@@ -120,10 +120,38 @@ trait ManualLiftedLegoBase { this: DeepDSL =>
 
   // TODO think about it, variables should be FieldAccess or FunctionDef or sth else?
   case class PrintOp_var_numRows[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]) extends FieldDef[Int](self, "numRows")
+  case class PrintOp_Field_parent[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]) extends FieldDef[Operator[A]](self, "parent")
 
   implicit class PrintOpRep2[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]) {
     def numRows: Rep[Int] = PrintOp_var_numRows(self)
+    def parent: Rep[Operator[A]] = printOp_Field_parent(self)
   }
+
+  def printOp_Field_parent[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = PrintOp_Field_parent(self)
+
+  case class SortOp_Field_parent[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]) extends FieldDef[Operator[A]](self, "parent")
+
+  implicit class SortOpRep2[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]) {
+    def parent: Rep[Operator[A]] = sortOp_Field_parent(self)
+  }
+
+  def sortOp_Field_parent[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = SortOp_Field_parent(self)
+
+  case class MapOp_Field_parent[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]) extends FieldDef[Operator[A]](self, "parent")
+
+  implicit class MapOpRep2[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]) {
+    def parent: Rep[Operator[A]] = mapOp_Field_parent(self)
+  }
+
+  def mapOp_Field_parent[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = MapOp_Field_parent(self)
+
+  case class AggOp_Field_parent[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FieldDef[Operator[A]](self, "parent")
+
+  implicit class AggOpRep2[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], evidence$6: Manifest[B], evidence$5: Manifest[A]) {
+    def parent: Rep[Operator[A]] = aggOp_Field_parent(self)(manifestA, manifestB)
+  }
+
+  def aggOp_Field_parent[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Operator[A]] = AggOp_Field_parent(self)
 
   // TODO this thing should be removed, ideally every literal should be lifted using YY
 
