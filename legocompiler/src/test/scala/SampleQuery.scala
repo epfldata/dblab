@@ -3,7 +3,7 @@ package legobase
 package deep
 
 import org.scalatest.{ FlatSpec, ShouldMatchers }
-import pardis.prettyprinter._
+import prettyprinter._
 
 class SampleQuery extends FlatSpec with ShouldMatchers {
   def sample1() = new DeepDSL {
@@ -20,5 +20,5 @@ class SampleQuery extends FlatSpec with ShouldMatchers {
   val block = lq.Q1
   println(block)
 
-  CodeGenerator.generate(block)
+  LegoGenerator.generate(block)
 }
