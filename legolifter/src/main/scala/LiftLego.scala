@@ -16,7 +16,6 @@ import scala.collection.mutable.DefaultEntry
 object LiftLego {
   def main(args: Array[String]) {
     implicit val al = new AutoLifter(universe)
-
     generateLegoBase
     generateNumber
     generateTpe[Array[Any]]
@@ -79,10 +78,11 @@ trait DeepDSL extends SelectOpComponent with ScanOpComponent with AggOpComponent
   }
 
   def generateCollection(implicit al: AutoLifter) {
-    val liftedCodes = List(al.autoLift[HashMap[Any, Any]](Custom(List(CMethod("keySet"), CMethod("getOrElseUpdate"), CMethod("size"), CMethod("remove"), CMethod("clear"), CMethod("<init>")))),
+    val liftedCodes = List(
+      al.autoLift[HashMap[Any, Any]](Custom(List(CMethod("keySet"), CMethod("getOrElseUpdate"), CMethod("size"), CMethod("remove"), CMethod("clear"), CMethod("<init>")))),
       al.autoLift[Set[Any]](Custom(List(CMethod("apply"), CMethod("toSeq"), CMethod("head"), CMethod("remove")))),
       al.autoLift[TreeSet[Any]](Custom(List(CMethod("+="), CMethod("-="), CMethod("head"), CMethod("size")))),
-      al.autoLift[DefaultEntry[Any, Any]])
+      al.autoLift[DefaultEntry[Any, Any]](Custom()))
     val liftedCode = liftedCodes.mkString("\n")
     val file = "DeepScalaCollection"
     printToFile(new java.io.File(s"$folder/scalalib/$file.scala")) { pw =>

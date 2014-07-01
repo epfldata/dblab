@@ -20,5 +20,5 @@ class SampleQuery extends FlatSpec with ShouldMatchers {
   val block = lq.Q1
   println(block)
 
-  LegoGenerator.generate(block)
+  LegoGenerator.apply(block)
 }

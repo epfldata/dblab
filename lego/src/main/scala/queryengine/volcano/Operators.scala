@@ -4,6 +4,7 @@ package queryengine
 package volcano
 
 import scala.reflect.runtime.universe._
+import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Set
 import GenericEngine._
@@ -138,3 +139,75 @@ case class PrintOp[A: Manifest](var parent: Operator[A])(printFunc: A => Unit, l
   def close() = {}
   def reset() { parent.reset }
 }
+/*
+case class HashJoinOp[A: Manifest, B: Manifest, C: Manifest](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[CompositeRecord[A, B]] {
+  var tmpCount = -1
+  var tmpBuffer = ArrayBuffer[A]()
+  val hm = HashMap[C, ArrayBuffer[A]]()
+  var tmpLine = NullDynamicRecord[B]
+
+  def open() = {
+    leftParent.open
+    rightParent.open
+    leftParent foreach { t =>
+      {
+        val k = leftHash(t)
+        val v = hm.getOrElseUpdate(k, ArrayBuffer[A]())
+        v.append(t)
+      }
+    }
+  }
+  def next() = {
+    if (tmpCount != -1) {
+      while (tmpCount < tmpBuffer.size && !joinCond(tmpBuffer(tmpCount), tmpLine)) tmpCount += 1
+      if (tmpCount == tmpBuffer.size) tmpCount = -1
+    }
+    if (tmpCount == -1) {
+      tmpLine = rightParent findFirst { t =>
+        {
+          val k = rightHash(t)
+          if (hm.contains(k)) {
+            tmpBuffer = hm(k)
+            tmpCount = tmpBuffer.indexWhere(e => joinCond(e, t))
+            tmpCount != -1
+          } else false
+        }
+      }
+    }
+    if (tmpLine != NullDynamicRecord[B] && tmpCount != -1) {
+      val res = tmpBuffer(tmpCount).concatenate(tmpLine, leftAlias, rightAlias)
+      tmpCount += 1
+      res
+    } else NullDynamicRecord[CompositeRecord[A, B]]
+  }
+  def close() {}
+  def reset() { rightParent.reset; leftParent.reset; hm.clear; tmpLine = NullDynamicRecord[B]; tmpCount = 0; tmpBuffer.clear }
+}
+
+case class WindowOp[A: Manifest, B: Manifest, C: Manifest](parent: Operator[A])(val grp: Function1[A, B])(val wndf: ArrayBuffer[A] => C) extends Operator[Record { val key: B; val wnd: C }] {
+  val hm = HashMap[B, ArrayBuffer[A]]()
+  var keySet = hm.keySet
+
+  def open() {
+    parent.open
+    parent foreach { t: Rep[A] =>
+      val key = grp(t)
+      val v = hm.getOrElseUpdate(key, ArrayBuffer[A]())
+      v.append(t)
+    }
+    keySet = hm.keySet
+  }
+  def next() = {
+    if (hm.size != 0) {
+      val k = keySet.head
+      keySet.remove(k)
+      val elem = hashmap_remove(hm, k)
+      new {
+        val key = k
+        val wnd = wndf(elem)
+      }
+    } else NullDynamicRecord
+  }
+  def close() {}
+  def reset() { parent.reset; hm.clear; open }
+}*/
