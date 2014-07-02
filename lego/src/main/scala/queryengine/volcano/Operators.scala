@@ -8,8 +8,23 @@ import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Set
 import GenericEngine._
+import ch.epfl.data.autolifter.annotations.{ deep, metadeep }
 
-abstract class Operator[+A: Manifest] {
+// This is a temporary solution until we introduce dependency management and adopt policies. Not a priority now!
+@metadeep(
+  "legocompiler/src/main/scala/ch/epfl/data/legobase/deep",
+  """
+package ch.epfl.data
+package legobase
+package deep
+
+import scalalib._
+import pardis.ir._
+""",
+  """OperatorsComponent""")
+class MetaInfo
+
+@deep abstract class Operator[+A: Manifest] {
   def open()
   def next(): A
   def close()
@@ -37,7 +52,7 @@ abstract class Operator[+A: Manifest] {
   def NullDynamicRecord[D: Manifest] = null.asInstanceOf[D]
 }
 
-case class ScanOp[A: Manifest](table: Array[A]) extends Operator[A] {
+@deep case class ScanOp[A: Manifest](table: Array[A]) extends Operator[A] {
   var i = 0
   def open() {}
   def next() = {
@@ -51,14 +66,14 @@ case class ScanOp[A: Manifest](table: Array[A]) extends Operator[A] {
   def reset() { i = 0 }
 }
 
-case class SelectOp[A: Manifest](parent: Operator[A])(selectPred: A => Boolean) extends Operator[A] {
+@deep case class SelectOp[A: Manifest](parent: Operator[A])(selectPred: A => Boolean) extends Operator[A] {
   def open() = { parent.open; }
   def next() = parent findFirst selectPred
   def close() = {}
   def reset() { parent.reset }
 }
 
-case class AggOp[A: Manifest, B: Manifest](parent: Operator[A], numAggs: Int)(val grp: A => B)(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
+@deep case class AggOp[A: Manifest, B: Manifest](parent: Operator[A], numAggs: Int)(val grp: A => B)(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
   val mA = manifest[A]
   val mB = manifest[B]
 
@@ -90,7 +105,7 @@ case class AggOp[A: Manifest, B: Manifest](parent: Operator[A], numAggs: Int)(va
   def reset() { parent.reset; hm.clear; open }
 }
 
-case class SortOp[A: Manifest](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends Operator[A] {
+@deep case class SortOp[A: Manifest](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends Operator[A] {
   val sortedTree = new scala.collection.mutable.TreeSet()(
     new Ordering[A] {
       def compare(o1: A, o2: A) = orderingFunc(o1, o2)
@@ -111,7 +126,7 @@ case class SortOp[A: Manifest](parent: Operator[A])(orderingFunc: Function2[A, A
 }
 
 // Limited version of map -- touches data in place and does not create new data
-case class MapOp[A: Manifest](parent: Operator[A])(aggFuncs: Function1[A, Unit]*) extends Operator[A] {
+@deep case class MapOp[A: Manifest](parent: Operator[A])(aggFuncs: Function1[A, Unit]*) extends Operator[A] {
   def open() = { parent.open; }
   def next() = {
     val t: A = parent.next
@@ -124,7 +139,7 @@ case class MapOp[A: Manifest](parent: Operator[A])(aggFuncs: Function1[A, Unit]*
   def reset { parent.reset }
 }
 
-case class PrintOp[A: Manifest](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean = () => true) extends Operator[A] {
+@deep case class PrintOp[A: Manifest](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean = () => true) extends Operator[A] {
   var numRows = 0
   def open() = { parent.open; }
   def next() = {
