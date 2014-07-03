@@ -23,8 +23,6 @@ object LiftLego {
     generateNumber
     generateTpe[Array[Any]]
     generateCollection
-    generateTpe[Option[Any]]
-    generateTpe[List[Any]]
   }
 
   val folder = "legocompiler/src/main/scala/ch/epfl/data/legobase/deep"

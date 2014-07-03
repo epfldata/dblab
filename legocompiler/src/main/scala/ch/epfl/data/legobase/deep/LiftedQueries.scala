@@ -14,7 +14,6 @@ class LiftedQueries {
     new InliningLegoBase {
       def q1 = {
         val lineitemTable = loadLineitem()
-        val pl = println(unit("Loading complete!"))
         val constantDate = parseDate(unit("1998-08-11"))
         val lineitemScan = selectOpNew2(scanOpNew(lineitemTable))({ x => x.L_SHIPDATE <= constantDate })
         val aggOp = aggOpNew2(lineitemScan, unit(9))(x => groupByClassNew(

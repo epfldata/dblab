@@ -11,28 +11,32 @@ trait InliningLegoBase extends DeepDSL {
   }
 
   override def operatorOpen[A](self: Rep[Operator[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = self match {
-    case Def(x: PrintOpNew[_])  => self.asInstanceOf[Rep[PrintOp[A]]].open
-    case Def(x: SortOpNew[_])   => self.asInstanceOf[Rep[SortOp[A]]].open
-    case Def(x: MapOpNew[_])    => self.asInstanceOf[Rep[MapOp[A]]].open
-    case Def(x: AggOpNew[_, _]) => self.asInstanceOf[Rep[AggOp[A, Any]]].open
+    case Def(x: PrintOpNew[_]) => self.asInstanceOf[Rep[PrintOp[A]]].open
+    case Def(x: SortOpNew[_])  => self.asInstanceOf[Rep[SortOp[A]]].open
+    case Def(x: MapOpNew[_])   => self.asInstanceOf[Rep[MapOp[A]]].open
+    case Def(x: AggOpNew[_, _]) => {
+      type X = A
+      type Y = Any
+      aggOpOpen(self.asInstanceOf[Rep[AggOp[X, Y]]])(x.manifestA.asInstanceOf[Manifest[X]], x.manifestB.asInstanceOf[Manifest[Y]])
+    }
     case Def(x: ScanOpNew[_])   => self.asInstanceOf[Rep[ScanOp[A]]].open
     case Def(x: SelectOpNew[_]) => self.asInstanceOf[Rep[SelectOp[A]]].open
     case _                      => super.operatorOpen(self)
   }
 
   override def operatorNext[A](self: Rep[Operator[A]])(implicit manifestA: Manifest[A]): Rep[A] = self match {
-    case Def(x: PrintOpNew[_])  => self.asInstanceOf[Rep[PrintOp[A]]].next
-    case Def(x: SortOpNew[_])   => self.asInstanceOf[Rep[SortOp[A]]].next
-    case Def(x: MapOpNew[_])    => self.asInstanceOf[Rep[MapOp[A]]].next
-    case Def(x: AggOpNew[_, _]) => self.asInstanceOf[Rep[AggOp[A, Any]]].next.asInstanceOf[Rep[A]]
+    case Def(x: PrintOpNew[_]) => self.asInstanceOf[Rep[PrintOp[A]]].next
+    case Def(x: SortOpNew[_])  => self.asInstanceOf[Rep[SortOp[A]]].next
+    case Def(x: MapOpNew[_])   => self.asInstanceOf[Rep[MapOp[A]]].next
+    case Def(x: AggOpNew[_, _]) => {
+      type X = A
+      type Y = Any
+      aggOpNext(self.asInstanceOf[Rep[AggOp[X, Y]]])(x.manifestA.asInstanceOf[Manifest[X]], x.manifestB.asInstanceOf[Manifest[Y]]).asInstanceOf[Rep[A]]
+    }
     case Def(x: ScanOpNew[_])   => self.asInstanceOf[Rep[ScanOp[A]]].next
     case Def(x: SelectOpNew[_]) => self.asInstanceOf[Rep[SelectOp[A]]].next
     case _                      => super.operatorNext(self)
   }
-  // seems not a good idea
-  // manifestA.erasure match {
-  //   case x if x == manifest[PrintOp[Any]].erasure => printOpOpen(self.asInstanceOf[Rep[PrintOp[A]]])
-  // }
 
   override def operatorForeach[A](self: Rep[Operator[A]], f: ((Rep[A]) => Rep[Unit]))(implicit manifestA: Manifest[A]): Rep[Unit] = {
     reifyBlock {
@@ -49,8 +53,8 @@ trait InliningLegoBase extends DeepDSL {
 
   override def operatorFindFirst[A](self: Rep[Operator[A]], cond: ((Rep[A]) => Rep[Boolean]))(implicit manifestA: Manifest[A]): Rep[A] = {
     reifyBlock {
-      var exit = __newVar(unit(false));
-      var res: Var[A] = __newVar(self.NullDynamicRecord);
+      val exit = __newVar(unit(false));
+      val res = __newVar(self.NullDynamicRecord);
       __whileDo(`infix_!=`(exit, unit(true)), {
         __assign(res, self.next());
         __ifThenElse(`infix_==`(res, self.NullDynamicRecord), __assign(exit, unit(true)), __assign(exit, cond.apply(res)))
@@ -85,11 +89,11 @@ trait InliningLegoBase extends DeepDSL {
     }, self.NullDynamicRecord)
   }
 
-  override def selectOpNext[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = {
+  override def selectOpNext[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = reifyBlock {
     self.parent.findFirst(self.selectPred)
   }
 
-  override def scanOpNext[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = {
+  override def scanOpNext[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = reifyBlock {
     __ifThenElse(self.i.<(self.table.length), {
       val v = self.table.apply(self.i);
       self.`i_=`(self.i.+(unit(1)));
@@ -150,13 +154,14 @@ trait InliningLegoBase extends DeepDSL {
   //   def apply(x1: Rep[A1], x2: Rep[A2]): Rep[B] = lambdaApply[(A1, A2), B](f.asInstanceOf[Rep[((A1, A2)) => B]], tupled2(x1, x2))
   // }
 
-  // implicit def toLambda22[A1: Manifest, A2: Manifest, B: Manifest](x: Rep[(A1, A2) => B]): Lambda2Rep2_2[A1, A2, B] = new Lambda2Rep2_2(x)
+  def toLambda22[A1: Manifest, A2: Manifest, B: Manifest](x: Rep[(A1, A2) => B]): Lambda2Rep2[A1, A2, B] = new Lambda2Rep2(x)
 
   // FIXME autolifter does not lift A to Rep[A]
   // FIXME virtualize new array
   // FIXME handle variables liftings
   // FIXME autolift modules
   // FIXME think more about varargs!
+  // FIXME remove : _* in YY transformation
   override def aggOpOpen[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Unit] = {
     reifyBlock {
       self.parent.open();
@@ -165,12 +170,13 @@ trait InliningLegoBase extends DeepDSL {
         val aggs = self.hm.getOrElseUpdate(key, arrayNew[scala.Double](self.numAggs));
         var i: Var[Int] = __newVar(unit(0));
         self.aggFuncs.foreach(((aggFun) => {
-          // aggs.update(i, aggFun.apply(t, aggs.apply(i)));
+          aggs.update(i, toLambda22(aggFun).apply(t, aggs.apply(i)));
           __assign(i, readVar(i).+(unit(1)))
         }))
         unit(())
       }));
       // self.`keySet_=`(scala.collection.mutable.Set.apply(((self.hm.keySet.toSeq): _*)))
+      self.`keySet_=`(Set.apply(self.hm.keySet.toSeq))
     }
   }
 

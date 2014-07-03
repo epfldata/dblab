@@ -108,7 +108,7 @@ trait AggOpOps extends Base { this: DeepDSL =>
     def reset(): Rep[Unit] = aggOpReset[A, B](self)(manifestA, manifestB)
   }
   // case classes
-  case class AggOpNew[A, B](parent: Rep[Operator[A]], numAggs: Rep[Int], grpInput1: Sym[A], grpOutput: Block[B], aggFuncs: List[((Rep[A], Rep[Double]) => Rep[Double])])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[AggOp[A, B]](None, "new AggOp", List(List(parent, numAggs), List(Lambda(grpInput1, grpOutput)), List(aggFuncs.map(x => doLambda2(x)): _*)))
+  case class AggOpNew[A, B](parent: Rep[Operator[A]], numAggs: Rep[Int], grpInput1: Sym[A], grpOutput: Block[B], aggFuncs: List[((Rep[A], Rep[Double]) => Rep[Double])])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[AggOp[A, B]](None, "new AggOp", List(List(parent, numAggs), List(Lambda(grpInput1, grpOutput)), List(aggFuncs.map(x => doLambda2(x)): _*)))
   case class AggOpForeach[A, B](self: Rep[AggOp[A, B]], fInput1: Sym[A], fOutput: Block[Unit])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "foreach", List(List(Lambda(fInput1, fOutput))))
   case class AggOpFindFirst[A, B](self: Rep[AggOp[A, B]], condInput1: Sym[A], condOutput: Block[Boolean])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[A](Some(self), "findFirst", List(List(Lambda(condInput1, condOutput))))
   case class AggOpNullDynamicRecord[A, B, D](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestD: Manifest[D]) extends FunctionDef[D](Some(self), "NullDynamicRecord", List())
