@@ -1,4 +1,4 @@
-package ch.epfl.data
+/*package ch.epfl.data
 package legobase
 
 import autolifter._
@@ -12,4 +12,4 @@ object ImplGenerator {
   def genOps {
     // impl.ImplLifter.liftClass[ScanOp[_]]
   }
-}
+}*/
