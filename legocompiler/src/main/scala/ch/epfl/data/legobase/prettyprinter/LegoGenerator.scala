@@ -7,7 +7,7 @@ import pardis.ir._
 import pardis.prettyprinter._
 import scala.language.implicitConversions
 
-object LegoGenerator extends CCodeGenerator {
+object LegoGenerator extends ScalaCodeGenerator {
   def apply(program: PardisBlock[_]) {
     /*    val header = {
       """package ch.epfl.data

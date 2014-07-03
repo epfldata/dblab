@@ -10,6 +10,18 @@ object ImplGenerator {
   }
 
   def genOps {
-    impl.ImplLifter.liftClass[ScanOp[_]]
+    // impl.ImplLifter.liftClass[ScanOp[_]]
+    // println("====")
+    // impl.ImplLifter.liftClass[MapOp[_]]
+    // println("====")
+    // impl.ImplLifter.liftClass[PrintOp[_]]
+    // println("====")
+    // impl.ImplLifter.liftClass[SortOp[_]]
+    // println("====")
+    // impl.ImplLifter.liftClass[Operator[_]]
+    // println("====")
+    // impl.ImplLifter.liftClass[AggOp[_, _]]
+    // println("====")
+    // impl.ImplLifter.liftClass[SelectOp[_]]
   }
 }

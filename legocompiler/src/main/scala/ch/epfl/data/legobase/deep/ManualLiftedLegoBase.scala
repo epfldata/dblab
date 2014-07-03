@@ -6,7 +6,7 @@ import scala.language.implicitConversions
 
 // FIXME in the righthand side of the genreated case class invokations, type parameters should be filled in.
 
-trait ManualLiftedLegoBase { this: DeepDSL =>
+trait ManualLiftedLegoBase extends OptionOps with ListOps { this: DeepDSL =>
 
   // TODO auto generate this functions
 
@@ -96,7 +96,7 @@ trait ManualLiftedLegoBase { this: DeepDSL =>
     aggOpNew(parent, numAggs, grp, aggFuncs: _*)
   }
 
-  def mapOpNew2[A](parent: Rep[Operator[A]])(aggFuncs: ((Rep[A]) => Rep[Unit])*)(implicit manifestA: Manifest[A]): Rep[MapOp[A]] = MapOpNew(parent, aggFuncs: _*)
+  def mapOpNew2[A](parent: Rep[Operator[A]])(aggFuncs: ((Rep[A]) => Rep[Unit])*)(implicit manifestA: Manifest[A]): Rep[MapOp[A]] = mapOpNew(parent, aggFuncs: _*)
 
   def sortOpNew2[A](parent: Rep[Operator[A]])(orderingFunc: ((Rep[A], Rep[A]) => Rep[Int]))(implicit manifestA: Manifest[A]): Rep[SortOp[A]] = {
     sortOpNew(parent, orderingFunc)
@@ -120,40 +120,139 @@ trait ManualLiftedLegoBase { this: DeepDSL =>
 
   // TODO think about it, variables should be FieldAccess or FunctionDef or sth else?
   case class PrintOp_var_numRows[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]) extends FieldDef[Int](self, "numRows")
+  case class PrintOp_var_numRows_$equals[A](self: Rep[PrintOp[A]], v: Rep[Int])(implicit manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "`numRows_=`", List(List(v)))
   case class PrintOp_Field_parent[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]) extends FieldDef[Operator[A]](self, "parent")
 
   implicit class PrintOpRep2[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]) {
+    // val numRowsVar: Var[Int] = __newVar(PrintOp_var_numRows(self))
+    // def numRows: Rep[Int] = readVar(numRowsVar)
     def numRows: Rep[Int] = PrintOp_var_numRows(self)
     def parent: Rep[Operator[A]] = printOp_Field_parent(self)
+    def numRows_=(v: Rep[Int]): Rep[Unit] = printOpNumRows_$equals(self, v)
+    // def printFunc: (Rep[A] => Rep[Unit]) = printOpPrintFunc(self)
+    def printFunc: Rep[A => Unit] = printOpPrintFunc(self)
+    def limit: Rep[() => Unit] = printOpLimit(self)
   }
 
+  def printOpNumRows_$equals[A](self: Rep[PrintOp[A]], v: Rep[Int])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    // __assign(self.numRowsVar, v)
+    PrintOp_var_numRows_$equals(self, v)
+  }
   def printOp_Field_parent[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = PrintOp_Field_parent(self)
+  def printOpPrintFunc[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[A => Unit] = self match {
+    case Def(PrintOpNew(_, i, o, _)) => Lambda(i, o)
+    case _                           => ???
+  }
+  def printOpLimit[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[() => Unit] = self match {
+    // FIXME HACK
+    case Def(PrintOpNew(_, i, _, o)) => toAtom(o).asInstanceOf[Rep[() => Unit]]
+    case _                           => ???
+  }
 
   case class SortOp_Field_parent[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]) extends FieldDef[Operator[A]](self, "parent")
+  case class SortOp_Field_sortedTree[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]) extends FieldDef[TreeSet[A]](self, "sortedTree")
 
   implicit class SortOpRep2[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]) {
     def parent: Rep[Operator[A]] = sortOp_Field_parent(self)
+    def sortedTree: Rep[TreeSet[A]] = sortOp_Field_sortedTree(self)
   }
 
   def sortOp_Field_parent[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = SortOp_Field_parent(self)
+  def sortOp_Field_sortedTree[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[TreeSet[A]] = SortOp_Field_sortedTree(self)
+
+  case class SelectOp_Field_parent[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]) extends FieldDef[Operator[A]](self, "parent")
+  case class SelectOp_Field_selectPred[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]) extends FieldDef[Operator[A]](self, "parent")
+
+  implicit class SelectOpRep2[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]) {
+    def parent: Rep[Operator[A]] = selectOp_Field_parent(self)
+    def selectPred: (Rep[A] => Rep[Boolean]) = selectOpSelectPred(self)
+  }
+
+  def selectOp_Field_parent[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = SelectOp_Field_parent(self)
+  def selectOpSelectPred[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): (Rep[A] => Rep[Boolean]) = self match {
+    case Def(SelectOpNew(_, i, o)) => i => o
+    case _ => ???
+  }
+
+  case class ScanOp_Field_table[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]) extends FieldDef[Array[A]](self, "table")
+  case class ScanOp_var_i[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]) extends FieldDef[Int](self, "i")
+  case class ScanOp_var_i_$equals[A](self: Rep[ScanOp[A]], v: Rep[Int])(implicit manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "`i_=`", List(List(v)))
+
+  implicit class ScanOpRep2[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]) {
+    def table: Rep[Array[A]] = scanOp_Field_table(self)
+    def i: Rep[Int] = ScanOp_var_i(self)
+    def i_=(v: Rep[Int]): Rep[Unit] = scanOpI_$equals(self, v)
+  }
+
+  def scanOp_Field_table[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]): Rep[Array[A]] = ScanOp_Field_table(self)
+  def scanOpI_$equals[A](self: Rep[ScanOp[A]], v: Rep[Int])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    ScanOp_var_i_$equals(self, v)
+  }
 
   case class MapOp_Field_parent[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]) extends FieldDef[Operator[A]](self, "parent")
 
   implicit class MapOpRep2[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]) {
     def parent: Rep[Operator[A]] = mapOp_Field_parent(self)
+    def aggFuncs: List[(Rep[A]) => Rep[Unit]] = mapOpAggFuncs(self)
   }
 
   def mapOp_Field_parent[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = MapOp_Field_parent(self)
+  def mapOpAggFuncs[A, B](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): List[((Rep[A]) => Rep[Unit])] = self match {
+    case Def(MapOpNew(_, funs)) => funs
+    case _                      => ???
+  }
 
   case class AggOp_Field_parent[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FieldDef[Operator[A]](self, "parent")
+  case class AggOp_Field_numAggs[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FieldDef[Int](self, "numAggs")
+  case class AggOp_Field_hm[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FieldDef[HashMap[B, Array[Double]]](self, "hm")
+  case class AggOp_Field_keySet[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FieldDef[Set[B]](self, "keySet")
 
-  implicit class AggOpRep2[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], evidence$6: Manifest[B], evidence$5: Manifest[A]) {
+  implicit class AggOpRep2[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) {
     def parent: Rep[Operator[A]] = aggOp_Field_parent(self)(manifestA, manifestB)
+    def numAggs: Rep[Int] = aggOp_Field_numAggs(self)(manifestA, manifestB)
+    def grp: ((Rep[A]) => Rep[B]) = aggOpGrp(self)(manifestA, manifestB)
+    def hm: Rep[HashMap[B, Array[Double]]] = aggOp_Field_hm(self)
+    def keySet: Rep[Set[B]] = aggOp_Field_keySet(self)
+    def aggFuncs: Rep[List[((A, Double) => Double)]] = aggOpAggFuncs(self)
   }
 
   def aggOp_Field_parent[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Operator[A]] = AggOp_Field_parent(self)
+  def aggOp_Field_numAggs[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Int] = AggOp_Field_numAggs(self)
+  def aggOpGrp[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): (Rep[A] => Rep[B]) = self match {
+    case Def(AggOpNew(_, _, i, o, _)) => i => o
+    case _ => ???
+  }
+  def aggOpAggFuncs[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[List[((A, Double) => Double)]] = self match {
+    case Def(AggOpNew(_, _, _, _, funs)) => unit(funs.map((x: (Rep[A], Rep[Double]) => Rep[Double]) => doLambda2(x))).asInstanceOf[Rep[List[((A, Double) => Double)]]]
+    case _                               => ???
+  }
+  def aggOp_Field_hm[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[B, Array[Double]]] = AggOp_Field_hm(self)
+  def aggOp_Field_keySet[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Set[B]] = AggOp_Field_keySet(self)
+
+  def newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit manifestB: Manifest[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)
 
   // TODO this thing should be removed, ideally every literal should be lifted using YY
 
   implicit def liftInt(i: scala.Int): Rep[Int] = unit(i)
+}
+
+// TODO should be generated automatically
+trait OptionOps { this: DeepDSL =>
+  implicit class OptionRep[A](self: Rep[Option[A]])(implicit manifestA: Manifest[A]) {
+    def get(): Rep[A] = optionGet[A](self)(manifestA)
+  }
+  def optionGet[A](self: Rep[Option[A]])(implicit manifestA: Manifest[A]): Rep[A] = OptionGet[A](self)
+  case class OptionGet[A](self: Rep[Option[A]])(implicit manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "get", List())
+}
+
+trait ListOps { this: DeepDSL =>
+  def listForeach[A, U](self: Rep[List[A]], f: ((Rep[A]) => Rep[U]))(implicit manifestA: Manifest[A], manifestU: Manifest[U]): Rep[Unit] = {
+    val fInput1 = fresh[A]
+    val fOutput = reifyBlock(f(fInput1))
+    ListForeach[A, U](self, fInput1, fOutput)
+  }
+  implicit class ListRep[A](self: Rep[List[A]])(implicit manifestA: Manifest[A]) {
+    def foreach[U](f: (Rep[A] => Rep[U]))(implicit manifestU: Manifest[U]): Rep[Unit] = listForeach[A, U](self, f)(manifestA, manifestU)
+  }
+  case class ListForeach[A, U](self: Rep[List[A]], fInput1: Sym[A], fOutput: Block[U])(implicit manifestA: Manifest[A], manifestU: Manifest[U]) extends FunctionDef[Unit](Some(self), "foreach", List(List(Lambda(fInput1, fOutput))))
 }
