@@ -1,4 +1,4 @@
-package ch.epfl.data
+/*package ch.epfl.data
 package legobase
 
 import autolifter._
@@ -24,4 +24,4 @@ object ImplGenerator {
     // println("====")
     // impl.ImplLifter.liftClass[SelectOp[_]]
   }
-}
+}*/
