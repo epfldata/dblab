@@ -103,7 +103,7 @@ trait Loader {
 
   def fileLineCount(file: String) = {
     import scala.sys.process._;
-    Integer.parseInt(((("wc -l " + file) #| "awk {print($1)}").!!).replaceAll("\\s+$", ""))
+    Integer.parseInt((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", ""))
   }
 
   def loadRegion() = {
