@@ -10,6 +10,6 @@ object ImplGenerator {
   }
 
   def genOps {
-    impl.ImplLifter.liftClass[ScanOp[_]]
+    // impl.ImplLifter.liftClass[ScanOp[_]]
   }
 }
