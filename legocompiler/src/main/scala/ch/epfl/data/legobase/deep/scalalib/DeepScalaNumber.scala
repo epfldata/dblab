@@ -119,6 +119,8 @@ trait IntOps extends Base { this: DeepDSL =>
     def %(x: Rep[Float])(implicit overload6: Overloaded6): Rep[Float] = int$percent6(self, x)
     def %(x: Rep[Double])(implicit overload7: Overloaded7): Rep[Double] = int$percent7(self, x)
   }
+  // constructors
+  def __newInt(): Rep[Int] = intNew
   // case classes
   case class IntNew() extends FunctionDef[Int](None, "new Int", List())
   case class IntToByte(self: Rep[Int]) extends FunctionDef[Byte](Some(self), "toByte", List())
@@ -438,6 +440,8 @@ trait DoubleOps extends Base { this: DeepDSL =>
     def %(x: Rep[Float])(implicit overload6: Overloaded6): Rep[Double] = double$percent6(self, x)
     def %(x: Rep[Double])(implicit overload7: Overloaded7): Rep[Double] = double$percent7(self, x)
   }
+  // constructors
+  def __newDouble(): Rep[Double] = doubleNew
   // case classes
   case class DoubleNew() extends FunctionDef[Double](None, "new Double", List())
   case class DoubleToByte(self: Rep[Double]) extends FunctionDef[Byte](Some(self), "toByte", List())
@@ -629,6 +633,8 @@ trait CharacterOps extends Base { this: DeepDSL =>
     def compareTo(x$1: Rep[Character]): Rep[Int] = characterCompareTo(self, x$1)
     def charValue(): Rep[Char] = characterCharValue(self)
   }
+  // constructors
+  def __newCharacter(x$1: Rep[Char]): Rep[Character] = characterNew(x$1)
   // case classes
   case class CharacterNew(x$1: Rep[Char]) extends FunctionDef[Character](None, "new Character", List(List(x$1)))
   case class CharacterEquals(self: Rep[Character], x$1: Rep[Any]) extends FunctionDef[Boolean](Some(self), "equals", List(List(x$1)))
@@ -758,6 +764,8 @@ trait LongOps extends Base { this: DeepDSL =>
     def %(x: Rep[Float])(implicit overload6: Overloaded6): Rep[Float] = long$percent6(self, x)
     def %(x: Rep[Double])(implicit overload7: Overloaded7): Rep[Double] = long$percent7(self, x)
   }
+  // constructors
+  def __newLong(): Rep[Long] = longNew
   // case classes
   case class LongNew() extends FunctionDef[Long](None, "new Long", List())
   case class LongToByte(self: Rep[Long]) extends FunctionDef[Byte](Some(self), "toByte", List())
@@ -998,6 +1006,9 @@ trait IntegerOps extends Base { this: DeepDSL =>
     def floatValue(): Rep[Float] = integerFloatValue(self)
     def doubleValue(): Rep[Double] = integerDoubleValue(self)
   }
+  // constructors
+  def __newInteger(x$1: Rep[Int])(implicit overload1: Overloaded1): Rep[Integer] = integerNew1(x$1)
+  def __newInteger(x$1: Rep[String])(implicit overload2: Overloaded2): Rep[Integer] = integerNew2(x$1)
   // case classes
   case class IntegerNew1(x$1: Rep[Int]) extends FunctionDef[Integer](None, "new Integer", List(List(x$1)))
   case class IntegerNew2(x$1: Rep[String]) extends FunctionDef[Integer](None, "new Integer", List(List(x$1)))
@@ -1038,6 +1049,8 @@ trait BooleanOps extends Base { this: DeepDSL =>
     def &(x: Rep[Boolean]): Rep[Boolean] = boolean$amp(self, x)
     def ^(x: Rep[Boolean]): Rep[Boolean] = boolean$up(self, x)
   }
+  // constructors
+  def __newBoolean(): Rep[Boolean] = booleanNew
   // case classes
   case class BooleanNew() extends FunctionDef[Boolean](None, "new Boolean", List())
   case class BooleanUnary_$bang(self: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "unary_$bang", List())

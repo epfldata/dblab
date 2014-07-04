@@ -15,7 +15,7 @@ import scala.collection.mutable.DefaultEntry
 import java.util.{ Calendar, GregorianCalendar }
 
 object LiftLego {
-  val reportToFile = false
+  val reportToFile = true
 
   def main(args: Array[String]) {
     implicit val al = new AutoLifter(universe)

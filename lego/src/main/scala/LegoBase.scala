@@ -22,7 +22,7 @@ object MiniDB extends storagemanager.Loader with Queries {
 
   def main(args: Array[String]) {
     Config.datapath = args(0)
-    Config.checkResults = false
+    Config.checkResults = true
 
     val queries: scala.collection.immutable.List[String] =
       if (args.length == 2 && args(1) == "testsuite") (for (i <- 1 to 22) yield "Q" + i).toList
