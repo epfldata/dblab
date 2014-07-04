@@ -5,11 +5,6 @@ package deep
 import scala.language.implicitConversions
 
 trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
-  // override def lambdaApply[T: Manifest, S: Manifest](fun: Rep[T => S], input: Rep[T]): Rep[S] = fun match {
-  //   case Def(Lambda(i, Block(stmts, res))) => Block(Stm(i.asInstanceOf[Sym[T]], ReadVal(input)) :: stmts, res)
-  //   case _                                 => super.lambdaApply(fun, input)
-  // }
-
   override def operatorOpen[A](self: Rep[Operator[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = self match {
     case Def(x: PrintOpNew[_]) => self.asInstanceOf[Rep[PrintOp[A]]].open
     case Def(x: SortOpNew[_])  => self.asInstanceOf[Rep[SortOp[A]]].open
@@ -45,7 +40,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
       __whileDo(`infix_!=`(exit, unit(true)), {
         val t = self.next();
         __ifThenElse(`infix_==`(t, self.NullDynamicRecord), __assign(exit, unit(true)), {
-          new LambdaRep(f).apply(t);
+          __app(f).apply(t);
           unit(())
         })
       })
@@ -59,7 +54,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
       val res = __newVar(self.NullDynamicRecord);
       __whileDo(`infix_!=`(exit, unit(true)), {
         __assign(res, self.next());
-        __ifThenElse(`infix_==`(res, self.NullDynamicRecord), __assign(exit, unit(true)), __assign(exit, new LambdaRep(cond).apply(res)))
+        __ifThenElse(`infix_==`(res, self.NullDynamicRecord), __assign(exit, unit(true)), __assign(exit, __app(cond).apply(res)))
       });
       res
     }
@@ -109,7 +104,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
     reifyBlock {
       val t = self.parent.next();
       __ifThenElse(`infix_!=`(t, self.NullDynamicRecord), {
-        self.aggFuncs.foreach(__lambda((agg) => new LambdaRep(agg).apply(t)));
+        self.aggFuncs.foreach(__lambda((agg) => __app(agg).apply(t)));
         t
       }, self.NullDynamicRecord)
     }
@@ -153,12 +148,6 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
     self.parent.open
   }
 
-  // // class Lambda2Rep2_2[A1: Manifest, A2: Manifest, B: Manifest](f: Rep[(A1, A2) => B]) {
-  // //   def apply(x1: Rep[A1], x2: Rep[A2]): Rep[B] = lambdaApply[(A1, A2), B](f.asInstanceOf[Rep[((A1, A2)) => B]], tupled2(x1, x2))
-  // // }
-
-  def toLambda22[A1: Manifest, A2: Manifest, B: Manifest](x: Rep[(A1, A2) => B]): Lambda2Rep2[A1, A2, B] = new Lambda2Rep2(x)
-
   // // FIXME autolifter does not lift A to Rep[A]
   // // FIXME virtualize new array
   // // FIXME handle variables liftings
@@ -174,7 +163,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
         val aggs = self.hm.getOrElseUpdate(key, __newArray[scala.Double](self.numAggs));
         var i: Var[Int] = __newVar(unit(0));
         self.aggFuncs.foreach(__lambda((aggFun) => {
-          aggs.update(i, toLambda22(aggFun).apply(t, aggs.apply(i)));
+          aggs.update(i, __app(aggFun).apply(t, aggs.apply(i)));
           __assign(i, readVar(i).+(unit(1)))
         }))
         unit(())

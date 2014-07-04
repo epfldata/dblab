@@ -14,9 +14,6 @@ import storagemanager.TPCHRelations.LINEITEMRecord
 import queryengine.AGGRecord
 import scala.collection.mutable.Set
 
-object SetVarArg {
-  def apply[T](v: Seq[T]): Set[T] = Set(v : _*)
-}
 """
 
   def apply(program: PardisBlock[_]) {

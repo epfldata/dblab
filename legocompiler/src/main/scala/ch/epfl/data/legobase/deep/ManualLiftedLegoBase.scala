@@ -6,7 +6,7 @@ import scala.language.implicitConversions
 
 // FIXME in the righthand side of the genreated case class invokations, type parameters should be filled in.
 
-trait ManualLiftedLegoBase extends OptionOps with ListOps { this: DeepDSL =>
+trait ManualLiftedLegoBase extends OptionOps with SetOps { this: DeepDSL =>
 
   // TODO auto generate this functions
 
@@ -151,14 +151,6 @@ trait ManualLiftedLegoBase extends OptionOps with ListOps { this: DeepDSL =>
     def selectPred: Rep[A => Boolean] = selectOpSelectPred(self)
   }
 
-  // surprisiningly it's a working solution!
-  // TODO ideally it should be removed
-  // case class InlinerLambda[T: Manifest, S: Manifest](inputSym: Rep[T], output: Block[S]) extends Function1[Rep[T], Rep[S]] {
-  //   def apply(input: Rep[T]) = output match {
-  //     case Block(stmts, res) => Block(Stm(inputSym.asInstanceOf[Sym[T]], ReadVal(input)) :: stmts, res)
-  //   }
-  // }
-
   def selectOp_Field_parent[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = SelectOp_Field_parent(self)
   def selectOpSelectPred[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[A => Boolean] = self match {
     case Def(SelectOpNew(_, f)) => f
@@ -241,24 +233,9 @@ trait OptionOps { this: DeepDSL =>
   case class OptionGet[A](self: Rep[Option[A]])(implicit manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "get", List())
 }
 
-trait ListOps { this: DeepDSL =>
-  // def listForeach[A, U](self: Rep[List[A]], f: ((Rep[A]) => Rep[U]))(implicit manifestA: Manifest[A], manifestU: Manifest[U]): Rep[Unit] = {
-  //   val fInput1 = fresh[A]
-  //   val fOutput = reifyBlock(f(fInput1))
-  //   ListForeach[A, U](self, fInput1, fOutput)
-  // }
-  // implicit class ListRep[A](self: Rep[List[A]])(implicit manifestA: Manifest[A]) {
-  //   def foreach[U](f: (Rep[A] => Rep[U]))(implicit manifestU: Manifest[U]): Rep[Unit] = listForeach[A, U](self, f)(manifestA, manifestU)
-  // }
-  // case class ListForeach[A, U](self: Rep[List[A]], fInput1: Sym[A], fOutput: Block[U])(implicit manifestA: Manifest[A], manifestU: Manifest[U]) extends FunctionDef[Unit](Some(self), "foreach", List(List(Lambda(fInput1, fOutput))))
-  // FIXME pure hack
-  // case class LiftedList[A](underlying: List[Rep[A]])(implicit manifestA: Manifest[A]) extends FunctionDef[List[A]](None, "List", List(underlying))
-  // def liftList[A](l: List[Rep[A]])(implicit manifestA: Manifest[A]): Rep[List[A]] = LiftedList(l)
-
+trait SetOps { this: DeepDSL =>
   object Set {
     def apply[T: Manifest](seq: Rep[Seq[T]]): Rep[Set[T]] = SetNew(seq)
   }
-
-  // case class SetNew[T: Manifest](seq: Rep[Seq[T]]) extends FunctionDef[Set[T]](None, "SetVarArg.apply", List(List(seq)))
   case class SetNew[T: Manifest](seq: Rep[Seq[T]]) extends FunctionDef[Set[T]](None, "Set", List(List(__varArg(seq))))
 }
