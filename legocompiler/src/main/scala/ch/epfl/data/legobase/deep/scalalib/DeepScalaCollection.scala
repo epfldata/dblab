@@ -12,6 +12,9 @@ trait HashMapOps extends Base { this: DeepDSL =>
     def getOrElseUpdate(key: Rep[A], op: => Rep[B]): Rep[B] = hashMapGetOrElseUpdate[A, B](self, key, op)(manifestA, manifestB)
     def clear(): Rep[Unit] = hashMapClear[A, B](self)(manifestA, manifestB)
     def size(): Rep[Int] = hashMapSize[A, B](self)(manifestA, manifestB)
+    def contains(key: Rep[A]): Rep[Boolean] = hashMapContains[A, B](self, key)(manifestA, manifestB)
+    def apply(key: Rep[A]): Rep[B] = hashMapApply[A, B](self, key)(manifestA, manifestB)
+    def update(key: Rep[A], value: Rep[B]): Rep[Unit] = hashMapUpdate[A, B](self, key, value)(manifestA, manifestB)
     def remove(key: Rep[A]): Rep[Option[B]] = hashMapRemove[A, B](self, key)(manifestA, manifestB)
     def keySet(): Rep[Set[A]] = hashMapKeySet[A, B](self)(manifestA, manifestB)
   }
@@ -24,6 +27,9 @@ trait HashMapOps extends Base { this: DeepDSL =>
   case class HashMapGetOrElseUpdate[A, B](self: Rep[HashMap[A, B]], key: Rep[A], opOutput: Block[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[B](Some(self), "getOrElseUpdate", List(List(key, opOutput)))
   case class HashMapClear[A, B](self: Rep[HashMap[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "clear", List())
   case class HashMapSize[A, B](self: Rep[HashMap[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Int](Some(self), "size", List())
+  case class HashMapContains[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Boolean](Some(self), "contains", List(List(key)))
+  case class HashMapApply[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[B](Some(self), "apply", List(List(key)))
+  case class HashMapUpdate[A, B](self: Rep[HashMap[A, B]], key: Rep[A], value: Rep[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "update", List(List(key, value)))
   case class HashMapRemove[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Option[B]](Some(self), "remove", List(List(key)))
   case class HashMapKeySet[A, B](self: Rep[HashMap[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Set[A]](Some(self), "keySet", List())
   // method definitions
@@ -35,6 +41,9 @@ trait HashMapOps extends Base { this: DeepDSL =>
   }
   def hashMapClear[A, B](self: Rep[HashMap[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Unit] = HashMapClear[A, B](self)
   def hashMapSize[A, B](self: Rep[HashMap[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Int] = HashMapSize[A, B](self)
+  def hashMapContains[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Boolean] = HashMapContains[A, B](self, key)
+  def hashMapApply[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[B] = HashMapApply[A, B](self, key)
+  def hashMapUpdate[A, B](self: Rep[HashMap[A, B]], key: Rep[A], value: Rep[B])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Unit] = HashMapUpdate[A, B](self, key, value)
   def hashMapRemove[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Option[B]] = HashMapRemove[A, B](self, key)
   def hashMapKeySet[A, B](self: Rep[HashMap[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Set[A]] = HashMapKeySet[A, B](self)
   type HashMap[A, B] = scala.collection.mutable.HashMap[A, B]
