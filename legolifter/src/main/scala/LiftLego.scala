@@ -15,6 +15,8 @@ import scala.collection.mutable.DefaultEntry
 import java.util.{ Calendar, GregorianCalendar }
 
 object LiftLego {
+  val reportToFile = true
+
   def main(args: Array[String]) {
     implicit val al = new AutoLifter(universe)
     generateLegoBase
@@ -121,8 +123,13 @@ $liftedCode
 
   /* from http://stackoverflow.com/questions/4604237/how-to-write-to-a-file-in-scala */
   def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
-    val p = new java.io.PrintWriter(f)
-    try { op(p) } finally { p.close() }
+    if (reportToFile) {
+      val p = new java.io.PrintWriter(f)
+      try { op(p) } finally { p.close() }
+    } else {
+      val p = new java.io.PrintWriter(System.out)
+      try { op(p) } finally { p.flush() }
+    }
   }
 }
 

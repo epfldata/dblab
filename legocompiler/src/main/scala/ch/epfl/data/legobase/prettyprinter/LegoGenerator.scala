@@ -7,7 +7,15 @@ import pardis.ir._
 import pardis.prettyprinter._
 import scala.language.implicitConversions
 
-object LegoGenerator extends CCodeGenerator {
+object LegoGenerator extends ScalaCodeGenerator {
+
+  override def getHeader: Document = """
+import storagemanager.TPCHRelations.LINEITEMRecord
+import queryengine.AGGRecord
+import scala.collection.mutable.Set
+
+"""
+
   def apply(program: PardisBlock[_]) {
     /*    val header = {
       """package ch.epfl.data

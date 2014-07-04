@@ -62,8 +62,8 @@ case class AggOp[A: Manifest, B: Manifest](parent: Operator[A], numAggs: Int)(va
   val mA = manifest[A]
   val mB = manifest[B]
 
-  val hm = HashMap[B, Array[Double]]()
-  var keySet = Set(hm.keySet.toSeq: _*)
+  val hm = scala.collection.mutable.HashMap[B, Array[Double]]()
+  var keySet = scala.collection.mutable.Set(hm.keySet.toSeq: _*)
 
   def open() {
     parent.open
@@ -76,14 +76,14 @@ case class AggOp[A: Manifest, B: Manifest](parent: Operator[A], numAggs: Int)(va
         i += 1
       }
     }
-    keySet = Set(hm.keySet.toSeq: _*)
+    keySet = scala.collection.mutable.Set(hm.keySet.toSeq: _*)
   }
   def next() = {
     if (hm.size != 0) {
       val key = keySet.head
       keySet.remove(key)
       val elem = hm.remove(key)
-      newAGGRecord(key, elem.get)
+      ch.epfl.data.legobase.queryengine.GenericEngine.newAGGRecord(key, elem.get)
     } else NullDynamicRecord
   }
   def close() {}

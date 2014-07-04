@@ -9,24 +9,30 @@ import pardis.ir._
 
 trait HashMapOps extends Base { this: DeepDSL =>
   implicit class HashMapRep[A, B](self: Rep[HashMap[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) {
-    def getOrElseUpdate(key: Rep[A], op: Rep[() => B]): Rep[B] = hashMapGetOrElseUpdate[A, B](self, key, op)(manifestA, manifestB)
+    def getOrElseUpdate(key: Rep[A], op: => Rep[B]): Rep[B] = hashMapGetOrElseUpdate[A, B](self, key, op)(manifestA, manifestB)
     def clear(): Rep[Unit] = hashMapClear[A, B](self)(manifestA, manifestB)
     def size(): Rep[Int] = hashMapSize[A, B](self)(manifestA, manifestB)
     def remove(key: Rep[A]): Rep[Option[B]] = hashMapRemove[A, B](self, key)(manifestA, manifestB)
     def keySet(): Rep[Set[A]] = hashMapKeySet[A, B](self)(manifestA, manifestB)
   }
+  // constructors
+  def __newHashMap[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit overload1: Overloaded1, manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = hashMapNew1[A, B](contents)(manifestA, manifestB)
+  def __newHashMap[A, B](implicit overload2: Overloaded2, manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = hashMapNew2[A, B](manifestA, manifestB)
   // case classes
-  case class HashMapNew1[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[HashMap[A, B]](None, "new HashMap", List(List(contents)))
-  case class HashMapNew2[A, B]()(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[HashMap[A, B]](None, "new HashMap", List())
-  case class HashMapGetOrElseUpdate[A, B](self: Rep[HashMap[A, B]], key: Rep[A], op: Rep[() => B])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[B](Some(self), "getOrElseUpdate", List(List(key, op)))
-  case class HashMapClear[A, B](self: Rep[HashMap[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "clear", List())
-  case class HashMapSize[A, B](self: Rep[HashMap[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[Int](Some(self), "size", List())
-  case class HashMapRemove[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[Option[B]](Some(self), "remove", List(List(key)))
-  case class HashMapKeySet[A, B](self: Rep[HashMap[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[Set[A]](Some(self), "keySet", List())
+  case class HashMapNew1[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[HashMap[A, B]](None, "new HashMap", List(List(contents)))
+  case class HashMapNew2[A, B]()(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[HashMap[A, B]](None, "new HashMap", List())
+  case class HashMapGetOrElseUpdate[A, B](self: Rep[HashMap[A, B]], key: Rep[A], opOutput: Block[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[B](Some(self), "getOrElseUpdate", List(List(key, opOutput)))
+  case class HashMapClear[A, B](self: Rep[HashMap[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "clear", List())
+  case class HashMapSize[A, B](self: Rep[HashMap[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Int](Some(self), "size", List())
+  case class HashMapRemove[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Option[B]](Some(self), "remove", List(List(key)))
+  case class HashMapKeySet[A, B](self: Rep[HashMap[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Set[A]](Some(self), "keySet", List())
   // method definitions
   def hashMapNew1[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = HashMapNew1[A, B](contents)
   def hashMapNew2[A, B](implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = HashMapNew2[A, B]()
-  def hashMapGetOrElseUpdate[A, B](self: Rep[HashMap[A, B]], key: Rep[A], op: Rep[() => B])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[B] = HashMapGetOrElseUpdate[A, B](self, key, op)
+  def hashMapGetOrElseUpdate[A, B](self: Rep[HashMap[A, B]], key: Rep[A], op: => Rep[B])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[B] = {
+    val opOutput = reifyBlock(op)
+    HashMapGetOrElseUpdate[A, B](self, key, opOutput)
+  }
   def hashMapClear[A, B](self: Rep[HashMap[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Unit] = HashMapClear[A, B](self)
   def hashMapSize[A, B](self: Rep[HashMap[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Int] = HashMapSize[A, B](self)
   def hashMapRemove[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Option[B]] = HashMapRemove[A, B](self, key)
@@ -45,11 +51,13 @@ trait SetOps extends Base { this: DeepDSL =>
     def toSeq(): Rep[Seq[A]] = setToSeq[A](self)(manifestA)
     def remove(elem: Rep[A]): Rep[Boolean] = setRemove[A](self, elem)(manifestA)
   }
+  // constructors
+
   // case classes
-  case class SetHead[A](self: Rep[Set[A]])(implicit manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "head", List())
-  case class SetApply[A](self: Rep[Set[A]], elem: Rep[A])(implicit manifestA: Manifest[A]) extends FunctionDef[Boolean](Some(self), "apply", List(List(elem)))
-  case class SetToSeq[A](self: Rep[Set[A]])(implicit manifestA: Manifest[A]) extends FunctionDef[Seq[A]](Some(self), "toSeq", List())
-  case class SetRemove[A](self: Rep[Set[A]], elem: Rep[A])(implicit manifestA: Manifest[A]) extends FunctionDef[Boolean](Some(self), "remove", List(List(elem)))
+  case class SetHead[A](self: Rep[Set[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "head", List())
+  case class SetApply[A](self: Rep[Set[A]], elem: Rep[A])(implicit val manifestA: Manifest[A]) extends FunctionDef[Boolean](Some(self), "apply", List(List(elem)))
+  case class SetToSeq[A](self: Rep[Set[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Seq[A]](Some(self), "toSeq", List())
+  case class SetRemove[A](self: Rep[Set[A]], elem: Rep[A])(implicit val manifestA: Manifest[A]) extends FunctionDef[Boolean](Some(self), "remove", List(List(elem)))
   // method definitions
   def setHead[A](self: Rep[Set[A]])(implicit manifestA: Manifest[A]): Rep[A] = SetHead[A](self)
   def setApply[A](self: Rep[Set[A]], elem: Rep[A])(implicit manifestA: Manifest[A]): Rep[Boolean] = SetApply[A](self, elem)
@@ -69,11 +77,13 @@ trait TreeSetOps extends Base { this: DeepDSL =>
     def -=(elem: Rep[A]): Rep[TreeSet[A]] = treeSet$minus$eq[A](self, elem)(manifestA, ordering)
     def +=(elem: Rep[A]): Rep[TreeSet[A]] = treeSet$plus$eq[A](self, elem)(manifestA, ordering)
   }
+  // constructors
+
   // case classes
-  case class TreeSetHead[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A], ordering: Ordering[A]) extends FunctionDef[A](Some(self), "head", List())
-  case class TreeSetSize[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A], ordering: Ordering[A]) extends FunctionDef[Int](Some(self), "size", List())
-  case class TreeSet$minus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit manifestA: Manifest[A], ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "$minus$eq", List(List(elem)))
-  case class TreeSet$plus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit manifestA: Manifest[A], ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "$plus$eq", List(List(elem)))
+  case class TreeSetHead[A](self: Rep[TreeSet[A]])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[A](Some(self), "head", List())
+  case class TreeSetSize[A](self: Rep[TreeSet[A]])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[Int](Some(self), "size", List())
+  case class TreeSet$minus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "$minus$eq", List(List(elem)))
+  case class TreeSet$plus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "$plus$eq", List(List(elem)))
   // method definitions
   def treeSetHead[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A], ordering: Ordering[A]): Rep[A] = TreeSetHead[A](self)
   def treeSetSize[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A], ordering: Ordering[A]): Rep[Int] = TreeSetSize[A](self)
@@ -90,9 +100,11 @@ trait DefaultEntryOps extends Base { this: DeepDSL =>
   implicit class DefaultEntryRep[A, B](self: Rep[DefaultEntry[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) {
     def chainString(): Rep[String] = defaultEntryChainString[A, B](self)(manifestA, manifestB)
   }
+  // constructors
+  def __newDefaultEntry[A, B](key: Rep[A], value: Rep[B])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[DefaultEntry[A, B]] = defaultEntryNew[A, B](key, value)(manifestA, manifestB)
   // case classes
-  case class DefaultEntryNew[A, B](key: Rep[A], value: Rep[B])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[DefaultEntry[A, B]](None, "new DefaultEntry", List(List(key, value)))
-  case class DefaultEntryChainString[A, B](self: Rep[DefaultEntry[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[String](Some(self), "chainString", List())
+  case class DefaultEntryNew[A, B](key: Rep[A], value: Rep[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[DefaultEntry[A, B]](None, "new DefaultEntry", List(List(key, value)))
+  case class DefaultEntryChainString[A, B](self: Rep[DefaultEntry[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[String](Some(self), "chainString", List())
   // method definitions
   def defaultEntryNew[A, B](key: Rep[A], value: Rep[B])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[DefaultEntry[A, B]] = DefaultEntryNew[A, B](key, value)
   def defaultEntryChainString[A, B](self: Rep[DefaultEntry[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[String] = DefaultEntryChainString[A, B](self)
