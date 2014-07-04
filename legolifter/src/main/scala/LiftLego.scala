@@ -82,7 +82,7 @@ trait DeepDSL extends SelectOpComponent with ScanOpComponent with AggOpComponent
 
   def generateCollection(implicit al: AutoLifter) {
     val liftedCodes = List(
-      al.autoLift[HashMap[Any, Any]](Custom("DeepDSL", List(CMethod("keySet"), CMethod("getOrElseUpdate"), CMethod("size"), CMethod("remove"), CMethod("clear"), CMethod("<init>")))),
+      al.autoLift[HashMap[Any, Any]](Custom("DeepDSL", List(CMethod("keySet"), CMethod("getOrElseUpdate"), CMethod("size"), CMethod("remove"), CMethod("clear"), CMethod("<init>"), CMethod("apply"), CMethod("contains"), CMethod("update")))),
       al.autoLift[Set[Any]](Custom("DeepDSL", List(CMethod("apply"), CMethod("toSeq"), CMethod("head"), CMethod("remove")))),
       al.autoLift[TreeSet[Any]](Custom("DeepDSL", List(CMethod("+="), CMethod("-="), CMethod("head"), CMethod("size")))),
       al.autoLift[DefaultEntry[Any, Any]](Custom("DeepDSL")))
