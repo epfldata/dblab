@@ -3,6 +3,7 @@ package legobase
 package lifter
 
 import scala.reflect.runtime.universe
+import universe.typeOf
 
 import queryengine.volcano._
 import ch.epfl.data.autolifter._
@@ -19,9 +20,9 @@ object LiftLego {
 
   def main(args: Array[String]) {
     implicit val al = new AutoLifter(universe)
-    generateLegoBase
+    /*generateLegoBase
     generateNumber
-    generateTpe[Array[Any]]
+    generateTpe[Array[Any]]*/
     generateCollection
   }
 
@@ -84,7 +85,7 @@ trait DeepDSL extends SelectOpComponent with ScanOpComponent with AggOpComponent
     val liftedCodes = List(
       al.autoLift[HashMap[Any, Any]](Custom("DeepDSL", List(CMethod("keySet"), CMethod("getOrElseUpdate"), CMethod("size"), CMethod("remove"), CMethod("clear"), CMethod("<init>"), CMethod("apply"), CMethod("contains"), CMethod("update")))),
       al.autoLift[Set[Any]](Custom("DeepDSL", List(CMethod("apply"), CMethod("toSeq"), CMethod("head"), CMethod("remove")))),
-      al.autoLift[TreeSet[Any]](Custom("DeepDSL", List(CMethod("+="), CMethod("-="), CMethod("head"), CMethod("size")))),
+      al.autoLift[TreeSet[Any]](Custom("DeepDSL", List(CMethod("<init>", List(List(), List(CType(typeOf[Ordering[Any]])))), CMethod("+="), CMethod("-="), CMethod("head"), CMethod("size")), List("rangeImpl"))),
       al.autoLift[DefaultEntry[Any, Any]](Custom("DeepDSL")))
     val liftedCode = liftedCodes.mkString("\n")
     val file = "DeepScalaCollection"
