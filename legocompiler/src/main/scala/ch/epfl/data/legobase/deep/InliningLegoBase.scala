@@ -173,38 +173,66 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
     }
   }
 
-  override def printOp_Field_parent[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
+  override def printOp_Field_Parent[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
     self match {
       case Def(x: PrintOpNew[_]) => x.parent
-      case _                     => super.printOp_Field_parent(self)
+      case _                     => super.printOp_Field_Parent(self)
     }
   }
 
-  override def sortOp_Field_parent[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
+  override def sortOp_Field_Parent[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
     self match {
       case Def(x: SortOpNew[_]) => x.parent
-      case _                    => super.sortOp_Field_parent(self)
+      case _                    => super.sortOp_Field_Parent(self)
     }
   }
 
-  override def mapOp_Field_parent[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
+  override def mapOp_Field_Parent[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
     self match {
       case Def(x: MapOpNew[_]) => x.parent
-      case _                   => super.mapOp_Field_parent(self)
+      case _                   => super.mapOp_Field_Parent(self)
     }
   }
 
-  override def selectOp_Field_parent[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
+  override def selectOp_Field_Parent[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
     self match {
       case Def(x: SelectOpNew[_]) => x.parent
-      case _                      => super.selectOp_Field_parent(self)
+      case _                      => super.selectOp_Field_Parent(self)
     }
   }
 
-  override def aggOp_Field_parent[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Operator[A]] = {
+  override def aggOp_Field_Parent[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Operator[A]] = {
     self match {
       case Def(x: AggOpNew[_, _]) => x.parent
-      case _                      => super.aggOp_Field_parent(self)
+      case _                      => super.aggOp_Field_Parent(self)
     }
+  }
+
+  override def mapOp_Field_AggFuncs[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Seq[A => Unit]] = self match {
+    case Def(MapOpNew(_, funs)) => funs
+    case _                      => super.mapOp_Field_AggFuncs(self)
+  }
+
+  override def aggOp_Field_Grp[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[A => B] = self match {
+    case Def(AggOpNew(_, _, f, _)) => f
+    case _                         => ???
+  }
+  override def aggOp_Field_AggFuncs[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Seq[((A, Double) => Double)]] = self match {
+    case Def(AggOpNew(_, _, _, funs)) => funs
+    case _                            => ???
+  }
+
+  override def printOp_Field_PrintFunc[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[A => Unit] = self match {
+    case Def(PrintOpNew(_, f, _)) => f
+    case _                        => ???
+  }
+  override def printOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[() => Boolean] = self match {
+    case Def(PrintOpNew(_, _, limit)) => limit
+    case _                            => ???
+  }
+
+  override def selectOp_Field_SelectPred[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[A => Boolean] = self match {
+    case Def(SelectOpNew(_, f)) => f
+    case _                      => ???
   }
 }

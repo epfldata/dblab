@@ -20,9 +20,9 @@ object LiftLego {
 
   def main(args: Array[String]) {
     implicit val al = new AutoLifter(universe)
-    /*generateLegoBase
+    generateLegoBase
     generateNumber
-    generateTpe[Array[Any]]*/
+    generateTpe[Array[Any]]
     generateCollection
   }
 
@@ -62,7 +62,7 @@ $liftedCode
       al.autoLift[queryengine.AGGRecord[Any]],
       al.autoLift[Operator[Any]],
       al.autoLift[storagemanager.TPCHRelations.LINEITEMRecord],
-      al.autoLift[storagemanager.K2DBScanner])
+      al.autoLift[storagemanager.K2DBScanner](Custom(component = "DeepDSL", excludedFields = List(CMethod("br"), CMethod("sdf")))))
     val liftedCode = liftedCodes.mkString("\n")
     val file = "DeepLegoBase"
     printToFile(new java.io.File(s"$folder/$file.scala")) { pw =>
@@ -85,7 +85,7 @@ trait DeepDSL extends SelectOpComponent with ScanOpComponent with AggOpComponent
     val liftedCodes = List(
       al.autoLift[HashMap[Any, Any]](Custom("DeepDSL", List(CMethod("keySet"), CMethod("getOrElseUpdate"), CMethod("size"), CMethod("remove"), CMethod("clear"), CMethod("<init>"), CMethod("apply"), CMethod("contains"), CMethod("update")))),
       al.autoLift[Set[Any]](Custom("DeepDSL", List(CMethod("apply"), CMethod("toSeq"), CMethod("head"), CMethod("remove")))),
-      al.autoLift[TreeSet[Any]](Custom("DeepDSL", List(CMethod("<init>", List(List(), List(CType(typeOf[Ordering[Any]])))), CMethod("+="), CMethod("-="), CMethod("head"), CMethod("size")), List("rangeImpl"))),
+      al.autoLift[TreeSet[Any]](Custom(component = "DeepDSL", includedMethods = List(CMethod("<init>", List(List(), List(CType(typeOf[Ordering[Any]])))), CMethod("+="), CMethod("-="), CMethod("head"), CMethod("size")), excludedMethods = List("rangeImpl"), excludedFields = List(CMethod("treeRef")))),
       al.autoLift[DefaultEntry[Any, Any]](Custom("DeepDSL")))
     val liftedCode = liftedCodes.mkString("\n")
     val file = "DeepScalaCollection"
