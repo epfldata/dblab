@@ -13,6 +13,7 @@ trait ArrayOps extends Base { this: DeepDSL =>
     def apply(i: Rep[Int]): Rep[T] = arrayApply[T](self, i)(manifestT)
     def update(i: Rep[Int], x: Rep[T]): Rep[Unit] = arrayUpdate[T](self, i, x)(manifestT)
     override def clone(): Rep[Array[T]] = arrayClone[T](self)(manifestT)
+    def _length(): Rep[Int] = array_Field__length[T](self)(manifestT)
   }
   // constructors
   def __newArray[T](_length: Rep[Int])(implicit manifestT: Manifest[T]): Rep[Array[T]] = arrayNew[T](_length)(manifestT)
@@ -22,12 +23,14 @@ trait ArrayOps extends Base { this: DeepDSL =>
   case class ArrayApply[T](self: Rep[Array[T]], i: Rep[Int])(implicit val manifestT: Manifest[T]) extends FunctionDef[T](Some(self), "apply", List(List(i)))
   case class ArrayUpdate[T](self: Rep[Array[T]], i: Rep[Int], x: Rep[T])(implicit val manifestT: Manifest[T]) extends FunctionDef[Unit](Some(self), "update", List(List(i, x)))
   case class ArrayClone[T](self: Rep[Array[T]])(implicit val manifestT: Manifest[T]) extends FunctionDef[Array[T]](Some(self), "clone", List())
+  case class Array_Field__length[T](self: Rep[Array[T]])(implicit val manifestT: Manifest[T]) extends FieldDef[Int](self, "_length")
   // method definitions
   def arrayNew[T](_length: Rep[Int])(implicit manifestT: Manifest[T]): Rep[Array[T]] = ArrayNew[T](_length)
   def arrayLength[T](self: Rep[Array[T]])(implicit manifestT: Manifest[T]): Rep[Int] = ArrayLength[T](self)
   def arrayApply[T](self: Rep[Array[T]], i: Rep[Int])(implicit manifestT: Manifest[T]): Rep[T] = ArrayApply[T](self, i)
   def arrayUpdate[T](self: Rep[Array[T]], i: Rep[Int], x: Rep[T])(implicit manifestT: Manifest[T]): Rep[Unit] = ArrayUpdate[T](self, i, x)
   def arrayClone[T](self: Rep[Array[T]])(implicit manifestT: Manifest[T]): Rep[Array[T]] = ArrayClone[T](self)
+  def array_Field__length[T](self: Rep[Array[T]])(implicit manifestT: Manifest[T]): Rep[Int] = Array_Field__length[T](self)
   type Array[T] = scala.Array[T]
 }
 trait ArrayImplicits { this: ArrayComponent =>

@@ -632,6 +632,7 @@ trait CharacterOps extends Base { this: DeepDSL =>
     def equals(x$1: Rep[Any]): Rep[Boolean] = characterEquals(self, x$1)
     def compareTo(x$1: Rep[Character]): Rep[Int] = characterCompareTo(self, x$1)
     def charValue(): Rep[Char] = characterCharValue(self)
+    def value(): Rep[Char] = character_Field_Value(self)
   }
   // constructors
   def __newCharacter(x$1: Rep[Char]): Rep[Character] = characterNew(x$1)
@@ -640,11 +641,13 @@ trait CharacterOps extends Base { this: DeepDSL =>
   case class CharacterEquals(self: Rep[Character], x$1: Rep[Any]) extends FunctionDef[Boolean](Some(self), "equals", List(List(x$1)))
   case class CharacterCompareTo(self: Rep[Character], x$1: Rep[Character]) extends FunctionDef[Int](Some(self), "compareTo", List(List(x$1)))
   case class CharacterCharValue(self: Rep[Character]) extends FunctionDef[Char](Some(self), "charValue", List())
+  case class Character_Field_Value(self: Rep[Character]) extends FieldDef[Char](self, "value")
   // method definitions
   def characterNew(x$1: Rep[Char]): Rep[Character] = CharacterNew(x$1)
   def characterEquals(self: Rep[Character], x$1: Rep[Any]): Rep[Boolean] = CharacterEquals(self, x$1)
   def characterCompareTo(self: Rep[Character], x$1: Rep[Character]): Rep[Int] = CharacterCompareTo(self, x$1)
   def characterCharValue(self: Rep[Character]): Rep[Char] = CharacterCharValue(self)
+  def character_Field_Value(self: Rep[Character]): Rep[Char] = Character_Field_Value(self)
   type Character = java.lang.Character
 }
 trait CharacterImplicits { this: CharacterComponent =>
@@ -1005,6 +1008,7 @@ trait IntegerOps extends Base { this: DeepDSL =>
     def longValue(): Rep[Long] = integerLongValue(self)
     def floatValue(): Rep[Float] = integerFloatValue(self)
     def doubleValue(): Rep[Double] = integerDoubleValue(self)
+    def value(): Rep[Int] = integer_Field_Value(self)
   }
   // constructors
   def __newInteger(x$1: Rep[Int])(implicit overload1: Overloaded1): Rep[Integer] = integerNew1(x$1)
@@ -1020,6 +1024,7 @@ trait IntegerOps extends Base { this: DeepDSL =>
   case class IntegerLongValue(self: Rep[Integer]) extends FunctionDef[Long](Some(self), "longValue", List())
   case class IntegerFloatValue(self: Rep[Integer]) extends FunctionDef[Float](Some(self), "floatValue", List())
   case class IntegerDoubleValue(self: Rep[Integer]) extends FunctionDef[Double](Some(self), "doubleValue", List())
+  case class Integer_Field_Value(self: Rep[Integer]) extends FieldDef[Int](self, "value")
   // method definitions
   def integerNew1(x$1: Rep[Int]): Rep[Integer] = IntegerNew1(x$1)
   def integerNew2(x$1: Rep[String]): Rep[Integer] = IntegerNew2(x$1)
@@ -1031,6 +1036,7 @@ trait IntegerOps extends Base { this: DeepDSL =>
   def integerLongValue(self: Rep[Integer]): Rep[Long] = IntegerLongValue(self)
   def integerFloatValue(self: Rep[Integer]): Rep[Float] = IntegerFloatValue(self)
   def integerDoubleValue(self: Rep[Integer]): Rep[Double] = IntegerDoubleValue(self)
+  def integer_Field_Value(self: Rep[Integer]): Rep[Int] = Integer_Field_Value(self)
   type Integer = java.lang.Integer
 }
 trait IntegerImplicits { this: IntegerComponent =>

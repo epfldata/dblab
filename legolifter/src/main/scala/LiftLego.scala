@@ -3,6 +3,7 @@ package legobase
 package lifter
 
 import scala.reflect.runtime.universe
+import universe.typeOf
 
 import queryengine.volcano._
 import ch.epfl.data.autolifter._
@@ -55,7 +56,7 @@ $liftedCode
     val liftedCodes = List(
       al.autoLift[queryengine.AGGRecord[Any]],
       al.autoLift[storagemanager.TPCHRelations.LINEITEMRecord],
-      al.autoLift[storagemanager.K2DBScanner])
+      al.autoLift[storagemanager.K2DBScanner](Custom(component = "DeepDSL", excludedFields = List(CMethod("br"), CMethod("sdf")))))
     val liftedCode = liftedCodes.mkString("\n")
     val file = "DeepLegoBase"
     printToFile(new java.io.File(s"$folder/$file.scala")) { pw =>
@@ -82,7 +83,7 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with CharacterC
     val liftedCodes = List(
       al.autoLift[HashMap[Any, Any]](Custom("DeepDSL", List(CMethod("keySet"), CMethod("getOrElseUpdate"), CMethod("size"), CMethod("remove"), CMethod("clear"), CMethod("<init>"), CMethod("apply"), CMethod("contains"), CMethod("update")))),
       al.autoLift[Set[Any]](Custom("DeepDSL", List(CMethod("apply"), CMethod("toSeq"), CMethod("head"), CMethod("remove")))),
-      al.autoLift[TreeSet[Any]](Custom("DeepDSL", List(CMethod("+="), CMethod("-="), CMethod("head"), CMethod("size")))),
+      al.autoLift[TreeSet[Any]](Custom(component = "DeepDSL", includedMethods = List(CMethod("<init>", List(List(), List(CType(typeOf[Ordering[Any]])))), CMethod("+="), CMethod("-="), CMethod("head"), CMethod("size")), excludedMethods = List("rangeImpl"), excludedFields = List(CMethod("treeRef")))),
       al.autoLift[DefaultEntry[Any, Any]](Custom("DeepDSL")))
     val liftedCode = liftedCodes.mkString("\n")
     val file = "DeepScalaCollection"

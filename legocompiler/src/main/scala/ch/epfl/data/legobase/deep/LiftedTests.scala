@@ -5,6 +5,7 @@ package deep
 import scala.collection.mutable.ArrayBuffer
 import ch.epfl.data.pardis.ir._
 import ch.epfl.data.legobase.deep.scalalib._
+import ch.epfl.data.pardis.ir._
 
 import scala.language.implicitConversions
 
@@ -56,26 +57,40 @@ object t1 extends HashMapOps with DeepDSL with TransformerFunction {
   }
 }
 
-object t2 extends HashMapOps with DeepDSL with TransformerFunction {
+case class NameAlias[A: Manifest](c: Option[Expression[_]], n: String, args: List[List[Expression[_]]]) extends FunctionNode[A](c, n, args) { this: Product => }
+
+object t2 extends HashMapOps with TreeSetOps with DeepDSL with TransformerFunction {
   val isRecursive = false
   case class GLibNew[A, B, C](eq: Rep[(A, A) => Boolean], hash: Rep[A => C])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]) extends FunctionDef[GHashTable](None, "g_hash_table_new", List(List(eq, hash)))
-  case class GLibApply[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[B](Some(self), "g_hash_table_lookup", List(List(key)))
-  case class GLibContains[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[Boolean](Some(self), "g_hash_table_contains", List(List(key)))
-  case class GLibRemove[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "g_hash_table_remove", List(List(key)))
-  case class GLibSize[A, B](self: Rep[HashMap[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Int](Some(self), "g_hash_table_size", List())
-  case class GLibUpdate[A, B](self: Rep[HashMap[A, B]], key: Rep[A], value: Rep[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "g_hash_table_insert", List(List(key, value)))
   def eq[A: Manifest] = doLambda2((x: Rep[A], y: Rep[A]) => unit(true))
   def hash[A: Manifest] = doLambda((x: Rep[A]) => unit(5))
   def apply(n: Def[Any]): Def[Any] = {
     n match {
       case nm @ HashMapNew2()                  => reifyBlock({ GLibNew(eq(nm.manifestA), hash(nm.manifestA))(nm.manifestA, nm.manifestB, manifest[Int]) })
-      case HashMapSize(map)                    => GLibSize(map)
-      case ma @ HashMapApply(map, key)         => GLibApply(map, key)(ma.manifestA, ma.manifestB)
-      case mc @ HashMapContains(map, key)      => GLibContains(map, key)
-      case mu @ HashMapUpdate(map, key, value) => GLibUpdate(map, key, value)
-      case mr @ HashMapRemove(map, key)        => GLibRemove(map, key)
+      case HashMapSize(map)                    => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
+      case ma @ HashMapApply(map, key)         => NameAlias(None, "g_hash_table_lookup", List(List(map, key)))(ma.manifestB)
+      case mc @ HashMapContains(map, key)      => NameAlias[Boolean](None, "g_hash_table_contains", List(List(map, key)))
+      case mu @ HashMapUpdate(map, key, value) => NameAlias[Unit](None, "g_hash_table_insert", List(List(map, key, value)))
+      case mr @ HashMapRemove(map, key)        => NameAlias[Unit](None, "g_hash_table_remove", List(List(map, key)))
+      case op @ TreeSetHead(t)                 => NameAlias(None, "g_tree_head", List(List(t)))
+      case op @ TreeSetSize(t)                 => NameAlias(None, "g_tree_nnodes", List(List(t)))
+      case op @ TreeSet$minus$eq(self, t)      => NameAlias(None, "g_tree_remove", List(List(self, t)))
+      case op @ TreeSet$plus$eq(self, t)       => NameAlias(None, "g_tree_insert", List(List(self, t)))
       case _                                   => n
     }
+  }
+}
+
+object DefaultScalaTo2NameAliases extends DeepDSL with TransformerFunction {
+  val isRecursive = false
+  def apply(n: Def[Any]): Def[Any] = n match {
+    case Int$less$eq1(self, x) => NameAlias(Some(self), " <= ", List(List(x)))
+    case Int$plus1(self, x)    => NameAlias(Some(self), " + ", List(List(x)))
+    case Int$minus1(self, x)   => NameAlias(Some(self), " - ", List(List(x)))
+    case Int$times1(self, x)   => NameAlias(Some(self), " * ", List(List(x)))
+    case Int$div1(self, x)     => NameAlias(Some(self), " / ", List(List(x)))
+    case Println(x)            => NameAlias[Unit](None, "printf", List(List(x)))
+    case _                     => n
   }
 }
 
@@ -96,7 +111,53 @@ class LiftedTests extends Base {
       def hashMapTestBlock = {
         val b = reifyBlock(hashMapTest)
         val tt = new SerialTransformer()
-        tt.transformBlock(b, List(t1, t2))
+        tt.transformBlock(b, List(t1, t2, DefaultScalaTo2NameAliases))
+      }
+    }.hashMapTestBlock
+  }
+
+  def loadingTest() = {
+    new HashMapOps with DeepDSL {
+      def loadString(size: Int, s: Rep[K2DBScanner]) = {
+        val NAME = __newArray[Byte](size)
+        s.next(NAME)
+        //NAME.filter(y => y != 0)
+      }
+
+      def loadingTest = {
+        val file = "/mnt/ramdisk/sf1/lineitem.tbl"
+        import scala.sys.process._;
+        val size = Integer.parseInt((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", ""))
+        // Load Relation 
+        val s = __newK2DBScanner(unit(file))
+        var i = unit(0)
+        __whileDo(s.hasNext, {
+          s.next_int
+          s.next_int
+          s.next_int
+          s.next_int
+          s.next_double
+          s.next_double
+          s.next_double
+          s.next_double
+          s.next_char
+          s.next_char
+          s.next_date
+          s.next_date
+          s.next_date
+          loadString(25, s)
+          loadString(10, s)
+          loadString(44, s)
+          i += unit(1)
+          unit()
+        })
+        unit()
+      }
+
+      def hashMapTestBlock = {
+        val b = reifyBlock(loadingTest)
+        val tt = new SerialTransformer()
+        tt.transformBlock(b, List(t1, t2, DefaultScalaTo2NameAliases))
       }
     }.hashMapTestBlock
   }
