@@ -45,7 +45,7 @@ object LegoBuild extends Build {
     .setPreference(AlignSingleLineCaseStatements, true)
   }
 
-  lazy val lego        = Project(id = "root",                     base = file("."), settings = defaults) aggregate (lego_core, legolifter, legocompiler)
+  lazy val lego            = Project(id = "root",             base = file("."), settings = defaults) aggregate (lego_core, legolifter, legocompiler)
   lazy val lego_core       = Project(id = "lego-core",        base = file("lego")  , settings = defaults ++ 
     Seq(name := "lego-core",
       libraryDependencies += "ch.epfl.data" % "autolifter_2.11" % "0.1-SNAPSHOT")) // hack for being able to generate implementation
