@@ -53,14 +53,8 @@ $liftedCode
   }
 
   def generateLegoBase(implicit al: AutoLifter) {
-    val liftedCodes = List(al.autoLift[SelectOp[Any]],
-      al.autoLift[ScanOp[Any]],
-      al.autoLift[AggOp[Any, Any]],
-      al.autoLift[MapOp[Any]],
-      al.autoLift[SortOp[Any]],
-      al.autoLift[PrintOp[Any]],
+    val liftedCodes = List(
       al.autoLift[queryengine.AGGRecord[Any]],
-      al.autoLift[Operator[Any]],
       al.autoLift[storagemanager.TPCHRelations.LINEITEMRecord],
       al.autoLift[storagemanager.K2DBScanner](Custom(component = "DeepDSL", excludedFields = List(CMethod("br"), CMethod("sdf")))))
     val liftedCode = liftedCodes.mkString("\n")
@@ -76,7 +70,11 @@ import scalalib._
 import pardis.ir._
 
 $liftedCode
-trait DeepDSL extends SelectOpComponent with ScanOpComponent with AggOpComponent with MapOpComponent with SortOpComponent with AGGRecordComponent with OperatorComponent with CharacterComponent with DoubleComponent with IntComponent with LongComponent with ArrayComponent with LINEITEMRecordComponent with K2DBScannerComponent with IntegerComponent with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent with DefaultEntryComponent with ManualLiftedLegoBase with PrintOpComponent
+trait DeepDSL extends OperatorsComponent with AGGRecordComponent with CharacterComponent 
+  with DoubleComponent with IntComponent with LongComponent with ArrayComponent 
+  with LINEITEMRecordComponent with K2DBScannerComponent with IntegerComponent 
+  with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent 
+  with DefaultEntryComponent with ManualLiftedLegoBase
 """)
     }
   }
