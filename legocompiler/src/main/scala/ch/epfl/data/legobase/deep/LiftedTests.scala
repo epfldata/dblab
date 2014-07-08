@@ -86,12 +86,13 @@ object t2 extends TransformerFunction with HashMapOps with TreeSetOps with DeepD
 }
 
 class FILE
+//case class Pointer[A: Manifest](x: Expression[A]) extends Expression[A]
 case class PTRADDRESS[A: Manifest](x: Expression[A]) extends Expression[A] {
   override def toString() = "&" + x.toString
 }
+
 object t3 extends TransformerFunction with K2DBScannerOps with DeepDSL {
-  case class FScanf[A, B](f: Expression[K2DBScanner], x: Expression[B])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[Unit](None, "fscanf", List(List(f, x)))
-  case class Break() extends Expression[Unit]
+  import CNodes._
   val isRecursive = false
   def defToSym[A: Manifest](x: Def[A])(implicit context: DeepDSL): Sym[_] = {
     context.globalDefs.find(gd => gd._2.rhs == x) match {
@@ -127,10 +128,13 @@ object t3 extends TransformerFunction with K2DBScannerOps with DeepDSL {
       case K2DBScannerNext1(s, buf) => reifyBlock({
         var i = __newVar[Int](0)
         __whileDo(unit(true), {
-          toAtom(FScanf(s, buf(i)))
-          __ifThenElse((infix_==(buf(i), unit('|')) || infix_==(buf(i), unit('\n'))), Break, unit())
+          val v = Pointer(ArrayApply(buf, i))
+          toAtom(FScanf(s, List(unit("%c"), v)))
+          __ifThenElse[Unit]((infix_==(buf(i), unit('|')) || infix_==(buf(i), unit('\n'))), toAtom(Break()), unit())
           __assign(i, readVar(i) + unit(1))
         })
+        buf(readVar(i)) = unit('\0');
+        buf
       })
       case K2DBScannerNext_date(s) => reifyBlock({
         val x = PTRADDRESS(__newVar[Int](0))
@@ -152,6 +156,7 @@ object DefaultScalaTo2NameAliases extends TransformerFunction with DeepDSL {
     case Int$plus1(self, x)       => NameAlias[Int](Some(self), " + ", List(List(x)))
     case Int$plus5(self, x)       => NameAlias[Int](Some(self), " + ", List(List(x)))
     case Int$minus1(self, x)      => NameAlias(Some(self), " - ", List(List(x)))
+    case Int$minus4(self, x)      => NameAlias[Int](Some(self), " - ", List(List(x)))
     case Int$times1(self, x)      => NameAlias(Some(self), " * ", List(List(x)))
     case Int$times4(self, x)      => NameAlias[Int](Some(self), " * ", List(List(x)))
     case Int$div1(self, x)        => NameAlias(Some(self), " / ", List(List(x)))
@@ -199,7 +204,7 @@ class LiftedTests extends Base {
         val s = __newK2DBScanner(unit(file))
         var i = __newVar[Int](0)
         __whileDo(s.hasNext, {
-          printf(unit("%d|%d|%d|%d|%lf|%lf|%lf|%lf|%c|%c|%d|%d|%d|\n"),
+          printf(unit("%d|%d|%d|%d|%lf|%lf|%lf|%lf|%c|%c|%d|%d|%d|%s|%s|%s|\n"),
             s.next_int,
             s.next_int,
             s.next_int,
@@ -212,10 +217,10 @@ class LiftedTests extends Base {
             s.next_char,
             s.next_date,
             s.next_date,
-            s.next_date)
-          loadString(25, s)
-          loadString(10, s)
-          loadString(44, s)
+            s.next_date,
+            loadString(25, s),
+            loadString(10, s),
+            loadString(44, s))
           __assign(i, readVar(i) + unit(1))
           unit()
         })
