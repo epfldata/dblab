@@ -5,15 +5,15 @@ package deep
 import scala.collection.mutable.ArrayBuffer
 import ch.epfl.data.pardis.ir._
 import ch.epfl.data.legobase.deep.scalalib._
-import ch.epfl.data.pardis.ir._
 
 import scala.language.implicitConversions
 
-trait TransformerFunction extends Function1[PardisNode[Any], PardisNode[Any]] with Base {
+abstract class TransformerFunction {
   val isRecursive: Boolean
+  def apply(n: PardisNode[Any])(implicit context: DeepDSL): PardisNode[Any]
 }
 
-class SerialTransformer extends Base {
+class SerialTransformer(implicit val context: DeepDSL) {
   def printBlock(b: PardisBlock[_]) =
     b.stmts.foreach(st => println(st))
 
@@ -27,6 +27,10 @@ class SerialTransformer extends Base {
           PardisIfThenElse(ifte.cond,
             transformBlock(ifte.thenp, if (!t.isRecursive) tl else tl diff List(t)),
             transformBlock(ifte.elsep, if (!t.isRecursive) tl else tl diff List(t)))(ifte.manifestT)
+        case w @ PardisWhile(cond, block) =>
+          PardisWhile(
+            transformBlock(cond, if (!t.isRecursive) tl else tl diff List(t)),
+            transformBlock(block, if (!t.isRecursive) tl else tl diff List(t)))
         case _ => res
       }
     }))
@@ -36,10 +40,9 @@ class SerialTransformer extends Base {
     PardisBlock(b.stmts.map(st => transformStmt(st, tl)), b.res)
 }
 
-class GHashTable
-object t1 extends HashMapOps with DeepDSL with TransformerFunction {
+object t1 extends TransformerFunction with HashMapOps with DeepDSL {
   val isRecursive = true
-  def apply(n: Def[Any]): Def[Any] = {
+  def apply(n: Def[Any])(implicit context: DeepDSL): Def[Any] = {
     n match {
       case geu @ HashMapGetOrElseUpdate(map, key, value) =>
         reifyBlock({
@@ -59,12 +62,13 @@ object t1 extends HashMapOps with DeepDSL with TransformerFunction {
 
 case class NameAlias[A: Manifest](c: Option[Expression[_]], n: String, args: List[List[Expression[_]]]) extends FunctionNode[A](c, n, args) { this: Product => }
 
-object t2 extends HashMapOps with TreeSetOps with DeepDSL with TransformerFunction {
+class GHashTable
+object t2 extends TransformerFunction with HashMapOps with TreeSetOps with DeepDSL {
   val isRecursive = false
   case class GLibNew[A, B, C](eq: Rep[(A, A) => Boolean], hash: Rep[A => C])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]) extends FunctionDef[GHashTable](None, "g_hash_table_new", List(List(eq, hash)))
   def eq[A: Manifest] = doLambda2((x: Rep[A], y: Rep[A]) => unit(true))
   def hash[A: Manifest] = doLambda((x: Rep[A]) => unit(5))
-  def apply(n: Def[Any]): Def[Any] = {
+  def apply(n: Def[Any])(implicit context: DeepDSL): Def[Any] = {
     n match {
       case nm @ HashMapNew2()                  => reifyBlock({ GLibNew(eq(nm.manifestA), hash(nm.manifestA))(nm.manifestA, nm.manifestB, manifest[Int]) })
       case HashMapSize(map)                    => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
@@ -81,16 +85,79 @@ object t2 extends HashMapOps with TreeSetOps with DeepDSL with TransformerFuncti
   }
 }
 
-object DefaultScalaTo2NameAliases extends DeepDSL with TransformerFunction {
+class FILE
+case class PTRADDRESS[A: Manifest](x: Expression[A]) extends Expression[A] {
+  override def toString() = "&" + x.toString
+}
+object t3 extends TransformerFunction with K2DBScannerOps with DeepDSL {
+  case class FScanf[A, B](f: Expression[K2DBScanner], x: Expression[B])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) extends FunctionDef[Unit](None, "fscanf", List(List(f, x)))
+  case class Break() extends Expression[Unit]
   val isRecursive = false
-  def apply(n: Def[Any]): Def[Any] = n match {
-    case Int$less$eq1(self, x) => NameAlias(Some(self), " <= ", List(List(x)))
-    case Int$plus1(self, x)    => NameAlias(Some(self), " + ", List(List(x)))
-    case Int$minus1(self, x)   => NameAlias(Some(self), " - ", List(List(x)))
-    case Int$times1(self, x)   => NameAlias(Some(self), " * ", List(List(x)))
-    case Int$div1(self, x)     => NameAlias(Some(self), " / ", List(List(x)))
-    case Println(x)            => NameAlias[Unit](None, "printf", List(List(x)))
-    case _                     => n
+  def defToSym[A: Manifest](x: Def[A])(implicit context: DeepDSL): Sym[_] = {
+    context.globalDefs.find(gd => gd._2.rhs == x) match {
+      case Some(e) => e._1
+      case None    => throw new Exception("symbol not found while looking up " + x + "!")
+    }
+  }
+  def lookup[A: Manifest](x: Sym[A])(implicit context: DeepDSL): Def[_] = {
+    context.globalDefs.find(gd => gd._1 == x) match {
+      case Some(e) => e._2.rhs
+      case None    => throw new Exception("symbol not found while looking up " + x + "!")
+    }
+  }
+
+  def apply(n: Def[Any])(implicit context: DeepDSL): Def[Any] = {
+    n match {
+      case K2DBScannerNew(f) => NameAlias[FILE](None, "fopen", List(List(f, unit("r"))))
+      case K2DBScannerNext_int(s) => reifyBlock({
+        val v = PTRADDRESS(__newVar(0))
+        toAtom(NameAlias[Unit](None, "fscanf", List(List(s, unit("%d|"), v))))
+        v.x
+      })
+      case K2DBScannerNext_double(s) => reifyBlock({
+        val v = PTRADDRESS(__newVar(unit(0.0)))
+        toAtom(NameAlias[Unit](None, "fscanf", List(List(s, unit("%lf|"), v))))
+        v.x
+      })
+      case K2DBScannerNext_char(s) => reifyBlock({
+        val v = PTRADDRESS(__newVar(unit('a')))
+        toAtom(NameAlias[Unit](None, "fscanf", List(List(s, unit("%c|"), v))))
+        v.x
+      })
+      case K2DBScannerNext1(s, buf) => reifyBlock({
+        var i = __newVar[Int](0)
+        __whileDo(unit(true), {
+          toAtom(FScanf(s, buf(i)))
+          __ifThenElse((infix_==(buf(i), unit('|')) || infix_==(buf(i), unit('\n'))), Break, unit())
+          __assign(i, readVar(i) + unit(1))
+        })
+      })
+      case K2DBScannerNext_date(s) => reifyBlock({
+        val x = PTRADDRESS(__newVar[Int](0))
+        val y = PTRADDRESS(__newVar[Int](0))
+        val z = PTRADDRESS(__newVar[Int](0))
+        toAtom(NameAlias[Unit](None, "fscanf", List(List(s, unit("%d-%d-%d|"), x, y, z))))
+        (x.x * unit(10000)) + (y.x * unit(100)) + z.x
+      })
+      case K2DBScannerHasNext(s) => NameAlias[Boolean](None, "!feof", List(List(s)))
+      case _                     => n
+    }
+  }
+}
+
+object DefaultScalaTo2NameAliases extends TransformerFunction with DeepDSL {
+  val isRecursive = false
+  def apply(n: Def[Any])(implicit context: DeepDSL): Def[Any] = n match {
+    case Int$less$eq1(self, x)    => NameAlias(Some(self), " <= ", List(List(x)))
+    case Int$plus1(self, x)       => NameAlias[Int](Some(self), " + ", List(List(x)))
+    case Int$plus5(self, x)       => NameAlias[Int](Some(self), " + ", List(List(x)))
+    case Int$minus1(self, x)      => NameAlias(Some(self), " - ", List(List(x)))
+    case Int$times1(self, x)      => NameAlias(Some(self), " * ", List(List(x)))
+    case Int$times4(self, x)      => NameAlias[Int](Some(self), " * ", List(List(x)))
+    case Int$div1(self, x)        => NameAlias(Some(self), " / ", List(List(x)))
+    case Boolean$bar$bar(self, x) => NameAlias[Boolean](Some(self), " || ", List(List(x)))
+    case Println(x)               => NameAlias[Unit](None, "printf", List(List(x)))
+    case _                        => n
   }
 }
 
@@ -110,7 +177,7 @@ class LiftedTests extends Base {
 
       def hashMapTestBlock = {
         val b = reifyBlock(hashMapTest)
-        val tt = new SerialTransformer()
+        val tt = new SerialTransformer()(this)
         tt.transformBlock(b, List(t1, t2, DefaultScalaTo2NameAliases))
       }
     }.hashMapTestBlock
@@ -125,30 +192,31 @@ class LiftedTests extends Base {
       }
 
       def loadingTest = {
-        val file = "/mnt/ramdisk/sf1/lineitem.tbl"
+        val file = "/mnt/ramdisk/test/lineitem.tbl"
         import scala.sys.process._;
         val size = Integer.parseInt((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", ""))
         // Load Relation 
         val s = __newK2DBScanner(unit(file))
-        var i = unit(0)
+        var i = __newVar[Int](0)
         __whileDo(s.hasNext, {
-          s.next_int
-          s.next_int
-          s.next_int
-          s.next_int
-          s.next_double
-          s.next_double
-          s.next_double
-          s.next_double
-          s.next_char
-          s.next_char
-          s.next_date
-          s.next_date
-          s.next_date
+          printf(unit("%d|%d|%d|%d|%lf|%lf|%lf|%lf|%c|%c|%d|%d|%d|\n"),
+            s.next_int,
+            s.next_int,
+            s.next_int,
+            s.next_int,
+            s.next_double,
+            s.next_double,
+            s.next_double,
+            s.next_double,
+            s.next_char,
+            s.next_char,
+            s.next_date,
+            s.next_date,
+            s.next_date)
           loadString(25, s)
           loadString(10, s)
           loadString(44, s)
-          i += unit(1)
+          __assign(i, readVar(i) + unit(1))
           unit()
         })
         unit()
@@ -156,8 +224,8 @@ class LiftedTests extends Base {
 
       def hashMapTestBlock = {
         val b = reifyBlock(loadingTest)
-        val tt = new SerialTransformer()
-        tt.transformBlock(b, List(t1, t2, DefaultScalaTo2NameAliases))
+        val tt = new SerialTransformer()(this)
+        tt.transformBlock(b, List(t1, t2, t3, DefaultScalaTo2NameAliases))
       }
     }.hashMapTestBlock
   }
