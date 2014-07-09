@@ -41,6 +41,7 @@ class SerialTransformer(implicit val context: DeepDSL) {
 }
 
 object t1 extends TransformerFunction with HashMapOps with DeepDSL {
+  import CNodes._
   val isRecursive = true
   def apply(n: Def[Any])(implicit context: DeepDSL): Def[Any] = {
     n match {
@@ -60,12 +61,9 @@ object t1 extends TransformerFunction with HashMapOps with DeepDSL {
   }
 }
 
-case class NameAlias[A: Manifest](c: Option[Expression[_]], n: String, args: List[List[Expression[_]]]) extends FunctionNode[A](c, n, args) { this: Product => }
-
-class GHashTable
 object t2 extends TransformerFunction with HashMapOps with TreeSetOps with DeepDSL {
+  import CNodes._
   val isRecursive = false
-  case class GLibNew[A, B, C](eq: Rep[(A, A) => Boolean], hash: Rep[A => C])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]) extends FunctionDef[GHashTable](None, "g_hash_table_new", List(List(eq, hash)))
   def eq[A: Manifest] = doLambda2((x: Rep[A], y: Rep[A]) => unit(true))
   def hash[A: Manifest] = doLambda((x: Rep[A]) => unit(5))
   def apply(n: Def[Any])(implicit context: DeepDSL): Def[Any] = {
@@ -83,12 +81,6 @@ object t2 extends TransformerFunction with HashMapOps with TreeSetOps with DeepD
       case _                                   => n
     }
   }
-}
-
-class FILE
-//case class Pointer[A: Manifest](x: Expression[A]) extends Expression[A]
-case class PTRADDRESS[A: Manifest](x: Expression[A]) extends Expression[A] {
-  override def toString() = "&" + x.toString
 }
 
 object t3 extends TransformerFunction with K2DBScannerOps with DeepDSL {
@@ -112,24 +104,24 @@ object t3 extends TransformerFunction with K2DBScannerOps with DeepDSL {
       case K2DBScannerNew(f) => NameAlias[FILE](None, "fopen", List(List(f, unit("r"))))
       case K2DBScannerNext_int(s) => reifyBlock({
         val v = PTRADDRESS(__newVar(0))
-        toAtom(NameAlias[Unit](None, "fscanf", List(List(s, unit("%d|"), v))))
+        __ifThenElse(infix_==(FScanf(s, List(unit("%d|"), v)), EOF()), Break(), unit())
         v.x
       })
       case K2DBScannerNext_double(s) => reifyBlock({
         val v = PTRADDRESS(__newVar(unit(0.0)))
-        toAtom(NameAlias[Unit](None, "fscanf", List(List(s, unit("%lf|"), v))))
+        __ifThenElse(infix_==(FScanf(s, List(unit("%lf|"), v)), EOF()), Break(), unit())
         v.x
       })
       case K2DBScannerNext_char(s) => reifyBlock({
         val v = PTRADDRESS(__newVar(unit('a')))
-        toAtom(NameAlias[Unit](None, "fscanf", List(List(s, unit("%c|"), v))))
+        __ifThenElse(infix_==(FScanf(s, List(unit("%c|"), v)), EOF()), Break(), unit())
         v.x
       })
       case K2DBScannerNext1(s, buf) => reifyBlock({
         var i = __newVar[Int](0)
         __whileDo(unit(true), {
           val v = Pointer(ArrayApply(buf, i))
-          toAtom(FScanf(s, List(unit("%c"), v)))
+          __ifThenElse(infix_==(FScanf(s, List(unit("%c"), v)), EOF()), Break(), unit())
           __ifThenElse[Unit]((infix_==(buf(i), unit('|')) || infix_==(buf(i), unit('\n'))), toAtom(Break()), unit())
           __assign(i, readVar(i) + unit(1))
         })
@@ -140,16 +132,17 @@ object t3 extends TransformerFunction with K2DBScannerOps with DeepDSL {
         val x = PTRADDRESS(__newVar[Int](0))
         val y = PTRADDRESS(__newVar[Int](0))
         val z = PTRADDRESS(__newVar[Int](0))
-        toAtom(NameAlias[Unit](None, "fscanf", List(List(s, unit("%d-%d-%d|"), x, y, z))))
+        __ifThenElse(infix_==(FScanf(s, List(unit("%d-%d-%d|"), x, y, z)), EOF()), Break(), unit())
         (x.x * unit(10000)) + (y.x * unit(100)) + z.x
       })
-      case K2DBScannerHasNext(s) => NameAlias[Boolean](None, "!feof", List(List(s)))
+      case K2DBScannerHasNext(s) => reifyBlock({ Constant(true) })
       case _                     => n
     }
   }
 }
 
 object DefaultScalaTo2NameAliases extends TransformerFunction with DeepDSL {
+  import CNodes._
   val isRecursive = false
   def apply(n: Def[Any])(implicit context: DeepDSL): Def[Any] = n match {
     case Int$less$eq1(self, x)    => NameAlias(Some(self), " <= ", List(List(x)))
