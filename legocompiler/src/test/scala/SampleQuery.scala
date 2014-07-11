@@ -18,7 +18,25 @@ class SampleQuery extends FlatSpec with ShouldMatchers {
 
   val lq = new LiftedQueries()
   val block = lq.Q1
-  println(block)
 
-  LegoGenerator.apply(block)
+  // println(block)
+  // LegoGenerator.apply(block)
+
+  val loweringContext = new LoweringLegoBase {}
+
+  val lowering = new Lowering {
+    val from = lq.context
+    val to = loweringContext
+  }
+
+  val loweredBlock = lowering.transformProgram(block)
+
+  val ir2Program = new IRToProgram {
+    val IR = loweringContext
+  }
+
+  val finalProgram = ir2Program.createProgram(loweredBlock)
+
+  println(finalProgram)
+  LegoGenerator.apply(finalProgram)
 }

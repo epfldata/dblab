@@ -30,4 +30,8 @@ import queryengine.AGGRecord
     /*:/: Document.nest(2, "def q1 = " :: doc) :/: "}" :/: ""*/
     generate(program /*, header, traitSignature*/ )
   }
+
+  def apply(program: PardisProgram) {
+    generate(program)
+  }
 }

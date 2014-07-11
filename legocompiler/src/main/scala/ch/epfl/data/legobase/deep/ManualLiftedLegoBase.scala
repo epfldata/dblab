@@ -69,6 +69,8 @@ trait OptionOps { this: DeepDSL =>
 trait SetOps { this: DeepDSL =>
   object Set {
     def apply[T: Manifest](seq: Rep[Seq[T]]): Rep[Set[T]] = SetNew(seq)
+    def apply[T: Manifest](): Rep[Set[T]] = SetNew2[T]()(manifest[T])
   }
   case class SetNew[T: Manifest](seq: Rep[Seq[T]]) extends FunctionDef[Set[T]](None, "Set", List(List(__varArg(seq))))
+  case class SetNew2[T: Manifest]() extends FunctionDef[Set[T]](None, "Set", List(List()))
 }
