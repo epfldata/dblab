@@ -10,43 +10,35 @@ trait TopDownTransformer[FromLang <: Base, ToLang <: Base] {
   val to: ToLang
   import from._
   def transformBlockTyped[T: Manifest, S: Manifest](block: Block[T]): to.Block[S] = block match {
-    case Block(stmts, res) => to.Block[S](
-      stmts map (s => //transformStmTyped[Any, Any](s.asInstanceOf[Stm[Any]])(s.manifest.asInstanceOf[Manifest[Any]], s.manifest.asInstanceOf[Manifest[Any]]).asInstanceOf[Stm[Any]]),
-        transformStm(s)),
-      transformExp[T, S](res))
+    case Block(stmts, res) => {
+      val newStmts = collection.mutable.ArrayBuffer[Stm[_]]()
+      for (st <- stmts) {
+        newStmts ++= transformStmToMultiple(st)
+      }
+      to.Block[S](
+        newStmts.toList,
+        transformExp[T, S](res))
+    }
   }
 
   def transformProgram[T: Manifest](block: Block[T]): to.Block[T] = transformBlockTyped[T, T](block)
 
   val subst = collection.mutable.Map.empty[Rep[Any], to.Rep[Any]]
 
-  // def transformStm(stm: Stm[_]): to.Stm[_] = transformStmTyped(stm)
-
-  // def transformStmTyped[T: Manifest, S: Manifest](stm: Stm[T]): to.Stm[S] = stm match {
-  //   case Stm(sym, rhs) => {
-  //     val newSym = to.fresh[S].copyFrom(sym)
-  //     subst += sym -> newSym
-  //     to.Stm[S](newSym, transformDefTyped[T, S](rhs))
-  //   }
-  // }
+  def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = List(transformStm(stm))
 
   def transformStm(stm: Stm[_]): to.Stm[_] = stm match {
     case Stm(sym, rhs) => {
       // val newSym = to.fresh[S].copyFrom(sym)
       val newSym = sym
       subst += sym -> newSym
-      to.Stm(newSym, transformDef(rhs))
+      val newdef = transformDef(rhs)
+
+      val stmt = to.Stm(newSym, newdef)
+      to.reflectStm(stmt)
+      stmt
     }
   }
-
-  // def transformDef[T: Manifest](node: Def[T]): to.Def[T] = transformDefTyped[T, T](node)
-
-  // def transformDefTyped[T: Manifest, S: Manifest](node: Def[T]): to.Def[S] = node match {
-  //   case b @ PardisBlock(stmt, res) => transformBlockTyped[T, S](b)
-  //   case ifte @ PardisIfThenElse(cond, thenp, elsep) => to.IfThenElse(transformExp[Boolean, Boolean](cond), transformBlockTyped[T, S](thenp), transformBlockTyped[T, S](elsep))
-  //   case w @ PardisWhile(cond, block) => to.While(transformBlockTyped[Boolean, Boolean](cond), transformBlockTyped[Unit, Unit](block)).asInstanceOf[to.Def[S]]
-  //   case _ => node.asInstanceOf[to.Def[S]]
-  // }
 
   def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
     case b @ PardisBlock(stmt, res) => transformBlockTyped[T, T](b)

@@ -18,26 +18,38 @@ trait IRToProgram extends TopDownTransformer[LoweringLegoBase, LoweringLegoBase]
     PardisProgram(structsDef, node)
   }
 
-  val structs = collection.mutable.HashMap.empty[StructTags.StructTag[_], Seq[(String, Type)]]
+  val structs = collection.mutable.HashMap.empty[StructTags.StructTag[_], Seq[(String, Type, Boolean)]]
 
   override def traverseDef(node: Def[_]): Unit = node match {
     case Struct(tag, elems) => {
       def getTypeTag(m: Manifest[Any]): TypeTag[Any] = reflect.runtime.universe.internal.manifestToTypeTag[Any](scala.reflect.runtime.currentMirror, m).asInstanceOf[TypeTag[Any]]
       def getType(m: Manifest[Any]): Type = getTypeTag(m).tpe
-      structs += tag -> elems.map(x => x._1 -> getType(x._2.tp))
+      structs += tag -> elems.map(x =>
+        (x._1, getType(x._2.tp), isVar(x._2)))
     }
     case _ => super.traverseDef(node)
   }
 
-  override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
-    case an: AggOpNew[_, _] => {
-      val ma = an.manifestA
-      val mb = an.manifestB
-      val marrDouble = manifest[Array[Double]]
-      to.reifyBlock({
-        to.__new[T](("hm", false, to.__newHashMap(to.overloaded2, mb, marrDouble)))
-      }).correspondingNode
+  def isVar[T](exp: Rep[T]) = {
+    exp match {
+      case s @ Sym(_) => s.correspondingNode match {
+        case ReadVar(Var(_)) => true
+        case _               => false
+      }
+      case _ => false
     }
-    case _ => super.transformDef(node)
+    // exp.correspondingNode
+    // exp match {
+    //   case null => false
+    //   case to.Def(d) => d match {
+    //     case null => {
+    //       scala.Predef.println("null for " + exp)
+    //       false
+    //     }
+    //     case ReadVar(Var(_)) => true
+    //   }
+    //   // case Def(ReadVar(Var(_))) => true
+    //   case _ => false
+    // }
   }
 }
