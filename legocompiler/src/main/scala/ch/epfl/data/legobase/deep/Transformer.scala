@@ -11,12 +11,12 @@ trait TopDownTransformer[FromLang <: Base, ToLang <: Base] {
   import from._
   def transformBlockTyped[T: Manifest, S: Manifest](block: Block[T]): to.Block[S] = block match {
     case Block(stmts, res) => {
-      val newStmts = collection.mutable.ArrayBuffer[Stm[_]]()
-      for (st <- stmts) {
-        newStmts ++= transformStmToMultiple(st)
-      }
+      // val newStmts = collection.mutable.ArrayBuffer[Stm[_]]()
+      // for (st <- stmts) {
+      //   newStmts ++= transformStmToMultiple(st)
+      // }
       to.Block[S](
-        newStmts.toList,
+        stmts.flatMap(transformStmToMultiple),
         transformExp[T, S](res))
     }
   }

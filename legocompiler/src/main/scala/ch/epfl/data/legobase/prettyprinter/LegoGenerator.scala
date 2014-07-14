@@ -10,12 +10,12 @@ import scala.language.implicitConversions
 object LegoGenerator extends ScalaCodeGenerator {
 
   override def getHeader: Document = """
-import storagemanager.TPCHRelations.LINEITEMRecord
 import queryengine.AGGRecord
 import scala.collection.mutable.Set
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.TreeSet
+import storagemanager.K2DBScanner
 
 object OrderingFactory {
   def apply[T](fun: (T, T) => Int): Ordering[T] = new Ordering[T] {

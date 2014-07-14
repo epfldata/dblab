@@ -5,6 +5,8 @@ package deep
 import scala.language.implicitConversions
 
 trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
+  def reifyInline[T: Manifest](e: => Rep[T]): Rep[T] = e
+
   override def operatorOpen[A](self: Rep[Operator[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = self match {
     case Def(x: PrintOpNew[_]) => self.asInstanceOf[Rep[PrintOp[A]]].open
     case Def(x: SortOpNew[_])  => self.asInstanceOf[Rep[SortOp[A]]].open
@@ -35,7 +37,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
 
   // FIXME needs apply virtualization
   override def operatorForeach[A](self: Rep[Operator[A]], f: Rep[A => Unit])(implicit manifestA: Manifest[A]): Rep[Unit] = {
-    reifyBlock {
+    reifyInline {
       var exit = __newVar(unit(false));
       __whileDo(`infix_!=`(exit, unit(true)), {
         val t = self.next();
@@ -49,7 +51,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
 
   // FIXME needs apply virtualization
   override def operatorFindFirst[A](self: Rep[Operator[A]], cond: Rep[A => Boolean])(implicit manifestA: Manifest[A]): Rep[A] = {
-    reifyBlock {
+    reifyInline {
       val exit = __newVar(unit(false));
       val res = __newVar(self.NullDynamicRecord);
       __whileDo(`infix_!=`(exit, unit(true)), {
@@ -61,7 +63,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
   }
 
   override def printOpNext[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = {
-    reifyBlock {
+    reifyInline {
       var exit = __newVar(unit(false));
       __whileDo(`infix_==`(exit, unit(false)), {
         val t = self.parent.next();
@@ -86,11 +88,11 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
     }, self.NullDynamicRecord)
   }
 
-  override def selectOpNext[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = reifyBlock {
+  override def selectOpNext[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = reifyInline {
     self.parent.findFirst(self.selectPred)
   }
 
-  override def scanOpNext[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = reifyBlock {
+  override def scanOpNext[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = reifyInline {
     __ifThenElse(self.i.<(self.table.length), {
       val v = self.table.apply(self.i);
       self.`i_=`(self.i.+(unit(1)));
@@ -101,7 +103,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
   // FIXME autolifter does not lift A to Rep[A]
   // FIXME needs apply virtualization
   override def mapOpNext[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = {
-    reifyBlock {
+    reifyInline {
       val t = self.parent.next();
       __ifThenElse(`infix_!=`(t, self.NullDynamicRecord), {
         self.aggFuncs.foreach(__lambda((agg) => __app(agg).apply(t)));
@@ -110,7 +112,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
     }
   }
 
-  override def aggOpNext[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[AGGRecord[B]] = reifyBlock {
+  override def aggOpNext[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[AGGRecord[B]] = reifyInline {
     __ifThenElse(`infix_!=`(self.hm.size, unit(0)), {
       val key = self.keySet.head;
       self.keySet.remove(key);
@@ -133,7 +135,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
 
   // FIXME hack handling ordering[A]
   // FIXME autolifter does not lift A to Rep[A]
-  override def sortOpOpen[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = reifyBlock {
+  override def sortOpOpen[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = reifyInline {
     implicit val ordering = new Ordering[A] {
       def compare(o1: A, o2: A) = ???
     }
@@ -144,7 +146,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
     }))
   }
 
-  override def mapOpOpen[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = reifyBlock {
+  override def mapOpOpen[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = reifyInline {
     self.parent.open
   }
 
@@ -157,7 +159,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
   // FIXME needs apply virtualization
   // FIXME newArray hack related to issue #24
   override def aggOpOpen[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Unit] = {
-    reifyBlock {
+    reifyInline {
       self.parent.open();
       self.parent.foreach(((t: Rep[A]) => {
         val key = self.grp.apply(t);
@@ -235,5 +237,47 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
   override def selectOp_Field_SelectPred[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[A => Boolean] = self match {
     case Def(SelectOpNew(_, f)) => f
     case _                      => ???
+  }
+
+  Config.datapath = "/Users/amirsh/Dropbox/yannis2/"
+
+  // FIXME here it uses staging!
+  override def loadLineitem(): Rep[Array[LINEITEMRecord]] = {
+    val file = Config.datapath + "lineitem.tbl"
+    import scala.sys.process._;
+    val size = Integer.parseInt((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", ""))
+    // Load Relation 
+    val s = __newK2DBScanner(unit(file))
+    var i = __newVar[Int](0)
+    val hm = __newArray[LINEITEMRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newLINEITEMRecord(
+        s.next_int,
+        s.next_int,
+        s.next_int,
+        s.next_int,
+        s.next_double,
+        s.next_double,
+        s.next_double,
+        s.next_double,
+        s.next_char,
+        s.next_char,
+        s.next_date,
+        s.next_date,
+        s.next_date,
+        loadString(25, s),
+        loadString(10, s),
+        loadString(44, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  def loadString(size: Rep[Int], s: Rep[K2DBScanner]) = {
+    val NAME = __newArray[Byte](size)
+    s.next(NAME)
+    NAME.filter(__lambda(y => infix_!=(y, unit(0))))
   }
 }

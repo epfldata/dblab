@@ -51,6 +51,8 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     def -(o: Rep[Character]): Rep[Int] = Character$minus1(self, o)
   }
 
+  type Char = Character
+
   def newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit manifestB: Manifest[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)
 
   // TODO this thing should be removed, ideally every literal should be lifted using YY
@@ -66,6 +68,14 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   // case classes
   case class ArrayNew2[T](_length: Rep[Int])(implicit val manifestT: Manifest[T]) extends FunctionDef[Array[T]](None, s"new Array[${m2s(manifestT)}]", List(List(_length)))
+
+  implicit class ArrayRep2[T](self: Rep[Array[T]])(implicit manifestT: Manifest[T]) {
+    def filter(p: Rep[T => Boolean]): Rep[Array[T]] = arrayFilter(self, p)
+  }
+
+  def arrayFilter[T](self: Rep[Array[T]], p: Rep[T => Boolean])(implicit manifestT: Manifest[T]): Rep[Array[T]] = ArrayFilter[T](self, p)
+
+  case class ArrayFilter[T](self: Rep[Array[T]], p: Rep[T => Boolean])(implicit val manifestT: Manifest[T]) extends FunctionDef[Array[T]](Some(self), "filter", List(List(p)))
 
   override def hashMapNew2[A, B](implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = HashMapNew2_2[A, B]()
 

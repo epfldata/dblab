@@ -72,6 +72,24 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
           ("L_LINESTATUS", false, gc.L_LINESTATUS))
       }).correspondingNode.asInstanceOf[to.Def[T]]
     }
+    case li: LINEITEMRecordNew => {
+      to.__new[LINEITEMRecord](("L_ORDERKEY", false, li.L_ORDERKEY),
+        ("L_PARTKEY", false, li.L_PARTKEY),
+        ("L_SUPPKEY", false, li.L_SUPPKEY),
+        ("L_LINENUMBER", false, li.L_LINENUMBER),
+        ("L_QUANTITY", false, li.L_QUANTITY),
+        ("L_EXTENDEDPRICE", false, li.L_EXTENDEDPRICE),
+        ("L_DISCOUNT", false, li.L_DISCOUNT),
+        ("L_TAX", false, li.L_TAX),
+        ("L_RETURNFLAG", false, li.L_RETURNFLAG),
+        ("L_LINESTATUS", false, li.L_LINESTATUS),
+        ("L_SHIPDATE", false, li.L_SHIPDATE),
+        ("L_COMMITDATE", false, li.L_COMMITDATE),
+        ("L_RECEIPTDATE", false, li.L_RECEIPTDATE),
+        ("L_SHIPINSTRUCT", false, li.L_SHIPINSTRUCT),
+        ("L_SHIPMODE", false, li.L_SHIPMODE),
+        ("L_COMMENT", false, li.L_COMMENT)).correspondingNode.asInstanceOf[to.Def[T]]
+    }
     case _ => super.transformDef(node)
   }
 
