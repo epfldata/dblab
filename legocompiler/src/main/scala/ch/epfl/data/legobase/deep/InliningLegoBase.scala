@@ -155,6 +155,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
   // // FIXME think more about varargs!
   // // FIXME remove : _* in YY transformation
   // FIXME needs apply virtualization
+  // FIXME newArray hack related to issue #24
   override def aggOpOpen[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Unit] = {
     reifyBlock {
       self.parent.open();

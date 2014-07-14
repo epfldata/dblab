@@ -13,6 +13,15 @@ object LegoGenerator extends ScalaCodeGenerator {
 import storagemanager.TPCHRelations.LINEITEMRecord
 import queryengine.AGGRecord
 import scala.collection.mutable.Set
+import scala.collection.mutable.HashMap
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.TreeSet
+
+object OrderingFactory {
+  def apply[T](fun: (T, T) => Int): Ordering[T] = new Ordering[T] {
+    def compare(o1: T, o2: T) = fun(o1, o2)
+  }
+}
 
 """
 
