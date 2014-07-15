@@ -9,11 +9,12 @@ import scala.language.implicitConversions
 
 object LegoGenerator extends ScalaCodeGenerator {
 
-  override def getHeader: Document = """
+  override def getHeader: Document = """package ch.epfl.data
+package legobase
+
 import queryengine.AGGRecord
 import scala.collection.mutable.Set
 import scala.collection.mutable.HashMap
-import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.TreeSet
 import storagemanager.K2DBScanner
 
@@ -25,22 +26,20 @@ object OrderingFactory {
 
 """
 
-  def apply(program: PardisBlock[_]) {
-    /*    val header = {
-      """package ch.epfl.data
-package legobase
-
-import queryengine.volcano._
-import storagemanager.TPCHRelations.LINEITEMRecord
-import queryengine.AGGRecord
-"""
-    }
-    val traitSignature = "trait Q1Generated extends Q1"*/
-    /*:/: Document.nest(2, "def q1 = " :: doc) :/: "}" :/: ""*/
-    generate(program /*, header, traitSignature*/ )
+  override def getTraitSignature(): Document = """object LEGO_QUERY extends LegoRunner with GenericQuery {
+  def main(args: Array[String]) {
+    val q1 = (x: Int) => main()
+    run(args, List(q1))
   }
+  """
 
   def apply(program: PardisProgram) {
     generate(program)
   }
 }
+
+// object LegoGenerator extends CCodeGenerator {
+//   def apply(program: PardisProgram) {
+//     generate(program)
+//   }
+// }

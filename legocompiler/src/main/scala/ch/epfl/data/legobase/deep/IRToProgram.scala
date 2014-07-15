@@ -12,13 +12,13 @@ trait IRToProgram extends TopDownTransformer[LoweringLegoBase, LoweringLegoBase]
   val from = IR
   val to = IR
 
-  def createProgram(node: Block[_]): PardisProgram = {
+  def createProgram[T](node: Block[T]): PardisProgram = {
     traverseBlock(node)
     val structsDef = structs.toList.map(x => PardisStructDef(x._1, x._2))
-    PardisProgram(structsDef, node)
+    PardisProgram(structsDef, node.asInstanceOf[Block[Any]])
   }
 
-  val structs = collection.mutable.HashMap.empty[StructTags.StructTag[_], Seq[(String, Type, Boolean)]]
+  val structs = collection.mutable.HashMap.empty[StructTags.StructTag[Any], Seq[(String, Type, Boolean)]]
 
   override def traverseDef(node: Def[_]): Unit = node match {
     case Struct(tag, elems) => {

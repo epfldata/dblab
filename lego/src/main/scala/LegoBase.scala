@@ -12,7 +12,7 @@ trait ScalaImpl {
   def parseString(x: String): Array[Byte] = x.getBytes
 }
 
-object MiniDB extends storagemanager.Loader with Queries {
+trait LegoRunner {
   val numRuns: scala.Int = 1
   var currQuery: java.lang.String = ""
 
@@ -20,7 +20,7 @@ object MiniDB extends storagemanager.Loader with Queries {
 
   def getResultFileName = "results/" + currQuery + ".result"
 
-  def main(args: Array[String]) {
+  def run(args: Array[String], funs: List[(Int => Unit)]) {
     Config.datapath = args(0)
     Config.checkResults = true
 
@@ -31,7 +31,7 @@ object MiniDB extends storagemanager.Loader with Queries {
       currQuery = q
       Console.withOut(new PrintStream(getOutputName)) {
         currQuery match {
-          case "Q1" => Q1(numRuns)
+          case "Q1" => funs(0)(numRuns)
           //        case "Q2" => Q2(numRuns)
           case _    => throw new Exception("Query not supported!")
         }
@@ -57,5 +57,13 @@ object MiniDB extends storagemanager.Loader with Queries {
         }
       }
     }
+  }
+}
+
+object MiniDB extends LegoRunner with storagemanager.Loader with Queries {
+
+  def main(args: Array[String]) {
+    val q1 = (x: Int) => Q1(x)
+    run(args, List(q1))
   }
 }

@@ -4,7 +4,7 @@ package deep
 
 import scala.language.implicitConversions
 
-trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
+trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopUnrolling {
   def reifyInline[T: Manifest](e: => Rep[T]): Rep[T] = e
 
   override def operatorOpen[A](self: Rep[Operator[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = self match {
@@ -281,3 +281,16 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions {
     NAME.filter(__lambda(y => infix_!=(y, unit(0))))
   }
 }
+
+trait LoopUnrolling extends pardis.ir.InlineFunctions { this: InliningLegoBase =>
+  override def seqForeach[A, U](self: Rep[Seq[A]], f: Rep[A => U])(implicit manifestA: Manifest[A], manifestU: Manifest[U]): Rep[Unit] = self match {
+    case Def(LiftedSeq(elems)) => elems.toList match {
+      case Nil => unit(())
+      case elem :: tail => {
+        __app(f).apply(elem)
+        __liftSeq(tail).foreach(f)
+      }
+    }
+  }
+}
+
