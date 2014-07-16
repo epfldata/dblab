@@ -19,6 +19,11 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   def println(x: Rep[Any]): Rep[Unit] = Println(x)
   case class Printf(text: Rep[String], xs: Rep[Any]*) extends FunctionDef[Unit](None, "printf", List(text :: xs.toList))
   def printf(text: Rep[String], xs: Rep[Any]*): Rep[Unit] = Printf(text, xs: _*)
+  def runQuery[T: Manifest](query: => Rep[T]): Rep[T] = {
+    val b = reifyBlock(query)
+    RunQuery(b)
+  }
+  case class RunQuery[T: Manifest](query: Block[T]) extends FunctionDef[T](None, "runQuery", List(List(query)))
 
   // TODO auto generate this class
 

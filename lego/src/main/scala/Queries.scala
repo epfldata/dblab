@@ -4,15 +4,24 @@ package legobase
 import queryengine.volcano._
 
 trait Queries extends Q1 //with Q2
-trait GenericQuery extends ScalaImpl with storagemanager.Loader
+trait GenericQuery extends ScalaImpl with storagemanager.Loader {
+  var profile = true
+
+  def runQuery[T](query: => T): T = {
+    if (profile) {
+      utils.Utilities.time(query, "finish")
+    } else {
+      query
+    }
+  }
+}
 
 trait Q1 extends GenericQuery {
   case class GroupByClass(val L_RETURNFLAG: java.lang.Character, val L_LINESTATUS: java.lang.Character);
   def Q1(numRuns: Int) {
     val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
-      import utils.Utilities.time
-      time({
+      runQuery {
         val constantDate: Long = parseDate("1998-08-11")
         val lineitemScan = SelectOp(ScanOp(lineitemTable))(x => x.L_SHIPDATE <= constantDate)
         val aggOp = AggOp(lineitemScan, 9)(x => new GroupByClass(
@@ -38,7 +47,7 @@ trait Q1 extends GenericQuery {
         po.next
         printf("(%d rows)\n", po.numRows)
         ()
-      }, "finish")
+      }
     }
   }
 }

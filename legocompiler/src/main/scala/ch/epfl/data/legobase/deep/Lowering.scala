@@ -9,6 +9,7 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
   import from._
 
   override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
+    case RunQuery(b) => to.RunQuery(transformBlock(b))
     case an: AggOpNew[_, _] => {
       val ma = an.manifestA
       val mb = an.manifestB

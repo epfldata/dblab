@@ -9,6 +9,9 @@ trait TopDownTransformer[FromLang <: Base, ToLang <: Base] {
   val from: FromLang
   val to: ToLang
   import from._
+
+  implicit val context: FromLang = from
+
   def transformBlockTyped[T: Manifest, S: Manifest](block: Block[T]): to.Block[S] = block match {
     case Block(stmts, res) => {
       // val newStmts = collection.mutable.ArrayBuffer[Stm[_]]()
@@ -21,7 +24,8 @@ trait TopDownTransformer[FromLang <: Base, ToLang <: Base] {
     }
   }
 
-  def transformProgram[T: Manifest](block: Block[T]): to.Block[T] = transformBlockTyped[T, T](block)
+  def transformProgram[T: Manifest](block: Block[T]): to.Block[T] = transformBlock[T](block)
+  def transformBlock[T: Manifest](block: Block[T]): to.Block[T] = transformBlockTyped[T, T](block)
 
   val subst = collection.mutable.Map.empty[Rep[Any], to.Rep[Any]]
 
@@ -45,7 +49,14 @@ trait TopDownTransformer[FromLang <: Base, ToLang <: Base] {
     case ifte @ PardisIfThenElse(cond, thenp, elsep) => to.IfThenElse(transformExp[Boolean, Boolean](cond), transformBlockTyped[T, T](thenp), transformBlockTyped[T, T](elsep))
     case w @ PardisWhile(cond, block) => to.While(transformBlockTyped[Boolean, Boolean](cond), transformBlockTyped[Unit, Unit](block)).asInstanceOf[to.Def[T]]
     case _ => node.asInstanceOf[to.Def[T]]
+    // case _                          => node.recreate(node.funArgs.map(transformFunArg): _*)
   }
+
+  // def transformFunArg(funArg: PardisFunArg): PardisFunArg = funArg match {
+  //   case d: Def[_]       => transformDef(d)(d.tp).asInstanceOf[PardisFunArg]
+  //   case e: Rep[_]       => transformExp(e)(e.tp, e.tp)
+  //   case PardisVarArg(v) => transformFunArg(v)
+  // }
 
   def transformExp[T: Manifest, S: Manifest](exp: Rep[T]): to.Rep[S] = exp match {
     case sy @ Sym(s)        => subst(sy).asInstanceOf[to.Rep[S]]
