@@ -6,11 +6,9 @@ import scala.language.implicitConversions
 import pardis.ir._
 import reflect.runtime.universe.{ TypeTag, Type }
 
-trait IRToProgram extends TopDownTransformer[LoweringLegoBase, LoweringLegoBase] with Traverser[LoweringLegoBase] {
-  import from._
-
-  val from = IR
-  val to = IR
+// trait IRToProgram extends TopDownTransformer[LoweringLegoBase, LoweringLegoBase] with Traverser[LoweringLegoBase] {
+trait IRToProgram extends TopDownTransformerTraverser[LoweringLegoBase] {
+  import IR._
 
   def createProgram[T](node: Block[T]): PardisProgram = {
     traverseBlock(node)
@@ -31,6 +29,8 @@ trait IRToProgram extends TopDownTransformer[LoweringLegoBase, LoweringLegoBase]
   }
 
   def isVar[T](exp: Rep[T]) = {
+
+    // TODO HACK
     exp match {
       case s @ Sym(_) => s.correspondingNode match {
         case ReadVar(Var(_)) => true
@@ -38,18 +38,5 @@ trait IRToProgram extends TopDownTransformer[LoweringLegoBase, LoweringLegoBase]
       }
       case _ => false
     }
-    // exp.correspondingNode
-    // exp match {
-    //   case null => false
-    //   case to.Def(d) => d match {
-    //     case null => {
-    //       scala.Predef.println("null for " + exp)
-    //       false
-    //     }
-    //     case ReadVar(Var(_)) => true
-    //   }
-    //   // case Def(ReadVar(Var(_))) => true
-    //   case _ => false
-    // }
   }
 }

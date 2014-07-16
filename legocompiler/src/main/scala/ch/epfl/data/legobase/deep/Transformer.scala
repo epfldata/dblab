@@ -52,3 +52,8 @@ trait TopDownTransformer[FromLang <: Base, ToLang <: Base] {
     case cons @ Constant(c) => Constant[S](c.asInstanceOf[S]) // TODO think more about it
   }
 }
+
+trait TopDownTransformerTraverser[Lang <: Base] extends Traverser[Lang] with TopDownTransformer[Lang, Lang] {
+  val from = IR
+  val to = IR
+}

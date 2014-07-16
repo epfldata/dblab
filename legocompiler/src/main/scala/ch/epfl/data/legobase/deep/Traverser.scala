@@ -25,16 +25,24 @@ trait Traverser[Lang <: Base] {
 
   def traverseDef(node: Def[_]): Unit = node match {
     case b @ PardisBlock(stmt, res) => traverseBlock(b)
-    case ifte @ PardisIfThenElse(cond, thenp, elsep) => {
-      traverseExp(cond)
-      traverseBlock(thenp)
-      traverseBlock(elsep)
+    // case ifte @ PardisIfThenElse(cond, thenp, elsep) => {
+    //   traverseExp(cond)
+    //   traverseBlock(thenp)
+    //   traverseBlock(elsep)
+    // }
+    // case w @ PardisWhile(cond, block) => {
+    //   traverseBlock(cond)
+    //   traverseBlock(block)
+    // }
+    case _ => for (a <- node.funArgs) {
+      traverseFunArg(a)
     }
-    case w @ PardisWhile(cond, block) => {
-      traverseBlock(cond)
-      traverseBlock(block)
-    }
-    case _ => ()
+  }
+
+  def traverseFunArg(funArg: PardisFunArg): Unit = funArg match {
+    case d: Def[_]       => traverseDef(d)
+    case e: Rep[_]       => traverseExp(e)
+    case PardisVarArg(v) => traverseFunArg(v)
   }
 
   def traverseExp(exp: Rep[_]): Unit = exp match {
