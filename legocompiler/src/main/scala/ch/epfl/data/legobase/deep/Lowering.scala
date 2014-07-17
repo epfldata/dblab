@@ -19,59 +19,59 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
       implicit val manifestRec: Manifest[Rec] = mb.asInstanceOf[Manifest[Rec]]
       val magg = manifest[AGGRecord[Rec]].asInstanceOf[Manifest[Any]]
       // val magg = maa
-      to.reifyBlock({
-        to.__new[AggOp[_, _]](("hm", false, to.__newHashMap(to.overloaded2, mb, marrDouble)),
-          ("NullDynamicRecord", false, unit[Any](null)(magg)),
-          ("keySet", true, to.Set()(mb)),
-          ("numAggs", false, an.numAggs)).asInstanceOf[to.Rep[T]]
-      }).correspondingNode
+      // to.reifyBlock ({
+      to.__new[AggOp[_, _]](("hm", false, to.__newHashMap(to.overloaded2, mb, marrDouble)),
+        ("NullDynamicRecord", false, unit[Any](null)(magg)),
+        ("keySet", true, to.Set()(mb)),
+        ("numAggs", false, an.numAggs)).asInstanceOf[to.Rep[T]]
+      // }).correspondingNode
     }
     case po: PrintOpNew[_] => {
       val ma = po.manifestA
       val maa = ma.asInstanceOf[Manifest[Any]]
-      to.reifyBlock({
-        to.__new[PrintOp[_]](("numRows", true, to.unit[Int](0)),
-          ("NullDynamicRecord", false, unit[Any](null)(maa)))
-      }).correspondingNode.asInstanceOf[to.Def[T]]
+      // to.reifyBlock({
+      to.__new[PrintOp[_]](("numRows", true, to.unit[Int](0)),
+        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Rep[T]]
+      // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case so: ScanOpNew[_] => {
       val ma = so.manifestA
       val maa = ma.asInstanceOf[Manifest[Any]]
-      to.reifyBlock({
-        to.__new[ScanOp[_]](("i", true, to.unit[Int](0)),
-          ("table", false, so.table),
-          ("NullDynamicRecord", false, unit[Any](null)(maa)))
-      }).correspondingNode.asInstanceOf[to.Def[T]]
+      // to.reifyBlock({
+      to.__new[ScanOp[_]](("i", true, to.unit[Int](0)),
+        ("table", false, so.table),
+        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Rep[T]]
+      // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case mo: MapOpNew[_] => {
       val ma = mo.manifestA
       val maa = ma.asInstanceOf[Manifest[Any]]
-      to.reifyBlock({
-        to.__new[MapOp[_]](
-          ("NullDynamicRecord", false, unit[Any](null)(maa)))
-      }).correspondingNode.asInstanceOf[to.Def[T]]
+      // to.reifyBlock({
+      to.__new[MapOp[_]](
+        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Rep[T]]
+      // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case so: SelectOpNew[_] => {
       val ma = so.manifestA
       val maa = ma.asInstanceOf[Manifest[Any]]
-      to.reifyBlock({
-        to.__new[SelectOp[_]](
-          ("NullDynamicRecord", false, unit[Any](null)(maa)))
-      }).correspondingNode.asInstanceOf[to.Def[T]]
+      // to.reifyBlock({
+      to.__new[SelectOp[_]](
+        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Rep[T]]
+      // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case so: SortOpNew[_] => {
       val ma = so.manifestA
       val maa = ma.asInstanceOf[Manifest[Any]]
-      to.reifyBlock({
-        to.__new[SortOp[_]](("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]])(maa))(maa)),
-          ("NullDynamicRecord", false, unit[Any](null)(maa)))
-      }).correspondingNode.asInstanceOf[to.Def[T]]
+      // to.reifyBlock({
+      to.__new[SortOp[_]](("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]])(maa))(maa)),
+        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Rep[T]]
+      // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case gc: GroupByClassNew => {
-      to.reifyBlock({
-        to.__new[GroupByClass](("L_RETURNFLAG", false, gc.L_RETURNFLAG),
-          ("L_LINESTATUS", false, gc.L_LINESTATUS))
-      }).correspondingNode.asInstanceOf[to.Def[T]]
+      // to.reifyBlock({
+      to.__new[GroupByClass](("L_RETURNFLAG", false, gc.L_RETURNFLAG),
+        ("L_LINESTATUS", false, gc.L_LINESTATUS)).asInstanceOf[to.Rep[T]]
+      // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case li: LINEITEMRecordNew => {
       to.__new[LINEITEMRecord](("L_ORDERKEY", false, li.L_ORDERKEY),

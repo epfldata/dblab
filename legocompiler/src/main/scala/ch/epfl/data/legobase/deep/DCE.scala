@@ -32,9 +32,8 @@ trait DCE[Lang <: Base] extends TopDownTransformerTraverser[Lang] {
 
   def checkAndAdd[T](exp: Rep[T]) {
     exp match {
-      case sym @ Sym(_) => {
-        // TODO HACK
-        val d = sym.correspondingNode
+      case Def(d) => {
+        val sym = exp.asInstanceOf[Sym[T]]
         if (!isMarked(sym)) {
           addToWorkList(d)
           mark(sym)
@@ -62,19 +61,6 @@ trait DCE[Lang <: Base] extends TopDownTransformerTraverser[Lang] {
   def traverseWorkList() {
     while (!workList.isEmpty) {
       val d = workList.pop()
-      // d match {
-      //   case fd: FunctionDef[_] => {
-      //     fd.caller.foreach { x =>
-      //       checkAndAdd(x)
-      //     }
-      //     fd.argss.foreach { l =>
-      //       l.foreach { x =>
-      //         processArg(x)
-      //       }
-      //     }
-      //   }
-      //   case _ => ()
-      // }
       for (a <- d.funArgs) {
         processArg(a)
       }

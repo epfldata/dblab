@@ -14,13 +14,10 @@ trait TopDownTransformer[FromLang <: Base, ToLang <: Base] {
 
   def transformBlockTyped[T: Manifest, S: Manifest](block: Block[T]): to.Block[S] = block match {
     case Block(stmts, res) => {
-      // val newStmts = collection.mutable.ArrayBuffer[Stm[_]]()
-      // for (st <- stmts) {
-      //   newStmts ++= transformStmToMultiple(st)
-      // }
-      to.Block[S](
-        stmts.flatMap(transformStmToMultiple),
-        transformExp[T, S](res))
+      to.reifyBlock[S] {
+        stmts.foreach(transformStmToMultiple)
+        transformExp[T, S](res)
+      }
     }
   }
 
@@ -33,8 +30,8 @@ trait TopDownTransformer[FromLang <: Base, ToLang <: Base] {
 
   def transformStm(stm: Stm[_]): to.Stm[_] = stm match {
     case Stm(sym, rhs) => {
-      // val newSym = to.fresh[S].copyFrom(sym)
-      val newSym = sym
+      val newSym = to.fresh(sym.tp).copyFrom(sym)
+      // val newSym = sym
       subst += sym -> newSym
       val newdef = transformDef(rhs)
 
@@ -51,6 +48,8 @@ trait TopDownTransformer[FromLang <: Base, ToLang <: Base] {
     case _ => node.asInstanceOf[to.Def[T]]
     // case _                          => node.recreate(node.funArgs.map(transformFunArg): _*)
   }
+
+  implicit def expToDef[T](exp: to.Rep[T]): to.Def[T] = exp.correspondingNode
 
   // def transformFunArg(funArg: PardisFunArg): PardisFunArg = funArg match {
   //   case d: Def[_]       => transformDef(d)(d.tp).asInstanceOf[PardisFunArg]

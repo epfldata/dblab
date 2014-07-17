@@ -31,12 +31,16 @@ trait IRToProgram extends TopDownTransformerTraverser[LoweringLegoBase] {
   def isVar[T](exp: Rep[T]) = {
 
     // TODO HACK
+    // exp match {
+    //   case s @ Sym(_) => s.correspondingNode match {
+    //     case ReadVar(Var(_)) => true
+    //     case _               => false
+    //   }
+    //   case _ => false
+    // }
     exp match {
-      case s @ Sym(_) => s.correspondingNode match {
-        case ReadVar(Var(_)) => true
-        case _               => false
-      }
-      case _ => false
+      case Def(ReadVar(Var(_))) => true
+      case _                    => false
     }
   }
 }
