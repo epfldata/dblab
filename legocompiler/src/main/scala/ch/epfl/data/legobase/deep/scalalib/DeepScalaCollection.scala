@@ -135,8 +135,8 @@ trait DefaultEntryOps extends Base { this: DeepDSL =>
   case class DefaultEntryNew[A, B](key: Rep[A], value: Rep[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[DefaultEntry[A, B]](None, "new DefaultEntry", List(List(key, value)))
   case class DefaultEntryChainString[A, B](self: Rep[DefaultEntry[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[String](Some(self), "chainString", List())
   case class DefaultEntry_Field_Key[A, B](self: Rep[DefaultEntry[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[A](self, "key")
-  case class DefaultEntry_Field_Value[A, B](self: Rep[DefaultEntry[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[B](self, "value")
-  case class DefaultEntry_Field_Value_$eq[A, B](self: Rep[DefaultEntry[A, B]], x$1: Rep[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "value_$eq", List(List(x$1)))
+  case class DefaultEntry_Field_Value[A, B](self: Rep[DefaultEntry[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldGetter[B](self, "value")
+  case class DefaultEntry_Field_Value_$eq[A, B](self: Rep[DefaultEntry[A, B]], x$1: Rep[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldSetter[B](self, "value", x$1)
   // method definitions
   def defaultEntryNew[A, B](key: Rep[A], value: Rep[B])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[DefaultEntry[A, B]] = DefaultEntryNew[A, B](key, value)
   def defaultEntryChainString[A, B](self: Rep[DefaultEntry[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[String] = DefaultEntryChainString[A, B](self)

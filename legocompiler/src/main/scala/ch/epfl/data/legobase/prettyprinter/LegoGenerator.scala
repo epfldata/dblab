@@ -23,7 +23,6 @@ object OrderingFactory {
     def compare(o1: T, o2: T) = fun(o1, o2)
   }
 }
-
 """
 
   override def getTraitSignature(): Document = """object LEGO_QUERY extends LegoRunner with GenericQuery {
