@@ -49,7 +49,7 @@ trait TopDownTransformer[FromLang <: Base, ToLang <: Base] {
     // case _                          => node.recreate(node.funArgs.map(transformFunArg): _*)
   }
 
-  implicit def expToDef[T](exp: to.Rep[T]): to.Def[T] = exp.correspondingNode
+  // implicit def expToDef[T](exp: to.Rep[T]): to.Def[T] = exp.correspondingNode
 
   // def transformFunArg(funArg: PardisFunArg): PardisFunArg = funArg match {
   //   case d: Def[_]       => transformDef(d)(d.tp).asInstanceOf[PardisFunArg]

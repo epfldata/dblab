@@ -13,6 +13,7 @@ trait DCE[Lang <: Base] extends TopDownTransformerTraverser[Lang] {
   def optimize[T: Manifest](node: Block[T]): Block[T] = {
     Predef.print(s"optimizing: $node")
     traverseBlock(node)
+    println(s"marks after one iteration: ${marks.toList.sortBy(x => x.id).map(_.id)}")
     traverseWorkList()
     transformProgram(node)
   }
@@ -25,6 +26,7 @@ trait DCE[Lang <: Base] extends TopDownTransformerTraverser[Lang] {
   }
 
   def mark[T](s: Sym[T]) {
+    // Predef.println(s.id + "\tadded")
     marks += s.asInstanceOf[Sym[Any]]
   }
 
@@ -62,6 +64,7 @@ trait DCE[Lang <: Base] extends TopDownTransformerTraverser[Lang] {
     while (!workList.isEmpty) {
       val d = workList.pop()
       for (a <- d.funArgs) {
+        // Predef.println(a + "\tprocessed")
         processArg(a)
       }
     }

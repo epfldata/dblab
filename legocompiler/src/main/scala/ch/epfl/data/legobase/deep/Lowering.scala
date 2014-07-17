@@ -20,61 +20,61 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
       val magg = manifest[AGGRecord[Rec]].asInstanceOf[Manifest[Any]]
       // val magg = maa
       // to.reifyBlock ({
-      to.__new[AggOp[_, _]](("hm", false, to.__newHashMap(to.overloaded2, mb, marrDouble)),
+      to.__newDef[AggOp[_, _]](("hm", false, to.__newHashMap(to.overloaded2, mb, marrDouble)),
         ("NullDynamicRecord", false, unit[Any](null)(magg)),
         ("keySet", true, to.Set()(mb)),
-        ("numAggs", false, an.numAggs)).asInstanceOf[to.Rep[T]]
+        ("numAggs", false, an.numAggs)).asInstanceOf[to.Def[T]]
       // }).correspondingNode
     }
     case po: PrintOpNew[_] => {
       val ma = po.manifestA
       val maa = ma.asInstanceOf[Manifest[Any]]
       // to.reifyBlock({
-      to.__new[PrintOp[_]](("numRows", true, to.unit[Int](0)),
-        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Rep[T]]
+      to.__newDef[PrintOp[_]](("numRows", true, to.unit[Int](0)),
+        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case so: ScanOpNew[_] => {
       val ma = so.manifestA
       val maa = ma.asInstanceOf[Manifest[Any]]
       // to.reifyBlock({
-      to.__new[ScanOp[_]](("i", true, to.unit[Int](0)),
+      to.__newDef[ScanOp[_]](("i", true, to.unit[Int](0)),
         ("table", false, so.table),
-        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Rep[T]]
+        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case mo: MapOpNew[_] => {
       val ma = mo.manifestA
       val maa = ma.asInstanceOf[Manifest[Any]]
       // to.reifyBlock({
-      to.__new[MapOp[_]](
-        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Rep[T]]
+      to.__newDef[MapOp[_]](
+        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case so: SelectOpNew[_] => {
       val ma = so.manifestA
       val maa = ma.asInstanceOf[Manifest[Any]]
       // to.reifyBlock({
-      to.__new[SelectOp[_]](
-        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Rep[T]]
+      to.__newDef[SelectOp[_]](
+        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case so: SortOpNew[_] => {
       val ma = so.manifestA
       val maa = ma.asInstanceOf[Manifest[Any]]
       // to.reifyBlock({
-      to.__new[SortOp[_]](("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]])(maa))(maa)),
-        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Rep[T]]
+      to.__newDef[SortOp[_]](("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]])(maa))(maa)),
+        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case gc: GroupByClassNew => {
       // to.reifyBlock({
-      to.__new[GroupByClass](("L_RETURNFLAG", false, gc.L_RETURNFLAG),
-        ("L_LINESTATUS", false, gc.L_LINESTATUS)).asInstanceOf[to.Rep[T]]
+      to.__newDef[GroupByClass](("L_RETURNFLAG", false, transformExp(gc.L_RETURNFLAG)),
+        ("L_LINESTATUS", false, transformExp(gc.L_LINESTATUS))).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case li: LINEITEMRecordNew => {
-      to.__new[LINEITEMRecord](("L_ORDERKEY", false, li.L_ORDERKEY),
+      to.__newDef[LINEITEMRecord](("L_ORDERKEY", false, li.L_ORDERKEY),
         ("L_PARTKEY", false, li.L_PARTKEY),
         ("L_SUPPKEY", false, li.L_SUPPKEY),
         ("L_LINENUMBER", false, li.L_LINENUMBER),
@@ -89,7 +89,7 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
         ("L_RECEIPTDATE", false, li.L_RECEIPTDATE),
         ("L_SHIPINSTRUCT", false, li.L_SHIPINSTRUCT),
         ("L_SHIPMODE", false, li.L_SHIPMODE),
-        ("L_COMMENT", false, li.L_COMMENT)).correspondingNode.asInstanceOf[to.Def[T]]
+        ("L_COMMENT", false, li.L_COMMENT)).asInstanceOf[to.Def[T]]
     }
     case _ => super.transformDef(node)
   }

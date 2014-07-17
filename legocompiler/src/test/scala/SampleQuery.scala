@@ -31,6 +31,7 @@ class SampleQuery extends FlatSpec with ShouldMatchers {
     }
 
     val loweredBlock = lowering.transformProgram(block)
+    // val loweredBlock = block
 
     /* it's written like this because of early definition: http://stackoverflow.com/questions/4712468/in-scala-what-is-an-early-initializer */
     val dce = new {
