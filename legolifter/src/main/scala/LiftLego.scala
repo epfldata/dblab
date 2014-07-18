@@ -81,10 +81,10 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with CharacterC
 
   def generateCollection(implicit al: AutoLifter) {
     val liftedCodes = List(
-      al.autoLift[HashMap[Any, Any]](Custom("DeepDSL", List(CMethod("keySet"), CMethod("getOrElseUpdate"), CMethod("size"), CMethod("remove"), CMethod("clear"), CMethod("<init>"), CMethod("apply"), CMethod("contains"), CMethod("update")))),
+      al.autoLift[HashMap[Any, Any]](Custom("DeepDSL", List(CMethod("keySet"), CMethod("getOrElseUpdate"), CMethod("size"), CMethod("remove"), CMethod("clear"), CMethod("<init>"), CMethod("apply"), CMethod("contains"), CMethod("update")), excludedFields = List(CMethod("table")))),
       al.autoLift[Set[Any]](Custom("DeepDSL", List(CMethod("apply"), CMethod("toSeq"), CMethod("head"), CMethod("remove")))),
       al.autoLift[TreeSet[Any]](Custom(component = "DeepDSL", includedMethods = List(CMethod("<init>", List(List(), List(CType(typeOf[Ordering[Any]])))), CMethod("+="), CMethod("-="), CMethod("head"), CMethod("size")), excludedMethods = List("rangeImpl"), excludedFields = List(CMethod("treeRef")))),
-      al.autoLift[DefaultEntry[Any, Any]](Custom("DeepDSL")))
+      al.autoLift[DefaultEntry[Any, Any]](Custom("DeepDSL", excludedFields = List(CMethod("next")))))
     val liftedCode = liftedCodes.mkString("\n")
     val file = "DeepScalaCollection"
     printToFile(new java.io.File(s"$folder/scalalib/$file.scala")) { pw =>
