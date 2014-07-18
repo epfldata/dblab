@@ -9,7 +9,8 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
   import from._
 
   override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
-    case RunQuery(b) => to.RunQuery(transformBlock(b))
+    case RunQuery(b)                                 => to.RunQuery(transformBlock(b))
+    case HashMapGetOrElseUpdate(self, key, opOutput) => to.HashMapGetOrElseUpdate(transformExp(self)(self.tp, self.tp), transformExp(key), transformBlock(opOutput))
     case an: AggOpNew[_, _] => {
       val ma = an.manifestA
       val mb = an.manifestB
@@ -91,7 +92,51 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
         ("L_SHIPMODE", false, li.L_SHIPMODE),
         ("L_COMMENT", false, li.L_COMMENT)).asInstanceOf[to.Def[T]]
     }
+    case ImmutableField(self @ LoweredNew(d), fieldName) => {
+      StructImmutableField(transformExp(self), fieldName)
+    }
+    case FieldGetter(self @ LoweredNew(d), fieldName) => {
+      StructFieldGetter(transformExp(self), fieldName)
+    }
+    case FieldSetter(self @ LoweredNew(d), fieldName, rhs) => {
+      StructFieldSetter[T](transformExp(self), fieldName, rhs).asInstanceOf[to.Def[T]]
+    }
+    case AGGRecord_Field_Aggs(self) => {
+      Predef.println("here")
+      super.transformDef(node)
+    }
     case _ => super.transformDef(node)
+  }
+
+  object ImmutableField {
+    def unapply[T](exp: Def[T]): Option[(Rep[Any], String)] = exp match {
+      case fd: FieldDef[_] => Some(fd.obj -> fd.field)
+      case _               => None
+    }
+  }
+
+  object FieldSetter {
+    def unapply[T](exp: Def[T]): Option[(Rep[Any], String, Rep[T])] = exp match {
+      case fd: FieldSetter[_] => Some((fd.obj, fd.field, fd.newValue.asInstanceOf[Rep[T]]))
+      case _                  => None
+    }
+  }
+
+  object FieldGetter {
+    def unapply[T](exp: Def[T]): Option[(Rep[Any], String)] = exp match {
+      case fd: FieldGetter[_] => Some(fd.obj -> fd.field)
+      case _                  => None
+    }
+  }
+
+  object LoweredNew {
+    def unapply[T](exp: Rep[T]): Option[Def[T]] = exp match {
+      case Def(d) => d match {
+        case _ if List(classOf[LINEITEMRecord], classOf[AggOp[_, _]], classOf[PrintOp[_]], classOf[ScanOp[_]], classOf[MapOp[_]], classOf[SelectOp[_]], classOf[SortOp[_]], classOf[GroupByClass]).contains(d.tp.runtimeClass) => Some(d)
+        case _ => None
+      }
+      case _ => None
+    }
   }
 
   // override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {

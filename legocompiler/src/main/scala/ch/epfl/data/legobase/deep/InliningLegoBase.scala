@@ -239,7 +239,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     case _                      => ???
   }
 
-  Config.datapath = "/Users/amirsh/Dropbox/yannis2/"
+  Config.datapath = "/Users/amirsh/Dropbox/yannis/"
 
   // FIXME here it uses staging!
   override def loadLineitem(): Rep[Array[LINEITEMRecord]] = {

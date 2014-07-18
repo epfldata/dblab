@@ -14,6 +14,7 @@ trait TopDownTransformer[FromLang <: Base, ToLang <: Base] {
 
   def transformBlockTyped[T: Manifest, S: Manifest](block: Block[T]): to.Block[S] = block match {
     case Block(stmts, res) => {
+      // println(s"processing block with ${stmts.size} and result $res")
       to.reifyBlock[S] {
         stmts.foreach(transformStmToMultiple)
         transformExp[T, S](res)
@@ -41,10 +42,27 @@ trait TopDownTransformer[FromLang <: Base, ToLang <: Base] {
     }
   }
 
+  def newSym[T: Manifest](sym: Rep[T]): to.Sym[_] = to.fresh(sym.tp).copyFrom(sym.asInstanceOf[Sym[T]])
+
   def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
-    case b @ PardisBlock(stmt, res) => transformBlockTyped[T, T](b)
+    case b @ PardisBlock(stmt, res)                  => transformBlockTyped[T, T](b)
     case ifte @ PardisIfThenElse(cond, thenp, elsep) => to.IfThenElse(transformExp[Boolean, Boolean](cond), transformBlockTyped[T, T](thenp), transformBlockTyped[T, T](elsep))
-    case w @ PardisWhile(cond, block) => to.While(transformBlockTyped[Boolean, Boolean](cond), transformBlockTyped[Unit, Unit](block)).asInstanceOf[to.Def[T]]
+    case w @ PardisWhile(cond, block)                => to.While(transformBlockTyped[Boolean, Boolean](cond), transformBlockTyped[Unit, Unit](block)).asInstanceOf[to.Def[T]]
+    case PardisLambda0(f, o)                         => to.Lambda0(f, transformBlockTyped(o).asInstanceOf[Block[Any]])
+    case PardisLambda(f, i, o) => {
+      subst += i -> newSym(i)
+      // println(i + " added")
+      val newO = transformBlockTyped(o).asInstanceOf[Block[Any]]
+      // println("newO: " + newO)
+      to.Lambda(f, i, newO)
+    }
+    case PardisLambda2(f, i1, i2, o) => {
+      subst += i1 -> newSym(i1)
+      subst += i2 -> newSym(i2)
+      // println(i1 + " added")
+      // println(i2 + " added")
+      to.Lambda2(f, i1, i2, transformBlockTyped(o).asInstanceOf[Block[Any]])
+    }
     case _ => node.asInstanceOf[to.Def[T]]
     // case _                          => node.recreate(node.funArgs.map(transformFunArg): _*)
   }

@@ -23,24 +23,14 @@ trait IRToProgram extends TopDownTransformerTraverser[LoweringLegoBase] {
       def getTypeTag(m: Manifest[Any]): TypeTag[Any] = reflect.runtime.universe.internal.manifestToTypeTag[Any](scala.reflect.runtime.currentMirror, m).asInstanceOf[TypeTag[Any]]
       def getType(m: Manifest[Any]): Type = getTypeTag(m).tpe
       structs += tag -> elems.map(x =>
-        (x._1, getType(x._2.tp), isVar(x._2)))
+        (x.name, getType(x.init.tp), x.mutable))
     }
     case _ => super.traverseDef(node)
   }
-
-  def isVar[T](exp: Rep[T]) = {
-
-    // TODO HACK
-    // exp match {
-    //   case s @ Sym(_) => s.correspondingNode match {
-    //     case ReadVar(Var(_)) => true
-    //     case _               => false
-    //   }
-    //   case _ => false
-    // }
-    exp match {
-      case Def(ReadVar(Var(_))) => true
-      case _                    => false
-    }
-  }
+  // def isVar[T](exp: Rep[T]) = {
+  //   exp match {
+  //     case Def(ReadVar(Var(_))) => true
+  //     case _                    => false
+  //   }
+  // }
 }

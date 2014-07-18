@@ -18,7 +18,7 @@ trait LegoRunner {
 
   def getOutputName = currQuery + "Output.txt"
 
-  def getResultFileName = "results/" + currQuery + ".result"
+  def getResultFileName = "results/" + currQuery + ".result_big"
 
   def run(args: Array[String], funs: List[(Int => Unit)]) {
     Config.datapath = args(0)

@@ -11,9 +11,9 @@ trait DCE[Lang <: Base] extends TopDownTransformerTraverser[Lang] {
   import IR._
 
   def optimize[T: Manifest](node: Block[T]): Block[T] = {
-    Predef.print(s"optimizing: $node")
+    // Predef.print(s"optimizing: $node")
     traverseBlock(node)
-    println(s"marks after one iteration: ${marks.toList.sortBy(x => x.id).map(_.id)}")
+    // println(s"marks after one iteration: ${marks.toList.sortBy(x => x.id).map(_.id)}")
     traverseWorkList()
     transformProgram(node)
   }
