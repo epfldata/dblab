@@ -9,8 +9,8 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
   import from._
 
   override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
-    case RunQuery(b)                                 => to.RunQuery(transformBlock(b))
-    case HashMapGetOrElseUpdate(self, key, opOutput) => to.HashMapGetOrElseUpdate(transformExp(self)(self.tp, self.tp), transformExp(key), transformBlock(opOutput))
+    case RunQuery(b)                                 => to.RunQuery(transformBlock(b)) // FIXME
+    case HashMapGetOrElseUpdate(self, key, opOutput) => to.HashMapGetOrElseUpdate(transformExp(self)(self.tp, self.tp), transformExp(key), transformBlock(opOutput)) // FIXME
     case an: AggOpNew[_, _] => {
       val ma = an.manifestA
       val mb = an.manifestB
@@ -22,7 +22,7 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
       // val magg = maa
       // to.reifyBlock ({
       to.__newDef[AggOp[_, _]](("hm", false, to.__newHashMap(to.overloaded2, mb, marrDouble)),
-        ("NullDynamicRecord", false, unit[Any](null)(magg)),
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(magg)),
         ("keySet", true, to.Set()(mb)),
         ("numAggs", false, an.numAggs)).asInstanceOf[to.Def[T]]
       // }).correspondingNode
@@ -32,7 +32,7 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
       val maa = ma.asInstanceOf[Manifest[Any]]
       // to.reifyBlock({
       to.__newDef[PrintOp[_]](("numRows", true, to.unit[Int](0)),
-        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Def[T]]
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa))).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case so: ScanOpNew[_] => {
@@ -41,7 +41,7 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
       // to.reifyBlock({
       to.__newDef[ScanOp[_]](("i", true, to.unit[Int](0)),
         ("table", false, so.table),
-        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Def[T]]
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa))).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case mo: MapOpNew[_] => {
@@ -49,7 +49,7 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
       val maa = ma.asInstanceOf[Manifest[Any]]
       // to.reifyBlock({
       to.__newDef[MapOp[_]](
-        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Def[T]]
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa))).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case so: SelectOpNew[_] => {
@@ -57,7 +57,7 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
       val maa = ma.asInstanceOf[Manifest[Any]]
       // to.reifyBlock({
       to.__newDef[SelectOp[_]](
-        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Def[T]]
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa))).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case so: SortOpNew[_] => {
@@ -65,7 +65,7 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
       val maa = ma.asInstanceOf[Manifest[Any]]
       // to.reifyBlock({
       to.__newDef[SortOp[_]](("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]])(maa))(maa)),
-        ("NullDynamicRecord", false, unit[Any](null)(maa))).asInstanceOf[to.Def[T]]
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa))).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case gc: GroupByClassNew => {
@@ -101,10 +101,6 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
     case FieldSetter(self @ LoweredNew(d), fieldName, rhs) => {
       StructFieldSetter[T](transformExp(self), fieldName, rhs).asInstanceOf[to.Def[T]]
     }
-    case AGGRecord_Field_Aggs(self) => {
-      Predef.println("here")
-      super.transformDef(node)
-    }
     case _ => super.transformDef(node)
   }
 
@@ -138,27 +134,6 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
       case _ => None
     }
   }
-
-  // override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
-  //   case Stm(sym, an: AggOpNew[_, _]) => {
-  //     val ma = an.manifestA
-  //     val mb = an.manifestB
-  //     val marrDouble = manifest[Array[Double]]
-  //     val hm = to.__newHashMap(to.overloaded2, mb, marrDouble)
-  //     val NullDynamicRecord = unit[Any](null)(ma.asInstanceOf[Manifest[Any]])
-  //     val keySet = reifyBlock {
-  //       __newVar(to.Set[Any]()(mb.asInstanceOf[Manifest[Any]]))
-  //     }
-  //     List(statementFromExp(hm), statementFromExp(keySet))
-  //   }
-  //   case _ =>
-  //     super.transformStmToMultiple(stm)
-  // }
-
-  // def statementFromExp(exp: Rep[_]): Stm[_] = exp match {
-  //   case s @ Sym(_) => Stm(s, s.correspondingNode)
-  //   // case c @ Constant(v) => Stm(fresh(c.tp), c)
-  // }
 }
 
 trait LoweringLegoBase extends InliningLegoBase with pardis.ir.InlineFunctions {

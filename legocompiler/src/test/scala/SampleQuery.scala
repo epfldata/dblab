@@ -33,14 +33,22 @@ class SampleQuery extends FlatSpec with ShouldMatchers {
     val loweredBlock = lowering.transformProgram(block)
     // val loweredBlock = block
 
+    val parameterPromotion = new {
+      val IR = loweringContext
+    } with ParameterPromotion {
+    }
+
+    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
+    // val operatorlessBlock = loweredBlock
+
     /* it's written like this because of early definition: http://stackoverflow.com/questions/4712468/in-scala-what-is-an-early-initializer */
     val dce = new {
       val IR = loweringContext
     } with DCELegoBase {
     }
 
-    val dceBlock = dce.optimize(loweredBlock)
-    // val dceBlock = loweredBlock
+    val dceBlock = dce.optimize(operatorlessBlock)
+    // val dceBlock = operatorlessBlock
 
     val ir2Program = new { val IR = loweringContext } with IRToProgram {
     }
