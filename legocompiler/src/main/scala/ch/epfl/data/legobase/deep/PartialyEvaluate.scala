@@ -41,10 +41,11 @@ class PartialyEvaluate(override val IR: LoweringLegoBase) extends Optimizer[Lowe
     bindingMap.toList.filter(_._1.isInstanceOf[Sym[_]]).map(x => x._1.asInstanceOf[Sym[Any]] -> x._2).sortBy(_._1.id).foreach {
       case (fa, st) =>
         fa match {
-          case Sym(id) => Predef.println(id + ":" + st)
+          case Sym(id) => Predef.println(id + ":\t" + st)
           case _       => ()
         }
     }
+    Predef.println("========================")
   }
   var contextIsStatic = false
   val bindingMap = collection.mutable.Map[FunctionArg, Stage]()
@@ -218,35 +219,52 @@ class PartialyEvaluate(override val IR: LoweringLegoBase) extends Optimizer[Lowe
       case Constant(vv) => vv
       case _            => environment(v)
     }
+
+    def isPartiallyEvaluated: Boolean = v match {
+      case Constant(_) => true
+      case _           => environment.contains(v)
+    }
+  }
+
+  override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
+    case RunQuery(b) => to.RunQuery(transformBlock(b))
+    case _           => super.transformDef(node)
+  }
+
+  override def transformExp[T: Manifest, S: Manifest](exp: Rep[T]): to.Rep[S] = exp match {
+    case sy @ Sym(_) if sy.isPartiallyEvaluated => to.unit(sy.value)(sy.tp.asInstanceOf[Manifest[Any]]).asInstanceOf[to.Rep[S]]
+    case _                                      => super.transformExp[T, S](exp)
   }
 
   override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
-    case Stm(s, d) if s.isStatic => d match {
-      case NewVar(init) => {
-        val initValue = init.value
-        val v = Var(s.asInstanceOf[Sym[Var[Any]]])
-        v.value = initValue
-        Nil
+    case Stm(s, d) if { Predef.println(s"$s is ${s.isStatic}"); s.isStatic } => d match {
+      // // FIXME needs a fix for case class recreation
+      // case NewVar(init) => {
+      //   val initValue = init.value
+      //   val v = Var(s.asInstanceOf[Sym[Var[Any]]])
+      //   v.value = initValue
+      //   Nil
+      // }
+      // case ReadVar(v) => {
+      //   Predef.println(s"Evaluating read var $s with value ${v.value}")
+      //   s.value = v.value
+      //   Nil
+      // }
+      // case Assign(v, newValue) => {
+      //   v.value = newValue.value
+      //   Nil
+      // }
+      // case _ if d.partialEvaluable => {
+      //   s.value = d.partialEvaluate(d.funArgs.map(_.value): _*)
+      //   Predef.println(s"Partial evaluating symbol $s with value ${s.value}")
+      //   Nil
+      // }
+      case _ => {
+        Predef.println(s"Cannot do PE for $s with class ${d.getClass}")
+        super.transformStmToMultiple(stm)
       }
-      case ReadVar(v) => {
-        // Predef.println(mutableBindingChain)
-        // v.addChain(sym)
-        // v.stage
-        s.value = v.value
-        Nil
-      }
-      case Assign(v, newValue) => {
-        // v.addChain(sym)
-        // if (v.isStatic && (newValue.isDynamic || varContextIsDynamic(v) /* || !contextIsStatic*/ )) {
-        //   // Predef.println(s"$v changed to dynamic because of $newValue")
-        //   v.stage = Dynamic
-        // }
-        // v.stage
-        v.value = newValue.value
-        Nil
-      }
-      case _ => super.transformStmToMultiple(stm)
     }
     case _ => super.transformStmToMultiple(stm)
   }
 }
+

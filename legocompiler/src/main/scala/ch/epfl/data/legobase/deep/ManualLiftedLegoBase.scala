@@ -7,7 +7,7 @@ import pardis.utils.Utils.{ manifestToString => m2s }
 
 // FIXME in the righthand side of the genreated case class invokations, type parameters should be filled in.
 
-trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps { this: DeepDSL =>
+trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE { this: DeepDSL =>
 
   // TODO auto generate this functions
 
@@ -118,4 +118,13 @@ trait ManifestOps { this: DeepDSL =>
   }
 
   case class ManifestNew[T](man: Manifest[T])(implicit manifestT: Manifest[T]) extends FunctionDef[Manifest[T]](None, s"manifest[${m2s(man)}]", Nil)
+}
+
+trait IntPE extends scalalib.IntOps { this: DeepDSL =>
+  case class Int$plus5PE(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+    override def partialEvaluable: Boolean = true
+    override def partialEvaluate(children: Any*): Int = children(0).asInstanceOf[Int] + children(1).asInstanceOf[Int]
+  }
+  override def int$plus5(self: Rep[Int], x: Rep[Int]): Rep[Int] = Int$plus5PE(self, x)
 }
