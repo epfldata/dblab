@@ -55,8 +55,9 @@ class PartialyEvaluate(override val IR: LoweringLegoBase) extends Optimizer[Lowe
   val cfgContext = collection.mutable.Stack[Stage]()
 
   type Value = Any
-  type Environment = collection.mutable.Map[Sym[Any], Value]
-  val environment: Environment = null
+
+  val environment = collection.mutable.Map[FunctionArg, Value]()
+  val mutableValues = collection.mutable.Map[Var[Any], Value]()
 
   override def traverseStm(stm: Stm[_]): Unit = stm match {
     case Stm(sym, rhs) => {
@@ -65,56 +66,6 @@ class PartialyEvaluate(override val IR: LoweringLegoBase) extends Optimizer[Lowe
       }
     }
   }
-
-  // def computeStageDef[T](definition: Def[T]): Stage = {
-  //   definition match {
-  //     case Block(stmts, res) => {
-  //       stmts.foreach(x => traverseStm(x))
-  //       if (stmts.forall(_.sym.isStatic) && res.isStatic)
-  //         Static
-  //       else
-  //         Dynamic
-  //     }
-  //     case While(cond, rest) => {
-  //       bindingTimeAnalysis(null, cond) // FIXME
-  //       if (cond.isDynamic) {
-  //         contextIsStatic ^= false
-  //       }
-  //       bindingTimeAnalysis(null, rest)
-  //       cond.stage and rest.stage
-  //     }
-  //     case IfThenElse(cond, thenp, elsep) => {
-  //       bindingTimeAnalysis(null, thenp)
-  //       bindingTimeAnalysis(null, elsep)
-  //       cond.stage and thenp.stage and elsep.stage
-  //     }
-  //     case nv @ NewVar(init) => {
-  //       val v = Var(nv)
-  //       mutableBindingChain(init) = List()
-  //       init.stage
-  //     }
-  //     case _ => {
-  //       for (fa <- definition.funArgs) {
-  //         fa match {
-  //           case d: Def[_]       => bindingTimeAnalysis(null, d)
-  //           case s: Sym[_]       => if (!bindingMap.contains(s)) bindingMap(s) = Dynamic
-  //           case c: Constant[_]  => ()
-  //           case PardisVarArg(f) => ()
-  //         }
-  //       }
-  //       if (definition.isPure && definition.funArgs.forall(_.isStatic)) Static else Dynamic
-  //     }
-  //   }
-  // }
-
-  // def computeStage(funArg: FunctionArg): Stage = {
-  //   funArg match {
-  //     case d: Def[_]       => computeStageDef(d)
-  //     case PardisVarArg(f) => computeStage(f)
-  //     case Sym(_)          => if (bindingMap.contains(funArg)) funArg.stage else Dynamic
-  //     case Constant(_)     => Static
-  //   }
-  // }
 
   def addContext(stage: Stage) {
     cfgContext.push(stage)
@@ -223,6 +174,12 @@ class PartialyEvaluate(override val IR: LoweringLegoBase) extends Optimizer[Lowe
     def addChain[T](sym: Sym[T]): Unit = {
       mutableBindingChain(v) +:= sym
     }
+
+    def value_=(newValue: Value): Unit = {
+      mutableValues(v) = newValue
+    }
+
+    def value: Value = mutableValues(v)
   }
 
   implicit class FunctionArgOps(v: FunctionArg) {
@@ -252,40 +209,44 @@ class PartialyEvaluate(override val IR: LoweringLegoBase) extends Optimizer[Lowe
         case _               => dependancyChain(v) +:= sym
       }
     }
+
+    def value_=(newValue: Value): Unit = {
+      environment(v) = newValue
+    }
+
+    def value: Value = v match {
+      case Constant(vv) => vv
+      case _            => environment(v)
+    }
   }
 
-  // override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
-  //   case RunQuery(b)                                 => to.RunQuery(transformBlock(b)) // FIXME
-  //   case HashMapGetOrElseUpdate(self, key, opOutput) => to.HashMapGetOrElseUpdate(transformExp(self)(self.tp, self.tp), transformExp(key), transformBlock(opOutput)) // FIXME
-  //   case StructImmutableField(self @ LoweredNew(d), fieldName) => {
-  //     ReadVal(transformExp(getParameter(self, fieldName)))
-  //   }
-  //   case StructFieldGetter(self @ LoweredNew(d), fieldName) => {
-  //     getParameter(self, fieldName) match {
-  //       case Def(ReadVar(v)) => ReadVar(v)(v.tp).asInstanceOf[Def[T]]
-  //       case _               => ???
-  //     }
-  //   }
-  //   case StructFieldSetter(self @ LoweredNew(d), fieldName, rhs) => {
-  //     getParameter(self, fieldName) match {
-  //       case Def(ReadVar(v)) => Assign(v, rhs)(v.tp).asInstanceOf[Def[T]]
-  //       case _               => ???
-  //     }
-  //   }
-  //   case _ => super.transformDef(node)
-  // }
-
-  // def getParameter[T: Manifest](obj: Rep[T], name: String): Rep[Any] = obj match {
-  //   case Def(Struct(t, elems)) => elems.find(_.name == name).map(_.init).get
-  // }
-
-  // object LoweredNew {
-  //   def unapply[T](exp: Rep[T]): Option[Def[T]] = exp match {
-  //     case Def(d) => d match {
-  //       case _ if promotedObjects.contains(exp.asInstanceOf[Sym[Any]]) => Some(d)
-  //       case _ => None
-  //     }
-  //     case _ => None
-  //   }
-  // }
+  override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
+    case Stm(s, d) if s.isStatic => d match {
+      case NewVar(init) => {
+        val initValue = init.value
+        val v = Var(s.asInstanceOf[Sym[Var[Any]]])
+        v.value = initValue
+        Nil
+      }
+      case ReadVar(v) => {
+        // Predef.println(mutableBindingChain)
+        // v.addChain(sym)
+        // v.stage
+        s.value = v.value
+        Nil
+      }
+      case Assign(v, newValue) => {
+        // v.addChain(sym)
+        // if (v.isStatic && (newValue.isDynamic || varContextIsDynamic(v) /* || !contextIsStatic*/ )) {
+        //   // Predef.println(s"$v changed to dynamic because of $newValue")
+        //   v.stage = Dynamic
+        // }
+        // v.stage
+        v.value = newValue.value
+        Nil
+      }
+      case _ => super.transformStmToMultiple(stm)
+    }
+    case _ => super.transformStmToMultiple(stm)
+  }
 }
