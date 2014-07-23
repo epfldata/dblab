@@ -120,120 +120,336 @@ trait IntOps extends Base { this: DeepDSL =>
     def %(x: Rep[Double])(implicit overload7: Overloaded7): Rep[Double] = int$percent7(self, x)
   }
   // constructors
-  def __newInt(): Rep[Int] = intNew
+
   // case classes
-  case class IntNew() extends FunctionDef[Int](None, "new Int", List())
-  case class IntToByte(self: Rep[Int]) extends FunctionDef[Byte](Some(self), "toByte", List())
-  case class IntToShort(self: Rep[Int]) extends FunctionDef[Short](Some(self), "toShort", List())
-  case class IntToChar(self: Rep[Int]) extends FunctionDef[Char](Some(self), "toChar", List())
-  case class IntToInt(self: Rep[Int]) extends FunctionDef[Int](Some(self), "toInt", List())
-  case class IntToLong(self: Rep[Int]) extends FunctionDef[Long](Some(self), "toLong", List())
-  case class IntToFloat(self: Rep[Int]) extends FunctionDef[Float](Some(self), "toFloat", List())
-  case class IntToDouble(self: Rep[Int]) extends FunctionDef[Double](Some(self), "toDouble", List())
-  case class IntUnary_$tilde(self: Rep[Int]) extends FunctionDef[Int](Some(self), "unary_$tilde", List())
-  case class IntUnary_$plus(self: Rep[Int]) extends FunctionDef[Int](Some(self), "unary_$plus", List())
-  case class IntUnary_$minus(self: Rep[Int]) extends FunctionDef[Int](Some(self), "unary_$minus", List())
-  case class Int$plus1(self: Rep[Int], x: Rep[String]) extends FunctionDef[String](Some(self), "$plus", List(List(x)))
-  case class Int$less$less1(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$less$less", List(List(x)))
-  case class Int$less$less2(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Int](Some(self), "$less$less", List(List(x)))
-  case class Int$greater$greater$greater1(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$greater$greater$greater", List(List(x)))
-  case class Int$greater$greater$greater2(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Int](Some(self), "$greater$greater$greater", List(List(x)))
-  case class Int$greater$greater1(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$greater$greater", List(List(x)))
-  case class Int$greater$greater2(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Int](Some(self), "$greater$greater", List(List(x)))
-  case class Int$eq$eq1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Int$eq$eq2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Int$eq$eq3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Int$eq$eq4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Int$eq$eq5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Int$eq$eq6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Int$eq$eq7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Int$bang$eq1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Int$bang$eq2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Int$bang$eq3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Int$bang$eq4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Int$bang$eq5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Int$bang$eq6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Int$bang$eq7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Int$less1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Int$less2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Int$less3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Int$less4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Int$less5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Int$less6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Int$less7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Int$less$eq1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Int$less$eq2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Int$less$eq3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Int$less$eq4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Int$less$eq5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Int$less$eq6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Int$less$eq7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Int$greater1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Int$greater2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Int$greater3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Int$greater4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Int$greater5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Int$greater6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Int$greater7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Int$greater$eq1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Int$greater$eq2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Int$greater$eq3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Int$greater$eq4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Int$greater$eq5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Int$greater$eq6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Int$greater$eq7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Int$bar1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$bar", List(List(x)))
-  case class Int$bar2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$bar", List(List(x)))
-  case class Int$bar3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$bar", List(List(x)))
-  case class Int$bar4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$bar", List(List(x)))
-  case class Int$bar5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$bar", List(List(x)))
-  case class Int$amp1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$amp", List(List(x)))
-  case class Int$amp2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$amp", List(List(x)))
-  case class Int$amp3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$amp", List(List(x)))
-  case class Int$amp4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$amp", List(List(x)))
-  case class Int$amp5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$amp", List(List(x)))
-  case class Int$up1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$up", List(List(x)))
-  case class Int$up2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$up", List(List(x)))
-  case class Int$up3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$up", List(List(x)))
-  case class Int$up4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$up", List(List(x)))
-  case class Int$up5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$up", List(List(x)))
-  case class Int$plus2(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$plus", List(List(x)))
-  case class Int$plus3(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$plus", List(List(x)))
-  case class Int$plus4(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$plus", List(List(x)))
-  case class Int$plus5(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$plus", List(List(x)))
-  case class Int$plus6(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$plus", List(List(x)))
-  case class Int$plus7(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$plus", List(List(x)))
-  case class Int$plus8(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$plus", List(List(x)))
-  case class Int$minus1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$minus", List(List(x)))
-  case class Int$minus2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$minus", List(List(x)))
-  case class Int$minus3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$minus", List(List(x)))
-  case class Int$minus4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$minus", List(List(x)))
-  case class Int$minus5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$minus", List(List(x)))
-  case class Int$minus6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$minus", List(List(x)))
-  case class Int$minus7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$minus", List(List(x)))
-  case class Int$times1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$times", List(List(x)))
-  case class Int$times2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$times", List(List(x)))
-  case class Int$times3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$times", List(List(x)))
-  case class Int$times4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$times", List(List(x)))
-  case class Int$times5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$times", List(List(x)))
-  case class Int$times6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$times", List(List(x)))
-  case class Int$times7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$times", List(List(x)))
-  case class Int$div1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$div", List(List(x)))
-  case class Int$div2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$div", List(List(x)))
-  case class Int$div3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$div", List(List(x)))
-  case class Int$div4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$div", List(List(x)))
-  case class Int$div5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$div", List(List(x)))
-  case class Int$div6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$div", List(List(x)))
-  case class Int$div7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$div", List(List(x)))
-  case class Int$percent1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$percent", List(List(x)))
-  case class Int$percent2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$percent", List(List(x)))
-  case class Int$percent3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$percent", List(List(x)))
-  case class Int$percent4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$percent", List(List(x)))
-  case class Int$percent5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$percent", List(List(x)))
-  case class Int$percent6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$percent", List(List(x)))
-  case class Int$percent7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$percent", List(List(x)))
+  case class IntToByte(self: Rep[Int]) extends FunctionDef[Byte](Some(self), "toByte", List()) {
+    override def isPure = true
+  }
+  case class IntToShort(self: Rep[Int]) extends FunctionDef[Short](Some(self), "toShort", List()) {
+    override def isPure = true
+  }
+  case class IntToChar(self: Rep[Int]) extends FunctionDef[Char](Some(self), "toChar", List()) {
+    override def isPure = true
+  }
+  case class IntToInt(self: Rep[Int]) extends FunctionDef[Int](Some(self), "toInt", List()) {
+    override def isPure = true
+  }
+  case class IntToLong(self: Rep[Int]) extends FunctionDef[Long](Some(self), "toLong", List()) {
+    override def isPure = true
+  }
+  case class IntToFloat(self: Rep[Int]) extends FunctionDef[Float](Some(self), "toFloat", List()) {
+    override def isPure = true
+  }
+  case class IntToDouble(self: Rep[Int]) extends FunctionDef[Double](Some(self), "toDouble", List()) {
+    override def isPure = true
+  }
+  case class IntUnary_$tilde(self: Rep[Int]) extends FunctionDef[Int](Some(self), "unary_$tilde", List()) {
+    override def isPure = true
+  }
+  case class IntUnary_$plus(self: Rep[Int]) extends FunctionDef[Int](Some(self), "unary_$plus", List()) {
+    override def isPure = true
+  }
+  case class IntUnary_$minus(self: Rep[Int]) extends FunctionDef[Int](Some(self), "unary_$minus", List()) {
+    override def isPure = true
+  }
+  case class Int$plus1(self: Rep[Int], x: Rep[String]) extends FunctionDef[String](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less$less1(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$less$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less$less2(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Int](Some(self), "$less$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater$greater$greater1(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$greater$greater$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater$greater$greater2(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Int](Some(self), "$greater$greater$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater$greater1(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$greater$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater$greater2(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Int](Some(self), "$greater$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$eq$eq1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$eq$eq2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$eq$eq3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$eq$eq4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$eq$eq5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$eq$eq6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$eq$eq7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$bang$eq1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$bang$eq2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$bang$eq3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$bang$eq4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$bang$eq5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$bang$eq6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$bang$eq7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less$eq1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less$eq2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less$eq3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less$eq4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less$eq5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less$eq6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$less$eq7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater$eq1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater$eq2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater$eq3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater$eq4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater$eq5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater$eq6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$greater$eq7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$bar1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$bar", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$bar2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$bar", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$bar3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$bar", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$bar4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$bar", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$bar5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$bar", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$amp1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$amp", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$amp2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$amp", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$amp3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$amp", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$amp4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$amp", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$amp5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$amp", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$up1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$up", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$up2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$up", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$up3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$up", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$up4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$up", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$up5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$up", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$plus2(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$plus3(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$plus4(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$plus5(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$plus6(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$plus7(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$plus8(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$minus1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$minus2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$minus3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$minus4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$minus5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$minus6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$minus7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$times1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$times2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$times3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$times4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$times5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$times6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$times7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$div1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$div2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$div3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$div4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$div5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$div6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$div7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$percent1(self: Rep[Int], x: Rep[Byte]) extends FunctionDef[Int](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$percent2(self: Rep[Int], x: Rep[Short]) extends FunctionDef[Int](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$percent3(self: Rep[Int], x: Rep[Char]) extends FunctionDef[Int](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$percent4(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$percent5(self: Rep[Int], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$percent6(self: Rep[Int], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Int$percent7(self: Rep[Int], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
   // method definitions
-  def intNew: Rep[Int] = IntNew()
   def intToByte(self: Rep[Int]): Rep[Byte] = IntToByte(self)
   def intToShort(self: Rep[Int]): Rep[Short] = IntToShort(self)
   def intToChar(self: Rep[Int]): Rep[Char] = IntToChar(self)
@@ -441,98 +657,270 @@ trait DoubleOps extends Base { this: DeepDSL =>
     def %(x: Rep[Double])(implicit overload7: Overloaded7): Rep[Double] = double$percent7(self, x)
   }
   // constructors
-  def __newDouble(): Rep[Double] = doubleNew
+
   // case classes
-  case class DoubleNew() extends FunctionDef[Double](None, "new Double", List())
-  case class DoubleToByte(self: Rep[Double]) extends FunctionDef[Byte](Some(self), "toByte", List())
-  case class DoubleToShort(self: Rep[Double]) extends FunctionDef[Short](Some(self), "toShort", List())
-  case class DoubleToChar(self: Rep[Double]) extends FunctionDef[Char](Some(self), "toChar", List())
-  case class DoubleToInt(self: Rep[Double]) extends FunctionDef[Int](Some(self), "toInt", List())
-  case class DoubleToLong(self: Rep[Double]) extends FunctionDef[Long](Some(self), "toLong", List())
-  case class DoubleToFloat(self: Rep[Double]) extends FunctionDef[Float](Some(self), "toFloat", List())
-  case class DoubleToDouble(self: Rep[Double]) extends FunctionDef[Double](Some(self), "toDouble", List())
-  case class DoubleUnary_$plus(self: Rep[Double]) extends FunctionDef[Double](Some(self), "unary_$plus", List())
-  case class DoubleUnary_$minus(self: Rep[Double]) extends FunctionDef[Double](Some(self), "unary_$minus", List())
-  case class Double$plus1(self: Rep[Double], x: Rep[String]) extends FunctionDef[String](Some(self), "$plus", List(List(x)))
-  case class Double$eq$eq1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Double$eq$eq2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Double$eq$eq3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Double$eq$eq4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Double$eq$eq5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Double$eq$eq6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Double$eq$eq7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Double$bang$eq1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Double$bang$eq2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Double$bang$eq3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Double$bang$eq4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Double$bang$eq5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Double$bang$eq6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Double$bang$eq7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Double$less1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Double$less2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Double$less3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Double$less4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Double$less5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Double$less6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Double$less7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Double$less$eq1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Double$less$eq2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Double$less$eq3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Double$less$eq4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Double$less$eq5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Double$less$eq6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Double$less$eq7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Double$greater1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Double$greater2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Double$greater3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Double$greater4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Double$greater5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Double$greater6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Double$greater7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Double$greater$eq1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Double$greater$eq2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Double$greater$eq3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Double$greater$eq4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Double$greater$eq5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Double$greater$eq6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Double$greater$eq7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Double$plus2(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Double](Some(self), "$plus", List(List(x)))
-  case class Double$plus3(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Double](Some(self), "$plus", List(List(x)))
-  case class Double$plus4(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Double](Some(self), "$plus", List(List(x)))
-  case class Double$plus5(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Double](Some(self), "$plus", List(List(x)))
-  case class Double$plus6(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Double](Some(self), "$plus", List(List(x)))
-  case class Double$plus7(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Double](Some(self), "$plus", List(List(x)))
-  case class Double$plus8(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$plus", List(List(x)))
-  case class Double$minus1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Double](Some(self), "$minus", List(List(x)))
-  case class Double$minus2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Double](Some(self), "$minus", List(List(x)))
-  case class Double$minus3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Double](Some(self), "$minus", List(List(x)))
-  case class Double$minus4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Double](Some(self), "$minus", List(List(x)))
-  case class Double$minus5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Double](Some(self), "$minus", List(List(x)))
-  case class Double$minus6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Double](Some(self), "$minus", List(List(x)))
-  case class Double$minus7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$minus", List(List(x)))
-  case class Double$times1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Double](Some(self), "$times", List(List(x)))
-  case class Double$times2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Double](Some(self), "$times", List(List(x)))
-  case class Double$times3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Double](Some(self), "$times", List(List(x)))
-  case class Double$times4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Double](Some(self), "$times", List(List(x)))
-  case class Double$times5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Double](Some(self), "$times", List(List(x)))
-  case class Double$times6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Double](Some(self), "$times", List(List(x)))
-  case class Double$times7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$times", List(List(x)))
-  case class Double$div1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Double](Some(self), "$div", List(List(x)))
-  case class Double$div2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Double](Some(self), "$div", List(List(x)))
-  case class Double$div3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Double](Some(self), "$div", List(List(x)))
-  case class Double$div4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Double](Some(self), "$div", List(List(x)))
-  case class Double$div5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Double](Some(self), "$div", List(List(x)))
-  case class Double$div6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Double](Some(self), "$div", List(List(x)))
-  case class Double$div7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$div", List(List(x)))
-  case class Double$percent1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Double](Some(self), "$percent", List(List(x)))
-  case class Double$percent2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Double](Some(self), "$percent", List(List(x)))
-  case class Double$percent3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Double](Some(self), "$percent", List(List(x)))
-  case class Double$percent4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Double](Some(self), "$percent", List(List(x)))
-  case class Double$percent5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Double](Some(self), "$percent", List(List(x)))
-  case class Double$percent6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Double](Some(self), "$percent", List(List(x)))
-  case class Double$percent7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$percent", List(List(x)))
+  case class DoubleToByte(self: Rep[Double]) extends FunctionDef[Byte](Some(self), "toByte", List()) {
+    override def isPure = true
+  }
+  case class DoubleToShort(self: Rep[Double]) extends FunctionDef[Short](Some(self), "toShort", List()) {
+    override def isPure = true
+  }
+  case class DoubleToChar(self: Rep[Double]) extends FunctionDef[Char](Some(self), "toChar", List()) {
+    override def isPure = true
+  }
+  case class DoubleToInt(self: Rep[Double]) extends FunctionDef[Int](Some(self), "toInt", List()) {
+    override def isPure = true
+  }
+  case class DoubleToLong(self: Rep[Double]) extends FunctionDef[Long](Some(self), "toLong", List()) {
+    override def isPure = true
+  }
+  case class DoubleToFloat(self: Rep[Double]) extends FunctionDef[Float](Some(self), "toFloat", List()) {
+    override def isPure = true
+  }
+  case class DoubleToDouble(self: Rep[Double]) extends FunctionDef[Double](Some(self), "toDouble", List()) {
+    override def isPure = true
+  }
+  case class DoubleUnary_$plus(self: Rep[Double]) extends FunctionDef[Double](Some(self), "unary_$plus", List()) {
+    override def isPure = true
+  }
+  case class DoubleUnary_$minus(self: Rep[Double]) extends FunctionDef[Double](Some(self), "unary_$minus", List()) {
+    override def isPure = true
+  }
+  case class Double$plus1(self: Rep[Double], x: Rep[String]) extends FunctionDef[String](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$eq$eq1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$eq$eq2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$eq$eq3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$eq$eq4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$eq$eq5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$eq$eq6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$eq$eq7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$bang$eq1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$bang$eq2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$bang$eq3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$bang$eq4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$bang$eq5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$bang$eq6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$bang$eq7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$less1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$less2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$less3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$less4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$less5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$less6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$less7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$less$eq1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$less$eq2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$less$eq3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$less$eq4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$less$eq5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$less$eq6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$less$eq7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$greater1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$greater2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$greater3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$greater4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$greater5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$greater6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$greater7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$greater$eq1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$greater$eq2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$greater$eq3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$greater$eq4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$greater$eq5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$greater$eq6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$greater$eq7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$plus2(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Double](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$plus3(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Double](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$plus4(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Double](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$plus5(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Double](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$plus6(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Double](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$plus7(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Double](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$plus8(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$minus1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Double](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$minus2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Double](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$minus3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Double](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$minus4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Double](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$minus5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Double](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$minus6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Double](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$minus7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$times1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Double](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$times2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Double](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$times3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Double](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$times4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Double](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$times5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Double](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$times6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Double](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$times7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$div1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Double](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$div2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Double](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$div3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Double](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$div4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Double](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$div5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Double](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$div6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Double](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$div7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$percent1(self: Rep[Double], x: Rep[Byte]) extends FunctionDef[Double](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$percent2(self: Rep[Double], x: Rep[Short]) extends FunctionDef[Double](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$percent3(self: Rep[Double], x: Rep[Char]) extends FunctionDef[Double](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$percent4(self: Rep[Double], x: Rep[Int]) extends FunctionDef[Double](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$percent5(self: Rep[Double], x: Rep[Long]) extends FunctionDef[Double](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$percent6(self: Rep[Double], x: Rep[Float]) extends FunctionDef[Double](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Double$percent7(self: Rep[Double], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
   // method definitions
-  def doubleNew: Rep[Double] = DoubleNew()
   def doubleToByte(self: Rep[Double]): Rep[Byte] = DoubleToByte(self)
   def doubleToShort(self: Rep[Double]): Rep[Short] = DoubleToShort(self)
   def doubleToChar(self: Rep[Double]): Rep[Char] = DoubleToChar(self)
@@ -632,18 +1020,18 @@ trait CharacterOps extends Base { this: DeepDSL =>
     def equals(x$1: Rep[Any]): Rep[Boolean] = characterEquals(self, x$1)
     def compareTo(x$1: Rep[Character]): Rep[Int] = characterCompareTo(self, x$1)
     def charValue(): Rep[Char] = characterCharValue(self)
-    def value(): Rep[Char] = character_Field_Value(self)
+    def value: Rep[Char] = character_Field_Value(self)
   }
   // constructors
-  def __newCharacter(x$1: Rep[Char]): Rep[Character] = characterNew(x$1)
+
   // case classes
-  case class CharacterNew(x$1: Rep[Char]) extends FunctionDef[Character](None, "new Character", List(List(x$1)))
   case class CharacterEquals(self: Rep[Character], x$1: Rep[Any]) extends FunctionDef[Boolean](Some(self), "equals", List(List(x$1)))
   case class CharacterCompareTo(self: Rep[Character], x$1: Rep[Character]) extends FunctionDef[Int](Some(self), "compareTo", List(List(x$1)))
   case class CharacterCharValue(self: Rep[Character]) extends FunctionDef[Char](Some(self), "charValue", List())
-  case class Character_Field_Value(self: Rep[Character]) extends FieldDef[Char](self, "value")
+  case class Character_Field_Value(self: Rep[Character]) extends FieldDef[Char](self, "value") {
+    override def isPure = true
+  }
   // method definitions
-  def characterNew(x$1: Rep[Char]): Rep[Character] = CharacterNew(x$1)
   def characterEquals(self: Rep[Character], x$1: Rep[Any]): Rep[Boolean] = CharacterEquals(self, x$1)
   def characterCompareTo(self: Rep[Character], x$1: Rep[Character]): Rep[Int] = CharacterCompareTo(self, x$1)
   def characterCharValue(self: Rep[Character]): Rep[Char] = CharacterCharValue(self)
@@ -768,120 +1156,336 @@ trait LongOps extends Base { this: DeepDSL =>
     def %(x: Rep[Double])(implicit overload7: Overloaded7): Rep[Double] = long$percent7(self, x)
   }
   // constructors
-  def __newLong(): Rep[Long] = longNew
+
   // case classes
-  case class LongNew() extends FunctionDef[Long](None, "new Long", List())
-  case class LongToByte(self: Rep[Long]) extends FunctionDef[Byte](Some(self), "toByte", List())
-  case class LongToShort(self: Rep[Long]) extends FunctionDef[Short](Some(self), "toShort", List())
-  case class LongToChar(self: Rep[Long]) extends FunctionDef[Char](Some(self), "toChar", List())
-  case class LongToInt(self: Rep[Long]) extends FunctionDef[Int](Some(self), "toInt", List())
-  case class LongToLong(self: Rep[Long]) extends FunctionDef[Long](Some(self), "toLong", List())
-  case class LongToFloat(self: Rep[Long]) extends FunctionDef[Float](Some(self), "toFloat", List())
-  case class LongToDouble(self: Rep[Long]) extends FunctionDef[Double](Some(self), "toDouble", List())
-  case class LongUnary_$tilde(self: Rep[Long]) extends FunctionDef[Long](Some(self), "unary_$tilde", List())
-  case class LongUnary_$plus(self: Rep[Long]) extends FunctionDef[Long](Some(self), "unary_$plus", List())
-  case class LongUnary_$minus(self: Rep[Long]) extends FunctionDef[Long](Some(self), "unary_$minus", List())
-  case class Long$plus1(self: Rep[Long], x: Rep[String]) extends FunctionDef[String](Some(self), "$plus", List(List(x)))
-  case class Long$less$less1(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$less$less", List(List(x)))
-  case class Long$less$less2(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$less$less", List(List(x)))
-  case class Long$greater$greater$greater1(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$greater$greater$greater", List(List(x)))
-  case class Long$greater$greater$greater2(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$greater$greater$greater", List(List(x)))
-  case class Long$greater$greater1(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$greater$greater", List(List(x)))
-  case class Long$greater$greater2(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$greater$greater", List(List(x)))
-  case class Long$eq$eq1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Long$eq$eq2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Long$eq$eq3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Long$eq$eq4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Long$eq$eq5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Long$eq$eq6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Long$eq$eq7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Long$bang$eq1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Long$bang$eq2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Long$bang$eq3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Long$bang$eq4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Long$bang$eq5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Long$bang$eq6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Long$bang$eq7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Long$less1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Long$less2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Long$less3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Long$less4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Long$less5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Long$less6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Long$less7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x)))
-  case class Long$less$eq1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Long$less$eq2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Long$less$eq3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Long$less$eq4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Long$less$eq5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Long$less$eq6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Long$less$eq7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x)))
-  case class Long$greater1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Long$greater2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Long$greater3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Long$greater4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Long$greater5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Long$greater6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Long$greater7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x)))
-  case class Long$greater$eq1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Long$greater$eq2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Long$greater$eq3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Long$greater$eq4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Long$greater$eq5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Long$greater$eq6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Long$greater$eq7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x)))
-  case class Long$bar1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$bar", List(List(x)))
-  case class Long$bar2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$bar", List(List(x)))
-  case class Long$bar3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$bar", List(List(x)))
-  case class Long$bar4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$bar", List(List(x)))
-  case class Long$bar5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$bar", List(List(x)))
-  case class Long$amp1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$amp", List(List(x)))
-  case class Long$amp2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$amp", List(List(x)))
-  case class Long$amp3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$amp", List(List(x)))
-  case class Long$amp4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$amp", List(List(x)))
-  case class Long$amp5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$amp", List(List(x)))
-  case class Long$up1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$up", List(List(x)))
-  case class Long$up2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$up", List(List(x)))
-  case class Long$up3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$up", List(List(x)))
-  case class Long$up4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$up", List(List(x)))
-  case class Long$up5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$up", List(List(x)))
-  case class Long$plus2(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$plus", List(List(x)))
-  case class Long$plus3(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$plus", List(List(x)))
-  case class Long$plus4(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$plus", List(List(x)))
-  case class Long$plus5(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$plus", List(List(x)))
-  case class Long$plus6(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$plus", List(List(x)))
-  case class Long$plus7(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$plus", List(List(x)))
-  case class Long$plus8(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$plus", List(List(x)))
-  case class Long$minus1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$minus", List(List(x)))
-  case class Long$minus2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$minus", List(List(x)))
-  case class Long$minus3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$minus", List(List(x)))
-  case class Long$minus4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$minus", List(List(x)))
-  case class Long$minus5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$minus", List(List(x)))
-  case class Long$minus6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$minus", List(List(x)))
-  case class Long$minus7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$minus", List(List(x)))
-  case class Long$times1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$times", List(List(x)))
-  case class Long$times2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$times", List(List(x)))
-  case class Long$times3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$times", List(List(x)))
-  case class Long$times4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$times", List(List(x)))
-  case class Long$times5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$times", List(List(x)))
-  case class Long$times6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$times", List(List(x)))
-  case class Long$times7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$times", List(List(x)))
-  case class Long$div1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$div", List(List(x)))
-  case class Long$div2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$div", List(List(x)))
-  case class Long$div3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$div", List(List(x)))
-  case class Long$div4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$div", List(List(x)))
-  case class Long$div5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$div", List(List(x)))
-  case class Long$div6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$div", List(List(x)))
-  case class Long$div7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$div", List(List(x)))
-  case class Long$percent1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$percent", List(List(x)))
-  case class Long$percent2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$percent", List(List(x)))
-  case class Long$percent3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$percent", List(List(x)))
-  case class Long$percent4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$percent", List(List(x)))
-  case class Long$percent5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$percent", List(List(x)))
-  case class Long$percent6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$percent", List(List(x)))
-  case class Long$percent7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$percent", List(List(x)))
+  case class LongToByte(self: Rep[Long]) extends FunctionDef[Byte](Some(self), "toByte", List()) {
+    override def isPure = true
+  }
+  case class LongToShort(self: Rep[Long]) extends FunctionDef[Short](Some(self), "toShort", List()) {
+    override def isPure = true
+  }
+  case class LongToChar(self: Rep[Long]) extends FunctionDef[Char](Some(self), "toChar", List()) {
+    override def isPure = true
+  }
+  case class LongToInt(self: Rep[Long]) extends FunctionDef[Int](Some(self), "toInt", List()) {
+    override def isPure = true
+  }
+  case class LongToLong(self: Rep[Long]) extends FunctionDef[Long](Some(self), "toLong", List()) {
+    override def isPure = true
+  }
+  case class LongToFloat(self: Rep[Long]) extends FunctionDef[Float](Some(self), "toFloat", List()) {
+    override def isPure = true
+  }
+  case class LongToDouble(self: Rep[Long]) extends FunctionDef[Double](Some(self), "toDouble", List()) {
+    override def isPure = true
+  }
+  case class LongUnary_$tilde(self: Rep[Long]) extends FunctionDef[Long](Some(self), "unary_$tilde", List()) {
+    override def isPure = true
+  }
+  case class LongUnary_$plus(self: Rep[Long]) extends FunctionDef[Long](Some(self), "unary_$plus", List()) {
+    override def isPure = true
+  }
+  case class LongUnary_$minus(self: Rep[Long]) extends FunctionDef[Long](Some(self), "unary_$minus", List()) {
+    override def isPure = true
+  }
+  case class Long$plus1(self: Rep[Long], x: Rep[String]) extends FunctionDef[String](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less$less1(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$less$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less$less2(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$less$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater$greater$greater1(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$greater$greater$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater$greater$greater2(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$greater$greater$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater$greater1(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$greater$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater$greater2(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$greater$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$eq$eq1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$eq$eq2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$eq$eq3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$eq$eq4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$eq$eq5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$eq$eq6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$eq$eq7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$bang$eq1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$bang$eq2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$bang$eq3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$bang$eq4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$bang$eq5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$bang$eq6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$bang$eq7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$less", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less$eq1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less$eq2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less$eq3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less$eq4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less$eq5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less$eq6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$less$eq7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$less$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$greater", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater$eq1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater$eq2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater$eq3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater$eq4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater$eq5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater$eq6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$greater$eq7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Boolean](Some(self), "$greater$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$bar1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$bar", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$bar2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$bar", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$bar3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$bar", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$bar4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$bar", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$bar5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$bar", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$amp1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$amp", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$amp2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$amp", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$amp3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$amp", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$amp4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$amp", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$amp5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$amp", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$up1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$up", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$up2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$up", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$up3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$up", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$up4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$up", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$up5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$up", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$plus2(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$plus3(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$plus4(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$plus5(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$plus6(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$plus7(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$plus8(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$plus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$minus1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$minus2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$minus3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$minus4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$minus5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$minus6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$minus7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$minus", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$times1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$times2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$times3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$times4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$times5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$times6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$times7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$times", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$div1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$div2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$div3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$div4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$div5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$div6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$div7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$div", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$percent1(self: Rep[Long], x: Rep[Byte]) extends FunctionDef[Long](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$percent2(self: Rep[Long], x: Rep[Short]) extends FunctionDef[Long](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$percent3(self: Rep[Long], x: Rep[Char]) extends FunctionDef[Long](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$percent4(self: Rep[Long], x: Rep[Int]) extends FunctionDef[Long](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$percent5(self: Rep[Long], x: Rep[Long]) extends FunctionDef[Long](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$percent6(self: Rep[Long], x: Rep[Float]) extends FunctionDef[Float](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
+  case class Long$percent7(self: Rep[Long], x: Rep[Double]) extends FunctionDef[Double](Some(self), "$percent", List(List(x))) {
+    override def isPure = true
+  }
   // method definitions
-  def longNew: Rep[Long] = LongNew()
   def longToByte(self: Rep[Long]): Rep[Byte] = LongToByte(self)
   def longToShort(self: Rep[Long]): Rep[Short] = LongToShort(self)
   def longToChar(self: Rep[Long]): Rep[Char] = LongToChar(self)
@@ -1008,14 +1612,11 @@ trait IntegerOps extends Base { this: DeepDSL =>
     def longValue(): Rep[Long] = integerLongValue(self)
     def floatValue(): Rep[Float] = integerFloatValue(self)
     def doubleValue(): Rep[Double] = integerDoubleValue(self)
-    def value(): Rep[Int] = integer_Field_Value(self)
+    def value: Rep[Int] = integer_Field_Value(self)
   }
   // constructors
-  def __newInteger(x$1: Rep[Int])(implicit overload1: Overloaded1): Rep[Integer] = integerNew1(x$1)
-  def __newInteger(x$1: Rep[String])(implicit overload2: Overloaded2): Rep[Integer] = integerNew2(x$1)
+
   // case classes
-  case class IntegerNew1(x$1: Rep[Int]) extends FunctionDef[Integer](None, "new Integer", List(List(x$1)))
-  case class IntegerNew2(x$1: Rep[String]) extends FunctionDef[Integer](None, "new Integer", List(List(x$1)))
   case class IntegerEquals(self: Rep[Integer], x$1: Rep[Any]) extends FunctionDef[Boolean](Some(self), "equals", List(List(x$1)))
   case class IntegerCompareTo(self: Rep[Integer], x$1: Rep[Integer]) extends FunctionDef[Int](Some(self), "compareTo", List(List(x$1)))
   case class IntegerByteValue(self: Rep[Integer]) extends FunctionDef[Byte](Some(self), "byteValue", List())
@@ -1024,10 +1625,10 @@ trait IntegerOps extends Base { this: DeepDSL =>
   case class IntegerLongValue(self: Rep[Integer]) extends FunctionDef[Long](Some(self), "longValue", List())
   case class IntegerFloatValue(self: Rep[Integer]) extends FunctionDef[Float](Some(self), "floatValue", List())
   case class IntegerDoubleValue(self: Rep[Integer]) extends FunctionDef[Double](Some(self), "doubleValue", List())
-  case class Integer_Field_Value(self: Rep[Integer]) extends FieldDef[Int](self, "value")
+  case class Integer_Field_Value(self: Rep[Integer]) extends FieldDef[Int](self, "value") {
+    override def isPure = true
+  }
   // method definitions
-  def integerNew1(x$1: Rep[Int]): Rep[Integer] = IntegerNew1(x$1)
-  def integerNew2(x$1: Rep[String]): Rep[Integer] = IntegerNew2(x$1)
   def integerEquals(self: Rep[Integer], x$1: Rep[Any]): Rep[Boolean] = IntegerEquals(self, x$1)
   def integerCompareTo(self: Rep[Integer], x$1: Rep[Integer]): Rep[Int] = IntegerCompareTo(self, x$1)
   def integerByteValue(self: Rep[Integer]): Rep[Byte] = IntegerByteValue(self)
@@ -1056,19 +1657,33 @@ trait BooleanOps extends Base { this: DeepDSL =>
     def ^(x: Rep[Boolean]): Rep[Boolean] = boolean$up(self, x)
   }
   // constructors
-  def __newBoolean(): Rep[Boolean] = booleanNew
+
   // case classes
-  case class BooleanNew() extends FunctionDef[Boolean](None, "new Boolean", List())
-  case class BooleanUnary_$bang(self: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "unary_$bang", List())
-  case class Boolean$eq$eq(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x)))
-  case class Boolean$bang$eq(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x)))
-  case class Boolean$bar$bar(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "$bar$bar", List(List(x)))
-  case class Boolean$amp$amp(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "$amp$amp", List(List(x)))
-  case class Boolean$bar(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "$bar", List(List(x)))
-  case class Boolean$amp(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "$amp", List(List(x)))
-  case class Boolean$up(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "$up", List(List(x)))
+  case class BooleanUnary_$bang(self: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "unary_$bang", List()) {
+    override def isPure = true
+  }
+  case class Boolean$eq$eq(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "$eq$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Boolean$bang$eq(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "$bang$eq", List(List(x))) {
+    override def isPure = true
+  }
+  case class Boolean$bar$bar(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "$bar$bar", List(List(x))) {
+    override def isPure = true
+  }
+  case class Boolean$amp$amp(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "$amp$amp", List(List(x))) {
+    override def isPure = true
+  }
+  case class Boolean$bar(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "$bar", List(List(x))) {
+    override def isPure = true
+  }
+  case class Boolean$amp(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "$amp", List(List(x))) {
+    override def isPure = true
+  }
+  case class Boolean$up(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "$up", List(List(x))) {
+    override def isPure = true
+  }
   // method definitions
-  def booleanNew: Rep[Boolean] = BooleanNew()
   def booleanUnary_$bang(self: Rep[Boolean]): Rep[Boolean] = BooleanUnary_$bang(self)
   def boolean$eq$eq(self: Rep[Boolean], x: Rep[Boolean]): Rep[Boolean] = Boolean$eq$eq(self, x)
   def boolean$bang$eq(self: Rep[Boolean], x: Rep[Boolean]): Rep[Boolean] = Boolean$bang$eq(self, x)

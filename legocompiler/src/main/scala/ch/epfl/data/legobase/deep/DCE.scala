@@ -55,8 +55,9 @@ trait DCE[Lang <: Base] extends TopDownTransformerTraverser[Lang] {
   }
 
   def processArg(p: PardisFunArg): Unit = p match {
-    case s @ Sym(_) => checkAndAdd(s)
-    case _          => ()
+    case s @ Sym(_)       => checkAndAdd(s)
+    case PardisVarArg(va) => processArg(va)
+    case _                => ()
   }
 
   def traverseWorkList() {

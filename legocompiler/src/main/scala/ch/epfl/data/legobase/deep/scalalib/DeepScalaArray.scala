@@ -19,11 +19,17 @@ trait ArrayOps extends Base { this: DeepDSL =>
   def __newArray[T](_length: Rep[Int])(implicit manifestT: Manifest[T]): Rep[Array[T]] = arrayNew[T](_length)(manifestT)
   // case classes
   case class ArrayNew[T](_length: Rep[Int])(implicit val manifestT: Manifest[T]) extends FunctionDef[Array[T]](None, "new Array", List(List(_length)))
-  case class ArrayLength[T](self: Rep[Array[T]])(implicit val manifestT: Manifest[T]) extends FunctionDef[Int](Some(self), "length", List())
-  case class ArrayApply[T](self: Rep[Array[T]], i: Rep[Int])(implicit val manifestT: Manifest[T]) extends FunctionDef[T](Some(self), "apply", List(List(i)))
+  case class ArrayLength[T](self: Rep[Array[T]])(implicit val manifestT: Manifest[T]) extends FunctionDef[Int](Some(self), "length", List()) {
+    override def isPure = true
+  }
+  case class ArrayApply[T](self: Rep[Array[T]], i: Rep[Int])(implicit val manifestT: Manifest[T]) extends FunctionDef[T](Some(self), "apply", List(List(i))) {
+    override def isPure = true
+  }
   case class ArrayUpdate[T](self: Rep[Array[T]], i: Rep[Int], x: Rep[T])(implicit val manifestT: Manifest[T]) extends FunctionDef[Unit](Some(self), "update", List(List(i, x)))
   case class ArrayClone[T](self: Rep[Array[T]])(implicit val manifestT: Manifest[T]) extends FunctionDef[Array[T]](Some(self), "clone", List())
-  case class Array_Field__length[T](self: Rep[Array[T]])(implicit val manifestT: Manifest[T]) extends FieldDef[Int](self, "_length")
+  case class Array_Field__length[T](self: Rep[Array[T]])(implicit val manifestT: Manifest[T]) extends FieldDef[Int](self, "_length") {
+    override def isPure = true
+  }
   // method definitions
   def arrayNew[T](_length: Rep[Int])(implicit manifestT: Manifest[T]): Rep[Array[T]] = ArrayNew[T](_length)
   def arrayLength[T](self: Rep[Array[T]])(implicit manifestT: Manifest[T]): Rep[Int] = ArrayLength[T](self)

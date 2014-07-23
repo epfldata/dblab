@@ -54,6 +54,7 @@ class SampleQuery extends FlatSpec with ShouldMatchers {
     val partialyEvaluator = new PartialyEvaluate(loweringContext)
 
     val partialyEvaluated = partialyEvaluator.optimize(dceBlock)
+    // val partialyEvaluated = dceBlock
 
     val ir2Program = new { val IR = loweringContext } with IRToProgram {
     }

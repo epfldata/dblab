@@ -18,9 +18,8 @@ trait OperatorOps extends Base { this: OperatorsComponent =>
     def evidence$1(): Rep[Manifest[A]] = operator_Field_Evidence$1[A](self)(manifestA)
   }
   // constructors
-  def __newOperator[A](implicit evidence$1: Manifest[A], manifestA: Manifest[A]): Rep[Operator[A]] = operatorNew[A](manifestA)
+
   // case classes
-  case class OperatorNew[A]()(implicit val manifestA: Manifest[A]) extends FunctionDef[Operator[A]](None, "new Operator", List())
   case class OperatorOpen[A](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List())
   case class OperatorNext[A](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List())
   case class OperatorClose[A](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List())
@@ -28,10 +27,13 @@ trait OperatorOps extends Base { this: OperatorsComponent =>
   case class OperatorForeach[A](self: Rep[Operator[A]], f: Rep[((A) => Unit)])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "foreach", List(List(f)))
   case class OperatorFindFirst[A](self: Rep[Operator[A]], cond: Rep[((A) => Boolean)])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "findFirst", List(List(cond)))
   case class OperatorNullDynamicRecord[A, D](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A], val manifestD: Manifest[D]) extends FunctionDef[D](Some(self), "NullDynamicRecord", List())
-  case class Operator_Field_NullDynamicRecord[A](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[A](self, "NullDynamicRecord")
-  case class Operator_Field_Evidence$1[A](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Manifest[A]](self, "evidence$1")
+  case class Operator_Field_NullDynamicRecord[A](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[A](self, "NullDynamicRecord") {
+    override def isPure = true
+  }
+  case class Operator_Field_Evidence$1[A](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Manifest[A]](self, "evidence$1") {
+    override def isPure = true
+  }
   // method definitions
-  def operatorNew[A](implicit manifestA: Manifest[A]): Rep[Operator[A]] = OperatorNew[A]()
   def operatorOpen[A](self: Rep[Operator[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = OperatorOpen[A](self)
   def operatorNext[A](self: Rep[Operator[A]])(implicit manifestA: Manifest[A]): Rep[A] = OperatorNext[A](self)
   def operatorClose[A](self: Rep[Operator[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = OperatorClose[A](self)
@@ -75,9 +77,15 @@ trait ScanOpOps extends Base { this: OperatorsComponent =>
   case class ScanOpReset[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List())
   case class ScanOp_Field_I_$eq[A](self: Rep[ScanOp[A]], x$1: Rep[Int])(implicit val manifestA: Manifest[A]) extends FieldSetter[Int](self, "i", x$1)
   case class ScanOp_Field_I[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FieldGetter[Int](self, "i")
-  case class ScanOp_Field_Evidence$3[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Manifest[A]](self, "evidence$3")
-  case class ScanOp_Field_Table[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Array[A]](self, "table")
-  case class ScanOp_Field_NullDynamicRecord[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[A](self, "NullDynamicRecord")
+  case class ScanOp_Field_Evidence$3[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Manifest[A]](self, "evidence$3") {
+    override def isPure = true
+  }
+  case class ScanOp_Field_Table[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Array[A]](self, "table") {
+    override def isPure = true
+  }
+  case class ScanOp_Field_NullDynamicRecord[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[A](self, "NullDynamicRecord") {
+    override def isPure = true
+  }
   // method definitions
   def scanOpNew[A](table: Rep[Array[A]])(implicit manifestA: Manifest[A]): Rep[ScanOp[A]] = ScanOpNew[A](table)
   def scanOpForeach[A](self: Rep[ScanOp[A]], f: Rep[((A) => Unit)])(implicit manifestA: Manifest[A]): Rep[Unit] = ScanOpForeach[A](self, f)
@@ -123,10 +131,18 @@ trait SelectOpOps extends Base { this: OperatorsComponent =>
   case class SelectOpNext[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List())
   case class SelectOpClose[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List())
   case class SelectOpReset[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List())
-  case class SelectOp_Field_Evidence$4[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Manifest[A]](self, "evidence$4")
-  case class SelectOp_Field_SelectPred[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[(A => Boolean)](self, "selectPred")
-  case class SelectOp_Field_Parent[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Operator[A]](self, "parent")
-  case class SelectOp_Field_NullDynamicRecord[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[A](self, "NullDynamicRecord")
+  case class SelectOp_Field_Evidence$4[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Manifest[A]](self, "evidence$4") {
+    override def isPure = true
+  }
+  case class SelectOp_Field_SelectPred[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[(A => Boolean)](self, "selectPred") {
+    override def isPure = true
+  }
+  case class SelectOp_Field_Parent[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Operator[A]](self, "parent") {
+    override def isPure = true
+  }
+  case class SelectOp_Field_NullDynamicRecord[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[A](self, "NullDynamicRecord") {
+    override def isPure = true
+  }
   // method definitions
   def selectOpNew[A](parent: Rep[Operator[A]], selectPred: Rep[((A) => Boolean)])(implicit manifestA: Manifest[A]): Rep[SelectOp[A]] = SelectOpNew[A](parent, selectPred)
   def selectOpForeach[A](self: Rep[SelectOp[A]], f: Rep[((A) => Unit)])(implicit manifestA: Manifest[A]): Rep[Unit] = SelectOpForeach[A](self, f)
@@ -181,16 +197,36 @@ trait AggOpOps extends Base { this: OperatorsComponent =>
   case class AggOpReset[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "reset", List())
   case class AggOp_Field_KeySet_$eq[A, B](self: Rep[AggOp[A, B]], x$1: Rep[Set[B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldSetter[Set[B]](self, "keySet", x$1)
   case class AggOp_Field_KeySet[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldGetter[Set[B]](self, "keySet")
-  case class AggOp_Field_Hm[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[HashMap[B, Array[Double]]](self, "hm")
-  case class AggOp_Field_MB[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[Manifest[B]](self, "mB")
-  case class AggOp_Field_MA[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[Manifest[A]](self, "mA")
-  case class AggOp_Field_Evidence$6[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[Manifest[B]](self, "evidence$6")
-  case class AggOp_Field_Evidence$5[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[Manifest[A]](self, "evidence$5")
-  case class AggOp_Field_AggFuncs[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[Seq[((A, Double) => Double)]](self, "aggFuncs")
-  case class AggOp_Field_Grp[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[(A => B)](self, "grp")
-  case class AggOp_Field_NumAggs[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[Int](self, "numAggs")
-  case class AggOp_Field_Parent[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[Operator[A]](self, "parent")
-  case class AggOp_Field_NullDynamicRecord[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[AGGRecord[B]](self, "NullDynamicRecord")
+  case class AggOp_Field_Hm[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[HashMap[B, Array[Double]]](self, "hm") {
+    override def isPure = true
+  }
+  case class AggOp_Field_MB[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[Manifest[B]](self, "mB") {
+    override def isPure = true
+  }
+  case class AggOp_Field_MA[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[Manifest[A]](self, "mA") {
+    override def isPure = true
+  }
+  case class AggOp_Field_Evidence$6[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[Manifest[B]](self, "evidence$6") {
+    override def isPure = true
+  }
+  case class AggOp_Field_Evidence$5[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[Manifest[A]](self, "evidence$5") {
+    override def isPure = true
+  }
+  case class AggOp_Field_AggFuncs[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[Seq[((A, Double) => Double)]](self, "aggFuncs") {
+    override def isPure = true
+  }
+  case class AggOp_Field_Grp[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[(A => B)](self, "grp") {
+    override def isPure = true
+  }
+  case class AggOp_Field_NumAggs[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[Int](self, "numAggs") {
+    override def isPure = true
+  }
+  case class AggOp_Field_Parent[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[Operator[A]](self, "parent") {
+    override def isPure = true
+  }
+  case class AggOp_Field_NullDynamicRecord[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[AGGRecord[B]](self, "NullDynamicRecord") {
+    override def isPure = true
+  }
   // method definitions
   def aggOpNew[A, B](parent: Rep[Operator[A]], numAggs: Rep[Int], grp: Rep[((A) => B)], aggFuncs: Rep[((A, Double) => Double)]*)(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[AggOp[A, B]] = {
     val aggFuncsOutput = __liftSeq(aggFuncs.toSeq)
@@ -247,11 +283,21 @@ trait SortOpOps extends Base { this: OperatorsComponent =>
   case class SortOpNext[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List())
   case class SortOpClose[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List())
   case class SortOpReset[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List())
-  case class SortOp_Field_SortedTree[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[TreeSet[A]](self, "sortedTree")
-  case class SortOp_Field_Evidence$7[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Manifest[A]](self, "evidence$7")
-  case class SortOp_Field_OrderingFunc[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[((A, A) => Int)](self, "orderingFunc")
-  case class SortOp_Field_Parent[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Operator[A]](self, "parent")
-  case class SortOp_Field_NullDynamicRecord[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[A](self, "NullDynamicRecord")
+  case class SortOp_Field_SortedTree[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[TreeSet[A]](self, "sortedTree") {
+    override def isPure = true
+  }
+  case class SortOp_Field_Evidence$7[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Manifest[A]](self, "evidence$7") {
+    override def isPure = true
+  }
+  case class SortOp_Field_OrderingFunc[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[((A, A) => Int)](self, "orderingFunc") {
+    override def isPure = true
+  }
+  case class SortOp_Field_Parent[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Operator[A]](self, "parent") {
+    override def isPure = true
+  }
+  case class SortOp_Field_NullDynamicRecord[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[A](self, "NullDynamicRecord") {
+    override def isPure = true
+  }
   // method definitions
   def sortOpNew[A](parent: Rep[Operator[A]], orderingFunc: Rep[((A, A) => Int)])(implicit manifestA: Manifest[A]): Rep[SortOp[A]] = SortOpNew[A](parent, orderingFunc)
   def sortOpForeach[A](self: Rep[SortOp[A]], f: Rep[((A) => Unit)])(implicit manifestA: Manifest[A]): Rep[Unit] = SortOpForeach[A](self, f)
@@ -297,10 +343,18 @@ trait MapOpOps extends Base { this: OperatorsComponent =>
   case class MapOpNext[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List())
   case class MapOpClose[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List())
   case class MapOpReset[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List())
-  case class MapOp_Field_Evidence$8[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Manifest[A]](self, "evidence$8")
-  case class MapOp_Field_AggFuncs[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Seq[(A => Unit)]](self, "aggFuncs")
-  case class MapOp_Field_Parent[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Operator[A]](self, "parent")
-  case class MapOp_Field_NullDynamicRecord[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[A](self, "NullDynamicRecord")
+  case class MapOp_Field_Evidence$8[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Manifest[A]](self, "evidence$8") {
+    override def isPure = true
+  }
+  case class MapOp_Field_AggFuncs[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Seq[(A => Unit)]](self, "aggFuncs") {
+    override def isPure = true
+  }
+  case class MapOp_Field_Parent[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Operator[A]](self, "parent") {
+    override def isPure = true
+  }
+  case class MapOp_Field_NullDynamicRecord[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[A](self, "NullDynamicRecord") {
+    override def isPure = true
+  }
   // method definitions
   def mapOpNew[A](parent: Rep[Operator[A]], aggFuncs: Rep[((A) => Unit)]*)(implicit manifestA: Manifest[A]): Rep[MapOp[A]] = {
     val aggFuncsOutput = __liftSeq(aggFuncs.toSeq)
@@ -354,12 +408,20 @@ trait PrintOpOps extends Base { this: OperatorsComponent =>
   case class PrintOpReset[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List())
   case class PrintOp_Field_NumRows_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Int])(implicit val manifestA: Manifest[A]) extends FieldSetter[Int](self, "numRows", x$1)
   case class PrintOp_Field_NumRows[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FieldGetter[Int](self, "numRows")
-  case class PrintOp_Field_Evidence$9[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Manifest[A]](self, "evidence$9")
-  case class PrintOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[(() => Boolean)](self, "limit")
-  case class PrintOp_Field_PrintFunc[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[(A => Unit)](self, "printFunc")
+  case class PrintOp_Field_Evidence$9[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Manifest[A]](self, "evidence$9") {
+    override def isPure = true
+  }
+  case class PrintOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[(() => Boolean)](self, "limit") {
+    override def isPure = true
+  }
+  case class PrintOp_Field_PrintFunc[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[(A => Unit)](self, "printFunc") {
+    override def isPure = true
+  }
   case class PrintOp_Field_Parent_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FieldSetter[Operator[A]](self, "parent", x$1)
   case class PrintOp_Field_Parent[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FieldGetter[Operator[A]](self, "parent")
-  case class PrintOp_Field_NullDynamicRecord[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[A](self, "NullDynamicRecord")
+  case class PrintOp_Field_NullDynamicRecord[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[A](self, "NullDynamicRecord") {
+    override def isPure = true
+  }
   // method definitions
   def printOpNew[A](parent: Rep[Operator[A]], printFunc: Rep[((A) => Unit)], limit: Rep[(() => Boolean)])(implicit manifestA: Manifest[A]): Rep[PrintOp[A]] = PrintOpNew[A](parent, printFunc, limit)
   def printOpForeach[A](self: Rep[PrintOp[A]], f: Rep[((A) => Unit)])(implicit manifestA: Manifest[A]): Rep[Unit] = PrintOpForeach[A](self, f)
