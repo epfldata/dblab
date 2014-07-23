@@ -6,7 +6,6 @@ import scala.language.implicitConversions
 import pardis.ir._
 import reflect.runtime.universe.{ TypeTag, Type }
 
-// trait ZCE extends TopDownTransformer[Base, Base] with Traverser[Base] {
 trait DCE[Lang <: Base] extends TopDownTransformerTraverser[Lang] {
   import IR._
 

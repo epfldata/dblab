@@ -5,7 +5,7 @@ package deep
 import scala.language.implicitConversions
 import pardis.ir._
 
-trait ParameterPromotion extends TopDownTransformerTraverser[LoweringLegoBase] {
+class ParameterPromotion(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) {
   import IR._
 
   sealed trait Phase

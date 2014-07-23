@@ -33,10 +33,11 @@ class SampleQuery extends FlatSpec with ShouldMatchers {
     val loweredBlock = lowering.transformProgram(block)
     // val loweredBlock = block
 
-    val parameterPromotion = new {
-      val IR = loweringContext
-    } with ParameterPromotion {
-    }
+    // val parameterPromotion = new {
+    //   val IR = loweringContext
+    // } with ParameterPromotion {
+    // }
+    val parameterPromotion = new ParameterPromotion(loweringContext)
 
     val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
     // val operatorlessBlock = loweredBlock
@@ -50,10 +51,14 @@ class SampleQuery extends FlatSpec with ShouldMatchers {
     val dceBlock = dce.optimize(operatorlessBlock)
     // val dceBlock = operatorlessBlock
 
+    val partialyEvaluator = new PartialyEvaluate(loweringContext)
+
+    val partialyEvaluated = partialyEvaluator.optimize(dceBlock)
+
     val ir2Program = new { val IR = loweringContext } with IRToProgram {
     }
 
-    val finalProgram = ir2Program.createProgram(dceBlock)
+    val finalProgram = ir2Program.createProgram(partialyEvaluated)
 
     println(finalProgram)
     LegoGenerator.apply(finalProgram)
