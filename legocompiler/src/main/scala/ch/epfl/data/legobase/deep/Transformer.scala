@@ -63,17 +63,17 @@ trait TopDownTransformer[FromLang <: Base, ToLang <: Base] {
       // println(i2 + " added")
       to.Lambda2(f, i1, i2, transformBlockTyped(o).asInstanceOf[Block[Any]])
     }
-    case _ => node.asInstanceOf[to.Def[T]]
-    // case _                          => node.recreate(node.funArgs.map(transformFunArg): _*)
+    // case _ => node.asInstanceOf[to.Def[T]]
+    case _ => node.rebuild(node.funArgs.map(transformFunArg): _*).asInstanceOf[to.Def[T]]
   }
 
   // implicit def expToDef[T](exp: to.Rep[T]): to.Def[T] = exp.correspondingNode
 
-  // def transformFunArg(funArg: PardisFunArg): PardisFunArg = funArg match {
-  //   case d: Def[_]       => transformDef(d)(d.tp).asInstanceOf[PardisFunArg]
-  //   case e: Rep[_]       => transformExp(e)(e.tp, e.tp)
-  //   case PardisVarArg(v) => transformFunArg(v)
-  // }
+  def transformFunArg(funArg: PardisFunArg): PardisFunArg = funArg match {
+    case d: Def[_]       => transformDef(d)(d.tp).asInstanceOf[PardisFunArg]
+    case e: Rep[_]       => transformExp(e)(e.tp, e.tp)
+    case PardisVarArg(v) => transformFunArg(v)
+  }
 
   def transformExp[T: Manifest, S: Manifest](exp: Rep[T]): to.Rep[S] = exp match {
     case sy @ Sym(s)        => subst(sy).asInstanceOf[to.Rep[S]]

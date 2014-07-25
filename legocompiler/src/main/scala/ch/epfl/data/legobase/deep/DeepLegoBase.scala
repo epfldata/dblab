@@ -15,13 +15,22 @@ trait AGGRecordOps extends Base { this: DeepDSL =>
   // constructors
   def __newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit manifestB: Manifest[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)(manifestB)
   // case classes
-  case class AGGRecordNew[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit val manifestB: Manifest[B]) extends FunctionDef[AGGRecord[B]](None, "new AGGRecord", List(List(key, aggs)))
+  case class AGGRecordNew[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit val manifestB: Manifest[B]) extends FunctionDef[AGGRecord[B]](None, "new AGGRecord", List(List(key, aggs))) {
+    override def curriedConstructor = (copy[B] _).curried
+  }
+
   case class AGGRecord_Field_Aggs[B](self: Rep[AGGRecord[B]])(implicit val manifestB: Manifest[B]) extends FieldDef[Array[Double]](self, "aggs") {
+    override def curriedConstructor = (copy[B] _)
     override def isPure = true
+
   }
+
   case class AGGRecord_Field_Key[B](self: Rep[AGGRecord[B]])(implicit val manifestB: Manifest[B]) extends FieldDef[B](self, "key") {
+    override def curriedConstructor = (copy[B] _)
     override def isPure = true
+
   }
+
   // method definitions
   def aGGRecordNew[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit manifestB: Manifest[B]): Rep[AGGRecord[B]] = AGGRecordNew[B](key, aggs)
   def aGGRecord_Field_Aggs[B](self: Rep[AGGRecord[B]])(implicit manifestB: Manifest[B]): Rep[Array[Double]] = AGGRecord_Field_Aggs[B](self)
@@ -55,55 +64,106 @@ trait LINEITEMRecordOps extends Base { this: DeepDSL =>
   // constructors
   def __newLINEITEMRecord(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character], L_SHIPDATE: Rep[Long], L_COMMITDATE: Rep[Long], L_RECEIPTDATE: Rep[Long], L_SHIPINSTRUCT: Rep[Array[Byte]], L_SHIPMODE: Rep[Array[Byte]], L_COMMENT: Rep[Array[Byte]]): Rep[LINEITEMRecord] = lINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
   // case classes
-  case class LINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character], L_SHIPDATE: Rep[Long], L_COMMITDATE: Rep[Long], L_RECEIPTDATE: Rep[Long], L_SHIPINSTRUCT: Rep[Array[Byte]], L_SHIPMODE: Rep[Array[Byte]], L_COMMENT: Rep[Array[Byte]]) extends FunctionDef[LINEITEMRecord](None, "new LINEITEMRecord", List(List(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)))
+  case class LINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character], L_SHIPDATE: Rep[Long], L_COMMITDATE: Rep[Long], L_RECEIPTDATE: Rep[Long], L_SHIPINSTRUCT: Rep[Array[Byte]], L_SHIPMODE: Rep[Array[Byte]], L_COMMENT: Rep[Array[Byte]]) extends FunctionDef[LINEITEMRecord](None, "new LINEITEMRecord", List(List(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
   case class LINEITEMRecord_Field_L_COMMENT(self: Rep[LINEITEMRecord]) extends FieldDef[Array[Byte]](self, "L_COMMENT") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   case class LINEITEMRecord_Field_L_SHIPMODE(self: Rep[LINEITEMRecord]) extends FieldDef[Array[Byte]](self, "L_SHIPMODE") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   case class LINEITEMRecord_Field_L_SHIPINSTRUCT(self: Rep[LINEITEMRecord]) extends FieldDef[Array[Byte]](self, "L_SHIPINSTRUCT") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   case class LINEITEMRecord_Field_L_RECEIPTDATE(self: Rep[LINEITEMRecord]) extends FieldDef[Long](self, "L_RECEIPTDATE") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   case class LINEITEMRecord_Field_L_COMMITDATE(self: Rep[LINEITEMRecord]) extends FieldDef[Long](self, "L_COMMITDATE") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   case class LINEITEMRecord_Field_L_SHIPDATE(self: Rep[LINEITEMRecord]) extends FieldDef[Long](self, "L_SHIPDATE") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   case class LINEITEMRecord_Field_L_LINESTATUS(self: Rep[LINEITEMRecord]) extends FieldDef[Character](self, "L_LINESTATUS") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   case class LINEITEMRecord_Field_L_RETURNFLAG(self: Rep[LINEITEMRecord]) extends FieldDef[Character](self, "L_RETURNFLAG") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   case class LINEITEMRecord_Field_L_TAX(self: Rep[LINEITEMRecord]) extends FieldDef[Double](self, "L_TAX") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   case class LINEITEMRecord_Field_L_DISCOUNT(self: Rep[LINEITEMRecord]) extends FieldDef[Double](self, "L_DISCOUNT") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   case class LINEITEMRecord_Field_L_EXTENDEDPRICE(self: Rep[LINEITEMRecord]) extends FieldDef[Double](self, "L_EXTENDEDPRICE") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   case class LINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]) extends FieldDef[Double](self, "L_QUANTITY") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   case class LINEITEMRecord_Field_L_LINENUMBER(self: Rep[LINEITEMRecord]) extends FieldDef[Int](self, "L_LINENUMBER") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   case class LINEITEMRecord_Field_L_SUPPKEY(self: Rep[LINEITEMRecord]) extends FieldDef[Int](self, "L_SUPPKEY") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   case class LINEITEMRecord_Field_L_PARTKEY(self: Rep[LINEITEMRecord]) extends FieldDef[Int](self, "L_PARTKEY") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   case class LINEITEMRecord_Field_L_ORDERKEY(self: Rep[LINEITEMRecord]) extends FieldDef[Int](self, "L_ORDERKEY") {
+    override def curriedConstructor = (copy _)
     override def isPure = true
+
   }
+
   // method definitions
   def lINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character], L_SHIPDATE: Rep[Long], L_COMMITDATE: Rep[Long], L_RECEIPTDATE: Rep[Long], L_SHIPINSTRUCT: Rep[Array[Byte]], L_SHIPMODE: Rep[Array[Byte]], L_COMMENT: Rep[Array[Byte]]): Rep[LINEITEMRecord] = LINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
   def lINEITEMRecord_Field_L_COMMENT(self: Rep[LINEITEMRecord]): Rep[Array[Byte]] = LINEITEMRecord_Field_L_COMMENT(self)
@@ -149,23 +209,68 @@ trait K2DBScannerOps extends Base { this: DeepDSL =>
   // constructors
   def __newK2DBScanner(filename: Rep[String]): Rep[K2DBScanner] = k2DBScannerNew(filename)
   // case classes
-  case class K2DBScannerNew(filename: Rep[String]) extends FunctionDef[K2DBScanner](None, "new K2DBScanner", List(List(filename)))
-  case class K2DBScannerNext_int(self: Rep[K2DBScanner]) extends FunctionDef[Int](Some(self), "next_int", List())
-  case class K2DBScannerNext_double(self: Rep[K2DBScanner]) extends FunctionDef[Double](Some(self), "next_double", List())
-  case class K2DBScannerNext_char(self: Rep[K2DBScanner]) extends FunctionDef[Char](Some(self), "next_char", List())
-  case class K2DBScannerNext1(self: Rep[K2DBScanner], buf: Rep[Array[Byte]]) extends FunctionDef[Int](Some(self), "next", List(List(buf)))
-  case class K2DBScannerNext2(self: Rep[K2DBScanner], buf: Rep[Array[Byte]], offset: Rep[Int]) extends FunctionDef[Int](Some(self), "next", List(List(buf, offset)))
-  case class K2DBScannerNext_date(self: Rep[K2DBScanner]) extends FunctionDef[Long](Some(self), "next_date", List())
-  case class K2DBScannerHasNext(self: Rep[K2DBScanner]) extends FunctionDef[Boolean](Some(self), "hasNext", List())
-  case class K2DBScanner_Field_Delimiter_$eq(self: Rep[K2DBScanner], x$1: Rep[Char]) extends FieldSetter[Char](self, "delimiter", x$1)
-  case class K2DBScanner_Field_Delimiter(self: Rep[K2DBScanner]) extends FieldGetter[Char](self, "delimiter")
-  case class K2DBScanner_Field_IntDigits_$eq(self: Rep[K2DBScanner], x$1: Rep[Int]) extends FieldSetter[Int](self, "intDigits", x$1)
-  case class K2DBScanner_Field_IntDigits(self: Rep[K2DBScanner]) extends FieldGetter[Int](self, "intDigits")
-  case class K2DBScanner_Field_ByteRead_$eq(self: Rep[K2DBScanner], x$1: Rep[Int]) extends FieldSetter[Int](self, "byteRead", x$1)
-  case class K2DBScanner_Field_ByteRead(self: Rep[K2DBScanner]) extends FieldGetter[Int](self, "byteRead")
-  case class K2DBScanner_Field_Filename(self: Rep[K2DBScanner]) extends FieldDef[String](self, "filename") {
-    override def isPure = true
+  case class K2DBScannerNew(filename: Rep[String]) extends FunctionDef[K2DBScanner](None, "new K2DBScanner", List(List(filename))) {
+    override def curriedConstructor = (copy _)
   }
+
+  case class K2DBScannerNext_int(self: Rep[K2DBScanner]) extends FunctionDef[Int](Some(self), "next_int", List()) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class K2DBScannerNext_double(self: Rep[K2DBScanner]) extends FunctionDef[Double](Some(self), "next_double", List()) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class K2DBScannerNext_char(self: Rep[K2DBScanner]) extends FunctionDef[Char](Some(self), "next_char", List()) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class K2DBScannerNext1(self: Rep[K2DBScanner], buf: Rep[Array[Byte]]) extends FunctionDef[Int](Some(self), "next", List(List(buf))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class K2DBScannerNext2(self: Rep[K2DBScanner], buf: Rep[Array[Byte]], offset: Rep[Int]) extends FunctionDef[Int](Some(self), "next", List(List(buf, offset))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class K2DBScannerNext_date(self: Rep[K2DBScanner]) extends FunctionDef[Long](Some(self), "next_date", List()) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class K2DBScannerHasNext(self: Rep[K2DBScanner]) extends FunctionDef[Boolean](Some(self), "hasNext", List()) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class K2DBScanner_Field_Delimiter_$eq(self: Rep[K2DBScanner], x$1: Rep[Char]) extends FieldSetter[Char](self, "delimiter", x$1) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class K2DBScanner_Field_Delimiter(self: Rep[K2DBScanner]) extends FieldGetter[Char](self, "delimiter") {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class K2DBScanner_Field_IntDigits_$eq(self: Rep[K2DBScanner], x$1: Rep[Int]) extends FieldSetter[Int](self, "intDigits", x$1) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class K2DBScanner_Field_IntDigits(self: Rep[K2DBScanner]) extends FieldGetter[Int](self, "intDigits") {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class K2DBScanner_Field_ByteRead_$eq(self: Rep[K2DBScanner], x$1: Rep[Int]) extends FieldSetter[Int](self, "byteRead", x$1) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class K2DBScanner_Field_ByteRead(self: Rep[K2DBScanner]) extends FieldGetter[Int](self, "byteRead") {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class K2DBScanner_Field_Filename(self: Rep[K2DBScanner]) extends FieldDef[String](self, "filename") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
   // method definitions
   def k2DBScannerNew(filename: Rep[String]): Rep[K2DBScanner] = K2DBScannerNew(filename)
   def k2DBScannerNext_int(self: Rep[K2DBScanner]): Rep[Int] = K2DBScannerNext_int(self)
