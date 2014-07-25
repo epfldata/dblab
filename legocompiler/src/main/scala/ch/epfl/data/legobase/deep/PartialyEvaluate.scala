@@ -226,11 +226,6 @@ class PartialyEvaluate(override val IR: LoweringLegoBase) extends Optimizer[Lowe
     }
   }
 
-  override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
-    case RunQuery(b) => to.RunQuery(transformBlock(b))
-    case _           => super.transformDef(node)
-  }
-
   override def transformExp[T: Manifest, S: Manifest](exp: Rep[T]): to.Rep[S] = exp match {
     case sy @ Sym(_) if sy.isPartiallyEvaluated => to.unit(sy.value)(sy.tp.asInstanceOf[Manifest[Any]]).asInstanceOf[to.Rep[S]]
     case _                                      => super.transformExp[T, S](exp)

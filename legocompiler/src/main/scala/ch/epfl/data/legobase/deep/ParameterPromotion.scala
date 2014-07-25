@@ -45,8 +45,6 @@ class ParameterPromotion(override val IR: LoweringLegoBase) extends Optimizer[Lo
   }
 
   override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
-    case RunQuery(b)                                 => to.RunQuery(transformBlock(b)) // FIXME
-    case HashMapGetOrElseUpdate(self, key, opOutput) => to.HashMapGetOrElseUpdate(transformExp(self)(self.tp, self.tp), transformExp(key), transformBlock(opOutput)) // FIXME
     case StructImmutableField(self @ LoweredNew(d), fieldName) => {
       ReadVal(transformExp(getParameter(self, fieldName)))
     }

@@ -27,10 +27,4 @@ trait IRToProgram extends TopDownTransformerTraverser[LoweringLegoBase] {
     }
     case _ => super.traverseDef(node)
   }
-  // def isVar[T](exp: Rep[T]) = {
-  //   exp match {
-  //     case Def(ReadVar(Var(_))) => true
-  //     case _                    => false
-  //   }
-  // }
 }

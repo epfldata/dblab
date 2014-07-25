@@ -51,23 +51,16 @@ trait TopDownTransformer[FromLang <: Base, ToLang <: Base] {
     case PardisLambda0(f, o)                         => to.Lambda0(f, transformBlockTyped(o).asInstanceOf[Block[Any]])
     case PardisLambda(f, i, o) => {
       subst += i -> newSym(i)
-      // println(i + " added")
       val newO = transformBlockTyped(o).asInstanceOf[Block[Any]]
-      // println("newO: " + newO)
       to.Lambda(f, i, newO)
     }
     case PardisLambda2(f, i1, i2, o) => {
       subst += i1 -> newSym(i1)
       subst += i2 -> newSym(i2)
-      // println(i1 + " added")
-      // println(i2 + " added")
       to.Lambda2(f, i1, i2, transformBlockTyped(o).asInstanceOf[Block[Any]])
     }
-    // case _ => node.asInstanceOf[to.Def[T]]
     case _ => node.rebuild(node.funArgs.map(transformFunArg): _*).asInstanceOf[to.Def[T]]
   }
-
-  // implicit def expToDef[T](exp: to.Rep[T]): to.Def[T] = exp.correspondingNode
 
   def transformFunArg(funArg: PardisFunArg): PardisFunArg = funArg match {
     case d: Def[_]       => transformDef(d)(d.tp).asInstanceOf[PardisFunArg]

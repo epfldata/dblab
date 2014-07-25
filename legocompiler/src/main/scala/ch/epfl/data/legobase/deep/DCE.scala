@@ -6,7 +6,7 @@ import scala.language.implicitConversions
 import pardis.ir._
 import reflect.runtime.universe.{ TypeTag, Type }
 
-trait DCE[Lang <: Base] extends TopDownTransformerTraverser[Lang] {
+class DCE[Lang <: Base](override val IR: Lang) extends TopDownTransformerTraverser[Lang] {
   import IR._
 
   def optimize[T: Manifest](node: Block[T]): Block[T] = {
@@ -80,14 +80,5 @@ trait DCE[Lang <: Base] extends TopDownTransformerTraverser[Lang] {
   override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
     case Stm(s, d) if marks.contains(s) => super.transformStmToMultiple(stm)
     case _                              => Nil
-  }
-}
-
-trait DCELegoBase extends DCE[DeepDSL] {
-  import from._
-  // TODO hack!
-  override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
-    case RunQuery(b) => to.RunQuery(transformBlock(b))
-    case _           => super.transformDef(node)
   }
 }
