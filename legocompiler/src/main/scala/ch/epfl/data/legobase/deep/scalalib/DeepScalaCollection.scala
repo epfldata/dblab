@@ -23,27 +23,60 @@ trait HashMapOps extends Base { this: DeepDSL =>
   def __newHashMap[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit overload1: Overloaded1, manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = hashMapNew1[A, B](contents)(manifestA, manifestB)
   def __newHashMap[A, B](implicit overload2: Overloaded2, manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = hashMapNew2[A, B](manifestA, manifestB)
   // case classes
-  case class HashMapNew1[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[HashMap[A, B]](None, "new HashMap", List(List(contents)))
-  case class HashMapNew2[A, B]()(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[HashMap[A, B]](None, "new HashMap", List())
-  case class HashMapGetOrElseUpdate[A, B](self: Rep[HashMap[A, B]], key: Rep[A], opOutput: Block[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[B](Some(self), "getOrElseUpdate", List(List(key, opOutput)))
-  case class HashMapClear[A, B](self: Rep[HashMap[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "clear", List())
+  case class HashMapNew1[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[HashMap[A, B]](None, "new HashMap", List(List(contents))) {
+    override def curriedConstructor = (copy[A, B] _)
+  }
+
+  case class HashMapNew2[A, B]()(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[HashMap[A, B]](None, "new HashMap", List()) {
+    override def curriedConstructor = (x: Any) => copy[A, B]()
+  }
+
+  case class HashMapGetOrElseUpdate[A, B](self: Rep[HashMap[A, B]], key: Rep[A], opOutput: Block[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[B](Some(self), "getOrElseUpdate", List(List(key, opOutput))) {
+    override def curriedConstructor = (copy[A, B] _).curried
+  }
+
+  case class HashMapClear[A, B](self: Rep[HashMap[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "clear", List()) {
+    override def curriedConstructor = (copy[A, B] _)
+  }
+
   case class HashMapSize[A, B](self: Rep[HashMap[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Int](Some(self), "size", List()) {
+    override def curriedConstructor = (copy[A, B] _)
     override def isPure = true
+
   }
+
   case class HashMapContains[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Boolean](Some(self), "contains", List(List(key))) {
+    override def curriedConstructor = (copy[A, B] _).curried
     override def isPure = true
+
   }
+
   case class HashMapApply[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[B](Some(self), "apply", List(List(key))) {
+    override def curriedConstructor = (copy[A, B] _).curried
     override def isPure = true
+
   }
-  case class HashMapUpdate[A, B](self: Rep[HashMap[A, B]], key: Rep[A], value: Rep[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "update", List(List(key, value)))
-  case class HashMapRemove[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Option[B]](Some(self), "remove", List(List(key)))
+
+  case class HashMapUpdate[A, B](self: Rep[HashMap[A, B]], key: Rep[A], value: Rep[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "update", List(List(key, value))) {
+    override def curriedConstructor = (copy[A, B] _).curried
+  }
+
+  case class HashMapRemove[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Option[B]](Some(self), "remove", List(List(key))) {
+    override def curriedConstructor = (copy[A, B] _).curried
+  }
+
   case class HashMapKeySet[A, B](self: Rep[HashMap[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Set[A]](Some(self), "keySet", List()) {
+    override def curriedConstructor = (copy[A, B] _)
     override def isPure = true
+
   }
+
   case class HashMap_Field_Contents[A, B](self: Rep[HashMap[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[Contents[A, DefaultEntry[A, B]]](self, "contents") {
+    override def curriedConstructor = (copy[A, B] _)
     override def isPure = true
+
   }
+
   // method definitions
   def hashMapNew1[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = HashMapNew1[A, B](contents)
   def hashMapNew2[A, B](implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = HashMapNew2[A, B]()
@@ -77,15 +110,27 @@ trait SetOps extends Base { this: DeepDSL =>
 
   // case classes
   case class SetHead[A](self: Rep[Set[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "head", List()) {
+    override def curriedConstructor = (copy[A] _)
     override def isPure = true
+
   }
+
   case class SetApply[A](self: Rep[Set[A]], elem: Rep[A])(implicit val manifestA: Manifest[A]) extends FunctionDef[Boolean](Some(self), "apply", List(List(elem))) {
+    override def curriedConstructor = (copy[A] _).curried
     override def isPure = true
+
   }
+
   case class SetToSeq[A](self: Rep[Set[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Seq[A]](Some(self), "toSeq", List()) {
+    override def curriedConstructor = (copy[A] _)
     override def isPure = true
+
   }
-  case class SetRemove[A](self: Rep[Set[A]], elem: Rep[A])(implicit val manifestA: Manifest[A]) extends FunctionDef[Boolean](Some(self), "remove", List(List(elem)))
+
+  case class SetRemove[A](self: Rep[Set[A]], elem: Rep[A])(implicit val manifestA: Manifest[A]) extends FunctionDef[Boolean](Some(self), "remove", List(List(elem))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
   // method definitions
   def setHead[A](self: Rep[Set[A]])(implicit manifestA: Manifest[A]): Rep[A] = SetHead[A](self)
   def setApply[A](self: Rep[Set[A]], elem: Rep[A])(implicit manifestA: Manifest[A]): Rep[Boolean] = SetApply[A](self, elem)
@@ -109,18 +154,36 @@ trait TreeSetOps extends Base { this: DeepDSL =>
   // constructors
   def __newTreeSet[A](implicit ordering: Ordering[A], manifestA: Manifest[A]): Rep[TreeSet[A]] = treeSetNew[A](manifestA, ordering)
   // case classes
-  case class TreeSetNew[A]()(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](None, "new TreeSet", List())
+  case class TreeSetNew[A]()(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](None, "new TreeSet", List()) {
+    override def curriedConstructor = (x: Any) => copy[A]()
+  }
+
   case class TreeSetHead[A](self: Rep[TreeSet[A]])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[A](Some(self), "head", List()) {
+    override def curriedConstructor = (copy[A] _)
     override def isPure = true
+
   }
+
   case class TreeSetSize[A](self: Rep[TreeSet[A]])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[Int](Some(self), "size", List()) {
+    override def curriedConstructor = (copy[A] _)
     override def isPure = true
+
   }
-  case class TreeSet$minus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "$minus$eq", List(List(elem)))
-  case class TreeSet$plus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "$plus$eq", List(List(elem)))
+
+  case class TreeSet$minus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "-=", List(List(elem))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class TreeSet$plus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "+=", List(List(elem))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
   case class TreeSet_Field_Ordering[A](self: Rep[TreeSet[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Ordering[A]](self, "ordering") {
+    override def curriedConstructor = (copy[A] _)
     override def isPure = true
+
   }
+
   // method definitions
   def treeSetNew[A](implicit manifestA: Manifest[A], ordering: Ordering[A]): Rep[TreeSet[A]] = TreeSetNew[A]()
   def treeSetHead[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A], ordering: Ordering[A]): Rep[A] = TreeSetHead[A](self)
@@ -145,13 +208,28 @@ trait DefaultEntryOps extends Base { this: DeepDSL =>
   // constructors
   def __newDefaultEntry[A, B](key: Rep[A], value: Rep[B])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[DefaultEntry[A, B]] = defaultEntryNew[A, B](key, value)(manifestA, manifestB)
   // case classes
-  case class DefaultEntryNew[A, B](key: Rep[A], value: Rep[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[DefaultEntry[A, B]](None, "new DefaultEntry", List(List(key, value)))
-  case class DefaultEntryChainString[A, B](self: Rep[DefaultEntry[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[String](Some(self), "chainString", List())
-  case class DefaultEntry_Field_Value_$eq[A, B](self: Rep[DefaultEntry[A, B]], x$1: Rep[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldSetter[B](self, "value", x$1)
-  case class DefaultEntry_Field_Value[A, B](self: Rep[DefaultEntry[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldGetter[B](self, "value")
-  case class DefaultEntry_Field_Key[A, B](self: Rep[DefaultEntry[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[A](self, "key") {
-    override def isPure = true
+  case class DefaultEntryNew[A, B](key: Rep[A], value: Rep[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[DefaultEntry[A, B]](None, "new DefaultEntry", List(List(key, value))) {
+    override def curriedConstructor = (copy[A, B] _).curried
   }
+
+  case class DefaultEntryChainString[A, B](self: Rep[DefaultEntry[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[String](Some(self), "chainString", List()) {
+    override def curriedConstructor = (copy[A, B] _)
+  }
+
+  case class DefaultEntry_Field_Value_$eq[A, B](self: Rep[DefaultEntry[A, B]], x$1: Rep[B])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldSetter[B](self, "value", x$1) {
+    override def curriedConstructor = (copy[A, B] _).curried
+  }
+
+  case class DefaultEntry_Field_Value[A, B](self: Rep[DefaultEntry[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldGetter[B](self, "value") {
+    override def curriedConstructor = (copy[A, B] _)
+  }
+
+  case class DefaultEntry_Field_Key[A, B](self: Rep[DefaultEntry[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FieldDef[A](self, "key") {
+    override def curriedConstructor = (copy[A, B] _)
+    override def isPure = true
+
+  }
+
   // method definitions
   def defaultEntryNew[A, B](key: Rep[A], value: Rep[B])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[DefaultEntry[A, B]] = DefaultEntryNew[A, B](key, value)
   def defaultEntryChainString[A, B](self: Rep[DefaultEntry[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[String] = DefaultEntryChainString[A, B](self)
