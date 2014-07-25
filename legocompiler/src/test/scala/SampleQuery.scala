@@ -4,6 +4,8 @@ package deep
 
 import org.scalatest.{ FlatSpec, ShouldMatchers }
 import prettyprinter._
+import optimization._
+import pardis.optimization._
 
 class SampleQuery extends FlatSpec with ShouldMatchers {
   def test1() {
@@ -26,7 +28,7 @@ class SampleQuery extends FlatSpec with ShouldMatchers {
     val loweringContext = new LoweringLegoBase {}
 
     /* it's written like this because of early definition: http://stackoverflow.com/questions/4712468/in-scala-what-is-an-early-initializer */
-    val lowering = new Lowering {
+    val lowering = new LBLowering {
       val from = lq.context
       val to = loweringContext
     }
@@ -34,7 +36,7 @@ class SampleQuery extends FlatSpec with ShouldMatchers {
     val loweredBlock = lowering.transformProgram(block)
     // val loweredBlock = block
 
-    val parameterPromotion = new ParameterPromotion(loweringContext)
+    val parameterPromotion = new LBParameterPromotion(loweringContext)
 
     val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
     // val operatorlessBlock = loweredBlock

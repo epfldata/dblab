@@ -1,6 +1,6 @@
 package ch.epfl.data
-package legobase
-package deep
+package pardis
+package optimization
 
 import scala.language.implicitConversions
 import pardis.ir._
@@ -8,7 +8,7 @@ import pardis.ir._
 /**
  * it does offline partial evaluation
  */
-class PartialyEvaluate(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) {
+class PartialyEvaluate(override val IR: Base) extends Optimizer[Base](IR) {
   import IR._
 
   sealed trait Phase

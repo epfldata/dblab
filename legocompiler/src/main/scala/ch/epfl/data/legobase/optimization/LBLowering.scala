@@ -1,11 +1,13 @@
 package ch.epfl.data
 package legobase
-package deep
+package optimization
 
+import legobase.deep._
 import scala.language.implicitConversions
 import pardis.ir._
+import pardis.optimization._
 
-trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
+trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
   import from._
 
   override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
@@ -132,7 +134,4 @@ trait Lowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
       case _ => None
     }
   }
-}
-
-trait LoweringLegoBase extends InliningLegoBase with pardis.ir.InlineFunctions {
 }

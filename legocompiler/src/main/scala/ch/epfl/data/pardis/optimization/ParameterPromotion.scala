@@ -1,11 +1,12 @@
 package ch.epfl.data
-package legobase
-package deep
+package pardis
+package optimization
 
+import legobase.deep._
 import scala.language.implicitConversions
 import pardis.ir._
 
-class ParameterPromotion(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) {
+abstract class ParameterPromotion[Lang <: Base](override val IR: Lang) extends Optimizer[Lang](IR) {
   import IR._
 
   sealed trait Phase
@@ -36,13 +37,7 @@ class ParameterPromotion(override val IR: LoweringLegoBase) extends Optimizer[Lo
     }
   }
 
-  def escapeAnalysis[T](sym: Sym[T], rhs: Def[T]): Unit = {
-    rhs match {
-      // TODO should be changed to an automatic version using escape analysis
-      case _ if List(classOf[AggOp[_, _]], classOf[PrintOp[_]], classOf[ScanOp[_]], classOf[MapOp[_]], classOf[SelectOp[_]], classOf[SortOp[_]]).contains(rhs.tp.runtimeClass) => promotedObjects += sym
-      case _ => ()
-    }
-  }
+  def escapeAnalysis[T](sym: Sym[T], rhs: Def[T]): Unit
 
   override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
     case StructImmutableField(self @ LoweredNew(d), fieldName) => {

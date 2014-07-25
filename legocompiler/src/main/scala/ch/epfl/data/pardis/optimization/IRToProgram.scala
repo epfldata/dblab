@@ -1,13 +1,14 @@
 package ch.epfl.data
-package legobase
-package deep
+package pardis
+package optimization
 
+import legobase.deep._
 import scala.language.implicitConversions
 import pardis.ir._
 import reflect.runtime.universe.{ TypeTag, Type }
 
 // trait IRToProgram extends TopDownTransformer[LoweringLegoBase, LoweringLegoBase] with Traverser[LoweringLegoBase] {
-trait IRToProgram extends TopDownTransformerTraverser[LoweringLegoBase] {
+trait IRToProgram extends TopDownTransformerTraverser[Base] {
   import IR._
 
   def createProgram[T](node: Block[T]): PardisProgram = {

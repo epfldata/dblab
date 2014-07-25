@@ -1,7 +1,8 @@
 package ch.epfl.data
-package legobase
-package deep
+package pardis
+package optimization
 
+import legobase.deep._
 import pardis.ir._
 
 abstract class Optimizer[Lang <: Base](val IR: Lang) extends TopDownTransformerTraverser[Lang] {
