@@ -170,11 +170,11 @@ trait TreeSetOps extends Base { this: DeepDSL =>
 
   }
 
-  case class TreeSet$minus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "$minus$eq", List(List(elem))) {
+  case class TreeSet$minus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "-=", List(List(elem))) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
-  case class TreeSet$plus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "$plus$eq", List(List(elem))) {
+  case class TreeSet$plus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "+=", List(List(elem))) {
     override def curriedConstructor = (copy[A] _).curried
   }
 

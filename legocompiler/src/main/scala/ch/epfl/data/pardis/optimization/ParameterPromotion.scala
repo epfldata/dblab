@@ -39,6 +39,31 @@ abstract class ParameterPromotion[Lang <: Base](override val IR: Lang) extends O
 
   def escapeAnalysis[T](sym: Sym[T], rhs: Def[T]): Unit
 
+  // override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
+  //   case Stm(s, node) => node match {
+  //     case StructImmutableField(self @ LoweredNew(d), fieldName) => {
+  //       subst += s -> transformExp(getParameter(self, fieldName))
+  //       Nil
+  //     }
+  //     case StructFieldGetter(self @ LoweredNew(d), fieldName) => {
+  //       getParameter(self, fieldName) match {
+  //         case Def(ReadVar(v)) => List(Stm(s, ReadVar(v)(v.tp)))
+  //         case _               => ???
+  //       }
+  //     }
+  //     case StructFieldSetter(self @ LoweredNew(d), fieldName, rhs) => {
+  //       getParameter(self, fieldName) match {
+  //         case Def(ReadVar(v)) => List(Stm(s, Assign(v, rhs)(v.tp)))
+  //         case _               => ???
+  //       }
+  //     }
+  //     case _ => {
+  //       // Predef.println(s"Cannot do PE for $s with class ${d.getClass}")
+  //       super.transformStmToMultiple(stm)
+  //     }
+  //   }
+  // }
+
   override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
     case StructImmutableField(self @ LoweredNew(d), fieldName) => {
       ReadVal(transformExp(getParameter(self, fieldName)))
