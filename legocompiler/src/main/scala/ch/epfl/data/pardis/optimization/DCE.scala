@@ -46,7 +46,7 @@ class DCE[Lang <: Base](override val IR: Lang) extends TopDownTransformerTravers
 
   override def traverseStm(stm: Stm[_]): Unit = stm match {
     case Stm(sym, rhs) => {
-      if (!rhs.isPure) {
+      if (!rhs.isPure && !rhs.effect.isInstanceOf[effects.Read]) {
         addToWorkList(rhs)
         mark(sym)
       }

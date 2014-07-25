@@ -29,7 +29,6 @@ class PartialyEvaluate(override val IR: Base) extends Optimizer[Base](IR) {
   def optimize[T: Manifest](node: Block[T]): Block[T] = {
     // TODO first an escape analysis phase should be added
     phase = BTA
-    contextIsStatic = false
     traverseBlock(node)
     debug()
     transformProgram(node)
@@ -47,7 +46,6 @@ class PartialyEvaluate(override val IR: Base) extends Optimizer[Base](IR) {
     }
     Predef.println("========================")
   }
-  var contextIsStatic = false
   val bindingMap = collection.mutable.Map[FunctionArg, Stage]()
   val dependancyChain = collection.mutable.Map[FunctionArg, List[Sym[Any]]]()
   val mutableBindingChain = collection.mutable.Map[Var[Any], List[Sym[Any]]]()
@@ -87,8 +85,6 @@ class PartialyEvaluate(override val IR: Base) extends Optimizer[Base](IR) {
   }
 
   def bindingTimeAnalysis[T](sym: Sym[T], rhs: Def[T]): Unit = {
-    // val saveContext = contextIsStatic
-    // val stage = computeStageDef(rhs)
     val stage = rhs match {
       case Block(stmts, res) => {
         stmts.foreach(x => traverseStm(x))
@@ -98,11 +94,8 @@ class PartialyEvaluate(override val IR: Base) extends Optimizer[Base](IR) {
           Dynamic
       }
       case While(cond, rest) => {
-        bindingTimeAnalysis(null, cond) // FIXME
+        bindingTimeAnalysis(null, cond)
         addContext(cond.stage)
-        // if (cond.isDynamic) {
-        //   contextIsStatic ^= false
-        // }
         bindingTimeAnalysis(null, rest)
         popContext()
         cond.stage and rest.stage
@@ -129,7 +122,7 @@ class PartialyEvaluate(override val IR: Base) extends Optimizer[Base](IR) {
       }
       case Assign(v, newValue) => {
         v.addChain(sym)
-        if (v.isStatic && (newValue.isDynamic || varContextIsDynamic(v) /* || !contextIsStatic*/ )) {
+        if (v.isStatic && (newValue.isDynamic || varContextIsDynamic(v))) {
           // Predef.println(s"$v changed to dynamic because of $newValue")
           v.stage = Dynamic
         }
@@ -156,8 +149,6 @@ class PartialyEvaluate(override val IR: Base) extends Optimizer[Base](IR) {
     } else {
       rhs.asInstanceOf[FunctionArg].stage = stage
     }
-    // dependancyChain(sym) = List()
-    // contextIsStatic = saveContext
   }
 
   implicit class VarOps[T](v: Var[T]) {
@@ -232,8 +223,7 @@ class PartialyEvaluate(override val IR: Base) extends Optimizer[Base](IR) {
   }
 
   override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
-    case Stm(s, d) if { Predef.println(s"$s is ${s.isStatic}"); s.isStatic } => d match {
-      // FIXME needs a fix for case class recreation
+    case Stm(s, d) if s.isStatic => d match {
       case NewVar(init) => {
         val initValue = init.value
         val v = Var(s.asInstanceOf[Sym[Var[Any]]])
@@ -255,7 +245,7 @@ class PartialyEvaluate(override val IR: Base) extends Optimizer[Base](IR) {
         Nil
       }
       case _ => {
-        Predef.println(s"Cannot do PE for $s with class ${d.getClass}")
+        // Predef.println(s"Cannot do PE for $s with class ${d.getClass}")
         super.transformStmToMultiple(stm)
       }
     }
