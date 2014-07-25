@@ -163,7 +163,7 @@ trait ManifestOps { this: DeepDSL =>
 }
 
 trait IntPE extends scalalib.IntOps { this: DeepDSL =>
-  case class Int$plus5PE(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "$plus", List(List(x))) {
+  case class Int$plus5PE(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "+", List(List(x))) {
     override def isPure = true
     override def partialEvaluable: Boolean = true
     override def partialEvaluate(children: Any*): Int = children(0).asInstanceOf[Int] + children(1).asInstanceOf[Int]
