@@ -233,27 +233,27 @@ class PartialyEvaluate(override val IR: Base) extends Optimizer[Base](IR) {
 
   override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
     case Stm(s, d) if { Predef.println(s"$s is ${s.isStatic}"); s.isStatic } => d match {
-      // // FIXME needs a fix for case class recreation
-      // case NewVar(init) => {
-      //   val initValue = init.value
-      //   val v = Var(s.asInstanceOf[Sym[Var[Any]]])
-      //   v.value = initValue
-      //   Nil
-      // }
-      // case ReadVar(v) => {
-      //   Predef.println(s"Evaluating read var $s with value ${v.value}")
-      //   s.value = v.value
-      //   Nil
-      // }
-      // case Assign(v, newValue) => {
-      //   v.value = newValue.value
-      //   Nil
-      // }
-      // case _ if d.partialEvaluable => {
-      //   s.value = d.partialEvaluate(d.funArgs.map(_.value): _*)
-      //   Predef.println(s"Partial evaluating symbol $s with value ${s.value}")
-      //   Nil
-      // }
+      // FIXME needs a fix for case class recreation
+      case NewVar(init) => {
+        val initValue = init.value
+        val v = Var(s.asInstanceOf[Sym[Var[Any]]])
+        v.value = initValue
+        Nil
+      }
+      case ReadVar(v) => {
+        // Predef.println(s"Evaluating read var $s with value ${v.value}")
+        s.value = v.value
+        Nil
+      }
+      case Assign(v, newValue) => {
+        v.value = newValue.value
+        Nil
+      }
+      case _ if d.partialEvaluable => {
+        s.value = d.partialEvaluate(d.funArgs.map(_.value): _*)
+        // Predef.println(s"Partial evaluating symbol $s with value ${s.value}")
+        Nil
+      }
       case _ => {
         Predef.println(s"Cannot do PE for $s with class ${d.getClass}")
         super.transformStmToMultiple(stm)
