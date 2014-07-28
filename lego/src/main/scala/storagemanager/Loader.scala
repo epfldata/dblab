@@ -3,6 +3,7 @@ package legobase
 package storagemanager
 
 import utils.Utilities._
+import ch.epfl.data.pardis.shallow.{ CaseClassRecord }
 
 object TPCHRelations {
   lazy val PARTTABLE = Config.datapath + "part.tbl"
@@ -28,7 +29,27 @@ object TPCHRelations {
     val L_RECEIPTDATE: Long,
     val L_SHIPINSTRUCT: Array[Byte],
     val L_SHIPMODE: Array[Byte],
-    val L_COMMENT: Array[Byte]);
+    val L_COMMENT: Array[Byte]) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "L_ORDERKEY"      => Some(L_ORDERKEY)
+      case "L_PARTKEY"       => Some(L_PARTKEY)
+      case "L_SUPPKEY"       => Some(L_SUPPKEY)
+      case "L_LINENUMBER"    => Some(L_LINENUMBER)
+      case "L_QUANTITY"      => Some(L_QUANTITY)
+      case "L_EXTENDEDPRICE" => Some(L_EXTENDEDPRICE)
+      case "L_DISCOUNT"      => Some(L_DISCOUNT)
+      case "L_TAX"           => Some(L_TAX)
+      case "L_RETURNFLAG"    => Some(L_RETURNFLAG)
+      case "L_LINESTATUS"    => Some(L_LINESTATUS)
+      case "L_SHIPDATE"      => Some(L_SHIPDATE)
+      case "L_COMMITDATE"    => Some(L_COMMITDATE)
+      case "L_RECEIPTDATE"   => Some(L_RECEIPTDATE)
+      case "L_SHIPINSTRUCT"  => Some(L_SHIPINSTRUCT)
+      case "L_SHIPMODE"      => Some(L_SHIPMODE)
+      case "L_COMMENT"       => Some(L_COMMENT)
+      case _                 => None
+    }
+  }
   def newLINEITEMRecord(ORDERKEY: Int, PARTKEY: Int, SUPPKEY: Int, LINENUMBER: Int,
                         QUANTITY: Double, EXTENDEDPRICE: Double, DISCOUNT: Double, TAX: Double,
                         RETURNFLAG: Character, LINESTATUS: Character, SHIPDATE: Long, COMMITDATE: Long,
@@ -46,7 +67,18 @@ object TPCHRelations {
     val S_NATIONKEY: Int,
     val S_PHONE: Array[Byte],
     val S_ACCTBAL: Double,
-    val S_COMMENT: Array[Byte]);
+    val S_COMMENT: Array[Byte]) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "S_SUPPKEY"   => Some(S_SUPPKEY)
+      case "S_NAME"      => Some(S_NAME)
+      case "S_ADDRESS"   => Some(S_ADDRESS)
+      case "S_NATIONKEY" => Some(S_NATIONKEY)
+      case "S_PHONE"     => Some(S_PHONE)
+      case "S_ACCTBAL"   => Some(S_ACCTBAL)
+      case "S_COMMENT"   => Some(S_COMMENT)
+      case _             => None
+    }
+  }
   def newSUPPLIERRecord(SUPPKEY: Int, NAME: Array[Byte], ADDRESS: Array[Byte], NATIONKEY: Int, PHONE: Array[Byte], ACCTBAL: Double, COMMENT: Array[Byte]): SUPPLIERRecord = {
     new SUPPLIERRecord(SUPPKEY, NAME, ADDRESS, NATIONKEY, PHONE, ACCTBAL, COMMENT)
   }
@@ -56,7 +88,16 @@ object TPCHRelations {
     val PS_SUPPKEY: Int,
     val PS_AVAILQTY: Int,
     val PS_SUPPLYCOST: Double,
-    val PS_COMMENT: Array[Byte]);
+    val PS_COMMENT: Array[Byte]) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "PS_PARTKEY"    => Some(PS_PARTKEY)
+      case "PS_SUPPKEY"    => Some(PS_SUPPKEY)
+      case "PS_AVAILQTY"   => Some(PS_AVAILQTY)
+      case "PS_SUPPLYCOST" => Some(PS_SUPPLYCOST)
+      case "PS_COMMENT"    => Some(PS_COMMENT)
+      case _               => None
+    }
+  }
   def newPARTSUPPRecord(PARTKEY: Int, SUPPKEY: Int, AVAILQTY: Int, SUPPLYCOST: Double, COMMENT: Array[Byte]): PARTSUPPRecord = {
     new PARTSUPPRecord(PARTKEY, SUPPKEY, AVAILQTY, SUPPLYCOST, COMMENT)
   }
@@ -64,7 +105,14 @@ object TPCHRelations {
   case class REGIONRecord(
     val R_REGIONKEY: Int,
     val R_NAME: Array[Byte],
-    val R_COMMENT: Array[Byte])
+    val R_COMMENT: Array[Byte]) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "R_REGIONKEY" => Some(R_REGIONKEY)
+      case "R_NAME"      => Some(R_NAME)
+      case "R_COMMENT"   => Some(R_COMMENT)
+      case _             => None
+    }
+  }
   def newREGIONRecord(REGIONKEY: Int, NAME: Array[Byte], COMMENT: Array[Byte]): REGIONRecord = {
     new REGIONRecord(REGIONKEY, NAME, COMMENT)
   }
@@ -73,7 +121,15 @@ object TPCHRelations {
     val N_NATIONKEY: Int,
     val N_NAME: Array[Byte],
     val N_REGIONKEY: Int,
-    val N_COMMENT: Array[Byte])
+    val N_COMMENT: Array[Byte]) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "N_NATIONKEY" => Some(N_NATIONKEY)
+      case "N_NAME"      => Some(N_NAME)
+      case "N_REGIONKEY" => Some(N_REGIONKEY)
+      case "N_COMMENT"   => Some(N_COMMENT)
+      case _             => None
+    }
+  }
   def newNATIONRecord(NATIONKEY: Int, NAME: Array[Byte], REGIONKEY: Int, COMMENT: Array[Byte]): NATIONRecord = {
     new NATIONRecord(NATIONKEY, NAME, REGIONKEY, COMMENT)
   }
@@ -87,7 +143,20 @@ object TPCHRelations {
     val P_SIZE: Int,
     val P_CONTAINER: Array[Byte],
     val P_RETAILPRICE: Double,
-    val P_COMMENT: Array[Byte])
+    val P_COMMENT: Array[Byte]) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "P_PARTKEY"     => Some(P_PARTKEY)
+      case "P_NAME"        => Some(P_NAME)
+      case "P_MFGR"        => Some(P_MFGR)
+      case "P_BRAND"       => Some(P_BRAND)
+      case "P_TYPE"        => Some(P_TYPE)
+      case "P_SIZE"        => Some(P_SIZE)
+      case "P_CONTAINER"   => Some(P_CONTAINER)
+      case "P_RETAILPRICE" => Some(P_RETAILPRICE)
+      case "P_COMMENT"     => Some(P_COMMENT)
+      case _               => None
+    }
+  }
   def newPARTRecord(PARTKEY: Int, NAME: Array[Byte], MFGR: Array[Byte], BRAND: Array[Byte], TYPE: Array[Byte], SIZE: Int, CONTAINER: Array[Byte], RETAILPRICE: Double, COMMENT: Array[Byte]): PARTRecord = {
     new PARTRecord(PARTKEY, NAME, MFGR, BRAND, TYPE, SIZE, CONTAINER, RETAILPRICE, COMMENT)
   }

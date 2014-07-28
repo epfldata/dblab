@@ -9,6 +9,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.Set
 import GenericEngine._
 import ch.epfl.data.autolifter.annotations.{ deep, metadeep }
+import ch.epfl.data.pardis.shallow.{ AbstractRecord, DynamicCompositeRecord }
 
 // This is a temporary solution until we introduce dependency management and adopt policies. Not a priority now!
 @metadeep(
@@ -154,8 +155,8 @@ class MetaInfo
   def close() = {}
   def reset() { parent.reset }
 }
-/*
-case class HashJoinOp[A: Manifest, B: Manifest, C: Manifest](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[CompositeRecord[A, B]] {
+
+case class HashJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord: Manifest, C: Manifest](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   var tmpCount = -1
   var tmpBuffer = ArrayBuffer[A]()
   val hm = HashMap[C, ArrayBuffer[A]]()
@@ -190,39 +191,36 @@ case class HashJoinOp[A: Manifest, B: Manifest, C: Manifest](val leftParent: Ope
       }
     }
     if (tmpLine != NullDynamicRecord[B] && tmpCount != -1) {
-      val res = tmpBuffer(tmpCount).concatenate(tmpLine, leftAlias, rightAlias)
+      val res = tmpBuffer(tmpCount).concatenateDynamic(tmpLine, leftAlias, rightAlias)
       tmpCount += 1
       res
-    } else NullDynamicRecord[CompositeRecord[A, B]]
+    } else NullDynamicRecord[DynamicCompositeRecord[A, B]]
   }
   def close() {}
   def reset() { rightParent.reset; leftParent.reset; hm.clear; tmpLine = NullDynamicRecord[B]; tmpCount = 0; tmpBuffer.clear }
 }
 
-case class WindowOp[A: Manifest, B: Manifest, C: Manifest](parent: Operator[A])(val grp: Function1[A, B])(val wndf: ArrayBuffer[A] => C) extends Operator[Record { val key: B; val wnd: C }] {
+case class WindowOp[A: Manifest, B: Manifest, C: Manifest](parent: Operator[A])(val grp: Function1[A, B])(val wndf: ArrayBuffer[A] => C) extends Operator[WindowRecord[B, C]] {
   val hm = HashMap[B, ArrayBuffer[A]]()
-  var keySet = hm.keySet
+  var keySet = scala.collection.mutable.Set(hm.keySet.toSeq: _*)
 
   def open() {
     parent.open
-    parent foreach { t: Rep[A] =>
+    parent foreach { t: A =>
       val key = grp(t)
       val v = hm.getOrElseUpdate(key, ArrayBuffer[A]())
       v.append(t)
     }
-    keySet = hm.keySet
+    keySet = scala.collection.mutable.Set(hm.keySet.toSeq: _*)
   }
   def next() = {
     if (hm.size != 0) {
-      val k = keySet.head
-      keySet.remove(k)
-      val elem = hashmap_remove(hm, k)
-      new {
-        val key = k
-        val wnd = wndf(elem)
-      }
+      val key = keySet.head
+      keySet.remove(key)
+      val elem = hm.remove(key).get // we're sure that it is Some(x)
+      newWindowRecord(key, wndf(elem))
     } else NullDynamicRecord
   }
   def close() {}
   def reset() { parent.reset; hm.clear; open }
-}*/
+}
