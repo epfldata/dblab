@@ -31,16 +31,19 @@ trait LegoRunner {
       currQuery = q
       Console.withOut(new PrintStream(getOutputName)) {
         currQuery match {
-          case "Q1" => funs(0)(numRuns)
-          case "Q2" => funs(1)(numRuns)
-          case "Q3" => funs(2)(numRuns)
-          case "Q4" => funs(3)(numRuns)
-          case "Q5" => funs(4)(numRuns)
-          case "Q6" => funs(5)(numRuns)
-          case "Q7" => funs(6)(numRuns)
-          case "Q8" => funs(7)(numRuns)
-          case "Q9" => funs(8)(numRuns)
-          case _    => throw new Exception("Query not supported!")
+          case "Q1"  => funs(0)(numRuns)
+          case "Q2"  => funs(1)(numRuns)
+          case "Q3"  => funs(2)(numRuns)
+          case "Q4"  => funs(3)(numRuns)
+          case "Q5"  => funs(4)(numRuns)
+          case "Q6"  => funs(5)(numRuns)
+          case "Q7"  => funs(6)(numRuns)
+          case "Q8"  => funs(7)(numRuns)
+          case "Q9"  => funs(8)(numRuns)
+          case "Q10" => funs(9)(numRuns)
+          case "Q12" => funs(10)(numRuns)
+          case "Q17" => funs(11)(numRuns)
+          case _     => throw new Exception("Query not supported!")
         }
         // Check results
         if (Config.checkResults) {
@@ -79,6 +82,9 @@ object MiniDB extends LegoRunner with storagemanager.Loader with Queries {
     val q7 = (x: Int) => Q7(x)
     val q8 = (x: Int) => Q8(x)
     val q9 = (x: Int) => Q9(x)
-    run(args, List(q1, q2, q3, q4, q5, q6, q7, q8, q9))
+    val q10 = (x: Int) => Q10(x)
+    val q12 = (x: Int) => Q12(x)
+    val q17 = (x: Int) => Q17(x)
+    run(args, List(q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q12, q17))
   }
 }

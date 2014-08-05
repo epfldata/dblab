@@ -73,15 +73,16 @@ object TPCHRelations {
     val O_SHIPPRIORITY: Int,
     val O_COMMENT: Array[Byte]) extends CaseClassRecord {
     def getField(key: String): Option[Any] = key match {
-      case "O_ORDERKEY"     => Some(O_ORDERKEY)
-      case "O_CUSTKEY"      => Some(O_CUSTKEY)
-      case "O_ORDERSTATUS"  => Some(O_ORDERSTATUS)
-      case "O_TOTALPRICE"   => Some(O_TOTALPRICE)
-      case "O_ORDERDATE"    => Some(O_ORDERDATE)
-      case "O_CLERK"        => Some(O_CLERK)
-      case "O_SHIPPRIORITY" => Some(O_SHIPPRIORITY)
-      case "O_COMMENT"      => Some(O_COMMENT)
-      case _                => None
+      case "O_ORDERKEY"      => Some(O_ORDERKEY)
+      case "O_CUSTKEY"       => Some(O_CUSTKEY)
+      case "O_ORDERSTATUS"   => Some(O_ORDERSTATUS)
+      case "O_TOTALPRICE"    => Some(O_TOTALPRICE)
+      case "O_ORDERDATE"     => Some(O_ORDERDATE)
+      case "O_CLERK"         => Some(O_CLERK)
+      case "O_ORDERPRIORITY" => Some(O_ORDERPRIORITY)
+      case "O_SHIPPRIORITY"  => Some(O_SHIPPRIORITY)
+      case "O_COMMENT"       => Some(O_COMMENT)
+      case _                 => None
     }
   }
 
