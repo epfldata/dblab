@@ -12,6 +12,8 @@ object TPCHRelations {
   lazy val REGIONTABLE = Config.datapath + "region.tbl"
   lazy val SUPPLIERTABLE = Config.datapath + "supplier.tbl"
   lazy val LINEITEMTABLE = Config.datapath + "lineitem.tbl"
+  lazy val CUSTOMERTABLE = Config.datapath + "customer.tbl"
+  lazy val ORDERSTABLE = Config.datapath + "orders.tbl"
 
   case class LINEITEMRecord(
     val L_ORDERKEY: Int,
@@ -58,6 +60,58 @@ object TPCHRelations {
     new LINEITEMRecord(ORDERKEY, PARTKEY, SUPPKEY, LINENUMBER, QUANTITY, EXTENDEDPRICE, DISCOUNT, TAX,
       RETURNFLAG, LINESTATUS, SHIPDATE, COMMITDATE, RECEIPTDATE, SHIPINSTRUCT, SHIPMODE,
       COMMENT);
+  }
+
+  case class ORDERSRecord(
+    val O_ORDERKEY: Int,
+    val O_CUSTKEY: Int,
+    val O_ORDERSTATUS: Character,
+    val O_TOTALPRICE: Double,
+    val O_ORDERDATE: Long,
+    val O_ORDERPRIORITY: Array[Byte],
+    val O_CLERK: Array[Byte],
+    val O_SHIPPRIORITY: Int,
+    val O_COMMENT: Array[Byte]) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "O_ORDERKEY"     => Some(O_ORDERKEY)
+      case "O_CUSTKEY"      => Some(O_CUSTKEY)
+      case "O_ORDERSTATUS"  => Some(O_ORDERSTATUS)
+      case "O_TOTALPRICE"   => Some(O_TOTALPRICE)
+      case "O_ORDERDATE"    => Some(O_ORDERDATE)
+      case "O_CLERK"        => Some(O_CLERK)
+      case "O_SHIPPRIORITY" => Some(O_SHIPPRIORITY)
+      case "O_COMMENT"      => Some(O_COMMENT)
+      case _                => None
+    }
+  }
+
+  def newORDERSRecord(ORDERKEY: Int, CUSTKEY: Int, ORDERSTATUS: Character, TOTALPRICE: Double, ORDERDATE: Long, ORDERPRIORITY: Array[Byte], CLERK: Array[Byte], SHIPPRIORITY: Int, COMMENT: Array[Byte]): ORDERSRecord = {
+    new ORDERSRecord(ORDERKEY, CUSTKEY, ORDERSTATUS, TOTALPRICE, ORDERDATE, ORDERPRIORITY, CLERK, SHIPPRIORITY, COMMENT)
+  }
+
+  case class CUSTOMERRecord(
+    val C_CUSTKEY: Int,
+    val C_NAME: Array[Byte],
+    val C_ADDRESS: Array[Byte],
+    val C_NATIONKEY: Int,
+    val C_PHONE: Array[Byte],
+    val C_ACCTBAL: Double,
+    val C_MKTSEGMENT: Array[Byte],
+    val C_COMMENT: Array[Byte]) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "C_CUSTKEY"    => Some(C_CUSTKEY)
+      case "C_NAME"       => Some(C_NAME)
+      case "C_ADDRESS"    => Some(C_ADDRESS)
+      case "C_NATIONKEY"  => Some(C_NATIONKEY)
+      case "C_PHONE"      => Some(C_PHONE)
+      case "C_ACCTBAL"    => Some(C_ACCTBAL)
+      case "C_MKTSEGMENT" => Some(C_MKTSEGMENT)
+      case "C_COMMENT"    => Some(C_COMMENT)
+      case _              => None
+    }
+  }
+  def newCUSTOMERRecord(CUSTKEY: Int, NAME: Array[Byte], ADDRESS: Array[Byte], NATIONKEY: Int, PHONE: Array[Byte], ACCTBAL: Double, MKTSEGMENT: Array[Byte], COMMENT: Array[Byte]): CUSTOMERRecord = {
+    new CUSTOMERRecord(CUSTKEY, NAME, ADDRESS, NATIONKEY, PHONE, ACCTBAL, MKTSEGMENT, COMMENT)
   }
 
   case class SUPPLIERRecord(
@@ -263,6 +317,37 @@ trait Loader {
         s.next_double, s.next_double, s.next_double, s.next_double,
         s.next_char, s.next_char, s.next_date, s.next_date, s.next_date,
         loadString(25, s), loadString(10, s), loadString(44, s))
+      hm(i) = newEntry
+      i += 1
+    }
+    hm
+  }
+
+  def loadOrders() = {
+    val file = ORDERSTABLE
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = new K2DBScanner(file)
+    val hm = new Array[ORDERSRecord](size)
+    var i = 0
+    while (s.hasNext()) {
+      val newEntry = newORDERSRecord(s.next_int, s.next_int, s.next_char, s.next_double, s.next_date,
+        loadString(15, s), loadString(15, s), s.next_int, loadString(79, s))
+      hm(i) = newEntry
+      i += 1
+    }
+    hm
+  }
+
+  def loadCustomer() = {
+    val file = CUSTOMERTABLE
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = new K2DBScanner(file)
+    val hm = new Array[CUSTOMERRecord](size)
+    var i = 0
+    while (s.hasNext()) {
+      val newEntry = newCUSTOMERRecord(s.next_int, loadString(25, s), loadString(40, s), s.next_int, loadString(15, s), s.next_double, loadString(10, s), loadString(117, s))
       hm(i) = newEntry
       i += 1
     }

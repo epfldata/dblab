@@ -33,7 +33,10 @@ trait LegoRunner {
         currQuery match {
           case "Q1" => funs(0)(numRuns)
           case "Q2" => funs(1)(numRuns)
-          case "Q6" => funs(2)(numRuns)
+          case "Q3" => funs(2)(numRuns)
+          case "Q4" => funs(3)(numRuns)
+          case "Q5" => funs(4)(numRuns)
+          case "Q6" => funs(5)(numRuns)
           case _    => throw new Exception("Query not supported!")
         }
         // Check results
@@ -66,7 +69,10 @@ object MiniDB extends LegoRunner with storagemanager.Loader with Queries {
   def main(args: Array[String]) {
     val q1 = (x: Int) => Q1(x)
     val q2 = (x: Int) => Q2(x)
+    val q3 = (x: Int) => Q3(x)
+    val q4 = (x: Int) => Q4(x)
+    val q5 = (x: Int) => Q5(x)
     val q6 = (x: Int) => Q6(x)
-    run(args, List(q1, q2, q6))
+    run(args, List(q1, q2, q3, q4, q5, q6))
   }
 }

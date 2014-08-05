@@ -25,7 +25,25 @@ import pardis.ir._
   """OperatorsComponent""")
 class MetaInfo
 
+class MyHashMap[K: Manifest, V: Manifest] extends scala.collection.mutable.HashMap[K, V]() {
+  override def elemHashCode(key: K) = {
+    if (manifest[K] == manifest[Array[Byte]]) {
+      val arr = key.asInstanceOf[Array[Byte]]
+      arr.foldLeft(0)((sum, e) => sum + e)
+    } else super.elemHashCode(key)
+  }
+  override def elemEquals(k1: K, k2: K) = {
+    if (manifest[K] == manifest[Array[Byte]]) {
+      val arr1 = k1.asInstanceOf[Array[Byte]]
+      val arr2 = k2.asInstanceOf[Array[Byte]]
+      arr1.sameElements(arr2)
+    } else super.elemEquals(k1, k2)
+  }
+}
+
 @deep abstract class Operator[+A: Manifest] {
+  def getShallowHashMap[K: Manifest, V: Manifest]() = new MyHashMap[K, V]()
+
   def open()
   def next(): A
   def close()
@@ -78,7 +96,7 @@ class MetaInfo
   val mA = manifest[A]
   val mB = manifest[B]
 
-  val hm = scala.collection.mutable.HashMap[B, Array[Double]]()
+  val hm = getShallowHashMap[B, Array[Double]]()
   var keySet = scala.collection.mutable.Set(hm.keySet.toSeq: _*)
 
   def open() {
@@ -159,7 +177,7 @@ class MetaInfo
 case class HashJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord: Manifest, C: Manifest](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   var tmpCount = -1
   var tmpBuffer = ArrayBuffer[A]()
-  val hm = HashMap[C, ArrayBuffer[A]]()
+  val hm = getShallowHashMap[C, ArrayBuffer[A]]()
   var tmpLine = NullDynamicRecord[B]
 
   def open() = {
@@ -201,7 +219,7 @@ case class HashJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord: Manife
 }
 
 case class WindowOp[A: Manifest, B: Manifest, C: Manifest](parent: Operator[A])(val grp: Function1[A, B])(val wndf: ArrayBuffer[A] => C) extends Operator[WindowRecord[B, C]] {
-  val hm = HashMap[B, ArrayBuffer[A]]()
+  val hm = getShallowHashMap[B, ArrayBuffer[A]]()
   var keySet = scala.collection.mutable.Set(hm.keySet.toSeq: _*)
 
   def open() {
@@ -223,4 +241,28 @@ case class WindowOp[A: Manifest, B: Manifest, C: Manifest](parent: Operator[A])(
   }
   def close() {}
   def reset() { parent.reset; hm.clear; open }
+}
+
+case class LeftHashSemiJoinOp[A: Manifest, B: Manifest, C: Manifest](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
+  val hm = getShallowHashMap[C, ArrayBuffer[B]]()
+  def open() = {
+    leftParent.open
+    rightParent.open
+    rightParent foreach { t: B =>
+      val k = rightHash(t)
+      val v = hm.getOrElseUpdate(k, ArrayBuffer[B]())
+      v.append(t)
+    }
+  }
+  def next() = {
+    leftParent findFirst { t: A =>
+      val k = leftHash(t)
+      if (hm.contains(k)) {
+        val tmpBuffer = hm(k)
+        tmpBuffer.indexWhere(e => joinCond(t, e)) != -1
+      } else false
+    }
+  }
+  def close() {}
+  def reset() { rightParent.reset; leftParent.reset; hm.clear; }
 }
