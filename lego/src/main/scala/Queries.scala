@@ -5,7 +5,7 @@ import queryengine._
 import queryengine.volcano._
 import ch.epfl.data.pardis.shallow.{ CaseClassRecord }
 
-trait Queries extends Q1 with Q2 with Q3 with Q4 with Q5 with Q6
+trait Queries extends Q1 with Q2 with Q3 with Q4 with Q5 with Q6 with Q7 with Q8 with Q9
 trait GenericQuery extends ScalaImpl with storagemanager.Loader {
   var profile = true
 
@@ -174,8 +174,7 @@ trait Q4 extends GenericQuery {
           (t, currAgg) => { currAgg + 1 })
         val sortOp = SortOp(aggOp)((kv1, kv2) => {
           val k1 = kv1.key; val k2 = kv2.key
-          // TODO: REFACTOR!
-          (k1 zip k2).foldLeft(0)((res, e) => { if (res == 0) e._1 - e._2 else res })
+          k1 diff k2
         })
         val po = PrintOp(sortOp)(kv => printf("%s|%.0f\n", kv.key.string, kv.aggs(0)))
         po.open
@@ -245,3 +244,177 @@ trait Q6 extends GenericQuery {
     }
   }
 }
+trait Q7 extends GenericQuery {
+  case class Q7GRPRecord(
+    val SUPP_NATION: Array[Byte],
+    val CUST_NATION: Array[Byte],
+    val L_YEAR: Long) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "SUPP_NATION" => Some(SUPP_NATION)
+      case "CUST_NATION" => Some(CUST_NATION)
+      case "L_YEAR"      => Some(L_YEAR)
+      case _             => None
+    }
+  }
+  def newQ7GRPRecord(SUPP_NATION: Array[Byte], CUST_NATION: Array[Byte], L_YEAR: Long) = {
+    new Q7GRPRecord(SUPP_NATION, CUST_NATION, L_YEAR)
+  }
+
+  def Q7(numRuns: Int) {
+    val nationTable = loadNation()
+    val ordersTable = loadOrders()
+    val lineitemTable = loadLineitem()
+    val customerTable = loadCustomer()
+    val supplierTable = loadSupplier()
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val usa = parseString("UNITED STATES")
+        val indonesia = parseString("INDONESIA")
+        val scanNation1 = ScanOp(nationTable)
+        val scanNation2 = ScanOp(nationTable)
+        val jo1 = NestedLoopsJoinOp(scanNation1, scanNation2, "N1_", "N2_")((x, y) => ((x.N_NAME === usa && y.N_NAME === indonesia) || (x.N_NAME === indonesia && y.N_NAME === usa)))
+        val scanSupplier = ScanOp(supplierTable)
+        val jo2 = HashJoinOp(jo1, scanSupplier)((x, y) => x.N1_N_NATIONKEY == y.S_NATIONKEY)(x => x.N1_N_NATIONKEY[Int])(x => x.S_NATIONKEY)
+        val scanLineitem = SelectOp(ScanOp(lineitemTable))(x => x.L_SHIPDATE >= parseDate("1995-01-01") && x.L_SHIPDATE <= parseDate("1996-12-31"))
+        val jo3 = HashJoinOp(jo2, scanLineitem)((x, y) => x.S_SUPPKEY == y.L_SUPPKEY)(x => x.S_SUPPKEY[Int])(x => x.L_SUPPKEY)
+        val scanOrders = ScanOp(ordersTable)
+        val jo4 = HashJoinOp(jo3, scanOrders)((x, y) => x.L_ORDERKEY == y.O_ORDERKEY)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)
+        val scanCustomer = ScanOp(customerTable)
+        val jo5 = HashJoinOp(scanCustomer, jo4)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY[Int] && x.C_NATIONKEY == y.N2_N_NATIONKEY[Int])(x => x.C_CUSTKEY)(x => x.O_CUSTKEY[Int])
+        val gb = AggOp(jo5, 1)(x => newQ7GRPRecord(
+          x.N1_N_NAME[Array[Byte]],
+          x.N2_N_NAME[Array[Byte]],
+          new java.util.Date(x.L_SHIPDATE[Long]).getYear + 1900))((t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
+        val so = SortOp(gb)((kv1, kv2) => {
+          val k1 = kv1.key; val k2 = kv2.key
+          val r1 = k1.SUPP_NATION diff k2.SUPP_NATION
+          if (r1 != 0) r1
+          else {
+            val r2 = k1.CUST_NATION diff k2.CUST_NATION
+            if (r2 != 0) r2
+            else {
+              if (k1.L_YEAR < k2.L_YEAR) -1
+              else if (k1.L_YEAR > k2.L_YEAR) 1
+              else 0
+            }
+          }
+        })
+        val po = PrintOp(so)(kv => printf("%s|%s|%d|%.4f\n", kv.key.SUPP_NATION.string, kv.key.CUST_NATION.string, kv.key.L_YEAR, kv.aggs(0)))
+        po.open
+        po.next
+        printf("(%d rows)\n", po.numRows)
+        ()
+      })
+    }
+  }
+}
+
+trait Q8 extends GenericQuery {
+  def Q8(numRuns: Int) {
+    val nationTable = loadNation()
+    val regionTable = loadRegion()
+    val partTable = loadPart()
+    val ordersTable = loadOrders()
+    val lineitemTable = loadLineitem()
+    val customerTable = loadCustomer()
+    val supplierTable = loadSupplier()
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val constantDate1 = parseDate("1995-01-01")
+        val constantDate2 = parseDate("1996-12-31")
+        val asia = parseString("ASIA")
+        val indonesia = parseString("INDONESIA")
+        val medAnonNick = parseString("MEDIUM ANODIZED NICKEL")
+        val scanLineitem = ScanOp(lineitemTable)
+        val scanPart = SelectOp(ScanOp(partTable))(x => x.P_TYPE === medAnonNick)
+        val jo1 = HashJoinOp(scanPart, scanLineitem)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY)
+        val scanOrders = SelectOp(ScanOp(ordersTable))(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE <= constantDate2)
+        val jo2 = HashJoinOp(jo1, scanOrders)((x, y) => x.L_ORDERKEY == y.O_ORDERKEY)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)
+        val scanCustomer = ScanOp(customerTable)
+        val jo3 = HashJoinOp(jo2, scanCustomer)((x, y) => x.O_CUSTKEY == y.C_CUSTKEY)(x => x.O_CUSTKEY[Int])(x => x.C_CUSTKEY)
+        val scanNation1 = ScanOp(nationTable)
+        val jo4 = HashJoinOp(scanNation1, jo3)((x, y) => x.N_NATIONKEY == y.C_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.C_NATIONKEY[Int])
+        val scanRegion = SelectOp(ScanOp(regionTable))(x => x.R_NAME === asia)
+        val jo5 = HashJoinOp(scanRegion, jo4)((x, y) => x.R_REGIONKEY == y.N_REGIONKEY[Int])(x => x.R_REGIONKEY)(x => x.N_REGIONKEY[Int])
+        val scanSupplier = ScanOp(supplierTable)
+        val jo6 = HashJoinOp(scanSupplier, jo5)((x, y) => x.S_SUPPKEY == y.L_SUPPKEY[Int])(x => x.S_SUPPKEY)(x => x.L_SUPPKEY[Int])
+        val scanNation2 = ScanOp(nationTable)
+        val jo7 = HashJoinOp(scanNation2, jo6, "REC1_", "REC2_")((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])
+        val aggOp = AggOp(jo7, 3)(x => new java.util.Date(x.REC2_O_ORDERDATE[Long]).getYear + 1900)(
+          (t, currAgg) => { currAgg + (t.REC2_L_EXTENDEDPRICE[Double] * (1.0 - t.REC2_L_DISCOUNT[Double])) },
+          (t, currAgg) => {
+            if (t.REC1_N_NAME[Array[Byte]] === indonesia) currAgg + (t.REC2_L_EXTENDEDPRICE[Double] * (1.0 - t.REC2_L_DISCOUNT[Double]))
+            else currAgg
+          })
+        val mapOp = MapOp(aggOp)(x => x.aggs(2) = x.aggs(1) / x.aggs(0))
+        val sortOp = SortOp(mapOp)((x, y) => {
+          if (x.key < y.key) -1
+          else if (x.key > y.key) 1
+          else 0
+        })
+        val po = PrintOp(sortOp)(kv => printf("%d|%.5f\n", kv.key, kv.aggs(2)))
+        po.open
+        po.next
+        printf("(%d rows)\n", po.numRows)
+        ()
+      })
+    }
+  }
+}
+
+trait Q9 extends GenericQuery {
+  case class Q9GRPRecord(
+    val NATION: Array[Byte],
+    val O_YEAR: Long) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "NATION" => Some(NATION)
+      case "O_YEAR" => Some(O_YEAR)
+      case _        => None
+    }
+  }
+  def newQ9GRPRecord(NATION: Array[Byte], YEAR: Long) = {
+    new Q9GRPRecord(NATION, YEAR)
+  }
+
+  def Q9(numRuns: Int) {
+    val partTable = loadPart()
+    val nationTable = loadNation()
+    val ordersTable = loadOrders()
+    val partsuppTable = loadPartsupp()
+    val supplierTable = loadSupplier()
+    val lineitemTable = loadLineitem()
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val ghost = parseString("ghost")
+        val soNation = ScanOp(nationTable)
+        val soSupplier = ScanOp(supplierTable)
+        val soLineitem = ScanOp(lineitemTable)
+        val soPart = SelectOp(ScanOp(partTable))(x => x.P_NAME.containsSlice(ghost))
+        val soPartsupp = ScanOp(partsuppTable)
+        val soOrders = ScanOp(ordersTable)
+        val hj1 = HashJoinOp(soNation, soSupplier)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY)
+        val hj2 = HashJoinOp(hj1, soLineitem)((x, y) => x.S_SUPPKEY[Int] == y.L_SUPPKEY)(x => x.S_SUPPKEY[Int])(x => x.L_SUPPKEY)
+        val hj3 = HashJoinOp(soPart, hj2)((x, y) => x.P_PARTKEY == y.L_PARTKEY[Int])(x => x.P_PARTKEY)(x => x.L_PARTKEY[Int])
+        val hj4 = HashJoinOp(soPartsupp, hj3)((x, y) => x.PS_PARTKEY == y.L_PARTKEY[Int] && x.PS_SUPPKEY == y.L_SUPPKEY[Int])(x => x.PS_PARTKEY)(x => x.L_PARTKEY[Int])
+        val hj5 = HashJoinOp(hj4, soOrders)((x, y) => x.L_ORDERKEY == y.O_ORDERKEY)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)
+        val aggOp = AggOp(hj5, 1)(x => new Q9GRPRecord(x.N_NAME[Array[Byte]], new java.util.Date(x.O_ORDERDATE[Long]).getYear + 1900))(
+          (t, currAgg) => { currAgg + ((t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))) - ((1.0 * t.PS_SUPPLYCOST[Double]) * t.L_QUANTITY[Double]) })
+        val sortOp = SortOp(aggOp)((kv1, kv2) => {
+          val k1 = kv1.key; val k2 = kv2.key
+          val r = k1.NATION diff k2.NATION
+          if (r == 0) {
+            if (k1.O_YEAR < k2.O_YEAR) 1
+            else if (k1.O_YEAR > k2.O_YEAR) -1
+            else 0
+          } else r
+        })
+        val po = PrintOp(sortOp)(kv => printf("%s|%d|%.4f\n", kv.key.NATION.string, kv.key.O_YEAR, kv.aggs(0)))
+        po.open
+        po.next
+        printf("(%d rows)\n", po.numRows)
+        ()
+      })
+    }
+  }
+}
+

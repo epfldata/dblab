@@ -266,3 +266,32 @@ case class LeftHashSemiJoinOp[A: Manifest, B: Manifest, C: Manifest](leftParent:
   def close() {}
   def reset() { rightParent.reset; leftParent.reset; hm.clear; }
 }
+
+case class NestedLoopsJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord: Manifest](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
+  var leftTuple = NullDynamicRecord[A]
+  var rightTuple = NullDynamicRecord[B]
+
+  def open() {
+    rightParent.open
+    leftParent.open
+    leftTuple = leftParent.next
+  }
+  var cnt = 1
+  def next() = {
+    var exit = false
+    while (exit == false && leftTuple != NullDynamicRecord[A]) {
+      rightTuple = rightParent findFirst (t => {
+        joinCond(leftTuple, t)
+      })
+      if (rightTuple == NullDynamicRecord[B]) {
+        rightParent.reset
+        leftTuple = leftParent.next
+      } else exit = true
+    }
+    if (leftTuple != NullDynamicRecord[A]) {
+      leftTuple.concatenateDynamic(rightTuple, leftAlias, rightAlias)
+    } else NullDynamicRecord
+  }
+  def close() = {}
+  def reset() = { rightParent.reset; leftParent.reset; leftTuple = NullDynamicRecord[A]; }
+}
