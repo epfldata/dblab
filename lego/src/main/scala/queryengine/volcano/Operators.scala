@@ -295,3 +295,83 @@ case class NestedLoopsJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord:
   def close() = {}
   def reset() = { rightParent.reset; leftParent.reset; leftTuple = NullDynamicRecord[A]; }
 }
+
+case class SubquerySingleResult[A: Manifest](parent: Operator[A]) extends Operator[A] {
+  def close() {
+    throw new Exception("PULL ENGINE BUG:: Close function in SubqueryResult should never be called!!!!\n")
+  }
+  def open() {
+    throw new Exception("PULL ENGINE BUG:: Open function in SubqueryResult should never be called!!!!\n")
+  }
+  def next() = {
+    throw new Exception("PULL ENGINE BUG:: Next function in SubqueryResult should never be called!!!!\n")
+  }
+  def reset() {
+    throw new Exception("PULL ENGINE BUG:: Reset function in SubqueryResult should never be called!!!!\n")
+  }
+  def getResult = { parent.open; parent.next; }
+}
+
+case class HashJoinAnti[A: Manifest, B: Manifest, C: Manifest](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
+  val hm = HashMap[C, ArrayBuffer[A]]()
+  var keySet = hm.keySet
+
+  def removeFromList(elemList: ArrayBuffer[A], e: A, idx: Int) = {
+    elemList.remove(idx)
+    if (elemList.size == 0) {
+      val lh = leftHash(e)
+      keySet -= lh
+      hm.remove(lh)
+      ()
+    }
+    e
+  }
+
+  def open() {
+    leftParent.open
+    rightParent.open
+    // Step 1: Prepare a hash table for the FROM side of the join
+    leftParent foreach { t: A =>
+      {
+        val k = leftHash(t)
+        val v = hm.getOrElseUpdate(k, ArrayBuffer[A]())
+        v.append(t)
+      }
+    }
+    // Step 2: Scan the NOT IN table, removing the corresponding records 
+    // from the hash table on each hash hit
+    rightParent foreach { t: B =>
+      {
+        val k = rightHash(t)
+        if (hm.contains(k)) {
+          val elems = hm(k)
+          // Sligtly complex logic here: we want to remove while
+          // iterating. This is the simplest way to do it, while
+          // making it easy to generate C code as well (otherwise we
+          // could use filter in scala and assign the result to the hm)
+          var removed = 0
+          for (i <- 0 until elems.size) {
+            var idx = i - removed
+            val e = elems(idx)
+            if (joinCond(e, t)) {
+              removeFromList(elems, e, idx);
+              removed += 1
+            }
+          }
+        }
+      }
+    }
+    keySet = hm.keySet
+  }
+  // Step 3: Return everything that left in the hash table
+  def next() = {
+    if (hm.size != 0) {
+      val k = keySet.head
+      val elemList = hm(k)
+      removeFromList(elemList, elemList(0), 0)
+    } else NullDynamicRecord
+  }
+  def close() {}
+  def reset() { rightParent.reset; leftParent.reset; hm.clear; }
+}
+

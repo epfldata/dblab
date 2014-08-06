@@ -4,8 +4,9 @@ package legobase
 import queryengine._
 import queryengine.volcano._
 import ch.epfl.data.pardis.shallow.{ CaseClassRecord }
+import ch.epfl.data.pardis.shallow.{ AbstractRecord, DynamicCompositeRecord }
 
-trait Queries extends Q1 with Q2 with Q3 with Q4 with Q5 with Q6 with Q7 with Q8 with Q9 with Q10 with Q12 with Q17
+trait Queries extends Q1 with Q2 with Q3 with Q4 with Q5 with Q6 with Q7 with Q8 with Q9 with Q10 with Q12 with Q17 with Q19 with Q21 with Q22
 
 trait GenericQuery extends ScalaImpl with storagemanager.Loader {
   var profile = true
@@ -539,6 +540,156 @@ trait Q17 extends GenericQuery {
         })
         val aggOp = AggOp(wo, 1)(x => "Total")((t, currAgg) => currAgg + t.wnd)
         val po = PrintOp(aggOp)(kv => printf("%.6f\n", kv.aggs(0)))
+        po.open
+        po.next
+        printf("(%d rows)\n", po.numRows)
+        ()
+      })
+    }
+  }
+}
+
+trait Q19 extends GenericQuery {
+  def Q19(numRuns: Int) {
+    val lineitemTable = loadLineitem()
+    val partTable = loadPart()
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val Brand31 = parseString("Brand#31")
+        val Brand43 = parseString("Brand#43")
+        val SMBOX = parseString("SM BOX")
+        val SMCASE = parseString("SM CASE")
+        val SMPACK = parseString("SM PACK")
+        val SMPKG = parseString("SM PKG")
+        val MEDBAG = parseString("MED BAG")
+        val MEDBOX = parseString("MED BOX")
+        val MEDPACK = parseString("MED PACK")
+        val MEDPKG = parseString("MED PKG")
+        val LGBOX = parseString("LG BOX")
+        val LGCASE = parseString("LG CASE")
+        val LGPACK = parseString("LG PACK")
+        val LGPKG = parseString("LG PKG")
+        val DELIVERINPERSON = parseString("DELIVER IN PERSON")
+        val AIR = parseString("AIR")
+        val AIRREG = parseString("AIRREG")
+
+        val so1 = SelectOp(ScanOp(partTable))(x => x.P_SIZE >= 1 &&
+          (x.P_SIZE <= 5 && x.P_BRAND === Brand31 && (x.P_CONTAINER === SMBOX || x.P_CONTAINER === SMCASE ||
+            x.P_CONTAINER === SMPACK || x.P_CONTAINER === SMPKG)) ||
+            (x.P_SIZE <= 10 && x.P_BRAND === Brand43 && (x.P_CONTAINER === MEDBAG || x.P_CONTAINER === MEDBOX ||
+              x.P_CONTAINER === MEDPACK || x.P_CONTAINER === MEDPKG)) ||
+              (x.P_SIZE <= 15 && x.P_BRAND === Brand43 && (x.P_CONTAINER === LGBOX || x.P_CONTAINER === LGCASE ||
+                x.P_CONTAINER === LGPACK || x.P_CONTAINER === LGPKG)))
+        val so2 = SelectOp(ScanOp(lineitemTable))(x =>
+          ((x.L_QUANTITY <= 36 && x.L_QUANTITY >= 26) || (x.L_QUANTITY <= 25 && x.L_QUANTITY >= 15) ||
+            (x.L_QUANTITY <= 14 && x.L_QUANTITY >= 4)) && x.L_SHIPINSTRUCT === DELIVERINPERSON &&
+            (x.L_SHIPMODE === AIR || x.L_SHIPMODE === AIRREG))
+        val jo = SelectOp(HashJoinOp(so1, so2)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY))(
+          x => x.P_BRAND[Array[Byte]] === Brand31 &&
+            (x.P_CONTAINER[Array[Byte]] === SMBOX || x.P_CONTAINER[Array[Byte]] === SMCASE || x.P_CONTAINER[Array[Byte]] === SMPACK || x.P_CONTAINER[Array[Byte]] === SMPKG) &&
+            x.L_QUANTITY[Double] >= 4 && x.L_QUANTITY[Double] <= 14 && x.P_SIZE[Int] <= 5 || x.P_BRAND[Array[Byte]] === Brand43 &&
+            (x.P_CONTAINER[Array[Byte]] === MEDBAG || x.P_CONTAINER[Array[Byte]] === MEDBOX || x.P_CONTAINER[Array[Byte]] === MEDPACK || x.P_CONTAINER[Array[Byte]] === MEDPKG) &&
+            x.L_QUANTITY[Double] >= 15 && x.L_QUANTITY[Double] <= 25 && x.P_SIZE[Int] <= 10 || x.P_BRAND[Array[Byte]] === Brand43 &&
+            (x.P_CONTAINER[Array[Byte]] === LGBOX || x.P_CONTAINER[Array[Byte]] === LGCASE || x.P_CONTAINER[Array[Byte]] === LGPACK || x.P_CONTAINER[Array[Byte]] === LGPKG) &&
+            x.L_QUANTITY[Double] >= 26 && x.L_QUANTITY[Double] <= 36 && x.P_SIZE[Int] <= 15)
+        val aggOp = AggOp(jo, 1)(x => "Total")(
+          (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
+        val po = PrintOp(aggOp)(kv => printf("%.4f\n", kv.aggs(0)))
+        po.open
+        po.next
+        printf("(%d rows)\n", po.numRows)
+        ()
+      })
+    }
+  }
+}
+
+trait Q21 extends GenericQuery {
+  def Q21(numRuns: Int) {
+    val lineitemTable = loadLineitem()
+    val supplierTable = loadSupplier()
+    val ordersTable = loadOrders()
+    val nationTable = loadNation()
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val morocco = parseString("MOROCCO")
+        val lineitemScan1 = SelectOp(ScanOp(lineitemTable))(x => x.L_RECEIPTDATE > x.L_COMMITDATE)
+        val lineitemScan2 = ScanOp(lineitemTable)
+        val lineitemScan3 = SelectOp(ScanOp(lineitemTable))(x => x.L_RECEIPTDATE > x.L_COMMITDATE)
+        val supplierScan = ScanOp(supplierTable)
+        val nationScan = SelectOp(ScanOp(nationTable))(x => x.N_NAME === morocco)
+        val ordersScan = SelectOp(ScanOp(ordersTable))(x => x.O_ORDERSTATUS == 'F')
+        val jo1 = HashJoinOp(nationScan, supplierScan)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY)
+        val jo2 = HashJoinOp(jo1, lineitemScan1)((x, y) => x.S_SUPPKEY == y.L_SUPPKEY)(x => x.S_SUPPKEY[Int])(x => x.L_SUPPKEY)
+        val jo3 = LeftHashSemiJoinOp(jo2, lineitemScan2)((x, y) => x.L_ORDERKEY == y.L_ORDERKEY && x.L_SUPPKEY != y.L_SUPPKEY)(x => x.L_ORDERKEY[Int])(x => x.L_ORDERKEY)
+        val jo4 = HashJoinAnti(jo3, lineitemScan3)((x, y) => x.L_ORDERKEY == y.L_ORDERKEY && x.L_SUPPKEY != y.L_SUPPKEY)(x => x.L_ORDERKEY[Int])(x => x.L_ORDERKEY)
+        val jo5 = HashJoinOp(ordersScan, jo4)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY[Int])(x => x.O_ORDERKEY)(x => x.L_ORDERKEY[Int])
+        val aggOp = AggOp(jo5, 1)(x => x.S_NAME[Array[Byte]])((t, currAgg) => { currAgg + 1 })
+        val sortOp = SortOp(aggOp)((x, y) => {
+          val a1 = x.aggs(0); val a2 = y.aggs(0)
+          if (a1 < a2) 1
+          else if (a1 > a2) -1
+          else x.key diff y.key
+        })
+        var i = 0
+        val po = PrintOp(sortOp)(kv => {
+          printf("%s|%.0f\n", kv.key.string, kv.aggs(0))
+          i += 1
+        }, () => i < 100)
+        po.open
+        po.next
+        printf("(%d rows)\n", po.numRows)
+        ()
+      })
+    }
+  }
+}
+
+trait Q22 extends GenericQuery {
+  def Q22(numRuns: Int) {
+    val customerTable = loadCustomer()
+    val ordersTable = loadOrders()
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val v23 = parseString("23")
+        val v29 = parseString("29")
+        val v22 = parseString("22")
+        val v20 = parseString("20")
+        val v24 = parseString("24")
+        val v26 = parseString("26")
+        val v25 = parseString("25")
+        // Subquery
+        val customerScan1 = SelectOp(ScanOp(customerTable))(x => {
+          x.C_ACCTBAL > 0.00 && (
+            x.C_PHONE.startsWith(v23) || (x.C_PHONE.startsWith(v29) || (x.C_PHONE.startsWith(v22) ||
+              (x.C_PHONE.startsWith(v20) || (x.C_PHONE.startsWith(v24) || (x.C_PHONE.startsWith(v26) ||
+                x.C_PHONE.startsWith(v25)))))))
+        })
+        val aggOp1 = AggOp(customerScan1, 3)(x => "AVG_C_ACCTBAL")(
+          (t, currAgg) => { t.C_ACCTBAL + currAgg },
+          (t, currAgg) => { currAgg + 1 })
+        val mapOp = MapOp(aggOp1)(kv => kv.aggs(2) = kv.aggs(0) / kv.aggs(1))
+        mapOp.open
+        val nestedAVG = SubquerySingleResult(mapOp).getResult.aggs(2)
+        // External Query
+        val customerScan2 = SelectOp(ScanOp(customerTable))(x => {
+          x.C_ACCTBAL > nestedAVG && (
+            x.C_PHONE.startsWith(v23) || (x.C_PHONE.startsWith(v29) || (x.C_PHONE.startsWith(v22) ||
+              (x.C_PHONE.startsWith(v20) || (x.C_PHONE.startsWith(v24) || (x.C_PHONE.startsWith(v26) ||
+                x.C_PHONE.startsWith(v25)))))))
+        })
+        val ordersScan = ScanOp(ordersTable)
+        val jo = HashJoinAnti(customerScan2, ordersScan)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY)
+        val aggOp2 = AggOp(jo, 2)(x => x.C_PHONE.slice(0, 2))(
+          (t, currAgg) => { t.C_ACCTBAL + currAgg },
+          (t, currAgg) => { currAgg + 1 })
+        val sortOp = SortOp(aggOp2)((x, y) => {
+          // We know that the substring has only two characters
+          var res = x.key(0) - y.key(0)
+          if (res == 0) res = x.key(1) - y.key(1)
+          res
+        })
+        val po = PrintOp(sortOp)(kv => printf("%s|%.0f|%.2f\n", kv.key.string, kv.aggs(1), kv.aggs(0)))
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)

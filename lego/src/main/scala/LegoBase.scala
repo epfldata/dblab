@@ -43,6 +43,9 @@ trait LegoRunner {
           case "Q10" => funs(9)(numRuns)
           case "Q12" => funs(10)(numRuns)
           case "Q17" => funs(11)(numRuns)
+          case "Q19" => funs(12)(numRuns)
+          case "Q21" => funs(13)(numRuns)
+          case "Q22" => funs(14)(numRuns)
           case _     => throw new Exception("Query not supported!")
         }
         // Check results
@@ -85,6 +88,9 @@ object MiniDB extends LegoRunner with storagemanager.Loader with Queries {
     val q10 = (x: Int) => Q10(x)
     val q12 = (x: Int) => Q12(x)
     val q17 = (x: Int) => Q17(x)
-    run(args, List(q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q12, q17))
+    val q19 = (x: Int) => Q19(x)
+    val q21 = (x: Int) => Q21(x)
+    val q22 = (x: Int) => Q22(x)
+    run(args, List(q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q12, q17, q19, q21, q22))
   }
 }
