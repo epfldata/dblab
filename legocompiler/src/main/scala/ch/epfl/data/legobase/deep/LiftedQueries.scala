@@ -10,6 +10,7 @@ package deep
 /* This class is the manually completely lifted version of Query1 which ideally should be lifted by YY */
 class LiftedQueries {
   val context = new InliningLegoBase {
+    // val context = new DeepDSL {
     def q1 = {
       val lineitemTable = loadLineitem()
       runQuery {
@@ -72,31 +73,39 @@ class LiftedQueries {
         val regionScan = __newSelectOp(__newScanOp(regionTable))(__lambda { x => x.R_NAME === africa }) // for comparing equality of Array[Byte] we should use === instead of ==
         val jo4 = __newHashJoinOp2(regionScan, jo3)(__lambda { (x, y) => x.R_REGIONKEY __== y.f.N_REGIONKEY[Int] })(__lambda { x => x.R_REGIONKEY })(__lambda { x => x.f.N_REGIONKEY[Int] })
         val wo = __newWindowOp(jo4)(__lambda { x => x.f.P_PARTKEY[Int] })(__lambda { x => x.minBy(__lambda { y => y.f.PS_SUPPLYCOST[Double] }) })
-        // val so = __newSortOp(wo)(__lambda {
-        //   (x, y) => {
-        //   __ifThenElse((x.wnd.f.S_ACCTBAL[Double] < y.wnd.f.S_ACCTBAL[Double]), 
-        //     unit(1), {
-        //       __ifThenElse(x.wnd.f.S_ACCTBAL[Double] > y.wnd.f.S_ACCTBAL[Double])(unit(-1))(
-        //         {
-        //           val res = __newVar(x.wnd.f.N_NAME[Array[Byte]] compare y.wnd.f.N_NAME[Array[Byte]])
-        //           __ifThenElse(infix_==(res, unit(0)), {
-        //             __assign(res, x.wnd.f.S_NAME[Array[Byte]] compare y.wnd.f.S_NAME[Array[Byte]])
-        //             if (res == 0) res = x.wnd.f.P_PARTKEY[Int] - y.wnd.f.P_PARTKEY[Int]
-        //           }
-        //     res
-        //   )
-        //   })
+        val so = __newSortOp(wo)(__lambda {
+          (x, y) =>
+            {
+              __ifThenElse((x.wnd.f.S_ACCTBAL[Double] < y.wnd.f.S_ACCTBAL[Double]),
+                unit(1), {
+                  __ifThenElse(x.wnd.f.S_ACCTBAL[Double] > y.wnd.f.S_ACCTBAL[Double],
+                    unit(-1), {
+                      val res = __newVar(x.wnd.f.N_NAME[Array[Byte]] compare y.wnd.f.N_NAME[Array[Byte]])
+                      __ifThenElse(infix_==(res, unit(0)), {
+                        __assign(res, x.wnd.f.S_NAME[Array[Byte]] compare y.wnd.f.S_NAME[Array[Byte]])
+                        __ifThenElse(infix_==(res, unit(0)), {
+                          __assign(res, x.wnd.f.P_PARTKEY[Int] - y.wnd.f.P_PARTKEY[Int])
+                        }, unit(()))
+                      },
+                        unit(()))
+                      res
+                    })
+                })
+            }
+        })
 
-        // ) } } )
-        // var j = 0
-        // val po = __newPrintOp(so)(e => {
-        //   val kv = e.wnd
-        //   printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL, (kv.S_NAME[Array[Byte]]).string, (kv.N_NAME[Array[Byte]]).string, kv.P_PARTKEY, (kv.P_MFGR[Array[Byte]]).string, (kv.S_ADDRESS[Array[Byte]]).string, (kv.S_PHONE[Array[Byte]]).string, (kv.S_COMMENT[Array[Byte]]).string)
-        //   j += 1
-        // }, () => j < 100)
-        // po.open
-        // po.next
-        // printf("(%d rows)\n", po.numRows)
+        val j = __newVar(0)
+        val po = __newPrintOp(so)(__lambda {
+          e =>
+            {
+              val kv = e.wnd
+              printf(unit("%.2f|%s|%s|%d|%s|%s|%s|%s\n"), kv.f.S_ACCTBAL, (kv.f.S_NAME[Array[Byte]]).string, (kv.f.N_NAME[Array[Byte]]).string, kv.f.P_PARTKEY, (kv.f.P_MFGR[Array[Byte]]).string, (kv.f.S_ADDRESS[Array[Byte]]).string, (kv.f.S_PHONE[Array[Byte]]).string, (kv.f.S_COMMENT[Array[Byte]]).string)
+              __assign(j, readVar(j) + unit(1))
+            }
+        }, __lambda { () => readVar(j) < 100 })
+        po.open
+        po.next
+        printf(unit("(%d rows)\n"), po.numRows)
         unit(())
       }
     }
@@ -107,4 +116,7 @@ class LiftedQueries {
 
   def Q1() =
     context.q1Block
+
+  def Q2() =
+    context.q2Block
 }

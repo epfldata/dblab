@@ -158,6 +158,8 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   implicit class ArrayByteRep(self: Rep[Array[Byte]]) {
     def endsWith(o: Rep[Array[Byte]]): Rep[Boolean] = arrayByteEndsWith(self, o)
+    def compare(o: Rep[Array[Byte]]): Rep[Int] = arrayByteCompare(self, o)
+    def string: Rep[String] = arrayByteString(self)
   }
 
   case class ArrayByteEndsWith(self: Rep[Array[Byte]], o: Rep[Array[Byte]]) extends FunctionDef[Boolean](Some(self), "endsWith", List(List(o))) {
@@ -166,6 +168,20 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   }
 
   def arrayByteEndsWith(self: Rep[Array[Byte]], o: Rep[Array[Byte]]): Rep[Boolean] = ArrayByteEndsWith(self, o)
+
+  case class ArrayByteCompare(self: Rep[Array[Byte]], o: Rep[Array[Byte]]) extends FunctionDef[Int](Some(self), "compare", List(List(o))) {
+    override def curriedConstructor = (copy _).curried
+    override def isPure = true
+  }
+
+  def arrayByteCompare(self: Rep[Array[Byte]], o: Rep[Array[Byte]]): Rep[Int] = ArrayByteCompare(self, o)
+
+  case class ArrayByteString(self: Rep[Array[Byte]]) extends FunctionDef[String](Some(self), "string", List(List())) {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+  }
+
+  def arrayByteString(self: Rep[Array[Byte]]): Rep[String] = ArrayByteString(self)
 
   implicit class AllRepOps[T: Manifest](self: Rep[T]) {
     def __==[T2: Manifest](o: Rep[T2]): Rep[Boolean] = infix_==(self, o)

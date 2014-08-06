@@ -8,6 +8,7 @@ import optimization._
 import pardis.optimization._
 
 class SampleQuery extends FlatSpec with ShouldMatchers {
+
   def test1() {
     def sample1() = new DeepDSL {
       def sample1 = {
@@ -57,7 +58,22 @@ class SampleQuery extends FlatSpec with ShouldMatchers {
     val finalProgram = ir2Program.createProgram(partialyEvaluated)
 
     println(finalProgram)
+    val LegoGenerator = new LegoGenerator(1, false)
     LegoGenerator.apply(finalProgram)
   }
-  test1()
+  def test2() {
+    val lq = new LiftedQueries()
+    val block = lq.Q2
+
+    val ir2Program = new { val IR = lq.context } with IRToProgram {
+    }
+
+    val finalProgram = ir2Program.createProgram(block)
+    println(finalProgram)
+    val LegoGenerator = new LegoGenerator(2, true)
+    LegoGenerator.apply(finalProgram)
+  }
+
+  // test1()
+  test2()
 }
