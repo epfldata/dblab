@@ -4,6 +4,7 @@ package deep
 
 import scala.language.implicitConversions
 import pardis.utils.Utils.{ manifestToString => m2s }
+import pardis.shallow.AbstractRecord
 
 // FIXME in the righthand side of the genreated case class invokations, type parameters should be filled in.
 
@@ -15,10 +16,37 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     override def curriedConstructor = (x: Any) => copy()
   }
   def loadLineitem(): Rep[Array[LINEITEMRecord]] = LoadLineItem()
+  case class LoadPart() extends FunctionDef[Array[PARTRecord]](None, "loadPart", List(Nil)) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+  def loadPart(): Rep[Array[PARTRecord]] = LoadPart()
+  case class LoadPartsupp() extends FunctionDef[Array[PARTSUPPRecord]](None, "loadPartsupp", List(Nil)) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+  def loadPartsupp(): Rep[Array[PARTSUPPRecord]] = LoadPartsupp()
+  case class LoadNation() extends FunctionDef[Array[NATIONRecord]](None, "loadNation", List(Nil)) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+  def loadNation(): Rep[Array[NATIONRecord]] = LoadNation()
+
+  case class LoadRegion() extends FunctionDef[Array[REGIONRecord]](None, "loadRegion", List(Nil)) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+  def loadRegion(): Rep[Array[REGIONRecord]] = LoadRegion()
+
+  case class LoadSupplier() extends FunctionDef[Array[SUPPLIERRecord]](None, "loadSupplier", List(Nil)) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+  def loadSupplier(): Rep[Array[SUPPLIERRecord]] = LoadSupplier()
+
   case class ParseDate(date: Rep[String]) extends FunctionDef[Long](None, "parseDate", List(List(date))) {
     override def curriedConstructor = (copy _)
   }
   def parseDate(date: Rep[String]): Rep[Long] = ParseDate(date)
+  case class ParseString(string: Rep[String]) extends FunctionDef[Array[Byte]](None, "parseString", List(List(string))) {
+    override def curriedConstructor = (copy _)
+  }
+  def parseString(string: Rep[String]): Rep[Array[Byte]] = ParseString(string)
   case class Println(x: Rep[Any]) extends FunctionDef[Unit](None, "println", List(List(x))) {
     override def curriedConstructor = (copy _)
   }
@@ -70,6 +98,8 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     __newPrintOp(parent)(printFunc, limit)
   }
 
+  def __newHashJoinOp2[A <: AbstractRecord, B <: AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String] = unit(""), rightAlias: Rep[String] = unit(""))(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit evidence$10: Manifest[A], evidence$11: Manifest[B], evidence$12: Manifest[C], manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[HashJoinOp[A, B, C]] = __newHashJoinOp[A, B, C](leftParent, rightParent, leftAlias, rightAlias)(joinCond)(leftHash)(rightHash)(manifestA, manifestB, manifestC, manifestA, manifestB, manifestC)
+
   // TODO scala.Char class should be lifted instead of the java one
 
   case class Character$minus1(self: Rep[Character], x: Rep[Character]) extends FunctionDef[Int](Some(self), "-", List(List(x))) {
@@ -104,6 +134,7 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   implicit class ArrayRep2[T](self: Rep[Array[T]])(implicit manifestT: Manifest[T]) {
     def filter(p: Rep[T => Boolean]): Rep[Array[T]] = arrayFilter(self, p)
+    def ===[T2: Manifest](o: Rep[Array[T2]]): Rep[Boolean] = arrayEquals(self, o)
   }
 
   def arrayFilter[T](self: Rep[Array[T]], p: Rep[T => Boolean])(implicit manifestT: Manifest[T]): Rep[Array[T]] = ArrayFilter[T](self, p)
@@ -116,6 +147,28 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   case class HashMapNew2_2[A, B]()(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[HashMap[A, B]](None, s"new HashMap[${m2s(manifestA)}, ${m2s(manifestB)}]", List()) {
     override def curriedConstructor = (x: Any) => copy[A, B]()
+  }
+
+  case class ArrayEquals[T1: Manifest, T2: Manifest](self: Rep[Array[T1]], o: Rep[Array[T2]]) extends FunctionDef[Boolean](Some(self), "===", List(List(o))) {
+    override def curriedConstructor = (copy[T1, T2] _).curried
+    override def isPure = true
+  }
+
+  def arrayEquals[T1: Manifest, T2: Manifest](self: Rep[Array[T1]], o: Rep[Array[T2]]): Rep[Boolean] = ArrayEquals(self, o)
+
+  implicit class ArrayByteRep(self: Rep[Array[Byte]]) {
+    def endsWith(o: Rep[Array[Byte]]): Rep[Boolean] = arrayByteEndsWith(self, o)
+  }
+
+  case class ArrayByteEndsWith(self: Rep[Array[Byte]], o: Rep[Array[Byte]]) extends FunctionDef[Boolean](Some(self), "endsWith", List(List(o))) {
+    override def curriedConstructor = (copy _).curried
+    override def isPure = true
+  }
+
+  def arrayByteEndsWith(self: Rep[Array[Byte]], o: Rep[Array[Byte]]): Rep[Boolean] = ArrayByteEndsWith(self, o)
+
+  implicit class AllRepOps[T: Manifest](self: Rep[T]) {
+    def __==[T2: Manifest](o: Rep[T2]): Rep[Boolean] = infix_==(self, o)
   }
 }
 

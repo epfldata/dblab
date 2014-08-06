@@ -243,3 +243,76 @@ trait DefaultEntryImplicits { this: DefaultEntryComponent =>
 }
 trait DefaultEntryComponent extends DefaultEntryOps with DefaultEntryImplicits { self: DeepDSL => }
 
+trait ArrayBufferOps extends Base { this: DeepDSL =>
+  implicit class ArrayBufferRep[A](self: Rep[ArrayBuffer[A]])(implicit manifestA: Manifest[A]) {
+    def size(): Rep[Int] = arrayBufferSize[A](self)(manifestA)
+    def apply(i: Rep[Int]): Rep[A] = arrayBufferApply[A](self, i)(manifestA)
+    def update(i: Rep[Int], x: Rep[A]): Rep[Unit] = arrayBufferUpdate[A](self, i, x)(manifestA)
+    def indexWhere(p: Rep[(A => Boolean)]): Rep[Int] = arrayBufferIndexWhere[A](self, p)(manifestA)
+    def clear(): Rep[Unit] = arrayBufferClear[A](self)(manifestA)
+    def minBy[B](f: Rep[(A => B)])(implicit manifestB: Manifest[B], cmp: Ordering[B]): Rep[A] = arrayBufferMinBy[A, B](self, f)(manifestA, manifestB, cmp)
+    def initialSize: Rep[Int] = arrayBuffer_Field_InitialSize[A](self)(manifestA)
+  }
+  // constructors
+  def __newArrayBuffer[A](initialSize: Rep[Int])(implicit overload1: Overloaded1, manifestA: Manifest[A]): Rep[ArrayBuffer[A]] = arrayBufferNew1[A](initialSize)(manifestA)
+  def __newArrayBuffer[A](implicit overload2: Overloaded2, manifestA: Manifest[A]): Rep[ArrayBuffer[A]] = arrayBufferNew2[A](manifestA)
+  // case classes
+  case class ArrayBufferNew1[A](initialSize: Rep[Int])(implicit val manifestA: Manifest[A]) extends FunctionDef[ArrayBuffer[A]](None, "new ArrayBuffer", List(List(initialSize))) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ArrayBufferNew2[A]()(implicit val manifestA: Manifest[A]) extends FunctionDef[ArrayBuffer[A]](None, "new ArrayBuffer", List()) {
+    override def curriedConstructor = (x: Any) => copy[A]()
+  }
+
+  case class ArrayBufferSize[A](self: Rep[ArrayBuffer[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Int](Some(self), "size", List()) {
+    override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
+  }
+
+  case class ArrayBufferApply[A](self: Rep[ArrayBuffer[A]], i: Rep[Int])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "apply", List(List(i))) {
+    override def curriedConstructor = (copy[A] _).curried
+    override def isPure = true
+
+  }
+
+  case class ArrayBufferUpdate[A](self: Rep[ArrayBuffer[A]], i: Rep[Int], x: Rep[A])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "update", List(List(i, x))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class ArrayBufferIndexWhere[A](self: Rep[ArrayBuffer[A]], p: Rep[((A) => Boolean)])(implicit val manifestA: Manifest[A]) extends FunctionDef[Int](Some(self), "indexWhere", List(List(p))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class ArrayBufferClear[A](self: Rep[ArrayBuffer[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "clear", List()) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ArrayBufferMinBy[A, B](self: Rep[ArrayBuffer[A]], f: Rep[((A) => B)])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val cmp: Ordering[B]) extends FunctionDef[A](Some(self), "minBy", List(List(f))) {
+    override def curriedConstructor = (copy[A, B] _).curried
+  }
+
+  case class ArrayBuffer_Field_InitialSize[A](self: Rep[ArrayBuffer[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Int](self, "initialSize") {
+    override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def arrayBufferNew1[A](initialSize: Rep[Int])(implicit manifestA: Manifest[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew1[A](initialSize)
+  def arrayBufferNew2[A](implicit manifestA: Manifest[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew2[A]()
+  def arrayBufferSize[A](self: Rep[ArrayBuffer[A]])(implicit manifestA: Manifest[A]): Rep[Int] = ArrayBufferSize[A](self)
+  def arrayBufferApply[A](self: Rep[ArrayBuffer[A]], i: Rep[Int])(implicit manifestA: Manifest[A]): Rep[A] = ArrayBufferApply[A](self, i)
+  def arrayBufferUpdate[A](self: Rep[ArrayBuffer[A]], i: Rep[Int], x: Rep[A])(implicit manifestA: Manifest[A]): Rep[Unit] = ArrayBufferUpdate[A](self, i, x)
+  def arrayBufferIndexWhere[A](self: Rep[ArrayBuffer[A]], p: Rep[((A) => Boolean)])(implicit manifestA: Manifest[A]): Rep[Int] = ArrayBufferIndexWhere[A](self, p)
+  def arrayBufferClear[A](self: Rep[ArrayBuffer[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = ArrayBufferClear[A](self)
+  def arrayBufferMinBy[A, B](self: Rep[ArrayBuffer[A]], f: Rep[((A) => B)])(implicit manifestA: Manifest[A], manifestB: Manifest[B], cmp: Ordering[B]): Rep[A] = ArrayBufferMinBy[A, B](self, f)
+  def arrayBuffer_Field_InitialSize[A](self: Rep[ArrayBuffer[A]])(implicit manifestA: Manifest[A]): Rep[Int] = ArrayBuffer_Field_InitialSize[A](self)
+  type ArrayBuffer[A] = scala.collection.mutable.ArrayBuffer[A]
+}
+trait ArrayBufferImplicits { this: ArrayBufferComponent =>
+  // Add implicit conversions here!
+}
+trait ArrayBufferComponent extends ArrayBufferOps with ArrayBufferImplicits { self: DeepDSL => }
+

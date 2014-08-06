@@ -55,6 +55,7 @@ trait Q1 extends GenericQuery {
 
 trait Q2 extends GenericQuery {
   def Q2(numRuns: Int) {
+    import queryengine._
     val partTable = loadPart()
     val partsuppTable = loadPartsupp()
     val nationTable = loadNation()

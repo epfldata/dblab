@@ -6,7 +6,8 @@ import queryengine.volcano._
 
 object ImplGenerator {
   def main(args: Array[String]) {
-    genOps
+    // genOps
+    genQueries
   }
 
   def genOps {
@@ -24,4 +25,11 @@ object ImplGenerator {
     // println("====")
     // impl.ImplLifter.liftClass[SelectOp[_]]
   }
-}*/
+
+  def genQueries {
+    impl.ImplLifter.liftClass[Q1]
+    println("====")
+    impl.ImplLifter.liftClass[Q2]
+  }
+}
+*/ 
