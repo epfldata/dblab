@@ -6,7 +6,7 @@ import queryengine.volcano._
 import ch.epfl.data.pardis.shallow.{ CaseClassRecord }
 import ch.epfl.data.pardis.shallow.{ AbstractRecord, DynamicCompositeRecord }
 
-trait Queries extends Q1 with Q2 with Q3 with Q4 with Q5 with Q6 with Q7 with Q8 with Q9 with Q10 with Q12 with Q17 with Q19 with Q21 with Q22
+trait Queries extends Q1 with Q2 with Q3 with Q4 with Q5 with Q6 with Q7 with Q8 with Q9 with Q10 with Q11 with Q12 with Q17 with Q19 with Q20 with Q21 with Q22
 
 trait GenericQuery extends ScalaImpl with storagemanager.Loader {
   var profile = true
@@ -487,6 +487,45 @@ trait Q10 extends GenericQuery {
   }
 }
 
+trait Q11 extends GenericQuery {
+  def Q11(numRuns: Int) {
+    val partsuppTable = loadPartsupp()
+    val supplierTable = loadSupplier()
+    val nationTable = loadNation()
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val uk = parseString("UNITED KINGDOM")
+        val scanSupplier = ScanOp(supplierTable)
+        val scanNation = SelectOp(ScanOp(nationTable))(x => x.N_NAME === uk)
+        val jo1 = HashJoinOp(scanNation, scanSupplier)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY)
+        val scanPartsupp = ScanOp(partsuppTable)
+        val jo2 = HashJoinOp(jo1, scanPartsupp)((x, y) => x.S_SUPPKEY == y.PS_SUPPKEY)(x => x.S_SUPPKEY[Int])(x => x.PS_SUPPKEY)
+        val wo = WindowOp(jo2)(x => x.PS_PARTKEY[Int])(x => {
+          x.foldLeft(0.0) { (cnt, e) => cnt + (e.PS_SUPPLYCOST[Double] * e.PS_AVAILQTY[Int]) }
+        })
+        wo.open
+        val vo = ViewOp(wo)
+        // Calculate total sum
+        val aggOp = AggOp(vo, 1)(x => "Total")((t, currAgg) => currAgg + t.wnd)
+        val total = SubquerySingleResult(aggOp).getResult.aggs(0) * 0.0001
+        // Calculate final result
+        vo.reset
+        val so = SelectOp(vo)(x => x.wnd > total)
+        val sortOp = SortOp(so)((x, y) => {
+          if (x.wnd > y.wnd) -1
+          else if (x.wnd < y.wnd) 1
+          else 0
+        })
+        val po = PrintOp(sortOp)(kv => printf("%d|%.2f\n", kv.key, kv.wnd))
+        po.open
+        po.next
+        printf("(%d rows)\n", po.numRows)
+        ()
+      })
+    }
+  }
+}
+
 trait Q12 extends GenericQuery {
   def Q12(numRuns: Int) {
     val lineitemTable = loadLineitem()
@@ -595,6 +634,56 @@ trait Q19 extends GenericQuery {
         val aggOp = AggOp(jo, 1)(x => "Total")(
           (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
         val po = PrintOp(aggOp)(kv => printf("%.4f\n", kv.aggs(0)))
+        po.open
+        po.next
+        printf("(%d rows)\n", po.numRows)
+        ()
+      })
+    }
+  }
+}
+
+trait Q20 extends GenericQuery {
+  case class Q20GRPRecord(
+    val PS_PARTKEY: Int,
+    val PS_SUPPKEY: Int,
+    val PS_AVAILQTY: Int) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "PS_PARTKEY"  => Some(PS_PARTKEY)
+      case "PS_SUPPKEY"  => Some(PS_SUPPKEY)
+      case "PS_AVAILQTY" => Some(PS_AVAILQTY)
+      case _             => None
+    }
+  }
+
+  def Q20(numRuns: Int) {
+    val partTable = loadPart()
+    val nationTable = loadNation()
+    val supplierTable = loadSupplier()
+    val partsuppTable = loadPartsupp()
+    val lineitemTable = loadLineitem()
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val constantDate1 = parseDate("1996-01-01")
+        val constantDate2 = parseDate("1997-01-01")
+        val jordan = parseString("JORDAN")
+        val azure = parseString("azure")
+        val scanPart = SelectOp(ScanOp(partTable))(x => x.P_NAME startsWith azure)
+        val scanPartsupp = ScanOp(partsuppTable)
+        val jo1 = HashJoinOp(scanPart, scanPartsupp)((x, y) => x.P_PARTKEY == y.PS_PARTKEY)(x => x.P_PARTKEY)(x => x.PS_PARTKEY)
+        val scanLineitem = SelectOp(ScanOp(lineitemTable))(x => x.L_SHIPDATE >= constantDate1 && x.L_SHIPDATE < constantDate2)
+        val jo2 = HashJoinOp(jo1, scanLineitem)((x, y) => x.PS_PARTKEY[Int] == y.L_PARTKEY && x.PS_SUPPKEY[Int] == y.L_SUPPKEY)(x => x.PS_PARTKEY[Int])(x => x.L_PARTKEY)
+        val aggOp = AggOp(jo2, 1)(x => new Q20GRPRecord(x.PS_PARTKEY[Int], x.PS_SUPPKEY[Int], x.PS_AVAILQTY[Int]))((t, currAgg) => { currAgg + t.L_QUANTITY[Double] })
+        val selOp = SelectOp(aggOp)(x => x.key.PS_AVAILQTY > 0.5 * x.aggs(0))
+        val scanSupplier = ScanOp(supplierTable)
+        val jo3 = HashJoinOp(aggOp, scanSupplier)((x, y) => x.key.PS_SUPPKEY == y.S_SUPPKEY)(x => x.key.PS_SUPPKEY)(x => x.S_SUPPKEY)
+        val scanNation = SelectOp(ScanOp(nationTable))(x => x.N_NAME === jordan)
+        val jo4 = HashJoinOp(scanNation, jo3)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])
+        val sortOp = SortOp(jo4)((x, y) => {
+          // TODO: Possible bug here in ArrayByteOps. Diff does not work
+          (x.S_NAME[Array[Byte]] zip y.S_NAME[Array[Byte]]).foldLeft(0)((res, e) => { if (res == 0) e._1.asInstanceOf[Byte] - e._2.asInstanceOf[Byte] else res })
+        })
+        val po = PrintOp(sortOp)(kv => printf("%s|%s\n", kv.S_NAME[Array[Byte]].string, kv.S_ADDRESS[Array[Byte]].string))
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)

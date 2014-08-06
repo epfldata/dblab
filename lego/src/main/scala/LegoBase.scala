@@ -12,7 +12,7 @@ trait ScalaImpl {
   def parseString(x: String): Array[Byte] = x.getBytes
 }
 
-trait LegoRunner {
+trait LegoRunner extends Queries {
   val numRuns: scala.Int = 1
   var currQuery: java.lang.String = ""
 
@@ -20,7 +20,7 @@ trait LegoRunner {
 
   def getResultFileName = "results/" + currQuery + ".result_big"
 
-  def run(args: Array[String], funs: List[(Int => Unit)]) {
+  def run(args: Array[String]) {
     Config.datapath = args(0)
     Config.checkResults = true
 
@@ -31,21 +31,23 @@ trait LegoRunner {
       currQuery = q
       Console.withOut(new PrintStream(getOutputName)) {
         currQuery match {
-          case "Q1"  => funs(0)(numRuns)
-          case "Q2"  => funs(1)(numRuns)
-          case "Q3"  => funs(2)(numRuns)
-          case "Q4"  => funs(3)(numRuns)
-          case "Q5"  => funs(4)(numRuns)
-          case "Q6"  => funs(5)(numRuns)
-          case "Q7"  => funs(6)(numRuns)
-          case "Q8"  => funs(7)(numRuns)
-          case "Q9"  => funs(8)(numRuns)
-          case "Q10" => funs(9)(numRuns)
-          case "Q12" => funs(10)(numRuns)
-          case "Q17" => funs(11)(numRuns)
-          case "Q19" => funs(12)(numRuns)
-          case "Q21" => funs(13)(numRuns)
-          case "Q22" => funs(14)(numRuns)
+          case "Q1"  => Q1(numRuns)
+          case "Q2"  => Q2(numRuns)
+          case "Q3"  => Q3(numRuns)
+          case "Q4"  => Q4(numRuns)
+          case "Q5"  => Q5(numRuns)
+          case "Q6"  => Q6(numRuns)
+          case "Q7"  => Q7(numRuns)
+          case "Q8"  => Q8(numRuns)
+          case "Q9"  => Q9(numRuns)
+          case "Q10" => Q10(numRuns)
+          case "Q11" => Q11(numRuns)
+          case "Q12" => Q12(numRuns)
+          case "Q17" => Q17(numRuns)
+          case "Q19" => Q19(numRuns)
+          case "Q20" => Q20(numRuns)
+          case "Q21" => Q21(numRuns)
+          case "Q22" => Q22(numRuns)
           case _     => throw new Exception("Query not supported!")
         }
         // Check results
@@ -73,24 +75,8 @@ trait LegoRunner {
   }
 }
 
-object MiniDB extends LegoRunner with storagemanager.Loader with Queries {
-
+object MiniDB extends LegoRunner with storagemanager.Loader {
   def main(args: Array[String]) {
-    val q1 = (x: Int) => Q1(x)
-    val q2 = (x: Int) => Q2(x)
-    val q3 = (x: Int) => Q3(x)
-    val q4 = (x: Int) => Q4(x)
-    val q5 = (x: Int) => Q5(x)
-    val q6 = (x: Int) => Q6(x)
-    val q7 = (x: Int) => Q7(x)
-    val q8 = (x: Int) => Q8(x)
-    val q9 = (x: Int) => Q9(x)
-    val q10 = (x: Int) => Q10(x)
-    val q12 = (x: Int) => Q12(x)
-    val q17 = (x: Int) => Q17(x)
-    val q19 = (x: Int) => Q19(x)
-    val q21 = (x: Int) => Q21(x)
-    val q22 = (x: Int) => Q22(x)
-    run(args, List(q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q12, q17, q19, q21, q22))
+    run(args)
   }
 }

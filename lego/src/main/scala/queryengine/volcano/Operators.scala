@@ -313,7 +313,7 @@ case class SubquerySingleResult[A: Manifest](parent: Operator[A]) extends Operat
 }
 
 case class HashJoinAnti[A: Manifest, B: Manifest, C: Manifest](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
-  val hm = HashMap[C, ArrayBuffer[A]]()
+  val hm = getShallowHashMap[C, ArrayBuffer[A]]()
   var keySet = hm.keySet
 
   def removeFromList(elemList: ArrayBuffer[A], e: A, idx: Int) = {
@@ -375,3 +375,23 @@ case class HashJoinAnti[A: Manifest, B: Manifest, C: Manifest](leftParent: Opera
   def reset() { rightParent.reset; leftParent.reset; hm.clear; }
 }
 
+case class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
+  var idx = 0
+  var size = 0
+  val table = ArrayBuffer[A]()
+
+  def open() = {
+    parent.open
+    parent foreach { t: A => { table.append(t) } }
+    size = table.size
+  }
+  def next() = {
+    if (idx < size) {
+      val e = table(idx)
+      idx += 1
+      e
+    } else NullDynamicRecord
+  }
+  def close() {}
+  def reset() { idx = 0 }
+}
