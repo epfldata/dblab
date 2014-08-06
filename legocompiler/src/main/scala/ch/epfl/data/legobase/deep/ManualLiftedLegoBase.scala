@@ -176,7 +176,7 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   def arrayByteCompare(self: Rep[Array[Byte]], o: Rep[Array[Byte]]): Rep[Int] = ArrayByteCompare(self, o)
 
-  case class ArrayByteString(self: Rep[Array[Byte]]) extends FunctionDef[String](Some(self), "string", List(List())) {
+  case class ArrayByteString(self: Rep[Array[Byte]]) extends FunctionDef[String](Some(self), "string", List()) {
     override def curriedConstructor = (copy _)
     override def isPure = true
   }

@@ -99,7 +99,7 @@ class LiftedQueries {
           e =>
             {
               val kv = e.wnd
-              printf(unit("%.2f|%s|%s|%d|%s|%s|%s|%s\n"), kv.f.S_ACCTBAL, (kv.f.S_NAME[Array[Byte]]).string, (kv.f.N_NAME[Array[Byte]]).string, kv.f.P_PARTKEY, (kv.f.P_MFGR[Array[Byte]]).string, (kv.f.S_ADDRESS[Array[Byte]]).string, (kv.f.S_PHONE[Array[Byte]]).string, (kv.f.S_COMMENT[Array[Byte]]).string)
+              printf(unit("%.2f|%s|%s|%d|%s|%s|%s|%s\n"), kv.f.S_ACCTBAL[Double], (kv.f.S_NAME[Array[Byte]]).string, (kv.f.N_NAME[Array[Byte]]).string, kv.f.P_PARTKEY[Int], (kv.f.P_MFGR[Array[Byte]]).string, (kv.f.S_ADDRESS[Array[Byte]]).string, (kv.f.S_PHONE[Array[Byte]]).string, (kv.f.S_COMMENT[Array[Byte]]).string)
               __assign(j, readVar(j) + unit(1))
             }
         }, __lambda { () => readVar(j) < 100 })

@@ -39,7 +39,7 @@ object OrderingFactory {
   override def getTraitSignature(): Document = s"""object LEGO_QUERY extends LegoRunner with GenericQuery {
   def main(args: Array[String]) {
     val query = (x: Int) => main()
-    val list = ${if (query == 1) "List(query)" else 1.to(query).mkString("List(", ", ", ", ") + "query)"}
+    val list = ${if (query == 1) "List(query)" else 1.until(query).map(x => null).mkString("List(", ", ", ", ") + "query)"}
     run(args, list)
   }
   """
