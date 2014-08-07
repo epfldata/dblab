@@ -377,15 +377,32 @@ case class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
   def close() {}
   def reset() { idx = 0 }
 }
-/*
+
 case class LeftOuterJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord: Manifest, C: Manifest](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   var tmpCount = -1
   var tmpBuffer = ArrayBuffer[B]()
   var tmpLine = NullDynamicRecord[A]
   val hm = new HashMap[C, ArrayBuffer[B]]()
+  val defaultB = getDefaultRecord[B]()
 
-
-  val defaultB = DefaultRecord[B]()
+  // Note: maybe this can move to Pardis and be generalized?
+  def defaultValue(n: String) = n match {
+    case "boolean"                        => false.asInstanceOf[Boolean]
+    case "byte"                           => (0: Byte).asInstanceOf[Byte]
+    case "short"                          => (0: Short).asInstanceOf[Short]
+    case "char"                           => '\0'.asInstanceOf[Char]
+    case "java.lang.Character"            => '\0'.asInstanceOf[java.lang.Character]
+    case "int"                            => 0.asInstanceOf[Int]
+    case "long"                           => 0L.asInstanceOf[Long]
+    case "float"                          => 0.0F.asInstanceOf[Float]
+    case "double"                         => 0.0.asInstanceOf[Double]
+    case "ch.epfl.data.legobase.LBString" => LBString("".getBytes)
+    case dflt @ _                         => throw new Exception("Unsupported type: " + dflt)
+  }
+  def getDefaultRecord[B: Manifest](): B = {
+    val values = manifest[B].runtimeClass.getDeclaredFields().map(x => defaultValue(x.getType.getName))
+    manifest[B].runtimeClass.getConstructors()(0).newInstance(values.toSeq.asInstanceOf[Seq[Object]]: _*).asInstanceOf[B]
+  }
 
   def open() = {
     leftParent.open
@@ -399,7 +416,7 @@ case class LeftOuterJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord: M
     }
   }
   def next() = {
-    var res = NullDynamicRecord[CompositeRecord[A, B]]
+    var res = NullDynamicRecord[DynamicCompositeRecord[A, B]]
     if (tmpCount != -1) {
       while (tmpCount < tmpBuffer.size && !joinCond(tmpLine, tmpBuffer(tmpCount))) tmpCount += 1
       if (tmpCount != tmpBuffer.size) {
@@ -427,4 +444,3 @@ case class LeftOuterJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord: M
   def close() {}
   def reset() { rightParent.reset; leftParent.reset; hm.clear; tmpLine = NullDynamicRecord[A]; tmpCount = 0; tmpBuffer.clear }
 }
-*/

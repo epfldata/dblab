@@ -557,7 +557,7 @@ trait Q12 extends GenericQuery {
 
 trait Q13 extends GenericQuery {
   def Q13(numRuns: Int) {
-    /*  val customerTable = loadCustomer()
+    val customerTable = loadCustomer()
     val ordersTable = loadOrders()
     for (i <- 0 until numRuns) {
       runQuery({
@@ -589,7 +589,7 @@ trait Q13 extends GenericQuery {
         printf("(%d rows)\n", po.numRows)
         ()
       })
-    }*/
+    }
   }
 }
 
