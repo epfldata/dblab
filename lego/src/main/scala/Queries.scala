@@ -6,7 +6,7 @@ import queryengine.volcano._
 import ch.epfl.data.pardis.shallow.{ CaseClassRecord }
 import ch.epfl.data.pardis.shallow.{ AbstractRecord, DynamicCompositeRecord }
 
-trait Queries extends Q1 with Q2 with Q3 with Q4 with Q5 with Q6 with Q7 with Q8 with Q9 with Q10 with Q11 with Q12 with Q17 with Q19 with Q20 with Q21 with Q22
+trait Queries extends Q1 with Q2 with Q3 with Q4 with Q5 with Q6 with Q7 with Q8 with Q9 with Q10 with Q11 with Q12 with Q13 with Q14 with Q15 with Q16 with Q17 with Q18 with Q19 with Q20 with Q21 with Q22
 
 trait GenericQuery extends ScalaImpl with storagemanager.Loader {
   var profile = true
@@ -557,6 +557,183 @@ trait Q12 extends GenericQuery {
   }
 }
 
+trait Q13 extends GenericQuery {
+  def Q13(numRuns: Int) {
+    /*  val customerTable = loadCustomer()
+    val ordersTable = loadOrders()
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val unusual = parseString("unusual")
+        val packages = parseString("packages")
+        val scanCustomer = ScanOp(customerTable)
+        val scanOrders = SelectOp(ScanOp(ordersTable))(x => {
+          val idxu = x.O_COMMENT.indexOfSlice(unusual, 0)
+          val idxp = x.O_COMMENT.indexOfSlice(packages, idxu)
+          !(idxu != -1 && idxp != -1)
+        })
+        val jo = LeftOuterJoinOp(scanCustomer, scanOrders)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY)
+        val aggOp1 = AggOp(jo, 1)(x => x.C_CUSTKEY[Int])(
+          (t, currAgg) => { if (t.O_ORDERKEY != 0.0) currAgg + 1 else currAgg })
+        val aggOp2 = AggOp(aggOp1, 1)(x => x.aggs(0))(
+          (t, currAgg) => { currAgg + 1 })
+        val sortOp = SortOp(aggOp2)((x, y) => {
+          if (x.aggs(0) < y.aggs(0)) 1
+          else if (x.aggs(0) > y.aggs(0)) -1
+          else {
+            if (x.key < y.key) 1
+            else if (x.key > y.key) -1
+            else 0
+          }
+        })
+        val po = PrintOp(sortOp)(kv => printf("%.0f|%.0f\n", kv.key, kv.aggs(0)))
+        po.open
+        po.next
+        printf("(%d rows)\n", po.numRows)
+        ()
+      })
+    }*/
+  }
+}
+
+trait Q14 extends GenericQuery {
+  def Q14(numRuns: Int) {
+    val lineitemTable = loadLineitem()
+    val partTable = loadPart()
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val promo = parseString("PROMO")
+        val constantDate = parseDate("1994-04-01")
+        val constantDate2 = parseDate("1994-03-01")
+        val so1 = ScanOp(partTable)
+        val so2 = SelectOp(ScanOp(lineitemTable))(x => x.L_SHIPDATE >= constantDate2 && x.L_SHIPDATE < constantDate)
+        val jo = HashJoinOp(so1, so2)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY)
+        val aggOp = AggOp(jo, 3)(x => "Total")(
+          (t, currAgg) => {
+            if (t.P_TYPE[Array[Byte]] startsWith promo)
+              currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))
+            else currAgg
+          },
+          (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
+        val mapOp = MapOp(aggOp)(kv => kv.aggs(2) = (kv.aggs(0) * 100) / kv.aggs(1))
+        val po = PrintOp(mapOp)(kv => printf("%.4f\n", kv.aggs(2)))
+        po.open
+        po.next
+        printf("(%d rows)\n", po.numRows)
+        ()
+      })
+    }
+  }
+}
+
+trait Q15 extends GenericQuery {
+  def Q15(numRuns: Int) {
+    val lineitemTable = loadLineitem()
+    val supplierTable = loadSupplier()
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val constantDate = parseDate("1993-09-01")
+        val constantDate2 = parseDate("1993-12-01")
+        val scanLineitem = SelectOp(ScanOp(lineitemTable))(x => x.L_SHIPDATE >= constantDate && x.L_SHIPDATE < constantDate2)
+        val aggOp1 = AggOp(scanLineitem, 1)(x => x.L_SUPPKEY)(
+          (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE * (1.0 - t.L_DISCOUNT)) })
+        // Create view
+        aggOp1.open
+        val vo = ViewOp(aggOp1)
+        // Get max
+        val aggOp2 = AggOp(vo, 1)(x => "MAXREVENUE")(
+          (t, currAgg) => { if (currAgg < t.aggs(0)) t.aggs(0) else currAgg })
+        aggOp2.open
+        val maxRevenue = SubquerySingleResult(aggOp2).getResult.aggs(0)
+        vo.reset
+        // Calcuate result
+        val scanSupplier = ScanOp(supplierTable)
+        val jo = HashJoinOp(scanSupplier, vo)((x, y) => x.S_SUPPKEY == y.key && y.aggs(0) == maxRevenue)(x => x.S_SUPPKEY)(x => x.key)
+        val po = PrintOp(jo)(kv => printf("%d|%s|%s|%s|%.4f\n", kv.S_SUPPKEY, kv.S_NAME[Array[Byte]].string, kv.S_ADDRESS[Array[Byte]].string, kv.S_PHONE[Array[Byte]].string, kv.getField("aggs").get.asInstanceOf[Array[Double]](0)))
+        po.open
+        po.next
+        printf("(%d rows)\n", po.numRows)
+        ()
+      })
+    }
+  }
+}
+
+// Note: Q16 produces wrong result. We know why this happens: Array[Byte] should
+// be wrapped to a MyString class so that we can wrap hash and equals method
+// appropriately. 
+trait Q16 extends GenericQuery {
+  case class Q16GRPRecord1(
+    val P_BRAND: Array[Byte],
+    val P_TYPE: Array[Byte],
+    val P_SIZE: Int,
+    val PS_SUPPKEY: Int) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "P_BRAND"    => Some(P_BRAND)
+      case "P_TYPE"     => Some(P_TYPE)
+      case "P_SIZE"     => Some(P_SIZE)
+      case "PS_SUPPKEY" => Some(PS_SUPPKEY)
+      case _            => None
+    }
+  }
+  case class Q16GRPRecord2(
+    val P_BRAND: Array[Byte],
+    val P_TYPE: Array[Byte],
+    val P_SIZE: Int) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "P_BRAND" => Some(P_BRAND)
+      case "P_TYPE"  => Some(P_TYPE)
+      case "P_SIZE"  => Some(P_SIZE)
+      case _         => None
+    }
+  }
+
+  def Q16(numRuns: Int) {
+    val supplierTable = loadSupplier()
+    val partTable = loadPart()
+    val partsuppTable = loadPartsupp()
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val str1 = parseString("Customer")
+        val str2 = parseString("Complaints")
+        val brand21 = parseString("Brand#21")
+        val promoPlated = parseString("PROMO PLATED")
+        val partScan = SelectOp(ScanOp(partTable))(x => !(x.P_BRAND startsWith brand21) && !(x.P_TYPE startsWith promoPlated) &&
+          (x.P_SIZE == 23 || x.P_SIZE == 3 || x.P_SIZE == 33 || x.P_SIZE == 29 ||
+            x.P_SIZE == 40 || x.P_SIZE == 27 || x.P_SIZE == 22 || x.P_SIZE == 4))
+        val partsuppScan = ScanOp(partsuppTable)
+        val jo1 = HashJoinOp(partScan, partsuppScan)((x, y) => x.P_PARTKEY == y.PS_PARTKEY)(x => x.P_PARTKEY)(x => x.PS_PARTKEY)
+        val supplierScan = SelectOp(ScanOp(supplierTable))(x => {
+          val idxu = x.S_COMMENT.indexOfSlice(str1, 0)
+          val idxp = x.S_COMMENT.indexOfSlice(str2, idxu)
+          idxu != -1 && idxp != -1
+        })
+        val jo2 = HashJoinAnti(jo1, supplierScan)((x, y) => x.PS_SUPPKEY == y.S_SUPPKEY)(x => x.PS_SUPPKEY[Int])(x => x.S_SUPPKEY)
+        val aggOp = AggOp(jo2, 1)(x => new Q16GRPRecord1(x.P_BRAND[Array[Byte]], x.P_TYPE[Array[Byte]],
+          x.P_SIZE[Int], x.PS_SUPPKEY[Int]))((t, currAgg) => currAgg)
+        val aggOp2 = AggOp(aggOp, 1)(x => new Q16GRPRecord2(x.key.P_BRAND, x.key.P_TYPE, x.key.P_SIZE))(
+          (t, currAgg) => currAgg + 1)
+        val sortOp = SortOp(aggOp2)((x, y) => {
+          if (x.aggs(0) < y.aggs(0)) 1
+          else if (x.aggs(0) > y.aggs(0)) -1
+          else {
+            var res = x.key.P_BRAND diff y.key.P_BRAND
+            if (res == 0) {
+              res = x.key.P_TYPE diff y.key.P_TYPE
+              if (res == 0) res = x.key.P_SIZE - y.key.P_SIZE
+            }
+            res
+          }
+        })
+        val po = PrintOp(sortOp)(x => printf("%s|%s|%d|%.0f\n", x.key.P_BRAND.string, x.key.P_TYPE.string, x.key.P_SIZE, x.aggs(0)))
+        po.open
+        po.next
+        printf("(%d rows)\n", po.numRows)
+        ()
+      })
+    }
+  }
+}
+
 trait Q17 extends GenericQuery {
   def Q17(numRuns: Int) {
     val lineitemTable = loadLineitem()
@@ -579,6 +756,70 @@ trait Q17 extends GenericQuery {
         })
         val aggOp = AggOp(wo, 1)(x => "Total")((t, currAgg) => currAgg + t.wnd)
         val po = PrintOp(aggOp)(kv => printf("%.6f\n", kv.aggs(0)))
+        po.open
+        po.next
+        printf("(%d rows)\n", po.numRows)
+        ()
+      })
+    }
+  }
+}
+
+// Danger, Will Robinson!: Query takes a long time to complete in Scala (but we 
+// knew that already!)
+trait Q18 extends GenericQuery {
+  case class Q18GRPRecord(
+    val C_NAME: Array[Byte],
+    val C_CUSTKEY: Int,
+    val O_ORDERKEY: Int,
+    val O_ORDERDATE: Long,
+    val O_TOTALPRICE: Double) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "C_NAME"       => Some(C_NAME)
+      case "C_CUSTKEY"    => Some(C_CUSTKEY)
+      case "O_ORDERKEY"   => Some(O_ORDERKEY)
+      case "O_ORDERDATE"  => Some(O_ORDERDATE)
+      case "O_TOTALPRICE" => Some(O_TOTALPRICE)
+      case _              => None
+    }
+  }
+  def Q18(numRuns: Int) {
+    val lineitemTable = loadLineitem()
+    val ordersTable = loadOrders()
+    val customerTable = loadCustomer()
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val scanOrders = ScanOp(ordersTable)
+        val scanCustomer = ScanOp(customerTable)
+        // Group aggregation on Lineitem
+        val scanLineitem1 = ScanOp(lineitemTable)
+        val aggOp1 = SelectOp(AggOp(scanLineitem1, 1)(x => x.L_ORDERKEY)(
+          (t, currAgg) => { currAgg + t.L_QUANTITY }))(x => x.aggs(0) > 300)
+        // Hash Join with orders
+        val jo1 = HashJoinOp(aggOp1, scanOrders)((x, y) => y.O_ORDERKEY == x.key)(x => x.key)(x => x.O_ORDERKEY)
+        val jo2 = HashJoinOp(jo1, scanCustomer)((x, y) => x.O_CUSTKEY == y.C_CUSTKEY)(x => x.O_CUSTKEY[Int])(x => x.C_CUSTKEY)
+        val aggOp2 = AggOp(jo2, 1)(x => new Q18GRPRecord(x.C_NAME[Array[Byte]], x.C_CUSTKEY[Int],
+          x.O_ORDERKEY[Int], x.O_ORDERDATE[Long], x.O_TOTALPRICE[Double]))(
+          // Why doesn't a simple t.aggs work here?
+          (t, currAgg) => { currAgg + (t.getField("aggs").get.asInstanceOf[Array[Double]])(0) } // aggs(0) => L_QUANTITY"
+          )
+        val sortOp = SortOp(aggOp2)((kv1, kv2) => {
+          val k1 = kv1.key.O_TOTALPRICE; val k2 = kv2.key.O_TOTALPRICE
+          if (k1 < k2) 1
+          else if (k1 > k2) -1
+          else {
+            val d1 = kv1.key.O_ORDERDATE; val d2 = kv2.key.O_ORDERDATE;
+            if (d1 < d2) -1
+            else if (d1 > d2) 1
+            else 0
+          }
+        })
+        var j = 0
+        val po = PrintOp(sortOp)(kv => {
+          // TODO: Date is not printed properly
+          printf("%s|%d|%d|%s|%.2f|%.2f\n", kv.key.C_NAME.string, kv.key.C_CUSTKEY, kv.key.O_ORDERKEY, new java.util.Date(kv.key.O_ORDERDATE), kv.key.O_TOTALPRICE, kv.aggs(0))
+          j += 1
+        }, () => j < 100)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)

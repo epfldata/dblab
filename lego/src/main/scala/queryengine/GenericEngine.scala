@@ -1,11 +1,11 @@
 package ch.epfl.data
 package legobase
 package queryengine
-import ch.epfl.data.pardis.shallow.{ AbstractRecord }
+import ch.epfl.data.pardis.shallow.{ CaseClassRecord }
 
 case class AGGRecord[B](
   val key: B,
-  val aggs: Array[Double]) extends AbstractRecord {
+  val aggs: Array[Double]) extends CaseClassRecord {
   def getField(key: String): Option[Any] = key match {
     case "key"  => Some(key)
     case "aggs" => Some(aggs)
@@ -15,7 +15,7 @@ case class AGGRecord[B](
 
 case class WindowRecord[B, C](
   val key: B,
-  val wnd: C) extends AbstractRecord {
+  val wnd: C) extends CaseClassRecord {
   def getField(key: String): Option[Any] = key match {
     case "key"  => Some(key)
     case "aggs" => Some(wnd)

@@ -314,13 +314,13 @@ case class SubquerySingleResult[A: Manifest](parent: Operator[A]) extends Operat
 
 case class HashJoinAnti[A: Manifest, B: Manifest, C: Manifest](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   val hm = getShallowHashMap[C, ArrayBuffer[A]]()
-  var keySet = hm.keySet
+  var keySet = scala.collection.mutable.Set(hm.keySet.toSeq: _*)
 
   def removeFromList(elemList: ArrayBuffer[A], e: A, idx: Int) = {
     elemList.remove(idx)
     if (elemList.size == 0) {
       val lh = leftHash(e)
-      keySet -= lh
+      keySet.remove(lh)
       hm.remove(lh)
       ()
     }
@@ -361,7 +361,7 @@ case class HashJoinAnti[A: Manifest, B: Manifest, C: Manifest](leftParent: Opera
         }
       }
     }
-    keySet = hm.keySet
+    keySet = scala.collection.mutable.Set(hm.keySet.toSeq: _*)
   }
   // Step 3: Return everything that left in the hash table
   def next() = {
@@ -395,3 +395,54 @@ case class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
   def close() {}
   def reset() { idx = 0 }
 }
+/*
+case class LeftOuterJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord: Manifest, C: Manifest](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
+  var tmpCount = -1
+  var tmpBuffer = ArrayBuffer[B]()
+  var tmpLine = NullDynamicRecord[A]
+  val hm = getShallowHashMap[C, ArrayBuffer[B]]()
+
+
+  val defaultB = DefaultRecord[B]()
+
+  def open() = {
+    leftParent.open
+    rightParent.open
+    rightParent foreach { t: B =>
+      {
+        val k = rightHash(t)
+        val v = hm.getOrElseUpdate(k, ArrayBuffer[B]())
+        v.append(t)
+      }
+    }
+  }
+  def next() = {
+    var res = NullDynamicRecord[CompositeRecord[A, B]]
+    if (tmpCount != -1) {
+      while (tmpCount < tmpBuffer.size && !joinCond(tmpLine, tmpBuffer(tmpCount))) tmpCount += 1
+      if (tmpCount != tmpBuffer.size) {
+        res = tmpLine.concatenateDynamic(tmpBuffer(tmpCount))
+        tmpCount += 1
+      }
+    }
+    if (res == NullDynamicRecord) {
+      tmpLine = leftParent.next
+      if (tmpLine == NullDynamicRecord[A]) res = NullDynamicRecord
+      else {
+        val k = leftHash(tmpLine)
+        if (hm.contains(k)) {
+          tmpBuffer = hm(k)
+          tmpCount = tmpBuffer.indexWhere(e => joinCond(tmpLine, e))
+          if (tmpCount != -1) {
+            res = tmpLine.concatenateDynamic(tmpBuffer(tmpCount))
+            tmpCount += 1
+          } else res = tmpLine.concatenateDynamic(defaultB)
+        } else res = tmpLine.concatenateDynamic(defaultB);
+      }
+    }
+    res
+  }
+  def close() {}
+  def reset() { rightParent.reset; leftParent.reset; hm.clear; tmpLine = NullDynamicRecord[A]; tmpCount = 0; tmpBuffer.clear }
+}
+*/
