@@ -18,6 +18,17 @@ trait GenericQuery extends ScalaImpl with storagemanager.Loader {
       query
     }
   }
+  def dateToString(dt: java.util.Date): String = {
+    (dt.getYear + 1900) + "" +
+      {
+        val m = dt.getMonth + 1
+        if (m < 10) "0" + m else m
+      } + "" +
+      {
+        val d = dt.getDate
+        if (d < 10) "0" + d else d
+      }
+  }
 }
 
 trait Q1 extends GenericQuery {
@@ -74,16 +85,16 @@ trait Q2 extends GenericQuery {
         val jo2 = HashJoinOp(nationScan, jo1)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])
         val partScan = SelectOp(ScanOp(partTable))(x => x.P_SIZE == 43 && x.P_TYPE.endsWith(tin))
         val jo3 = HashJoinOp(partScan, jo2)((x, y) => x.P_PARTKEY == y.PS_PARTKEY[Int])(x => x.P_PARTKEY)(x => x.PS_PARTKEY[Int])
-        val regionScan = SelectOp(ScanOp(regionTable))(x => x.R_NAME === africa) // for comparing equality of Array[Byte] we should use === instead of ==
+        val regionScan = SelectOp(ScanOp(regionTable))(x => x.R_NAME === africa) // for comparing equality of LBString we should use === instead of ==
         val jo4 = HashJoinOp(regionScan, jo3)((x, y) => x.R_REGIONKEY == y.N_REGIONKEY[Int])(x => x.R_REGIONKEY)(x => x.N_REGIONKEY[Int])
         val wo = WindowOp(jo4)(x => x.P_PARTKEY[Int])(x => x.minBy(y => y.PS_SUPPLYCOST[Double]))
         val so = SortOp(wo)((x, y) => {
           if (x.wnd.S_ACCTBAL[Double] < y.wnd.S_ACCTBAL[Double]) 1
           else if (x.wnd.S_ACCTBAL[Double] > y.wnd.S_ACCTBAL[Double]) -1
           else {
-            var res = x.wnd.N_NAME[Array[Byte]] compare y.wnd.N_NAME[Array[Byte]]
+            var res = x.wnd.N_NAME[LBString] compare y.wnd.N_NAME[LBString]
             if (res == 0) {
-              res = x.wnd.S_NAME[Array[Byte]] compare y.wnd.S_NAME[Array[Byte]]
+              res = x.wnd.S_NAME[LBString] compare y.wnd.S_NAME[LBString]
               if (res == 0) res = x.wnd.P_PARTKEY[Int] - y.wnd.P_PARTKEY[Int]
             }
             res
@@ -92,7 +103,7 @@ trait Q2 extends GenericQuery {
         var j = 0
         val po = PrintOp(so)(e => {
           val kv = e.wnd
-          printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL, (kv.S_NAME[Array[Byte]]).string, (kv.N_NAME[Array[Byte]]).string, kv.P_PARTKEY, (kv.P_MFGR[Array[Byte]]).string, (kv.S_ADDRESS[Array[Byte]]).string, (kv.S_PHONE[Array[Byte]]).string, (kv.S_COMMENT[Array[Byte]]).string)
+          printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL, (kv.S_NAME[LBString]).string, (kv.N_NAME[LBString]).string, kv.P_PARTKEY, (kv.P_MFGR[LBString]).string, (kv.S_ADDRESS[LBString]).string, (kv.S_PHONE[LBString]).string, (kv.S_COMMENT[LBString]).string)
           j += 1
         }, () => j < 100)
         po.open
@@ -116,9 +127,6 @@ trait Q3 extends GenericQuery {
       case _                => None
     }
   }
-  def newQ3GRPRecord(ORDERKEY: Int, ORDERDATE: Long, SHIPPRIORITY: Int) = {
-    new Q3GRPRecord(ORDERKEY, ORDERDATE, SHIPPRIORITY)
-  }
 
   def Q3(numRuns: Int) {
     val lineitemTable = loadLineitem()
@@ -132,7 +140,7 @@ trait Q3 extends GenericQuery {
         val scanLineitem = SelectOp(ScanOp(lineitemTable))(x => x.L_SHIPDATE > constantDate)
         val jo1 = HashJoinOp(scanCustomer, scanOrders)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY)
         val jo2 = HashJoinOp(jo1, scanLineitem)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY)
-        val aggOp = AggOp(jo2, 1)(x => newQ3GRPRecord(x.L_ORDERKEY[Int], x.O_ORDERDATE[Long], x.O_SHIPPRIORITY[Int]))((t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
+        val aggOp = AggOp(jo2, 1)(x => new Q3GRPRecord(x.L_ORDERKEY[Int], x.O_ORDERDATE[Long], x.O_SHIPPRIORITY[Int]))((t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
         val sortOp = SortOp(aggOp)((kv1, kv2) => {
           val agg1 = kv1.aggs(0); val agg2 = kv2.aggs(0)
           if (agg1 < agg2) 1
@@ -149,7 +157,7 @@ trait Q3 extends GenericQuery {
         val po = PrintOp(sortOp)(kv => {
           // TODO: The date is not printed properly (but is correct), and fails 
           // in the comparison with result file. Rest of fields OK.
-          printf("%d|%.4f|%s|%d\n", kv.key.L_ORDERKEY, kv.aggs(0), new java.util.Date(kv.key.O_ORDERDATE).toString, kv.key.O_SHIPPRIORITY)
+          printf("%d|%.4f|%s|%d\n", kv.key.L_ORDERKEY, kv.aggs(0), dateToString(new java.util.Date(kv.key.O_ORDERDATE)), kv.key.O_SHIPPRIORITY)
           i += 1
         }, () => i < 10)
         po.open
@@ -211,7 +219,7 @@ trait Q5 extends GenericQuery {
         val jo3 = HashJoinOp(jo2, scanCustomer)((x, y) => x.N_NATIONKEY == y.C_NATIONKEY)(x => x.S_NATIONKEY[Int])(x => x.C_NATIONKEY)
         val jo4 = HashJoinOp(jo3, scanOrders)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)(x => x.C_CUSTKEY[Int])(x => x.O_CUSTKEY)
         val jo5 = SelectOp(HashJoinOp(jo4, scanLineitem)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY))(x => x.S_SUPPKEY == x.L_SUPPKEY)
-        val aggOp = AggOp(jo5, 1)(x => x.N_NAME[Array[Byte]])(
+        val aggOp = AggOp(jo5, 1)(x => x.N_NAME[LBString])(
           (t, currAgg) => { currAgg + t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]) })
         val sortOp = SortOp(aggOp)((x, y) => {
           if (x.aggs(0) < y.aggs(0)) 1
@@ -248,8 +256,8 @@ trait Q6 extends GenericQuery {
 }
 trait Q7 extends GenericQuery {
   case class Q7GRPRecord(
-    val SUPP_NATION: Array[Byte],
-    val CUST_NATION: Array[Byte],
+    val SUPP_NATION: LBString,
+    val CUST_NATION: LBString,
     val L_YEAR: Long) extends CaseClassRecord {
     def getField(key: String): Option[Any] = key match {
       case "SUPP_NATION" => Some(SUPP_NATION)
@@ -257,9 +265,6 @@ trait Q7 extends GenericQuery {
       case "L_YEAR"      => Some(L_YEAR)
       case _             => None
     }
-  }
-  def newQ7GRPRecord(SUPP_NATION: Array[Byte], CUST_NATION: Array[Byte], L_YEAR: Long) = {
-    new Q7GRPRecord(SUPP_NATION, CUST_NATION, L_YEAR)
   }
 
   def Q7(numRuns: Int) {
@@ -283,9 +288,9 @@ trait Q7 extends GenericQuery {
         val jo4 = HashJoinOp(jo3, scanOrders)((x, y) => x.L_ORDERKEY == y.O_ORDERKEY)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)
         val scanCustomer = ScanOp(customerTable)
         val jo5 = HashJoinOp(scanCustomer, jo4)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY[Int] && x.C_NATIONKEY == y.N2_N_NATIONKEY[Int])(x => x.C_CUSTKEY)(x => x.O_CUSTKEY[Int])
-        val gb = AggOp(jo5, 1)(x => newQ7GRPRecord(
-          x.N1_N_NAME[Array[Byte]],
-          x.N2_N_NAME[Array[Byte]],
+        val gb = AggOp(jo5, 1)(x => new Q7GRPRecord(
+          x.N1_N_NAME[LBString],
+          x.N2_N_NAME[LBString],
           new java.util.Date(x.L_SHIPDATE[Long]).getYear + 1900))((t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
         val so = SortOp(gb)((kv1, kv2) => {
           val k1 = kv1.key; val k2 = kv2.key
@@ -345,7 +350,7 @@ trait Q8 extends GenericQuery {
         val aggOp = AggOp(jo7, 3)(x => new java.util.Date(x.REC2_O_ORDERDATE[Long]).getYear + 1900)(
           (t, currAgg) => { currAgg + (t.REC2_L_EXTENDEDPRICE[Double] * (1.0 - t.REC2_L_DISCOUNT[Double])) },
           (t, currAgg) => {
-            if (t.REC1_N_NAME[Array[Byte]] === indonesia) currAgg + (t.REC2_L_EXTENDEDPRICE[Double] * (1.0 - t.REC2_L_DISCOUNT[Double]))
+            if (t.REC1_N_NAME[LBString] === indonesia) currAgg + (t.REC2_L_EXTENDEDPRICE[Double] * (1.0 - t.REC2_L_DISCOUNT[Double]))
             else currAgg
           })
         val mapOp = MapOp(aggOp)(x => x.aggs(2) = x.aggs(1) / x.aggs(0))
@@ -366,16 +371,13 @@ trait Q8 extends GenericQuery {
 
 trait Q9 extends GenericQuery {
   case class Q9GRPRecord(
-    val NATION: Array[Byte],
+    val NATION: LBString,
     val O_YEAR: Long) extends CaseClassRecord {
     def getField(key: String): Option[Any] = key match {
       case "NATION" => Some(NATION)
       case "O_YEAR" => Some(O_YEAR)
       case _        => None
     }
-  }
-  def newQ9GRPRecord(NATION: Array[Byte], YEAR: Long) = {
-    new Q9GRPRecord(NATION, YEAR)
   }
 
   def Q9(numRuns: Int) {
@@ -399,7 +401,7 @@ trait Q9 extends GenericQuery {
         val hj3 = HashJoinOp(soPart, hj2)((x, y) => x.P_PARTKEY == y.L_PARTKEY[Int])(x => x.P_PARTKEY)(x => x.L_PARTKEY[Int])
         val hj4 = HashJoinOp(soPartsupp, hj3)((x, y) => x.PS_PARTKEY == y.L_PARTKEY[Int] && x.PS_SUPPKEY == y.L_SUPPKEY[Int])(x => x.PS_PARTKEY)(x => x.L_PARTKEY[Int])
         val hj5 = HashJoinOp(hj4, soOrders)((x, y) => x.L_ORDERKEY == y.O_ORDERKEY)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)
-        val aggOp = AggOp(hj5, 1)(x => new Q9GRPRecord(x.N_NAME[Array[Byte]], new java.util.Date(x.O_ORDERDATE[Long]).getYear + 1900))(
+        val aggOp = AggOp(hj5, 1)(x => new Q9GRPRecord(x.N_NAME[LBString], new java.util.Date(x.O_ORDERDATE[Long]).getYear + 1900))(
           (t, currAgg) => { currAgg + ((t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))) - ((1.0 * t.PS_SUPPLYCOST[Double]) * t.L_QUANTITY[Double]) })
         val sortOp = SortOp(aggOp)((kv1, kv2) => {
           val k1 = kv1.key; val k2 = kv2.key
@@ -423,12 +425,12 @@ trait Q9 extends GenericQuery {
 trait Q10 extends GenericQuery {
   case class Q10GRPRecord(
     val C_CUSTKEY: Int,
-    val C_NAME: Array[Byte],
+    val C_NAME: LBString,
     val C_ACCTBAL: Double,
-    val C_PHONE: Array[Byte],
-    val N_NAME: Array[Byte],
-    val C_ADDRESS: Array[Byte],
-    val C_COMMENT: Array[Byte]) extends CaseClassRecord {
+    val C_PHONE: LBString,
+    val N_NAME: LBString,
+    val C_ADDRESS: LBString,
+    val C_COMMENT: LBString) extends CaseClassRecord {
     def getField(key: String): Option[Any] = key match {
       case "C_CUSTKEY" => Some(C_CUSTKEY)
       case "C_NAME"    => Some(C_NAME)
@@ -439,10 +441,6 @@ trait Q10 extends GenericQuery {
       case "C_COMMENT" => Some(C_COMMENT)
       case _           => None
     }
-  }
-  def newQ10GRPRecord(CUSTKEY: Int, NAME: Array[Byte], ACCTBAL: Double, PHONE: Array[Byte],
-                      N_NAME: Array[Byte], ADDRESS: Array[Byte], COMMENT: Array[Byte]) = {
-    new Q10GRPRecord(CUSTKEY, NAME, ACCTBAL, PHONE, N_NAME, ADDRESS, COMMENT)
   }
 
   def Q10(numRuns: Int) {
@@ -462,9 +460,9 @@ trait Q10 extends GenericQuery {
         val so4 = SelectOp(ScanOp(lineitemTable))(x => x.L_RETURNFLAG == 'R')
         val hj3 = HashJoinOp(hj2, so4)((x, y) => x.O_ORDERKEY[Int] == y.L_ORDERKEY)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY)
         val aggOp = AggOp(hj3, 1)(x => new Q10GRPRecord(x.C_CUSTKEY[Int],
-          x.C_NAME[Array[Byte]], x.C_ACCTBAL[Double],
-          x.C_PHONE[Array[Byte]], x.N_NAME[Array[Byte]],
-          x.C_ADDRESS[Array[Byte]], x.C_COMMENT[Array[Byte]]))((t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])).asInstanceOf[Double] })
+          x.C_NAME[LBString], x.C_ACCTBAL[Double],
+          x.C_PHONE[LBString], x.N_NAME[LBString],
+          x.C_ADDRESS[LBString], x.C_COMMENT[LBString]))((t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])).asInstanceOf[Double] })
         val sortOp = SortOp(aggOp)((kv1, kv2) => {
           val k1 = kv1.aggs(0); val k2 = kv2.aggs(0)
           if (k1 < k2) 1
@@ -542,10 +540,10 @@ trait Q12 extends GenericQuery {
         val jo = HashJoinOp(so1, so2)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)
         val URGENT = parseString("1-URGENT")
         val HIGH = parseString("2-HIGH")
-        val aggOp = AggOp(jo, 2)(x => x.L_SHIPMODE[Array[Byte]])(
-          (t, currAgg) => { if (t.O_ORDERPRIORITY[Array[Byte]] === URGENT || t.O_ORDERPRIORITY[Array[Byte]] === HIGH) currAgg + 1 else currAgg },
+        val aggOp = AggOp(jo, 2)(x => x.L_SHIPMODE[LBString])(
+          (t, currAgg) => { if (t.O_ORDERPRIORITY[LBString] === URGENT || t.O_ORDERPRIORITY[LBString] === HIGH) currAgg + 1 else currAgg },
 
-          (t, currAgg) => { if (t.O_ORDERPRIORITY[Array[Byte]] =!= URGENT && t.O_ORDERPRIORITY[Array[Byte]] =!= HIGH) currAgg + 1 else currAgg })
+          (t, currAgg) => { if (t.O_ORDERPRIORITY[LBString] =!= URGENT && t.O_ORDERPRIORITY[LBString] =!= HIGH) currAgg + 1 else currAgg })
         val sortOp = SortOp(aggOp)((x, y) => x.key diff y.key)
         val po = PrintOp(sortOp)(kv => printf("%s|%.0f|%.0f\n", kv.key.string, kv.aggs(0), kv.aggs(1)))
         po.open
@@ -609,7 +607,7 @@ trait Q14 extends GenericQuery {
         val jo = HashJoinOp(so1, so2)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY)
         val aggOp = AggOp(jo, 3)(x => "Total")(
           (t, currAgg) => {
-            if (t.P_TYPE[Array[Byte]] startsWith promo)
+            if (t.P_TYPE[LBString] startsWith promo)
               currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))
             else currAgg
           },
@@ -648,7 +646,7 @@ trait Q15 extends GenericQuery {
         // Calcuate result
         val scanSupplier = ScanOp(supplierTable)
         val jo = HashJoinOp(scanSupplier, vo)((x, y) => x.S_SUPPKEY == y.key && y.aggs(0) == maxRevenue)(x => x.S_SUPPKEY)(x => x.key)
-        val po = PrintOp(jo)(kv => printf("%d|%s|%s|%s|%.4f\n", kv.S_SUPPKEY, kv.S_NAME[Array[Byte]].string, kv.S_ADDRESS[Array[Byte]].string, kv.S_PHONE[Array[Byte]].string, kv.getField("aggs").get.asInstanceOf[Array[Double]](0)))
+        val po = PrintOp(jo)(kv => printf("%d|%s|%s|%s|%.4f\n", kv.S_SUPPKEY, kv.S_NAME[LBString].string, kv.S_ADDRESS[LBString].string, kv.S_PHONE[LBString].string, kv.getField("aggs").get.asInstanceOf[Array[Double]](0)))
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -658,13 +656,10 @@ trait Q15 extends GenericQuery {
   }
 }
 
-// Note: Q16 produces wrong result. We know why this happens: Array[Byte] should
-// be wrapped to a MyString class so that we can wrap hash and equals method
-// appropriately. 
 trait Q16 extends GenericQuery {
   case class Q16GRPRecord1(
-    val P_BRAND: Array[Byte],
-    val P_TYPE: Array[Byte],
+    val P_BRAND: LBString,
+    val P_TYPE: LBString,
     val P_SIZE: Int,
     val PS_SUPPKEY: Int) extends CaseClassRecord {
     def getField(key: String): Option[Any] = key match {
@@ -676,8 +671,8 @@ trait Q16 extends GenericQuery {
     }
   }
   case class Q16GRPRecord2(
-    val P_BRAND: Array[Byte],
-    val P_TYPE: Array[Byte],
+    val P_BRAND: LBString,
+    val P_TYPE: LBString,
     val P_SIZE: Int) extends CaseClassRecord {
     def getField(key: String): Option[Any] = key match {
       case "P_BRAND" => Some(P_BRAND)
@@ -708,7 +703,7 @@ trait Q16 extends GenericQuery {
           idxu != -1 && idxp != -1
         })
         val jo2 = HashJoinAnti(jo1, supplierScan)((x, y) => x.PS_SUPPKEY == y.S_SUPPKEY)(x => x.PS_SUPPKEY[Int])(x => x.S_SUPPKEY)
-        val aggOp = AggOp(jo2, 1)(x => new Q16GRPRecord1(x.P_BRAND[Array[Byte]], x.P_TYPE[Array[Byte]],
+        val aggOp = AggOp(jo2, 1)(x => new Q16GRPRecord1(x.P_BRAND[LBString], x.P_TYPE[LBString],
           x.P_SIZE[Int], x.PS_SUPPKEY[Int]))((t, currAgg) => currAgg)
         val aggOp2 = AggOp(aggOp, 1)(x => new Q16GRPRecord2(x.key.P_BRAND, x.key.P_TYPE, x.key.P_SIZE))(
           (t, currAgg) => currAgg + 1)
@@ -769,7 +764,7 @@ trait Q17 extends GenericQuery {
 // knew that already!)
 trait Q18 extends GenericQuery {
   case class Q18GRPRecord(
-    val C_NAME: Array[Byte],
+    val C_NAME: LBString,
     val C_CUSTKEY: Int,
     val O_ORDERKEY: Int,
     val O_ORDERDATE: Long,
@@ -798,7 +793,7 @@ trait Q18 extends GenericQuery {
         // Hash Join with orders
         val jo1 = HashJoinOp(aggOp1, scanOrders)((x, y) => y.O_ORDERKEY == x.key)(x => x.key)(x => x.O_ORDERKEY)
         val jo2 = HashJoinOp(jo1, scanCustomer)((x, y) => x.O_CUSTKEY == y.C_CUSTKEY)(x => x.O_CUSTKEY[Int])(x => x.C_CUSTKEY)
-        val aggOp2 = AggOp(jo2, 1)(x => new Q18GRPRecord(x.C_NAME[Array[Byte]], x.C_CUSTKEY[Int],
+        val aggOp2 = AggOp(jo2, 1)(x => new Q18GRPRecord(x.C_NAME[LBString], x.C_CUSTKEY[Int],
           x.O_ORDERKEY[Int], x.O_ORDERDATE[Long], x.O_TOTALPRICE[Double]))(
           // Why doesn't a simple t.aggs work here?
           (t, currAgg) => { currAgg + (t.getField("aggs").get.asInstanceOf[Array[Double]])(0) } // aggs(0) => L_QUANTITY"
@@ -816,8 +811,7 @@ trait Q18 extends GenericQuery {
         })
         var j = 0
         val po = PrintOp(sortOp)(kv => {
-          // TODO: Date is not printed properly
-          printf("%s|%d|%d|%s|%.2f|%.2f\n", kv.key.C_NAME.string, kv.key.C_CUSTKEY, kv.key.O_ORDERKEY, new java.util.Date(kv.key.O_ORDERDATE), kv.key.O_TOTALPRICE, kv.aggs(0))
+          printf("%s|%d|%d|%s|%.2f|%.2f\n", kv.key.C_NAME.string, kv.key.C_CUSTKEY, kv.key.O_ORDERKEY, dateToString(new java.util.Date(kv.key.O_ORDERDATE)), kv.key.O_TOTALPRICE, kv.aggs(0))
           j += 1
         }, () => j < 100)
         po.open
@@ -865,12 +859,12 @@ trait Q19 extends GenericQuery {
             (x.L_QUANTITY <= 14 && x.L_QUANTITY >= 4)) && x.L_SHIPINSTRUCT === DELIVERINPERSON &&
             (x.L_SHIPMODE === AIR || x.L_SHIPMODE === AIRREG))
         val jo = SelectOp(HashJoinOp(so1, so2)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY))(
-          x => x.P_BRAND[Array[Byte]] === Brand31 &&
-            (x.P_CONTAINER[Array[Byte]] === SMBOX || x.P_CONTAINER[Array[Byte]] === SMCASE || x.P_CONTAINER[Array[Byte]] === SMPACK || x.P_CONTAINER[Array[Byte]] === SMPKG) &&
-            x.L_QUANTITY[Double] >= 4 && x.L_QUANTITY[Double] <= 14 && x.P_SIZE[Int] <= 5 || x.P_BRAND[Array[Byte]] === Brand43 &&
-            (x.P_CONTAINER[Array[Byte]] === MEDBAG || x.P_CONTAINER[Array[Byte]] === MEDBOX || x.P_CONTAINER[Array[Byte]] === MEDPACK || x.P_CONTAINER[Array[Byte]] === MEDPKG) &&
-            x.L_QUANTITY[Double] >= 15 && x.L_QUANTITY[Double] <= 25 && x.P_SIZE[Int] <= 10 || x.P_BRAND[Array[Byte]] === Brand43 &&
-            (x.P_CONTAINER[Array[Byte]] === LGBOX || x.P_CONTAINER[Array[Byte]] === LGCASE || x.P_CONTAINER[Array[Byte]] === LGPACK || x.P_CONTAINER[Array[Byte]] === LGPKG) &&
+          x => x.P_BRAND[LBString] === Brand31 &&
+            (x.P_CONTAINER[LBString] === SMBOX || x.P_CONTAINER[LBString] === SMCASE || x.P_CONTAINER[LBString] === SMPACK || x.P_CONTAINER[LBString] === SMPKG) &&
+            x.L_QUANTITY[Double] >= 4 && x.L_QUANTITY[Double] <= 14 && x.P_SIZE[Int] <= 5 || x.P_BRAND[LBString] === Brand43 &&
+            (x.P_CONTAINER[LBString] === MEDBAG || x.P_CONTAINER[LBString] === MEDBOX || x.P_CONTAINER[LBString] === MEDPACK || x.P_CONTAINER[LBString] === MEDPKG) &&
+            x.L_QUANTITY[Double] >= 15 && x.L_QUANTITY[Double] <= 25 && x.P_SIZE[Int] <= 10 || x.P_BRAND[LBString] === Brand43 &&
+            (x.P_CONTAINER[LBString] === LGBOX || x.P_CONTAINER[LBString] === LGCASE || x.P_CONTAINER[LBString] === LGPACK || x.P_CONTAINER[LBString] === LGPKG) &&
             x.L_QUANTITY[Double] >= 26 && x.L_QUANTITY[Double] <= 36 && x.P_SIZE[Int] <= 15)
         val aggOp = AggOp(jo, 1)(x => "Total")(
           (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
@@ -922,9 +916,9 @@ trait Q20 extends GenericQuery {
         val jo4 = HashJoinOp(scanNation, jo3)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])
         val sortOp = SortOp(jo4)((x, y) => {
           // TODO: Possible bug here in ArrayByteOps. Diff does not work
-          (x.S_NAME[Array[Byte]] zip y.S_NAME[Array[Byte]]).foldLeft(0)((res, e) => { if (res == 0) e._1.asInstanceOf[Byte] - e._2.asInstanceOf[Byte] else res })
+          (x.S_NAME[LBString] zip y.S_NAME[LBString]).foldLeft(0)((res, e) => { if (res == 0) e._1.asInstanceOf[Byte] - e._2.asInstanceOf[Byte] else res })
         })
-        val po = PrintOp(sortOp)(kv => printf("%s|%s\n", kv.S_NAME[Array[Byte]].string, kv.S_ADDRESS[Array[Byte]].string))
+        val po = PrintOp(sortOp)(kv => printf("%s|%s\n", kv.S_NAME[LBString].string, kv.S_ADDRESS[LBString].string))
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -954,7 +948,7 @@ trait Q21 extends GenericQuery {
         val jo3 = LeftHashSemiJoinOp(jo2, lineitemScan2)((x, y) => x.L_ORDERKEY == y.L_ORDERKEY && x.L_SUPPKEY != y.L_SUPPKEY)(x => x.L_ORDERKEY[Int])(x => x.L_ORDERKEY)
         val jo4 = HashJoinAnti(jo3, lineitemScan3)((x, y) => x.L_ORDERKEY == y.L_ORDERKEY && x.L_SUPPKEY != y.L_SUPPKEY)(x => x.L_ORDERKEY[Int])(x => x.L_ORDERKEY)
         val jo5 = HashJoinOp(ordersScan, jo4)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY[Int])(x => x.O_ORDERKEY)(x => x.L_ORDERKEY[Int])
-        val aggOp = AggOp(jo5, 1)(x => x.S_NAME[Array[Byte]])((t, currAgg) => { currAgg + 1 })
+        val aggOp = AggOp(jo5, 1)(x => x.S_NAME[LBString])((t, currAgg) => { currAgg + 1 })
         val sortOp = SortOp(aggOp)((x, y) => {
           val a1 = x.aggs(0); val a2 = y.aggs(0)
           if (a1 < a2) 1

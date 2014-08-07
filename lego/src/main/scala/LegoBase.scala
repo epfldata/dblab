@@ -9,7 +9,7 @@ trait ScalaImpl {
   def parseDate(x: String): Long = {
     sdf.parse(x).getTime
   }
-  def parseString(x: String): Array[Byte] = x.getBytes
+  def parseString(x: String): LBString = LBString(x.getBytes)
 }
 
 trait LegoRunner extends Queries {
