@@ -8,7 +8,7 @@ import pardis.shallow.AbstractRecord
 
 // FIXME in the righthand side of the genreated case class invokations, type parameters should be filled in.
 
-trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE { this: DeepDSL =>
+trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE with HashJoinOpComponent { this: DeepDSL =>
 
   // TODO auto generate this functions
 

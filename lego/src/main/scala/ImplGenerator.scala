@@ -24,12 +24,13 @@ object ImplGenerator {
     // impl.ImplLifter.liftClass[AggOp[_, _]]
     // println("====")
     // impl.ImplLifter.liftClass[SelectOp[_]]
+    impl.ImplLifter.liftClass[WindowOp[_, _, _]]
   }
 
   def genQueries {
-    impl.ImplLifter.liftClass[Q1]
-    println("====")
-    impl.ImplLifter.liftClass[Q2]
+    // impl.ImplLifter.liftClass[Q1]
+    // println("====")
+    // impl.ImplLifter.liftClass[Q2]
   }
 }
 */ 

@@ -176,6 +176,16 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     }
   }
 
+  // override def windowOpOpen[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Unit] = {
+  //   self.parent.open
+  //   self.parent.foreach(__lambda { t: Rep[A] =>
+  //     val key = self.grp(t)
+  //     val v = self.hm.getOrElseUpdate(key, ArrayBuffer[A]())
+  //     // v.append(t)
+  //   })
+  //   self.`keySet_=`(Set.apply(self.hm.keySet.toSeq))
+  // }
+
   override def printOp_Field_Parent[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
     self match {
       case Def(x: PrintOpNew[_]) => x.parent
