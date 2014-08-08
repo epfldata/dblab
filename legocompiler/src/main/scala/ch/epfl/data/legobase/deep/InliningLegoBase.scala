@@ -288,7 +288,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
   def loadString(size: Rep[Int], s: Rep[K2DBScanner]) = {
     val NAME = __newArray[Byte](size)
     s.next(NAME)
-    NAME.filter(__lambda(y => infix_!=(y, unit(0))))
+    __newOptimalString(NAME.filter(__lambda(y => infix_!=(y, unit(0)))))
   }
 }
 

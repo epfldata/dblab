@@ -43,10 +43,10 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     override def curriedConstructor = (copy _)
   }
   def parseDate(date: Rep[String]): Rep[Long] = ParseDate(date)
-  case class ParseString(string: Rep[String]) extends FunctionDef[Array[Byte]](None, "parseString", List(List(string))) {
+  case class ParseString(string: Rep[String]) extends FunctionDef[LBString](None, "parseString", List(List(string))) {
     override def curriedConstructor = (copy _)
   }
-  def parseString(string: Rep[String]): Rep[Array[Byte]] = ParseString(string)
+  def parseString(string: Rep[String]): Rep[LBString] = ParseString(string)
   case class Println(x: Rep[Any]) extends FunctionDef[Unit](None, "println", List(List(x))) {
     override def curriedConstructor = (copy _)
   }
@@ -155,33 +155,6 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   }
 
   def arrayEquals[T1: Manifest, T2: Manifest](self: Rep[Array[T1]], o: Rep[Array[T2]]): Rep[Boolean] = ArrayEquals(self, o)
-
-  implicit class ArrayByteRep(self: Rep[Array[Byte]]) {
-    def endsWith(o: Rep[Array[Byte]]): Rep[Boolean] = arrayByteEndsWith(self, o)
-    def compare(o: Rep[Array[Byte]]): Rep[Int] = arrayByteCompare(self, o)
-    def string: Rep[String] = arrayByteString(self)
-  }
-
-  case class ArrayByteEndsWith(self: Rep[Array[Byte]], o: Rep[Array[Byte]]) extends FunctionDef[Boolean](Some(self), "endsWith", List(List(o))) {
-    override def curriedConstructor = (copy _).curried
-    override def isPure = true
-  }
-
-  def arrayByteEndsWith(self: Rep[Array[Byte]], o: Rep[Array[Byte]]): Rep[Boolean] = ArrayByteEndsWith(self, o)
-
-  case class ArrayByteCompare(self: Rep[Array[Byte]], o: Rep[Array[Byte]]) extends FunctionDef[Int](Some(self), "compare", List(List(o))) {
-    override def curriedConstructor = (copy _).curried
-    override def isPure = true
-  }
-
-  def arrayByteCompare(self: Rep[Array[Byte]], o: Rep[Array[Byte]]): Rep[Int] = ArrayByteCompare(self, o)
-
-  case class ArrayByteString(self: Rep[Array[Byte]]) extends FunctionDef[String](Some(self), "string", List()) {
-    override def curriedConstructor = (copy _)
-    override def isPure = true
-  }
-
-  def arrayByteString(self: Rep[Array[Byte]]): Rep[String] = ArrayByteString(self)
 
   implicit class AllRepOps[T: Manifest](self: Rep[T]) {
     def __==[T2: Manifest](o: Rep[T2]): Rep[Boolean] = infix_==(self, o)

@@ -28,6 +28,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.TreeSet
 import scala.collection.mutable.ArrayBuffer
 import storagemanager.K2DBScanner
+import pardis.shallow.OptimalString
 
 object OrderingFactory {
   def apply[T](fun: (T, T) => Int): Ordering[T] = new Ordering[T] {
