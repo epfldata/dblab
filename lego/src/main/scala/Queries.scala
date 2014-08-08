@@ -55,7 +55,7 @@ trait Q1 extends GenericQuery {
             res = kv1.key.L_LINESTATUS - kv2.key.L_LINESTATUS
           res
         })
-        val po = PrintOp(sortOp)(kv => printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.6f|%.0f\n",
+        val po = PrintOp(sortOp)(kv => printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n",
           kv.key.L_RETURNFLAG, kv.key.L_LINESTATUS, kv.aggs(1), kv.aggs(2), kv.aggs(3), kv.aggs(4),
           kv.aggs(6), kv.aggs(7), kv.aggs(8), kv.aggs(5)))
         po.open
