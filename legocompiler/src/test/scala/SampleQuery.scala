@@ -74,6 +74,6 @@ class SampleQuery extends FlatSpec with ShouldMatchers {
     LegoGenerator.apply(finalProgram)
   }
 
-  test1()
-  // test2()
+  // test1()
+  test2()
 }
