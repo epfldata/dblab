@@ -9,7 +9,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.Set
 import GenericEngine._
 import ch.epfl.data.autolifter.annotations.{ deep, metadeep }
-import ch.epfl.data.pardis.shallow.{ AbstractRecord, DynamicCompositeRecord }
+import ch.epfl.data.pardis.shallow.{ AbstractRecord, DynamicCompositeRecord, Record }
 
 // This is a temporary solution until we introduce dependency management and adopt policies. Not a priority now!
 @metadeep(
@@ -383,26 +383,7 @@ case class LeftOuterJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord: M
   var tmpBuffer = ArrayBuffer[B]()
   var tmpLine = NullDynamicRecord[A]
   val hm = new HashMap[C, ArrayBuffer[B]]()
-  val defaultB = getDefaultRecord[B]()
-
-  // Note: maybe this can move to Pardis and be generalized?
-  def defaultValue(n: String) = n match {
-    case "boolean"                        => false.asInstanceOf[Boolean]
-    case "byte"                           => (0: Byte).asInstanceOf[Byte]
-    case "short"                          => (0: Short).asInstanceOf[Short]
-    case "char"                           => '\0'.asInstanceOf[Char]
-    case "java.lang.Character"            => '\0'.asInstanceOf[java.lang.Character]
-    case "int"                            => 0.asInstanceOf[Int]
-    case "long"                           => 0L.asInstanceOf[Long]
-    case "float"                          => 0.0F.asInstanceOf[Float]
-    case "double"                         => 0.0.asInstanceOf[Double]
-    case "ch.epfl.data.legobase.LBString" => LBString("".getBytes)
-    case dflt @ _                         => throw new Exception("Unsupported type: " + dflt)
-  }
-  def getDefaultRecord[B: Manifest](): B = {
-    val values = manifest[B].runtimeClass.getDeclaredFields().map(x => defaultValue(x.getType.getName))
-    manifest[B].runtimeClass.getConstructors()(0).newInstance(values.toSeq.asInstanceOf[Seq[Object]]: _*).asInstanceOf[B]
-  }
+  val defaultB = Record.getDefaultRecord[B]()
 
   def open() = {
     leftParent.open
