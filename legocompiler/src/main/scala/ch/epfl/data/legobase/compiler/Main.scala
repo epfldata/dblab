@@ -22,8 +22,22 @@ object Main extends LegoRunner {
   }
 
   def executeQuery(query: String): Unit = query match {
-    case "Q1" => query1()
-    case "Q2" => query2()
+    case "Q1"   => query1()
+    case "Q1_U" => query1_unoptimized()
+    case "Q2"   => query2()
+  }
+
+  def query1_unoptimized() {
+    val lq = new LiftedQueries()
+    val block = lq.Q1
+
+    val ir2Program = new { val IR = lq.context } with IRToProgram {
+    }
+
+    val finalProgram = ir2Program.createProgram(block)
+    println(finalProgram)
+    val LegoGenerator = new LegoCGenerator(2, true)
+    LegoGenerator.apply(finalProgram)
   }
 
   def query1() {
@@ -36,7 +50,7 @@ object Main extends LegoRunner {
 
     val loweringContext = new LoweringLegoBase {}
 
-    /* it's written like this because of early definition: http://stackoverflow.com/questions/4712468/in-scala-what-is-an-early-initializer */
+    // it's written like this because of early definition: http://stackoverflow.com/questions/4712468/in-scala-what-is-an-early-initializer
     val lowering = new LBLowering {
       val from = lq.context
       val to = loweringContext
@@ -66,7 +80,7 @@ object Main extends LegoRunner {
     val finalProgram = ir2Program.createProgram(partialyEvaluated)
 
     println(finalProgram)
-    val LegoGenerator = new LegoGenerator(1, false)
+    val LegoGenerator = new LegoScalaGenerator(1, false)
     LegoGenerator.apply(finalProgram)
   }
 
@@ -79,7 +93,7 @@ object Main extends LegoRunner {
 
     val finalProgram = ir2Program.createProgram(block)
     println(finalProgram)
-    val LegoGenerator = new LegoGenerator(2, true)
+    val LegoGenerator = new LegoScalaGenerator(2, true)
     LegoGenerator.apply(finalProgram)
   }
 
