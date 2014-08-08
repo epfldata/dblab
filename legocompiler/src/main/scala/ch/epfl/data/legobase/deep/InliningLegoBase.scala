@@ -249,15 +249,14 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     case _                      => ???
   }
 
-  Config.datapath = "/Users/amirsh/Dropbox/yannis/"
-
   // FIXME here it uses staging!
   override def loadLineitem(): Rep[Array[LINEITEMRecord]] = {
-    val file = Config.datapath + "lineitem.tbl"
+    val file = unit(Config.datapath + "lineitem.tbl")
     import scala.sys.process._;
-    val size = Integer.parseInt((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", ""))
+    // val size = Integer.parseInt((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", ""))
+    val size = fileLineCount(file)
     // Load Relation 
-    val s = __newK2DBScanner(unit(file))
+    val s = __newK2DBScanner(file)
     var i = __newVar[Int](0)
     val hm = __newArray[LINEITEMRecord](size)
     __whileDo(s.hasNext, {

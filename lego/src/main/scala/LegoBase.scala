@@ -15,6 +15,7 @@ trait ScalaImpl {
 trait LegoRunner extends GenericQuery {
   val numRuns: scala.Int = 1
   var currQuery: java.lang.String = ""
+  Config.checkResults = true
 
   def getOutputName = currQuery + "Output.txt"
 
@@ -24,7 +25,6 @@ trait LegoRunner extends GenericQuery {
 
     val sf = if (args(1).contains(".")) args(1).toDouble.toString else args(1).toInt.toString
     Config.datapath = args(0) + "/sf" + sf + "/"
-    Config.checkResults = true
 
     val queries: scala.collection.immutable.List[String] =
       if (args.length == 3 && args(2) == "testsuite") (for (i <- 1 to 22) yield "Q" + i).toList

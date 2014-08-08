@@ -56,6 +56,10 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     override def rebuild(children: FunctionArg*) = Printf(children(0).asInstanceOf[Rep[String]], children.drop(1).toSeq.asInstanceOf[Seq[Rep[Any]]]: _*)
   }
   def printf(text: Rep[String], xs: Rep[Any]*): Rep[Unit] = Printf(text, xs: _*)
+  case class FileLineCount(file: Rep[String]) extends FunctionDef[Int](None, "fileLineCount", List(List(file))) {
+    override def curriedConstructor = (copy _)
+  }
+  def fileLineCount(file: Rep[String]): Rep[Int] = FileLineCount(file)
   // printf is not written like this for the reason mentioned above
   // case class Printf(text: Rep[String], xs: Rep[Seq[Any]]) extends FunctionDef[Unit](None, "printf", List(List(text, __varArg(xs)))) {
   //   override def curriedConstructor = (copy _).curried

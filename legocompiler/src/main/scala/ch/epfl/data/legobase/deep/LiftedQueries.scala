@@ -41,7 +41,7 @@ class LiftedQueries {
           }
         })
         val po = __newPrintOp2(sortOp)(__lambda { kv =>
-          printf(unit("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.6f|%.0f\n"),
+          printf(unit("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n"),
             kv.key.L_RETURNFLAG, kv.key.L_LINESTATUS, kv.aggs(1), kv.aggs(2), kv.aggs(3), kv.aggs(4),
             kv.aggs(6), kv.aggs(7), kv.aggs(8), kv.aggs(5))
         })
