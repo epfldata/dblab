@@ -37,10 +37,9 @@ object OrderingFactory {
 """
 
   override def getTraitSignature(): Document = s"""object LEGO_QUERY extends LegoRunner with GenericQuery {
+  def executeQuery(query: String): Unit = main()
   def main(args: Array[String]) {
-    val query = (x: Int) => main()
-    val list = ${if (query == 1) "List(query)" else 1.until(query).map(x => null).mkString("List(", ", ", ", ") + "query)"}
-    run(args, list)
+    run(args)
   }
   """
 
@@ -49,37 +48,37 @@ object OrderingFactory {
   }
 }
 
-object LegoGeneratorShallow extends ScalaCodeGenerator {
+// object LegoGeneratorShallow extends ScalaCodeGenerator {
 
-  override def getHeader: Document = """package ch.epfl.data
-package legobase
+//   override def getHeader: Document = """package ch.epfl.data
+// package legobase
 
-import scala.collection.mutable.Set
-import scala.collection.mutable.HashMap
-import scala.collection.mutable.TreeSet
-import scala.collection.mutable.ArrayBuffer
-import storagemanager.K2DBScanner
-import storagemanager.TPCHRelations._
-import pardis.shallow._
+// import scala.collection.mutable.Set
+// import scala.collection.mutable.HashMap
+// import scala.collection.mutable.TreeSet
+// import scala.collection.mutable.ArrayBuffer
+// import storagemanager.K2DBScanner
+// import storagemanager.TPCHRelations._
+// import pardis.shallow._
 
-object OrderingFactory {
-  def apply[T](fun: (T, T) => Int): Ordering[T] = new Ordering[T] {
-    def compare(o1: T, o2: T) = fun(o1, o2)
-  }
-}
-"""
+// object OrderingFactory {
+//   def apply[T](fun: (T, T) => Int): Ordering[T] = new Ordering[T] {
+//     def compare(o1: T, o2: T) = fun(o1, o2)
+//   }
+// }
+// """
 
-  override def getTraitSignature(): Document = """object LEGO_QUERY extends LegoRunner with GenericQuery {
-  def main(args: Array[String]) {
-    val q1 = (x: Int) => main()
-    run(args, List(q1))
-  }
-  """
+//   override def getTraitSignature(): Document = """object LEGO_QUERY extends LegoRunner with GenericQuery {
+//   def main(args: Array[String]) {
+//     val q1 = (x: Int) => main()
+//     run(args, List(q1))
+//   }
+//   """
 
-  def apply(program: PardisProgram) {
-    generate(program)
-  }
-}
+//   def apply(program: PardisProgram) {
+//     generate(program)
+//   }
+// }
 
 // object LegoGenerator extends CCodeGenerator {
 //   def apply(program: PardisProgram) {

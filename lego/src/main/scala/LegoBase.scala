@@ -9,10 +9,10 @@ trait ScalaImpl {
   def parseDate(x: String): Long = {
     sdf.parse(x).getTime
   }
-  def parseString(x: String): Array[Byte] = x.getBytes
+  def parseString(x: String): LBString = LBString(x.getBytes)
 }
 
-trait LegoRunner {
+trait LegoRunner extends GenericQuery {
   val numRuns: scala.Int = 1
   var currQuery: java.lang.String = ""
 
@@ -20,7 +20,9 @@ trait LegoRunner {
 
   def getResultFileName = "results/" + currQuery + ".result_big"
 
-  def run(args: Array[String], funs: List[(Int => Unit)]) {
+  def executeQuery(query: String): Unit
+
+  def run(args: Array[String]) {
     Config.datapath = args(0)
     Config.checkResults = true
 
@@ -30,12 +32,7 @@ trait LegoRunner {
     for (q <- queries) {
       currQuery = q
       Console.withOut(new PrintStream(getOutputName)) {
-        currQuery match {
-          case "Q1" => funs(0)(numRuns)
-          case "Q2" => funs(1)(numRuns)
-          case "Q6" => funs(2)(numRuns)
-          case _    => throw new Exception("Query not supported!")
-        }
+        executeQuery(currQuery)
         // Check results
         if (Config.checkResults) {
           if (new java.io.File(getResultFileName).exists) {
@@ -62,11 +59,32 @@ trait LegoRunner {
 }
 
 object MiniDB extends LegoRunner with storagemanager.Loader with Queries {
-
+  def executeQuery(query: String): Unit = query match {
+    case "Q1"  => Q1(numRuns)
+    case "Q2"  => Q2(numRuns)
+    case "Q3"  => Q3(numRuns)
+    case "Q4"  => Q4(numRuns)
+    case "Q5"  => Q5(numRuns)
+    case "Q6"  => Q6(numRuns)
+    case "Q7"  => Q7(numRuns)
+    case "Q8"  => Q8(numRuns)
+    case "Q9"  => Q9(numRuns)
+    case "Q10" => Q10(numRuns)
+    case "Q11" => Q11(numRuns)
+    case "Q12" => Q12(numRuns)
+    case "Q13" => Q13(numRuns)
+    case "Q14" => Q14(numRuns)
+    case "Q15" => Q15(numRuns)
+    case "Q16" => Q16(numRuns)
+    case "Q17" => Q17(numRuns)
+    case "Q18" => Q18(numRuns)
+    case "Q19" => Q19(numRuns)
+    case "Q20" => Q20(numRuns)
+    case "Q21" => Q21(numRuns)
+    case "Q22" => Q22(numRuns)
+    case _     => throw new Exception("Query not supported!")
+  }
   def main(args: Array[String]) {
-    val q1 = (x: Int) => Q1(x)
-    val q2 = (x: Int) => Q2(x)
-    val q6 = (x: Int) => Q6(x)
-    run(args, List(q1, q2, q6))
+    run(args)
   }
 }
