@@ -118,6 +118,10 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   def newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit manifestB: Manifest[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)
 
+  object GenericEngine {
+    def newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit manifestB: Manifest[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)
+  }
+
   // TODO this thing should be removed, ideally every literal should be lifted using YY
 
   implicit def liftInt(i: scala.Int): Rep[Int] = unit(i)

@@ -46,6 +46,9 @@ trait AGGRecordOps extends Base { this: DeepDSL =>
 trait AGGRecordImplicits { this: AGGRecordComponent =>
   // Add implicit conversions here!
 }
+trait AGGRecordImplementations { self: DeepDSL =>
+
+}
 trait AGGRecordComponent extends AGGRecordOps with AGGRecordImplicits { self: DeepDSL => }
 
 trait LINEITEMRecordOps extends Base { this: DeepDSL =>
@@ -199,6 +202,9 @@ trait LINEITEMRecordOps extends Base { this: DeepDSL =>
 trait LINEITEMRecordImplicits { this: LINEITEMRecordComponent =>
   // Add implicit conversions here!
 }
+trait LINEITEMRecordImplementations { self: DeepDSL =>
+
+}
 trait LINEITEMRecordComponent extends LINEITEMRecordOps with LINEITEMRecordImplicits { self: DeepDSL => }
 
 trait SUPPLIERRecordOps extends Base { this: DeepDSL =>
@@ -280,6 +286,9 @@ trait SUPPLIERRecordOps extends Base { this: DeepDSL =>
 trait SUPPLIERRecordImplicits { this: SUPPLIERRecordComponent =>
   // Add implicit conversions here!
 }
+trait SUPPLIERRecordImplementations { self: DeepDSL =>
+
+}
 trait SUPPLIERRecordComponent extends SUPPLIERRecordOps with SUPPLIERRecordImplicits { self: DeepDSL => }
 
 trait PARTSUPPRecordOps extends Base { this: DeepDSL =>
@@ -345,6 +354,9 @@ trait PARTSUPPRecordOps extends Base { this: DeepDSL =>
 trait PARTSUPPRecordImplicits { this: PARTSUPPRecordComponent =>
   // Add implicit conversions here!
 }
+trait PARTSUPPRecordImplementations { self: DeepDSL =>
+
+}
 trait PARTSUPPRecordComponent extends PARTSUPPRecordOps with PARTSUPPRecordImplicits { self: DeepDSL => }
 
 trait REGIONRecordOps extends Base { this: DeepDSL =>
@@ -393,6 +405,9 @@ trait REGIONRecordOps extends Base { this: DeepDSL =>
 }
 trait REGIONRecordImplicits { this: REGIONRecordComponent =>
   // Add implicit conversions here!
+}
+trait REGIONRecordImplementations { self: DeepDSL =>
+
 }
 trait REGIONRecordComponent extends REGIONRecordOps with REGIONRecordImplicits { self: DeepDSL => }
 
@@ -450,6 +465,9 @@ trait NATIONRecordOps extends Base { this: DeepDSL =>
 }
 trait NATIONRecordImplicits { this: NATIONRecordComponent =>
   // Add implicit conversions here!
+}
+trait NATIONRecordImplementations { self: DeepDSL =>
+
 }
 trait NATIONRecordComponent extends NATIONRecordOps with NATIONRecordImplicits { self: DeepDSL => }
 
@@ -547,6 +565,9 @@ trait PARTRecordOps extends Base { this: DeepDSL =>
 }
 trait PARTRecordImplicits { this: PARTRecordComponent =>
   // Add implicit conversions here!
+}
+trait PARTRecordImplementations { self: DeepDSL =>
+
 }
 trait PARTRecordComponent extends PARTRecordOps with PARTRecordImplicits { self: DeepDSL => }
 
@@ -659,6 +680,9 @@ trait OptimalStringOps extends Base { this: DeepDSL =>
 trait OptimalStringImplicits { this: OptimalStringComponent =>
   // Add implicit conversions here!
 }
+trait OptimalStringImplementations { self: DeepDSL =>
+
+}
 trait OptimalStringComponent extends OptimalStringOps with OptimalStringImplicits { self: DeepDSL => }
 
 trait K2DBScannerOps extends Base { this: DeepDSL =>
@@ -764,6 +788,9 @@ trait K2DBScannerOps extends Base { this: DeepDSL =>
 trait K2DBScannerImplicits { this: K2DBScannerComponent =>
   // Add implicit conversions here!
 }
+trait K2DBScannerImplementations { self: DeepDSL =>
+
+}
 trait K2DBScannerComponent extends K2DBScannerOps with K2DBScannerImplicits { self: DeepDSL => }
 
 trait WindowRecordOps extends Base { this: DeepDSL =>
@@ -804,6 +831,9 @@ trait WindowRecordOps extends Base { this: DeepDSL =>
 }
 trait WindowRecordImplicits { this: WindowRecordComponent =>
   // Add implicit conversions here!
+}
+trait WindowRecordImplementations { self: DeepDSL =>
+
 }
 trait WindowRecordComponent extends WindowRecordOps with WindowRecordImplicits { self: DeepDSL => }
 

@@ -891,6 +891,9 @@ trait IntOps extends Base { this: DeepDSL =>
 trait IntImplicits { this: IntComponent =>
   // Add implicit conversions here!
 }
+trait IntImplementations { self: DeepDSL =>
+
+}
 trait IntComponent extends IntOps with IntImplicits { self: DeepDSL => }
 
 trait DoubleOps extends Base { this: DeepDSL =>
@@ -1601,6 +1604,9 @@ trait DoubleOps extends Base { this: DeepDSL =>
 trait DoubleImplicits { this: DoubleComponent =>
   // Add implicit conversions here!
 }
+trait DoubleImplementations { self: DeepDSL =>
+
+}
 trait DoubleComponent extends DoubleOps with DoubleImplicits { self: DeepDSL => }
 
 trait CharacterOps extends Base { this: DeepDSL =>
@@ -1640,6 +1646,9 @@ trait CharacterOps extends Base { this: DeepDSL =>
 }
 trait CharacterImplicits { this: CharacterComponent =>
   // Add implicit conversions here!
+}
+trait CharacterImplementations { self: DeepDSL =>
+
 }
 trait CharacterComponent extends CharacterOps with CharacterImplicits { self: DeepDSL => }
 
@@ -2527,6 +2536,9 @@ trait LongOps extends Base { this: DeepDSL =>
 trait LongImplicits { this: LongComponent =>
   // Add implicit conversions here!
 }
+trait LongImplementations { self: DeepDSL =>
+
+}
 trait LongComponent extends LongOps with LongImplicits { self: DeepDSL => }
 
 trait IntegerOps extends Base { this: DeepDSL =>
@@ -2596,6 +2608,9 @@ trait IntegerOps extends Base { this: DeepDSL =>
 }
 trait IntegerImplicits { this: IntegerComponent =>
   // Add implicit conversions here!
+}
+trait IntegerImplementations { self: DeepDSL =>
+
 }
 trait IntegerComponent extends IntegerOps with IntegerImplicits { self: DeepDSL => }
 
@@ -2674,6 +2689,9 @@ trait BooleanOps extends Base { this: DeepDSL =>
 }
 trait BooleanImplicits { this: BooleanComponent =>
   // Add implicit conversions here!
+}
+trait BooleanImplementations { self: DeepDSL =>
+
 }
 trait BooleanComponent extends BooleanOps with BooleanImplicits { self: DeepDSL => }
 

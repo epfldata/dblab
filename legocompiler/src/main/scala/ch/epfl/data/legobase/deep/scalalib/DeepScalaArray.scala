@@ -60,5 +60,8 @@ trait ArrayOps extends Base { this: DeepDSL =>
 trait ArrayImplicits { this: ArrayComponent =>
   // Add implicit conversions here!
 }
+trait ArrayImplementations { self: DeepDSL =>
+
+}
 trait ArrayComponent extends ArrayOps with ArrayImplicits { self: DeepDSL => }
 

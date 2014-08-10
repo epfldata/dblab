@@ -97,6 +97,9 @@ trait HashMapOps extends Base { this: DeepDSL =>
 trait HashMapImplicits { this: HashMapComponent =>
   // Add implicit conversions here!
 }
+trait HashMapImplementations { self: DeepDSL =>
+
+}
 trait HashMapComponent extends HashMapOps with HashMapImplicits { self: DeepDSL => }
 
 trait SetOps extends Base { this: DeepDSL =>
@@ -141,40 +144,43 @@ trait SetOps extends Base { this: DeepDSL =>
 trait SetImplicits { this: SetComponent =>
   // Add implicit conversions here!
 }
+trait SetImplementations { self: DeepDSL =>
+
+}
 trait SetComponent extends SetOps with SetImplicits { self: DeepDSL => }
 
 trait TreeSetOps extends Base { this: DeepDSL =>
-  implicit class TreeSetRep[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A], ordering: Ordering[A]) {
-    def head(): Rep[A] = treeSetHead[A](self)(manifestA, ordering)
-    def size(): Rep[Int] = treeSetSize[A](self)(manifestA, ordering)
-    def -=(elem: Rep[A]): Rep[TreeSet[A]] = treeSet$minus$eq[A](self, elem)(manifestA, ordering)
-    def +=(elem: Rep[A]): Rep[TreeSet[A]] = treeSet$plus$eq[A](self, elem)(manifestA, ordering)
+  implicit class TreeSetRep[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A]) {
+    def head(): Rep[A] = treeSetHead[A](self)(manifestA)
+    def size(): Rep[Int] = treeSetSize[A](self)(manifestA)
+    def -=(elem: Rep[A]): Rep[TreeSet[A]] = treeSet$minus$eq[A](self, elem)(manifestA)
+    def +=(elem: Rep[A]): Rep[TreeSet[A]] = treeSet$plus$eq[A](self, elem)(manifestA)
     def ordering: Rep[Ordering[A]] = treeSet_Field_Ordering[A](self)(manifestA)
   }
   // constructors
-  def __newTreeSet[A](implicit ordering: Ordering[A], manifestA: Manifest[A]): Rep[TreeSet[A]] = treeSetNew[A](manifestA, ordering)
+  def __newTreeSet[A](ordering: Rep[Ordering[A]])(implicit manifestA: Manifest[A]): Rep[TreeSet[A]] = treeSetNew[A](ordering)(manifestA)
   // case classes
-  case class TreeSetNew[A]()(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](None, "new TreeSet", List()) {
-    override def curriedConstructor = (x: Any) => copy[A]()
+  case class TreeSetNew[A](ordering: Rep[Ordering[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[TreeSet[A]](None, "new TreeSet", List(List(ordering))) {
+    override def curriedConstructor = (copy[A] _)
   }
 
-  case class TreeSetHead[A](self: Rep[TreeSet[A]])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[A](Some(self), "head", List()) {
+  case class TreeSetHead[A](self: Rep[TreeSet[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "head", List()) {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
 
   }
 
-  case class TreeSetSize[A](self: Rep[TreeSet[A]])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[Int](Some(self), "size", List()) {
+  case class TreeSetSize[A](self: Rep[TreeSet[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Int](Some(self), "size", List()) {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
 
   }
 
-  case class TreeSet$minus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "-=", List(List(elem))) {
+  case class TreeSet$minus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A]) extends FunctionDef[TreeSet[A]](Some(self), "-=", List(List(elem))) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
-  case class TreeSet$plus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "+=", List(List(elem))) {
+  case class TreeSet$plus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A]) extends FunctionDef[TreeSet[A]](Some(self), "+=", List(List(elem))) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -185,16 +191,19 @@ trait TreeSetOps extends Base { this: DeepDSL =>
   }
 
   // method definitions
-  def treeSetNew[A](implicit manifestA: Manifest[A], ordering: Ordering[A]): Rep[TreeSet[A]] = TreeSetNew[A]()
-  def treeSetHead[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A], ordering: Ordering[A]): Rep[A] = TreeSetHead[A](self)
-  def treeSetSize[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A], ordering: Ordering[A]): Rep[Int] = TreeSetSize[A](self)
-  def treeSet$minus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit manifestA: Manifest[A], ordering: Ordering[A]): Rep[TreeSet[A]] = TreeSet$minus$eq[A](self, elem)
-  def treeSet$plus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit manifestA: Manifest[A], ordering: Ordering[A]): Rep[TreeSet[A]] = TreeSet$plus$eq[A](self, elem)
+  def treeSetNew[A](ordering: Rep[Ordering[A]])(implicit manifestA: Manifest[A]): Rep[TreeSet[A]] = TreeSetNew[A](ordering)
+  def treeSetHead[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A]): Rep[A] = TreeSetHead[A](self)
+  def treeSetSize[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A]): Rep[Int] = TreeSetSize[A](self)
+  def treeSet$minus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit manifestA: Manifest[A]): Rep[TreeSet[A]] = TreeSet$minus$eq[A](self, elem)
+  def treeSet$plus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit manifestA: Manifest[A]): Rep[TreeSet[A]] = TreeSet$plus$eq[A](self, elem)
   def treeSet_Field_Ordering[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A]): Rep[Ordering[A]] = TreeSet_Field_Ordering[A](self)
   type TreeSet[A] = scala.collection.mutable.TreeSet[A]
 }
 trait TreeSetImplicits { this: TreeSetComponent =>
   // Add implicit conversions here!
+}
+trait TreeSetImplementations { self: DeepDSL =>
+
 }
 trait TreeSetComponent extends TreeSetOps with TreeSetImplicits { self: DeepDSL => }
 
@@ -240,6 +249,9 @@ trait DefaultEntryOps extends Base { this: DeepDSL =>
 }
 trait DefaultEntryImplicits { this: DefaultEntryComponent =>
   // Add implicit conversions here!
+}
+trait DefaultEntryImplementations { self: DeepDSL =>
+
 }
 trait DefaultEntryComponent extends DefaultEntryOps with DefaultEntryImplicits { self: DeepDSL => }
 
@@ -313,6 +325,9 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
 }
 trait ArrayBufferImplicits { this: ArrayBufferComponent =>
   // Add implicit conversions here!
+}
+trait ArrayBufferImplementations { self: DeepDSL =>
+
 }
 trait ArrayBufferComponent extends ArrayBufferOps with ArrayBufferImplicits { self: DeepDSL => }
 

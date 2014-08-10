@@ -39,7 +39,7 @@ trait MirrorSet[A] {
 }
 
 @reflect[TreeSet[_]]
-class MirrorTreeSet[A](implicit val ordering: Ordering[A]) {
+class MirrorTreeSet[A]()( /*implicit */ val ordering: Ordering[A]) {
   @pure
   def head(): A = ???
   @pure

@@ -75,6 +75,34 @@ trait OperatorOps extends Base { this: OperatorsComponent =>
 trait OperatorImplicits { this: OperatorComponent =>
   // Add implicit conversions here!
 }
+trait OperatorImplementations { self: DeepDSL =>
+  override def operatorForeach[A](self: Rep[Operator[A]], f: Rep[((A) => Unit)])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    {
+      var exit: this.Var[Boolean] = __newVar(unit(false));
+      __whileDo(infix_$bang$eq(readVar(exit), unit(true)), {
+        val t: this.Rep[A] = self.next();
+        __ifThenElse(infix_$eq$eq(t, self.NullDynamicRecord), __assign(exit, unit(true)), {
+          __app(f).apply(t);
+          unit(())
+        })
+      })
+    }
+  }
+  override def operatorFindFirst[A](self: Rep[Operator[A]], cond: Rep[((A) => Boolean)])(implicit manifestA: Manifest[A]): Rep[A] = {
+    {
+      var exit: this.Var[Boolean] = __newVar(unit(false));
+      var res: this.Var[A] = __newVar(self.NullDynamicRecord);
+      __whileDo(infix_$bang$eq(readVar(exit), unit(true)), {
+        __assign(res, self.next());
+        __ifThenElse(infix_$eq$eq(readVar(res), self.NullDynamicRecord), __assign(exit, unit(true)), __assign(exit, __app(cond).apply(res)))
+      });
+      readVar(res)
+    }
+  }
+  override def operatorNullDynamicRecord[A, D](self: Rep[Operator[A]])(implicit manifestA: Manifest[A], manifestD: Manifest[D]): Rep[D] = {
+    infix_asInstanceOf[D](unit(null))
+  }
+}
 trait OperatorComponent extends OperatorOps with OperatorImplicits { self: OperatorsComponent => }
 trait ScanOpOps extends Base { this: OperatorsComponent =>
   implicit class ScanOpRep[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A], evidence$3: Manifest[A]) {
@@ -171,6 +199,24 @@ trait ScanOpOps extends Base { this: OperatorsComponent =>
 trait ScanOpImplicits { this: ScanOpComponent =>
   // Add implicit conversions here!
 }
+trait ScanOpImplementations { self: DeepDSL =>
+  override def scanOpOpen[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    unit(())
+  }
+  override def scanOpNext[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = {
+    __ifThenElse(self.i.$less(self.table.length), {
+      val v: this.Rep[A] = self.table.apply(self.i);
+      self.i_$eq(self.i.$plus(unit(1)));
+      v
+    }, self.NullDynamicRecord)
+  }
+  override def scanOpClose[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    unit(())
+  }
+  override def scanOpReset[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    self.i_$eq(unit(0))
+  }
+}
 trait ScanOpComponent extends ScanOpOps with ScanOpImplicits { self: OperatorsComponent => }
 trait SelectOpOps extends Base { this: OperatorsComponent =>
   implicit class SelectOpRep[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A], evidence$4: Manifest[A]) {
@@ -262,6 +308,20 @@ trait SelectOpOps extends Base { this: OperatorsComponent =>
 }
 trait SelectOpImplicits { this: SelectOpComponent =>
   // Add implicit conversions here!
+}
+trait SelectOpImplementations { self: DeepDSL =>
+  override def selectOpOpen[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    self.parent.open()
+  }
+  override def selectOpNext[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = {
+    self.parent.findFirst(self.selectPred)
+  }
+  override def selectOpClose[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    unit(())
+  }
+  override def selectOpReset[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    self.parent.reset()
+  }
 }
 trait SelectOpComponent extends SelectOpOps with SelectOpImplicits { self: OperatorsComponent => }
 trait AggOpOps extends Base { this: OperatorsComponent =>
@@ -418,6 +478,41 @@ trait AggOpOps extends Base { this: OperatorsComponent =>
 trait AggOpImplicits { this: AggOpComponent =>
   // Add implicit conversions here!
 }
+trait AggOpImplementations { self: DeepDSL =>
+  override def aggOpOpen[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Unit] = {
+    {
+      self.parent.open();
+      self.parent.foreach(__lambda(((t: this.Rep[A]) => {
+        val key: this.Rep[B] = self.grp.apply(t);
+        val aggs: this.Rep[Array[Double]] = self.hm.getOrElseUpdate(key, __newArray[Double](self.numAggs));
+        var i: this.Var[Int] = __newVar(unit(0));
+        self.aggFuncs.foreach[Unit](__lambda(((aggFun: this.Rep[(A, Double) => Double]) => {
+          aggs.update(readVar(i), __app(aggFun).apply(t, aggs.apply(i)));
+          __assign(i, readVar(i).$plus(unit(1)))
+        })))
+      })));
+      self.keySet_$eq(Set.apply[B](self.hm.keySet.toSeq))
+    }
+  }
+  override def aggOpNext[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[AGGRecord[B]] = {
+    __ifThenElse(infix_$bang$eq(self.hm.size, unit(0)), {
+      val key: this.Rep[B] = self.keySet.head;
+      self.keySet.remove(key);
+      val elem: this.Rep[Option[Array[Double]]] = self.hm.remove(key);
+      GenericEngine.newAGGRecord[B](key, elem.get)
+    }, self.NullDynamicRecord)
+  }
+  override def aggOpClose[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Unit] = {
+    unit(())
+  }
+  override def aggOpReset[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Unit] = {
+    {
+      self.parent.reset();
+      self.hm.clear();
+      self.open()
+    }
+  }
+}
 trait AggOpComponent extends AggOpOps with AggOpImplicits { self: OperatorsComponent => }
 trait SortOpOps extends Base { this: OperatorsComponent =>
   implicit class SortOpRep[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A], evidence$7: Manifest[A]) {
@@ -518,6 +613,33 @@ trait SortOpOps extends Base { this: OperatorsComponent =>
 trait SortOpImplicits { this: SortOpComponent =>
   // Add implicit conversions here!
 }
+trait SortOpImplementations { self: DeepDSL =>
+  override def sortOpOpen[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    {
+      self.parent.open();
+      self.parent.foreach(__lambda(((t: this.Rep[A]) => {
+        self.sortedTree.$plus$eq(t);
+        unit(())
+      })))
+    }
+  }
+  override def sortOpNext[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = {
+    __ifThenElse(infix_$bang$eq(self.sortedTree.size, unit(0)), {
+      val elem: this.Rep[A] = self.sortedTree.head;
+      self.sortedTree.$minus$eq(elem);
+      elem
+    }, self.NullDynamicRecord)
+  }
+  override def sortOpClose[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    unit(())
+  }
+  override def sortOpReset[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    {
+      self.parent.reset();
+      self.open()
+    }
+  }
+}
 trait SortOpComponent extends SortOpOps with SortOpImplicits { self: OperatorsComponent => }
 trait MapOpOps extends Base { this: OperatorsComponent =>
   implicit class MapOpRep[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A], evidence$8: Manifest[A]) {
@@ -612,6 +734,26 @@ trait MapOpOps extends Base { this: OperatorsComponent =>
 }
 trait MapOpImplicits { this: MapOpComponent =>
   // Add implicit conversions here!
+}
+trait MapOpImplementations { self: DeepDSL =>
+  override def mapOpOpen[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    self.parent.open()
+  }
+  override def mapOpNext[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = {
+    {
+      val t: this.Rep[A] = self.parent.next();
+      __ifThenElse(infix_$bang$eq(t, self.NullDynamicRecord), {
+        self.aggFuncs.foreach[Unit](__lambda(((agg: this.Rep[A => Unit]) => __app(agg).apply(t))));
+        t
+      }, self.NullDynamicRecord)
+    }
+  }
+  override def mapOpClose[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    unit(())
+  }
+  override def mapOpReset[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    self.parent.reset()
+  }
 }
 trait MapOpComponent extends MapOpOps with MapOpImplicits { self: OperatorsComponent => }
 trait PrintOpOps extends Base { this: OperatorsComponent =>
@@ -728,6 +870,30 @@ trait PrintOpOps extends Base { this: OperatorsComponent =>
 }
 trait PrintOpImplicits { this: PrintOpComponent =>
   // Add implicit conversions here!
+}
+trait PrintOpImplementations { self: DeepDSL =>
+  override def printOpOpen[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    self.parent.open()
+  }
+  override def printOpNext[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = {
+    {
+      var exit: this.Var[Boolean] = __newVar(unit(false));
+      __whileDo(infix_$eq$eq(readVar(exit), unit(false)), {
+        val t: this.Rep[A] = self.parent.next();
+        __ifThenElse(infix_$eq$eq(__app(self.limit).apply(), unit(false)).$bar$bar(infix_$eq$eq(t, self.NullDynamicRecord)), __assign(exit, unit(true)), {
+          __app(self.printFunc).apply(t);
+          self.numRows_$eq(self.numRows.$plus(unit(1)))
+        })
+      });
+      self.NullDynamicRecord
+    }
+  }
+  override def printOpClose[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    unit(())
+  }
+  override def printOpReset[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+    self.parent.reset()
+  }
 }
 trait PrintOpComponent extends PrintOpOps with PrintOpImplicits { self: OperatorsComponent => }
 trait HashJoinOpOps extends Base { this: OperatorsComponent =>
@@ -921,6 +1087,53 @@ trait HashJoinOpOps extends Base { this: OperatorsComponent =>
 trait HashJoinOpImplicits { this: HashJoinOpComponent =>
   // Add implicit conversions here!
 }
+// trait HashJoinOpImplementations { self: DeepDSL =>
+//   override def hashJoinOpOpen[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Unit] = {
+//     {
+//       self.leftParent.open();
+//       self.rightParent.open();
+//       self.leftParent.foreach(__lambda(((t: this.Rep[A]) => {
+//         val k: this.Rep[C] = self.leftHash.apply(t);
+//         val v: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.getOrElseUpdate(k, ArrayBuffer.apply[A]());
+//         v.append(t)
+//       })))
+//     }
+//   }
+//   override def hashJoinOpNext[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[DynamicCompositeRecord[A, B]] = {
+//     {
+//       __ifThenElse(infix_$bang$eq(self.tmpCount, unit(-1)), {
+//         __whileDo(self.tmpCount.$less(self.tmpBuffer.size).$amp$amp(__app(self.joinCond).apply(self.tmpBuffer.apply(self.tmpCount), self.tmpLine).unary_$bang), self.tmpCount_$eq(self.tmpCount.$plus(unit(1))));
+//         __ifThenElse(infix_$eq$eq(self.tmpCount, self.tmpBuffer.size), self.tmpCount_$eq(unit(-1)), unit(()))
+//       }, unit(()));
+//       __ifThenElse(infix_$eq$eq(self.tmpCount, unit(-1)), self.tmpLine_$eq(self.rightParent.findFirst(__lambda(((t: this.Rep[B]) => {
+//         val k: this.Rep[C] = self.rightHash.apply(t);
+//         __ifThenElse(self.hm.contains(k), {
+//           self.tmpBuffer_$eq(self.hm.apply(k));
+//           self.tmpCount_$eq(self.tmpBuffer.indexWhere(__lambda(((e: this.Rep[A]) => __app(self.joinCond).apply(e, t)))));
+//           infix_$bang$eq(self.tmpCount, unit(-1))
+//         }, unit(false))
+//       })))), unit(()));
+//       __ifThenElse(infix_$bang$eq(self.tmpLine, self.NullDynamicRecord[B]).$amp$amp(infix_$bang$eq(self.tmpCount, unit(-1))), {
+//         val res: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]] = RecordOps[A](self.tmpBuffer.apply(self.tmpCount)).concatenateDynamic[B](self.tmpLine, self.leftAlias, self.rightAlias);
+//         self.tmpCount_$eq(self.tmpCount.$plus(unit(1)));
+//         res
+//       }, self.NullDynamicRecord[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]])
+//     }
+//   }
+//   override def hashJoinOpClose[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Unit] = {
+//     unit(())
+//   }
+//   override def hashJoinOpReset[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Unit] = {
+//     {
+//       self.rightParent.reset();
+//       self.leftParent.reset();
+//       self.hm.clear();
+//       self.tmpLine_$eq(self.NullDynamicRecord[B]);
+//       self.tmpCount_$eq(unit(0));
+//       self.tmpBuffer.clear()
+//     }
+//   }
+// }
 trait HashJoinOpComponent extends HashJoinOpOps with HashJoinOpImplicits { self: OperatorsComponent => }
 trait WindowOpOps extends Base { this: OperatorsComponent =>
   implicit class WindowOpRep[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C], evidence$15: Manifest[C], evidence$14: Manifest[B], evidence$13: Manifest[A]) {
@@ -1057,5 +1270,36 @@ trait WindowOpOps extends Base { this: OperatorsComponent =>
 trait WindowOpImplicits { this: WindowOpComponent =>
   // Add implicit conversions here!
 }
+// trait WindowOpImplementations { self: DeepDSL =>
+//   override def windowOpOpen[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Unit] = {
+//     {
+//       self.parent.open();
+//       self.parent.foreach(__lambda(((t: this.Rep[A]) => {
+//         val key: this.Rep[B] = self.grp.apply(t);
+//         val v: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.getOrElseUpdate(key, ArrayBuffer.apply[A]());
+//         v.append(t)
+//       })));
+//       self.keySet_$eq(Set.apply[B](self.hm.keySet.toSeq))
+//     }
+//   }
+//   override def windowOpNext[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[WindowRecord[B, C]] = {
+//     __ifThenElse(infix_$bang$eq(self.hm.size, unit(0)), {
+//       val key: this.Rep[B] = self.keySet.head;
+//       self.keySet.remove(key);
+//       val elem: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.remove(key).get;
+//       GenericEngine.newWindowRecord[B, C](key, __app(self.wndf).apply(elem))
+//     }, self.NullDynamicRecord)
+//   }
+//   override def windowOpClose[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Unit] = {
+//     unit(())
+//   }
+//   override def windowOpReset[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Unit] = {
+//     {
+//       self.parent.reset();
+//       self.hm.clear();
+//       self.open()
+//     }
+//   }
+// }
 trait WindowOpComponent extends WindowOpOps with WindowOpImplicits { self: OperatorsComponent => }
 trait OperatorsComponent extends OperatorComponent with ScanOpComponent with SelectOpComponent with AggOpComponent with SortOpComponent with MapOpComponent with PrintOpComponent with HashJoinOpComponent with WindowOpComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent with DoubleComponent with IntComponent with LongComponent with ArrayComponent with LINEITEMRecordComponent with K2DBScannerComponent with IntegerComponent with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase { self: DeepDSL => }
