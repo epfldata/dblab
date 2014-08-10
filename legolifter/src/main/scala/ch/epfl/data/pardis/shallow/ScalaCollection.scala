@@ -64,4 +64,5 @@ final class MirrorArrayBuffer[A](protected val initialSize: Int) {
   def indexWhere(p: A => Boolean): Int = ???
   def clear(): Unit = ???
   def minBy[B](f: A => B)(implicit cmp: Ordering[B]): A = ???
+  @write def append(elem: A): Unit = ???
 }

@@ -263,6 +263,7 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
     def indexWhere(p: Rep[(A => Boolean)]): Rep[Int] = arrayBufferIndexWhere[A](self, p)(manifestA)
     def clear(): Rep[Unit] = arrayBufferClear[A](self)(manifestA)
     def minBy[B](f: Rep[(A => B)])(implicit manifestB: Manifest[B], cmp: Ordering[B]): Rep[A] = arrayBufferMinBy[A, B](self, f)(manifestA, manifestB, cmp)
+    def append(elem: Rep[A]): Rep[Unit] = arrayBufferAppend[A](self, elem)(manifestA)
     def initialSize: Rep[Int] = arrayBuffer_Field_InitialSize[A](self)(manifestA)
   }
   // constructors
@@ -305,6 +306,10 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B] _).curried
   }
 
+  case class ArrayBufferAppend[A](self: Rep[ArrayBuffer[A]], elem: Rep[A])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "append", List(List(elem))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
   case class ArrayBuffer_Field_InitialSize[A](self: Rep[ArrayBuffer[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Int](self, "initialSize") {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
@@ -320,6 +325,7 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
   def arrayBufferIndexWhere[A](self: Rep[ArrayBuffer[A]], p: Rep[((A) => Boolean)])(implicit manifestA: Manifest[A]): Rep[Int] = ArrayBufferIndexWhere[A](self, p)
   def arrayBufferClear[A](self: Rep[ArrayBuffer[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = ArrayBufferClear[A](self)
   def arrayBufferMinBy[A, B](self: Rep[ArrayBuffer[A]], f: Rep[((A) => B)])(implicit manifestA: Manifest[A], manifestB: Manifest[B], cmp: Ordering[B]): Rep[A] = ArrayBufferMinBy[A, B](self, f)
+  def arrayBufferAppend[A](self: Rep[ArrayBuffer[A]], elem: Rep[A])(implicit manifestA: Manifest[A]): Rep[Unit] = ArrayBufferAppend[A](self, elem)
   def arrayBuffer_Field_InitialSize[A](self: Rep[ArrayBuffer[A]])(implicit manifestA: Manifest[A]): Rep[Int] = ArrayBuffer_Field_InitialSize[A](self)
   type ArrayBuffer[A] = scala.collection.mutable.ArrayBuffer[A]
 }

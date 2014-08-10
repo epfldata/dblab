@@ -120,6 +120,7 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   object GenericEngine {
     def newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit manifestB: Manifest[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)
+    def newWindowRecord[B, C](key: Rep[B], wnd: Rep[C])(implicit manifestB: Manifest[B], manifestC: Manifest[C]): Rep[WindowRecord[B, C]] = __newWindowRecord(key, wnd)
   }
 
   // TODO this thing should be removed, ideally every literal should be lifted using YY
@@ -166,6 +167,10 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   implicit class AllRepOps[T: Manifest](self: Rep[T]) {
     def __==[T2: Manifest](o: Rep[T2]): Rep[Boolean] = infix_==(self, o)
+  }
+
+  object ArrayBuffer {
+    def apply[T: Manifest](): Rep[ArrayBuffer[T]] = __newArrayBuffer[T](unit(0))
   }
 }
 
