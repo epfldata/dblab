@@ -4,6 +4,7 @@ package deep
 
 import scala.language.implicitConversions
 import pardis.utils.Utils.{ manifestToString => m2s }
+import pardis.shallow.AbstractRecord
 
 // FIXME in the righthand side of the genreated case class invokations, type parameters should be filled in.
 
@@ -15,10 +16,37 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     override def curriedConstructor = (x: Any) => copy()
   }
   def loadLineitem(): Rep[Array[LINEITEMRecord]] = LoadLineItem()
+  case class LoadPart() extends FunctionDef[Array[PARTRecord]](None, "loadPart", List(Nil)) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+  def loadPart(): Rep[Array[PARTRecord]] = LoadPart()
+  case class LoadPartsupp() extends FunctionDef[Array[PARTSUPPRecord]](None, "loadPartsupp", List(Nil)) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+  def loadPartsupp(): Rep[Array[PARTSUPPRecord]] = LoadPartsupp()
+  case class LoadNation() extends FunctionDef[Array[NATIONRecord]](None, "loadNation", List(Nil)) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+  def loadNation(): Rep[Array[NATIONRecord]] = LoadNation()
+
+  case class LoadRegion() extends FunctionDef[Array[REGIONRecord]](None, "loadRegion", List(Nil)) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+  def loadRegion(): Rep[Array[REGIONRecord]] = LoadRegion()
+
+  case class LoadSupplier() extends FunctionDef[Array[SUPPLIERRecord]](None, "loadSupplier", List(Nil)) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+  def loadSupplier(): Rep[Array[SUPPLIERRecord]] = LoadSupplier()
+
   case class ParseDate(date: Rep[String]) extends FunctionDef[Long](None, "parseDate", List(List(date))) {
     override def curriedConstructor = (copy _)
   }
   def parseDate(date: Rep[String]): Rep[Long] = ParseDate(date)
+  case class ParseString(string: Rep[String]) extends FunctionDef[LBString](None, "parseString", List(List(string))) {
+    override def curriedConstructor = (copy _)
+  }
+  def parseString(string: Rep[String]): Rep[LBString] = ParseString(string)
   case class Println(x: Rep[Any]) extends FunctionDef[Unit](None, "println", List(List(x))) {
     override def curriedConstructor = (copy _)
   }
@@ -28,6 +56,10 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     override def rebuild(children: FunctionArg*) = Printf(children(0).asInstanceOf[Rep[String]], children.drop(1).toSeq.asInstanceOf[Seq[Rep[Any]]]: _*)
   }
   def printf(text: Rep[String], xs: Rep[Any]*): Rep[Unit] = Printf(text, xs: _*)
+  case class FileLineCount(file: Rep[String]) extends FunctionDef[Int](None, "fileLineCount", List(List(file))) {
+    override def curriedConstructor = (copy _)
+  }
+  def fileLineCount(file: Rep[String]): Rep[Int] = FileLineCount(file)
   // printf is not written like this for the reason mentioned above
   // case class Printf(text: Rep[String], xs: Rep[Seq[Any]]) extends FunctionDef[Unit](None, "printf", List(List(text, __varArg(xs)))) {
   //   override def curriedConstructor = (copy _).curried
@@ -70,6 +102,8 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     __newPrintOp(parent)(printFunc, limit)
   }
 
+  def __newHashJoinOp2[A <: AbstractRecord, B <: AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String] = unit(""), rightAlias: Rep[String] = unit(""))(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit evidence$10: Manifest[A], evidence$11: Manifest[B], evidence$12: Manifest[C], manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[HashJoinOp[A, B, C]] = __newHashJoinOp[A, B, C](leftParent, rightParent, leftAlias, rightAlias)(joinCond)(leftHash)(rightHash)(manifestA, manifestB, manifestC, manifestA, manifestB, manifestC)
+
   // TODO scala.Char class should be lifted instead of the java one
 
   case class Character$minus1(self: Rep[Character], x: Rep[Character]) extends FunctionDef[Int](Some(self), "-", List(List(x))) {
@@ -104,6 +138,7 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   implicit class ArrayRep2[T](self: Rep[Array[T]])(implicit manifestT: Manifest[T]) {
     def filter(p: Rep[T => Boolean]): Rep[Array[T]] = arrayFilter(self, p)
+    def ===[T2: Manifest](o: Rep[Array[T2]]): Rep[Boolean] = arrayEquals(self, o)
   }
 
   def arrayFilter[T](self: Rep[Array[T]], p: Rep[T => Boolean])(implicit manifestT: Manifest[T]): Rep[Array[T]] = ArrayFilter[T](self, p)
@@ -116,6 +151,17 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   case class HashMapNew2_2[A, B]()(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[HashMap[A, B]](None, s"new HashMap[${m2s(manifestA)}, ${m2s(manifestB)}]", List()) {
     override def curriedConstructor = (x: Any) => copy[A, B]()
+  }
+
+  case class ArrayEquals[T1: Manifest, T2: Manifest](self: Rep[Array[T1]], o: Rep[Array[T2]]) extends FunctionDef[Boolean](Some(self), "===", List(List(o))) {
+    override def curriedConstructor = (copy[T1, T2] _).curried
+    override def isPure = true
+  }
+
+  def arrayEquals[T1: Manifest, T2: Manifest](self: Rep[Array[T1]], o: Rep[Array[T2]]): Rep[Boolean] = ArrayEquals(self, o)
+
+  implicit class AllRepOps[T: Manifest](self: Rep[T]) {
+    def __==[T2: Manifest](o: Rep[T2]): Rep[Boolean] = infix_==(self, o)
   }
 }
 

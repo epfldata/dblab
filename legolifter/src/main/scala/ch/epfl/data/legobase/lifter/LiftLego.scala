@@ -14,6 +14,7 @@ import scala.collection.mutable.MirrorHashMap
 import scala.collection.mutable.MirrorSet
 import scala.collection.mutable.MirrorTreeSet
 import scala.collection.mutable.MirrorDefaultEntry
+import scala.collection.mutable.MirrorArrayBuffer
 
 object LiftLego {
   val reportToFile = true
@@ -57,7 +58,14 @@ $liftedCode
     val liftedCodes = List(
       al.autoLift[queryengine.AGGRecord[Any]],
       al.autoLift[storagemanager.TPCHRelations.LINEITEMRecord],
-      al.autoLift[storagemanager.K2DBScanner](Custom(component = "DeepDSL", excludedFields = List(CMethod("br"), CMethod("sdf")))))
+      al.autoLift[storagemanager.TPCHRelations.SUPPLIERRecord],
+      al.autoLift[storagemanager.TPCHRelations.PARTSUPPRecord],
+      al.autoLift[storagemanager.TPCHRelations.REGIONRecord],
+      al.autoLift[storagemanager.TPCHRelations.NATIONRecord],
+      al.autoLift[storagemanager.TPCHRelations.PARTRecord],
+      al.autoLift[pardis.shallow.OptimalString],
+      al.autoLift[storagemanager.K2DBScanner](Custom(component = "DeepDSL", excludedFields = List(CMethod("br"), CMethod("sdf")))),
+      al.autoLift[queryengine.WindowRecord[Any, Any]])
     val liftedCode = liftedCodes.mkString("\n")
     val file = "DeepLegoBase"
     printToFile(new java.io.File(s"$folder/$file.scala")) { pw =>
@@ -71,11 +79,18 @@ import scalalib._
 import pardis.ir._
 
 $liftedCode
-trait DeepDSL extends OperatorsComponent with AGGRecordComponent with CharacterComponent 
+trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent 
   with DoubleComponent with IntComponent with LongComponent with ArrayComponent 
-  with LINEITEMRecordComponent with K2DBScannerComponent with IntegerComponent 
+  with LINEITEMRecordComponent
+  with SUPPLIERRecordComponent
+  with PARTSUPPRecordComponent
+  with REGIONRecordComponent
+  with NATIONRecordComponent
+  with PARTRecordComponent
+  with OptimalStringComponent
+  with K2DBScannerComponent with IntegerComponent 
   with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent 
-  with DefaultEntryComponent with ManualLiftedLegoBase
+  with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase
 """)
     }
   }
@@ -85,7 +100,8 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with CharacterC
       al.autoLift[MirrorHashMap[Any, Any]](Custom("DeepDSL")),
       al.autoLift[MirrorSet[Any]](Custom("DeepDSL")),
       al.autoLift[MirrorTreeSet[Any]](Custom("DeepDSL")),
-      al.autoLift[MirrorDefaultEntry[Any, Any]](Custom("DeepDSL")))
+      al.autoLift[MirrorDefaultEntry[Any, Any]](Custom("DeepDSL")),
+      al.autoLift[MirrorArrayBuffer[Any]](Custom("DeepDSL")))
     val liftedCode = liftedCodes.mkString("\n")
     val file = "DeepScalaCollection"
     printToFile(new java.io.File(s"$folder/scalalib/$file.scala")) { pw =>

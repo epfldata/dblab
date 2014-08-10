@@ -176,6 +176,16 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     }
   }
 
+  // override def windowOpOpen[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Unit] = {
+  //   self.parent.open
+  //   self.parent.foreach(__lambda { t: Rep[A] =>
+  //     val key = self.grp(t)
+  //     val v = self.hm.getOrElseUpdate(key, ArrayBuffer[A]())
+  //     // v.append(t)
+  //   })
+  //   self.`keySet_=`(Set.apply(self.hm.keySet.toSeq))
+  // }
+
   override def printOp_Field_Parent[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
     self match {
       case Def(x: PrintOpNew[_]) => x.parent
@@ -239,15 +249,14 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     case _                      => ???
   }
 
-  Config.datapath = "/Users/amirsh/Dropbox/yannis/"
-
   // FIXME here it uses staging!
   override def loadLineitem(): Rep[Array[LINEITEMRecord]] = {
-    val file = Config.datapath + "lineitem.tbl"
+    val file = unit(Config.datapath + "lineitem.tbl")
     import scala.sys.process._;
-    val size = Integer.parseInt((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", ""))
+    // val size = Integer.parseInt((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", ""))
+    val size = fileLineCount(file)
     // Load Relation 
-    val s = __newK2DBScanner(unit(file))
+    val s = __newK2DBScanner(file)
     var i = __newVar[Int](0)
     val hm = __newArray[LINEITEMRecord](size)
     __whileDo(s.hasNext, {
@@ -278,7 +287,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
   def loadString(size: Rep[Int], s: Rep[K2DBScanner]) = {
     val NAME = __newArray[Byte](size)
     s.next(NAME)
-    NAME.filter(__lambda(y => infix_!=(y, unit(0))))
+    __newOptimalString(NAME.filter(__lambda(y => infix_!=(y, unit(0)))))
   }
 }
 

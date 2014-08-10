@@ -49,6 +49,7 @@ object LegoBuild extends Build {
   lazy val lego_core       = Project(id = "lego-core",        base = file("lego")  , settings = defaults ++ 
     Seq(name := "lego-core",
       libraryDependencies += "ch.epfl.data" % "autolifter_2.11" % "0.1-SNAPSHOT",
+      libraryDependencies += "ch.epfl.data" % "pardis-library_2.11" % "0.1-SNAPSHOT",
       scalacOptions ++= Seq("-optimize"))) // hack for being able to generate implementation
   lazy val legolifter = Project(id = "legolifter", base = file("legolifter"), settings = defaults ++ Seq(name := "legolifter",
       libraryDependencies += "ch.epfl.data" % "autolifter_2.11" % "0.1-SNAPSHOT")) dependsOn(lego_core)

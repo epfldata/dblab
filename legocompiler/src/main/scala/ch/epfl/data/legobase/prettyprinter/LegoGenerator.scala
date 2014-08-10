@@ -7,16 +7,28 @@ import pardis.ir._
 import pardis.prettyprinter._
 import scala.language.implicitConversions
 
-object LegoGenerator extends ScalaCodeGenerator {
+class LegoScalaGenerator(val query: Int, val shallow: Boolean = false) extends ScalaCodeGenerator {
 
-  override def getHeader: Document = """package ch.epfl.data
+  def getShallowHeader: String = if (shallow) """
+import queryengine._
+import queryengine.volcano._
+import storagemanager.TPCHRelations._
+import pardis.shallow._
+  """
+  else
+    ""
+
+  override def getHeader: Document = s"""package ch.epfl.data
 package legobase
 
+$getShallowHeader
 import queryengine.AGGRecord
 import scala.collection.mutable.Set
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.TreeSet
+import scala.collection.mutable.ArrayBuffer
 import storagemanager.K2DBScanner
+import pardis.shallow.OptimalString
 
 object OrderingFactory {
   def apply[T](fun: (T, T) => Int): Ordering[T] = new Ordering[T] {
@@ -25,10 +37,10 @@ object OrderingFactory {
 }
 """
 
-  override def getTraitSignature(): Document = """object LEGO_QUERY extends LegoRunner with GenericQuery {
+  override def getTraitSignature(): Document = s"""object LEGO_QUERY extends LegoRunner with GenericQuery {
+  def executeQuery(query: String): Unit = main()
   def main(args: Array[String]) {
-    val q1 = (x: Int) => main()
-    run(args, List(q1))
+    run(args)
   }
   """
 
@@ -37,8 +49,8 @@ object OrderingFactory {
   }
 }
 
-// object LegoGenerator extends CCodeGenerator {
-//   def apply(program: PardisProgram) {
-//     generate(program)
-//   }
-// }
+class LegoCGenerator(val query: Int, val shallow: Boolean = false) extends CCodeGenerator {
+  def apply(program: PardisProgram) {
+    generate(program)
+  }
+}
