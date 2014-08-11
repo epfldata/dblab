@@ -2619,8 +2619,8 @@ trait BooleanOps extends Base { this: DeepDSL =>
     def unary_!(): Rep[Boolean] = booleanUnary_$bang(self)
     def ==(x: Rep[Boolean]): Rep[Boolean] = boolean$eq$eq(self, x)
     def !=(x: Rep[Boolean]): Rep[Boolean] = boolean$bang$eq(self, x)
-    def ||(x: Rep[Boolean]): Rep[Boolean] = boolean$bar$bar(self, x)
-    def &&(x: Rep[Boolean]): Rep[Boolean] = boolean$amp$amp(self, x)
+    def ||(x: => Rep[Boolean]): Rep[Boolean] = boolean$bar$bar(self, x)
+    def &&(x: => Rep[Boolean]): Rep[Boolean] = boolean$amp$amp(self, x)
     def |(x: Rep[Boolean]): Rep[Boolean] = boolean$bar(self, x)
     def &(x: Rep[Boolean]): Rep[Boolean] = boolean$amp(self, x)
     def ^(x: Rep[Boolean]): Rep[Boolean] = boolean$up(self, x)
@@ -2646,13 +2646,13 @@ trait BooleanOps extends Base { this: DeepDSL =>
 
   }
 
-  case class Boolean$bar$bar(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "||", List(List(x))) {
+  case class Boolean$bar$bar(self: Rep[Boolean], xOutput: Block[Boolean]) extends FunctionDef[Boolean](Some(self), "||", List(List(xOutput))) {
     override def curriedConstructor = (copy _).curried
     override def isPure = true
 
   }
 
-  case class Boolean$amp$amp(self: Rep[Boolean], x: Rep[Boolean]) extends FunctionDef[Boolean](Some(self), "&&", List(List(x))) {
+  case class Boolean$amp$amp(self: Rep[Boolean], xOutput: Block[Boolean]) extends FunctionDef[Boolean](Some(self), "&&", List(List(xOutput))) {
     override def curriedConstructor = (copy _).curried
     override def isPure = true
 
@@ -2680,8 +2680,14 @@ trait BooleanOps extends Base { this: DeepDSL =>
   def booleanUnary_$bang(self: Rep[Boolean]): Rep[Boolean] = BooleanUnary_$bang(self)
   def boolean$eq$eq(self: Rep[Boolean], x: Rep[Boolean]): Rep[Boolean] = Boolean$eq$eq(self, x)
   def boolean$bang$eq(self: Rep[Boolean], x: Rep[Boolean]): Rep[Boolean] = Boolean$bang$eq(self, x)
-  def boolean$bar$bar(self: Rep[Boolean], x: Rep[Boolean]): Rep[Boolean] = Boolean$bar$bar(self, x)
-  def boolean$amp$amp(self: Rep[Boolean], x: Rep[Boolean]): Rep[Boolean] = Boolean$amp$amp(self, x)
+  def boolean$bar$bar(self: Rep[Boolean], x: => Rep[Boolean]): Rep[Boolean] = {
+    val xOutput = reifyBlock(x)
+    Boolean$bar$bar(self, xOutput)
+  }
+  def boolean$amp$amp(self: Rep[Boolean], x: => Rep[Boolean]): Rep[Boolean] = {
+    val xOutput = reifyBlock(x)
+    Boolean$amp$amp(self, xOutput)
+  }
   def boolean$bar(self: Rep[Boolean], x: Rep[Boolean]): Rep[Boolean] = Boolean$bar(self, x)
   def boolean$amp(self: Rep[Boolean], x: Rep[Boolean]): Rep[Boolean] = Boolean$amp(self, x)
   def boolean$up(self: Rep[Boolean], x: Rep[Boolean]): Rep[Boolean] = Boolean$up(self, x)

@@ -483,7 +483,7 @@ trait AggOpImplementations { self: DeepDSL =>
     {
       self.parent.open();
       self.parent.foreach(__lambda(((t: this.Rep[A]) => {
-        val key: this.Rep[B] = self.grp.apply(t);
+        val key: this.Rep[B] = __app(self.grp).apply(t);
         val aggs: this.Rep[Array[Double]] = self.hm.getOrElseUpdate(key, __newArray[Double](self.numAggs));
         var i: this.Var[Int] = __newVar(unit(0));
         self.aggFuncs.foreach[Unit](__lambda(((aggFun: this.Rep[(A, Double) => Double]) => {
@@ -1093,33 +1093,33 @@ trait HashJoinOpImplementations { self: DeepDSL =>
       self.leftParent.open();
       self.rightParent.open();
       self.leftParent.foreach(__lambda(((t: this.Rep[A]) => {
-        val k: this.Rep[C] = self.leftHash.apply(t);
+        val k: this.Rep[C] = __app(self.leftHash).apply(t);
         val v: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.getOrElseUpdate(k, ArrayBuffer.apply[A]());
         v.append(t)
       })))
     }
   }
-  //     override def hashJoinOpNext[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self : Rep[HashJoinOp[A, B, C]])(implicit manifestA : Manifest[A], manifestB : Manifest[B], manifestC : Manifest[C]): Rep[DynamicCompositeRecord[A, B]] = {
-  // {
-  //   __ifThenElse(infix_$bang$eq(self.tmpCount, unit(-1)), {
-  //     __whileDo(self.tmpCount.$less(self.tmpBuffer.size).$amp$amp(__app(self.joinCond).apply(self.tmpBuffer.apply(self.tmpCount), self.tmpLine).unary_$bang), self.tmpCount_$eq(self.tmpCount.$plus(unit(1))));
-  //     __ifThenElse(infix_$eq$eq(self.tmpCount, self.tmpBuffer.size), self.tmpCount_$eq(unit(-1)), unit(()))
-  //   }, unit(()));
-  //   __ifThenElse(infix_$eq$eq(self.tmpCount, unit(-1)), self.tmpLine_$eq(self.rightParent.findFirst(__lambda(((t: this.Rep[B]) => {
-  //     val k: this.Rep[C] = self.rightHash.apply(t);
-  //     __ifThenElse(self.hm.contains(k), {
-  //       self.tmpBuffer_$eq(self.hm.apply(k));
-  //       self.tmpCount_$eq(self.tmpBuffer.indexWhere(__lambda(((e: this.Rep[A]) => __app(self.joinCond).apply(e, t)))));
-  //       infix_$bang$eq(self.tmpCount, unit(-1))
-  //     }, unit(false))
-  //   })))), unit(()));
-  //   __ifThenElse(infix_$bang$eq(self.tmpLine, self.NullDynamicRecord[B]).$amp$amp(infix_$bang$eq(self.tmpCount, unit(-1))), {
-  //     val res: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A,B]] = RecordOps[A](self.tmpBuffer.apply(self.tmpCount)).concatenateDynamic[B](self.tmpLine, self.leftAlias, self.rightAlias);
-  //     self.tmpCount_$eq(self.tmpCount.$plus(unit(1)));
-  //     res
-  //   }, self.NullDynamicRecord[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A,B]])
-  // }
-  //     }
+  override def hashJoinOpNext[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[DynamicCompositeRecord[A, B]] = {
+    {
+      __ifThenElse(infix_$bang$eq(self.tmpCount, unit(-1)), {
+        __whileDo(self.tmpCount.$less(self.tmpBuffer.size).$amp$amp(__app(self.joinCond).apply(self.tmpBuffer.apply(self.tmpCount), self.tmpLine).unary_$bang), self.tmpCount_$eq(self.tmpCount.$plus(unit(1))));
+        __ifThenElse(infix_$eq$eq(self.tmpCount, self.tmpBuffer.size), self.tmpCount_$eq(unit(-1)), unit(()))
+      }, unit(()));
+      __ifThenElse(infix_$eq$eq(self.tmpCount, unit(-1)), self.tmpLine_$eq(self.rightParent.findFirst(__lambda(((t: this.Rep[B]) => {
+        val k: this.Rep[C] = __app(self.rightHash).apply(t);
+        __ifThenElse(self.hm.contains(k), {
+          self.tmpBuffer_$eq(self.hm.apply(k));
+          self.tmpCount_$eq(self.tmpBuffer.indexWhere(__lambda(((e: this.Rep[A]) => __app(self.joinCond).apply(e, t)))));
+          infix_$bang$eq(self.tmpCount, unit(-1))
+        }, unit(false))
+      })))), unit(()));
+      __ifThenElse(infix_$bang$eq(self.tmpLine, self.NullDynamicRecord[B]).$amp$amp(infix_$bang$eq(self.tmpCount, unit(-1))), {
+        val res: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]] = RecordOps[A](self.tmpBuffer.apply(self.tmpCount)).concatenateDynamic[B](self.tmpLine, self.leftAlias, self.rightAlias);
+        self.tmpCount_$eq(self.tmpCount.$plus(unit(1)));
+        res
+      }, self.NullDynamicRecord[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]])
+    }
+  }
   override def hashJoinOpClose[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Unit] = {
     unit(())
   }
@@ -1275,7 +1275,7 @@ trait WindowOpImplementations { self: DeepDSL =>
     {
       self.parent.open();
       self.parent.foreach(__lambda(((t: this.Rep[A]) => {
-        val key: this.Rep[B] = self.grp.apply(t);
+        val key: this.Rep[B] = __app(self.grp).apply(t);
         val v: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.getOrElseUpdate(key, ArrayBuffer.apply[A]());
         v.append(t)
       })));

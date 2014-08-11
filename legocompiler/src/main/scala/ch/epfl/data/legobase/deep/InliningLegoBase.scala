@@ -4,7 +4,7 @@ package deep
 
 import scala.language.implicitConversions
 
-trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopUnrolling with OperatorImplementations with ScanOpImplementations with SelectOpImplementations with AggOpImplementations with SortOpImplementations with MapOpImplementations with PrintOpImplementations {
+trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopUnrolling with OperatorImplementations with ScanOpImplementations with SelectOpImplementations with AggOpImplementations with SortOpImplementations with MapOpImplementations with PrintOpImplementations with WindowOpImplementations with HashJoinOpImplementations {
   def reifyInline[T: Manifest](e: => Rep[T]): Rep[T] = e
 
   override def operatorOpen[A](self: Rep[Operator[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = self match {
@@ -18,7 +18,19 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     }
     case Def(x: ScanOpNew[_])   => self.asInstanceOf[Rep[ScanOp[A]]].open
     case Def(x: SelectOpNew[_]) => self.asInstanceOf[Rep[SelectOp[A]]].open
-    case _                      => super.operatorOpen(self)
+    case Def(x: WindowOpNew[_, _, _]) => {
+      type X = Any
+      type Y = Any
+      type Z = Any
+      windowOpOpen(self.asInstanceOf[Rep[WindowOp[X, Y, Z]]])(x.manifestA.asInstanceOf[Manifest[X]], x.manifestB.asInstanceOf[Manifest[Y]], x.manifestC.asInstanceOf[Manifest[Z]])
+    }
+    case Def(x: HashJoinOpNew[_, _, _]) => {
+      type X = pardis.shallow.AbstractRecord
+      type Y = pardis.shallow.AbstractRecord
+      type Z = Any
+      hashJoinOpOpen(self.asInstanceOf[Rep[HashJoinOp[X, Y, Z]]])(x.manifestA.asInstanceOf[Manifest[X]], x.manifestB.asInstanceOf[Manifest[Y]], x.manifestC.asInstanceOf[Manifest[Z]])
+    }
+    case _ => super.operatorOpen(self)
   }
 
   override def operatorNext[A](self: Rep[Operator[A]])(implicit manifestA: Manifest[A]): Rep[A] = self match {
@@ -32,7 +44,19 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     }
     case Def(x: ScanOpNew[_])   => self.asInstanceOf[Rep[ScanOp[A]]].next
     case Def(x: SelectOpNew[_]) => self.asInstanceOf[Rep[SelectOp[A]]].next
-    case _                      => super.operatorNext(self)
+    case Def(x: WindowOpNew[_, _, _]) => {
+      type X = Any
+      type Y = Any
+      type Z = Any
+      windowOpNext(self.asInstanceOf[Rep[WindowOp[X, Y, Z]]])(x.manifestA.asInstanceOf[Manifest[X]], x.manifestB.asInstanceOf[Manifest[Y]], x.manifestC.asInstanceOf[Manifest[Z]]).asInstanceOf[Rep[A]]
+    }
+    case Def(x: HashJoinOpNew[_, _, _]) => {
+      type X = pardis.shallow.AbstractRecord
+      type Y = pardis.shallow.AbstractRecord
+      type Z = Any
+      hashJoinOpNext(self.asInstanceOf[Rep[HashJoinOp[X, Y, Z]]])(x.manifestA.asInstanceOf[Manifest[X]], x.manifestB.asInstanceOf[Manifest[Y]], x.manifestC.asInstanceOf[Manifest[Z]]).asInstanceOf[Rep[A]]
+    }
+    case _ => super.operatorNext(self)
   }
 
   override def printOp_Field_Parent[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
@@ -70,6 +94,26 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     }
   }
 
+  override def windowOp_Field_Parent[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Operator[A]] = {
+    self match {
+      case Def(x: WindowOpNew[_, _, _]) => x.parent
+      case _                            => super.windowOp_Field_Parent(self)
+    }
+  }
+
+  override def hashJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Operator[B]] = {
+    self match {
+      case Def(x: HashJoinOpNew[_, _, _]) => x.rightParent
+      case _                              => super.hashJoinOp_Field_RightParent(self)
+    }
+  }
+  override def hashJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Operator[A]] = {
+    self match {
+      case Def(x: HashJoinOpNew[_, _, _]) => x.leftParent
+      case _                              => super.hashJoinOp_Field_LeftParent(self)
+    }
+  }
+
   override def mapOp_Field_AggFuncs[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Seq[A => Unit]] = self match {
     case Def(MapOpNew(_, funs)) => funs
     case _                      => super.mapOp_Field_AggFuncs(self)
@@ -96,6 +140,30 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
   override def selectOp_Field_SelectPred[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[A => Boolean] = self match {
     case Def(SelectOpNew(_, f)) => f
     case _                      => ???
+  }
+
+  override def windowOp_Field_Wndf[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[(ArrayBuffer[A] => C)] = self match {
+    case Def(x: WindowOpNew[_, _, _]) => x.wndf
+    case _                            => super.windowOp_Field_Wndf(self)
+  }
+  override def windowOp_Field_Grp[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[(A => B)] = self match {
+    case Def(x: WindowOpNew[_, _, _]) => x.grp
+    case _                            => super.windowOp_Field_Grp(self)
+  }
+
+  override def hashJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[((A, B) => Boolean)] = self match {
+    case Def(x: HashJoinOpNew[_, _, _]) => x.joinCond
+    case _                              => super.hashJoinOp_Field_JoinCond(self)
+  }
+
+  override def hashJoinOp_Field_LeftHash[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[(A => C)] = self match {
+    case Def(x: HashJoinOpNew[_, _, _]) => x.leftHash
+    case _                              => super.hashJoinOp_Field_LeftHash(self)
+  }
+
+  override def hashJoinOp_Field_RightHash[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[(B => C)] = self match {
+    case Def(x: HashJoinOpNew[_, _, _]) => x.rightHash
+    case _                              => super.hashJoinOp_Field_RightHash(self)
   }
 
   // FIXME here it uses staging!

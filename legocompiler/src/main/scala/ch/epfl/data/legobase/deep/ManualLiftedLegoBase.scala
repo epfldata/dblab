@@ -141,6 +141,17 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     override def curriedConstructor = (copy[T] _)
   }
 
+  override def arrayBufferNew1[A](initialSize: Rep[Int])(implicit manifestA: Manifest[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew1_2[A](initialSize)
+  override def arrayBufferNew2[A](implicit manifestA: Manifest[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew2_2[A]()
+
+  case class ArrayBufferNew1_2[A](initialSize: Rep[Int])(implicit val manifestA: Manifest[A]) extends FunctionDef[ArrayBuffer[A]](None, s"new ArrayBuffer[${m2s(manifestA)}]", List(List(initialSize))) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ArrayBufferNew2_2[A]()(implicit val manifestA: Manifest[A]) extends FunctionDef[ArrayBuffer[A]](None, s"new ArrayBuffer[${m2s(manifestA)}]", List()) {
+    override def curriedConstructor = (x: Any) => copy[A]()
+  }
+
   implicit class ArrayRep2[T](self: Rep[Array[T]])(implicit manifestT: Manifest[T]) {
     def filter(p: Rep[T => Boolean]): Rep[Array[T]] = arrayFilter(self, p)
     def ===[T2: Manifest](o: Rep[Array[T2]]): Rep[Boolean] = arrayEquals(self, o)
@@ -170,7 +181,7 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   }
 
   object ArrayBuffer {
-    def apply[T: Manifest](): Rep[ArrayBuffer[T]] = __newArrayBuffer[T](unit(0))
+    def apply[T: Manifest](): Rep[ArrayBuffer[T]] = __newArrayBuffer[T]
   }
 }
 

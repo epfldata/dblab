@@ -88,10 +88,14 @@ object Main extends LegoRunner {
     val lq = new LiftedQueries()
     val block = lq.Q2
 
+    val dce = new DCE(lq.context)
+
+    val dceBlock = dce.optimize(block)
+
     val ir2Program = new { val IR = lq.context } with IRToProgram {
     }
 
-    val finalProgram = ir2Program.createProgram(block)
+    val finalProgram = ir2Program.createProgram(dceBlock)
     println(finalProgram)
     val LegoGenerator = new LegoScalaGenerator(2, true)
     LegoGenerator.apply(finalProgram)
