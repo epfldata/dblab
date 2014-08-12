@@ -88,11 +88,25 @@ object Main extends LegoRunner {
     val lq = new LiftedQueries()
     val block = lq.Q2
 
-    val dce = new DCE(lq.context)
+    val loweringContext = new LoweringLegoBase {}
 
-    val dceBlock = dce.optimize(block)
+    // it's written like this because of early definition: http://stackoverflow.com/questions/4712468/in-scala-what-is-an-early-initializer
+    val lowering = new LBLowering {
+      val from = lq.context
+      val to = loweringContext
+    }
 
-    val ir2Program = new { val IR = lq.context } with IRToProgram {
+    val loweredBlock = lowering.transformProgram(block)
+
+    val parameterPromotion = new LBParameterPromotion(loweringContext)
+
+    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
+
+    val dce = new DCE(loweringContext)
+
+    val dceBlock = dce.optimize(operatorlessBlock)
+
+    val ir2Program = new { val IR = loweringContext } with IRToProgram {
     }
 
     val finalProgram = ir2Program.createProgram(dceBlock)
