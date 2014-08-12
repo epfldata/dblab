@@ -369,8 +369,8 @@ final abstract class MirrorBoolean {
   @pure def unary_! : Boolean
   @pure def ==(x: Boolean): Boolean
   @pure def !=(x: Boolean): Boolean
-  @pure def ||(x: Boolean): Boolean
-  @pure def &&(x: Boolean): Boolean
+  @pure def ||(x: => Boolean): Boolean
+  @pure def &&(x: => Boolean): Boolean
 
   @pure def |(x: Boolean): Boolean
   @pure def &(x: Boolean): Boolean

@@ -11,23 +11,26 @@ trait HashMapOps extends Base { this: DeepDSL =>
   implicit class HashMapRep[A, B](self: Rep[HashMap[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) {
     def getOrElseUpdate(key: Rep[A], op: => Rep[B]): Rep[B] = hashMapGetOrElseUpdate[A, B](self, key, op)(manifestA, manifestB)
     def clear(): Rep[Unit] = hashMapClear[A, B](self)(manifestA, manifestB)
-    def size(): Rep[Int] = hashMapSize[A, B](self)(manifestA, manifestB)
+    def size: Rep[Int] = hashMapSize[A, B](self)(manifestA, manifestB)
     def contains(key: Rep[A]): Rep[Boolean] = hashMapContains[A, B](self, key)(manifestA, manifestB)
     def apply(key: Rep[A]): Rep[B] = hashMapApply[A, B](self, key)(manifestA, manifestB)
     def update(key: Rep[A], value: Rep[B]): Rep[Unit] = hashMapUpdate[A, B](self, key, value)(manifestA, manifestB)
     def remove(key: Rep[A]): Rep[Option[B]] = hashMapRemove[A, B](self, key)(manifestA, manifestB)
-    def keySet(): Rep[Set[A]] = hashMapKeySet[A, B](self)(manifestA, manifestB)
-    def contents(): Rep[Contents[A, DefaultEntry[A, B]]] = hashMap_Field_Contents[A, B](self)(manifestA, manifestB)
+    def keySet: Rep[Set[A]] = hashMapKeySet[A, B](self)(manifestA, manifestB)
+    def contents: Rep[Contents[A, DefaultEntry[A, B]]] = hashMap_Field_Contents[A, B](self)(manifestA, manifestB)
+  }
+  object HashMap {
+
   }
   // constructors
   def __newHashMap[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit overload1: Overloaded1, manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = hashMapNew1[A, B](contents)(manifestA, manifestB)
-  def __newHashMap[A, B](implicit overload2: Overloaded2, manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = hashMapNew2[A, B](manifestA, manifestB)
+  def __newHashMap[A, B]()(implicit overload2: Overloaded2, manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = hashMapNew2[A, B]()(manifestA, manifestB)
   // case classes
   case class HashMapNew1[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[HashMap[A, B]](None, "new HashMap", List(List(contents))) {
     override def curriedConstructor = (copy[A, B] _)
   }
 
-  case class HashMapNew2[A, B]()(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[HashMap[A, B]](None, "new HashMap", List()) {
+  case class HashMapNew2[A, B]()(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[HashMap[A, B]](None, "new HashMap", List(List())) {
     override def curriedConstructor = (x: Any) => copy[A, B]()
   }
 
@@ -35,7 +38,7 @@ trait HashMapOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B] _).curried
   }
 
-  case class HashMapClear[A, B](self: Rep[HashMap[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "clear", List()) {
+  case class HashMapClear[A, B](self: Rep[HashMap[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "clear", List(List())) {
     override def curriedConstructor = (copy[A, B] _)
   }
 
@@ -79,7 +82,7 @@ trait HashMapOps extends Base { this: DeepDSL =>
 
   // method definitions
   def hashMapNew1[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = HashMapNew1[A, B](contents)
-  def hashMapNew2[A, B](implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = HashMapNew2[A, B]()
+  def hashMapNew2[A, B]()(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = HashMapNew2[A, B]()
   def hashMapGetOrElseUpdate[A, B](self: Rep[HashMap[A, B]], key: Rep[A], op: => Rep[B])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[B] = {
     val opOutput = reifyBlock(op)
     HashMapGetOrElseUpdate[A, B](self, key, opOutput)
@@ -97,14 +100,21 @@ trait HashMapOps extends Base { this: DeepDSL =>
 trait HashMapImplicits { this: HashMapComponent =>
   // Add implicit conversions here!
 }
+trait HashMapImplementations { self: DeepDSL =>
+
+}
 trait HashMapComponent extends HashMapOps with HashMapImplicits { self: DeepDSL => }
 
 trait SetOps extends Base { this: DeepDSL =>
   implicit class SetRep[A](self: Rep[Set[A]])(implicit manifestA: Manifest[A]) {
-    def head(): Rep[A] = setHead[A](self)(manifestA)
+    def head: Rep[A] = setHead[A](self)(manifestA)
     def apply(elem: Rep[A]): Rep[Boolean] = setApply[A](self, elem)(manifestA)
-    def toSeq(): Rep[Seq[A]] = setToSeq[A](self)(manifestA)
+    def toSeq: Rep[Seq[A]] = setToSeq[A](self)(manifestA)
     def remove(elem: Rep[A]): Rep[Boolean] = setRemove[A](self, elem)(manifestA)
+  }
+  object Set {
+    def apply[T](seq: Rep[Seq[T]])(implicit manifestT: Manifest[T], overload1: Overloaded1): Rep[Set[T]] = setApplyObject1[T](seq)(manifestT)
+    def apply[T]()(implicit manifestT: Manifest[T], overload2: Overloaded2): Rep[Set[T]] = setApplyObject2[T]()(manifestT)
   }
   // constructors
 
@@ -131,50 +141,66 @@ trait SetOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A] _).curried
   }
 
+  case class SetApplyObject1[T](seq: Rep[Seq[T]])(implicit val manifestT: Manifest[T]) extends FunctionDef[Set[T]](None, "Set.apply", List(List(seq))) {
+    override def curriedConstructor = (copy[T] _)
+  }
+
+  case class SetApplyObject2[T]()(implicit val manifestT: Manifest[T]) extends FunctionDef[Set[T]](None, "Set.apply", List(List())) {
+    override def curriedConstructor = (x: Any) => copy[T]()
+  }
+
   // method definitions
   def setHead[A](self: Rep[Set[A]])(implicit manifestA: Manifest[A]): Rep[A] = SetHead[A](self)
   def setApply[A](self: Rep[Set[A]], elem: Rep[A])(implicit manifestA: Manifest[A]): Rep[Boolean] = SetApply[A](self, elem)
   def setToSeq[A](self: Rep[Set[A]])(implicit manifestA: Manifest[A]): Rep[Seq[A]] = SetToSeq[A](self)
   def setRemove[A](self: Rep[Set[A]], elem: Rep[A])(implicit manifestA: Manifest[A]): Rep[Boolean] = SetRemove[A](self, elem)
+  def setApplyObject1[T](seq: Rep[Seq[T]])(implicit manifestT: Manifest[T]): Rep[Set[T]] = SetApplyObject1[T](seq)
+  def setApplyObject2[T]()(implicit manifestT: Manifest[T]): Rep[Set[T]] = SetApplyObject2[T]()
   type Set[A] = scala.collection.mutable.Set[A]
 }
 trait SetImplicits { this: SetComponent =>
   // Add implicit conversions here!
 }
+trait SetImplementations { self: DeepDSL =>
+
+}
 trait SetComponent extends SetOps with SetImplicits { self: DeepDSL => }
 
 trait TreeSetOps extends Base { this: DeepDSL =>
-  implicit class TreeSetRep[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A], ordering: Ordering[A]) {
-    def head(): Rep[A] = treeSetHead[A](self)(manifestA, ordering)
-    def size(): Rep[Int] = treeSetSize[A](self)(manifestA, ordering)
-    def -=(elem: Rep[A]): Rep[TreeSet[A]] = treeSet$minus$eq[A](self, elem)(manifestA, ordering)
-    def +=(elem: Rep[A]): Rep[TreeSet[A]] = treeSet$plus$eq[A](self, elem)(manifestA, ordering)
+  implicit class TreeSetRep[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A]) {
+    def head: Rep[A] = treeSetHead[A](self)(manifestA)
+    def size: Rep[Int] = treeSetSize[A](self)(manifestA)
+    def -=(elem: Rep[A]): Rep[TreeSet[A]] = treeSet$minus$eq[A](self, elem)(manifestA)
+    def +=(elem: Rep[A]): Rep[TreeSet[A]] = treeSet$plus$eq[A](self, elem)(manifestA)
     def ordering: Rep[Ordering[A]] = treeSet_Field_Ordering[A](self)(manifestA)
   }
+  object TreeSet {
+
+  }
   // constructors
-  def __newTreeSet[A](implicit ordering: Ordering[A], manifestA: Manifest[A]): Rep[TreeSet[A]] = treeSetNew[A](manifestA, ordering)
+  def __newTreeSet[A]()(ordering: Rep[Ordering[A]])(implicit manifestA: Manifest[A]): Rep[TreeSet[A]] = treeSetNew[A](ordering)(manifestA)
   // case classes
-  case class TreeSetNew[A]()(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](None, "new TreeSet", List()) {
-    override def curriedConstructor = (x: Any) => copy[A]()
+  case class TreeSetNew[A](ordering: Rep[Ordering[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[TreeSet[A]](None, "new TreeSet", List(List(), List(ordering))) {
+    override def curriedConstructor = (copy[A] _)
   }
 
-  case class TreeSetHead[A](self: Rep[TreeSet[A]])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[A](Some(self), "head", List()) {
+  case class TreeSetHead[A](self: Rep[TreeSet[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "head", List()) {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
 
   }
 
-  case class TreeSetSize[A](self: Rep[TreeSet[A]])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[Int](Some(self), "size", List()) {
+  case class TreeSetSize[A](self: Rep[TreeSet[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Int](Some(self), "size", List()) {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
 
   }
 
-  case class TreeSet$minus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "-=", List(List(elem))) {
+  case class TreeSet$minus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A]) extends FunctionDef[TreeSet[A]](Some(self), "-=", List(List(elem))) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
-  case class TreeSet$plus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A], val ordering: Ordering[A]) extends FunctionDef[TreeSet[A]](Some(self), "+=", List(List(elem))) {
+  case class TreeSet$plus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val manifestA: Manifest[A]) extends FunctionDef[TreeSet[A]](Some(self), "+=", List(List(elem))) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -185,25 +211,31 @@ trait TreeSetOps extends Base { this: DeepDSL =>
   }
 
   // method definitions
-  def treeSetNew[A](implicit manifestA: Manifest[A], ordering: Ordering[A]): Rep[TreeSet[A]] = TreeSetNew[A]()
-  def treeSetHead[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A], ordering: Ordering[A]): Rep[A] = TreeSetHead[A](self)
-  def treeSetSize[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A], ordering: Ordering[A]): Rep[Int] = TreeSetSize[A](self)
-  def treeSet$minus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit manifestA: Manifest[A], ordering: Ordering[A]): Rep[TreeSet[A]] = TreeSet$minus$eq[A](self, elem)
-  def treeSet$plus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit manifestA: Manifest[A], ordering: Ordering[A]): Rep[TreeSet[A]] = TreeSet$plus$eq[A](self, elem)
+  def treeSetNew[A](ordering: Rep[Ordering[A]])(implicit manifestA: Manifest[A]): Rep[TreeSet[A]] = TreeSetNew[A](ordering)
+  def treeSetHead[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A]): Rep[A] = TreeSetHead[A](self)
+  def treeSetSize[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A]): Rep[Int] = TreeSetSize[A](self)
+  def treeSet$minus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit manifestA: Manifest[A]): Rep[TreeSet[A]] = TreeSet$minus$eq[A](self, elem)
+  def treeSet$plus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit manifestA: Manifest[A]): Rep[TreeSet[A]] = TreeSet$plus$eq[A](self, elem)
   def treeSet_Field_Ordering[A](self: Rep[TreeSet[A]])(implicit manifestA: Manifest[A]): Rep[Ordering[A]] = TreeSet_Field_Ordering[A](self)
   type TreeSet[A] = scala.collection.mutable.TreeSet[A]
 }
 trait TreeSetImplicits { this: TreeSetComponent =>
   // Add implicit conversions here!
 }
+trait TreeSetImplementations { self: DeepDSL =>
+
+}
 trait TreeSetComponent extends TreeSetOps with TreeSetImplicits { self: DeepDSL => }
 
 trait DefaultEntryOps extends Base { this: DeepDSL =>
   implicit class DefaultEntryRep[A, B](self: Rep[DefaultEntry[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]) {
-    def chainString(): Rep[String] = defaultEntryChainString[A, B](self)(manifestA, manifestB)
+    def chainString: Rep[String] = defaultEntryChainString[A, B](self)(manifestA, manifestB)
     def value_=(x$1: Rep[B]): Rep[Unit] = defaultEntry_Field_Value_$eq[A, B](self, x$1)(manifestA, manifestB)
     def value: Rep[B] = defaultEntry_Field_Value[A, B](self)(manifestA, manifestB)
     def key: Rep[A] = defaultEntry_Field_Key[A, B](self)(manifestA, manifestB)
+  }
+  object DefaultEntry {
+
   }
   // constructors
   def __newDefaultEntry[A, B](key: Rep[A], value: Rep[B])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[DefaultEntry[A, B]] = defaultEntryNew[A, B](key, value)(manifestA, manifestB)
@@ -241,27 +273,34 @@ trait DefaultEntryOps extends Base { this: DeepDSL =>
 trait DefaultEntryImplicits { this: DefaultEntryComponent =>
   // Add implicit conversions here!
 }
+trait DefaultEntryImplementations { self: DeepDSL =>
+
+}
 trait DefaultEntryComponent extends DefaultEntryOps with DefaultEntryImplicits { self: DeepDSL => }
 
 trait ArrayBufferOps extends Base { this: DeepDSL =>
   implicit class ArrayBufferRep[A](self: Rep[ArrayBuffer[A]])(implicit manifestA: Manifest[A]) {
-    def size(): Rep[Int] = arrayBufferSize[A](self)(manifestA)
+    def size: Rep[Int] = arrayBufferSize[A](self)(manifestA)
     def apply(i: Rep[Int]): Rep[A] = arrayBufferApply[A](self, i)(manifestA)
     def update(i: Rep[Int], x: Rep[A]): Rep[Unit] = arrayBufferUpdate[A](self, i, x)(manifestA)
     def indexWhere(p: Rep[(A => Boolean)]): Rep[Int] = arrayBufferIndexWhere[A](self, p)(manifestA)
     def clear(): Rep[Unit] = arrayBufferClear[A](self)(manifestA)
     def minBy[B](f: Rep[(A => B)])(implicit manifestB: Manifest[B], cmp: Ordering[B]): Rep[A] = arrayBufferMinBy[A, B](self, f)(manifestA, manifestB, cmp)
+    def append(elem: Rep[A]): Rep[Unit] = arrayBufferAppend[A](self, elem)(manifestA)
     def initialSize: Rep[Int] = arrayBuffer_Field_InitialSize[A](self)(manifestA)
+  }
+  object ArrayBuffer {
+    def apply[T]()(implicit manifestT: Manifest[T]): Rep[ArrayBuffer[T]] = arrayBufferApplyObject[T]()(manifestT)
   }
   // constructors
   def __newArrayBuffer[A](initialSize: Rep[Int])(implicit overload1: Overloaded1, manifestA: Manifest[A]): Rep[ArrayBuffer[A]] = arrayBufferNew1[A](initialSize)(manifestA)
-  def __newArrayBuffer[A](implicit overload2: Overloaded2, manifestA: Manifest[A]): Rep[ArrayBuffer[A]] = arrayBufferNew2[A](manifestA)
+  def __newArrayBuffer[A]()(implicit overload2: Overloaded2, manifestA: Manifest[A]): Rep[ArrayBuffer[A]] = arrayBufferNew2[A]()(manifestA)
   // case classes
   case class ArrayBufferNew1[A](initialSize: Rep[Int])(implicit val manifestA: Manifest[A]) extends FunctionDef[ArrayBuffer[A]](None, "new ArrayBuffer", List(List(initialSize))) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class ArrayBufferNew2[A]()(implicit val manifestA: Manifest[A]) extends FunctionDef[ArrayBuffer[A]](None, "new ArrayBuffer", List()) {
+  case class ArrayBufferNew2[A]()(implicit val manifestA: Manifest[A]) extends FunctionDef[ArrayBuffer[A]](None, "new ArrayBuffer", List(List())) {
     override def curriedConstructor = (x: Any) => copy[A]()
   }
 
@@ -285,12 +324,16 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A] _).curried
   }
 
-  case class ArrayBufferClear[A](self: Rep[ArrayBuffer[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "clear", List()) {
+  case class ArrayBufferClear[A](self: Rep[ArrayBuffer[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "clear", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
   case class ArrayBufferMinBy[A, B](self: Rep[ArrayBuffer[A]], f: Rep[((A) => B)])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val cmp: Ordering[B]) extends FunctionDef[A](Some(self), "minBy", List(List(f))) {
     override def curriedConstructor = (copy[A, B] _).curried
+  }
+
+  case class ArrayBufferAppend[A](self: Rep[ArrayBuffer[A]], elem: Rep[A])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "append", List(List(elem))) {
+    override def curriedConstructor = (copy[A] _).curried
   }
 
   case class ArrayBuffer_Field_InitialSize[A](self: Rep[ArrayBuffer[A]])(implicit val manifestA: Manifest[A]) extends FieldDef[Int](self, "initialSize") {
@@ -299,20 +342,29 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
 
   }
 
+  case class ArrayBufferApplyObject[T]()(implicit val manifestT: Manifest[T]) extends FunctionDef[ArrayBuffer[T]](None, "ArrayBuffer.apply", List(List())) {
+    override def curriedConstructor = (x: Any) => copy[T]()
+  }
+
   // method definitions
   def arrayBufferNew1[A](initialSize: Rep[Int])(implicit manifestA: Manifest[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew1[A](initialSize)
-  def arrayBufferNew2[A](implicit manifestA: Manifest[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew2[A]()
+  def arrayBufferNew2[A]()(implicit manifestA: Manifest[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew2[A]()
   def arrayBufferSize[A](self: Rep[ArrayBuffer[A]])(implicit manifestA: Manifest[A]): Rep[Int] = ArrayBufferSize[A](self)
   def arrayBufferApply[A](self: Rep[ArrayBuffer[A]], i: Rep[Int])(implicit manifestA: Manifest[A]): Rep[A] = ArrayBufferApply[A](self, i)
   def arrayBufferUpdate[A](self: Rep[ArrayBuffer[A]], i: Rep[Int], x: Rep[A])(implicit manifestA: Manifest[A]): Rep[Unit] = ArrayBufferUpdate[A](self, i, x)
   def arrayBufferIndexWhere[A](self: Rep[ArrayBuffer[A]], p: Rep[((A) => Boolean)])(implicit manifestA: Manifest[A]): Rep[Int] = ArrayBufferIndexWhere[A](self, p)
   def arrayBufferClear[A](self: Rep[ArrayBuffer[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = ArrayBufferClear[A](self)
   def arrayBufferMinBy[A, B](self: Rep[ArrayBuffer[A]], f: Rep[((A) => B)])(implicit manifestA: Manifest[A], manifestB: Manifest[B], cmp: Ordering[B]): Rep[A] = ArrayBufferMinBy[A, B](self, f)
+  def arrayBufferAppend[A](self: Rep[ArrayBuffer[A]], elem: Rep[A])(implicit manifestA: Manifest[A]): Rep[Unit] = ArrayBufferAppend[A](self, elem)
   def arrayBuffer_Field_InitialSize[A](self: Rep[ArrayBuffer[A]])(implicit manifestA: Manifest[A]): Rep[Int] = ArrayBuffer_Field_InitialSize[A](self)
+  def arrayBufferApplyObject[T]()(implicit manifestT: Manifest[T]): Rep[ArrayBuffer[T]] = ArrayBufferApplyObject[T]()
   type ArrayBuffer[A] = scala.collection.mutable.ArrayBuffer[A]
 }
 trait ArrayBufferImplicits { this: ArrayBufferComponent =>
   // Add implicit conversions here!
+}
+trait ArrayBufferImplementations { self: DeepDSL =>
+
 }
 trait ArrayBufferComponent extends ArrayBufferOps with ArrayBufferImplicits { self: DeepDSL => }
 

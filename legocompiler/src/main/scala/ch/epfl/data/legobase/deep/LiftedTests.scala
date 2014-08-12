@@ -163,7 +163,7 @@ class LiftedTests extends Base {
   def hashMapTest() = {
     new HashMapOps with DeepDSL {
       def hashMapTest = {
-        val hm = hashMapNew2(manifest[Int], manifest[String])
+        val hm = hashMapNew2()(manifest[Int], manifest[String])
         val f = hashMapGetOrElseUpdate(hm, 5, { unit("lala") })
         println(f)
         val g = hashMapGetOrElseUpdate(hm, 7, { unit("foo") })
@@ -192,7 +192,7 @@ class LiftedTests extends Base {
       def loadingTest = {
         val file = "/mnt/ramdisk/test/lineitem.tbl"
         import scala.sys.process._;
-        val size = Integer.parseInt((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", ""))
+        val size = java.lang.Integer.parseInt((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", ""))
         // Load Relation 
         val s = __newK2DBScanner(unit(file))
         var i = __newVar[Int](0)
