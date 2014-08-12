@@ -21,9 +21,9 @@ trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] 
       val magg = manifest[AGGRecord[Rec]].asInstanceOf[Manifest[Any]]
       // val magg = maa
       // to.reifyBlock ({
-      to.__newDef[AggOp[_, _]](("hm", false, to.__newHashMap(to.overloaded2, mb, marrDouble)),
+      to.__newDef[AggOp[_, _]](("hm", false, to.__newHashMap()(to.overloaded2, mb, marrDouble)),
         ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(magg)),
-        ("keySet", true, to.Set()(mb)),
+        ("keySet", true, to.Set()(mb, to.overloaded2)),
         ("numAggs", false, an.numAggs)).asInstanceOf[to.Def[T]]
       // }).correspondingNode
     }

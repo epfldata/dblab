@@ -9,11 +9,14 @@ import pardis.ir._
 
 trait ArrayOps extends Base { this: DeepDSL =>
   implicit class ArrayRep[T](self: Rep[Array[T]])(implicit manifestT: Manifest[T]) {
-    def length(): Rep[Int] = arrayLength[T](self)(manifestT)
+    def length: Rep[Int] = arrayLength[T](self)(manifestT)
     def apply(i: Rep[Int]): Rep[T] = arrayApply[T](self, i)(manifestT)
     def update(i: Rep[Int], x: Rep[T]): Rep[Unit] = arrayUpdate[T](self, i, x)(manifestT)
     override def clone(): Rep[Array[T]] = arrayClone[T](self)(manifestT)
-    def _length(): Rep[Int] = array_Field__length[T](self)(manifestT)
+    def _length: Rep[Int] = array_Field__length[T](self)(manifestT)
+  }
+  object Array {
+
   }
   // constructors
   def __newArray[T](_length: Rep[Int])(implicit manifestT: Manifest[T]): Rep[Array[T]] = arrayNew[T](_length)(manifestT)
@@ -38,7 +41,7 @@ trait ArrayOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class ArrayClone[T](self: Rep[Array[T]])(implicit val manifestT: Manifest[T]) extends FunctionDef[Array[T]](Some(self), "clone", List()) {
+  case class ArrayClone[T](self: Rep[Array[T]])(implicit val manifestT: Manifest[T]) extends FunctionDef[Array[T]](Some(self), "clone", List(List())) {
     override def curriedConstructor = (copy[T] _)
   }
 

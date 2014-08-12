@@ -142,7 +142,7 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   }
 
   override def arrayBufferNew1[A](initialSize: Rep[Int])(implicit manifestA: Manifest[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew1_2[A](initialSize)
-  override def arrayBufferNew2[A](implicit manifestA: Manifest[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew2_2[A]()
+  override def arrayBufferNew2[A]()(implicit manifestA: Manifest[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew2_2[A]()
 
   case class ArrayBufferNew1_2[A](initialSize: Rep[Int])(implicit val manifestA: Manifest[A]) extends FunctionDef[ArrayBuffer[A]](None, s"new ArrayBuffer[${m2s(manifestA)}]", List(List(initialSize))) {
     override def curriedConstructor = (copy[A] _)
@@ -163,7 +163,7 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  override def hashMapNew2[A, B](implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = HashMapNew2_2[A, B]()
+  override def hashMapNew2[A, B]()(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = HashMapNew2_2[A, B]()
 
   case class HashMapNew2_2[A, B]()(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[HashMap[A, B]](None, s"new HashMap[${m2s(manifestA)}, ${m2s(manifestB)}]", List()) {
     override def curriedConstructor = (x: Any) => copy[A, B]()
@@ -180,9 +180,11 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     def __==[T2: Manifest](o: Rep[T2]): Rep[Boolean] = infix_==(self, o)
   }
 
-  object ArrayBuffer {
-    def apply[T: Manifest](): Rep[ArrayBuffer[T]] = __newArrayBuffer[T]
-  }
+  // object ArrayBuffer {
+  //   def apply[T: Manifest](): Rep[ArrayBuffer[T]] = __newArrayBuffer[T]
+  // }
+
+  override def arrayBufferApplyObject[T]()(implicit manifestT: Manifest[T]): Rep[ArrayBuffer[T]] = __newArrayBuffer[T]()
 }
 
 // TODO should be generated automatically
@@ -196,14 +198,18 @@ trait OptionOps { this: DeepDSL =>
   }
 }
 
-trait SetOps { this: DeepDSL =>
-  object Set {
-    def apply[T: Manifest](seq: Rep[Seq[T]]): Rep[Set[T]] = SetNew(seq)
-    def apply[T: Manifest](): Rep[Set[T]] = SetNew2[T]()(manifest[T])
-  }
+trait SetOps extends scalalib.SetOps { this: DeepDSL =>
+  // object Set {
+  //   def apply[T: Manifest](seq: Rep[Seq[T]]): Rep[Set[T]] = SetNew(seq)
+  //   def apply[T: Manifest](): Rep[Set[T]] = SetNew2[T]()(manifest[T])
+  // }
   case class SetNew[T: Manifest](seq: Rep[Seq[T]]) extends FunctionDef[Set[T]](None, "Set", List(List(__varArg(seq)))) {
     override def curriedConstructor = copy[T] _
   }
+
+  override def setApplyObject1[T](seq: Rep[Seq[T]])(implicit manifestT: Manifest[T]): Rep[Set[T]] = SetNew[T](seq)
+
+  override def setApplyObject2[T]()(implicit manifestT: Manifest[T]): Rep[Set[T]] = SetNew2[T]()
   case class SetNew2[T: Manifest]() extends FunctionDef[Set[T]](None, s"Set[${m2s(manifest[T])}]", List(List())) {
     override def curriedConstructor = (x: Any) => copy[T]()
   }

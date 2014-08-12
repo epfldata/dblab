@@ -15,24 +15,27 @@ trait OperatorOps extends Base { this: OperatorsComponent =>
     def findFirst(cond: Rep[(A => Boolean)]): Rep[A] = operatorFindFirst[A](self, cond)(manifestA)
     def NullDynamicRecord[D](implicit manifestD: Manifest[D]): Rep[D] = operatorNullDynamicRecord[A, D](self)(manifestA, manifestD)
     def NullDynamicRecord: Rep[A] = operator_Field_NullDynamicRecord[A](self)(manifestA)
-    def evidence$1(): Rep[Manifest[A]] = operator_Field_Evidence$1[A](self)(manifestA)
+    def evidence$1: Rep[Manifest[A]] = operator_Field_Evidence$1[A](self)(manifestA)
+  }
+  object Operator {
+
   }
   // constructors
 
   // case classes
-  case class OperatorOpen[A](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List()) {
+  case class OperatorOpen[A](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class OperatorNext[A](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List()) {
+  case class OperatorNext[A](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class OperatorClose[A](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List()) {
+  case class OperatorClose[A](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class OperatorReset[A](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List()) {
+  case class OperatorReset[A](self: Rep[Operator[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
@@ -115,9 +118,12 @@ trait ScanOpOps extends Base { this: OperatorsComponent =>
     def reset(): Rep[Unit] = scanOpReset[A](self)(manifestA)
     def i_=(x$1: Rep[Int]): Rep[Unit] = scanOp_Field_I_$eq[A](self, x$1)(manifestA)
     def i: Rep[Int] = scanOp_Field_I[A](self)(manifestA)
-    def evidence$3(): Rep[Manifest[A]] = scanOp_Field_Evidence$3[A](self)(manifestA)
+    def evidence$3: Rep[Manifest[A]] = scanOp_Field_Evidence$3[A](self)(manifestA)
     def table: Rep[Array[A]] = scanOp_Field_Table[A](self)(manifestA)
     def NullDynamicRecord: Rep[A] = scanOp_Field_NullDynamicRecord[A](self)(manifestA)
+  }
+  object ScanOp {
+
   }
   // constructors
   def __newScanOp[A](table: Rep[Array[A]])(implicit evidence$3: Manifest[A], manifestA: Manifest[A]): Rep[ScanOp[A]] = scanOpNew[A](table)(manifestA)
@@ -138,19 +144,19 @@ trait ScanOpOps extends Base { this: OperatorsComponent =>
     override def curriedConstructor = (copy[A, D] _)
   }
 
-  case class ScanOpOpen[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List()) {
+  case class ScanOpOpen[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class ScanOpNext[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List()) {
+  case class ScanOpNext[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class ScanOpClose[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List()) {
+  case class ScanOpClose[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class ScanOpReset[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List()) {
+  case class ScanOpReset[A](self: Rep[ScanOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
@@ -227,10 +233,13 @@ trait SelectOpOps extends Base { this: OperatorsComponent =>
     def next(): Rep[A] = selectOpNext[A](self)(manifestA)
     def close(): Rep[Unit] = selectOpClose[A](self)(manifestA)
     def reset(): Rep[Unit] = selectOpReset[A](self)(manifestA)
-    def evidence$4(): Rep[Manifest[A]] = selectOp_Field_Evidence$4[A](self)(manifestA)
-    def selectPred(): Rep[(A => Boolean)] = selectOp_Field_SelectPred[A](self)(manifestA)
+    def evidence$4: Rep[Manifest[A]] = selectOp_Field_Evidence$4[A](self)(manifestA)
+    def selectPred: Rep[(A => Boolean)] = selectOp_Field_SelectPred[A](self)(manifestA)
     def parent: Rep[Operator[A]] = selectOp_Field_Parent[A](self)(manifestA)
     def NullDynamicRecord: Rep[A] = selectOp_Field_NullDynamicRecord[A](self)(manifestA)
+  }
+  object SelectOp {
+
   }
   // constructors
   def __newSelectOp[A](parent: Rep[Operator[A]])(selectPred: Rep[(A => Boolean)])(implicit evidence$4: Manifest[A], manifestA: Manifest[A]): Rep[SelectOp[A]] = selectOpNew[A](parent, selectPred)(manifestA)
@@ -251,19 +260,19 @@ trait SelectOpOps extends Base { this: OperatorsComponent =>
     override def curriedConstructor = (copy[A, D] _)
   }
 
-  case class SelectOpOpen[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List()) {
+  case class SelectOpOpen[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class SelectOpNext[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List()) {
+  case class SelectOpNext[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class SelectOpClose[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List()) {
+  case class SelectOpClose[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class SelectOpReset[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List()) {
+  case class SelectOpReset[A](self: Rep[SelectOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
@@ -338,13 +347,16 @@ trait AggOpOps extends Base { this: OperatorsComponent =>
     def hm: Rep[HashMap[B, Array[Double]]] = aggOp_Field_Hm[A, B](self)(manifestA, manifestB)
     def mB: Rep[Manifest[B]] = aggOp_Field_MB[A, B](self)(manifestA, manifestB)
     def mA: Rep[Manifest[A]] = aggOp_Field_MA[A, B](self)(manifestA, manifestB)
-    def evidence$6(): Rep[Manifest[B]] = aggOp_Field_Evidence$6[A, B](self)(manifestA, manifestB)
-    def evidence$5(): Rep[Manifest[A]] = aggOp_Field_Evidence$5[A, B](self)(manifestA, manifestB)
+    def evidence$6: Rep[Manifest[B]] = aggOp_Field_Evidence$6[A, B](self)(manifestA, manifestB)
+    def evidence$5: Rep[Manifest[A]] = aggOp_Field_Evidence$5[A, B](self)(manifestA, manifestB)
     def aggFuncs: Rep[Seq[((A, Double) => Double)]] = aggOp_Field_AggFuncs[A, B](self)(manifestA, manifestB)
     def grp: Rep[(A => B)] = aggOp_Field_Grp[A, B](self)(manifestA, manifestB)
     def numAggs: Rep[Int] = aggOp_Field_NumAggs[A, B](self)(manifestA, manifestB)
     def parent: Rep[Operator[A]] = aggOp_Field_Parent[A, B](self)(manifestA, manifestB)
     def NullDynamicRecord: Rep[AGGRecord[B]] = aggOp_Field_NullDynamicRecord[A, B](self)(manifestA, manifestB)
+  }
+  object AggOp {
+
   }
   // constructors
   def __newAggOp[A, B](parent: Rep[Operator[A]], numAggs: Rep[Int])(grp: Rep[(A => B)])(aggFuncs: Rep[((A, Double) => Double)]*)(implicit evidence$5: Manifest[A], evidence$6: Manifest[B], manifestA: Manifest[A], manifestB: Manifest[B]): Rep[AggOp[A, B]] = aggOpNew[A, B](parent, numAggs, grp, aggFuncs: _*)(manifestA, manifestB)
@@ -365,19 +377,19 @@ trait AggOpOps extends Base { this: OperatorsComponent =>
     override def curriedConstructor = (copy[A, B, D] _)
   }
 
-  case class AggOpOpen[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "open", List()) {
+  case class AggOpOpen[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
     override def curriedConstructor = (copy[A, B] _)
   }
 
-  case class AggOpNext[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[AGGRecord[B]](Some(self), "next", List()) {
+  case class AggOpNext[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[AGGRecord[B]](Some(self), "next", List(List())) {
     override def curriedConstructor = (copy[A, B] _)
   }
 
-  case class AggOpClose[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "close", List()) {
+  case class AggOpClose[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
     override def curriedConstructor = (copy[A, B] _)
   }
 
-  case class AggOpReset[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "reset", List()) {
+  case class AggOpReset[A, B](self: Rep[AggOp[A, B]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
     override def curriedConstructor = (copy[A, B] _)
   }
 
@@ -524,10 +536,13 @@ trait SortOpOps extends Base { this: OperatorsComponent =>
     def close(): Rep[Unit] = sortOpClose[A](self)(manifestA)
     def reset(): Rep[Unit] = sortOpReset[A](self)(manifestA)
     def sortedTree: Rep[TreeSet[A]] = sortOp_Field_SortedTree[A](self)(manifestA)
-    def evidence$7(): Rep[Manifest[A]] = sortOp_Field_Evidence$7[A](self)(manifestA)
-    def orderingFunc(): Rep[((A, A) => Int)] = sortOp_Field_OrderingFunc[A](self)(manifestA)
+    def evidence$7: Rep[Manifest[A]] = sortOp_Field_Evidence$7[A](self)(manifestA)
+    def orderingFunc: Rep[((A, A) => Int)] = sortOp_Field_OrderingFunc[A](self)(manifestA)
     def parent: Rep[Operator[A]] = sortOp_Field_Parent[A](self)(manifestA)
     def NullDynamicRecord: Rep[A] = sortOp_Field_NullDynamicRecord[A](self)(manifestA)
+  }
+  object SortOp {
+
   }
   // constructors
   def __newSortOp[A](parent: Rep[Operator[A]])(orderingFunc: Rep[((A, A) => Int)])(implicit evidence$7: Manifest[A], manifestA: Manifest[A]): Rep[SortOp[A]] = sortOpNew[A](parent, orderingFunc)(manifestA)
@@ -548,19 +563,19 @@ trait SortOpOps extends Base { this: OperatorsComponent =>
     override def curriedConstructor = (copy[A, D] _)
   }
 
-  case class SortOpOpen[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List()) {
+  case class SortOpOpen[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class SortOpNext[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List()) {
+  case class SortOpNext[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class SortOpClose[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List()) {
+  case class SortOpClose[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class SortOpReset[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List()) {
+  case class SortOpReset[A](self: Rep[SortOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
@@ -650,10 +665,13 @@ trait MapOpOps extends Base { this: OperatorsComponent =>
     def next(): Rep[A] = mapOpNext[A](self)(manifestA)
     def close(): Rep[Unit] = mapOpClose[A](self)(manifestA)
     def reset(): Rep[Unit] = mapOpReset[A](self)(manifestA)
-    def evidence$8(): Rep[Manifest[A]] = mapOp_Field_Evidence$8[A](self)(manifestA)
-    def aggFuncs(): Rep[Seq[(A => Unit)]] = mapOp_Field_AggFuncs[A](self)(manifestA)
+    def evidence$8: Rep[Manifest[A]] = mapOp_Field_Evidence$8[A](self)(manifestA)
+    def aggFuncs: Rep[Seq[(A => Unit)]] = mapOp_Field_AggFuncs[A](self)(manifestA)
     def parent: Rep[Operator[A]] = mapOp_Field_Parent[A](self)(manifestA)
     def NullDynamicRecord: Rep[A] = mapOp_Field_NullDynamicRecord[A](self)(manifestA)
+  }
+  object MapOp {
+
   }
   // constructors
   def __newMapOp[A](parent: Rep[Operator[A]])(aggFuncs: Rep[(A => Unit)]*)(implicit evidence$8: Manifest[A], manifestA: Manifest[A]): Rep[MapOp[A]] = mapOpNew[A](parent, aggFuncs: _*)(manifestA)
@@ -674,19 +692,19 @@ trait MapOpOps extends Base { this: OperatorsComponent =>
     override def curriedConstructor = (copy[A, D] _)
   }
 
-  case class MapOpOpen[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List()) {
+  case class MapOpOpen[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class MapOpNext[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List()) {
+  case class MapOpNext[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class MapOpClose[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List()) {
+  case class MapOpClose[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class MapOpReset[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List()) {
+  case class MapOpReset[A](self: Rep[MapOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
@@ -767,12 +785,15 @@ trait PrintOpOps extends Base { this: OperatorsComponent =>
     def reset(): Rep[Unit] = printOpReset[A](self)(manifestA)
     def numRows_=(x$1: Rep[Int]): Rep[Unit] = printOp_Field_NumRows_$eq[A](self, x$1)(manifestA)
     def numRows: Rep[Int] = printOp_Field_NumRows[A](self)(manifestA)
-    def evidence$9(): Rep[Manifest[A]] = printOp_Field_Evidence$9[A](self)(manifestA)
-    def limit(): Rep[(() => Boolean)] = printOp_Field_Limit[A](self)(manifestA)
-    def printFunc(): Rep[(A => Unit)] = printOp_Field_PrintFunc[A](self)(manifestA)
+    def evidence$9: Rep[Manifest[A]] = printOp_Field_Evidence$9[A](self)(manifestA)
+    def limit: Rep[(() => Boolean)] = printOp_Field_Limit[A](self)(manifestA)
+    def printFunc: Rep[(A => Unit)] = printOp_Field_PrintFunc[A](self)(manifestA)
     def parent_=(x$1: Rep[Operator[A]]): Rep[Unit] = printOp_Field_Parent_$eq[A](self, x$1)(manifestA)
     def parent: Rep[Operator[A]] = printOp_Field_Parent[A](self)(manifestA)
     def NullDynamicRecord: Rep[A] = printOp_Field_NullDynamicRecord[A](self)(manifestA)
+  }
+  object PrintOp {
+
   }
   // constructors
   def __newPrintOp[A](parent: Rep[Operator[A]])(printFunc: Rep[(A => Unit)], limit: Rep[(() => Boolean)])(implicit evidence$9: Manifest[A], manifestA: Manifest[A]): Rep[PrintOp[A]] = printOpNew[A](parent, printFunc, limit)(manifestA)
@@ -793,19 +814,19 @@ trait PrintOpOps extends Base { this: OperatorsComponent =>
     override def curriedConstructor = (copy[A, D] _)
   }
 
-  case class PrintOpOpen[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List()) {
+  case class PrintOpOpen[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class PrintOpNext[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List()) {
+  case class PrintOpNext[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "next", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class PrintOpClose[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List()) {
+  case class PrintOpClose[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class PrintOpReset[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List()) {
+  case class PrintOpReset[A](self: Rep[PrintOp[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
@@ -912,9 +933,9 @@ trait HashJoinOpOps extends Base { this: OperatorsComponent =>
     def tmpBuffer: Rep[ArrayBuffer[A]] = hashJoinOp_Field_TmpBuffer[A, B, C](self)(manifestA, manifestB, manifestC)
     def tmpCount_=(x$1: Rep[Int]): Rep[Unit] = hashJoinOp_Field_TmpCount_$eq[A, B, C](self, x$1)(manifestA, manifestB, manifestC)
     def tmpCount: Rep[Int] = hashJoinOp_Field_TmpCount[A, B, C](self)(manifestA, manifestB, manifestC)
-    def evidence$12(): Rep[Manifest[C]] = hashJoinOp_Field_Evidence$12[A, B, C](self)(manifestA, manifestB, manifestC)
-    def evidence$11(): Rep[Manifest[B]] = hashJoinOp_Field_Evidence$11[A, B, C](self)(manifestA, manifestB, manifestC)
-    def evidence$10(): Rep[Manifest[A]] = hashJoinOp_Field_Evidence$10[A, B, C](self)(manifestA, manifestB, manifestC)
+    def evidence$12: Rep[Manifest[C]] = hashJoinOp_Field_Evidence$12[A, B, C](self)(manifestA, manifestB, manifestC)
+    def evidence$11: Rep[Manifest[B]] = hashJoinOp_Field_Evidence$11[A, B, C](self)(manifestA, manifestB, manifestC)
+    def evidence$10: Rep[Manifest[A]] = hashJoinOp_Field_Evidence$10[A, B, C](self)(manifestA, manifestB, manifestC)
     def rightHash: Rep[(B => C)] = hashJoinOp_Field_RightHash[A, B, C](self)(manifestA, manifestB, manifestC)
     def leftHash: Rep[(A => C)] = hashJoinOp_Field_LeftHash[A, B, C](self)(manifestA, manifestB, manifestC)
     def joinCond: Rep[((A, B) => Boolean)] = hashJoinOp_Field_JoinCond[A, B, C](self)(manifestA, manifestB, manifestC)
@@ -923,6 +944,9 @@ trait HashJoinOpOps extends Base { this: OperatorsComponent =>
     def rightParent: Rep[Operator[B]] = hashJoinOp_Field_RightParent[A, B, C](self)(manifestA, manifestB, manifestC)
     def leftParent: Rep[Operator[A]] = hashJoinOp_Field_LeftParent[A, B, C](self)(manifestA, manifestB, manifestC)
     def NullDynamicRecord: Rep[DynamicCompositeRecord[A, B]] = hashJoinOp_Field_NullDynamicRecord[A, B, C](self)(manifestA, manifestB, manifestC)
+  }
+  object HashJoinOp {
+
   }
   // constructors
   def __newHashJoinOp[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String])(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit evidence$10: Manifest[A], evidence$11: Manifest[B], evidence$12: Manifest[C], manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[HashJoinOp[A, B, C]] = hashJoinOpNew[A, B, C](leftParent, rightParent, leftAlias, rightAlias, joinCond, leftHash, rightHash)(manifestA, manifestB, manifestC)
@@ -943,19 +967,19 @@ trait HashJoinOpOps extends Base { this: OperatorsComponent =>
     override def curriedConstructor = (copy[A, B, C, D] _)
   }
 
-  case class HashJoinOpOpen[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[Unit](Some(self), "open", List()) {
+  case class HashJoinOpOpen[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  case class HashJoinOpNext[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[DynamicCompositeRecord[A, B]](Some(self), "next", List()) {
+  case class HashJoinOpNext[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[DynamicCompositeRecord[A, B]](Some(self), "next", List(List())) {
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  case class HashJoinOpClose[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[Unit](Some(self), "close", List()) {
+  case class HashJoinOpClose[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  case class HashJoinOpReset[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[Unit](Some(self), "reset", List()) {
+  case class HashJoinOpReset[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
@@ -1147,13 +1171,16 @@ trait WindowOpOps extends Base { this: OperatorsComponent =>
     def keySet_=(x$1: Rep[Set[B]]): Rep[Unit] = windowOp_Field_KeySet_$eq[A, B, C](self, x$1)(manifestA, manifestB, manifestC)
     def keySet: Rep[Set[B]] = windowOp_Field_KeySet[A, B, C](self)(manifestA, manifestB, manifestC)
     def hm: Rep[HashMap[B, ArrayBuffer[A]]] = windowOp_Field_Hm[A, B, C](self)(manifestA, manifestB, manifestC)
-    def evidence$15(): Rep[Manifest[C]] = windowOp_Field_Evidence$15[A, B, C](self)(manifestA, manifestB, manifestC)
-    def evidence$14(): Rep[Manifest[B]] = windowOp_Field_Evidence$14[A, B, C](self)(manifestA, manifestB, manifestC)
-    def evidence$13(): Rep[Manifest[A]] = windowOp_Field_Evidence$13[A, B, C](self)(manifestA, manifestB, manifestC)
+    def evidence$15: Rep[Manifest[C]] = windowOp_Field_Evidence$15[A, B, C](self)(manifestA, manifestB, manifestC)
+    def evidence$14: Rep[Manifest[B]] = windowOp_Field_Evidence$14[A, B, C](self)(manifestA, manifestB, manifestC)
+    def evidence$13: Rep[Manifest[A]] = windowOp_Field_Evidence$13[A, B, C](self)(manifestA, manifestB, manifestC)
     def wndf: Rep[(ArrayBuffer[A] => C)] = windowOp_Field_Wndf[A, B, C](self)(manifestA, manifestB, manifestC)
     def grp: Rep[(A => B)] = windowOp_Field_Grp[A, B, C](self)(manifestA, manifestB, manifestC)
     def parent: Rep[Operator[A]] = windowOp_Field_Parent[A, B, C](self)(manifestA, manifestB, manifestC)
     def NullDynamicRecord: Rep[WindowRecord[B, C]] = windowOp_Field_NullDynamicRecord[A, B, C](self)(manifestA, manifestB, manifestC)
+  }
+  object WindowOp {
+
   }
   // constructors
   def __newWindowOp[A, B, C](parent: Rep[Operator[A]])(grp: Rep[(A => B)])(wndf: Rep[(ArrayBuffer[A] => C)])(implicit evidence$13: Manifest[A], evidence$14: Manifest[B], evidence$15: Manifest[C], manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[WindowOp[A, B, C]] = windowOpNew[A, B, C](parent, grp, wndf)(manifestA, manifestB, manifestC)
@@ -1174,19 +1201,19 @@ trait WindowOpOps extends Base { this: OperatorsComponent =>
     override def curriedConstructor = (copy[A, B, C, D] _)
   }
 
-  case class WindowOpOpen[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[Unit](Some(self), "open", List()) {
+  case class WindowOpOpen[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  case class WindowOpNext[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[WindowRecord[B, C]](Some(self), "next", List()) {
+  case class WindowOpNext[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[WindowRecord[B, C]](Some(self), "next", List(List())) {
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  case class WindowOpClose[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[Unit](Some(self), "close", List()) {
+  case class WindowOpClose[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  case class WindowOpReset[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[Unit](Some(self), "reset", List()) {
+  case class WindowOpReset[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit val manifestA: Manifest[A], val manifestB: Manifest[B], val manifestC: Manifest[C]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
     override def curriedConstructor = (copy[A, B, C] _)
   }
 

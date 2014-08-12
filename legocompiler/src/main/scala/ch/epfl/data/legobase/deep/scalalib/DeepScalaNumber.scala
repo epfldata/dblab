@@ -9,16 +9,16 @@ import pardis.ir._
 
 trait IntOps extends Base { this: DeepDSL =>
   implicit class IntRep(self: Rep[Int]) {
-    def toByte(): Rep[Byte] = intToByte(self)
-    def toShort(): Rep[Short] = intToShort(self)
-    def toChar(): Rep[Char] = intToChar(self)
-    def toInt(): Rep[Int] = intToInt(self)
-    def toLong(): Rep[Long] = intToLong(self)
-    def toFloat(): Rep[Float] = intToFloat(self)
-    def toDouble(): Rep[Double] = intToDouble(self)
-    def unary_~(): Rep[Int] = intUnary_$tilde(self)
-    def unary_+(): Rep[Int] = intUnary_$plus(self)
-    def unary_-(): Rep[Int] = intUnary_$minus(self)
+    def toByte: Rep[Byte] = intToByte(self)
+    def toShort: Rep[Short] = intToShort(self)
+    def toChar: Rep[Char] = intToChar(self)
+    def toInt: Rep[Int] = intToInt(self)
+    def toLong: Rep[Long] = intToLong(self)
+    def toFloat: Rep[Float] = intToFloat(self)
+    def toDouble: Rep[Double] = intToDouble(self)
+    def unary_~ : Rep[Int] = intUnary_$tilde(self)
+    def unary_+ : Rep[Int] = intUnary_$plus(self)
+    def unary_- : Rep[Int] = intUnary_$minus(self)
     def +(x: Rep[String])(implicit overload1: Overloaded1): Rep[String] = int$plus1(self, x)
     def <<(x: Rep[Int])(implicit overload1: Overloaded1): Rep[Int] = int$less$less1(self, x)
     def <<(x: Rep[Long])(implicit overload2: Overloaded2): Rep[Int] = int$less$less2(self, x)
@@ -118,6 +118,9 @@ trait IntOps extends Base { this: DeepDSL =>
     def %(x: Rep[Long])(implicit overload5: Overloaded5): Rep[Long] = int$percent5(self, x)
     def %(x: Rep[Float])(implicit overload6: Overloaded6): Rep[Float] = int$percent6(self, x)
     def %(x: Rep[Double])(implicit overload7: Overloaded7): Rep[Double] = int$percent7(self, x)
+  }
+  object Int {
+
   }
   // constructors
 
@@ -898,15 +901,15 @@ trait IntComponent extends IntOps with IntImplicits { self: DeepDSL => }
 
 trait DoubleOps extends Base { this: DeepDSL =>
   implicit class DoubleRep(self: Rep[Double]) {
-    def toByte(): Rep[Byte] = doubleToByte(self)
-    def toShort(): Rep[Short] = doubleToShort(self)
-    def toChar(): Rep[Char] = doubleToChar(self)
-    def toInt(): Rep[Int] = doubleToInt(self)
-    def toLong(): Rep[Long] = doubleToLong(self)
-    def toFloat(): Rep[Float] = doubleToFloat(self)
-    def toDouble(): Rep[Double] = doubleToDouble(self)
-    def unary_+(): Rep[Double] = doubleUnary_$plus(self)
-    def unary_-(): Rep[Double] = doubleUnary_$minus(self)
+    def toByte: Rep[Byte] = doubleToByte(self)
+    def toShort: Rep[Short] = doubleToShort(self)
+    def toChar: Rep[Char] = doubleToChar(self)
+    def toInt: Rep[Int] = doubleToInt(self)
+    def toLong: Rep[Long] = doubleToLong(self)
+    def toFloat: Rep[Float] = doubleToFloat(self)
+    def toDouble: Rep[Double] = doubleToDouble(self)
+    def unary_+ : Rep[Double] = doubleUnary_$plus(self)
+    def unary_- : Rep[Double] = doubleUnary_$minus(self)
     def +(x: Rep[String])(implicit overload1: Overloaded1): Rep[String] = double$plus1(self, x)
     def ==(x: Rep[Byte])(implicit overload1: Overloaded1): Rep[Boolean] = double$eq$eq1(self, x)
     def ==(x: Rep[Short])(implicit overload2: Overloaded2): Rep[Boolean] = double$eq$eq2(self, x)
@@ -985,6 +988,9 @@ trait DoubleOps extends Base { this: DeepDSL =>
     def %(x: Rep[Long])(implicit overload5: Overloaded5): Rep[Double] = double$percent5(self, x)
     def %(x: Rep[Float])(implicit overload6: Overloaded6): Rep[Double] = double$percent6(self, x)
     def %(x: Rep[Double])(implicit overload7: Overloaded7): Rep[Double] = double$percent7(self, x)
+  }
+  object Double {
+
   }
   // constructors
 
@@ -1616,6 +1622,9 @@ trait CharacterOps extends Base { this: DeepDSL =>
     def charValue(): Rep[Char] = characterCharValue(self)
     def value: Rep[Char] = character_Field_Value(self)
   }
+  object Character {
+
+  }
   // constructors
 
   // case classes
@@ -1627,7 +1636,7 @@ trait CharacterOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CharacterCharValue(self: Rep[Character]) extends FunctionDef[Char](Some(self), "charValue", List()) {
+  case class CharacterCharValue(self: Rep[Character]) extends FunctionDef[Char](Some(self), "charValue", List(List())) {
     override def curriedConstructor = (copy _)
   }
 
@@ -1654,16 +1663,16 @@ trait CharacterComponent extends CharacterOps with CharacterImplicits { self: De
 
 trait LongOps extends Base { this: DeepDSL =>
   implicit class LongRep(self: Rep[Long]) {
-    def toByte(): Rep[Byte] = longToByte(self)
-    def toShort(): Rep[Short] = longToShort(self)
-    def toChar(): Rep[Char] = longToChar(self)
-    def toInt(): Rep[Int] = longToInt(self)
-    def toLong(): Rep[Long] = longToLong(self)
-    def toFloat(): Rep[Float] = longToFloat(self)
-    def toDouble(): Rep[Double] = longToDouble(self)
-    def unary_~(): Rep[Long] = longUnary_$tilde(self)
-    def unary_+(): Rep[Long] = longUnary_$plus(self)
-    def unary_-(): Rep[Long] = longUnary_$minus(self)
+    def toByte: Rep[Byte] = longToByte(self)
+    def toShort: Rep[Short] = longToShort(self)
+    def toChar: Rep[Char] = longToChar(self)
+    def toInt: Rep[Int] = longToInt(self)
+    def toLong: Rep[Long] = longToLong(self)
+    def toFloat: Rep[Float] = longToFloat(self)
+    def toDouble: Rep[Double] = longToDouble(self)
+    def unary_~ : Rep[Long] = longUnary_$tilde(self)
+    def unary_+ : Rep[Long] = longUnary_$plus(self)
+    def unary_- : Rep[Long] = longUnary_$minus(self)
     def +(x: Rep[String])(implicit overload1: Overloaded1): Rep[String] = long$plus1(self, x)
     def <<(x: Rep[Int])(implicit overload1: Overloaded1): Rep[Long] = long$less$less1(self, x)
     def <<(x: Rep[Long])(implicit overload2: Overloaded2): Rep[Long] = long$less$less2(self, x)
@@ -1763,6 +1772,9 @@ trait LongOps extends Base { this: DeepDSL =>
     def %(x: Rep[Long])(implicit overload5: Overloaded5): Rep[Long] = long$percent5(self, x)
     def %(x: Rep[Float])(implicit overload6: Overloaded6): Rep[Float] = long$percent6(self, x)
     def %(x: Rep[Double])(implicit overload7: Overloaded7): Rep[Double] = long$percent7(self, x)
+  }
+  object Long {
+
   }
   // constructors
 
@@ -2553,6 +2565,9 @@ trait IntegerOps extends Base { this: DeepDSL =>
     def doubleValue(): Rep[Double] = integerDoubleValue(self)
     def value: Rep[Int] = integer_Field_Value(self)
   }
+  object Integer {
+
+  }
   // constructors
 
   // case classes
@@ -2564,27 +2579,27 @@ trait IntegerOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy _).curried
   }
 
-  case class IntegerByteValue(self: Rep[Integer]) extends FunctionDef[Byte](Some(self), "byteValue", List()) {
+  case class IntegerByteValue(self: Rep[Integer]) extends FunctionDef[Byte](Some(self), "byteValue", List(List())) {
     override def curriedConstructor = (copy _)
   }
 
-  case class IntegerShortValue(self: Rep[Integer]) extends FunctionDef[Short](Some(self), "shortValue", List()) {
+  case class IntegerShortValue(self: Rep[Integer]) extends FunctionDef[Short](Some(self), "shortValue", List(List())) {
     override def curriedConstructor = (copy _)
   }
 
-  case class IntegerIntValue(self: Rep[Integer]) extends FunctionDef[Int](Some(self), "intValue", List()) {
+  case class IntegerIntValue(self: Rep[Integer]) extends FunctionDef[Int](Some(self), "intValue", List(List())) {
     override def curriedConstructor = (copy _)
   }
 
-  case class IntegerLongValue(self: Rep[Integer]) extends FunctionDef[Long](Some(self), "longValue", List()) {
+  case class IntegerLongValue(self: Rep[Integer]) extends FunctionDef[Long](Some(self), "longValue", List(List())) {
     override def curriedConstructor = (copy _)
   }
 
-  case class IntegerFloatValue(self: Rep[Integer]) extends FunctionDef[Float](Some(self), "floatValue", List()) {
+  case class IntegerFloatValue(self: Rep[Integer]) extends FunctionDef[Float](Some(self), "floatValue", List(List())) {
     override def curriedConstructor = (copy _)
   }
 
-  case class IntegerDoubleValue(self: Rep[Integer]) extends FunctionDef[Double](Some(self), "doubleValue", List()) {
+  case class IntegerDoubleValue(self: Rep[Integer]) extends FunctionDef[Double](Some(self), "doubleValue", List(List())) {
     override def curriedConstructor = (copy _)
   }
 
@@ -2616,7 +2631,7 @@ trait IntegerComponent extends IntegerOps with IntegerImplicits { self: DeepDSL 
 
 trait BooleanOps extends Base { this: DeepDSL =>
   implicit class BooleanRep(self: Rep[Boolean]) {
-    def unary_!(): Rep[Boolean] = booleanUnary_$bang(self)
+    def unary_! : Rep[Boolean] = booleanUnary_$bang(self)
     def ==(x: Rep[Boolean]): Rep[Boolean] = boolean$eq$eq(self, x)
     def !=(x: Rep[Boolean]): Rep[Boolean] = boolean$bang$eq(self, x)
     def ||(x: => Rep[Boolean]): Rep[Boolean] = boolean$bar$bar(self, x)
@@ -2624,6 +2639,9 @@ trait BooleanOps extends Base { this: DeepDSL =>
     def |(x: Rep[Boolean]): Rep[Boolean] = boolean$bar(self, x)
     def &(x: Rep[Boolean]): Rep[Boolean] = boolean$amp(self, x)
     def ^(x: Rep[Boolean]): Rep[Boolean] = boolean$up(self, x)
+  }
+  object Boolean {
+
   }
   // constructors
 
