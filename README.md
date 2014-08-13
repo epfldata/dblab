@@ -1,14 +1,14 @@
 Legobase
 ======
 
-A Cost-based optimizing compiler for DSLs
+An efficient query engine in Scala programming language
 
 Installation
 ============
 
 TODO
 
-Clone these project and checkout to the mentioned branch. Then, run `sbt publish-local`.
+Clone these project and checkout to the appropriate branch. Then, run `sbt publish-local`.
 
 Testing
 =======
