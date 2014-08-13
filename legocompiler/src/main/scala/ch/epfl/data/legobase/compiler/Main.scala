@@ -51,12 +51,14 @@ object Main extends LegoRunner {
     val loweringContext = new LoweringLegoBase {}
 
     // it's written like this because of early definition: http://stackoverflow.com/questions/4712468/in-scala-what-is-an-early-initializer
-    val lowering = new LBLowering {
-      val from = lq.context
-      val to = loweringContext
-    }
+    // val lowering = new LBLowering {
+    //   val from = lq.context
+    //   val to = loweringContext
+    // }
 
-    val loweredBlock = lowering.transformProgram(block)
+    // val loweredBlock = lowering.transformProgram(block)
+    val lowering = new LBLowering(lq.context, loweringContext)
+    val loweredBlock = lowering.lower(block)
     // val loweredBlock = block
 
     val parameterPromotion = new LBParameterPromotion(loweringContext)
@@ -91,12 +93,14 @@ object Main extends LegoRunner {
     val loweringContext = new LoweringLegoBase {}
 
     // it's written like this because of early definition: http://stackoverflow.com/questions/4712468/in-scala-what-is-an-early-initializer
-    val lowering = new LBLowering {
-      val from = lq.context
-      val to = loweringContext
-    }
+    // val lowering = new LBLowering {
+    //   val from = lq.context
+    //   val to = loweringContext
+    // }
 
-    val loweredBlock = lowering.transformProgram(block)
+    // val loweredBlock = lowering.transformProgram(block)
+    val lowering = new LBLowering(lq.context, loweringContext)
+    val loweredBlock = lowering.lower(block)
 
     val parameterPromotion = new LBParameterPromotion(loweringContext)
 

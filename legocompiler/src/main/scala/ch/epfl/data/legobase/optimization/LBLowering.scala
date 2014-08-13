@@ -7,7 +7,7 @@ import scala.language.implicitConversions
 import pardis.ir._
 import pardis.optimization._
 
-trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
+class LBLowering(override val from: InliningLegoBase, override val to: LoweringLegoBase) extends Lowering[InliningLegoBase, LoweringLegoBase](from, to) {
   import from._
 
   override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
@@ -113,54 +113,7 @@ trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] 
     //     ("L_SHIPMODE", false, li.L_SHIPMODE),
     //     ("L_COMMENT", false, li.L_COMMENT)).asInstanceOf[to.Def[T]]
     // }
-    case CaseClassNew(ccn) => {
-      val tp = node.tp.asInstanceOf[Manifest[Any]]
-      val tpe = pardis.utils.Utils.manifestToType(tp)
-      val fields = tpe.decls.toList.map(_.asTerm).filter(_.isVal)
-      import scala.language.reflectiveCalls
-      /** adopted from http://stackoverflow.com/questions/1589603/scala-set-a-field-value-reflectively-from-field-name */
-      implicit def reflector(ref: AnyRef) = new {
-        def getV(name: String): Any = {
-          val field = ref.getClass.getDeclaredFields.toList.find(x => x.getName == name).get
-          field.setAccessible(true)
-          field.get(ref)
-        }
-      }
-      def normalizeFieldName(originalName: String): String = if (originalName.endsWith(" ")) originalName.dropRight(1) else originalName
-      val structFields = fields.map(x => (normalizeFieldName(x.name.toString), false, ccn.getV(normalizeFieldName(x.name.toString)).asInstanceOf[Rep[Any]]))
-      to.__newDef[Any](structFields: _*)(tp).asInstanceOf[to.Def[T]]
-    }
-    case ImmutableField(self @ LoweredNew(d), fieldName) => {
-      StructImmutableField(transformExp(self), fieldName)
-    }
-    case FieldGetter(self @ LoweredNew(d), fieldName) => {
-      StructFieldGetter(transformExp(self), fieldName)
-    }
-    case FieldSetter(self @ LoweredNew(d), fieldName, rhs) => {
-      StructFieldSetter[T](transformExp(self), fieldName, rhs).asInstanceOf[to.Def[T]]
-    }
     case _ => super.transformDef(node)
-  }
-
-  object ImmutableField {
-    def unapply[T](exp: Def[T]): Option[(Rep[Any], String)] = exp match {
-      case fd: FieldDef[_] => Some(fd.obj -> fd.field)
-      case _               => None
-    }
-  }
-
-  object FieldSetter {
-    def unapply[T](exp: Def[T]): Option[(Rep[Any], String, Rep[T])] = exp match {
-      case fd: FieldSetter[_] => Some((fd.obj, fd.field, fd.newValue.asInstanceOf[Rep[T]]))
-      case _                  => None
-    }
-  }
-
-  object FieldGetter {
-    def unapply[T](exp: Def[T]): Option[(Rep[Any], String)] = exp match {
-      case fd: FieldGetter[_] => Some(fd.obj -> fd.field)
-      case _                  => None
-    }
   }
 
   // GroupByClass
@@ -172,7 +125,7 @@ trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] 
   // NATIONRecord
   // CUSTOMERRecord
   // ORDERSRecord
-  object CaseClassNew {
+  object CaseClassNew extends DefExtractor {
     def unapply[T](exp: Def[T]): Option[Def[T]] =
       exp match {
         case _: GroupByClassNew | _: LINEITEMRecordNew | _: SUPPLIERRecordNew | _: PARTSUPPRecordNew | _: REGIONRecordNew | _: PARTRecordNew | _: NATIONRecordNew | _: CUSTOMERRecordNew | _: ORDERSRecordNew => Some(exp)
@@ -180,7 +133,7 @@ trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] 
       }
   }
 
-  object LoweredNew {
+  object LoweredNew extends RepExtractor {
     def unapply[T](exp: Rep[T]): Option[Def[T]] = exp match {
       case Def(d) => d match {
         case _ if List(classOf[GroupByClass], classOf[LINEITEMRecord], classOf[SUPPLIERRecord], classOf[PARTSUPPRecord], classOf[REGIONRecord], classOf[PARTRecord], classOf[NATIONRecord], classOf[CUSTOMERRecord], classOf[ORDERSRecord], classOf[AggOp[_, _]], classOf[PrintOp[_]], classOf[ScanOp[_]], classOf[MapOp[_]], classOf[SelectOp[_]], classOf[SortOp[_]], classOf[HashJoinOp[_, _, _]], classOf[WindowOp[_, _, _]]).contains(d.tp.runtimeClass) => Some(d)
