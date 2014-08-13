@@ -243,6 +243,88 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     hm
   }
 
+  override def loadCustomer(): Rep[Array[CUSTOMERRecord]] = {
+    val file = unit(Config.datapath + "customer.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[CUSTOMERRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newCUSTOMERRecord(s.next_int, loadString(25, s), loadString(40, s), s.next_int, loadString(15, s), s.next_double, loadString(10, s), loadString(117, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadOrders(): Rep[Array[ORDERSRecord]] = {
+    val file = unit(Config.datapath + "orders.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[ORDERSRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newORDERSRecord(s.next_int, s.next_int, s.next_char, s.next_double, s.next_date,
+        loadString(15, s), loadString(15, s), s.next_int, loadString(79, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadNation(): Rep[Array[NATIONRecord]] = {
+    val file = unit(Config.datapath + "nation.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[NATIONRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newNATIONRecord(s.next_int, loadString(25, s), s.next_int, loadString(152, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadPart(): Rep[Array[PARTRecord]] = {
+    val file = unit(Config.datapath + "part.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[PARTRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newPARTRecord(s.next_int, loadString(55, s), loadString(25, s), loadString(10, s), loadString(25, s),
+        s.next_int, loadString(10, s), s.next_double, loadString(23, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadRegion(): Rep[Array[REGIONRecord]] = {
+    val file = unit(Config.datapath + "region.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[REGIONRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newREGIONRecord(s.next_int, loadString(25, s), loadString(152, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
   def loadString(size: Rep[Int], s: Rep[K2DBScanner]) = {
     val NAME = __newArray[Byte](size)
     s.next(NAME)

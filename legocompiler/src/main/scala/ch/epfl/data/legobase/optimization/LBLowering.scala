@@ -116,7 +116,7 @@ trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] 
     case CaseClassNew(ccn) => {
       val tp = node.tp.asInstanceOf[Manifest[Any]]
       val tpe = pardis.utils.Utils.manifestToType(tp)
-      val fields = tpe.members.toList.map(_.asTerm).filter(_.isVal)
+      val fields = tpe.decls.toList.map(_.asTerm).filter(_.isVal)
       import scala.language.reflectiveCalls
       /** adopted from http://stackoverflow.com/questions/1589603/scala-set-a-field-value-reflectively-from-field-name */
       implicit def reflector(ref: AnyRef) = new {
@@ -163,10 +163,19 @@ trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] 
     }
   }
 
+  // GroupByClass
+  // LINEITEMRecord
+  // SUPPLIERRecord
+  // PARTSUPPRecord
+  // REGIONRecord
+  // PARTRecord
+  // NATIONRecord
+  // CUSTOMERRecord
+  // ORDERSRecord
   object CaseClassNew {
     def unapply[T](exp: Def[T]): Option[Def[T]] =
       exp match {
-        case _: GroupByClassNew | _: LINEITEMRecordNew | _: SUPPLIERRecordNew | _: PARTSUPPRecordNew => Some(exp)
+        case _: GroupByClassNew | _: LINEITEMRecordNew | _: SUPPLIERRecordNew | _: PARTSUPPRecordNew | _: REGIONRecordNew | _: PARTRecordNew | _: NATIONRecordNew | _: CUSTOMERRecordNew | _: ORDERSRecordNew => Some(exp)
         case _ => None
       }
   }
@@ -174,7 +183,7 @@ trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] 
   object LoweredNew {
     def unapply[T](exp: Rep[T]): Option[Def[T]] = exp match {
       case Def(d) => d match {
-        case _ if List(classOf[PARTSUPPRecord], classOf[SUPPLIERRecord], classOf[LINEITEMRecord], classOf[AggOp[_, _]], classOf[PrintOp[_]], classOf[ScanOp[_]], classOf[MapOp[_]], classOf[SelectOp[_]], classOf[SortOp[_]], classOf[HashJoinOp[_, _, _]], classOf[WindowOp[_, _, _]], classOf[GroupByClass]).contains(d.tp.runtimeClass) => Some(d)
+        case _ if List(classOf[GroupByClass], classOf[LINEITEMRecord], classOf[SUPPLIERRecord], classOf[PARTSUPPRecord], classOf[REGIONRecord], classOf[PARTRecord], classOf[NATIONRecord], classOf[CUSTOMERRecord], classOf[ORDERSRecord], classOf[AggOp[_, _]], classOf[PrintOp[_]], classOf[ScanOp[_]], classOf[MapOp[_]], classOf[SelectOp[_]], classOf[SortOp[_]], classOf[HashJoinOp[_, _, _]], classOf[WindowOp[_, _, _]]).contains(d.tp.runtimeClass) => Some(d)
         case _ => None
       }
       case _ => None

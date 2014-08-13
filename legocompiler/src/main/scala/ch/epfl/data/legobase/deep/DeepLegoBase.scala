@@ -592,6 +592,204 @@ trait PARTRecordImplementations { self: DeepDSL =>
 }
 trait PARTRecordComponent extends PARTRecordOps with PARTRecordImplicits { self: DeepDSL => }
 
+trait CUSTOMERRecordOps extends Base { this: DeepDSL =>
+  implicit class CUSTOMERRecordRep(self: Rep[CUSTOMERRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = cUSTOMERRecordGetField(self, key)
+    def C_COMMENT: Rep[OptimalString] = cUSTOMERRecord_Field_C_COMMENT(self)
+    def C_MKTSEGMENT: Rep[OptimalString] = cUSTOMERRecord_Field_C_MKTSEGMENT(self)
+    def C_ACCTBAL: Rep[Double] = cUSTOMERRecord_Field_C_ACCTBAL(self)
+    def C_PHONE: Rep[OptimalString] = cUSTOMERRecord_Field_C_PHONE(self)
+    def C_NATIONKEY: Rep[Int] = cUSTOMERRecord_Field_C_NATIONKEY(self)
+    def C_ADDRESS: Rep[OptimalString] = cUSTOMERRecord_Field_C_ADDRESS(self)
+    def C_NAME: Rep[OptimalString] = cUSTOMERRecord_Field_C_NAME(self)
+    def C_CUSTKEY: Rep[Int] = cUSTOMERRecord_Field_C_CUSTKEY(self)
+  }
+  object CUSTOMERRecord {
+
+  }
+  // constructors
+  def __newCUSTOMERRecord(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[CUSTOMERRecord] = cUSTOMERRecordNew(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT)
+  // case classes
+  case class CUSTOMERRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends FunctionDef[CUSTOMERRecord](None, "new CUSTOMERRecord", List(List(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class CUSTOMERRecordGetField(self: Rep[CUSTOMERRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class CUSTOMERRecord_Field_C_COMMENT(self: Rep[CUSTOMERRecord]) extends FieldDef[OptimalString](self, "C_COMMENT") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class CUSTOMERRecord_Field_C_MKTSEGMENT(self: Rep[CUSTOMERRecord]) extends FieldDef[OptimalString](self, "C_MKTSEGMENT") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class CUSTOMERRecord_Field_C_ACCTBAL(self: Rep[CUSTOMERRecord]) extends FieldDef[Double](self, "C_ACCTBAL") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class CUSTOMERRecord_Field_C_PHONE(self: Rep[CUSTOMERRecord]) extends FieldDef[OptimalString](self, "C_PHONE") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class CUSTOMERRecord_Field_C_NATIONKEY(self: Rep[CUSTOMERRecord]) extends FieldDef[Int](self, "C_NATIONKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class CUSTOMERRecord_Field_C_ADDRESS(self: Rep[CUSTOMERRecord]) extends FieldDef[OptimalString](self, "C_ADDRESS") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class CUSTOMERRecord_Field_C_NAME(self: Rep[CUSTOMERRecord]) extends FieldDef[OptimalString](self, "C_NAME") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class CUSTOMERRecord_Field_C_CUSTKEY(self: Rep[CUSTOMERRecord]) extends FieldDef[Int](self, "C_CUSTKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def cUSTOMERRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[CUSTOMERRecord] = CUSTOMERRecordNew(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT)
+  def cUSTOMERRecordGetField(self: Rep[CUSTOMERRecord], key: Rep[String]): Rep[Option[Any]] = CUSTOMERRecordGetField(self, key)
+  def cUSTOMERRecord_Field_C_COMMENT(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_COMMENT(self)
+  def cUSTOMERRecord_Field_C_MKTSEGMENT(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_MKTSEGMENT(self)
+  def cUSTOMERRecord_Field_C_ACCTBAL(self: Rep[CUSTOMERRecord]): Rep[Double] = CUSTOMERRecord_Field_C_ACCTBAL(self)
+  def cUSTOMERRecord_Field_C_PHONE(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_PHONE(self)
+  def cUSTOMERRecord_Field_C_NATIONKEY(self: Rep[CUSTOMERRecord]): Rep[Int] = CUSTOMERRecord_Field_C_NATIONKEY(self)
+  def cUSTOMERRecord_Field_C_ADDRESS(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_ADDRESS(self)
+  def cUSTOMERRecord_Field_C_NAME(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_NAME(self)
+  def cUSTOMERRecord_Field_C_CUSTKEY(self: Rep[CUSTOMERRecord]): Rep[Int] = CUSTOMERRecord_Field_C_CUSTKEY(self)
+  type CUSTOMERRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.CUSTOMERRecord
+}
+trait CUSTOMERRecordImplicits { this: CUSTOMERRecordComponent =>
+  // Add implicit conversions here!
+}
+trait CUSTOMERRecordImplementations { self: DeepDSL =>
+
+}
+trait CUSTOMERRecordComponent extends CUSTOMERRecordOps with CUSTOMERRecordImplicits { self: DeepDSL => }
+
+trait ORDERSRecordOps extends Base { this: DeepDSL =>
+  implicit class ORDERSRecordRep(self: Rep[ORDERSRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = oRDERSRecordGetField(self, key)
+    def O_COMMENT: Rep[OptimalString] = oRDERSRecord_Field_O_COMMENT(self)
+    def O_SHIPPRIORITY: Rep[Int] = oRDERSRecord_Field_O_SHIPPRIORITY(self)
+    def O_CLERK: Rep[OptimalString] = oRDERSRecord_Field_O_CLERK(self)
+    def O_ORDERPRIORITY: Rep[OptimalString] = oRDERSRecord_Field_O_ORDERPRIORITY(self)
+    def O_ORDERDATE: Rep[Long] = oRDERSRecord_Field_O_ORDERDATE(self)
+    def O_TOTALPRICE: Rep[Double] = oRDERSRecord_Field_O_TOTALPRICE(self)
+    def O_ORDERSTATUS: Rep[Character] = oRDERSRecord_Field_O_ORDERSTATUS(self)
+    def O_CUSTKEY: Rep[Int] = oRDERSRecord_Field_O_CUSTKEY(self)
+    def O_ORDERKEY: Rep[Int] = oRDERSRecord_Field_O_ORDERKEY(self)
+  }
+  object ORDERSRecord {
+
+  }
+  // constructors
+  def __newORDERSRecord(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Character], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Long], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = oRDERSRecordNew(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
+  // case classes
+  case class ORDERSRecordNew(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Character], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Long], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]) extends FunctionDef[ORDERSRecord](None, "new ORDERSRecord", List(List(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class ORDERSRecordGetField(self: Rep[ORDERSRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class ORDERSRecord_Field_O_COMMENT(self: Rep[ORDERSRecord]) extends FieldDef[OptimalString](self, "O_COMMENT") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_SHIPPRIORITY(self: Rep[ORDERSRecord]) extends FieldDef[Int](self, "O_SHIPPRIORITY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_CLERK(self: Rep[ORDERSRecord]) extends FieldDef[OptimalString](self, "O_CLERK") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_ORDERPRIORITY(self: Rep[ORDERSRecord]) extends FieldDef[OptimalString](self, "O_ORDERPRIORITY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_ORDERDATE(self: Rep[ORDERSRecord]) extends FieldDef[Long](self, "O_ORDERDATE") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_TOTALPRICE(self: Rep[ORDERSRecord]) extends FieldDef[Double](self, "O_TOTALPRICE") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_ORDERSTATUS(self: Rep[ORDERSRecord]) extends FieldDef[Character](self, "O_ORDERSTATUS") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_CUSTKEY(self: Rep[ORDERSRecord]) extends FieldDef[Int](self, "O_CUSTKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_ORDERKEY(self: Rep[ORDERSRecord]) extends FieldDef[Int](self, "O_ORDERKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def oRDERSRecordNew(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Character], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Long], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = ORDERSRecordNew(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
+  def oRDERSRecordGetField(self: Rep[ORDERSRecord], key: Rep[String]): Rep[Option[Any]] = ORDERSRecordGetField(self, key)
+  def oRDERSRecord_Field_O_COMMENT(self: Rep[ORDERSRecord]): Rep[OptimalString] = ORDERSRecord_Field_O_COMMENT(self)
+  def oRDERSRecord_Field_O_SHIPPRIORITY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_SHIPPRIORITY(self)
+  def oRDERSRecord_Field_O_CLERK(self: Rep[ORDERSRecord]): Rep[OptimalString] = ORDERSRecord_Field_O_CLERK(self)
+  def oRDERSRecord_Field_O_ORDERPRIORITY(self: Rep[ORDERSRecord]): Rep[OptimalString] = ORDERSRecord_Field_O_ORDERPRIORITY(self)
+  def oRDERSRecord_Field_O_ORDERDATE(self: Rep[ORDERSRecord]): Rep[Long] = ORDERSRecord_Field_O_ORDERDATE(self)
+  def oRDERSRecord_Field_O_TOTALPRICE(self: Rep[ORDERSRecord]): Rep[Double] = ORDERSRecord_Field_O_TOTALPRICE(self)
+  def oRDERSRecord_Field_O_ORDERSTATUS(self: Rep[ORDERSRecord]): Rep[Character] = ORDERSRecord_Field_O_ORDERSTATUS(self)
+  def oRDERSRecord_Field_O_CUSTKEY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_CUSTKEY(self)
+  def oRDERSRecord_Field_O_ORDERKEY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_ORDERKEY(self)
+  type ORDERSRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.ORDERSRecord
+}
+trait ORDERSRecordImplicits { this: ORDERSRecordComponent =>
+  // Add implicit conversions here!
+}
+trait ORDERSRecordImplementations { self: DeepDSL =>
+
+}
+trait ORDERSRecordComponent extends ORDERSRecordOps with ORDERSRecordImplicits { self: DeepDSL => }
+
 trait OptimalStringOps extends Base { this: DeepDSL =>
   implicit class OptimalStringRep(self: Rep[OptimalString]) {
     def equals(o: Rep[Any]): Rep[Boolean] = optimalStringEquals(self, o)
@@ -886,6 +1084,8 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowReco
   with REGIONRecordComponent
   with NATIONRecordComponent
   with PARTRecordComponent
+  with CUSTOMERRecordComponent
+  with ORDERSRecordComponent
   with OptimalStringComponent
   with K2DBScannerComponent with IntegerComponent
   with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent

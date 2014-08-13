@@ -39,6 +39,15 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   }
   def loadSupplier(): Rep[Array[SUPPLIERRecord]] = LoadSupplier()
 
+  case class LoadOrders() extends FunctionDef[Array[ORDERSRecord]](None, "loadOrders", List(Nil)) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+  def loadOrders(): Rep[Array[ORDERSRecord]] = LoadOrders()
+  case class LoadCustomer() extends FunctionDef[Array[CUSTOMERRecord]](None, "loadCustomer", List(Nil)) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+  def loadCustomer(): Rep[Array[CUSTOMERRecord]] = LoadCustomer()
+
   case class ParseDate(date: Rep[String]) extends FunctionDef[Long](None, "parseDate", List(List(date))) {
     override def curriedConstructor = (copy _)
   }
