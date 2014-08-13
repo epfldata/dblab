@@ -6,6 +6,7 @@ import deep._
 import prettyprinter._
 import optimization._
 import pardis.optimization._
+import ch.epfl.data.pardis.ir._
 
 object Main extends LegoRunner {
 
@@ -31,11 +32,24 @@ object Main extends LegoRunner {
     val lq = new LiftedQueries()
     val block = lq.Q1
 
-    val ir2Program = new { val IR = lq.context } with IRToProgram {
+    // Lowering (e.g. case classes to records)
+    val lowering = new LBLowering {
+      val from = lq.context
+      val to = lq.context
     }
+    val loweredBlock = lowering.transformProgram(block)
+    /*val parameterPromotion = new LBParameterPromotion(lq.context)
+    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)*/
 
-    val finalProgram = ir2Program.createProgram(block)
-    println(finalProgram)
+    // Convert Scala constructs to C
+    val transformedBlock = (new t3(lq.context)).transformBlock(loweredBlock)
+
+    val ir2Program = new { val IR = lq.context } with IRToProgram {}
+
+    System.out.println(transformedBlock)
+
+    val finalProgram = ir2Program.createProgram(transformedBlock)
+
     val LegoGenerator = new LegoCGenerator(2, true)
     LegoGenerator.apply(finalProgram)
   }

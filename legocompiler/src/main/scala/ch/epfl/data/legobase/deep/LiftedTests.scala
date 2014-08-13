@@ -2,13 +2,77 @@ package ch.epfl.data
 package legobase
 package deep
 
+import ch.epfl.data.pardis.shallow.OptimalString
 import scala.collection.mutable.ArrayBuffer
 import ch.epfl.data.pardis.ir._
 import ch.epfl.data.legobase.deep.scalalib._
-
+import legobase.deep._
+import pardis.optimization._
 import scala.language.implicitConversions
 
-abstract class TransformerFunction {
+trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base => }
+
+class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
+  import IR._
+  import CNodes._
+
+  override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = (node match {
+    case K2DBScannerNew(f) => NameAlias[FILE](None, "fopen", List(List(f, unit("r"))))
+    case K2DBScannerNext_int(s) =>
+      val v = readVar(__newVar[Int](0))
+      __ifThenElse[Unit](infix_==(fscanf(s, unit("%d|"), &(v)), eof), break, unit(()))
+      ReadVal(v)
+    case K2DBScannerNext_double(s) =>
+      val v = readVar(__newVar(unit(0.0)))
+      __ifThenElse(infix_==(fscanf(s, unit("%lf|"), &(v)), eof), break, unit)
+      ReadVal(v)
+    case K2DBScannerNext_char(s) =>
+      val v = readVar(__newVar(unit('a')))
+      __ifThenElse(infix_==(fscanf(s, unit("%c|"), &(v)), eof), break, unit)
+      ReadVal(v)
+    case K2DBScannerNext1(s, buf) =>
+      var i = __newVar[Int](0)
+      __whileDo(unit(true), {
+        val v = readVar(__newVar(unit('a')))
+        __ifThenElse(infix_==(fscanf(s, unit("%c"), &(v)), eof), break, unit)
+        __ifThenElse[Unit]((infix_==(ReadVal(v), unit('|')) || infix_==(ReadVal(v), unit('\n'))), break, unit)
+        arrayUpdate(buf.asInstanceOf[Expression[Array[AnyVal]]], readVar(i), ReadVal(v))
+        __assign(i, readVar(i) + unit(1))
+      })
+      buf(readVar(i)) = unit('\0');
+      ReadVar(i)
+    case K2DBScannerNext_date(s) =>
+      val x = readVar(__newVar[Int](unit(0)))
+      val y = readVar(__newVar[Int](unit(0)))
+      val z = readVar(__newVar[Int](unit(0)))
+      __ifThenElse(infix_==(fscanf(s, unit("%d-%d-%d|"), &(x), &(y), &(z)), eof), break, unit)
+      ((toAtom(ReadVal(x)) * unit(10000)) + (toAtom(ReadVal(y)) * unit(100)) + toAtom(ReadVal(z))).correspondingNode
+    case K2DBScannerHasNext(s) => ReadVal(Constant(true))
+    case FileLineCount(Constant(x: String)) =>
+      val p = popen(unit("wc -l " + x), unit("r"))
+      val cnt = readVar(__newVar[Int](0))
+      fscanf(p, unit("%d"), &(cnt))
+      pclose(p)
+      ReadVal(cnt)
+    case OptimalStringNew(x) => x.correspondingNode
+    case s @ PardisStruct(tag, elems) =>
+      val x = malloc(unit(1))(s.manifestT)
+      structInit(x, s)
+      ReadVal(x)(getPointerManifest(s.tp))
+    case a @ ArrayNew2(x) =>
+      if (a.manifestT.runtimeClass.isPrimitive) Malloc(x)(a.manifestT)
+      else Malloc(x)(getPointerManifest(a.manifestT))
+    case ArrayFilter(s, op) => ReadVal(s)(s.tp)
+    case _ =>
+      super.transformDef(node)
+  }).asInstanceOf[to.Def[T]]
+}
+
+/*********************/
+// OLD CODE GOES HERE
+/*********************/
+
+/*abstract class TransformerFunction {
   val isRecursive: Boolean
   def apply(n: PardisNode[Any])(implicit context: DeepDSL): PardisNode[Any]
 }
@@ -83,7 +147,7 @@ object t2 extends TransformerFunction with HashMapOps with TreeSetOps with DeepD
   }
 }
 
-object t3 extends TransformerFunction with K2DBScannerOps with DeepDSL {
+object t3 extends TransformerFunction with K2DBScannerOps with DeepDSL with CFunctions {
   import CNodes._
   val isRecursive = false
   def defToSym[A: Manifest](x: Def[A])(implicit context: DeepDSL): Sym[_] = {
@@ -104,24 +168,24 @@ object t3 extends TransformerFunction with K2DBScannerOps with DeepDSL {
       case K2DBScannerNew(f) => NameAlias[FILE](None, "fopen", List(List(f, unit("r"))))
       case K2DBScannerNext_int(s) => reifyBlock({
         val v = PTRADDRESS(__newVar(0))
-        __ifThenElse(infix_==(FScanf(s, List(unit("%d|"), v)), EOF()), Break(), unit())
+        __ifThenElse(infix_==(FScanf(s, unit("%d|"), List(v)), EOF()), Break(), unit())
         v.x
       })
       case K2DBScannerNext_double(s) => reifyBlock({
         val v = PTRADDRESS(__newVar(unit(0.0)))
-        __ifThenElse(infix_==(FScanf(s, List(unit("%lf|"), v)), EOF()), Break(), unit())
+        __ifThenElse(infix_==(FScanf(s, unit("%lf|"), List(v)), EOF()), Break(), unit())
         v.x
       })
       case K2DBScannerNext_char(s) => reifyBlock({
         val v = PTRADDRESS(__newVar(unit('a')))
-        __ifThenElse(infix_==(FScanf(s, List(unit("%c|"), v)), EOF()), Break(), unit())
+        __ifThenElse(infix_==(FScanf(s, unit("%c|"), List(v)), EOF()), Break(), unit())
         v.x
       })
       case K2DBScannerNext1(s, buf) => reifyBlock({
         var i = __newVar[Int](0)
         __whileDo(unit(true), {
           val v = Pointer(ArrayApply(buf, i))
-          __ifThenElse(infix_==(FScanf(s, List(unit("%c"), v)), EOF()), Break(), unit())
+          __ifThenElse(infix_==(FScanf(s, unit("%c"), List(v)), EOF()), Break(), unit())
           __ifThenElse[Unit]((infix_==(buf(i), unit('|')) || infix_==(buf(i), unit('\n'))), toAtom(Break()), unit())
           __assign(i, readVar(i) + unit(1))
         })
@@ -132,11 +196,19 @@ object t3 extends TransformerFunction with K2DBScannerOps with DeepDSL {
         val x = PTRADDRESS(__newVar[Int](0))
         val y = PTRADDRESS(__newVar[Int](0))
         val z = PTRADDRESS(__newVar[Int](0))
-        __ifThenElse(infix_==(FScanf(s, List(unit("%d-%d-%d|"), x, y, z)), EOF()), Break(), unit())
+        __ifThenElse(infix_==(FScanf(s, unit("%d-%d-%d|"), List(x, y, z)), EOF()), Break(), unit())
         (x.x * unit(10000)) + (y.x * unit(100)) + z.x
       })
       case K2DBScannerHasNext(s) => reifyBlock({ Constant(true) })
-      case _                     => n
+      case FileLineCount(x) =>
+        reifyBlock({
+          val p = popen(x, List(unit("r")))
+          val cnt = PTRADDRESS(__newVar[Int](0))
+          fscanf(p, unit("%d"), List(cnt))
+          pclose(p)
+          cnt.x
+        })
+      case _ => n
     }
   }
 }
@@ -227,4 +299,4 @@ class LiftedTests extends Base {
       }
     }.hashMapTestBlock
   }
-}
+}*/
