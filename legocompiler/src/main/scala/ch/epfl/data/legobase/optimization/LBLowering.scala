@@ -91,31 +91,10 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
         ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(mwinRecBC)),
         ("keySet", true, to.Set()(mb, to.overloaded2))).asInstanceOf[to.Def[T]]
     }
-    // case gc: GroupByClassNew => {
-    //   to.__newDef[GroupByClass](("L_RETURNFLAG", false, transformExp(gc.L_RETURNFLAG)),
-    //     ("L_LINESTATUS", false, transformExp(gc.L_LINESTATUS))).asInstanceOf[to.Def[T]]
-    // }
-    // case li: LINEITEMRecordNew => {
-    //   to.__newDef[LINEITEMRecord](("L_ORDERKEY", false, li.L_ORDERKEY),
-    //     ("L_PARTKEY", false, li.L_PARTKEY),
-    //     ("L_SUPPKEY", false, li.L_SUPPKEY),
-    //     ("L_LINENUMBER", false, li.L_LINENUMBER),
-    //     ("L_QUANTITY", false, li.L_QUANTITY),
-    //     ("L_EXTENDEDPRICE", false, li.L_EXTENDEDPRICE),
-    //     ("L_DISCOUNT", false, li.L_DISCOUNT),
-    //     ("L_TAX", false, li.L_TAX),
-    //     ("L_RETURNFLAG", false, li.L_RETURNFLAG),
-    //     ("L_LINESTATUS", false, li.L_LINESTATUS),
-    //     ("L_SHIPDATE", false, li.L_SHIPDATE),
-    //     ("L_COMMITDATE", false, li.L_COMMITDATE),
-    //     ("L_RECEIPTDATE", false, li.L_RECEIPTDATE),
-    //     ("L_SHIPINSTRUCT", false, li.L_SHIPINSTRUCT),
-    //     ("L_SHIPMODE", false, li.L_SHIPMODE),
-    //     ("L_COMMENT", false, li.L_COMMENT)).asInstanceOf[to.Def[T]]
-    // }
     case _ => super.transformDef(node)
   }
 
+  // WindowRecord
   // GroupByClass
   // LINEITEMRecord
   // SUPPLIERRecord
@@ -128,7 +107,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
   object CaseClassNew extends DefExtractor {
     def unapply[T](exp: Def[T]): Option[Def[T]] =
       exp match {
-        case _: GroupByClassNew | _: LINEITEMRecordNew | _: SUPPLIERRecordNew | _: PARTSUPPRecordNew | _: REGIONRecordNew | _: PARTRecordNew | _: NATIONRecordNew | _: CUSTOMERRecordNew | _: ORDERSRecordNew => Some(exp)
+        case _: WindowRecordNew[_, _] | _: GroupByClassNew | _: LINEITEMRecordNew | _: SUPPLIERRecordNew | _: PARTSUPPRecordNew | _: REGIONRecordNew | _: PARTRecordNew | _: NATIONRecordNew | _: CUSTOMERRecordNew | _: ORDERSRecordNew => Some(exp)
         case _ => None
       }
   }
@@ -136,7 +115,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
   object LoweredNew extends RepExtractor {
     def unapply[T](exp: Rep[T]): Option[Def[T]] = exp match {
       case Def(d) => d match {
-        case _ if List(classOf[GroupByClass], classOf[LINEITEMRecord], classOf[SUPPLIERRecord], classOf[PARTSUPPRecord], classOf[REGIONRecord], classOf[PARTRecord], classOf[NATIONRecord], classOf[CUSTOMERRecord], classOf[ORDERSRecord], classOf[AggOp[_, _]], classOf[PrintOp[_]], classOf[ScanOp[_]], classOf[MapOp[_]], classOf[SelectOp[_]], classOf[SortOp[_]], classOf[HashJoinOp[_, _, _]], classOf[WindowOp[_, _, _]]).contains(d.tp.runtimeClass) => Some(d)
+        case _ if List(classOf[WindowRecord[_, _]], classOf[GroupByClass], classOf[LINEITEMRecord], classOf[SUPPLIERRecord], classOf[PARTSUPPRecord], classOf[REGIONRecord], classOf[PARTRecord], classOf[NATIONRecord], classOf[CUSTOMERRecord], classOf[ORDERSRecord], classOf[AggOp[_, _]], classOf[PrintOp[_]], classOf[ScanOp[_]], classOf[MapOp[_]], classOf[SelectOp[_]], classOf[SortOp[_]], classOf[HashJoinOp[_, _, _]], classOf[WindowOp[_, _, _]]).contains(d.tp.runtimeClass) => Some(d)
         case _ => None
       }
       case _ => None

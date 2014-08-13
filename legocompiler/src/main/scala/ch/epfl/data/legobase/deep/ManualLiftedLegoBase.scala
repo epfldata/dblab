@@ -5,6 +5,7 @@ package deep
 import scala.language.implicitConversions
 import pardis.utils.Utils.{ manifestToString => m2s }
 import pardis.shallow.AbstractRecord
+import pardis.shallow.CaseClassRecord
 
 // FIXME in the righthand side of the genreated case class invokations, type parameters should be filled in.
 
@@ -96,7 +97,14 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     def L_LINESTATUS: Rep[Character] = GroupByClass_Field_L_LINESTATUS(self)
   }
 
-  case class GroupByClass(val L_RETURNFLAG: java.lang.Character, val L_LINESTATUS: java.lang.Character);
+  // TODO should be ported to legocore only and auto-lifter should generate it
+  case class GroupByClass(val L_RETURNFLAG: java.lang.Character, val L_LINESTATUS: java.lang.Character) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "L_RETURNFLAG" => Some(L_RETURNFLAG)
+      case "L_LINESTATUS" => Some(L_LINESTATUS)
+      case _              => None
+    }
+  }
 
   case class GroupByClassNew(L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character]) extends FunctionDef[GroupByClass](None, "new GroupByClass", List(List(L_RETURNFLAG, L_LINESTATUS))) {
     override def curriedConstructor = (copy _).curried
