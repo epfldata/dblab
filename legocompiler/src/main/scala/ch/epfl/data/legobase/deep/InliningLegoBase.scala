@@ -3,32 +3,34 @@ package legobase
 package deep
 
 import scala.language.implicitConversions
+import pardis.ir._
+import pardis.ir.pardisTypeImplicits._
 
 trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopUnrolling {
-  def reifyInline[T: Manifest](e: => Rep[T]): Rep[T] = e
+  def reifyInline[T: TypeRep](e: => Rep[T]): Rep[T] = e
 
-  override def operatorOpen[A](self: Rep[Operator[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = self match {
+  override def operatorOpen[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = self match {
     case Def(x: PrintOpNew[_]) => self.asInstanceOf[Rep[PrintOp[A]]].open
     case Def(x: SortOpNew[_])  => self.asInstanceOf[Rep[SortOp[A]]].open
     case Def(x: MapOpNew[_])   => self.asInstanceOf[Rep[MapOp[A]]].open
     case Def(x: AggOpNew[_, _]) => {
       type X = A
       type Y = Any
-      aggOpOpen(self.asInstanceOf[Rep[AggOp[X, Y]]])(x.manifestA.asInstanceOf[Manifest[X]], x.manifestB.asInstanceOf[Manifest[Y]])
+      aggOpOpen(self.asInstanceOf[Rep[AggOp[X, Y]]])
     }
     case Def(x: ScanOpNew[_])   => self.asInstanceOf[Rep[ScanOp[A]]].open
     case Def(x: SelectOpNew[_]) => self.asInstanceOf[Rep[SelectOp[A]]].open
     case _                      => super.operatorOpen(self)
   }
 
-  override def operatorNext[A](self: Rep[Operator[A]])(implicit manifestA: Manifest[A]): Rep[A] = self match {
+  override def operatorNext[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[A] = self match {
     case Def(x: PrintOpNew[_]) => self.asInstanceOf[Rep[PrintOp[A]]].next
     case Def(x: SortOpNew[_])  => self.asInstanceOf[Rep[SortOp[A]]].next
     case Def(x: MapOpNew[_])   => self.asInstanceOf[Rep[MapOp[A]]].next
     case Def(x: AggOpNew[_, _]) => {
       type X = A
       type Y = Any
-      aggOpNext(self.asInstanceOf[Rep[AggOp[X, Y]]])(x.manifestA.asInstanceOf[Manifest[X]], x.manifestB.asInstanceOf[Manifest[Y]]).asInstanceOf[Rep[A]]
+      aggOpNext[X, Y](self.asInstanceOf[Rep[AggOp[X, Y]]]).asInstanceOf[Rep[A]]
     }
     case Def(x: ScanOpNew[_])   => self.asInstanceOf[Rep[ScanOp[A]]].next
     case Def(x: SelectOpNew[_]) => self.asInstanceOf[Rep[SelectOp[A]]].next
@@ -36,7 +38,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
   }
 
   // FIXME needs apply virtualization
-  override def operatorForeach[A](self: Rep[Operator[A]], f: Rep[A => Unit])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+  override def operatorForeach[A](self: Rep[Operator[A]], f: Rep[A => Unit])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = {
     reifyInline {
       var exit = __newVar(unit(false));
       __whileDo(`infix_!=`(exit, unit(true)), {
@@ -50,7 +52,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
   }
 
   // FIXME needs apply virtualization
-  override def operatorFindFirst[A](self: Rep[Operator[A]], cond: Rep[A => Boolean])(implicit manifestA: Manifest[A]): Rep[A] = {
+  override def operatorFindFirst[A](self: Rep[Operator[A]], cond: Rep[A => Boolean])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[A] = {
     reifyInline {
       val exit = __newVar(unit(false));
       val res = __newVar(self.NullDynamicRecord);
@@ -62,7 +64,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     }
   }
 
-  override def printOpNext[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = {
+  override def printOpNext[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[A] = {
     reifyInline {
       var exit = __newVar(unit(false));
       __whileDo(`infix_==`(exit, unit(false)), {
@@ -77,7 +79,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
   }
 
   // FIXME hack handling ordering[A]
-  override def sortOpNext[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = {
+  override def sortOpNext[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[A] = {
     implicit val ordering = new Ordering[A] {
       def compare(o1: A, o2: A) = ???
     }
@@ -88,11 +90,11 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     }, self.NullDynamicRecord)
   }
 
-  override def selectOpNext[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = reifyInline {
+  override def selectOpNext[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[A] = reifyInline {
     self.parent.findFirst(self.selectPred)
   }
 
-  override def scanOpNext[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = reifyInline {
+  override def scanOpNext[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[A] = reifyInline {
     __ifThenElse(self.i.<(self.table.length), {
       val v = self.table.apply(self.i);
       self.`i_=`(self.i.+(unit(1)));
@@ -102,7 +104,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
 
   // FIXME autolifter does not lift A to Rep[A]
   // FIXME needs apply virtualization
-  override def mapOpNext[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = {
+  override def mapOpNext[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[A] = {
     reifyInline {
       val t = self.parent.next();
       __ifThenElse(`infix_!=`(t, self.NullDynamicRecord), {
@@ -112,7 +114,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     }
   }
 
-  override def aggOpNext[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[AGGRecord[B]] = reifyInline {
+  override def aggOpNext[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$1: Manifest[B], evidence$2: Manifest[A]): Rep[AGGRecord[B]] = reifyInline {
     __ifThenElse(`infix_!=`(self.hm.size, unit(0)), {
       val key = self.keySet.head;
       self.keySet.remove(key);
@@ -121,21 +123,21 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     }, self.NullDynamicRecord)
   }
 
-  override def printOpOpen[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+  override def printOpOpen[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = {
     self.parent.open
   }
 
-  override def scanOpOpen[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+  override def scanOpOpen[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = {
     unit(())
   }
 
-  override def selectOpOpen[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
+  override def selectOpOpen[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = {
     unit(())
   }
 
   // FIXME hack handling ordering[A]
   // FIXME autolifter does not lift A to Rep[A]
-  override def sortOpOpen[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = reifyInline {
+  override def sortOpOpen[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = reifyInline {
     implicit val ordering = new Ordering[A] {
       def compare(o1: A, o2: A) = ???
     }
@@ -146,7 +148,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     }))
   }
 
-  override def mapOpOpen[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = reifyInline {
+  override def mapOpOpen[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = reifyInline {
     self.parent.open
   }
 
@@ -158,7 +160,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
   // // FIXME remove : _* in YY transformation
   // FIXME needs apply virtualization
   // FIXME newArray hack related to issue #24
-  override def aggOpOpen[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Unit] = {
+  override def aggOpOpen[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$1: Manifest[B], evidence$2: Manifest[A]): Rep[Unit] = {
     reifyInline {
       self.parent.open();
       self.parent.foreach(((t: Rep[A]) => {
@@ -176,7 +178,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     }
   }
 
-  // override def windowOpOpen[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Unit] = {
+  // override def windowOpOpen[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
   //   self.parent.open
   //   self.parent.foreach(__lambda { t: Rep[A] =>
   //     val key = self.grp(t)
@@ -186,65 +188,65 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
   //   self.`keySet_=`(Set.apply(self.hm.keySet.toSeq))
   // }
 
-  override def printOp_Field_Parent[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
+  override def printOp_Field_Parent[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = {
     self match {
       case Def(x: PrintOpNew[_]) => x.parent
       case _                     => super.printOp_Field_Parent(self)
     }
   }
 
-  override def sortOp_Field_Parent[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
+  override def sortOp_Field_Parent[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = {
     self match {
       case Def(x: SortOpNew[_]) => x.parent
       case _                    => super.sortOp_Field_Parent(self)
     }
   }
 
-  override def mapOp_Field_Parent[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
+  override def mapOp_Field_Parent[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = {
     self match {
       case Def(x: MapOpNew[_]) => x.parent
       case _                   => super.mapOp_Field_Parent(self)
     }
   }
 
-  override def selectOp_Field_Parent[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
+  override def selectOp_Field_Parent[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = {
     self match {
       case Def(x: SelectOpNew[_]) => x.parent
       case _                      => super.selectOp_Field_Parent(self)
     }
   }
 
-  override def aggOp_Field_Parent[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Operator[A]] = {
+  override def aggOp_Field_Parent[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[A]] = {
     self match {
       case Def(x: AggOpNew[_, _]) => x.parent
       case _                      => super.aggOp_Field_Parent(self)
     }
   }
 
-  override def mapOp_Field_AggFuncs[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Seq[A => Unit]] = self match {
+  override def mapOp_Field_AggFuncs[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Seq[A => Unit]] = self match {
     case Def(MapOpNew(_, funs)) => funs
     case _                      => super.mapOp_Field_AggFuncs(self)
   }
 
-  override def aggOp_Field_Grp[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[A => B] = self match {
+  override def aggOp_Field_Grp[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[A => B] = self match {
     case Def(AggOpNew(_, _, f, _)) => f
     case _                         => ???
   }
-  override def aggOp_Field_AggFuncs[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Seq[((A, Double) => Double)]] = self match {
+  override def aggOp_Field_AggFuncs[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Seq[((A, Double) => Double)]] = self match {
     case Def(AggOpNew(_, _, _, funs)) => funs
     case _                            => ???
   }
 
-  override def printOp_Field_PrintFunc[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[A => Unit] = self match {
+  override def printOp_Field_PrintFunc[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[A => Unit] = self match {
     case Def(PrintOpNew(_, f, _)) => f
     case _                        => ???
   }
-  override def printOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[() => Boolean] = self match {
+  override def printOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[() => Boolean] = self match {
     case Def(PrintOpNew(_, _, limit)) => limit
     case _                            => ???
   }
 
-  override def selectOp_Field_SelectPred[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[A => Boolean] = self match {
+  override def selectOp_Field_SelectPred[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[A => Boolean] = self match {
     case Def(SelectOpNew(_, f)) => f
     case _                      => ???
   }
@@ -292,7 +294,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
 }
 
 trait LoopUnrolling extends pardis.ir.InlineFunctions { this: InliningLegoBase =>
-  override def seqForeach[A, U](self: Rep[Seq[A]], f: Rep[A => U])(implicit manifestA: Manifest[A], manifestU: Manifest[U]): Rep[Unit] = self match {
+  override def seqForeach[A, U](self: Rep[Seq[A]], f: Rep[A => U])(implicit typeA: TypeRep[A], typeU: TypeRep[U]): Rep[Unit] = self match {
     case Def(LiftedSeq(elems)) => elems.toList match {
       case Nil => unit(())
       case elem :: tail => {

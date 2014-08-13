@@ -21,6 +21,7 @@ package deep
 
 import scalalib._
 import pardis.ir._
+import pardis.ir.pardisTypeImplicits._
 """,
   """OperatorsComponent""")
 class MetaInfo

@@ -2,70 +2,78 @@ package ch.epfl.data
 package legobase
 package optimization
 
+import scala.reflect.runtime.universe.{ typeTag => tag }
 import legobase.deep._
 import scala.language.implicitConversions
 import pardis.ir._
+import pardis.ir.pardisTypeImplicits._
 import pardis.optimization._
 
 trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
   import from._
 
-  override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
+  override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = node match {
     case an: AggOpNew[_, _] => {
-      val ma = an.manifestA
-      val mb = an.manifestB
-      val maa = ma.asInstanceOf[Manifest[Any]]
-      val marrDouble = manifest[Array[Double]]
+      val ma = an.typeA
+      val mb = an.typeB
+      val maa = ma.asInstanceOf[TypeRep[Any]]
+      val marrDouble = implicitly[to.TypeRep[to.Array[to.Double]]]
       class Rec
-      implicit val manifestRec: Manifest[Rec] = mb.asInstanceOf[Manifest[Rec]]
-      val magg = manifest[AGGRecord[Rec]].asInstanceOf[Manifest[Any]]
+      case object RecType extends TypeRep[Rec] {
+        val name = "Rec"
+        val typeArguments = Nil
+        val typeTag = ??? //TODO: tag[Rec]
+      }
+
+      implicit val manifestRec: TypeRep[Rec] = mb.asInstanceOf[TypeRep[Rec]]
+      val magg = implicitly[TypeRep[AGGRecord[Rec]]].asInstanceOf[TypeRep[Any]]
       // val magg = maa
       // to.reifyBlock ({
-      to.__newDef[AggOp[_, _]](("hm", false, to.__newHashMap(to.overloaded2, mb, marrDouble)),
+      to.__newDef[AggOp[_, _]](("hm", false, to.__newHashMap[Rec, to.Array[to.Double]]()(to.overloaded2, mb.asInstanceOf[to.TypeRep[Rec]], marrDouble)),
         ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(magg)),
         ("keySet", true, to.Set()(mb)),
-        ("numAggs", false, an.numAggs)).asInstanceOf[to.Def[T]]
+        ("numAggs", false, an.numAggs))(an.tp.asInstanceOf[to.TypeRep[AggOp[_, _]]]).asInstanceOf[to.Def[T]]
       // }).correspondingNode
     }
     case po: PrintOpNew[_] => {
-      val ma = po.manifestA
-      val maa = ma.asInstanceOf[Manifest[Any]]
+      val ma = po.typeA
+      val maa = ma.asInstanceOf[TypeRep[Any]]
       // to.reifyBlock({
       to.__newDef[PrintOp[_]](("numRows", true, to.unit[Int](0)),
-        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa))).asInstanceOf[to.Def[T]]
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa)))(po.tp.asInstanceOf[to.TypeRep[PrintOp[_]]]).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case so: ScanOpNew[_] => {
-      val ma = so.manifestA
-      val maa = ma.asInstanceOf[Manifest[Any]]
+      val ma = so.typeA
+      val maa = ma.asInstanceOf[TypeRep[Any]]
       // to.reifyBlock({
       to.__newDef[ScanOp[_]](("i", true, to.unit[Int](0)),
         ("table", false, so.table),
-        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa))).asInstanceOf[to.Def[T]]
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa)))(so.tp.asInstanceOf[to.TypeRep[ScanOp[_]]]).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case mo: MapOpNew[_] => {
-      val ma = mo.manifestA
-      val maa = ma.asInstanceOf[Manifest[Any]]
+      val ma = mo.typeA
+      val maa = ma.asInstanceOf[TypeRep[Any]]
       // to.reifyBlock({
       to.__newDef[MapOp[_]](
-        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa))).asInstanceOf[to.Def[T]]
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa)))(mo.tp.asInstanceOf[to.TypeRep[MapOp[_]]]).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case so: SelectOpNew[_] => {
-      val ma = so.manifestA
-      val maa = ma.asInstanceOf[Manifest[Any]]
+      val ma = so.typeA
+      val maa = ma.asInstanceOf[TypeRep[Any]]
       // to.reifyBlock({
       to.__newDef[SelectOp[_]](
-        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa))).asInstanceOf[to.Def[T]]
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa)))(so.tp.asInstanceOf[to.TypeRep[SelectOp[_]]]).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case so: SortOpNew[_] => {
-      val ma = so.manifestA
-      val maa = ma.asInstanceOf[Manifest[Any]]
+      val ma = so.typeA
+      val maa = ma.asInstanceOf[TypeRep[Any]]
       // to.reifyBlock({
-      to.__newDef[SortOp[_]](("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]])(maa))(maa)),
-        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa))).asInstanceOf[to.Def[T]]
+      to.__newDef[SortOp[_]](("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]])(maa))),
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa)))(so.tp.asInstanceOf[to.TypeRep[SortOp[_]]]).asInstanceOf[to.Def[T]]
       // }).correspondingNode.asInstanceOf[to.Def[T]]
     }
     case gc: GroupByClassNew => {
@@ -92,14 +100,14 @@ trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] 
         ("L_SHIPMODE", false, li.L_SHIPMODE),
         ("L_COMMENT", false, li.L_COMMENT)).asInstanceOf[to.Def[T]]
     }
-    case ImmutableField(self @ LoweredNew(d), fieldName) => {
-      StructImmutableField(transformExp(self), fieldName)
+    case f @ ImmutableField(self @ LoweredNew(d), fieldName) => {
+      StructImmutableField(transformExp(self)(self.tp, self.tp), fieldName)(f.tp)
     }
-    case FieldGetter(self @ LoweredNew(d), fieldName) => {
-      StructFieldGetter(transformExp(self), fieldName)
+    case fg @ FieldGetter(self @ LoweredNew(d), fieldName) => {
+      StructFieldGetter(transformExp(self)(self.tp, self.tp), fieldName)(fg.tp)
     }
-    case FieldSetter(self @ LoweredNew(d), fieldName, rhs) => {
-      StructFieldSetter[T](transformExp(self), fieldName, rhs).asInstanceOf[to.Def[T]]
+    case fs @ FieldSetter(self @ LoweredNew(d), fieldName, rhs) => {
+      StructFieldSetter[T](transformExp(self)(self.tp, self.tp), fieldName, rhs)(fs.tp).asInstanceOf[to.Def[T]]
     }
     case _ => super.transformDef(node)
   }
@@ -127,8 +135,8 @@ trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] 
 
   object LoweredNew {
     def unapply[T](exp: Rep[T]): Option[Def[T]] = exp match {
-      case Def(d) => d match {
-        case _ if List(classOf[LINEITEMRecord], classOf[AggOp[_, _]], classOf[PrintOp[_]], classOf[ScanOp[_]], classOf[MapOp[_]], classOf[SelectOp[_]], classOf[SortOp[_]], classOf[GroupByClass]).contains(d.tp.runtimeClass) => Some(d)
+      case Def(d) => d.tp match {
+        case LINEITEMRecordType | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | GroupByClassType => Some(d)
         case _ => None
       }
       case _ => None

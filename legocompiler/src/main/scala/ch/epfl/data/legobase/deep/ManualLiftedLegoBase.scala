@@ -2,9 +2,11 @@ package ch.epfl.data
 package legobase
 package deep
 
+import scala.reflect.runtime.universe.{ typeTag => tag }
 import scala.language.implicitConversions
-import pardis.utils.Utils.{ manifestToString => m2s }
+import pardis.utils.Utils.{ pardisTypeToString => t2s }
 import pardis.shallow.AbstractRecord
+import pardis.ir.pardisTypeImplicits._
 
 // FIXME in the righthand side of the genreated case class invokations, type parameters should be filled in.
 
@@ -65,11 +67,11 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   //   override def curriedConstructor = (copy _).curried
   // }
   // def printf(text: Rep[String], xs: Rep[Any]*): Rep[Unit] = Printf(text, __liftSeq(xs.toSeq))
-  def runQuery[T: Manifest](query: => Rep[T]): Rep[T] = {
+  def runQuery[T: TypeRep](query: => Rep[T]): Rep[T] = {
     val b = reifyBlock(query)
     RunQuery(b)
   }
-  case class RunQuery[T: Manifest](query: Block[T]) extends FunctionDef[T](None, "runQuery", List(List(query))) {
+  case class RunQuery[T: TypeRep](query: Block[T]) extends FunctionDef[T](None, "runQuery", List(List(query))) {
     override def curriedConstructor = (copy[T] _)
   }
 
@@ -89,6 +91,13 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   case class GroupByClass(val L_RETURNFLAG: java.lang.Character, val L_LINESTATUS: java.lang.Character);
 
+  case object GroupByClassType extends TypeRep[GroupByClass] {
+    val name = "GroupByClass"
+    val typeArguments = List()
+    val typeTag = tag[GroupByClass]
+  }
+  implicit val typeGroupByClass = GroupByClassType
+
   case class GroupByClassNew(L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character]) extends FunctionDef[GroupByClass](None, "new GroupByClass", List(List(L_RETURNFLAG, L_LINESTATUS))) {
     override def curriedConstructor = (copy _).curried
   }
@@ -98,11 +107,11 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   def __newPrintOp2[A](parent: Rep[Operator[A]])(printFunc: Rep[(A => Unit)], limit: Rep[(() => Boolean)] = {
     __lambda(() => unit(true))
-  })(implicit manifestA: Manifest[A]): Rep[PrintOp[A]] = {
+  })(implicit evidence$9: Manifest[A], typeA: TypeRep[A]): Rep[PrintOp[A]] = {
     __newPrintOp(parent)(printFunc, limit)
   }
 
-  def __newHashJoinOp2[A <: AbstractRecord, B <: AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String] = unit(""), rightAlias: Rep[String] = unit(""))(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit evidence$10: Manifest[A], evidence$11: Manifest[B], evidence$12: Manifest[C], manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[HashJoinOp[A, B, C]] = __newHashJoinOp[A, B, C](leftParent, rightParent, leftAlias, rightAlias)(joinCond)(leftHash)(rightHash)(manifestA, manifestB, manifestC, manifestA, manifestB, manifestC)
+  def __newHashJoinOp2[A <: AbstractRecord, B <: AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String] = unit(""), rightAlias: Rep[String] = unit(""))(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit evidence$10: Manifest[A], evidence$11: Manifest[B], evidence$12: Manifest[C], typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = __newHashJoinOp[A, B, C](leftParent, rightParent, leftAlias, rightAlias)(joinCond)(leftHash)(rightHash)
 
   // TODO scala.Char class should be lifted instead of the java one
 
@@ -116,94 +125,94 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   type Char = Character
 
-  def newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit manifestB: Manifest[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)
+  def newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)
 
   // TODO this thing should be removed, ideally every literal should be lifted using YY
 
   implicit def liftInt(i: scala.Int): Rep[Int] = unit(i)
 
-  def __newTreeSet2[A](ordering: Rep[Ordering[A]])(implicit manifestA: Manifest[A]): Rep[TreeSet[A]] = TreeSetNew2[A](ordering)(manifestA)
+  def __newTreeSet2[A](ordering: Rep[Ordering[A]])(implicit evidence$9: Manifest[A], typeA: TypeRep[A]): Rep[TreeSet[A]] = TreeSetNew2[A](ordering)(typeA)
   // case classes
-  case class TreeSetNew2[A](val ordering: Rep[Ordering[A]])(implicit val manifestA: Manifest[A]) extends FunctionDef[TreeSet[A]](None, "new TreeSet", List(Nil, List(ordering))) {
+  case class TreeSetNew2[A](val ordering: Rep[Ordering[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[TreeSet[A]](None, "new TreeSet", List(Nil, List(ordering))) {
     override def curriedConstructor = (copy[A] _)
   }
 
   // constructors
-  override def arrayNew[T](_length: Rep[Int])(implicit manifestT: Manifest[T]): Rep[Array[T]] = ArrayNew2[T](_length)(manifestT)
+  override def arrayNew[T](_length: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Array[T]] = ArrayNew2[T](_length)(typeT)
 
   // case classes
-  case class ArrayNew2[T](_length: Rep[Int])(implicit val manifestT: Manifest[T]) extends FunctionDef[Array[T]](None, s"new Array[${m2s(manifestT)}]", List(List(_length))) {
+  case class ArrayNew2[T](_length: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[Array[T]](None, s"new Array[${t2s(typeT)}]", List(List(_length))) {
     override def curriedConstructor = (copy[T] _)
   }
 
-  implicit class ArrayRep2[T](self: Rep[Array[T]])(implicit manifestT: Manifest[T]) {
+  implicit class ArrayRep2[T](self: Rep[Array[T]])(implicit typeT: TypeRep[T]) {
     def filter(p: Rep[T => Boolean]): Rep[Array[T]] = arrayFilter(self, p)
-    def ===[T2: Manifest](o: Rep[Array[T2]]): Rep[Boolean] = arrayEquals(self, o)
+    def ===[T2: TypeRep](o: Rep[Array[T2]]): Rep[Boolean] = arrayEquals(self, o)
   }
 
-  def arrayFilter[T](self: Rep[Array[T]], p: Rep[T => Boolean])(implicit manifestT: Manifest[T]): Rep[Array[T]] = ArrayFilter[T](self, p)
+  def arrayFilter[T](self: Rep[Array[T]], p: Rep[T => Boolean])(implicit typeT: TypeRep[T]): Rep[Array[T]] = ArrayFilter[T](self, p)
 
-  case class ArrayFilter[T](self: Rep[Array[T]], p: Rep[T => Boolean])(implicit val manifestT: Manifest[T]) extends FunctionDef[Array[T]](Some(self), "filter", List(List(p))) {
+  case class ArrayFilter[T](self: Rep[Array[T]], p: Rep[T => Boolean])(implicit val typeT: TypeRep[T]) extends FunctionDef[Array[T]](Some(self), "filter", List(List(p))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  override def hashMapNew2[A, B](implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[HashMap[A, B]] = HashMapNew2_2[A, B]()
+  override def hashMapNew2[A, B]()(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, B]] = HashMapNew2_2[A, B]()
 
-  case class HashMapNew2_2[A, B]()(implicit val manifestA: Manifest[A], val manifestB: Manifest[B]) extends FunctionDef[HashMap[A, B]](None, s"new HashMap[${m2s(manifestA)}, ${m2s(manifestB)}]", List()) {
+  case class HashMapNew2_2[A, B]()(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[HashMap[A, B]](None, s"new HashMap[${t2s(typeA)}, ${t2s(typeB)}]", List()) {
     override def curriedConstructor = (x: Any) => copy[A, B]()
   }
 
-  case class ArrayEquals[T1: Manifest, T2: Manifest](self: Rep[Array[T1]], o: Rep[Array[T2]]) extends FunctionDef[Boolean](Some(self), "===", List(List(o))) {
+  case class ArrayEquals[T1: TypeRep, T2: TypeRep](self: Rep[Array[T1]], o: Rep[Array[T2]]) extends FunctionDef[Boolean](Some(self), "===", List(List(o))) {
     override def curriedConstructor = (copy[T1, T2] _).curried
     override def isPure = true
   }
 
-  def arrayEquals[T1: Manifest, T2: Manifest](self: Rep[Array[T1]], o: Rep[Array[T2]]): Rep[Boolean] = ArrayEquals(self, o)
+  def arrayEquals[T1: TypeRep, T2: TypeRep](self: Rep[Array[T1]], o: Rep[Array[T2]]): Rep[Boolean] = ArrayEquals(self, o)
 
-  implicit class AllRepOps[T: Manifest](self: Rep[T]) {
-    def __==[T2: Manifest](o: Rep[T2]): Rep[Boolean] = infix_==(self, o)
+  implicit class AllRepOps[T: TypeRep](self: Rep[T]) {
+    def __==[T2: TypeRep](o: Rep[T2]): Rep[Boolean] = infix_==(self, o)
   }
 }
 
 // TODO should be generated automatically
 trait OptionOps { this: DeepDSL =>
-  implicit class OptionRep[A](self: Rep[Option[A]])(implicit manifestA: Manifest[A]) {
-    def get(): Rep[A] = optionGet[A](self)(manifestA)
+  implicit class OptionRep[A](self: Rep[Option[A]])(implicit typeA: TypeRep[A]) {
+    def get(): Rep[A] = optionGet[A](self)(typeA)
   }
-  def optionGet[A](self: Rep[Option[A]])(implicit manifestA: Manifest[A]): Rep[A] = OptionGet[A](self)
-  case class OptionGet[A](self: Rep[Option[A]])(implicit manifestA: Manifest[A]) extends FunctionDef[A](Some(self), "get", List()) {
+  def optionGet[A](self: Rep[Option[A]])(implicit typeA: TypeRep[A]): Rep[A] = OptionGet[A](self)
+  case class OptionGet[A](self: Rep[Option[A]])(implicit typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "get", List()) {
     override def curriedConstructor = copy[A] _
   }
 }
 
 trait SetOps { this: DeepDSL =>
   object Set {
-    def apply[T: Manifest](seq: Rep[Seq[T]]): Rep[Set[T]] = SetNew(seq)
-    def apply[T: Manifest](): Rep[Set[T]] = SetNew2[T]()(manifest[T])
+    def apply[T: TypeRep](seq: Rep[Seq[T]]): Rep[Set[T]] = SetNew(seq)
+    def apply[T: TypeRep](): Rep[Set[T]] = SetNew2[T]()
   }
-  case class SetNew[T: Manifest](seq: Rep[Seq[T]]) extends FunctionDef[Set[T]](None, "Set", List(List(__varArg(seq)))) {
+  case class SetNew[T: TypeRep](seq: Rep[Seq[T]]) extends FunctionDef[Set[T]](None, "Set", List(List(__varArg(seq)))) {
     override def curriedConstructor = copy[T] _
   }
-  case class SetNew2[T: Manifest]() extends FunctionDef[Set[T]](None, s"Set[${m2s(manifest[T])}]", List(List())) {
+  case class SetNew2[T: TypeRep]() extends FunctionDef[Set[T]](None, s"Set[${t2s(implicitly[TypeRep[T]])}]", List(List())) {
     override def curriedConstructor = (x: Any) => copy[T]()
   }
 }
 
 trait OrderingOps { this: DeepDSL =>
   object Ordering {
-    def apply[T: Manifest](comp: Rep[Function2[T, T, Int]]): Rep[Ordering[T]] = OrderingNew(comp)
+    def apply[T: TypeRep](comp: Rep[Function2[T, T, Int]]): Rep[Ordering[T]] = OrderingNew(comp)
   }
-  case class OrderingNew[T: Manifest](comp: Rep[Function2[T, T, Int]]) extends FunctionDef[Ordering[T]](None, "OrderingFactory", List(List(comp))) {
+  case class OrderingNew[T: TypeRep](comp: Rep[Function2[T, T, Int]]) extends FunctionDef[Ordering[T]](None, "OrderingFactory", List(List(comp))) {
     override def curriedConstructor = copy[T] _
   }
 }
 
 trait ManifestOps { this: DeepDSL =>
   object ManifestRep {
-    def apply[T: Manifest](man: Manifest[T]): Rep[Manifest[T]] = ManifestNew[T](man)(man)
+    def apply[T: TypeRep](man: Manifest[T]): Rep[Manifest[T]] = ManifestNew[T](man)
   }
 
-  case class ManifestNew[T](man: Manifest[T])(implicit manifestT: Manifest[T]) extends FunctionDef[Manifest[T]](None, s"manifest[${m2s(man)}]", Nil) {
+  case class ManifestNew[T](man: Manifest[T])(implicit typeT: TypeRep[T]) extends FunctionDef[Manifest[T]](None, s"manifest[${t2s(typeT)}]", Nil) {
     override def curriedConstructor = copy[T] _
   }
 }
