@@ -22,4 +22,15 @@ class LBParameterPromotion(override val IR: LoweringLegoBase) extends ParameterP
       case _ => ()
     }
   }
+
+  override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
+    // case pc @ PardisCast(exp) => {
+    //   System.out.print("--->")
+    //   System.out.print(pc)
+    //   System.out.print("<---")
+    //   System.out.println(transformType(pc.castTp))
+    //   PardisCast(transformExp[Any, Any](exp))(transformType(exp.tp), transformType(pc.castTp)).asInstanceOf[to.Def[T]]
+    // }
+    case _ => super.transformDef(node)
+  }
 }
