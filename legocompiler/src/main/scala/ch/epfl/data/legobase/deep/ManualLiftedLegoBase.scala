@@ -127,6 +127,11 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   def newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)
 
+  object GenericEngine {
+    def newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)
+    def newWindowRecord[B, C](key: Rep[B], wnd: Rep[C])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowRecord[B, C]] = __newWindowRecord(key, wnd)
+  }
+
   // TODO this thing should be removed, ideally every literal should be lifted using YY
 
   implicit def liftInt(i: scala.Int): Rep[Int] = unit(i)
@@ -143,6 +148,17 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   // case classes
   case class ArrayNew2[T](_length: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[Array[T]](None, s"new Array[${t2s(typeT)}]", List(List(_length))) {
     override def curriedConstructor = (copy[T] _)
+  }
+
+  override def arrayBufferNew1[A](initialSize: Rep[Int])(implicit typeA: TypeRep[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew1_2[A](initialSize)
+  override def arrayBufferNew2[A]()(implicit typeA: TypeRep[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew2_2[A]()
+
+  case class ArrayBufferNew1_2[A](initialSize: Rep[Int])(implicit val typeA: TypeRep[A]) extends FunctionDef[ArrayBuffer[A]](None, s"new ArrayBuffer[${t2s(typeA)}]", List(List(initialSize))) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ArrayBufferNew2_2[A]()(implicit val typeA: TypeRep[A]) extends FunctionDef[ArrayBuffer[A]](None, s"new ArrayBuffer[${t2s(typeA)}]", List()) {
+    override def curriedConstructor = (x: Any) => copy[A]()
   }
 
   implicit class ArrayRep2[T](self: Rep[Array[T]])(implicit typeT: TypeRep[T]) {
@@ -172,6 +188,22 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   implicit class AllRepOps[T: TypeRep](self: Rep[T]) {
     def __==[T2: TypeRep](o: Rep[T2]): Rep[Boolean] = infix_==(self, o)
   }
+
+  // object ArrayBuffer {
+  //   def apply[T: Manifest](): Rep[ArrayBuffer[T]] = __newArrayBuffer[T]
+  // }
+
+  override def arrayBufferApplyObject[T]()(implicit typeT: TypeRep[T]): Rep[ArrayBuffer[T]] = __newArrayBuffer[T]()
+
+  case class ContentsType[T, S](typeT: TypeRep[T], typeS: TypeRep[S]) extends TypeRep[Contents[T, S]] {
+    private implicit val tagT = typeT.typeTag
+    private implicit val tagS = typeS.typeTag
+    val name = s"Contents[${typeT.name}, ${typeS.name}]"
+    val typeArguments = List(typeT, typeS)
+    val typeTag = tag[Contents[T, S]]
+  }
+  implicit def typeContents[T: TypeRep, S: TypeRep] = ContentsType[T, S](implicitly[TypeRep[T]], implicitly[TypeRep[S]])
+
 }
 
 // TODO should be generated automatically
@@ -185,14 +217,18 @@ trait OptionOps { this: DeepDSL =>
   }
 }
 
-trait SetOps { this: DeepDSL =>
-  object Set {
-    def apply[T: TypeRep](seq: Rep[Seq[T]]): Rep[Set[T]] = SetNew(seq)
-    def apply[T: TypeRep](): Rep[Set[T]] = SetNew2[T]()
-  }
+trait SetOps extends scalalib.SetOps { this: DeepDSL =>
+  // object Set {
+  //   def apply[T: TypeRep](seq: Rep[Seq[T]]): Rep[Set[T]] = SetNew(seq)
+  //   def apply[T: TypeRep](): Rep[Set[T]] = SetNew2[T]()
+  // }
   case class SetNew[T: TypeRep](seq: Rep[Seq[T]]) extends FunctionDef[Set[T]](None, "Set", List(List(__varArg(seq)))) {
     override def curriedConstructor = copy[T] _
   }
+
+  override def setApplyObject1[T](seq: Rep[Seq[T]])(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetNew[T](seq)
+
+  override def setApplyObject2[T]()(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetNew2[T]()
   case class SetNew2[T: TypeRep]() extends FunctionDef[Set[T]](None, s"Set[${t2s(implicitly[TypeRep[T]])}]", List(List())) {
     override def curriedConstructor = (x: Any) => copy[T]()
   }

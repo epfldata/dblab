@@ -3,6 +3,7 @@ package legobase
 package deep
 
 import ch.epfl.data.pardis.ir.pardisTypeImplicits._
+import scala.language.reflectiveCalls
 
 // FIXME there's a bug for AggOpNew. The functions should not be (Rep[T] => Rep[S])* but they should be two distinct parameters Rep[T]* and Rep[S]*
 // which ideally should be zipped together to perform further operations

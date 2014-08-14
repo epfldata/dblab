@@ -6,7 +6,6 @@ package deep
 
 import scalalib._
 import pardis.ir._
-import scala.reflect.runtime.universe.{ typeTag => tag }
 import pardis.ir.pardisTypeImplicits._
 
 trait AGGRecordOps extends Base { this: DeepDSL =>
@@ -18,15 +17,6 @@ trait AGGRecordOps extends Base { this: DeepDSL =>
   object AGGRecord {
 
   }
-
-  case class AGGRecordType[B](innerType: PardisType[B]) extends PardisType[AGGRecord[B]] {
-    private implicit val innerTag = innerType.typeTag
-    val name = "AGGRecord"
-    val typeArguments = List(innerType)
-    val typeTag = tag[AGGRecord[B]]
-  }
-  implicit def typeAggRecord[B: PardisType] = AGGRecordType(implicitly[PardisType[B]])
-
   // constructors
   def __newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)(typeB)
   // case classes
@@ -56,6 +46,13 @@ trait AGGRecordOps extends Base { this: DeepDSL =>
   def aGGRecord_Field_Aggs[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]): Rep[Array[Double]] = AGGRecord_Field_Aggs[B](self)
   def aGGRecord_Field_Key[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]): Rep[B] = AGGRecord_Field_Key[B](self)
   type AGGRecord[B] = ch.epfl.data.legobase.queryengine.AGGRecord[B]
+  case class AGGRecordType[B](typeB: TypeRep[B]) extends TypeRep[AGGRecord[B]] {
+    private implicit val tagB = typeB.typeTag
+    val name = s"AGGRecord[${typeB.name}]"
+    val typeArguments = List(typeB)
+    val typeTag = scala.reflect.runtime.universe.typeTag[AGGRecord[B]]
+  }
+  implicit def typeAGGRecord[B: TypeRep] = AGGRecordType(implicitly[TypeRep[B]])
 }
 trait AGGRecordImplicits { this: AGGRecordComponent =>
   // Add implicit conversions here!
@@ -88,13 +85,6 @@ trait LINEITEMRecordOps extends Base { this: DeepDSL =>
   object LINEITEMRecord {
 
   }
-  case object LINEITEMRecordType extends PardisType[LINEITEMRecord] {
-    val name = "LINEITEMRecord"
-    val typeArguments = List()
-    val typeTag = tag[LINEITEMRecord]
-  }
-  implicit val typeLineItemRecord = LINEITEMRecordType
-
   // constructors
   def __newLINEITEMRecord(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character], L_SHIPDATE: Rep[Long], L_COMMITDATE: Rep[Long], L_RECEIPTDATE: Rep[Long], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = lINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
   // case classes
@@ -222,6 +212,12 @@ trait LINEITEMRecordOps extends Base { this: DeepDSL =>
   def lINEITEMRecord_Field_L_PARTKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_PARTKEY(self)
   def lINEITEMRecord_Field_L_ORDERKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_ORDERKEY(self)
   type LINEITEMRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.LINEITEMRecord
+  case object LINEITEMRecordType extends TypeRep[LINEITEMRecord] {
+    val name = "LINEITEMRecord"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[LINEITEMRecord]
+  }
+  implicit val typeLINEITEMRecord = LINEITEMRecordType
 }
 trait LINEITEMRecordImplicits { this: LINEITEMRecordComponent =>
   // Add implicit conversions here!
@@ -245,13 +241,6 @@ trait SUPPLIERRecordOps extends Base { this: DeepDSL =>
   object SUPPLIERRecord {
 
   }
-  case object SUPPLIERRecordType extends PardisType[SUPPLIERRecord] {
-    val name = "SUPPLIERRecord"
-    val typeArguments = List()
-    val typeTag = tag[SUPPLIERRecord]
-  }
-  implicit val typeSupplierRecord = SUPPLIERRecordType
-
   // constructors
   def __newSUPPLIERRecord(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]): Rep[SUPPLIERRecord] = sUPPLIERRecordNew(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT)
   // case classes
@@ -316,6 +305,12 @@ trait SUPPLIERRecordOps extends Base { this: DeepDSL =>
   def sUPPLIERRecord_Field_S_NAME(self: Rep[SUPPLIERRecord]): Rep[OptimalString] = SUPPLIERRecord_Field_S_NAME(self)
   def sUPPLIERRecord_Field_S_SUPPKEY(self: Rep[SUPPLIERRecord]): Rep[Int] = SUPPLIERRecord_Field_S_SUPPKEY(self)
   type SUPPLIERRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.SUPPLIERRecord
+  case object SUPPLIERRecordType extends TypeRep[SUPPLIERRecord] {
+    val name = "SUPPLIERRecord"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[SUPPLIERRecord]
+  }
+  implicit val typeSUPPLIERRecord = SUPPLIERRecordType
 }
 trait SUPPLIERRecordImplicits { this: SUPPLIERRecordComponent =>
   // Add implicit conversions here!
@@ -337,13 +332,6 @@ trait PARTSUPPRecordOps extends Base { this: DeepDSL =>
   object PARTSUPPRecord {
 
   }
-  case object PARTSUPPRecordType extends PardisType[PARTSUPPRecord] {
-    val name = "PARTSUPPRecord"
-    val typeArguments = List()
-    val typeTag = tag[PARTSUPPRecord]
-  }
-  implicit val typePartSuppRecord = PARTSUPPRecordType
-
   // constructors
   def __newPARTSUPPRecord(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]): Rep[PARTSUPPRecord] = pARTSUPPRecordNew(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT)
   // case classes
@@ -394,6 +382,12 @@ trait PARTSUPPRecordOps extends Base { this: DeepDSL =>
   def pARTSUPPRecord_Field_PS_SUPPKEY(self: Rep[PARTSUPPRecord]): Rep[Int] = PARTSUPPRecord_Field_PS_SUPPKEY(self)
   def pARTSUPPRecord_Field_PS_PARTKEY(self: Rep[PARTSUPPRecord]): Rep[Int] = PARTSUPPRecord_Field_PS_PARTKEY(self)
   type PARTSUPPRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.PARTSUPPRecord
+  case object PARTSUPPRecordType extends TypeRep[PARTSUPPRecord] {
+    val name = "PARTSUPPRecord"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[PARTSUPPRecord]
+  }
+  implicit val typePARTSUPPRecord = PARTSUPPRecordType
 }
 trait PARTSUPPRecordImplicits { this: PARTSUPPRecordComponent =>
   // Add implicit conversions here!
@@ -413,13 +407,6 @@ trait REGIONRecordOps extends Base { this: DeepDSL =>
   object REGIONRecord {
 
   }
-  case object REGIONRecordType extends PardisType[REGIONRecord] {
-    val name = "REGIONRecord"
-    val typeArguments = List()
-    val typeTag = tag[REGIONRecord]
-  }
-  implicit val typeRegionRecord = REGIONRecordType
-
   // constructors
   def __newREGIONRecord(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]): Rep[REGIONRecord] = rEGIONRecordNew(R_REGIONKEY, R_NAME, R_COMMENT)
   // case classes
@@ -456,6 +443,12 @@ trait REGIONRecordOps extends Base { this: DeepDSL =>
   def rEGIONRecord_Field_R_NAME(self: Rep[REGIONRecord]): Rep[OptimalString] = REGIONRecord_Field_R_NAME(self)
   def rEGIONRecord_Field_R_REGIONKEY(self: Rep[REGIONRecord]): Rep[Int] = REGIONRecord_Field_R_REGIONKEY(self)
   type REGIONRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.REGIONRecord
+  case object REGIONRecordType extends TypeRep[REGIONRecord] {
+    val name = "REGIONRecord"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[REGIONRecord]
+  }
+  implicit val typeREGIONRecord = REGIONRecordType
 }
 trait REGIONRecordImplicits { this: REGIONRecordComponent =>
   // Add implicit conversions here!
@@ -476,13 +469,6 @@ trait NATIONRecordOps extends Base { this: DeepDSL =>
   object NATIONRecord {
 
   }
-  case object NATIONRecordType extends PardisType[NATIONRecord] {
-    val name = "NATIONRecord"
-    val typeArguments = List()
-    val typeTag = tag[NATIONRecord]
-  }
-  implicit val typeNationRecord = NATIONRecordType
-
   // constructors
   def __newNATIONRecord(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]): Rep[NATIONRecord] = nATIONRecordNew(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT)
   // case classes
@@ -526,6 +512,12 @@ trait NATIONRecordOps extends Base { this: DeepDSL =>
   def nATIONRecord_Field_N_NAME(self: Rep[NATIONRecord]): Rep[OptimalString] = NATIONRecord_Field_N_NAME(self)
   def nATIONRecord_Field_N_NATIONKEY(self: Rep[NATIONRecord]): Rep[Int] = NATIONRecord_Field_N_NATIONKEY(self)
   type NATIONRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.NATIONRecord
+  case object NATIONRecordType extends TypeRep[NATIONRecord] {
+    val name = "NATIONRecord"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[NATIONRecord]
+  }
+  implicit val typeNATIONRecord = NATIONRecordType
 }
 trait NATIONRecordImplicits { this: NATIONRecordComponent =>
   // Add implicit conversions here!
@@ -551,13 +543,6 @@ trait PARTRecordOps extends Base { this: DeepDSL =>
   object PARTRecord {
 
   }
-  case object PARTRecordType extends PardisType[PARTRecord] {
-    val name = "PARTRecord"
-    val typeArguments = List()
-    val typeTag = tag[PARTRecord]
-  }
-  implicit val typePartRecord = PARTRecordType
-
   // constructors
   def __newPARTRecord(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]): Rep[PARTRecord] = pARTRecordNew(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT)
   // case classes
@@ -636,6 +621,12 @@ trait PARTRecordOps extends Base { this: DeepDSL =>
   def pARTRecord_Field_P_NAME(self: Rep[PARTRecord]): Rep[OptimalString] = PARTRecord_Field_P_NAME(self)
   def pARTRecord_Field_P_PARTKEY(self: Rep[PARTRecord]): Rep[Int] = PARTRecord_Field_P_PARTKEY(self)
   type PARTRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.PARTRecord
+  case object PARTRecordType extends TypeRep[PARTRecord] {
+    val name = "PARTRecord"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[PARTRecord]
+  }
+  implicit val typePARTRecord = PARTRecordType
 }
 trait PARTRecordImplicits { this: PARTRecordComponent =>
   // Add implicit conversions here!
@@ -667,13 +658,6 @@ trait OptimalStringOps extends Base { this: DeepDSL =>
     def apply(data: Rep[Array[Byte]]): Rep[OptimalString] = optimalStringApplyObject(data)
     def default: Rep[OptimalString] = optimalStringDefaultObject()
   }
-  case object OptimalStringType extends PardisType[OptimalString] {
-    val name = "OptimalString"
-    val typeArguments = List()
-    val typeTag = tag[OptimalString]
-  }
-  implicit val typeOptimalString = OptimalStringType
-
   // constructors
   def __newOptimalString(data: Rep[Array[Byte]]): Rep[OptimalString] = optimalStringNew(data)
   // case classes
@@ -771,6 +755,12 @@ trait OptimalStringOps extends Base { this: DeepDSL =>
   def optimalStringApplyObject(data: Rep[Array[Byte]]): Rep[OptimalString] = OptimalStringApplyObject(data)
   def optimalStringDefaultObject(): Rep[OptimalString] = OptimalStringDefaultObject()
   type OptimalString = ch.epfl.data.pardis.shallow.OptimalString
+  case object OptimalStringType extends TypeRep[OptimalString] {
+    val name = "OptimalString"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[OptimalString]
+  }
+  implicit val typeOptimalString = OptimalStringType
 }
 trait OptimalStringImplicits { this: OptimalStringComponent =>
   // Add implicit conversions here!
@@ -800,13 +790,6 @@ trait K2DBScannerOps extends Base { this: DeepDSL =>
   object K2DBScanner {
 
   }
-  case object K2DBScannerType extends PardisType[K2DBScanner] {
-    val name = "K2DBScanner"
-    val typeArguments = List()
-    val typeTag = tag[K2DBScanner]
-  }
-  implicit val typeK2DBScanner = K2DBScannerType
-
   // constructors
   def __newK2DBScanner(filename: Rep[String]): Rep[K2DBScanner] = k2DBScannerNew(filename)
   // case classes
@@ -889,6 +872,12 @@ trait K2DBScannerOps extends Base { this: DeepDSL =>
   def k2DBScanner_Field_ByteRead(self: Rep[K2DBScanner]): Rep[Int] = K2DBScanner_Field_ByteRead(self)
   def k2DBScanner_Field_Filename(self: Rep[K2DBScanner]): Rep[String] = K2DBScanner_Field_Filename(self)
   type K2DBScanner = ch.epfl.data.legobase.storagemanager.K2DBScanner
+  case object K2DBScannerType extends TypeRep[K2DBScanner] {
+    val name = "K2DBScanner"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[K2DBScanner]
+  }
+  implicit val typeK2DBScanner = K2DBScannerType
 }
 trait K2DBScannerImplicits { this: K2DBScannerComponent =>
   // Add implicit conversions here!
@@ -907,16 +896,6 @@ trait WindowRecordOps extends Base { this: DeepDSL =>
   object WindowRecord {
 
   }
-  case class WindowRecordType[B, C](keyType: PardisType[B], windowType: PardisType[C]) extends PardisType[WindowRecord[B, C]] {
-    private implicit val keyTag = keyType.typeTag
-    private implicit val windowTag = windowType.typeTag
-
-    val name = "WindowRecord"
-    val typeArguments = List(keyType, windowType)
-    val typeTag = tag[WindowRecord[B, C]]
-  }
-  implicit def typeWindowRecord[B: PardisType, C: PardisType] = WindowRecordType(implicitly[PardisType[B]], implicitly[PardisType[C]])
-
   // constructors
   def __newWindowRecord[B, C](key: Rep[B], wnd: Rep[C])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowRecord[B, C]] = windowRecordNew[B, C](key, wnd)(typeB, typeC)
   // case classes
@@ -946,6 +925,14 @@ trait WindowRecordOps extends Base { this: DeepDSL =>
   def windowRecord_Field_Wnd[B, C](self: Rep[WindowRecord[B, C]])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[C] = WindowRecord_Field_Wnd[B, C](self)
   def windowRecord_Field_Key[B, C](self: Rep[WindowRecord[B, C]])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[B] = WindowRecord_Field_Key[B, C](self)
   type WindowRecord[B, C] = ch.epfl.data.legobase.queryengine.WindowRecord[B, C]
+  case class WindowRecordType[B, C](typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[WindowRecord[B, C]] {
+    private implicit val tagB = typeB.typeTag
+    private implicit val tagC = typeC.typeTag
+    val name = s"WindowRecord[${typeB.name}, ${typeC.name}]"
+    val typeArguments = List(typeB, typeC)
+    val typeTag = scala.reflect.runtime.universe.typeTag[WindowRecord[B, C]]
+  }
+  implicit def typeWindowRecord[B: TypeRep, C: TypeRep] = WindowRecordType(implicitly[TypeRep[B]], implicitly[TypeRep[C]])
 }
 trait WindowRecordImplicits { this: WindowRecordComponent =>
   // Add implicit conversions here!

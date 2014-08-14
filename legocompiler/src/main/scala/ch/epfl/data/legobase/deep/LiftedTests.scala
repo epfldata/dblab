@@ -1,4 +1,4 @@
-package ch.epfl.data
+/*package ch.epfl.data
 package legobase
 package deep
 
@@ -164,7 +164,11 @@ class LiftedTests extends Base {
   def hashMapTest() = {
     new HashMapOps with DeepDSL {
       def hashMapTest = {
+        <<<<<<< HEAD
         val hm = hashMapNew2()(IntType, StringType)
+        =======
+        val hm = hashMapNew2()(manifest[Int], manifest[String])
+        >>>>>>> origin /master
         val f = hashMapGetOrElseUpdate(hm, 5, { unit("lala") })
         println(f)
         val g = hashMapGetOrElseUpdate(hm, 7, { unit("foo") })
@@ -193,7 +197,11 @@ class LiftedTests extends Base {
       def loadingTest = {
         val file = "/mnt/ramdisk/test/lineitem.tbl"
         import scala.sys.process._;
+        <<<<<<< HEAD
         val size = ((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", "")).toInt
+        =======
+        val size = java.lang.Integer.parseInt((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", ""))
+        >>>>>>> origin /master
         // Load Relation 
         val s = __newK2DBScanner(unit(file))
         var i = __newVar[Int](0)
@@ -228,4 +236,4 @@ class LiftedTests extends Base {
       }
     }.hashMapTestBlock
   }
-}
+}*/
