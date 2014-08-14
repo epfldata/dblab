@@ -7,6 +7,7 @@ import scala.reflect.runtime.universe._
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Set
+import scala.collection.mutable.TreeSet
 import GenericEngine._
 import ch.epfl.data.autolifter.annotations.{ deep, metadeep }
 import ch.epfl.data.pardis.shallow.{ AbstractRecord, DynamicCompositeRecord, Record }
@@ -79,7 +80,7 @@ class MetaInfo
   val mB = manifest[B]
 
   val hm = new HashMap[B, Array[Double]]()
-  var keySet = scala.collection.mutable.Set(hm.keySet.toSeq: _*)
+  var keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
 
   def open() {
     parent.open
@@ -92,14 +93,14 @@ class MetaInfo
         i += 1
       }
     }
-    keySet = scala.collection.mutable.Set(hm.keySet.toSeq: _*)
+    keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
   }
   def next() = {
     if (hm.size != 0) {
       val key = keySet.head
       keySet.remove(key)
       val elem = hm.remove(key)
-      ch.epfl.data.legobase.queryengine.GenericEngine.newAGGRecord(key, elem.get)
+      /*ch.epfl.data.legobase.queryengine.GenericEngine.*/ newAGGRecord(key, elem.get)
     } else NullDynamicRecord
   }
   def close() {}
@@ -107,7 +108,7 @@ class MetaInfo
 }
 
 @deep case class SortOp[A: Manifest](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends Operator[A] {
-  val sortedTree = new scala.collection.mutable.TreeSet()(
+  val sortedTree = new /*scala.collection.mutable.*/ TreeSet()(
     new Ordering[A] {
       def compare(o1: A, o2: A) = orderingFunc(o1, o2)
     })
@@ -156,8 +157,6 @@ class MetaInfo
   def reset() { parent.reset }
 }
 
-// TODO @deep should be uncommented after fixing the bug with autolifter on type bounds
-
 @deep case class HashJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord: Manifest, C: Manifest](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   var tmpCount = -1
   var tmpBuffer = ArrayBuffer[A]()
@@ -204,7 +203,7 @@ class MetaInfo
 
 @deep case class WindowOp[A: Manifest, B: Manifest, C: Manifest](parent: Operator[A])(val grp: Function1[A, B])(val wndf: ArrayBuffer[A] => C) extends Operator[WindowRecord[B, C]] {
   val hm = HashMap[B, ArrayBuffer[A]]()
-  var keySet = scala.collection.mutable.Set(hm.keySet.toSeq: _*)
+  var keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
 
   def open() {
     parent.open
@@ -213,7 +212,7 @@ class MetaInfo
       val v = hm.getOrElseUpdate(key, ArrayBuffer[A]())
       v.append(t)
     }
-    keySet = scala.collection.mutable.Set(hm.keySet.toSeq: _*)
+    keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
   }
   def next() = {
     if (hm.size != 0) {
@@ -298,7 +297,7 @@ case class SubquerySingleResult[A: Manifest](parent: Operator[A]) extends Operat
 
 case class HashJoinAnti[A: Manifest, B: Manifest, C: Manifest](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   val hm = new HashMap[C, ArrayBuffer[A]]()
-  var keySet = scala.collection.mutable.Set(hm.keySet.toSeq: _*)
+  var keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
 
   def removeFromList(elemList: ArrayBuffer[A], e: A, idx: Int) = {
     elemList.remove(idx)
@@ -345,7 +344,7 @@ case class HashJoinAnti[A: Manifest, B: Manifest, C: Manifest](leftParent: Opera
         }
       }
     }
-    keySet = scala.collection.mutable.Set(hm.keySet.toSeq: _*)
+    keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
   }
   // Step 3: Return everything that left in the hash table
   def next() = {

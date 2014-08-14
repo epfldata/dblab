@@ -4,7 +4,7 @@ package deep
 
 import scala.language.implicitConversions
 
-trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopUnrolling {
+trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopUnrolling with OperatorImplementations with ScanOpImplementations with SelectOpImplementations with AggOpImplementations with SortOpImplementations with MapOpImplementations with PrintOpImplementations with WindowOpImplementations with HashJoinOpImplementations {
   def reifyInline[T: Manifest](e: => Rep[T]): Rep[T] = e
 
   override def operatorOpen[A](self: Rep[Operator[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = self match {
@@ -18,7 +18,19 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     }
     case Def(x: ScanOpNew[_])   => self.asInstanceOf[Rep[ScanOp[A]]].open
     case Def(x: SelectOpNew[_]) => self.asInstanceOf[Rep[SelectOp[A]]].open
-    case _                      => super.operatorOpen(self)
+    case Def(x: WindowOpNew[_, _, _]) => {
+      type X = Any
+      type Y = Any
+      type Z = Any
+      windowOpOpen(self.asInstanceOf[Rep[WindowOp[X, Y, Z]]])(x.manifestA.asInstanceOf[Manifest[X]], x.manifestB.asInstanceOf[Manifest[Y]], x.manifestC.asInstanceOf[Manifest[Z]])
+    }
+    case Def(x: HashJoinOpNew[_, _, _]) => {
+      type X = pardis.shallow.AbstractRecord
+      type Y = pardis.shallow.AbstractRecord
+      type Z = Any
+      hashJoinOpOpen(self.asInstanceOf[Rep[HashJoinOp[X, Y, Z]]])(x.manifestA.asInstanceOf[Manifest[X]], x.manifestB.asInstanceOf[Manifest[Y]], x.manifestC.asInstanceOf[Manifest[Z]])
+    }
+    case _ => super.operatorOpen(self)
   }
 
   override def operatorNext[A](self: Rep[Operator[A]])(implicit manifestA: Manifest[A]): Rep[A] = self match {
@@ -32,159 +44,20 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     }
     case Def(x: ScanOpNew[_])   => self.asInstanceOf[Rep[ScanOp[A]]].next
     case Def(x: SelectOpNew[_]) => self.asInstanceOf[Rep[SelectOp[A]]].next
-    case _                      => super.operatorNext(self)
-  }
-
-  // FIXME needs apply virtualization
-  override def operatorForeach[A](self: Rep[Operator[A]], f: Rep[A => Unit])(implicit manifestA: Manifest[A]): Rep[Unit] = {
-    reifyInline {
-      var exit = __newVar(unit(false));
-      __whileDo(`infix_!=`(exit, unit(true)), {
-        val t = self.next();
-        __ifThenElse(`infix_==`(t, self.NullDynamicRecord), __assign(exit, unit(true)), {
-          __app(f).apply(t);
-          unit(())
-        })
-      })
+    case Def(x: WindowOpNew[_, _, _]) => {
+      type X = Any
+      type Y = Any
+      type Z = Any
+      windowOpNext(self.asInstanceOf[Rep[WindowOp[X, Y, Z]]])(x.manifestA.asInstanceOf[Manifest[X]], x.manifestB.asInstanceOf[Manifest[Y]], x.manifestC.asInstanceOf[Manifest[Z]]).asInstanceOf[Rep[A]]
     }
-  }
-
-  // FIXME needs apply virtualization
-  override def operatorFindFirst[A](self: Rep[Operator[A]], cond: Rep[A => Boolean])(implicit manifestA: Manifest[A]): Rep[A] = {
-    reifyInline {
-      val exit = __newVar(unit(false));
-      val res = __newVar(self.NullDynamicRecord);
-      __whileDo(`infix_!=`(exit, unit(true)), {
-        __assign(res, self.next());
-        __ifThenElse(`infix_==`(res, self.NullDynamicRecord), __assign(exit, unit(true)), __assign(exit, __app(cond).apply(res)))
-      });
-      res
+    case Def(x: HashJoinOpNew[_, _, _]) => {
+      type X = pardis.shallow.AbstractRecord
+      type Y = pardis.shallow.AbstractRecord
+      type Z = Any
+      hashJoinOpNext(self.asInstanceOf[Rep[HashJoinOp[X, Y, Z]]])(x.manifestA.asInstanceOf[Manifest[X]], x.manifestB.asInstanceOf[Manifest[Y]], x.manifestC.asInstanceOf[Manifest[Z]]).asInstanceOf[Rep[A]]
     }
+    case _ => super.operatorNext(self)
   }
-
-  override def printOpNext[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = {
-    reifyInline {
-      var exit = __newVar(unit(false));
-      __whileDo(`infix_==`(exit, unit(false)), {
-        val t = self.parent.next();
-        __ifThenElse(`infix_==`(self.limit.apply(), unit(false)).||(`infix_==`(t, self.NullDynamicRecord)), __assign(exit, unit(true)), {
-          self.printFunc.apply(t);
-          self.`numRows_=`(self.numRows.+(unit(1)))
-        })
-      });
-      self.NullDynamicRecord
-    }
-  }
-
-  // FIXME hack handling ordering[A]
-  override def sortOpNext[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = {
-    implicit val ordering = new Ordering[A] {
-      def compare(o1: A, o2: A) = ???
-    }
-    __ifThenElse(`infix_!=`(self.sortedTree.size, unit(0)), {
-      val elem = self.sortedTree.head;
-      self.sortedTree.-=(elem);
-      elem
-    }, self.NullDynamicRecord)
-  }
-
-  override def selectOpNext[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = reifyInline {
-    self.parent.findFirst(self.selectPred)
-  }
-
-  override def scanOpNext[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = reifyInline {
-    __ifThenElse(self.i.<(self.table.length), {
-      val v = self.table.apply(self.i);
-      self.`i_=`(self.i.+(unit(1)));
-      v
-    }, self.NullDynamicRecord)
-  }
-
-  // FIXME autolifter does not lift A to Rep[A]
-  // FIXME needs apply virtualization
-  override def mapOpNext[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[A] = {
-    reifyInline {
-      val t = self.parent.next();
-      __ifThenElse(`infix_!=`(t, self.NullDynamicRecord), {
-        self.aggFuncs.foreach(__lambda((agg) => __app(agg).apply(t)));
-        t
-      }, self.NullDynamicRecord)
-    }
-  }
-
-  override def aggOpNext[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[AGGRecord[B]] = reifyInline {
-    __ifThenElse(`infix_!=`(self.hm.size, unit(0)), {
-      val key = self.keySet.head;
-      self.keySet.remove(key);
-      val elem = self.hm.remove(key);
-      newAGGRecord(key, elem.get)
-    }, self.NullDynamicRecord)
-  }
-
-  override def printOpOpen[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
-    self.parent.open
-  }
-
-  override def scanOpOpen[A](self: Rep[ScanOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
-    unit(())
-  }
-
-  override def selectOpOpen[A](self: Rep[SelectOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = {
-    unit(())
-  }
-
-  // FIXME hack handling ordering[A]
-  // FIXME autolifter does not lift A to Rep[A]
-  override def sortOpOpen[A](self: Rep[SortOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = reifyInline {
-    implicit val ordering = new Ordering[A] {
-      def compare(o1: A, o2: A) = ???
-    }
-    self.parent.open
-    self.parent.foreach(__lambda((t: Rep[A]) => {
-      self.sortedTree.+=(t);
-      unit(())
-    }))
-  }
-
-  override def mapOpOpen[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Unit] = reifyInline {
-    self.parent.open
-  }
-
-  // // FIXME autolifter does not lift A to Rep[A]
-  // // FIXME virtualize new array
-  // // FIXME handle variables liftings
-  // // FIXME autolift modules
-  // // FIXME think more about varargs!
-  // // FIXME remove : _* in YY transformation
-  // FIXME needs apply virtualization
-  // FIXME newArray hack related to issue #24
-  override def aggOpOpen[A, B](self: Rep[AggOp[A, B]])(implicit manifestA: Manifest[A], manifestB: Manifest[B]): Rep[Unit] = {
-    reifyInline {
-      self.parent.open();
-      self.parent.foreach(((t: Rep[A]) => {
-        val key = self.grp.apply(t);
-        val aggs = self.hm.getOrElseUpdate(key, __newArray[scala.Double](self.numAggs));
-        var i: Var[Int] = __newVar(unit(0));
-        self.aggFuncs.foreach(__lambda((aggFun) => {
-          aggs.update(i, __app(aggFun).apply(t, aggs.apply(i)));
-          __assign(i, readVar(i).+(unit(1)))
-        }))
-        unit(())
-      }));
-      // self.`keySet_=`(scala.collection.mutable.Set.apply(((self.hm.keySet.toSeq): _*)))
-      self.`keySet_=`(Set.apply(self.hm.keySet.toSeq))
-    }
-  }
-
-  // override def windowOpOpen[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Unit] = {
-  //   self.parent.open
-  //   self.parent.foreach(__lambda { t: Rep[A] =>
-  //     val key = self.grp(t)
-  //     val v = self.hm.getOrElseUpdate(key, ArrayBuffer[A]())
-  //     // v.append(t)
-  //   })
-  //   self.`keySet_=`(Set.apply(self.hm.keySet.toSeq))
-  // }
 
   override def printOp_Field_Parent[A](self: Rep[PrintOp[A]])(implicit manifestA: Manifest[A]): Rep[Operator[A]] = {
     self match {
@@ -221,6 +94,26 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     }
   }
 
+  override def windowOp_Field_Parent[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Operator[A]] = {
+    self match {
+      case Def(x: WindowOpNew[_, _, _]) => x.parent
+      case _                            => super.windowOp_Field_Parent(self)
+    }
+  }
+
+  override def hashJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Operator[B]] = {
+    self match {
+      case Def(x: HashJoinOpNew[_, _, _]) => x.rightParent
+      case _                              => super.hashJoinOp_Field_RightParent(self)
+    }
+  }
+  override def hashJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[Operator[A]] = {
+    self match {
+      case Def(x: HashJoinOpNew[_, _, _]) => x.leftParent
+      case _                              => super.hashJoinOp_Field_LeftParent(self)
+    }
+  }
+
   override def mapOp_Field_AggFuncs[A](self: Rep[MapOp[A]])(implicit manifestA: Manifest[A]): Rep[Seq[A => Unit]] = self match {
     case Def(MapOpNew(_, funs)) => funs
     case _                      => super.mapOp_Field_AggFuncs(self)
@@ -249,11 +142,44 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     case _                      => ???
   }
 
-  // FIXME here it uses staging!
+  override def windowOp_Field_Wndf[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[(ArrayBuffer[A] => C)] = self match {
+    case Def(x: WindowOpNew[_, _, _]) => x.wndf
+    case _                            => super.windowOp_Field_Wndf(self)
+  }
+  override def windowOp_Field_Grp[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[(A => B)] = self match {
+    case Def(x: WindowOpNew[_, _, _]) => x.grp
+    case _                            => super.windowOp_Field_Grp(self)
+  }
+
+  override def hashJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[((A, B) => Boolean)] = self match {
+    case Def(x: HashJoinOpNew[_, _, _]) => x.joinCond
+    case _                              => super.hashJoinOp_Field_JoinCond(self)
+  }
+
+  override def hashJoinOp_Field_LeftHash[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[(A => C)] = self match {
+    case Def(x: HashJoinOpNew[_, _, _]) => x.leftHash
+    case _                              => super.hashJoinOp_Field_LeftHash(self)
+  }
+
+  override def hashJoinOp_Field_RightHash[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[(B => C)] = self match {
+    case Def(x: HashJoinOpNew[_, _, _]) => x.rightHash
+    case _                              => super.hashJoinOp_Field_RightHash(self)
+  }
+
+  override def hashJoinOp_Field_RightAlias[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[String] = self match {
+    case Def(x: HashJoinOpNew[_, _, _]) => x.rightAlias
+    case _                              => super.hashJoinOp_Field_RightAlias(self)
+  }
+
+  override def hashJoinOp_Field_LeftAlias[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C]): Rep[String] = self match {
+    case Def(x: HashJoinOpNew[_, _, _]) => x.leftAlias
+    case _                              => super.hashJoinOp_Field_LeftAlias(self)
+  }
+
+  override def hashJoinOpNullDynamicRecord[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C, D](self: Rep[HashJoinOp[A, B, C]])(implicit manifestA: Manifest[A], manifestB: Manifest[B], manifestC: Manifest[C], manifestD: Manifest[D]): Rep[D] = infix_asInstanceOf(unit[Any](null))(manifestD)
+
   override def loadLineitem(): Rep[Array[LINEITEMRecord]] = {
     val file = unit(Config.datapath + "lineitem.tbl")
-    import scala.sys.process._;
-    // val size = Integer.parseInt((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", ""))
     val size = fileLineCount(file)
     // Load Relation 
     val s = __newK2DBScanner(file)
@@ -278,6 +204,121 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
         loadString(10, s),
         loadString(44, s))
       hm.update(readVar(i), newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadSupplier(): Rep[Array[SUPPLIERRecord]] = {
+    val file = unit(Config.datapath + "supplier.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[SUPPLIERRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newSUPPLIERRecord(
+        s.next_int, loadString(25, s), loadString(40, s), s.next_int, loadString(15, s), s.next_double, loadString(101, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadPartsupp(): Rep[Array[PARTSUPPRecord]] = {
+    val file = unit(Config.datapath + "partsupp.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[PARTSUPPRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newPARTSUPPRecord(s.next_int, s.next_int, s.next_int, s.next_double, loadString(199, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadCustomer(): Rep[Array[CUSTOMERRecord]] = {
+    val file = unit(Config.datapath + "customer.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[CUSTOMERRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newCUSTOMERRecord(s.next_int, loadString(25, s), loadString(40, s), s.next_int, loadString(15, s), s.next_double, loadString(10, s), loadString(117, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadOrders(): Rep[Array[ORDERSRecord]] = {
+    val file = unit(Config.datapath + "orders.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[ORDERSRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newORDERSRecord(s.next_int, s.next_int, s.next_char, s.next_double, s.next_date,
+        loadString(15, s), loadString(15, s), s.next_int, loadString(79, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadNation(): Rep[Array[NATIONRecord]] = {
+    val file = unit(Config.datapath + "nation.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[NATIONRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newNATIONRecord(s.next_int, loadString(25, s), s.next_int, loadString(152, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadPart(): Rep[Array[PARTRecord]] = {
+    val file = unit(Config.datapath + "part.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[PARTRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newPARTRecord(s.next_int, loadString(55, s), loadString(25, s), loadString(10, s), loadString(25, s),
+        s.next_int, loadString(10, s), s.next_double, loadString(23, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadRegion(): Rep[Array[REGIONRecord]] = {
+    val file = unit(Config.datapath + "region.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[REGIONRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newREGIONRecord(s.next_int, loadString(25, s), loadString(152, s))
+      hm.update(i, newEntry)
       __assign(i, readVar(i) + unit(1))
       unit()
     })

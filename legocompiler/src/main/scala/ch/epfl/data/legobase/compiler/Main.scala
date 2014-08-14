@@ -65,12 +65,14 @@ object Main extends LegoRunner {
     val loweringContext = new LoweringLegoBase {}
 
     // it's written like this because of early definition: http://stackoverflow.com/questions/4712468/in-scala-what-is-an-early-initializer
-    val lowering = new LBLowering {
-      val from = lq.context
-      val to = loweringContext
-    }
+    // val lowering = new LBLowering {
+    //   val from = lq.context
+    //   val to = loweringContext
+    // }
 
-    val loweredBlock = lowering.transformProgram(block)
+    // val loweredBlock = lowering.transformProgram(block)
+    val lowering = new LBLowering(lq.context, loweringContext)
+    val loweredBlock = lowering.lower(block)
     // val loweredBlock = block
 
     val parameterPromotion = new LBParameterPromotion(loweringContext)
@@ -102,10 +104,30 @@ object Main extends LegoRunner {
     val lq = new LiftedQueries()
     val block = lq.Q2
 
-    val ir2Program = new { val IR = lq.context } with IRToProgram {
+    val loweringContext = new LoweringLegoBase {}
+
+    // it's written like this because of early definition: http://stackoverflow.com/questions/4712468/in-scala-what-is-an-early-initializer
+    // val lowering = new LBLowering {
+    //   val from = lq.context
+    //   val to = loweringContext
+    // }
+
+    // val loweredBlock = lowering.transformProgram(block)
+    val lowering = new LBLowering(lq.context, loweringContext)
+    val loweredBlock = lowering.lower(block)
+
+    val parameterPromotion = new LBParameterPromotion(loweringContext)
+
+    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
+
+    val dce = new DCE(loweringContext)
+
+    val dceBlock = dce.optimize(operatorlessBlock)
+
+    val ir2Program = new { val IR = loweringContext } with IRToProgram {
     }
 
-    val finalProgram = ir2Program.createProgram(block)
+    val finalProgram = ir2Program.createProgram(dceBlock)
     println(finalProgram)
     val LegoGenerator = new LegoScalaGenerator(2, true)
     LegoGenerator.apply(finalProgram)

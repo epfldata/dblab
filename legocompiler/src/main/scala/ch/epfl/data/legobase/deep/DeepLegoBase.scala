@@ -13,6 +13,9 @@ trait AGGRecordOps extends Base { this: DeepDSL =>
     def aggs: Rep[Array[Double]] = aGGRecord_Field_Aggs[B](self)(manifestB)
     def key: Rep[B] = aGGRecord_Field_Key[B](self)(manifestB)
   }
+  object AGGRecord {
+
+  }
   // constructors
   def __newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit manifestB: Manifest[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)(manifestB)
   // case classes
@@ -46,6 +49,9 @@ trait AGGRecordOps extends Base { this: DeepDSL =>
 trait AGGRecordImplicits { this: AGGRecordComponent =>
   // Add implicit conversions here!
 }
+trait AGGRecordImplementations { self: DeepDSL =>
+
+}
 trait AGGRecordComponent extends AGGRecordOps with AGGRecordImplicits { self: DeepDSL => }
 
 trait LINEITEMRecordOps extends Base { this: DeepDSL =>
@@ -67,6 +73,9 @@ trait LINEITEMRecordOps extends Base { this: DeepDSL =>
     def L_SUPPKEY: Rep[Int] = lINEITEMRecord_Field_L_SUPPKEY(self)
     def L_PARTKEY: Rep[Int] = lINEITEMRecord_Field_L_PARTKEY(self)
     def L_ORDERKEY: Rep[Int] = lINEITEMRecord_Field_L_ORDERKEY(self)
+  }
+  object LINEITEMRecord {
+
   }
   // constructors
   def __newLINEITEMRecord(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character], L_SHIPDATE: Rep[Long], L_COMMITDATE: Rep[Long], L_RECEIPTDATE: Rep[Long], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = lINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
@@ -199,6 +208,9 @@ trait LINEITEMRecordOps extends Base { this: DeepDSL =>
 trait LINEITEMRecordImplicits { this: LINEITEMRecordComponent =>
   // Add implicit conversions here!
 }
+trait LINEITEMRecordImplementations { self: DeepDSL =>
+
+}
 trait LINEITEMRecordComponent extends LINEITEMRecordOps with LINEITEMRecordImplicits { self: DeepDSL => }
 
 trait SUPPLIERRecordOps extends Base { this: DeepDSL =>
@@ -211,6 +223,9 @@ trait SUPPLIERRecordOps extends Base { this: DeepDSL =>
     def S_ADDRESS: Rep[OptimalString] = sUPPLIERRecord_Field_S_ADDRESS(self)
     def S_NAME: Rep[OptimalString] = sUPPLIERRecord_Field_S_NAME(self)
     def S_SUPPKEY: Rep[Int] = sUPPLIERRecord_Field_S_SUPPKEY(self)
+  }
+  object SUPPLIERRecord {
+
   }
   // constructors
   def __newSUPPLIERRecord(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]): Rep[SUPPLIERRecord] = sUPPLIERRecordNew(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT)
@@ -280,6 +295,9 @@ trait SUPPLIERRecordOps extends Base { this: DeepDSL =>
 trait SUPPLIERRecordImplicits { this: SUPPLIERRecordComponent =>
   // Add implicit conversions here!
 }
+trait SUPPLIERRecordImplementations { self: DeepDSL =>
+
+}
 trait SUPPLIERRecordComponent extends SUPPLIERRecordOps with SUPPLIERRecordImplicits { self: DeepDSL => }
 
 trait PARTSUPPRecordOps extends Base { this: DeepDSL =>
@@ -290,6 +308,9 @@ trait PARTSUPPRecordOps extends Base { this: DeepDSL =>
     def PS_AVAILQTY: Rep[Int] = pARTSUPPRecord_Field_PS_AVAILQTY(self)
     def PS_SUPPKEY: Rep[Int] = pARTSUPPRecord_Field_PS_SUPPKEY(self)
     def PS_PARTKEY: Rep[Int] = pARTSUPPRecord_Field_PS_PARTKEY(self)
+  }
+  object PARTSUPPRecord {
+
   }
   // constructors
   def __newPARTSUPPRecord(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]): Rep[PARTSUPPRecord] = pARTSUPPRecordNew(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT)
@@ -345,6 +366,9 @@ trait PARTSUPPRecordOps extends Base { this: DeepDSL =>
 trait PARTSUPPRecordImplicits { this: PARTSUPPRecordComponent =>
   // Add implicit conversions here!
 }
+trait PARTSUPPRecordImplementations { self: DeepDSL =>
+
+}
 trait PARTSUPPRecordComponent extends PARTSUPPRecordOps with PARTSUPPRecordImplicits { self: DeepDSL => }
 
 trait REGIONRecordOps extends Base { this: DeepDSL =>
@@ -353,6 +377,9 @@ trait REGIONRecordOps extends Base { this: DeepDSL =>
     def R_COMMENT: Rep[OptimalString] = rEGIONRecord_Field_R_COMMENT(self)
     def R_NAME: Rep[OptimalString] = rEGIONRecord_Field_R_NAME(self)
     def R_REGIONKEY: Rep[Int] = rEGIONRecord_Field_R_REGIONKEY(self)
+  }
+  object REGIONRecord {
+
   }
   // constructors
   def __newREGIONRecord(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]): Rep[REGIONRecord] = rEGIONRecordNew(R_REGIONKEY, R_NAME, R_COMMENT)
@@ -394,6 +421,9 @@ trait REGIONRecordOps extends Base { this: DeepDSL =>
 trait REGIONRecordImplicits { this: REGIONRecordComponent =>
   // Add implicit conversions here!
 }
+trait REGIONRecordImplementations { self: DeepDSL =>
+
+}
 trait REGIONRecordComponent extends REGIONRecordOps with REGIONRecordImplicits { self: DeepDSL => }
 
 trait NATIONRecordOps extends Base { this: DeepDSL =>
@@ -403,6 +433,9 @@ trait NATIONRecordOps extends Base { this: DeepDSL =>
     def N_REGIONKEY: Rep[Int] = nATIONRecord_Field_N_REGIONKEY(self)
     def N_NAME: Rep[OptimalString] = nATIONRecord_Field_N_NAME(self)
     def N_NATIONKEY: Rep[Int] = nATIONRecord_Field_N_NATIONKEY(self)
+  }
+  object NATIONRecord {
+
   }
   // constructors
   def __newNATIONRecord(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]): Rep[NATIONRecord] = nATIONRecordNew(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT)
@@ -451,6 +484,9 @@ trait NATIONRecordOps extends Base { this: DeepDSL =>
 trait NATIONRecordImplicits { this: NATIONRecordComponent =>
   // Add implicit conversions here!
 }
+trait NATIONRecordImplementations { self: DeepDSL =>
+
+}
 trait NATIONRecordComponent extends NATIONRecordOps with NATIONRecordImplicits { self: DeepDSL => }
 
 trait PARTRecordOps extends Base { this: DeepDSL =>
@@ -465,6 +501,9 @@ trait PARTRecordOps extends Base { this: DeepDSL =>
     def P_MFGR: Rep[OptimalString] = pARTRecord_Field_P_MFGR(self)
     def P_NAME: Rep[OptimalString] = pARTRecord_Field_P_NAME(self)
     def P_PARTKEY: Rep[Int] = pARTRecord_Field_P_PARTKEY(self)
+  }
+  object PARTRecord {
+
   }
   // constructors
   def __newPARTRecord(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]): Rep[PARTRecord] = pARTRecordNew(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT)
@@ -548,7 +587,208 @@ trait PARTRecordOps extends Base { this: DeepDSL =>
 trait PARTRecordImplicits { this: PARTRecordComponent =>
   // Add implicit conversions here!
 }
+trait PARTRecordImplementations { self: DeepDSL =>
+
+}
 trait PARTRecordComponent extends PARTRecordOps with PARTRecordImplicits { self: DeepDSL => }
+
+trait CUSTOMERRecordOps extends Base { this: DeepDSL =>
+  implicit class CUSTOMERRecordRep(self: Rep[CUSTOMERRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = cUSTOMERRecordGetField(self, key)
+    def C_COMMENT: Rep[OptimalString] = cUSTOMERRecord_Field_C_COMMENT(self)
+    def C_MKTSEGMENT: Rep[OptimalString] = cUSTOMERRecord_Field_C_MKTSEGMENT(self)
+    def C_ACCTBAL: Rep[Double] = cUSTOMERRecord_Field_C_ACCTBAL(self)
+    def C_PHONE: Rep[OptimalString] = cUSTOMERRecord_Field_C_PHONE(self)
+    def C_NATIONKEY: Rep[Int] = cUSTOMERRecord_Field_C_NATIONKEY(self)
+    def C_ADDRESS: Rep[OptimalString] = cUSTOMERRecord_Field_C_ADDRESS(self)
+    def C_NAME: Rep[OptimalString] = cUSTOMERRecord_Field_C_NAME(self)
+    def C_CUSTKEY: Rep[Int] = cUSTOMERRecord_Field_C_CUSTKEY(self)
+  }
+  object CUSTOMERRecord {
+
+  }
+  // constructors
+  def __newCUSTOMERRecord(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[CUSTOMERRecord] = cUSTOMERRecordNew(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT)
+  // case classes
+  case class CUSTOMERRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends FunctionDef[CUSTOMERRecord](None, "new CUSTOMERRecord", List(List(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class CUSTOMERRecordGetField(self: Rep[CUSTOMERRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class CUSTOMERRecord_Field_C_COMMENT(self: Rep[CUSTOMERRecord]) extends FieldDef[OptimalString](self, "C_COMMENT") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class CUSTOMERRecord_Field_C_MKTSEGMENT(self: Rep[CUSTOMERRecord]) extends FieldDef[OptimalString](self, "C_MKTSEGMENT") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class CUSTOMERRecord_Field_C_ACCTBAL(self: Rep[CUSTOMERRecord]) extends FieldDef[Double](self, "C_ACCTBAL") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class CUSTOMERRecord_Field_C_PHONE(self: Rep[CUSTOMERRecord]) extends FieldDef[OptimalString](self, "C_PHONE") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class CUSTOMERRecord_Field_C_NATIONKEY(self: Rep[CUSTOMERRecord]) extends FieldDef[Int](self, "C_NATIONKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class CUSTOMERRecord_Field_C_ADDRESS(self: Rep[CUSTOMERRecord]) extends FieldDef[OptimalString](self, "C_ADDRESS") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class CUSTOMERRecord_Field_C_NAME(self: Rep[CUSTOMERRecord]) extends FieldDef[OptimalString](self, "C_NAME") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class CUSTOMERRecord_Field_C_CUSTKEY(self: Rep[CUSTOMERRecord]) extends FieldDef[Int](self, "C_CUSTKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def cUSTOMERRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[CUSTOMERRecord] = CUSTOMERRecordNew(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT)
+  def cUSTOMERRecordGetField(self: Rep[CUSTOMERRecord], key: Rep[String]): Rep[Option[Any]] = CUSTOMERRecordGetField(self, key)
+  def cUSTOMERRecord_Field_C_COMMENT(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_COMMENT(self)
+  def cUSTOMERRecord_Field_C_MKTSEGMENT(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_MKTSEGMENT(self)
+  def cUSTOMERRecord_Field_C_ACCTBAL(self: Rep[CUSTOMERRecord]): Rep[Double] = CUSTOMERRecord_Field_C_ACCTBAL(self)
+  def cUSTOMERRecord_Field_C_PHONE(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_PHONE(self)
+  def cUSTOMERRecord_Field_C_NATIONKEY(self: Rep[CUSTOMERRecord]): Rep[Int] = CUSTOMERRecord_Field_C_NATIONKEY(self)
+  def cUSTOMERRecord_Field_C_ADDRESS(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_ADDRESS(self)
+  def cUSTOMERRecord_Field_C_NAME(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_NAME(self)
+  def cUSTOMERRecord_Field_C_CUSTKEY(self: Rep[CUSTOMERRecord]): Rep[Int] = CUSTOMERRecord_Field_C_CUSTKEY(self)
+  type CUSTOMERRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.CUSTOMERRecord
+}
+trait CUSTOMERRecordImplicits { this: CUSTOMERRecordComponent =>
+  // Add implicit conversions here!
+}
+trait CUSTOMERRecordImplementations { self: DeepDSL =>
+
+}
+trait CUSTOMERRecordComponent extends CUSTOMERRecordOps with CUSTOMERRecordImplicits { self: DeepDSL => }
+
+trait ORDERSRecordOps extends Base { this: DeepDSL =>
+  implicit class ORDERSRecordRep(self: Rep[ORDERSRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = oRDERSRecordGetField(self, key)
+    def O_COMMENT: Rep[OptimalString] = oRDERSRecord_Field_O_COMMENT(self)
+    def O_SHIPPRIORITY: Rep[Int] = oRDERSRecord_Field_O_SHIPPRIORITY(self)
+    def O_CLERK: Rep[OptimalString] = oRDERSRecord_Field_O_CLERK(self)
+    def O_ORDERPRIORITY: Rep[OptimalString] = oRDERSRecord_Field_O_ORDERPRIORITY(self)
+    def O_ORDERDATE: Rep[Long] = oRDERSRecord_Field_O_ORDERDATE(self)
+    def O_TOTALPRICE: Rep[Double] = oRDERSRecord_Field_O_TOTALPRICE(self)
+    def O_ORDERSTATUS: Rep[Character] = oRDERSRecord_Field_O_ORDERSTATUS(self)
+    def O_CUSTKEY: Rep[Int] = oRDERSRecord_Field_O_CUSTKEY(self)
+    def O_ORDERKEY: Rep[Int] = oRDERSRecord_Field_O_ORDERKEY(self)
+  }
+  object ORDERSRecord {
+
+  }
+  // constructors
+  def __newORDERSRecord(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Character], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Long], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = oRDERSRecordNew(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
+  // case classes
+  case class ORDERSRecordNew(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Character], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Long], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]) extends FunctionDef[ORDERSRecord](None, "new ORDERSRecord", List(List(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class ORDERSRecordGetField(self: Rep[ORDERSRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class ORDERSRecord_Field_O_COMMENT(self: Rep[ORDERSRecord]) extends FieldDef[OptimalString](self, "O_COMMENT") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_SHIPPRIORITY(self: Rep[ORDERSRecord]) extends FieldDef[Int](self, "O_SHIPPRIORITY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_CLERK(self: Rep[ORDERSRecord]) extends FieldDef[OptimalString](self, "O_CLERK") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_ORDERPRIORITY(self: Rep[ORDERSRecord]) extends FieldDef[OptimalString](self, "O_ORDERPRIORITY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_ORDERDATE(self: Rep[ORDERSRecord]) extends FieldDef[Long](self, "O_ORDERDATE") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_TOTALPRICE(self: Rep[ORDERSRecord]) extends FieldDef[Double](self, "O_TOTALPRICE") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_ORDERSTATUS(self: Rep[ORDERSRecord]) extends FieldDef[Character](self, "O_ORDERSTATUS") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_CUSTKEY(self: Rep[ORDERSRecord]) extends FieldDef[Int](self, "O_CUSTKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class ORDERSRecord_Field_O_ORDERKEY(self: Rep[ORDERSRecord]) extends FieldDef[Int](self, "O_ORDERKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def oRDERSRecordNew(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Character], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Long], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = ORDERSRecordNew(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
+  def oRDERSRecordGetField(self: Rep[ORDERSRecord], key: Rep[String]): Rep[Option[Any]] = ORDERSRecordGetField(self, key)
+  def oRDERSRecord_Field_O_COMMENT(self: Rep[ORDERSRecord]): Rep[OptimalString] = ORDERSRecord_Field_O_COMMENT(self)
+  def oRDERSRecord_Field_O_SHIPPRIORITY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_SHIPPRIORITY(self)
+  def oRDERSRecord_Field_O_CLERK(self: Rep[ORDERSRecord]): Rep[OptimalString] = ORDERSRecord_Field_O_CLERK(self)
+  def oRDERSRecord_Field_O_ORDERPRIORITY(self: Rep[ORDERSRecord]): Rep[OptimalString] = ORDERSRecord_Field_O_ORDERPRIORITY(self)
+  def oRDERSRecord_Field_O_ORDERDATE(self: Rep[ORDERSRecord]): Rep[Long] = ORDERSRecord_Field_O_ORDERDATE(self)
+  def oRDERSRecord_Field_O_TOTALPRICE(self: Rep[ORDERSRecord]): Rep[Double] = ORDERSRecord_Field_O_TOTALPRICE(self)
+  def oRDERSRecord_Field_O_ORDERSTATUS(self: Rep[ORDERSRecord]): Rep[Character] = ORDERSRecord_Field_O_ORDERSTATUS(self)
+  def oRDERSRecord_Field_O_CUSTKEY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_CUSTKEY(self)
+  def oRDERSRecord_Field_O_ORDERKEY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_ORDERKEY(self)
+  type ORDERSRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.ORDERSRecord
+}
+trait ORDERSRecordImplicits { this: ORDERSRecordComponent =>
+  // Add implicit conversions here!
+}
+trait ORDERSRecordImplementations { self: DeepDSL =>
+
+}
+trait ORDERSRecordComponent extends ORDERSRecordOps with ORDERSRecordImplicits { self: DeepDSL => }
 
 trait OptimalStringOps extends Base { this: DeepDSL =>
   implicit class OptimalStringRep(self: Rep[OptimalString]) {
@@ -563,10 +803,14 @@ trait OptimalStringOps extends Base { this: DeepDSL =>
     def compare(o: Rep[OptimalString]): Rep[Int] = optimalStringCompare(self, o)
     def ===(o: Rep[OptimalString]): Rep[Boolean] = optimalString$eq$eq$eq(self, o)
     def =!=(o: Rep[OptimalString]): Rep[Boolean] = optimalString$eq$bang$eq(self, o)
-    def string(): Rep[String] = optimalStringString(self)
+    def string: Rep[String] = optimalStringString(self)
     def zip(o: Rep[OptimalString]): Rep[Array[Tuple2[Byte, Byte]]] = optimalStringZip(self, o)
     def foldLeft(c: Rep[Int])(f: Rep[((Int, Byte) => Int)]): Rep[Int] = optimalStringFoldLeft(self, c, f)
     def data: Rep[Array[Byte]] = optimalString_Field_Data(self)
+  }
+  object OptimalString {
+    def apply(data: Rep[Array[Byte]]): Rep[OptimalString] = optimalStringApplyObject(data)
+    def default: Rep[OptimalString] = optimalStringDefaultObject()
   }
   // constructors
   def __newOptimalString(data: Rep[Array[Byte]]): Rep[OptimalString] = optimalStringNew(data)
@@ -637,6 +881,14 @@ trait OptimalStringOps extends Base { this: DeepDSL =>
 
   }
 
+  case class OptimalStringApplyObject(data: Rep[Array[Byte]]) extends FunctionDef[OptimalString](None, "OptimalString.apply", List(List(data))) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class OptimalStringDefaultObject() extends FunctionDef[OptimalString](None, "OptimalString.default", List()) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+
   // method definitions
   def optimalStringNew(data: Rep[Array[Byte]]): Rep[OptimalString] = OptimalStringNew(data)
   def optimalStringEquals(self: Rep[OptimalString], o: Rep[Any]): Rep[Boolean] = OptimalStringEquals(self, o)
@@ -654,10 +906,15 @@ trait OptimalStringOps extends Base { this: DeepDSL =>
   def optimalStringZip(self: Rep[OptimalString], o: Rep[OptimalString]): Rep[Array[Tuple2[Byte, Byte]]] = OptimalStringZip(self, o)
   def optimalStringFoldLeft(self: Rep[OptimalString], c: Rep[Int], f: Rep[((Int, Byte) => Int)]): Rep[Int] = OptimalStringFoldLeft(self, c, f)
   def optimalString_Field_Data(self: Rep[OptimalString]): Rep[Array[Byte]] = OptimalString_Field_Data(self)
+  def optimalStringApplyObject(data: Rep[Array[Byte]]): Rep[OptimalString] = OptimalStringApplyObject(data)
+  def optimalStringDefaultObject(): Rep[OptimalString] = OptimalStringDefaultObject()
   type OptimalString = ch.epfl.data.pardis.shallow.OptimalString
 }
 trait OptimalStringImplicits { this: OptimalStringComponent =>
   // Add implicit conversions here!
+}
+trait OptimalStringImplementations { self: DeepDSL =>
+
 }
 trait OptimalStringComponent extends OptimalStringOps with OptimalStringImplicits { self: DeepDSL => }
 
@@ -668,7 +925,7 @@ trait K2DBScannerOps extends Base { this: DeepDSL =>
     def next_char(): Rep[Char] = k2DBScannerNext_char(self)
     def next(buf: Rep[Array[Byte]])(implicit overload1: Overloaded1): Rep[Int] = k2DBScannerNext1(self, buf)
     def next(buf: Rep[Array[Byte]], offset: Rep[Int])(implicit overload2: Overloaded2): Rep[Int] = k2DBScannerNext2(self, buf, offset)
-    def next_date(): Rep[Long] = k2DBScannerNext_date(self)
+    def next_date: Rep[Long] = k2DBScannerNext_date(self)
     def hasNext(): Rep[Boolean] = k2DBScannerHasNext(self)
     def delimiter_=(x$1: Rep[Char]): Rep[Unit] = k2DBScanner_Field_Delimiter_$eq(self, x$1)
     def delimiter: Rep[Char] = k2DBScanner_Field_Delimiter(self)
@@ -676,7 +933,10 @@ trait K2DBScannerOps extends Base { this: DeepDSL =>
     def intDigits: Rep[Int] = k2DBScanner_Field_IntDigits(self)
     def byteRead_=(x$1: Rep[Int]): Rep[Unit] = k2DBScanner_Field_ByteRead_$eq(self, x$1)
     def byteRead: Rep[Int] = k2DBScanner_Field_ByteRead(self)
-    def filename(): Rep[String] = k2DBScanner_Field_Filename(self)
+    def filename: Rep[String] = k2DBScanner_Field_Filename(self)
+  }
+  object K2DBScanner {
+
   }
   // constructors
   def __newK2DBScanner(filename: Rep[String]): Rep[K2DBScanner] = k2DBScannerNew(filename)
@@ -685,15 +945,15 @@ trait K2DBScannerOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy _)
   }
 
-  case class K2DBScannerNext_int(self: Rep[K2DBScanner]) extends FunctionDef[Int](Some(self), "next_int", List()) {
+  case class K2DBScannerNext_int(self: Rep[K2DBScanner]) extends FunctionDef[Int](Some(self), "next_int", List(List())) {
     override def curriedConstructor = (copy _)
   }
 
-  case class K2DBScannerNext_double(self: Rep[K2DBScanner]) extends FunctionDef[Double](Some(self), "next_double", List()) {
+  case class K2DBScannerNext_double(self: Rep[K2DBScanner]) extends FunctionDef[Double](Some(self), "next_double", List(List())) {
     override def curriedConstructor = (copy _)
   }
 
-  case class K2DBScannerNext_char(self: Rep[K2DBScanner]) extends FunctionDef[Char](Some(self), "next_char", List()) {
+  case class K2DBScannerNext_char(self: Rep[K2DBScanner]) extends FunctionDef[Char](Some(self), "next_char", List(List())) {
     override def curriedConstructor = (copy _)
   }
 
@@ -709,7 +969,7 @@ trait K2DBScannerOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy _)
   }
 
-  case class K2DBScannerHasNext(self: Rep[K2DBScanner]) extends FunctionDef[Boolean](Some(self), "hasNext", List()) {
+  case class K2DBScannerHasNext(self: Rep[K2DBScanner]) extends FunctionDef[Boolean](Some(self), "hasNext", List(List())) {
     override def curriedConstructor = (copy _)
   }
 
@@ -764,6 +1024,9 @@ trait K2DBScannerOps extends Base { this: DeepDSL =>
 trait K2DBScannerImplicits { this: K2DBScannerComponent =>
   // Add implicit conversions here!
 }
+trait K2DBScannerImplementations { self: DeepDSL =>
+
+}
 trait K2DBScannerComponent extends K2DBScannerOps with K2DBScannerImplicits { self: DeepDSL => }
 
 trait WindowRecordOps extends Base { this: DeepDSL =>
@@ -771,6 +1034,9 @@ trait WindowRecordOps extends Base { this: DeepDSL =>
     def getField(key: Rep[String]): Rep[Option[Any]] = windowRecordGetField[B, C](self, key)(manifestB, manifestC)
     def wnd: Rep[C] = windowRecord_Field_Wnd[B, C](self)(manifestB, manifestC)
     def key: Rep[B] = windowRecord_Field_Key[B, C](self)(manifestB, manifestC)
+  }
+  object WindowRecord {
+
   }
   // constructors
   def __newWindowRecord[B, C](key: Rep[B], wnd: Rep[C])(implicit manifestB: Manifest[B], manifestC: Manifest[C]): Rep[WindowRecord[B, C]] = windowRecordNew[B, C](key, wnd)(manifestB, manifestC)
@@ -805,6 +1071,9 @@ trait WindowRecordOps extends Base { this: DeepDSL =>
 trait WindowRecordImplicits { this: WindowRecordComponent =>
   // Add implicit conversions here!
 }
+trait WindowRecordImplementations { self: DeepDSL =>
+
+}
 trait WindowRecordComponent extends WindowRecordOps with WindowRecordImplicits { self: DeepDSL => }
 
 trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent
@@ -815,6 +1084,8 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowReco
   with REGIONRecordComponent
   with NATIONRecordComponent
   with PARTRecordComponent
+  with CUSTOMERRecordComponent
+  with ORDERSRecordComponent
   with OptimalStringComponent
   with K2DBScannerComponent with IntegerComponent
   with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent
