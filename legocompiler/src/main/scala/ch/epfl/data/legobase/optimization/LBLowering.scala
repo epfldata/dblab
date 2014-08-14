@@ -19,7 +19,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       // implicit val ma: Manifest[Rec] = transformType(arg).asInstanceOf[Manifest[Rec]]
       // manifest[ArrayBuffer[Rec]].asInstanceOf[Manifest[Any]]
       val res = reflect.ManifestFactory.classType(classOf[ArrayBuffer[_]], transformType(arg)).asInstanceOf[Manifest[Any]]
-      System.out.println(s"before was $arg now is:\n $res \n !!${pardis.utils.Utils.manifestToString(res)}")
+      // System.out.println(s"before was $arg now is:\n $res \n !!${pardis.utils.Utils.manifestToString(res)}")
       res
     } else {
       super.transformType[T]
@@ -108,10 +108,10 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
         ("keySet", true, to.Set()(apply(mb), to.overloaded2))).asInstanceOf[to.Def[T]]
     }
     case pc @ PardisCast(exp) => {
-      System.out.print("--->")
-      System.out.print(pc)
-      System.out.print("<---")
-      System.out.println(transformType(pc.castTp))
+      // System.out.print("--->")
+      // System.out.print(pc)
+      // System.out.print("<---")
+      // System.out.println(transformType(pc.castTp))
       PardisCast(transformExp[Any, Any](exp))(transformType(exp.tp), transformType(pc.castTp)).asInstanceOf[to.Def[T]]
     }
     case ab @ ArrayBufferNew2_2() => {
@@ -123,10 +123,11 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
     // case PardisLambda(f, i, o) => {
     //   val newI = newSym(i)
     //   subst += i -> newI
-    //   System.err.println(s"tp for input of $newI" + newI.tp)
-    //   System.err.println(s"tp manToString for input of $newI" + utils.Utils.manifestToString(newI.tp))
+    //   System.err.println(s"-->${newI.id}")
+    //   System.err.println(s"tp " + newI.tp)
+    //   System.err.println(s"manToString" + pardis.utils.Utils.manifestToString(newI.tp))
     //   val newO = transformBlockTyped(o).asInstanceOf[Block[Any]]
-    //   to.Lambda(f, i, newO)
+    //   to.Lambda(f, newI, newO)
     // }
     case _ => super.transformDef(node)
   }
