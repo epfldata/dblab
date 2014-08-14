@@ -20,6 +20,7 @@ trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] 
       val marrDouble = implicitly[to.TypeRep[to.Array[to.Double]]]
       class Rec
       case object RecType extends TypeRep[Rec] {
+        def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = RecType
         val name = "Rec"
         val typeArguments = Nil
         val typeTag = ??? //TODO: tag[Rec]

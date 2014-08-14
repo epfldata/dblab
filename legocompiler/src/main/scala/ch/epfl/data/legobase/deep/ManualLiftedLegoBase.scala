@@ -92,6 +92,7 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   case class GroupByClass(val L_RETURNFLAG: java.lang.Character, val L_LINESTATUS: java.lang.Character);
 
   case object GroupByClassType extends TypeRep[GroupByClass] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GroupByClassType
     val name = "GroupByClass"
     val typeArguments = List()
     val typeTag = tag[GroupByClass]
@@ -196,6 +197,7 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   override def arrayBufferApplyObject[T]()(implicit typeT: TypeRep[T]): Rep[ArrayBuffer[T]] = __newArrayBuffer[T]()
 
   case class ContentsType[T, S](typeT: TypeRep[T], typeS: TypeRep[S]) extends TypeRep[Contents[T, S]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ContentsType(newArguments(0), newArguments(1))
     private implicit val tagT = typeT.typeTag
     private implicit val tagS = typeS.typeTag
     val name = s"Contents[${typeT.name}, ${typeS.name}]"

@@ -47,6 +47,7 @@ trait AGGRecordOps extends Base { this: DeepDSL =>
   def aGGRecord_Field_Key[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]): Rep[B] = AGGRecord_Field_Key[B](self)
   type AGGRecord[B] = ch.epfl.data.legobase.queryengine.AGGRecord[B]
   case class AGGRecordType[B](typeB: TypeRep[B]) extends TypeRep[AGGRecord[B]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = AGGRecordType(newArguments(0).asInstanceOf[TypeRep[_]])
     private implicit val tagB = typeB.typeTag
     val name = s"AGGRecord[${typeB.name}]"
     val typeArguments = List(typeB)
@@ -213,6 +214,7 @@ trait LINEITEMRecordOps extends Base { this: DeepDSL =>
   def lINEITEMRecord_Field_L_ORDERKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_ORDERKEY(self)
   type LINEITEMRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.LINEITEMRecord
   case object LINEITEMRecordType extends TypeRep[LINEITEMRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LINEITEMRecordType
     val name = "LINEITEMRecord"
     val typeArguments = Nil
     val typeTag = scala.reflect.runtime.universe.typeTag[LINEITEMRecord]
@@ -306,6 +308,7 @@ trait SUPPLIERRecordOps extends Base { this: DeepDSL =>
   def sUPPLIERRecord_Field_S_SUPPKEY(self: Rep[SUPPLIERRecord]): Rep[Int] = SUPPLIERRecord_Field_S_SUPPKEY(self)
   type SUPPLIERRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.SUPPLIERRecord
   case object SUPPLIERRecordType extends TypeRep[SUPPLIERRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SUPPLIERRecordType
     val name = "SUPPLIERRecord"
     val typeArguments = Nil
     val typeTag = scala.reflect.runtime.universe.typeTag[SUPPLIERRecord]
@@ -383,6 +386,7 @@ trait PARTSUPPRecordOps extends Base { this: DeepDSL =>
   def pARTSUPPRecord_Field_PS_PARTKEY(self: Rep[PARTSUPPRecord]): Rep[Int] = PARTSUPPRecord_Field_PS_PARTKEY(self)
   type PARTSUPPRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.PARTSUPPRecord
   case object PARTSUPPRecordType extends TypeRep[PARTSUPPRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PARTSUPPRecordType
     val name = "PARTSUPPRecord"
     val typeArguments = Nil
     val typeTag = scala.reflect.runtime.universe.typeTag[PARTSUPPRecord]
@@ -444,6 +448,7 @@ trait REGIONRecordOps extends Base { this: DeepDSL =>
   def rEGIONRecord_Field_R_REGIONKEY(self: Rep[REGIONRecord]): Rep[Int] = REGIONRecord_Field_R_REGIONKEY(self)
   type REGIONRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.REGIONRecord
   case object REGIONRecordType extends TypeRep[REGIONRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = REGIONRecordType
     val name = "REGIONRecord"
     val typeArguments = Nil
     val typeTag = scala.reflect.runtime.universe.typeTag[REGIONRecord]
@@ -513,6 +518,7 @@ trait NATIONRecordOps extends Base { this: DeepDSL =>
   def nATIONRecord_Field_N_NATIONKEY(self: Rep[NATIONRecord]): Rep[Int] = NATIONRecord_Field_N_NATIONKEY(self)
   type NATIONRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.NATIONRecord
   case object NATIONRecordType extends TypeRep[NATIONRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = NATIONRecordType
     val name = "NATIONRecord"
     val typeArguments = Nil
     val typeTag = scala.reflect.runtime.universe.typeTag[NATIONRecord]
@@ -622,6 +628,7 @@ trait PARTRecordOps extends Base { this: DeepDSL =>
   def pARTRecord_Field_P_PARTKEY(self: Rep[PARTRecord]): Rep[Int] = PARTRecord_Field_P_PARTKEY(self)
   type PARTRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.PARTRecord
   case object PARTRecordType extends TypeRep[PARTRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PARTRecordType
     val name = "PARTRecord"
     val typeArguments = Nil
     val typeTag = scala.reflect.runtime.universe.typeTag[PARTRecord]
@@ -756,6 +763,7 @@ trait OptimalStringOps extends Base { this: DeepDSL =>
   def optimalStringDefaultObject(): Rep[OptimalString] = OptimalStringDefaultObject()
   type OptimalString = ch.epfl.data.pardis.shallow.OptimalString
   case object OptimalStringType extends TypeRep[OptimalString] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = OptimalStringType
     val name = "OptimalString"
     val typeArguments = Nil
     val typeTag = scala.reflect.runtime.universe.typeTag[OptimalString]
@@ -873,6 +881,7 @@ trait K2DBScannerOps extends Base { this: DeepDSL =>
   def k2DBScanner_Field_Filename(self: Rep[K2DBScanner]): Rep[String] = K2DBScanner_Field_Filename(self)
   type K2DBScanner = ch.epfl.data.legobase.storagemanager.K2DBScanner
   case object K2DBScannerType extends TypeRep[K2DBScanner] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = K2DBScannerType
     val name = "K2DBScanner"
     val typeArguments = Nil
     val typeTag = scala.reflect.runtime.universe.typeTag[K2DBScanner]
@@ -926,6 +935,7 @@ trait WindowRecordOps extends Base { this: DeepDSL =>
   def windowRecord_Field_Key[B, C](self: Rep[WindowRecord[B, C]])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[B] = WindowRecord_Field_Key[B, C](self)
   type WindowRecord[B, C] = ch.epfl.data.legobase.queryengine.WindowRecord[B, C]
   case class WindowRecordType[B, C](typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[WindowRecord[B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = WindowRecordType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
     private implicit val tagB = typeB.typeTag
     private implicit val tagC = typeC.typeTag
     val name = s"WindowRecord[${typeB.name}, ${typeC.name}]"

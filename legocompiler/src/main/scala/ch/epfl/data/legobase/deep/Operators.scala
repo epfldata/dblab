@@ -76,6 +76,7 @@ trait OperatorOps extends Base { this: OperatorsComponent =>
   def operator_Field_Evidence$1[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Manifest[A]] = Operator_Field_Evidence$1[A](self)
   type Operator[A] = ch.epfl.data.legobase.queryengine.volcano.Operator[A]
   case class OperatorType[A](typeA: TypeRep[A]) extends TypeRep[Operator[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = OperatorType(newArguments(0).asInstanceOf[TypeRep[_]])
     private implicit val tagA = typeA.typeTag
     val name = s"Operator[${typeA.name}]"
     val typeArguments = List(typeA)
@@ -210,6 +211,7 @@ trait ScanOpOps extends Base { this: OperatorsComponent =>
   def scanOp_Field_NullDynamicRecord[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[A] = ScanOp_Field_NullDynamicRecord[A](self)
   type ScanOp[A] = ch.epfl.data.legobase.queryengine.volcano.ScanOp[A]
   case class ScanOpType[A](typeA: TypeRep[A]) extends TypeRep[ScanOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ScanOpType(newArguments(0).asInstanceOf[TypeRep[_]])
     private implicit val tagA = typeA.typeTag
     val name = s"ScanOp[${typeA.name}]"
     val typeArguments = List(typeA)
@@ -330,6 +332,7 @@ trait SelectOpOps extends Base { this: OperatorsComponent =>
   def selectOp_Field_NullDynamicRecord[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[A] = SelectOp_Field_NullDynamicRecord[A](self)
   type SelectOp[A] = ch.epfl.data.legobase.queryengine.volcano.SelectOp[A]
   case class SelectOpType[A](typeA: TypeRep[A]) extends TypeRep[SelectOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SelectOpType(newArguments(0).asInstanceOf[TypeRep[_]])
     private implicit val tagA = typeA.typeTag
     val name = s"SelectOp[${typeA.name}]"
     val typeArguments = List(typeA)
@@ -509,6 +512,7 @@ trait AggOpOps extends Base { this: OperatorsComponent =>
   def aggOp_Field_NullDynamicRecord[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[AGGRecord[B]] = AggOp_Field_NullDynamicRecord[A, B](self)
   type AggOp[A, B] = ch.epfl.data.legobase.queryengine.volcano.AggOp[A, B]
   case class AggOpType[A, B](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[AggOp[A, B]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = AggOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
     private implicit val tagA = typeA.typeTag
     private implicit val tagB = typeB.typeTag
     val name = s"AggOp[${typeA.name}, ${typeB.name}]"
@@ -655,6 +659,7 @@ trait SortOpOps extends Base { this: OperatorsComponent =>
   def sortOp_Field_NullDynamicRecord[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[A] = SortOp_Field_NullDynamicRecord[A](self)
   type SortOp[A] = ch.epfl.data.legobase.queryengine.volcano.SortOp[A]
   case class SortOpType[A](typeA: TypeRep[A]) extends TypeRep[SortOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SortOpType(newArguments(0).asInstanceOf[TypeRep[_]])
     private implicit val tagA = typeA.typeTag
     val name = s"SortOp[${typeA.name}]"
     val typeArguments = List(typeA)
@@ -787,6 +792,7 @@ trait MapOpOps extends Base { this: OperatorsComponent =>
   def mapOp_Field_NullDynamicRecord[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[A] = MapOp_Field_NullDynamicRecord[A](self)
   type MapOp[A] = ch.epfl.data.legobase.queryengine.volcano.MapOp[A]
   case class MapOpType[A](typeA: TypeRep[A]) extends TypeRep[MapOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = MapOpType(newArguments(0).asInstanceOf[TypeRep[_]])
     private implicit val tagA = typeA.typeTag
     val name = s"MapOp[${typeA.name}]"
     val typeArguments = List(typeA)
@@ -933,6 +939,7 @@ trait PrintOpOps extends Base { this: OperatorsComponent =>
   def printOp_Field_NullDynamicRecord[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[A] = PrintOp_Field_NullDynamicRecord[A](self)
   type PrintOp[A] = ch.epfl.data.legobase.queryengine.volcano.PrintOp[A]
   case class PrintOpType[A](typeA: TypeRep[A]) extends TypeRep[PrintOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PrintOpType(newArguments(0).asInstanceOf[TypeRep[_]])
     private implicit val tagA = typeA.typeTag
     val name = s"PrintOp[${typeA.name}]"
     val typeArguments = List(typeA)
@@ -1159,6 +1166,7 @@ trait HashJoinOpOps extends Base { this: OperatorsComponent =>
   def hashJoinOp_Field_NullDynamicRecord[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[DynamicCompositeRecord[A, B]] = HashJoinOp_Field_NullDynamicRecord[A, B, C](self)
   type HashJoinOp[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C] = ch.epfl.data.legobase.queryengine.volcano.HashJoinOp[A, B, C]
   case class HashJoinOpType[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[HashJoinOp[A, B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = HashJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.AbstractRecord]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.AbstractRecord]], newArguments(2).asInstanceOf[TypeRep[_]])
     private implicit val tagA = typeA.typeTag
     private implicit val tagB = typeB.typeTag
     private implicit val tagC = typeC.typeTag
@@ -1354,6 +1362,7 @@ trait WindowOpOps extends Base { this: OperatorsComponent =>
   def windowOp_Field_NullDynamicRecord[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowRecord[B, C]] = WindowOp_Field_NullDynamicRecord[A, B, C](self)
   type WindowOp[A, B, C] = ch.epfl.data.legobase.queryengine.volcano.WindowOp[A, B, C]
   case class WindowOpType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[WindowOp[A, B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = WindowOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
     private implicit val tagA = typeA.typeTag
     private implicit val tagB = typeB.typeTag
     private implicit val tagC = typeC.typeTag

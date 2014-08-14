@@ -98,6 +98,7 @@ trait HashMapOps extends Base { this: DeepDSL =>
   def hashMap_Field_Contents[A, B](self: Rep[HashMap[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Contents[A, DefaultEntry[A, B]]] = HashMap_Field_Contents[A, B](self)
   type HashMap[A, B] = scala.collection.mutable.HashMap[A, B]
   case class HashMapType[A, B](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[HashMap[A, B]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = HashMapType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
     private implicit val tagA = typeA.typeTag
     private implicit val tagB = typeB.typeTag
     val name = s"HashMap[${typeA.name}, ${typeB.name}]"
@@ -167,6 +168,7 @@ trait SetOps extends Base { this: DeepDSL =>
   def setApplyObject2[T]()(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetApplyObject2[T]()
   type Set[A] = scala.collection.mutable.Set[A]
   case class SetType[A](typeA: TypeRep[A]) extends TypeRep[Set[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SetType(newArguments(0).asInstanceOf[TypeRep[_]])
     private implicit val tagA = typeA.typeTag
     val name = s"Set[${typeA.name}]"
     val typeArguments = List(typeA)
@@ -235,6 +237,7 @@ trait TreeSetOps extends Base { this: DeepDSL =>
   def treeSet_Field_Ordering[A](self: Rep[TreeSet[A]])(implicit typeA: TypeRep[A]): Rep[Ordering[A]] = TreeSet_Field_Ordering[A](self)
   type TreeSet[A] = scala.collection.mutable.TreeSet[A]
   case class TreeSetType[A](typeA: TypeRep[A]) extends TypeRep[TreeSet[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = TreeSetType(newArguments(0).asInstanceOf[TypeRep[_]])
     private implicit val tagA = typeA.typeTag
     val name = s"TreeSet[${typeA.name}]"
     val typeArguments = List(typeA)
@@ -293,6 +296,7 @@ trait DefaultEntryOps extends Base { this: DeepDSL =>
   def defaultEntry_Field_Key[A, B](self: Rep[DefaultEntry[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[A] = DefaultEntry_Field_Key[A, B](self)
   type DefaultEntry[A, B] = scala.collection.mutable.DefaultEntry[A, B]
   case class DefaultEntryType[A, B](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[DefaultEntry[A, B]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = DefaultEntryType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
     private implicit val tagA = typeA.typeTag
     private implicit val tagB = typeB.typeTag
     val name = s"DefaultEntry[${typeA.name}, ${typeB.name}]"
@@ -391,6 +395,7 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
   def arrayBufferApplyObject[T]()(implicit typeT: TypeRep[T]): Rep[ArrayBuffer[T]] = ArrayBufferApplyObject[T]()
   type ArrayBuffer[A] = scala.collection.mutable.ArrayBuffer[A]
   case class ArrayBufferType[A](typeA: TypeRep[A]) extends TypeRep[ArrayBuffer[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ArrayBufferType(newArguments(0).asInstanceOf[TypeRep[_]])
     private implicit val tagA = typeA.typeTag
     val name = s"ArrayBuffer[${typeA.name}]"
     val typeArguments = List(typeA)
