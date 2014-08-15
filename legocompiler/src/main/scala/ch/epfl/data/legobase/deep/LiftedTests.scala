@@ -2,6 +2,7 @@ package ch.epfl.data
 package legobase
 package deep
 
+import scala.language.existentials
 import ch.epfl.data.pardis.shallow.OptimalString
 import scala.collection.mutable.ArrayBuffer
 import ch.epfl.data.pardis.ir._
@@ -9,14 +10,41 @@ import ch.epfl.data.legobase.deep.scalalib._
 import legobase.deep._
 import pardis.optimization._
 import scala.language.implicitConversions
+import ch.epfl.data.pardis.utils.Utils._
+import scala.reflect.runtime.universe
+import ch.epfl.data.pardis.ir.StructTags._
 
-trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base => }
+trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base =>
+  import CNodes._
+  // Hack will be removed once lewis has the manifest thing ready
+  override def structName[T](m: Manifest[T]): String = {
+    if (m <:< manifest[CArray[Any]]) "ArrayOf" + structName(m.typeArguments.last)
+    else if (m <:< manifest[Pointer[Any]]) structName(m.typeArguments.last)
+    else if (m.runtimeClass.toString == "byte") "char"
+    //"XM"
+    //    "LALA"
+    else { System.out.println("MPLOYM " + m.runtimeClass.toString); super.structName(m) }
+  }
+}
 
 class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
   import IR._
   import CNodes._
 
+  override def transformType[T: Manifest]: Manifest[Any] = {
+    val tp = manifest[T].asInstanceOf[Manifest[Any]]
+    (if (tp.runtimeClass.isArray) {
+      getArrayManifest({
+        if (tp.typeArguments.head.runtimeClass.isPrimitive) getPointerManifest(tp.typeArguments.head)
+        else getPointerManifest(getPointerManifest(tp.typeArguments.head))
+      })
+    } else if (tp <:< manifest[pardis.shallow.CaseClassRecord])
+      getPointerManifest(tp)
+    else tp).asInstanceOf[Manifest[Any]]
+  }
+
   override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = (node match {
+    // Mapping Scala Scanner operations to C FILE operations
     case K2DBScannerNew(f) => NameAlias[FILE](None, "fopen", List(List(f, unit("r"))))
     case K2DBScannerNext_int(s) =>
       val v = readVar(__newVar[Int](0))
@@ -36,10 +64,10 @@ class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[
         val v = readVar(__newVar(unit('a')))
         __ifThenElse(infix_==(fscanf(s, unit("%c"), &(v)), eof), break, unit)
         __ifThenElse[Unit]((infix_==(ReadVal(v), unit('|')) || infix_==(ReadVal(v), unit('\n'))), break, unit)
-        arrayUpdate(buf.asInstanceOf[Expression[Array[AnyVal]]], readVar(i), ReadVal(v))
+        toAtom(transformDef(ArrayUpdate(buf.asInstanceOf[Expression[Array[AnyVal]]], readVar(i), ReadVal(v))))
         __assign(i, readVar(i) + unit(1))
       })
-      buf(readVar(i)) = unit('\0');
+      toAtom(transformDef(ArrayUpdate(buf.asInstanceOf[Expression[Array[AnyVal]]], readVar(i), unit('\0'))))
       ReadVar(i)
     case K2DBScannerNext_date(s) =>
       val x = readVar(__newVar[Int](unit(0)))
@@ -57,12 +85,84 @@ class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[
     case OptimalStringNew(x) => x.correspondingNode
     case s @ PardisStruct(tag, elems) =>
       val x = malloc(unit(1))(s.manifestT)
-      structInit(x, s)
+      structCopy(x, s)
       ReadVal(x)(getPointerManifest(s.tp))
+    // Mapping Scala Array to C Array
     case a @ ArrayNew2(x) =>
-      if (a.manifestT.runtimeClass.isPrimitive) Malloc(x)(a.manifestT)
-      else Malloc(x)(getPointerManifest(a.manifestT))
-    case ArrayFilter(s, op) => ReadVal(s)(s.tp)
+      /* Allocate original array */
+      val array = {
+        if (a.manifestT.runtimeClass.isPrimitive) malloc(x)(a.manifestT)
+        else malloc(x)(getPointerManifest(a.manifestT))
+      }
+      /* Create wrapper with length */
+      val am = getArrayManifest(a.manifestT)
+      val s = Struct(ClassTag(structName(am)), Seq(
+        PardisStructArg("array", false, array),
+        PardisStructArg("length", false, x)))(am)
+      /* Initialize wrapper */
+      val m = malloc(unit(1))(am)
+      structCopy(m.asInstanceOf[Expression[Pointer[Any]]], Struct(s.tag, s.elems))
+      ReadVal(m.asInstanceOf[Expression[Any]])(m.tp.asInstanceOf[Manifest[Any]])
+    case au @ ArrayUpdate(a, i, v) => {
+      val s = transformExp(a)
+      val arr = field(s, "array")(s.tp.typeArguments.head)
+      ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, v)
+    }
+    case ArrayApply(a, i) =>
+      val s = transformExp(a)
+      val arr = field(s, "array")(s.tp.typeArguments.head)
+      ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], i)(s.tp.typeArguments.head.typeArguments.head.asInstanceOf[Manifest[Any]])
+    case ArrayLength(a) =>
+      val s = transformExp(a)
+      val arr = field(s, "length")(manifest[Int])
+      ReadVal(arr)(manifest[Int])
+    case PardisReadVal(s) => {
+      val ss = transformExp(s)
+      val m = {
+        if (s.tp.runtimeClass.isArray) {
+          getArrayManifest({
+            if (s.tp.typeArguments.head.runtimeClass.isPrimitive) s.tp.typeArguments.head
+            else (getPointerManifest(s.tp.typeArguments.head))
+          })
+        } else s.tp
+      }
+      PardisReadVal(ss)(m.asInstanceOf[Manifest[T]])
+    }
+    /*case IfThenElse(cond, ifStmt, elseStmt) =>
+      val ifStmtT = transformBlock(ifStmt)
+      val elseStmtT = transformBlock(elseStmt)
+      System.out.println(elseStmtT.res.tp)
+      IfThenElse(cond, ifStmt, elseStmt)(elseStmtT.res.tp)*/
+    case PardisReadVar(PardisVar(s)) =>
+      val ss = transformExp(s)
+      val m = {
+        if (s.tp.runtimeClass.isArray) {
+          getArrayManifest({
+            if (s.tp.typeArguments.head.runtimeClass.isPrimitive) s.tp.typeArguments.head
+            else (getPointerManifest(s.tp.typeArguments.head))
+          })
+        } else s.tp
+      }
+      PardisReadVar(PardisVar(ss.asInstanceOf[Expression[PardisVar[Any]]]))(m.asInstanceOf[Manifest[Any]])
+
+    case ArrayFilter(a, op) =>
+      val s = transformExp(a)
+      val arr = field(s, "array")(s.tp.typeArguments.head)
+      ReadVal(arr)(arr.tp)
+    // Profiling and utils functions mapping
+    case pc @ PardisCast(Constant(null)) => PardisCast(Constant(0.asInstanceOf[Any]))(pc.castFrom, getPointerManifest(pc.castTp))
+    case RunQuery(b) =>
+      val diff = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
+      val start = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
+      val end = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
+      gettimeofday(&(start))
+      toAtom(transformBlock(b))
+      gettimeofday(&(end))
+      val tm = timeval_subtract(&(diff), &(end), &(start))
+      Printf(unit("Generated code run in %ld milliseconds."), tm)
+    case ParseDate(Constant(d)) =>
+      val data = d.split("-").map(x => x.toInt)
+      ReadVal(Constant((data(0) * 10000) + (data(1) * 100) + data(2)))
     case _ =>
       super.transformDef(node)
   }).asInstanceOf[to.Def[T]]

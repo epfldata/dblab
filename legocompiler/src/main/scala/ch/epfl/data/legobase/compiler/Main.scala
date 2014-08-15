@@ -30,19 +30,21 @@ object Main extends LegoRunner {
 
   def query1_unoptimized() {
     val lq = new LiftedQueries()
-    val block = lq.Q1
+    val block = lq.Q1_U
 
     // Lowering (e.g. case classes to records)
-    val lowering = new LBLowering {
-      val from = lq.context
-      val to = lq.context
-    }
-    val loweredBlock = lowering.transformProgram(block)
-    /*val parameterPromotion = new LBParameterPromotion(lq.context)
-    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)*/
+    val lowering = new LBLowering(lq.context, lq.context)
+    val loweredBlock = lowering.lower(block)
+    val parameterPromotion = new LBParameterPromotion(lq.context)
+    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
+
+    // DCE
+    val dce = new DCE(lq.context)
+    val dceBlock = dce.optimize(operatorlessBlock)
 
     // Convert Scala constructs to C
-    val transformedBlock = (new t3(lq.context)).transformBlock(loweredBlock)
+    val scalaToC = new t3(lq.context)
+    val transformedBlock = scalaToC.transformBlock(dceBlock)
 
     val ir2Program = new { val IR = lq.context } with IRToProgram {}
 
@@ -63,12 +65,6 @@ object Main extends LegoRunner {
     // LegoGenerator.apply(block)
 
     val loweringContext = new LoweringLegoBase {}
-
-    // it's written like this because of early definition: http://stackoverflow.com/questions/4712468/in-scala-what-is-an-early-initializer
-    // val lowering = new LBLowering {
-    //   val from = lq.context
-    //   val to = loweringContext
-    // }
 
     // val loweredBlock = lowering.transformProgram(block)
     val lowering = new LBLowering(lq.context, loweringContext)
