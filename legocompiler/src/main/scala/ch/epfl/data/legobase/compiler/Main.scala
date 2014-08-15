@@ -12,19 +12,27 @@ object Main extends LegoRunner {
   def main(args: Array[String]) {
     if (args.length < 3) {
       System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
-      System.out.println("USAGE: run <data_folder> <scaling_factor_number> <list of queries to run>")
+      System.out.println("USAGE: run <data_folder> <scaling_factor_number> <list of queries to run> <copy>?")
       System.out.println("     : data_folder_name should contain folders named sf0.1 sf1 sf2 sf4 etc")
       System.exit(0)
     }
     Config.checkResults = false
 
     run(args)
+    // if (args.length == 4 && args(3) == "copy") {
+    //   import java.io.{ File, FileInputStream, FileOutputStream }
+    //   val src = new File("generator-out/lala.scala")
+    //   val dest = new File("legocompiler/src/test/scala/Generated.scala")
+    //   new FileOutputStream(dest) getChannel () transferFrom (
+    //     new FileInputStream(src) getChannel, 0, Long.MaxValue)
+    // }
   }
 
   def executeQuery(query: String): Unit = query match {
     case "Q1"   => query1()
     case "Q1_U" => query1_unoptimized()
     case "Q2"   => query2()
+    case "Q5"   => query5()
   }
 
   def query1_unoptimized() {
@@ -40,21 +48,12 @@ object Main extends LegoRunner {
     LegoGenerator.apply(finalProgram)
   }
 
-  def query1() {
-
-    val lq = new LiftedQueries()
-    val block = lq.Q1
+  def compileQuery(lq: LiftedQueries, block: pardis.ir.PardisBlock[Unit], number: Int, shallow: Boolean) {
 
     // println(block)
     // LegoGenerator.apply(block)
 
     val loweringContext = new LoweringLegoBase {}
-
-    // it's written like this because of early definition: http://stackoverflow.com/questions/4712468/in-scala-what-is-an-early-initializer
-    // val lowering = new LBLowering {
-    //   val from = lq.context
-    //   val to = loweringContext
-    // }
 
     // val loweredBlock = lowering.transformProgram(block)
     val lowering = new LBLowering(lq.context, loweringContext)
@@ -82,41 +81,26 @@ object Main extends LegoRunner {
     val finalProgram = ir2Program.createProgram(partialyEvaluated)
 
     println(finalProgram)
-    val LegoGenerator = new LegoScalaGenerator(1, false)
+    val LegoGenerator = new LegoScalaGenerator(number, shallow)
     LegoGenerator.apply(finalProgram)
+  }
+
+  def query1() {
+    val lq = new LiftedQueries()
+    val block = lq.Q1
+    compileQuery(lq, block, 1, false)
   }
 
   def query2() {
     val lq = new LiftedQueries()
     val block = lq.Q2
+    compileQuery(lq, block, 2, false)
+  }
 
-    val loweringContext = new LoweringLegoBase {}
-
-    // it's written like this because of early definition: http://stackoverflow.com/questions/4712468/in-scala-what-is-an-early-initializer
-    // val lowering = new LBLowering {
-    //   val from = lq.context
-    //   val to = loweringContext
-    // }
-
-    // val loweredBlock = lowering.transformProgram(block)
-    val lowering = new LBLowering(lq.context, loweringContext)
-    val loweredBlock = lowering.lower(block)
-
-    val parameterPromotion = new LBParameterPromotion(loweringContext)
-
-    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
-
-    val dce = new DCE(loweringContext)
-
-    val dceBlock = dce.optimize(operatorlessBlock)
-
-    val ir2Program = new { val IR = loweringContext } with IRToProgram {
-    }
-
-    val finalProgram = ir2Program.createProgram(dceBlock)
-    println(finalProgram)
-    val LegoGenerator = new LegoScalaGenerator(2, true)
-    LegoGenerator.apply(finalProgram)
+  def query5() {
+    val lq = new LiftedQueries()
+    val block = lq.Q5
+    compileQuery(lq, block, 5, false)
   }
 
   // test1()
