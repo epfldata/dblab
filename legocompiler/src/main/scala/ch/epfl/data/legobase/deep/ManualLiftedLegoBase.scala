@@ -6,6 +6,7 @@ import scala.reflect.runtime.universe.{ typeTag => tag }
 import scala.language.implicitConversions
 import pardis.utils.Utils.{ pardisTypeToString => t2s }
 import pardis.shallow.AbstractRecord
+import pardis.shallow.CaseClassRecord
 import pardis.ir.pardisTypeImplicits._
 
 // FIXME in the righthand side of the genreated case class invokations, type parameters should be filled in.
@@ -40,6 +41,15 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     override def curriedConstructor = (x: Any) => copy()
   }
   def loadSupplier(): Rep[Array[SUPPLIERRecord]] = LoadSupplier()
+
+  case class LoadOrders() extends FunctionDef[Array[ORDERSRecord]](None, "loadOrders", List(Nil)) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+  def loadOrders(): Rep[Array[ORDERSRecord]] = LoadOrders()
+  case class LoadCustomer() extends FunctionDef[Array[CUSTOMERRecord]](None, "loadCustomer", List(Nil)) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+  def loadCustomer(): Rep[Array[CUSTOMERRecord]] = LoadCustomer()
 
   case class ParseDate(date: Rep[String]) extends FunctionDef[Long](None, "parseDate", List(List(date))) {
     override def curriedConstructor = (copy _)
@@ -89,7 +99,14 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     def L_LINESTATUS: Rep[Character] = GroupByClass_Field_L_LINESTATUS(self)
   }
 
-  case class GroupByClass(val L_RETURNFLAG: java.lang.Character, val L_LINESTATUS: java.lang.Character);
+  // TODO should be ported to legocore only and auto-lifter should generate it
+  case class GroupByClass(val L_RETURNFLAG: java.lang.Character, val L_LINESTATUS: java.lang.Character) extends CaseClassRecord {
+    def getField(key: String): Option[Any] = key match {
+      case "L_RETURNFLAG" => Some(L_RETURNFLAG)
+      case "L_LINESTATUS" => Some(L_LINESTATUS)
+      case _              => None
+    }
+  }
 
   case object GroupByClassType extends TypeRep[GroupByClass] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GroupByClassType
@@ -137,7 +154,7 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   implicit def liftInt(i: scala.Int): Rep[Int] = unit(i)
 
-  def __newTreeSet2[A](ordering: Rep[Ordering[A]])(implicit evidence$9: Manifest[A], typeA: TypeRep[A]): Rep[TreeSet[A]] = TreeSetNew2[A](ordering)(typeA)
+  def __newTreeSet2[A](ordering: Rep[Ordering[A]])(implicit typeA: TypeRep[A]): Rep[TreeSet[A]] = TreeSetNew2[A](ordering)(typeA)
   // case classes
   case class TreeSetNew2[A](val ordering: Rep[Ordering[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[TreeSet[A]](None, "new TreeSet", List(Nil, List(ordering))) {
     override def curriedConstructor = (copy[A] _)
