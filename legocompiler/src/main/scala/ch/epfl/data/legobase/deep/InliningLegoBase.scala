@@ -168,11 +168,20 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     case _                              => super.hashJoinOp_Field_RightHash(self)
   }
 
-  // FIXME here it uses staging!
+  override def hashJoinOp_Field_RightAlias[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[String] = self match {
+    case Def(x: HashJoinOpNew[_, _, _]) => x.rightAlias
+    case _                              => super.hashJoinOp_Field_RightAlias(self)
+  }
+
+  override def hashJoinOp_Field_LeftAlias[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[String] = self match {
+    case Def(x: HashJoinOpNew[_, _, _]) => x.leftAlias
+    case _                              => super.hashJoinOp_Field_LeftAlias(self)
+  }
+
+  override def hashJoinOpNullDynamicRecord[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C, D](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], typeD: TypeRep[D], evidence$2: Manifest[D], evidence$12: Manifest[C], evidence$11: Manifest[B], evidence$10: Manifest[A]): Rep[D] = infix_asInstanceOf(unit[Any](null))(typeD)
+
   override def loadLineitem(): Rep[Array[LINEITEMRecord]] = {
     val file = unit(Config.datapath + "lineitem.tbl")
-    import scala.sys.process._;
-    // val size = Integer.parseInt((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", ""))
     val size = fileLineCount(file)
     // Load Relation 
     val s = __newK2DBScanner(file)
@@ -196,6 +205,121 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
         loadString(25, s),
         loadString(10, s),
         loadString(44, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadSupplier(): Rep[Array[SUPPLIERRecord]] = {
+    val file = unit(Config.datapath + "supplier.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[SUPPLIERRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newSUPPLIERRecord(
+        s.next_int, loadString(25, s), loadString(40, s), s.next_int, loadString(15, s), s.next_double, loadString(101, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadPartsupp(): Rep[Array[PARTSUPPRecord]] = {
+    val file = unit(Config.datapath + "partsupp.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[PARTSUPPRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newPARTSUPPRecord(s.next_int, s.next_int, s.next_int, s.next_double, loadString(199, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadCustomer(): Rep[Array[CUSTOMERRecord]] = {
+    val file = unit(Config.datapath + "customer.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[CUSTOMERRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newCUSTOMERRecord(s.next_int, loadString(25, s), loadString(40, s), s.next_int, loadString(15, s), s.next_double, loadString(10, s), loadString(117, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadOrders(): Rep[Array[ORDERSRecord]] = {
+    val file = unit(Config.datapath + "orders.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[ORDERSRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newORDERSRecord(s.next_int, s.next_int, s.next_char, s.next_double, s.next_date,
+        loadString(15, s), loadString(15, s), s.next_int, loadString(79, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadNation(): Rep[Array[NATIONRecord]] = {
+    val file = unit(Config.datapath + "nation.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[NATIONRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newNATIONRecord(s.next_int, loadString(25, s), s.next_int, loadString(152, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadPart(): Rep[Array[PARTRecord]] = {
+    val file = unit(Config.datapath + "part.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[PARTRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newPARTRecord(s.next_int, loadString(55, s), loadString(25, s), loadString(10, s), loadString(25, s),
+        s.next_int, loadString(10, s), s.next_double, loadString(23, s))
+      hm.update(i, newEntry)
+      __assign(i, readVar(i) + unit(1))
+      unit()
+    })
+    hm
+  }
+
+  override def loadRegion(): Rep[Array[REGIONRecord]] = {
+    val file = unit(Config.datapath + "region.tbl")
+    val size = fileLineCount(file)
+    // Load Relation 
+    val s = __newK2DBScanner(file)
+    var i = __newVar[Int](0)
+    val hm = __newArray[REGIONRecord](size)
+    __whileDo(s.hasNext, {
+      val newEntry = __newREGIONRecord(s.next_int, loadString(25, s), loadString(152, s))
       hm.update(i, newEntry)
       __assign(i, readVar(i) + unit(1))
       unit()

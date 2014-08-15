@@ -9,8 +9,21 @@ import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
 import pardis.optimization._
 
-trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] {
+class LBLowering(override val from: InliningLegoBase, override val to: LoweringLegoBase) extends Lowering[InliningLegoBase, LoweringLegoBase](from, to) {
   import from._
+
+  // override def transformType[T: TypeRep]: TypeRep[Any] = {
+  //   val tp = typeRep[T].asInstanceOf[TypeRep[Any]]
+  //   // Amir: it's a hack until TypeReps are comming
+  //   // if (tp.isInstanceOf[ArrayBufferType[_]]) {
+  //   //   System.out.println()
+  //   //   val arg = tp.typeArguments.head
+  //   //   tp.rebuild(arg).asInstanceOf[TypeRep[Any]]
+  //   // } else {
+  //   //   super.transformType[T]
+  //   // }
+  //   tp.rebuild(tp.typeArguments.map(x => transformType(x)): _*).asInstanceOf[TypeRep[Any]]
+  // }
 
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = node match {
     case an: AggOpNew[_, _] => {
@@ -18,116 +31,133 @@ trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] 
       val mb = an.typeB
       val maa = ma.asInstanceOf[TypeRep[Any]]
       val marrDouble = implicitly[to.TypeRep[to.Array[to.Double]]]
-      val magg = implicitly[TypeRep[AGGRecord[Any]]].rebuild(mb).asInstanceOf[TypeRep[Any]]
-      // to.reifyBlock ({
-      to.__newDef[AggOp[_, _]](("hm", false, to.__newHashMap[Any, to.Array[to.Double]]()(to.overloaded2, mb.asInstanceOf[to.TypeRep[Any]], marrDouble)),
-        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(magg)),
-        ("keySet", true, to.Set()(mb, to.overloaded2)),
-        ("numAggs", false, an.numAggs))(an.tp.asInstanceOf[to.TypeRep[AggOp[_, _]]]).asInstanceOf[to.Def[T]]
-      // }).correspondingNode
+      val magg = typeRep[AGGRecord[Any]].rebuild(mb).asInstanceOf[TypeRep[Any]]
+
+      to.__newDef[AggOp[Any, Any]](("hm", false, to.__newHashMap()(to.overloaded2, apply(mb), apply(marrDouble))),
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(magg))),
+        ("keySet", true, to.Set()(apply(mb), to.overloaded2)),
+        ("numAggs", false, an.numAggs)).asInstanceOf[to.Def[T]]
     }
     case po: PrintOpNew[_] => {
       val ma = po.typeA
       val maa = ma.asInstanceOf[TypeRep[Any]]
-      // to.reifyBlock({
-      to.__newDef[PrintOp[_]](("numRows", true, to.unit[Int](0)),
-        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa)))(po.tp.asInstanceOf[to.TypeRep[PrintOp[_]]]).asInstanceOf[to.Def[T]]
-      // }).correspondingNode.asInstanceOf[to.Def[T]]
+      to.__newDef[PrintOp[Any]](("numRows", true, to.unit[Int](0)),
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(maa)))).asInstanceOf[to.Def[T]]
     }
     case so: ScanOpNew[_] => {
       val ma = so.typeA
       val maa = ma.asInstanceOf[TypeRep[Any]]
-      // to.reifyBlock({
-      to.__newDef[ScanOp[_]](("i", true, to.unit[Int](0)),
+      to.__newDef[ScanOp[Any]](("i", true, to.unit[Int](0)),
         ("table", false, so.table),
-        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa)))(so.tp.asInstanceOf[to.TypeRep[ScanOp[_]]]).asInstanceOf[to.Def[T]]
-      // }).correspondingNode.asInstanceOf[to.Def[T]]
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(maa)))).asInstanceOf[to.Def[T]]
     }
     case mo: MapOpNew[_] => {
       val ma = mo.typeA
       val maa = ma.asInstanceOf[TypeRep[Any]]
-      // to.reifyBlock({
-      to.__newDef[MapOp[_]](
-        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa)))(mo.tp.asInstanceOf[to.TypeRep[MapOp[_]]]).asInstanceOf[to.Def[T]]
-      // }).correspondingNode.asInstanceOf[to.Def[T]]
+      to.__newDef[MapOp[Any]](
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(maa)))).asInstanceOf[to.Def[T]]
     }
     case so: SelectOpNew[_] => {
       val ma = so.typeA
       val maa = ma.asInstanceOf[TypeRep[Any]]
-      // to.reifyBlock({
-      to.__newDef[SelectOp[_]](
-        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa)))(so.tp.asInstanceOf[to.TypeRep[SelectOp[_]]]).asInstanceOf[to.Def[T]]
-      // }).correspondingNode.asInstanceOf[to.Def[T]]
+      to.__newDef[SelectOp[Any]](
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(maa)))).asInstanceOf[to.Def[T]]
     }
     case so: SortOpNew[_] => {
       val ma = so.typeA
       val maa = ma.asInstanceOf[TypeRep[Any]]
-      // to.reifyBlock({
-      to.__newDef[SortOp[_]](("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]])(maa))),
-        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(maa)))(so.tp.asInstanceOf[to.TypeRep[SortOp[_]]]).asInstanceOf[to.Def[T]]
-      // }).correspondingNode.asInstanceOf[to.Def[T]]
+      to.__newDef[SortOp[Any]](("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](apply(so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]]))(apply(maa)))(apply(maa))),
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(maa)))).asInstanceOf[to.Def[T]]
     }
-    case gc: GroupByClassNew => {
-      // to.reifyBlock({
-      to.__newDef[GroupByClass](("L_RETURNFLAG", false, transformExp(gc.L_RETURNFLAG)),
-        ("L_LINESTATUS", false, transformExp(gc.L_LINESTATUS))).asInstanceOf[to.Def[T]]
-      // }).correspondingNode.asInstanceOf[to.Def[T]]
+    case ho: HashJoinOpNew[_, _, _] => {
+      val ma = ho.typeA
+      val mb = ho.typeB
+      val mc = ho.typeC
+      val mba = mb.asInstanceOf[TypeRep[Any]]
+      type HashJoinOpTp = HashJoinOp[pardis.shallow.AbstractRecord, pardis.shallow.AbstractRecord, Any]
+      val tp = ho.tp.asInstanceOf[TypeRep[HashJoinOpTp]]
+      // trait A extends pardis.shallow.AbstractRecord
+      // implicit val manifestASynthetic: TypeRep[A] = ma.asInstanceOf[TypeRep[A]]
+      // trait B extends pardis.shallow.AbstractRecord
+      // implicit val manifestBSynthetic: TypeRep[B] = mb.asInstanceOf[TypeRep[B]]
+      // class C
+      // implicit val manifestCSynthetic: TypeRep[C] = mc.asInstanceOf[TypeRep[C]]
+      // val marrBuffA = manifest[ArrayBuffer[A]].asInstanceOf[TypeRep[Any]]
+      // val mCompRec = manifest[DynamicCompositeRecord[A, B]].asInstanceOf[TypeRep[Any]]
+      val marrBuffA = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(ma).asInstanceOf[TypeRep[Any]]
+      val mCompRec = implicitly[TypeRep[DynamicCompositeRecord[pardis.shallow.AbstractRecord, pardis.shallow.AbstractRecord]]].rebuild(ma, mb).asInstanceOf[TypeRep[Any]]
+      to.__newDef[HashJoinOpTp](("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffA))),
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(mCompRec))),
+        ("tmpCount", true, to.unit[Int](-1)),
+        ("tmpLine", true, to.infix_asInstanceOf(to.unit[Any](null))(apply(mba))),
+        ("tmpBuffer", true, to.ArrayBuffer()(apply(ma))))(tp).asInstanceOf[to.Def[T]]
     }
-    case li: LINEITEMRecordNew => {
-      to.__newDef[LINEITEMRecord](("L_ORDERKEY", false, li.L_ORDERKEY),
-        ("L_PARTKEY", false, li.L_PARTKEY),
-        ("L_SUPPKEY", false, li.L_SUPPKEY),
-        ("L_LINENUMBER", false, li.L_LINENUMBER),
-        ("L_QUANTITY", false, li.L_QUANTITY),
-        ("L_EXTENDEDPRICE", false, li.L_EXTENDEDPRICE),
-        ("L_DISCOUNT", false, li.L_DISCOUNT),
-        ("L_TAX", false, li.L_TAX),
-        ("L_RETURNFLAG", false, li.L_RETURNFLAG),
-        ("L_LINESTATUS", false, li.L_LINESTATUS),
-        ("L_SHIPDATE", false, li.L_SHIPDATE),
-        ("L_COMMITDATE", false, li.L_COMMITDATE),
-        ("L_RECEIPTDATE", false, li.L_RECEIPTDATE),
-        ("L_SHIPINSTRUCT", false, li.L_SHIPINSTRUCT),
-        ("L_SHIPMODE", false, li.L_SHIPMODE),
-        ("L_COMMENT", false, li.L_COMMENT)).asInstanceOf[to.Def[T]]
+    case wo: WindowOpNew[_, _, _] => {
+      val ma = wo.typeA
+      val mb = wo.typeB
+      val mc = wo.typeC
+      val maa = ma.asInstanceOf[TypeRep[Any]]
+      // class A
+      // implicit val manifestASynthetic: TypeRep[A] = ma.asInstanceOf[TypeRep[A]]
+      // class B
+      // implicit val manifestBSynthetic: TypeRep[B] = mb.asInstanceOf[TypeRep[B]]
+      // class C
+      // implicit val manifestCSynthetic: TypeRep[C] = mc.asInstanceOf[TypeRep[C]]
+      // val marrBuffA = manifest[ArrayBuffer[A]].asInstanceOf[TypeRep[Any]]
+      // val mwinRecBC = manifest[WindowRecord[B, C]].asInstanceOf[TypeRep[Any]]
+      val marrBuffA = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(ma).asInstanceOf[TypeRep[Any]]
+      val mwinRecBC = implicitly[TypeRep[WindowRecord[Any, Any]]].rebuild(mb, mc).asInstanceOf[TypeRep[Any]]
+      to.__newDef[WindowOp[Any, Any, Any]](("hm", false, to.__newHashMap()(to.overloaded2, apply(mb), apply(marrBuffA))),
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(mwinRecBC))),
+        ("keySet", true, to.Set()(apply(mb), to.overloaded2))).asInstanceOf[to.Def[T]]
     }
-    case f @ ImmutableField(self @ LoweredNew(d), fieldName) => {
-      StructImmutableField(transformExp(self)(self.tp, self.tp), fieldName)(f.tp)
+    case pc @ PardisCast(exp) => {
+      // System.out.print("--->")
+      // System.out.print(pc)
+      // System.out.print("<---")
+      // System.out.println(transformType(pc.castTp))
+      PardisCast(transformExp[Any, Any](exp))(transformType(exp.tp), transformType(pc.castTp)).asInstanceOf[to.Def[T]]
     }
-    case fg @ FieldGetter(self @ LoweredNew(d), fieldName) => {
-      StructFieldGetter(transformExp(self)(self.tp, self.tp), fieldName)(fg.tp)
+    case ab @ ArrayBufferNew2_2() => {
+      ArrayBufferNew2_2()(transformType(ab.typeA)).asInstanceOf[to.Def[T]]
     }
-    case fs @ FieldSetter(self @ LoweredNew(d), fieldName, rhs) => {
-      StructFieldSetter[T](transformExp(self)(self.tp, self.tp), fieldName, rhs)(fs.tp).asInstanceOf[to.Def[T]]
+    case hm @ HashMapNew2_2() => {
+      HashMapNew2_2()(transformType(hm.typeA), transformType(hm.typeB)).asInstanceOf[to.Def[T]]
     }
+    // case PardisLambda(f, i, o) => {
+    //   val newI = newSym(i)
+    //   subst += i -> newI
+    //   System.err.println(s"-->${newI.id}")
+    //   System.err.println(s"tp " + newI.tp)
+    //   System.err.println(s"manToString" + pardis.utils.Utils.manifestToString(newI.tp))
+    //   val newO = transformBlockTyped(o).asInstanceOf[Block[Any]]
+    //   to.Lambda(f, newI, newO)
+    // }
     case _ => super.transformDef(node)
   }
 
-  object ImmutableField {
-    def unapply[T](exp: Def[T]): Option[(Rep[Any], String)] = exp match {
-      case fd: FieldDef[_] => Some(fd.obj -> fd.field)
-      case _               => None
-    }
+  // WindowRecord
+  // GroupByClass
+  // LINEITEMRecord
+  // SUPPLIERRecord
+  // PARTSUPPRecord
+  // REGIONRecord
+  // PARTRecord
+  // NATIONRecord
+  // CUSTOMERRecord
+  // ORDERSRecord
+  object CaseClassNew extends DefExtractor {
+    def unapply[T](exp: Def[T]): Option[Def[T]] =
+      exp match {
+        case _: WindowRecordNew[_, _] | _: GroupByClassNew | _: LINEITEMRecordNew | _: SUPPLIERRecordNew | _: PARTSUPPRecordNew | _: REGIONRecordNew | _: PARTRecordNew | _: NATIONRecordNew | _: CUSTOMERRecordNew | _: ORDERSRecordNew => Some(exp)
+        case _ => None
+      }
   }
 
-  object FieldSetter {
-    def unapply[T](exp: Def[T]): Option[(Rep[Any], String, Rep[T])] = exp match {
-      case fd: FieldSetter[_] => Some((fd.obj, fd.field, fd.newValue.asInstanceOf[Rep[T]]))
-      case _                  => None
-    }
-  }
-
-  object FieldGetter {
-    def unapply[T](exp: Def[T]): Option[(Rep[Any], String)] = exp match {
-      case fd: FieldGetter[_] => Some(fd.obj -> fd.field)
-      case _                  => None
-    }
-  }
-
-  object LoweredNew {
+  object LoweredNew extends RepExtractor {
     def unapply[T](exp: Rep[T]): Option[Def[T]] = exp match {
       case Def(d) => d.tp match {
-        case LINEITEMRecordType | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | GroupByClassType => Some(d)
+        case SUPPLIERRecordType | PARTSUPPRecordType | REGIONRecordType | PARTRecordType | NATIONRecordType | CUSTOMERRecordType | ORDERSRecordType | LINEITEMRecordType | WindowRecordType(_, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | GroupByClassType => Some(d)
         case _ => None
       }
       case _ => None

@@ -20,3 +20,7 @@ project/plugins/project/
 .worksheet
 
 .DS_Store
+
+legocompiler/src/test/scala/generated/
+
+*Output.txt
