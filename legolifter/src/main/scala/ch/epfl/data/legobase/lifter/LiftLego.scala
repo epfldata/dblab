@@ -48,6 +48,7 @@ package deep
 package scalalib
 
 import pardis.ir._
+import pardis.ir.pardisTypeImplicits._
 
 $liftedCode
 """)
@@ -79,6 +80,7 @@ package deep
 
 import scalalib._
 import pardis.ir._
+import pardis.ir.pardisTypeImplicits._
 
 $liftedCode
 trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent 
@@ -117,6 +119,7 @@ package deep
 package scalalib
 
 import pardis.ir._
+import pardis.ir.pardisTypeImplicits._
 
 $liftedCode
 """)
@@ -138,6 +141,7 @@ package deep
 package scalalib
 
 import pardis.ir._
+import pardis.ir.pardisTypeImplicits._
 
 $liftedCode
 """)

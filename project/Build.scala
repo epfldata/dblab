@@ -63,7 +63,7 @@ object LegoBuild extends Build {
         "ch.epfl.data" % "pardis-core_2.11" % "0.1-SNAPSHOT"
         ),
       generate_test <<= inputTask { (argTask: TaskKey[Seq[String]]) =>
-        (argTask, sourceManaged in Test, sourceDirectory in Test, fullClasspath in Test, runner in Test, streams) map { (args, dir, srcDir, cp, r, s) =>
+        (argTask, sourceDirectory in Test, fullClasspath in Compile, runner in Compile, streams) map { (args, srcDir, cp, r, s) =>
           val cgDir = srcDir / "scala" / "generated"
           IO.delete(cgDir ** "*.scala" get)
           toError(r.run("ch.epfl.data.legobase.compiler.Main", cp.files, args, s.log))
