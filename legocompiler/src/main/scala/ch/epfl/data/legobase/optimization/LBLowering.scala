@@ -18,19 +18,9 @@ trait LBLowering extends TopDownTransformer[InliningLegoBase, LoweringLegoBase] 
       val mb = an.typeB
       val maa = ma.asInstanceOf[TypeRep[Any]]
       val marrDouble = implicitly[to.TypeRep[to.Array[to.Double]]]
-      class Rec
-      case object RecType extends TypeRep[Rec] {
-        def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = RecType
-        val name = "Rec"
-        val typeArguments = Nil
-        val typeTag = ??? //TODO: tag[Rec]
-      }
-
-      implicit val manifestRec: TypeRep[Rec] = mb.asInstanceOf[TypeRep[Rec]]
-      val magg = implicitly[TypeRep[AGGRecord[Rec]]].asInstanceOf[TypeRep[Any]]
-      // val magg = maa
+      val magg = implicitly[TypeRep[AGGRecord[Any]]].rebuild(mb).asInstanceOf[TypeRep[Any]]
       // to.reifyBlock ({
-      to.__newDef[AggOp[_, _]](("hm", false, to.__newHashMap[Rec, to.Array[to.Double]]()(to.overloaded2, mb.asInstanceOf[to.TypeRep[Rec]], marrDouble)),
+      to.__newDef[AggOp[_, _]](("hm", false, to.__newHashMap[Any, to.Array[to.Double]]()(to.overloaded2, mb.asInstanceOf[to.TypeRep[Any]], marrDouble)),
         ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(magg)),
         ("keySet", true, to.Set()(mb, to.overloaded2)),
         ("numAggs", false, an.numAggs))(an.tp.asInstanceOf[to.TypeRep[AggOp[_, _]]]).asInstanceOf[to.Def[T]]
