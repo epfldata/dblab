@@ -33,6 +33,7 @@ object Main extends LegoRunner {
     case "Q1"   => query1()
     case "Q1_U" => query1_unoptimized()
     case "Q2"   => query2()
+    case "Q3"   => query3()
     case "Q5"   => query5()
   }
 
@@ -96,6 +97,12 @@ object Main extends LegoRunner {
     val lq = new LiftedQueries()
     val block = lq.Q2
     compileQuery(lq, block, 2, false)
+  }
+
+  def query3() {
+    val lq = new LiftedQueries()
+    val block = lq.Q3
+    compileQuery(lq, block, 3, false)
   }
 
   def query5() {

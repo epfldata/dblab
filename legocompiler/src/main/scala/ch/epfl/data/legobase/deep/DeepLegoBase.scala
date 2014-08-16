@@ -62,6 +62,68 @@ trait GroupByClassImplementations { self: DeepDSL =>
 }
 trait GroupByClassComponent extends GroupByClassOps with GroupByClassImplicits { self: DeepDSL => }
 
+trait Q3GRPRecordOps extends Base { this: DeepDSL =>
+  implicit class Q3GRPRecordRep(self: Rep[Q3GRPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q3GRPRecordGetField(self, key)
+    def O_SHIPPRIORITY: Rep[Int] = q3GRPRecord_Field_O_SHIPPRIORITY(self)
+    def O_ORDERDATE: Rep[Long] = q3GRPRecord_Field_O_ORDERDATE(self)
+    def L_ORDERKEY: Rep[Int] = q3GRPRecord_Field_L_ORDERKEY(self)
+  }
+  object Q3GRPRecord {
+
+  }
+  // constructors
+  def __newQ3GRPRecord(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Long], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = q3GRPRecordNew(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
+  // case classes
+  case class Q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Long], O_SHIPPRIORITY: Rep[Int]) extends ConstructorDef[Q3GRPRecord](List(), "Q3GRPRecord", List(List(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q3GRPRecordGetField(self: Rep[Q3GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q3GRPRecord_Field_O_SHIPPRIORITY(self: Rep[Q3GRPRecord]) extends FieldDef[Int](self, "O_SHIPPRIORITY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q3GRPRecord_Field_O_ORDERDATE(self: Rep[Q3GRPRecord]) extends FieldDef[Long](self, "O_ORDERDATE") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q3GRPRecord_Field_L_ORDERKEY(self: Rep[Q3GRPRecord]) extends FieldDef[Int](self, "L_ORDERKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Long], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = Q3GRPRecordNew(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
+  def q3GRPRecordGetField(self: Rep[Q3GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q3GRPRecordGetField(self, key)
+  def q3GRPRecord_Field_O_SHIPPRIORITY(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_O_SHIPPRIORITY(self)
+  def q3GRPRecord_Field_O_ORDERDATE(self: Rep[Q3GRPRecord]): Rep[Long] = Q3GRPRecord_Field_O_ORDERDATE(self)
+  def q3GRPRecord_Field_L_ORDERKEY(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_L_ORDERKEY(self)
+  type Q3GRPRecord = ch.epfl.data.legobase.queryengine.Q3GRPRecord
+  case object Q3GRPRecordType extends TypeRep[Q3GRPRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q3GRPRecordType
+    val name = "Q3GRPRecord"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q3GRPRecord]
+  }
+  implicit val typeQ3GRPRecord = Q3GRPRecordType
+}
+trait Q3GRPRecordImplicits { this: Q3GRPRecordComponent =>
+  // Add implicit conversions here!
+}
+trait Q3GRPRecordImplementations { self: DeepDSL =>
+
+}
+trait Q3GRPRecordComponent extends Q3GRPRecordOps with Q3GRPRecordImplicits { self: DeepDSL => }
+
 trait AGGRecordOps extends Base { this: DeepDSL =>
   implicit class AGGRecordRep[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = aGGRecordGetField[B](self, key)(typeB)
@@ -1221,6 +1283,7 @@ trait WindowRecordComponent extends WindowRecordOps with WindowRecordImplicits {
 trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent
   with DoubleComponent with IntComponent with LongComponent with ArrayComponent
   with GroupByClassComponent
+  with Q3GRPRecordComponent
   with LINEITEMRecordComponent
   with SUPPLIERRecordComponent
   with PARTSUPPRecordComponent

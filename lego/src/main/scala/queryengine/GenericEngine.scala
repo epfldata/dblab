@@ -31,6 +31,18 @@ case class GroupByClass(val L_RETURNFLAG: java.lang.Character, val L_LINESTATUS:
   }
 }
 
+case class Q3GRPRecord(
+  val L_ORDERKEY: Int,
+  val O_ORDERDATE: Long,
+  val O_SHIPPRIORITY: Int) extends CaseClassRecord {
+  def getField(key: String): Option[Any] = key match {
+    case "L_ORDERKEY"     => Some(L_ORDERKEY)
+    case "O_ORDERDATE"    => Some(O_ORDERDATE)
+    case "O_SHIPPRIORITY" => Some(O_SHIPPRIORITY)
+    case _                => None
+  }
+}
+
 object GenericEngine {
   def newAGGRecord[B: Manifest](k: B, a: Array[Double]) = new AGGRecord(k, a)
   def newWindowRecord[B, C](k: B, w: C) = new WindowRecord(k, w)

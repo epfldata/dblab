@@ -18,6 +18,9 @@ trait GenericQuery extends ScalaImpl with storagemanager.Loader {
       query
     }
   }
+
+  def dateToString(long: Long): String = dateToString(new java.util.Date(long))
+
   def dateToString(dt: java.util.Date): String = {
     (dt.getYear + 1900) + "" +
       {
@@ -116,18 +119,6 @@ trait Q2 extends GenericQuery {
 }
 
 trait Q3 extends GenericQuery {
-  case class Q3GRPRecord(
-    val L_ORDERKEY: Int,
-    val O_ORDERDATE: Long,
-    val O_SHIPPRIORITY: Int) extends CaseClassRecord {
-    def getField(key: String): Option[Any] = key match {
-      case "L_ORDERKEY"     => Some(L_ORDERKEY)
-      case "O_ORDERDATE"    => Some(O_ORDERDATE)
-      case "O_SHIPPRIORITY" => Some(O_SHIPPRIORITY)
-      case _                => None
-    }
-  }
-
   def Q3(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
@@ -157,7 +148,7 @@ trait Q3 extends GenericQuery {
         val po = PrintOp(sortOp)(kv => {
           // TODO: The date is not printed properly (but is correct), and fails 
           // in the comparison with result file. Rest of fields OK.
-          printf("%d|%.4f|%s|%d\n", kv.key.L_ORDERKEY, kv.aggs(0), dateToString(new java.util.Date(kv.key.O_ORDERDATE)), kv.key.O_SHIPPRIORITY)
+          printf("%d|%.4f|%s|%d\n", kv.key.L_ORDERKEY, kv.aggs(0), dateToString(kv.key.O_ORDERDATE), kv.key.O_SHIPPRIORITY)
           i += 1
         }, () => i < 10)
         po.open
@@ -811,7 +802,7 @@ trait Q18 extends GenericQuery {
         })
         var j = 0
         val po = PrintOp(sortOp)(kv => {
-          printf("%s|%d|%d|%s|%.2f|%.2f\n", kv.key.C_NAME.string, kv.key.C_CUSTKEY, kv.key.O_ORDERKEY, dateToString(new java.util.Date(kv.key.O_ORDERDATE)), kv.key.O_TOTALPRICE, kv.aggs(0))
+          printf("%s|%d|%d|%s|%.2f|%.2f\n", kv.key.C_NAME.string, kv.key.C_CUSTKEY, kv.key.O_ORDERKEY, dateToString(kv.key.O_ORDERDATE), kv.key.O_TOTALPRICE, kv.aggs(0))
           j += 1
         }, () => j < 100)
         po.open

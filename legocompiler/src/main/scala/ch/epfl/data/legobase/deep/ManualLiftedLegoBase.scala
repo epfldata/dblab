@@ -87,6 +87,10 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   case class RunQuery[T: TypeRep](query: Block[T]) extends FunctionDef[T](None, "runQuery", List(List(query))) {
     override def curriedConstructor = (copy[T] _)
   }
+  def dateToString(long: Rep[Long]): Rep[String] = DateToString(long)
+  case class DateToString(long: Rep[Long]) extends FunctionDef[String](None, "dateToString", List(List(long))) {
+    override def curriedConstructor = (copy _)
+  }
 
   // FIXME handling default values (which needs macro or a compiler plugin)
   def __newPrintOp2[A](parent: Rep[Operator[A]])(printFunc: Rep[(A => Unit)], limit: Rep[(() => Boolean)] = {
