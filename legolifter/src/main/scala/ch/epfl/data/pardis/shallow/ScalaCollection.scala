@@ -39,7 +39,7 @@ trait MirrorSet[A] {
 }
 
 object MirrorSet {
-  def apply[T](seq: Seq[T]): Set[T] = ???
+  def apply[T](elems: Seq[T]): Set[T] = ???
   def apply[T](): Set[T] = ???
 }
 

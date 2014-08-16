@@ -13,6 +13,7 @@ trait ArrayOps extends Base { this: DeepDSL =>
     def length: Rep[Int] = arrayLength[T](self)(typeT)
     def apply(i: Rep[Int]): Rep[T] = arrayApply[T](self, i)(typeT)
     def update(i: Rep[Int], x: Rep[T]): Rep[Unit] = arrayUpdate[T](self, i, x)(typeT)
+    def filter(p: Rep[(T => Boolean)]): Rep[Array[T]] = arrayFilter[T](self, p)(typeT)
     override def clone(): Rep[Array[T]] = arrayClone[T](self)(typeT)
     def _length: Rep[Int] = array_Field__length[T](self)(typeT)
   }
@@ -42,6 +43,10 @@ trait ArrayOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[T] _).curried
   }
 
+  case class ArrayFilter[T](self: Rep[Array[T]], p: Rep[((T) => Boolean)])(implicit val typeT: TypeRep[T]) extends FunctionDef[Array[T]](Some(self), "filter", List(List(p))) {
+    override def curriedConstructor = (copy[T] _).curried
+  }
+
   case class ArrayClone[T](self: Rep[Array[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Array[T]](Some(self), "clone", List(List())) {
     override def curriedConstructor = (copy[T] _)
   }
@@ -57,6 +62,7 @@ trait ArrayOps extends Base { this: DeepDSL =>
   def arrayLength[T](self: Rep[Array[T]])(implicit typeT: TypeRep[T]): Rep[Int] = ArrayLength[T](self)
   def arrayApply[T](self: Rep[Array[T]], i: Rep[Int])(implicit typeT: TypeRep[T]): Rep[T] = ArrayApply[T](self, i)
   def arrayUpdate[T](self: Rep[Array[T]], i: Rep[Int], x: Rep[T])(implicit typeT: TypeRep[T]): Rep[Unit] = ArrayUpdate[T](self, i, x)
+  def arrayFilter[T](self: Rep[Array[T]], p: Rep[((T) => Boolean)])(implicit typeT: TypeRep[T]): Rep[Array[T]] = ArrayFilter[T](self, p)
   def arrayClone[T](self: Rep[Array[T]])(implicit typeT: TypeRep[T]): Rep[Array[T]] = ArrayClone[T](self)
   def array_Field__length[T](self: Rep[Array[T]])(implicit typeT: TypeRep[T]): Rep[Int] = Array_Field__length[T](self)
   type Array[T] = scala.Array[T]

@@ -32,7 +32,6 @@ trait GenericQuery extends ScalaImpl with storagemanager.Loader {
 }
 
 trait Q1 extends GenericQuery {
-  case class GroupByClass(val L_RETURNFLAG: java.lang.Character, val L_LINESTATUS: java.lang.Character);
   def Q1(numRuns: Int) {
     val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {

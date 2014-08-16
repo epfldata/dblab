@@ -23,6 +23,14 @@ case class WindowRecord[B, C](
   }
 }
 
+case class GroupByClass(val L_RETURNFLAG: java.lang.Character, val L_LINESTATUS: java.lang.Character) extends CaseClassRecord {
+  def getField(key: String): Option[Any] = key match {
+    case "L_RETURNFLAG" => Some(L_RETURNFLAG)
+    case "L_LINESTATUS" => Some(L_LINESTATUS)
+    case _              => None
+  }
+}
+
 object GenericEngine {
   def newAGGRecord[B: Manifest](k: B, a: Array[Double]) = new AGGRecord(k, a)
   def newWindowRecord[B, C](k: B, w: C) = new WindowRecord(k, w)

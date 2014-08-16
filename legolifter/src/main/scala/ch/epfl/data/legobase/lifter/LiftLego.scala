@@ -57,6 +57,7 @@ $liftedCode
 
   def generateLegoBase(implicit al: AutoLifter) {
     val liftedCodes = List(
+      al.autoLift[queryengine.GroupByClass],
       al.autoLift[queryengine.AGGRecord[Any]],
       al.autoLift[storagemanager.TPCHRelations.LINEITEMRecord],
       al.autoLift[storagemanager.TPCHRelations.SUPPLIERRecord],
@@ -85,6 +86,7 @@ import pardis.ir.pardisTypeImplicits._
 $liftedCode
 trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent 
   with DoubleComponent with IntComponent with LongComponent with ArrayComponent 
+  with GroupByClassComponent
   with LINEITEMRecordComponent
   with SUPPLIERRecordComponent
   with PARTSUPPRecordComponent

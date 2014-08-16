@@ -123,7 +123,7 @@ trait SetOps extends Base { this: DeepDSL =>
     def remove(elem: Rep[A]): Rep[Boolean] = setRemove[A](self, elem)(typeA)
   }
   object Set {
-    def apply[T](seq: Rep[Seq[T]])(implicit typeT: TypeRep[T], overload1: Overloaded1): Rep[Set[T]] = setApplyObject1[T](seq)(typeT)
+    def apply[T](elems: Rep[Seq[T]])(implicit typeT: TypeRep[T], overload1: Overloaded1): Rep[Set[T]] = setApplyObject1[T](elems)(typeT)
     def apply[T]()(implicit typeT: TypeRep[T], overload2: Overloaded2): Rep[Set[T]] = setApplyObject2[T]()(typeT)
   }
   // constructors
@@ -151,7 +151,7 @@ trait SetOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A] _).curried
   }
 
-  case class SetApplyObject1[T](seq: Rep[Seq[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Set[T]](None, "Set.apply", List(List(seq))) {
+  case class SetApplyObject1[T](elems: Rep[Seq[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Set[T]](None, "Set.apply", List(List(elems))) {
     override def curriedConstructor = (copy[T] _)
   }
 
@@ -164,7 +164,7 @@ trait SetOps extends Base { this: DeepDSL =>
   def setApply[A](self: Rep[Set[A]], elem: Rep[A])(implicit typeA: TypeRep[A]): Rep[Boolean] = SetApply[A](self, elem)
   def setToSeq[A](self: Rep[Set[A]])(implicit typeA: TypeRep[A]): Rep[Seq[A]] = SetToSeq[A](self)
   def setRemove[A](self: Rep[Set[A]], elem: Rep[A])(implicit typeA: TypeRep[A]): Rep[Boolean] = SetRemove[A](self, elem)
-  def setApplyObject1[T](seq: Rep[Seq[T]])(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetApplyObject1[T](seq)
+  def setApplyObject1[T](elems: Rep[Seq[T]])(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetApplyObject1[T](elems)
   def setApplyObject2[T]()(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetApplyObject2[T]()
   type Set[A] = scala.collection.mutable.Set[A]
   case class SetType[A](typeA: TypeRep[A]) extends TypeRep[Set[A]] {

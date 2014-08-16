@@ -8,6 +8,60 @@ import scalalib._
 import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
 
+trait GroupByClassOps extends Base { this: DeepDSL =>
+  implicit class GroupByClassRep(self: Rep[GroupByClass]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = groupByClassGetField(self, key)
+    def L_LINESTATUS: Rep[Character] = groupByClass_Field_L_LINESTATUS(self)
+    def L_RETURNFLAG: Rep[Character] = groupByClass_Field_L_RETURNFLAG(self)
+  }
+  object GroupByClass {
+
+  }
+  // constructors
+  def __newGroupByClass(L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character]): Rep[GroupByClass] = groupByClassNew(L_RETURNFLAG, L_LINESTATUS)
+  // case classes
+  case class GroupByClassNew(L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character]) extends ConstructorDef[GroupByClass](List(), "GroupByClass", List(List(L_RETURNFLAG, L_LINESTATUS))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class GroupByClassGetField(self: Rep[GroupByClass], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class GroupByClass_Field_L_LINESTATUS(self: Rep[GroupByClass]) extends FieldDef[Character](self, "L_LINESTATUS") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class GroupByClass_Field_L_RETURNFLAG(self: Rep[GroupByClass]) extends FieldDef[Character](self, "L_RETURNFLAG") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def groupByClassNew(L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character]): Rep[GroupByClass] = GroupByClassNew(L_RETURNFLAG, L_LINESTATUS)
+  def groupByClassGetField(self: Rep[GroupByClass], key: Rep[String]): Rep[Option[Any]] = GroupByClassGetField(self, key)
+  def groupByClass_Field_L_LINESTATUS(self: Rep[GroupByClass]): Rep[Character] = GroupByClass_Field_L_LINESTATUS(self)
+  def groupByClass_Field_L_RETURNFLAG(self: Rep[GroupByClass]): Rep[Character] = GroupByClass_Field_L_RETURNFLAG(self)
+  type GroupByClass = ch.epfl.data.legobase.queryengine.GroupByClass
+  case object GroupByClassType extends TypeRep[GroupByClass] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GroupByClassType
+    val name = "GroupByClass"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[GroupByClass]
+  }
+  implicit val typeGroupByClass = GroupByClassType
+}
+trait GroupByClassImplicits { this: GroupByClassComponent =>
+  // Add implicit conversions here!
+}
+trait GroupByClassImplementations { self: DeepDSL =>
+
+}
+trait GroupByClassComponent extends GroupByClassOps with GroupByClassImplicits { self: DeepDSL => }
+
 trait AGGRecordOps extends Base { this: DeepDSL =>
   implicit class AGGRecordRep[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = aGGRecordGetField[B](self, key)(typeB)
@@ -1166,6 +1220,7 @@ trait WindowRecordComponent extends WindowRecordOps with WindowRecordImplicits {
 
 trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent
   with DoubleComponent with IntComponent with LongComponent with ArrayComponent
+  with GroupByClassComponent
   with LINEITEMRecordComponent
   with SUPPLIERRecordComponent
   with PARTSUPPRecordComponent

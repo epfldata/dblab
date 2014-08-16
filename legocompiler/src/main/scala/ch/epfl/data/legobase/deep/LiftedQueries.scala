@@ -20,7 +20,7 @@ class LiftedQueries {
         val constantDate = parseDate(unit("1998-08-11"))
         val lineitemScan = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_SHIPDATE <= constantDate })
         val aggOp = __newAggOp(lineitemScan, unit(9))(__lambda { x =>
-          groupByClassNew(
+          __newGroupByClass(
             x.L_RETURNFLAG, x.L_LINESTATUS)
         })(
           __lambda { (t, currAgg) => { t.L_DISCOUNT + currAgg } },
