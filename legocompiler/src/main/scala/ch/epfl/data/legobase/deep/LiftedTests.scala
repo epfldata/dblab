@@ -40,7 +40,18 @@ class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[
       })
     } else if (tp <:< manifest[pardis.shallow.CaseClassRecord])
       getPointerManifest(tp)
-    else tp).asInstanceOf[Manifest[Any]]
+    else if (tp <:< manifest[scala.collection.mutable.HashMap[Any, Any]])
+      getPointerManifest(manifest[GHashTable])
+    else if (tp <:< manifest[scala.collection.mutable.Set[Any]])
+      getPointerManifest(manifest[GList])
+    else if (tp <:< manifest[scala.collection.Seq[Any]])
+      getPointerManifest(manifest[GList])
+    else if (tp.runtimeClass.toString.contains("PardisVar")) {
+      val vartype = tp.typeArguments.head
+      val res = getVarManifest(transformType(vartype))
+      System.out.println("@@@" + res)
+      res
+    } else { System.out.println("---> " + tp); tp }).asInstanceOf[Manifest[Any]]
   }
 
   override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = (node match {
@@ -124,15 +135,18 @@ class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[
             if (s.tp.typeArguments.head.runtimeClass.isPrimitive) s.tp.typeArguments.head
             else (getPointerManifest(s.tp.typeArguments.head))
           })
-        } else s.tp
+        } else transformType(s.tp)
       }
       PardisReadVal(ss)(m.asInstanceOf[Manifest[T]])
     }
-    /*case IfThenElse(cond, ifStmt, elseStmt) =>
+    case IfThenElse(cond, ifStmt, elseStmt) =>
       val ifStmtT = transformBlock(ifStmt)
       val elseStmtT = transformBlock(elseStmt)
       System.out.println(elseStmtT.res.tp)
-      IfThenElse(cond, ifStmt, elseStmt)(elseStmtT.res.tp)*/
+      IfThenElse(cond, ifStmtT, elseStmtT)(elseStmtT.res.tp)
+    case PardisNewVar(v) =>
+      val tv = transformExp(v)
+      PardisNewVar(tv)(tv.tp)
     case PardisReadVar(PardisVar(s)) =>
       val ss = transformExp(s)
       val m = {
@@ -144,7 +158,23 @@ class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[
         } else s.tp
       }
       PardisReadVar(PardisVar(ss.asInstanceOf[Expression[PardisVar[Any]]]))(m.asInstanceOf[Manifest[Any]])
-
+    case PardisAssign(PardisVar(a), b) =>
+      val ta = transformExp(a)
+      System.out.println(a.tp + "//" + ta.tp)
+      val tb = transformExp(b)
+      System.out.println(b.tp + "//" + tb.tp)
+      PardisAssign(PardisVar(ta.asInstanceOf[Expression[PardisVar[Any]]]), tb)
+    case or @ Boolean$bar$bar(case1, case2) => {
+      case2 match {
+        case b @ PardisBlock(stmt, res) =>
+          val newB = transformBlockTyped(b)
+          System.out.println(newB.tp)
+          ReadVal(newB)(newB.tp)
+          val v = boolean$bar$bar(case1, newB.res.asInstanceOf[Expression[Boolean]])
+          ReadVal(v)(manifest[Boolean])
+        case _ => or
+      }
+    }
     case ArrayFilter(a, op) =>
       val s = transformExp(a)
       val arr = field(s, "array")(s.tp.typeArguments.head)
@@ -224,29 +254,34 @@ object t1 extends TransformerFunction with HashMapOps with DeepDSL {
     }
   }
 }
+*/
 
-object t2 extends TransformerFunction with HashMapOps with TreeSetOps with DeepDSL {
+class t2(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
+  import IR._
   import CNodes._
-  val isRecursive = false
   def eq[A: Manifest] = doLambda2((x: Rep[A], y: Rep[A]) => unit(true))
   def hash[A: Manifest] = doLambda((x: Rep[A]) => unit(5))
-  def apply(n: Def[Any])(implicit context: DeepDSL): Def[Any] = {
-    n match {
-      case nm @ HashMapNew2()                  => reifyBlock({ GLibNew(eq(nm.manifestA), hash(nm.manifestA))(nm.manifestA, nm.manifestB, manifest[Int]) })
-      case HashMapSize(map)                    => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
-      case ma @ HashMapApply(map, key)         => NameAlias(None, "g_hash_table_lookup", List(List(map, key)))(ma.manifestB)
-      case mc @ HashMapContains(map, key)      => NameAlias[Boolean](None, "g_hash_table_contains", List(List(map, key)))
-      case mu @ HashMapUpdate(map, key, value) => NameAlias[Unit](None, "g_hash_table_insert", List(List(map, key, value)))
-      case mr @ HashMapRemove(map, key)        => NameAlias[Unit](None, "g_hash_table_remove", List(List(map, key)))
-      case op @ TreeSetHead(t)                 => NameAlias(None, "g_tree_head", List(List(t)))
-      case op @ TreeSetSize(t)                 => NameAlias(None, "g_tree_nnodes", List(List(t)))
-      case op @ TreeSet$minus$eq(self, t)      => NameAlias(None, "g_tree_remove", List(List(self, t)))
-      case op @ TreeSet$plus$eq(self, t)       => NameAlias(None, "g_tree_insert", List(List(self, t)))
-      case _                                   => n
-    }
-  }
+  override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = (node match {
+    case nm @ HashMapNew2_2()                => reifyBlock({ GHashTableNew(eq(nm.manifestA), hash(nm.manifestA))(nm.manifestA, nm.manifestB, manifest[Int]) })
+    case HashMapSize(map)                    => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
+    case HashMapKeySet(map)                  => NameAlias[Pointer[GList]](None, "g_hash_table_get_keys", List(List(map)))
+    case ma @ HashMapApply(map, key)         => NameAlias(None, "g_hash_table_lookup", List(List(map, key)))(ma.manifestB)
+    case mc @ HashMapContains(map, key)      => NameAlias[Boolean](None, "g_hash_table_contains", List(List(map, key)))
+    case mu @ HashMapUpdate(map, key, value) => NameAlias[Unit](None, "g_hash_table_insert", List(List(map, key, value)))
+    case mr @ HashMapRemove(map, key)        => NameAlias[Unit](None, "g_hash_table_remove", List(List(map, key)))
+    case nm @ SetNew(s)                      => ReadVal(transformExp(s))(transformType(s.tp).asInstanceOf[Manifest[T]])
+    case nm @ SetNew2()                      => NameAlias[Pointer[GList]](None, "g_list_new", List(List()))
+    case SetHead(s)                          => NameAlias(None, "g_list_first", List(List(s)))
+    case SetRemove(s, e)                     => NameAlias(None, "g_list_remove", List(List(s, e)))
+    case SetToSeq(set)                       => ReadVal(set)(transformType(set.tp).asInstanceOf[Manifest[Set[Any]]])
+    case op @ TreeSetHead(t)                 => NameAlias(None, "g_tree_head", List(List(t)))
+    case op @ TreeSetSize(t)                 => NameAlias(None, "g_tree_nnodes", List(List(t)))
+    case op @ TreeSet$minus$eq(self, t)      => NameAlias(None, "g_tree_remove", List(List(self, t)))
+    case op @ TreeSet$plus$eq(self, t)       => NameAlias(None, "g_tree_insert", List(List(self, t)))
+    case _                                   => super.transformDef(node)
+  }).asInstanceOf[to.Def[T]]
 }
-
+/*
 object t3 extends TransformerFunction with K2DBScannerOps with DeepDSL with CFunctions {
   import CNodes._
   val isRecursive = false

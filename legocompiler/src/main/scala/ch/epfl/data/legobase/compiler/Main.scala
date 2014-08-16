@@ -45,12 +45,14 @@ object Main extends LegoRunner {
     // Convert Scala constructs to C
     val scalaToC = new t3(lq.context)
     val transformedBlock = scalaToC.transformBlock(dceBlock)
+    val scalaToC2 = new t2(lq.context)
+    val transformedBlock2 = scalaToC2.transformBlock(transformedBlock)
 
     val ir2Program = new { val IR = lq.context } with IRToProgram {}
 
-    System.out.println(transformedBlock)
+    System.out.println(transformedBlock2)
 
-    val finalProgram = ir2Program.createProgram(transformedBlock)
+    val finalProgram = ir2Program.createProgram(transformedBlock2)
 
     val LegoGenerator = new LegoCGenerator(2, true)
     LegoGenerator.apply(finalProgram)
