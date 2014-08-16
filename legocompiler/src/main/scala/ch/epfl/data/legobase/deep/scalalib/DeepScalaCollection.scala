@@ -27,11 +27,11 @@ trait HashMapOps extends Base { this: DeepDSL =>
   def __newHashMap[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit overload1: Overloaded1, typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, B]] = hashMapNew1[A, B](contents)(typeA, typeB)
   def __newHashMap[A, B]()(implicit overload2: Overloaded2, typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, B]] = hashMapNew2[A, B]()(typeA, typeB)
   // case classes
-  case class HashMapNew1[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[HashMap[A, B]](None, "new HashMap", List(List(contents))) {
+  case class HashMapNew1[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[HashMap[A, B]](List(typeA, typeB), "HashMap", List(List(contents))) {
     override def curriedConstructor = (copy[A, B] _)
   }
 
-  case class HashMapNew2[A, B]()(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[HashMap[A, B]](None, "new HashMap", List(List())) {
+  case class HashMapNew2[A, B]()(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[HashMap[A, B]](List(typeA, typeB), "HashMap", List(List())) {
     override def curriedConstructor = (x: Any) => copy[A, B]()
   }
 
@@ -198,7 +198,7 @@ trait TreeSetOps extends Base { this: DeepDSL =>
   // constructors
   def __newTreeSet[A]()(ordering: Rep[Ordering[A]])(implicit typeA: TypeRep[A]): Rep[TreeSet[A]] = treeSetNew[A](ordering)(typeA)
   // case classes
-  case class TreeSetNew[A](ordering: Rep[Ordering[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[TreeSet[A]](None, "new TreeSet", List(List(), List(ordering))) {
+  case class TreeSetNew[A](ordering: Rep[Ordering[A]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[TreeSet[A]](List(typeA), "TreeSet", List(List(), List(ordering))) {
     override def curriedConstructor = (copy[A] _)
   }
 
@@ -266,7 +266,7 @@ trait DefaultEntryOps extends Base { this: DeepDSL =>
   // constructors
   def __newDefaultEntry[A, B](key: Rep[A], value: Rep[B])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[DefaultEntry[A, B]] = defaultEntryNew[A, B](key, value)(typeA, typeB)
   // case classes
-  case class DefaultEntryNew[A, B](key: Rep[A], value: Rep[B])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[DefaultEntry[A, B]](None, "new DefaultEntry", List(List(key, value))) {
+  case class DefaultEntryNew[A, B](key: Rep[A], value: Rep[B])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[DefaultEntry[A, B]](List(typeA, typeB), "DefaultEntry", List(List(key, value))) {
     override def curriedConstructor = (copy[A, B] _).curried
   }
 
@@ -331,11 +331,11 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
   def __newArrayBuffer[A](initialSize: Rep[Int])(implicit overload1: Overloaded1, typeA: TypeRep[A]): Rep[ArrayBuffer[A]] = arrayBufferNew1[A](initialSize)(typeA)
   def __newArrayBuffer[A]()(implicit overload2: Overloaded2, typeA: TypeRep[A]): Rep[ArrayBuffer[A]] = arrayBufferNew2[A]()(typeA)
   // case classes
-  case class ArrayBufferNew1[A](initialSize: Rep[Int])(implicit val typeA: TypeRep[A]) extends FunctionDef[ArrayBuffer[A]](None, "new ArrayBuffer", List(List(initialSize))) {
+  case class ArrayBufferNew1[A](initialSize: Rep[Int])(implicit val typeA: TypeRep[A]) extends ConstructorDef[ArrayBuffer[A]](List(typeA), "ArrayBuffer", List(List(initialSize))) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class ArrayBufferNew2[A]()(implicit val typeA: TypeRep[A]) extends FunctionDef[ArrayBuffer[A]](None, "new ArrayBuffer", List(List())) {
+  case class ArrayBufferNew2[A]()(implicit val typeA: TypeRep[A]) extends ConstructorDef[ArrayBuffer[A]](List(typeA), "ArrayBuffer", List(List())) {
     override def curriedConstructor = (x: Any) => copy[A]()
   }
 

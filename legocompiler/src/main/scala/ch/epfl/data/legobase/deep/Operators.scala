@@ -137,7 +137,7 @@ trait ScanOpOps extends Base { this: OperatorsComponent =>
   // constructors
   def __newScanOp[A](table: Rep[Array[A]])(implicit evidence$3: Manifest[A], typeA: TypeRep[A]): Rep[ScanOp[A]] = scanOpNew[A](table)(typeA, evidence$3)
   // case classes
-  case class ScanOpNew[A](table: Rep[Array[A]])(implicit val typeA: TypeRep[A], val evidence$3: Manifest[A]) extends FunctionDef[ScanOp[A]](None, "new ScanOp", List(List(table))) {
+  case class ScanOpNew[A](table: Rep[Array[A]])(implicit val typeA: TypeRep[A], val evidence$3: Manifest[A]) extends ConstructorDef[ScanOp[A]](List(typeA), "ScanOp", List(List(table))) {
     override def curriedConstructor = (copy[A] _)
   }
 
@@ -261,7 +261,7 @@ trait SelectOpOps extends Base { this: OperatorsComponent =>
   // constructors
   def __newSelectOp[A](parent: Rep[Operator[A]])(selectPred: Rep[(A => Boolean)])(implicit evidence$4: Manifest[A], typeA: TypeRep[A]): Rep[SelectOp[A]] = selectOpNew[A](parent, selectPred)(typeA, evidence$4)
   // case classes
-  case class SelectOpNew[A](parent: Rep[Operator[A]], selectPred: Rep[((A) => Boolean)])(implicit val typeA: TypeRep[A], val evidence$4: Manifest[A]) extends FunctionDef[SelectOp[A]](None, "new SelectOp", List(List(parent), List(selectPred))) {
+  case class SelectOpNew[A](parent: Rep[Operator[A]], selectPred: Rep[((A) => Boolean)])(implicit val typeA: TypeRep[A], val evidence$4: Manifest[A]) extends ConstructorDef[SelectOp[A]](List(typeA), "SelectOp", List(List(parent), List(selectPred))) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -386,7 +386,7 @@ trait AggOpOps extends Base { this: OperatorsComponent =>
   // constructors
   def __newAggOp[A, B](parent: Rep[Operator[A]], numAggs: Rep[Int])(grp: Rep[(A => B)])(aggFuncs: Rep[((A, Double) => Double)]*)(implicit evidence$5: Manifest[A], evidence$6: Manifest[B], typeA: TypeRep[A], typeB: TypeRep[B]): Rep[AggOp[A, B]] = aggOpNew[A, B](parent, numAggs, grp, aggFuncs: _*)(typeA, typeB, evidence$5, evidence$6)
   // case classes
-  case class AggOpNew[A, B](parent: Rep[Operator[A]], numAggs: Rep[Int], grp: Rep[((A) => B)], aggFuncsOutput: Rep[Seq[((A, Double) => Double)]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$5: Manifest[A], val evidence$6: Manifest[B]) extends FunctionDef[AggOp[A, B]](None, "new AggOp", List(List(parent, numAggs), List(grp), List(__varArg(aggFuncsOutput)))) {
+  case class AggOpNew[A, B](parent: Rep[Operator[A]], numAggs: Rep[Int], grp: Rep[((A) => B)], aggFuncsOutput: Rep[Seq[((A, Double) => Double)]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$5: Manifest[A], val evidence$6: Manifest[B]) extends ConstructorDef[AggOp[A, B]](List(typeA, typeB), "AggOp", List(List(parent, numAggs), List(grp), List(__varArg(aggFuncsOutput)))) {
     override def curriedConstructor = (copy[A, B] _).curried
   }
 
@@ -581,7 +581,7 @@ trait SortOpOps extends Base { this: OperatorsComponent =>
   // constructors
   def __newSortOp[A](parent: Rep[Operator[A]])(orderingFunc: Rep[((A, A) => Int)])(implicit evidence$7: Manifest[A], typeA: TypeRep[A]): Rep[SortOp[A]] = sortOpNew[A](parent, orderingFunc)(typeA, evidence$7)
   // case classes
-  case class SortOpNew[A](parent: Rep[Operator[A]], orderingFunc: Rep[((A, A) => Int)])(implicit val typeA: TypeRep[A], val evidence$7: Manifest[A]) extends FunctionDef[SortOp[A]](None, "new SortOp", List(List(parent), List(orderingFunc))) {
+  case class SortOpNew[A](parent: Rep[Operator[A]], orderingFunc: Rep[((A, A) => Int)])(implicit val typeA: TypeRep[A], val evidence$7: Manifest[A]) extends ConstructorDef[SortOp[A]](List(typeA), "SortOp", List(List(parent), List(orderingFunc))) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -718,7 +718,7 @@ trait MapOpOps extends Base { this: OperatorsComponent =>
   // constructors
   def __newMapOp[A](parent: Rep[Operator[A]])(aggFuncs: Rep[(A => Unit)]*)(implicit evidence$8: Manifest[A], typeA: TypeRep[A]): Rep[MapOp[A]] = mapOpNew[A](parent, aggFuncs: _*)(typeA, evidence$8)
   // case classes
-  case class MapOpNew[A](parent: Rep[Operator[A]], aggFuncsOutput: Rep[Seq[((A) => Unit)]])(implicit val typeA: TypeRep[A], val evidence$8: Manifest[A]) extends FunctionDef[MapOp[A]](None, "new MapOp", List(List(parent), List(__varArg(aggFuncsOutput)))) {
+  case class MapOpNew[A](parent: Rep[Operator[A]], aggFuncsOutput: Rep[Seq[((A) => Unit)]])(implicit val typeA: TypeRep[A], val evidence$8: Manifest[A]) extends ConstructorDef[MapOp[A]](List(typeA), "MapOp", List(List(parent), List(__varArg(aggFuncsOutput)))) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -848,7 +848,7 @@ trait PrintOpOps extends Base { this: OperatorsComponent =>
   // constructors
   def __newPrintOp[A](parent: Rep[Operator[A]])(printFunc: Rep[(A => Unit)], limit: Rep[(() => Boolean)])(implicit evidence$9: Manifest[A], typeA: TypeRep[A]): Rep[PrintOp[A]] = printOpNew[A](parent, printFunc, limit)(typeA, evidence$9)
   // case classes
-  case class PrintOpNew[A](parent: Rep[Operator[A]], printFunc: Rep[((A) => Unit)], limit: Rep[(() => Boolean)])(implicit val typeA: TypeRep[A], val evidence$9: Manifest[A]) extends FunctionDef[PrintOp[A]](None, "new PrintOp", List(List(parent), List(printFunc, limit))) {
+  case class PrintOpNew[A](parent: Rep[Operator[A]], printFunc: Rep[((A) => Unit)], limit: Rep[(() => Boolean)])(implicit val typeA: TypeRep[A], val evidence$9: Manifest[A]) extends ConstructorDef[PrintOp[A]](List(typeA), "PrintOp", List(List(parent), List(printFunc, limit))) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -1009,7 +1009,7 @@ trait HashJoinOpOps extends Base { this: OperatorsComponent =>
   // constructors
   def __newHashJoinOp[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String])(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit evidence$10: Manifest[A], evidence$11: Manifest[B], evidence$12: Manifest[C], typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = hashJoinOpNew[A, B, C](leftParent, rightParent, leftAlias, rightAlias, joinCond, leftHash, rightHash)(typeA, typeB, typeC, evidence$10, evidence$11, evidence$12)
   // case classes
-  case class HashJoinOpNew[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$10: Manifest[A], val evidence$11: Manifest[B], val evidence$12: Manifest[C]) extends FunctionDef[HashJoinOp[A, B, C]](None, "new HashJoinOp", List(List(leftParent, rightParent, leftAlias, rightAlias), List(joinCond), List(leftHash), List(rightHash))) {
+  case class HashJoinOpNew[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$10: Manifest[A], val evidence$11: Manifest[B], val evidence$12: Manifest[C]) extends ConstructorDef[HashJoinOp[A, B, C]](List(typeA, typeB, typeC), "HashJoinOp", List(List(leftParent, rightParent, leftAlias, rightAlias), List(joinCond), List(leftHash), List(rightHash))) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -1253,7 +1253,7 @@ trait WindowOpOps extends Base { this: OperatorsComponent =>
   // constructors
   def __newWindowOp[A, B, C](parent: Rep[Operator[A]])(grp: Rep[(A => B)])(wndf: Rep[(ArrayBuffer[A] => C)])(implicit evidence$13: Manifest[A], evidence$14: Manifest[B], evidence$15: Manifest[C], typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowOp[A, B, C]] = windowOpNew[A, B, C](parent, grp, wndf)(typeA, typeB, typeC, evidence$13, evidence$14, evidence$15)
   // case classes
-  case class WindowOpNew[A, B, C](parent: Rep[Operator[A]], grp: Rep[((A) => B)], wndf: Rep[((ArrayBuffer[A]) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$13: Manifest[A], val evidence$14: Manifest[B], val evidence$15: Manifest[C]) extends FunctionDef[WindowOp[A, B, C]](None, "new WindowOp", List(List(parent), List(grp), List(wndf))) {
+  case class WindowOpNew[A, B, C](parent: Rep[Operator[A]], grp: Rep[((A) => B)], wndf: Rep[((ArrayBuffer[A]) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$13: Manifest[A], val evidence$14: Manifest[B], val evidence$15: Manifest[C]) extends ConstructorDef[WindowOp[A, B, C]](List(typeA, typeB, typeC), "WindowOp", List(List(parent), List(grp), List(wndf))) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 

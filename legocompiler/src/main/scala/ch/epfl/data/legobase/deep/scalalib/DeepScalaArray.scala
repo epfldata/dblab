@@ -22,7 +22,7 @@ trait ArrayOps extends Base { this: DeepDSL =>
   // constructors
   def __newArray[T](_length: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Array[T]] = arrayNew[T](_length)(typeT)
   // case classes
-  case class ArrayNew[T](_length: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[Array[T]](None, "new Array", List(List(_length))) {
+  case class ArrayNew[T](_length: Rep[Int])(implicit val typeT: TypeRep[T]) extends ConstructorDef[Array[T]](List(typeT), "Array", List(List(_length))) {
     override def curriedConstructor = (copy[T] _)
   }
 

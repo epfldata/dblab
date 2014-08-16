@@ -143,7 +143,7 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   type Char = Character
 
-  def newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)
+  // def newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)
 
   object GenericEngine {
     def newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)
@@ -161,23 +161,23 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   }
 
   // constructors
-  override def arrayNew[T](_length: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Array[T]] = ArrayNew2[T](_length)(typeT)
+  // override def arrayNew[T](_length: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Array[T]] = ArrayNew2[T](_length)(typeT)
 
   // case classes
-  case class ArrayNew2[T](_length: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[Array[T]](None, s"new Array[${t2s(typeT)}]", List(List(_length))) {
-    override def curriedConstructor = (copy[T] _)
-  }
+  // case class ArrayNew2[T](_length: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[Array[T]](None, s"new Array[${t2s(typeT)}]", List(List(_length))) {
+  //   override def curriedConstructor = (copy[T] _)
+  // }
 
-  override def arrayBufferNew1[A](initialSize: Rep[Int])(implicit typeA: TypeRep[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew1_2[A](initialSize)
-  override def arrayBufferNew2[A]()(implicit typeA: TypeRep[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew2_2[A]()
+  // override def arrayBufferNew1[A](initialSize: Rep[Int])(implicit typeA: TypeRep[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew1_2[A](initialSize)
+  // override def arrayBufferNew2[A]()(implicit typeA: TypeRep[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew2_2[A]()
 
-  case class ArrayBufferNew1_2[A](initialSize: Rep[Int])(implicit val typeA: TypeRep[A]) extends FunctionDef[ArrayBuffer[A]](None, s"new ArrayBuffer[${t2s(typeA)}]", List(List(initialSize))) {
-    override def curriedConstructor = (copy[A] _)
-  }
+  // case class ArrayBufferNew1_2[A](initialSize: Rep[Int])(implicit val typeA: TypeRep[A]) extends FunctionDef[ArrayBuffer[A]](None, s"new ArrayBuffer[${t2s(typeA)}]", List(List(initialSize))) {
+  //   override def curriedConstructor = (copy[A] _)
+  // }
 
-  case class ArrayBufferNew2_2[A]()(implicit val typeA: TypeRep[A]) extends FunctionDef[ArrayBuffer[A]](None, s"new ArrayBuffer[${t2s(typeA)}]", List()) {
-    override def curriedConstructor = (x: Any) => copy[A]()
-  }
+  // case class ArrayBufferNew2_2[A]()(implicit val typeA: TypeRep[A]) extends FunctionDef[ArrayBuffer[A]](None, s"new ArrayBuffer[${t2s(typeA)}]", List()) {
+  //   override def curriedConstructor = (x: Any) => copy[A]()
+  // }
 
   implicit class ArrayRep2[T](self: Rep[Array[T]])(implicit typeT: TypeRep[T]) {
     def filter(p: Rep[T => Boolean]): Rep[Array[T]] = arrayFilter(self, p)
@@ -190,11 +190,11 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  override def hashMapNew2[A, B]()(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, B]] = HashMapNew2_2[A, B]()
+  // override def hashMapNew2[A, B]()(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, B]] = HashMapNew2_2[A, B]()
 
-  case class HashMapNew2_2[A, B]()(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[HashMap[A, B]](None, s"new HashMap[${t2s(typeA)}, ${t2s(typeB)}]", List()) {
-    override def curriedConstructor = (x: Any) => copy[A, B]()
-  }
+  // case class HashMapNew2_2[A, B]()(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[HashMap[A, B]](None, s"new HashMap[${t2s(typeA)}, ${t2s(typeB)}]", List()) {
+  //   override def curriedConstructor = (x: Any) => copy[A, B]()
+  // }
 
   case class ArrayEquals[T1: TypeRep, T2: TypeRep](self: Rep[Array[T1]], o: Rep[Array[T2]]) extends FunctionDef[Boolean](Some(self), "===", List(List(o))) {
     override def curriedConstructor = (copy[T1, T2] _).curried
@@ -223,6 +223,11 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   }
   implicit def typeContents[T: TypeRep, S: TypeRep] = ContentsType[T, S](implicitly[TypeRep[T]], implicitly[TypeRep[S]])
 
+  override def aGGRecordNew[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = AGGRecordNew2[B](key, aggs)
+
+  case class AGGRecordNew2[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit val typeB: TypeRep[B]) extends ConstructorDef[AGGRecord[B]](List(), "AGGRecord", List(List(key, aggs))) {
+    override def curriedConstructor = (copy[B] _).curried
+  }
 }
 
 // TODO should be generated automatically
