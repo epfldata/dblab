@@ -6,6 +6,7 @@ package deep
 package scalalib
 
 import pardis.ir._
+import pardis.ir.pardisTypeImplicits._
 
 trait IntOps extends Base { this: DeepDSL =>
   implicit class IntRep(self: Rep[Int]) {
@@ -890,6 +891,13 @@ trait IntOps extends Base { this: DeepDSL =>
   def int$percent6(self: Rep[Int], x: Rep[Float]): Rep[Float] = Int$percent6(self, x)
   def int$percent7(self: Rep[Int], x: Rep[Double]): Rep[Double] = Int$percent7(self, x)
   type Int = scala.Int
+  case object IntType extends TypeRep[Int] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = IntType
+    val name = "Int"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[Int]
+  }
+  implicit val typeInt = IntType
 }
 trait IntImplicits { this: IntComponent =>
   // Add implicit conversions here!
@@ -1606,6 +1614,13 @@ trait DoubleOps extends Base { this: DeepDSL =>
   def double$percent6(self: Rep[Double], x: Rep[Float]): Rep[Double] = Double$percent6(self, x)
   def double$percent7(self: Rep[Double], x: Rep[Double]): Rep[Double] = Double$percent7(self, x)
   type Double = scala.Double
+  case object DoubleType extends TypeRep[Double] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = DoubleType
+    val name = "Double"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[Double]
+  }
+  implicit val typeDouble = DoubleType
 }
 trait DoubleImplicits { this: DoubleComponent =>
   // Add implicit conversions here!
@@ -1652,6 +1667,13 @@ trait CharacterOps extends Base { this: DeepDSL =>
   def characterCharValue(self: Rep[Character]): Rep[Char] = CharacterCharValue(self)
   def character_Field_Value(self: Rep[Character]): Rep[Char] = Character_Field_Value(self)
   type Character = java.lang.Character
+  case object CharacterType extends TypeRep[Character] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = CharacterType
+    val name = "Character"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[Character]
+  }
+  implicit val typeCharacter = CharacterType
 }
 trait CharacterImplicits { this: CharacterComponent =>
   // Add implicit conversions here!
@@ -2544,6 +2566,13 @@ trait LongOps extends Base { this: DeepDSL =>
   def long$percent6(self: Rep[Long], x: Rep[Float]): Rep[Float] = Long$percent6(self, x)
   def long$percent7(self: Rep[Long], x: Rep[Double]): Rep[Double] = Long$percent7(self, x)
   type Long = scala.Long
+  case object LongType extends TypeRep[Long] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LongType
+    val name = "Long"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[Long]
+  }
+  implicit val typeLong = LongType
 }
 trait LongImplicits { this: LongComponent =>
   // Add implicit conversions here!
@@ -2620,6 +2649,13 @@ trait IntegerOps extends Base { this: DeepDSL =>
   def integerDoubleValue(self: Rep[Integer]): Rep[Double] = IntegerDoubleValue(self)
   def integer_Field_Value(self: Rep[Integer]): Rep[Int] = Integer_Field_Value(self)
   type Integer = java.lang.Integer
+  case object IntegerType extends TypeRep[Integer] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = IntegerType
+    val name = "Integer"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[Integer]
+  }
+  implicit val typeInteger = IntegerType
 }
 trait IntegerImplicits { this: IntegerComponent =>
   // Add implicit conversions here!
@@ -2710,6 +2746,13 @@ trait BooleanOps extends Base { this: DeepDSL =>
   def boolean$amp(self: Rep[Boolean], x: Rep[Boolean]): Rep[Boolean] = Boolean$amp(self, x)
   def boolean$up(self: Rep[Boolean], x: Rep[Boolean]): Rep[Boolean] = Boolean$up(self, x)
   type Boolean = scala.Boolean
+  case object BooleanType extends TypeRep[Boolean] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = BooleanType
+    val name = "Boolean"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[Boolean]
+  }
+  implicit val typeBoolean = BooleanType
 }
 trait BooleanImplicits { this: BooleanComponent =>
   // Add implicit conversions here!

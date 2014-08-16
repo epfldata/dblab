@@ -16,14 +16,14 @@ class LBParameterPromotion(override val IR: LoweringLegoBase) extends ParameterP
   //   res
   // }
   def escapeAnalysis[T](sym: Sym[T], rhs: Def[T]): Unit = {
-    rhs match {
+    rhs.tp match {
       // TODO should be changed to an automatic version using escape analysis
-      case _ if List(classOf[AggOp[_, _]], classOf[PrintOp[_]], classOf[ScanOp[_]], classOf[MapOp[_]], classOf[SelectOp[_]], classOf[SortOp[_]], classOf[HashJoinOp[_, _, _]], classOf[WindowOp[_, _, _]]).contains(rhs.tp.runtimeClass) => promotedObjects += sym
+      case AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) => promotedObjects += sym
       case _ => ()
     }
   }
 
-  override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = node match {
+  override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = node match {
     // case pc @ PardisCast(exp) => {
     //   System.out.print("--->")
     //   System.out.print(pc)

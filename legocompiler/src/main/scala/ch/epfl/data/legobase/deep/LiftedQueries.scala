@@ -2,6 +2,7 @@ package ch.epfl.data
 package legobase
 package deep
 
+import ch.epfl.data.pardis.ir.pardisTypeImplicits._
 import scala.language.reflectiveCalls
 // FIXME there's a bug for AggOpNew. The functions should not be (Rep[T] => Rep[S])* but they should be two distinct parameters Rep[T]* and Rep[S]*
 // which ideally should be zipped together to perform further operations
@@ -18,7 +19,7 @@ class LiftedQueries {
       runQuery {
         val constantDate = parseDate(unit("1998-08-11"))
         val lineitemScan = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_SHIPDATE <= constantDate })
-        val aggOp = __newAggOp(lineitemScan, unit(9))(__lambda { x =>
+        /*  val aggOp = __newAggOp(lineitemScan, unit(9))(__lambda { x =>
           groupByClassNew(
             x.L_RETURNFLAG, x.L_LINESTATUS)
         })(
@@ -28,7 +29,7 @@ class LiftedQueries {
           __lambda { (t, currAgg) => { (t.L_EXTENDEDPRICE * (unit(1.0) - t.L_DISCOUNT)) + currAgg } },
           __lambda { (t, currAgg) => { (t.L_EXTENDEDPRICE * (unit(1.0) - t.L_DISCOUNT) * (unit(1.0) + t.L_TAX)) + currAgg } },
           __lambda { (t, currAgg) => { currAgg + unit(1) } })
-        /*val mapOp = __newMapOp(aggOp)(__lambda { (kv) => kv.aggs(6) = kv.aggs(1) / kv.aggs(5) }, // AVG(L_QUANTITY)
+        val mapOp = __newMapOp(aggOp)(__lambda { (kv) => kv.aggs(6) = kv.aggs(1) / kv.aggs(5) }, // AVG(L_QUANTITY)
           __lambda { (kv) => kv.aggs(7) = kv.aggs(2) / kv.aggs(5) }, // AVG(L_EXTENDEDPRICE)
           __lambda { (kv) => kv.aggs(8) = kv.aggs(0) / kv.aggs(5) }) // AVG(L_DISCOUNT)
         val sortOp = __newSortOp(mapOp)(__lambda { (kv1, kv2) =>
@@ -41,15 +42,15 @@ class LiftedQueries {
               unit(()))
             res
           }
-        })*/
+        })
         val po = __newPrintOp2(aggOp)(__lambda { kv =>
           printf(unit("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n"),
             kv.key.L_RETURNFLAG, kv.key.L_LINESTATUS, kv.aggs(1), kv.aggs(2), kv.aggs(3), kv.aggs(4),
             kv.aggs(6), kv.aggs(7), kv.aggs(8), kv.aggs(5))
-        })
-        /*val po = __newPrintOp2(lineitemScan)(__lambda { kv =>
-          printf(unit("RECORD FOUND\n"))
         })*/
+        val po = __newPrintOp2(lineitemScan)(__lambda { kv =>
+          printf(unit("RECORD FOUND\n"))
+        })
 
         po.open
         po.next
@@ -154,9 +155,50 @@ class LiftedQueries {
       }
     }
 
+    def q5 = {
+      val lineitemTable = loadLineitem()
+      val nationTable = loadNation()
+      val customerTable = loadCustomer()
+      val supplierTable = loadSupplier()
+      val regionTable = loadRegion()
+      val ordersTable = loadOrders()
+      runQuery({
+        val constantDate1 = parseDate(unit("1996-01-01"))
+        val constantDate2 = parseDate(unit("1997-01-01"))
+        val scanRegion = __newSelectOp(__newScanOp(regionTable))(__lambda { x => infix_==(x.R_NAME, parseString(unit("ASIA"))) })
+        val scanNation = __newScanOp(nationTable)
+        val scanSupplier = __newScanOp(supplierTable)
+        val scanCustomer = __newScanOp(customerTable)
+        val scanLineitem = __newScanOp(lineitemTable)
+        val scanOrders = __newSelectOp(__newScanOp(ordersTable))(__lambda { x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE < constantDate2 })
+        val jo1 = __newHashJoinOp2(scanRegion, scanNation)(__lambda { (x, y) => infix_==(x.R_REGIONKEY, y.N_REGIONKEY) })(__lambda { x => x.R_REGIONKEY })(__lambda { x => x.N_REGIONKEY })
+        val jo2 = __newHashJoinOp2(jo1, scanSupplier)(__lambda { (x, y) => infix_==(x.f.N_NATIONKEY[Int], y.S_NATIONKEY) })(__lambda { x => x.f.N_NATIONKEY[Int] })(__lambda { x => x.S_NATIONKEY })
+        val jo3 = __newHashJoinOp2(jo2, scanCustomer)(__lambda { (x, y) => infix_==(x.f.N_NATIONKEY[Int], y.C_NATIONKEY) })(__lambda { x => x.f.S_NATIONKEY[Int] })(__lambda { x => x.C_NATIONKEY })
+        val jo4 = __newHashJoinOp2(jo3, scanOrders)(__lambda { (x, y) => infix_==(x.f.C_CUSTKEY[Int], y.O_CUSTKEY) })(__lambda { x => x.f.C_CUSTKEY[Int] })(__lambda { x => x.O_CUSTKEY })
+        val jo5 = __newSelectOp(__newHashJoinOp2(jo4, scanLineitem)(__lambda { (x, y) => infix_==(x.f.O_ORDERKEY[Int], y.L_ORDERKEY) })(__lambda { x => x.f.O_ORDERKEY[Int] })(__lambda { x => x.L_ORDERKEY }))(__lambda { x => infix_==(x.f.S_SUPPKEY[Int], x.f.L_SUPPKEY[Int]) })
+        val aggOp = __newAggOp(jo5, unit(1))(__lambda { x => x.f.N_NAME[LBString] })(
+          __lambda { (t, currAgg) => { currAgg + t.f.L_EXTENDEDPRICE[Double] * (unit(1.0) - t.f.L_DISCOUNT[Double]) } })
+        val sortOp = __newSortOp(aggOp)(__lambda { (x, y) =>
+          {
+            __ifThenElse(x.aggs(unit(0)) < y.aggs(unit(0)),
+              unit(1),
+              __ifThenElse(x.aggs(unit(0)) > y.aggs(unit(0)),
+                unit(-1),
+                unit(0)))
+          }
+        })
+        val po = __newPrintOp2(sortOp)(__lambda { kv => printf(unit("%s|%.4f\n"), kv.key.string, kv.aggs(unit(0))) })
+        po.open
+        po.next
+        printf(unit("(%d rows)\n"), po.numRows)
+        unit(())
+      })
+    }
+
     def q1Block = reifyBlock(q1)
     def q1_uBlock = reifyBlock(q1_u)
     def q2Block = reifyBlock(q2)
+    def q5Block = reifyBlock(q5)
   }
 
   def Q1() =
@@ -167,4 +209,7 @@ class LiftedQueries {
 
   def Q2() =
     context.q2Block
+
+  def Q5() =
+    context.q5Block
 }

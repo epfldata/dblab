@@ -6,6 +6,7 @@ import scala.language.existentials
 import ch.epfl.data.pardis.shallow.OptimalString
 import scala.collection.mutable.ArrayBuffer
 import ch.epfl.data.pardis.ir._
+import ch.epfl.data.pardis.ir.pardisTypeImplicits._
 import ch.epfl.data.legobase.deep.scalalib._
 import legobase.deep._
 import pardis.optimization._
@@ -16,22 +17,29 @@ import ch.epfl.data.pardis.ir.StructTags._
 
 trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base =>
   import CNodes._
-  // Hack will be removed once lewis has the manifest thing ready
-  override def structName[T](m: Manifest[T]): String = {
-    if (m <:< manifest[CArray[Any]]) "ArrayOf" + structName(m.typeArguments.last)
-    else if (m <:< manifest[Pointer[Any]]) structName(m.typeArguments.last)
-    else if (m.runtimeClass.toString == "byte") "char"
-    //"XM"
-    //    "LALA"
-    else { System.out.println("MPLOYM " + m.runtimeClass.toString); super.structName(m) }
+  override def structName[T](m: PardisType[T]): String = {
+    if (m.name.startsWith("CArray")) "ArrayOf" + structName(m.typeArguments.last)
+    else if (m.name.startsWith("Array")) structName(m.typeArguments.last)
+    else if (m.name.startsWith("Pointer")) structName(m.typeArguments.last)
+    else if (m.name == "Byte") "char"
+    else { System.out.println("MPLOYM " + m.name); super.structName(m) }
   }
 }
 
 class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
   import IR._
   import CNodes._
+  import CTypes._
 
-  override def transformType[T: Manifest]: Manifest[Any] = {
+  /*  override def transformType[T: PardisType]: PardisType[Any] = ({
+    System.out.println("I am called")
+    val tp = typeRep[T]
+    System.out.println(tp.name)
+    if (tp.name.startsWith("Array")) {
+      typeCArray(typeArray(tp.typeArguments(0)))
+    } else super.transformType[T]
+  }).asInstanceOf[PardisType[Any]]*/
+  /*override def transformType[T: Manifest]: Manifest[Any] = {
     val tp = manifest[T].asInstanceOf[Manifest[Any]]
     (if (tp.runtimeClass.isArray) {
       getArrayManifest({
@@ -52,9 +60,9 @@ class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[
       System.out.println("@@@" + res)
       res
     } else { System.out.println("---> " + tp); tp }).asInstanceOf[Manifest[Any]]
-  }
+  }*/
 
-  override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = (node match {
+  override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
     // Mapping Scala Scanner operations to C FILE operations
     case K2DBScannerNew(f) => NameAlias[FILE](None, "fopen", List(List(f, unit("r"))))
     case K2DBScannerNext_int(s) =>
@@ -74,11 +82,12 @@ class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[
       __whileDo(unit(true), {
         val v = readVar(__newVar(unit('a')))
         __ifThenElse(infix_==(fscanf(s, unit("%c"), &(v)), eof), break, unit)
-        __ifThenElse[Unit]((infix_==(ReadVal(v), unit('|')) || infix_==(ReadVal(v), unit('\n'))), break, unit)
-        toAtom(transformDef(ArrayUpdate(buf.asInstanceOf[Expression[Array[AnyVal]]], readVar(i), ReadVal(v))))
+        val z = infix_==(ReadVal(v), unit('\n'))
+        __ifThenElse[Unit]((infix_==(ReadVal(v), unit('|')) || z), break, unit)
+        toAtom(transformDef(ArrayUpdate(buf.asInstanceOf[Expression[Array[AnyVal]]], readVar(i), ReadVal(v))(buf.tp.typeArguments(0).asInstanceOf[TypeRep[AnyVal]])))
         __assign(i, readVar(i) + unit(1))
       })
-      toAtom(transformDef(ArrayUpdate(buf.asInstanceOf[Expression[Array[AnyVal]]], readVar(i), unit('\0'))))
+      toAtom(transformDef(ArrayUpdate(buf.asInstanceOf[Expression[Array[AnyVal]]], readVar(i), unit('\0'))(buf.tp.typeArguments(0).asInstanceOf[TypeRep[AnyVal]])))
       ReadVar(i)
     case K2DBScannerNext_date(s) =>
       val x = readVar(__newVar[Int](unit(0)))
@@ -95,56 +104,67 @@ class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[
       ReadVal(cnt)
     case OptimalStringNew(x) => x.correspondingNode
     case s @ PardisStruct(tag, elems) =>
-      val x = malloc(unit(1))(s.manifestT)
+      val x = malloc(unit(1))(s.tp)
       structCopy(x, s)
-      ReadVal(x)(getPointerManifest(s.tp))
+      ReadVal(x)(typePointer(s.tp))
     // Mapping Scala Array to C Array
     case a @ ArrayNew2(x) =>
-      /* Allocate original array */
+      // Get type of elements stored in array
+      val elemType = a.tp.typeArguments(0)
+      // Allocate original array
       val array = {
-        if (a.manifestT.runtimeClass.isPrimitive) malloc(x)(a.manifestT)
-        else malloc(x)(getPointerManifest(a.manifestT))
+        if (elemType.isPrimitive) malloc(x)(elemType)
+        else malloc(x)(typePointer(elemType))
       }
-      /* Create wrapper with length */
-      val am = getArrayManifest(a.manifestT)
-      val s = Struct(ClassTag(structName(am)), Seq(
-        PardisStructArg("array", false, array),
-        PardisStructArg("length", false, x)))(am)
-      /* Initialize wrapper */
+      // Create wrapper with length
+      val am = typeCArray(typeArray(elemType))
+      val s = __new(("array", false, array), ("length", false, x))(am)
       val m = malloc(unit(1))(am)
-      structCopy(m.asInstanceOf[Expression[Pointer[Any]]], Struct(s.tag, s.elems))
-      ReadVal(m.asInstanceOf[Expression[Any]])(m.tp.asInstanceOf[Manifest[Any]])
+      structCopy(m.asInstanceOf[Expression[Pointer[Any]]], s)
+      ReadVal(m.asInstanceOf[Expression[Any]])(m.tp.asInstanceOf[PardisType[Any]])
     case au @ ArrayUpdate(a, i, v) => {
-      val s = transformExp(a)
-      val arr = field(s, "array")(s.tp.typeArguments.head)
+      val s = transformExp[Any, T](a)
+      // Get type of elements stored in array
+      val elemType = a.tp.typeArguments(0)
+      // Get type of internal array
+      val newTp = if (elemType.isPrimitive) elemType else typePointer(elemType)
+      // Read array and perform update
+      val arr = field(s, "array")(typePointer(newTp))
       ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, v)
     }
-    case ArrayApply(a, i) =>
+    case ArrayFilter(a, op) =>
+      val s = transformExp[Any, T](a)
+      // Get type of elements stored in array
+      val elemType = a.tp.typeArguments(0)
+      // Get type of internal array
+      val newTp = if (elemType.isPrimitive) elemType else typePointer(elemType)
+      val arr = field(s, "array")(newTp)
+      ReadVal(arr)(arr.tp)
+    /* case ArrayApply(a, i) =>
       val s = transformExp(a)
       val arr = field(s, "array")(s.tp.typeArguments.head)
       ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], i)(s.tp.typeArguments.head.typeArguments.head.asInstanceOf[Manifest[Any]])
     case ArrayLength(a) =>
       val s = transformExp(a)
       val arr = field(s, "length")(manifest[Int])
-      ReadVal(arr)(manifest[Int])
+      ReadVal(arr)(manifest[Int])*/
     case PardisReadVal(s) => {
       val ss = transformExp(s)
       val m = {
-        if (s.tp.runtimeClass.isArray) {
-          getArrayManifest({
+        if (s.tp.name.startsWith("Array")) {
+          typeCArray({
             if (s.tp.typeArguments.head.runtimeClass.isPrimitive) s.tp.typeArguments.head
             else (getPointerManifest(s.tp.typeArguments.head))
           })
         } else transformType(s.tp)
       }
-      PardisReadVal(ss)(m.asInstanceOf[Manifest[T]])
+      PardisReadVal(ss)(m.asInstanceOf[PardisType[T]])
     }
     case IfThenElse(cond, ifStmt, elseStmt) =>
       val ifStmtT = transformBlock(ifStmt)
       val elseStmtT = transformBlock(elseStmt)
-      System.out.println(elseStmtT.res.tp)
       IfThenElse(cond, ifStmtT, elseStmtT)(elseStmtT.res.tp)
-    case PardisNewVar(v) =>
+    /*case PardisNewVar(v) =>
       val tv = transformExp(v)
       PardisNewVar(tv)(tv.tp)
     case PardisReadVar(PardisVar(s)) =>
@@ -163,24 +183,20 @@ class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[
       System.out.println(a.tp + "//" + ta.tp)
       val tb = transformExp(b)
       System.out.println(b.tp + "//" + tb.tp)
-      PardisAssign(PardisVar(ta.asInstanceOf[Expression[PardisVar[Any]]]), tb)
+      PardisAssign(PardisVar(ta.asInstanceOf[Expression[PardisVar[Any]]]), tb)*/
     case or @ Boolean$bar$bar(case1, case2) => {
+      System.out.println("ZITW!")
       case2 match {
         case b @ PardisBlock(stmt, res) =>
-          val newB = transformBlockTyped(b)
-          System.out.println(newB.tp)
+          val newB = transformBlockTyped[Boolean, T](b)
           ReadVal(newB)(newB.tp)
           val v = boolean$bar$bar(case1, newB.res.asInstanceOf[Expression[Boolean]])
-          ReadVal(v)(manifest[Boolean])
+          ReadVal(v)(BooleanType)
         case _ => or
       }
     }
-    case ArrayFilter(a, op) =>
-      val s = transformExp(a)
-      val arr = field(s, "array")(s.tp.typeArguments.head)
-      ReadVal(arr)(arr.tp)
     // Profiling and utils functions mapping
-    case pc @ PardisCast(Constant(null)) => PardisCast(Constant(0.asInstanceOf[Any]))(pc.castFrom, getPointerManifest(pc.castTp))
+    case pc @ PardisCast(Constant(null)) => PardisCast(Constant(0.asInstanceOf[Any]))(pc.castFrom, typePointer(pc.castTp))
     case RunQuery(b) =>
       val diff = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val start = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
@@ -220,7 +236,7 @@ class SerialTransformer(implicit val context: DeepDSL) {
         case ifte @ PardisIfThenElse(cond, thenp, elsep) =>
           PardisIfThenElse(ifte.cond,
             transformBlock(ifte.thenp, if (!t.isRecursive) tl else tl diff List(t)),
-            transformBlock(ifte.elsep, if (!t.isRecursive) tl else tl diff List(t)))(ifte.manifestT)
+            transformBlock(ifte.elsep, if (!t.isRecursive) tl else tl diff List(t)))(ifte.typeT)
         case w @ PardisWhile(cond, block) =>
           PardisWhile(
             transformBlock(cond, if (!t.isRecursive) tl else tl diff List(t)),
@@ -230,7 +246,7 @@ class SerialTransformer(implicit val context: DeepDSL) {
     }))
   }
 
-  def transformBlock[A: Manifest](b: PardisBlock[A], tl: List[TransformerFunction]): PardisBlock[A] =
+  def transformBlock[A: PardisType](b: PardisBlock[A], tl: List[TransformerFunction]): PardisBlock[A] =
     PardisBlock(b.stmts.map(st => transformStmt(st, tl)), b.res)
 }
 
@@ -241,15 +257,15 @@ object t1 extends TransformerFunction with HashMapOps with DeepDSL {
     n match {
       case geu @ HashMapGetOrElseUpdate(map, key, value) =>
         reifyBlock({
-          __ifThenElse(hashMapContains(map, key)(geu.manifestA, geu.manifestB),
-            hashMapApply(map, key)(geu.manifestA, geu.manifestB),
-            hashMapUpdate(map, key, value)(geu.manifestA, geu.manifestB))(geu.manifestB)
-        })(geu.manifestB)
+          __ifThenElse(hashMapContains(map, key)(geu.typeB, geu.typeB),
+            hashMapApply(map, key)(geu.typeA, geu.typeB),
+            hashMapUpdate(map, key, value)(geu.typeA, geu.typeB))(geu.typeB)
+        })(geu.typeB)
       case rm @ HashMapRemove(map, key) => reifyBlock({
-        val x = hashMapApply(map, key)(rm.manifestA, rm.manifestB)
-        hashMapRemove(map, key)(rm.manifestA, rm.manifestB)
+        val x = hashMapApply(map, key)(rm.typeA, rm.typeB)
+        hashMapRemove(map, key)(rm.typeA, rm.typeB)
         x
-      })(rm.manifestB)
+      })(rm.typeB)
       case _ => n
     }
   }
@@ -259,7 +275,8 @@ object t1 extends TransformerFunction with HashMapOps with DeepDSL {
 class t2(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
   import IR._
   import CNodes._
-  def eq[A: Manifest] = doLambda2((x: Rep[A], y: Rep[A]) => unit(true))
+  //<<<<<<< HEAD
+  /*def eq[A: Manifest] = doLambda2((x: Rep[A], y: Rep[A]) => unit(true))
   def hash[A: Manifest] = doLambda((x: Rep[A]) => unit(5))
   override def transformDef[T: Manifest](node: Def[T]): to.Def[T] = (node match {
     case nm @ HashMapNew2_2()                => reifyBlock({ GHashTableNew(eq(nm.manifestA), hash(nm.manifestA))(nm.manifestA, nm.manifestB, manifest[Int]) })
@@ -279,7 +296,28 @@ class t2(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[
     case op @ TreeSet$minus$eq(self, t)      => NameAlias(None, "g_tree_remove", List(List(self, t)))
     case op @ TreeSet$plus$eq(self, t)       => NameAlias(None, "g_tree_insert", List(List(self, t)))
     case _                                   => super.transformDef(node)
-  }).asInstanceOf[to.Def[T]]
+  }).asInstanceOf[to.Def[T]]*/
+  /*
+=======
+  val isRecursive = false
+  def eq[A: TypeRep] = doLambda2((x: Rep[A], y: Rep[A]) => unit(true))
+  def hash[A: TypeRep] = doLambda((x: Rep[A]) => unit(5))
+  def apply(n: Def[Any])(implicit context: DeepDSL): Def[Any] = {
+    n match {
+      case nm @ HashMapNew2()                  => reifyBlock({ GLibNew(eq(nm.typeA), hash(nm.typeA))(nm.typeA, nm.typeB, IntType) })
+      case HashMapSize(map)                    => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
+      case ma @ HashMapApply(map, key)         => NameAlias(None, "g_hash_table_lookup", List(List(map, key)))(ma.typeB)
+      case mc @ HashMapContains(map, key)      => NameAlias[Boolean](None, "g_hash_table_contains", List(List(map, key)))
+      case mu @ HashMapUpdate(map, key, value) => NameAlias[Unit](None, "g_hash_table_insert", List(List(map, key, value)))
+      case mr @ HashMapRemove(map, key)        => NameAlias[Unit](None, "g_hash_table_remove", List(List(map, key)))
+      case op @ TreeSetHead(t)                 => NameAlias(None, "g_tree_head", List(List(t)))(op.typeA)
+      case op @ TreeSetSize(t)                 => NameAlias(None, "g_tree_nnodes", List(List(t)))(op.typeA)
+      case op @ TreeSet$minus$eq(self, t)      => NameAlias(None, "g_tree_remove", List(List(self, t)))(op.typeA)
+      case op @ TreeSet$plus$eq(self, t)       => NameAlias(None, "g_tree_insert", List(List(self, t)))(op.typeA)
+      case _                                   => n
+    }
+  }
+>>>>>>> origin/master*/
 }
 /*
 object t3 extends TransformerFunction with K2DBScannerOps with DeepDSL with CFunctions {
@@ -352,14 +390,14 @@ object DefaultScalaTo2NameAliases extends TransformerFunction with DeepDSL {
   import CNodes._
   val isRecursive = false
   def apply(n: Def[Any])(implicit context: DeepDSL): Def[Any] = n match {
-    case Int$less$eq1(self, x)    => NameAlias(Some(self), " <= ", List(List(x)))
+    case Int$less$eq1(self, x)    => NameAlias[Boolean](Some(self), " <= ", List(List(x)))
     case Int$plus1(self, x)       => NameAlias[Int](Some(self), " + ", List(List(x)))
     case Int$plus5(self, x)       => NameAlias[Int](Some(self), " + ", List(List(x)))
-    case Int$minus1(self, x)      => NameAlias(Some(self), " - ", List(List(x)))
+    case Int$minus1(self, x)      => NameAlias[Int](Some(self), " - ", List(List(x)))
     case Int$minus4(self, x)      => NameAlias[Int](Some(self), " - ", List(List(x)))
-    case Int$times1(self, x)      => NameAlias(Some(self), " * ", List(List(x)))
+    case Int$times1(self, x)      => NameAlias[Int](Some(self), " * ", List(List(x)))
     case Int$times4(self, x)      => NameAlias[Int](Some(self), " * ", List(List(x)))
-    case Int$div1(self, x)        => NameAlias(Some(self), " / ", List(List(x)))
+    case Int$div1(self, x)        => NameAlias[Int](Some(self), " / ", List(List(x)))
     case Boolean$bar$bar(self, x) => NameAlias[Boolean](Some(self), " || ", List(List(x)))
     case Println(x)               => NameAlias[Unit](None, "printf", List(List(x)))
     case _                        => n
@@ -370,7 +408,11 @@ class LiftedTests extends Base {
   def hashMapTest() = {
     new HashMapOps with DeepDSL {
       def hashMapTest = {
+        <<<<<<< HEAD
+        val hm = hashMapNew2()(IntType, StringType)
+        =======
         val hm = hashMapNew2()(manifest[Int], manifest[String])
+        >>>>>>> origin /master
         val f = hashMapGetOrElseUpdate(hm, 5, { unit("lala") })
         println(f)
         val g = hashMapGetOrElseUpdate(hm, 7, { unit("foo") })
@@ -399,7 +441,11 @@ class LiftedTests extends Base {
       def loadingTest = {
         val file = "/mnt/ramdisk/test/lineitem.tbl"
         import scala.sys.process._;
+        <<<<<<< HEAD
+        val size = ((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", "")).toInt
+        =======
         val size = java.lang.Integer.parseInt((("wc -l " + file) #| "awk {print($1)}" !!).replaceAll("\\s+$", ""))
+        >>>>>>> origin /master
         // Load Relation 
         val s = __newK2DBScanner(unit(file))
         var i = __newVar[Int](0)
