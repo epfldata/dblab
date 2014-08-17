@@ -15,7 +15,6 @@ class LiftedQueries {
     // val context = new DeepDSL {
     def q1_u = {
       val lineitemTable = loadLineitem()
-      unit()
       runQuery {
         val constantDate = parseDate(unit("1998-08-11"))
         val lineitemScan = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_SHIPDATE <= constantDate })

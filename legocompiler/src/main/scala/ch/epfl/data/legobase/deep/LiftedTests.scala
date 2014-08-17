@@ -31,14 +31,14 @@ class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[
   import CNodes._
   import CTypes._
 
-  /*  override def transformType[T: PardisType]: PardisType[Any] = ({
-    System.out.println("I am called")
+  override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
-    System.out.println(tp.name)
-    if (tp.name.startsWith("Array")) {
-      typeCArray(typeArray(tp.typeArguments(0)))
-    } else super.transformType[T]
-  }).asInstanceOf[PardisType[Any]]*/
+    if (tp.name.startsWith("Array"))
+      typeCArray(transformType(tp.typeArguments(0)))
+    else if (tp.name.contains("Record"))
+      typePointer(tp)
+    else super.transformType[T]
+  }).asInstanceOf[PardisType[Any]]
   /*override def transformType[T: Manifest]: Manifest[Any] = {
     val tp = manifest[T].asInstanceOf[Manifest[Any]]
     (if (tp.runtimeClass.isArray) {
@@ -59,7 +59,8 @@ class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[
       val res = getVarManifest(transformType(vartype))
       System.out.println("@@@" + res)
       res
-    } else { System.out.println("---> " + tp); tp }).asInstanceOf[Manifest[Any]]
+    } else { System.out.println("---> " + tp); tp
+    }).asInstanceOf[Manifest[Any]]
   }*/
 
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
@@ -129,7 +130,7 @@ class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[
       // Get type of internal array
       val newTp = if (elemType.isPrimitive) elemType else typePointer(elemType)
       // Read array and perform update
-      val arr = field(s, "array")(typePointer(newTp))
+      val arr = field(s, "array")(typeArray(typePointer(newTp)))
       ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, v)
     }
     case ArrayFilter(a, op) =>
@@ -140,52 +141,38 @@ class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[
       val newTp = if (elemType.isPrimitive) elemType else typePointer(elemType)
       val arr = field(s, "array")(newTp)
       ReadVal(arr)(arr.tp)
-    /* case ArrayApply(a, i) =>
-      val s = transformExp(a)
-      val arr = field(s, "array")(s.tp.typeArguments.head)
-      ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], i)(s.tp.typeArguments.head.typeArguments.head.asInstanceOf[Manifest[Any]])
+    case ArrayApply(a, i) =>
+      val s = transformExp[Any, T](a)
+      // Get type of elements stored in array
+      val elemType = a.tp.typeArguments(0)
+      // Get type of internal array
+      val newTp = if (elemType.isPrimitive) elemType else typePointer(elemType)
+      val arr = field(s, "array")(typeArray(typePointer(newTp)))
+      ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], i)(newTp.asInstanceOf[PardisType[Any]])
     case ArrayLength(a) =>
-      val s = transformExp(a)
-      val arr = field(s, "length")(manifest[Int])
-      ReadVal(arr)(manifest[Int])*/
-    case PardisReadVal(s) => {
-      val ss = transformExp(s)
-      val m = {
-        if (s.tp.name.startsWith("Array")) {
-          typeCArray({
-            if (s.tp.typeArguments.head.runtimeClass.isPrimitive) s.tp.typeArguments.head
-            else (getPointerManifest(s.tp.typeArguments.head))
-          })
-        } else transformType(s.tp)
-      }
-      PardisReadVal(ss)(m.asInstanceOf[PardisType[T]])
-    }
+      val s = transformExp[Any, T](a)
+      val arr = field(s, "length")(IntType)
+      ReadVal(arr)(IntType)
+    case PardisReadVal(s) =>
+      val ss = transformExp[Any, T](s)
+      PardisReadVal(ss)(ss.tp.asInstanceOf[PardisType[T]])
     case IfThenElse(cond, ifStmt, elseStmt) =>
       val ifStmtT = transformBlock(ifStmt)
       val elseStmtT = transformBlock(elseStmt)
       IfThenElse(cond, ifStmtT, elseStmtT)(elseStmtT.res.tp)
-    /*case PardisNewVar(v) =>
-      val tv = transformExp(v)
+    case PardisNewVar(v) =>
+      val tv = transformExp[Any, T](v)
       PardisNewVar(tv)(tv.tp)
     case PardisReadVar(PardisVar(s)) =>
-      val ss = transformExp(s)
-      val m = {
-        if (s.tp.runtimeClass.isArray) {
-          getArrayManifest({
-            if (s.tp.typeArguments.head.runtimeClass.isPrimitive) s.tp.typeArguments.head
-            else (getPointerManifest(s.tp.typeArguments.head))
-          })
-        } else s.tp
-      }
-      PardisReadVar(PardisVar(ss.asInstanceOf[Expression[PardisVar[Any]]]))(m.asInstanceOf[Manifest[Any]])
-    case PardisAssign(PardisVar(a), b) =>
+      val ss = transformExp[Any, T](s)
+      PardisReadVar(PardisVar(ss.asInstanceOf[Expression[PardisVar[Any]]]))(ss.tp.asInstanceOf[PardisType[Any]])
+    /*case PardisAssign(PardisVar(a), b) =>
       val ta = transformExp(a)
       System.out.println(a.tp + "//" + ta.tp)
       val tb = transformExp(b)
       System.out.println(b.tp + "//" + tb.tp)
       PardisAssign(PardisVar(ta.asInstanceOf[Expression[PardisVar[Any]]]), tb)*/
     case or @ Boolean$bar$bar(case1, case2) => {
-      System.out.println("ZITW!")
       case2 match {
         case b @ PardisBlock(stmt, res) =>
           val newB = transformBlockTyped[Boolean, T](b)
