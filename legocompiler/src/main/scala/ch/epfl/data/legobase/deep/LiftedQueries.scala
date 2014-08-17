@@ -159,6 +159,34 @@ class LiftedQueries {
       })
     }
 
+    def q4 = {
+      val lineitemTable = loadLineitem()
+      val ordersTable = loadOrders()
+
+      runQuery({
+        val constantDate1 = parseDate(unit("1993-11-01"))
+        val constantDate2 = parseDate(unit("1993-08-01"))
+        val scanOrders = __newSelectOp(__newScanOp(ordersTable))(__lambda { x => x.O_ORDERDATE < constantDate1 && x.O_ORDERDATE >= constantDate2 })
+        val scanLineitem = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_COMMITDATE < x.L_RECEIPTDATE })
+        val hj = __newLeftHashSemiJoinOp(scanOrders, scanLineitem)(__lambda { (x, y) => x.O_ORDERKEY __== y.L_ORDERKEY })(__lambda { x => x.O_ORDERKEY })(__lambda { x => x.L_ORDERKEY })
+        val aggOp = __newAggOp(hj, unit(1))(__lambda { x => x.O_ORDERPRIORITY })(
+          __lambda { (t, currAgg) => { currAgg + unit(1) } })
+        val sortOp = __newSortOp(aggOp)(__lambda { (kv1, kv2) =>
+          {
+            val k1 = kv1.key
+            val k2 = kv2.key
+            k1 diff k2
+          }
+        })
+        val po = __newPrintOp2(sortOp)(__lambda { kv => printf(unit("%s|%.0f\n"), kv.key.string, kv.aggs(unit(0))) })
+        po.open
+        po.next
+        printf(unit("(%d rows)\n"), po.numRows)
+        unit(())
+      })
+
+    }
+
     def q5 = {
       val lineitemTable = loadLineitem()
       val nationTable = loadNation()
@@ -202,6 +230,7 @@ class LiftedQueries {
     def q1Block = reifyBlock(q1)
     def q2Block = reifyBlock(q2)
     def q3Block = reifyBlock(q3)
+    def q4Block = reifyBlock(q4)
     def q5Block = reifyBlock(q5)
   }
 
@@ -213,6 +242,9 @@ class LiftedQueries {
 
   def Q3() =
     context.q3Block
+
+  def Q4() =
+    context.q4Block
 
   def Q5() =
     context.q5Block

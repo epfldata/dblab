@@ -1407,4 +1407,189 @@ trait WindowOpImplementations { self: DeepDSL =>
   }
 }
 trait WindowOpComponent extends WindowOpOps with WindowOpImplicits { self: OperatorsComponent => }
-trait OperatorsComponent extends OperatorComponent with ScanOpComponent with SelectOpComponent with AggOpComponent with SortOpComponent with MapOpComponent with PrintOpComponent with HashJoinOpComponent with WindowOpComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent with DoubleComponent with IntComponent with LongComponent with ArrayComponent with LINEITEMRecordComponent with K2DBScannerComponent with IntegerComponent with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase { self: DeepDSL => }
+trait LeftHashSemiJoinOpOps extends Base { this: OperatorsComponent =>
+  implicit class LeftHashSemiJoinOpRep[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$18: Manifest[C], evidence$17: Manifest[B], evidence$16: Manifest[A]) {
+    def foreach(f: Rep[(A => Unit)]): Rep[Unit] = leftHashSemiJoinOpForeach[A, B, C](self, f)(typeA, typeB, typeC, evidence$18, evidence$17, evidence$16)
+    def findFirst(cond: Rep[(A => Boolean)]): Rep[A] = leftHashSemiJoinOpFindFirst[A, B, C](self, cond)(typeA, typeB, typeC, evidence$18, evidence$17, evidence$16)
+    def NullDynamicRecord[D](implicit typeD: TypeRep[D], evidence$2: Manifest[D]): Rep[D] = leftHashSemiJoinOpNullDynamicRecord[A, B, C, D](self)(typeA, typeB, typeC, typeD, evidence$2, evidence$18, evidence$17, evidence$16)
+    def open(): Rep[Unit] = leftHashSemiJoinOpOpen[A, B, C](self)(typeA, typeB, typeC, evidence$18, evidence$17, evidence$16)
+    def next(): Rep[A] = leftHashSemiJoinOpNext[A, B, C](self)(typeA, typeB, typeC, evidence$18, evidence$17, evidence$16)
+    def close(): Rep[Unit] = leftHashSemiJoinOpClose[A, B, C](self)(typeA, typeB, typeC, evidence$18, evidence$17, evidence$16)
+    def reset(): Rep[Unit] = leftHashSemiJoinOpReset[A, B, C](self)(typeA, typeB, typeC, evidence$18, evidence$17, evidence$16)
+    def hm: Rep[HashMap[C, ArrayBuffer[B]]] = leftHashSemiJoinOp_Field_Hm[A, B, C](self)(typeA, typeB, typeC)
+    def evidence$18: Rep[Manifest[C]] = leftHashSemiJoinOp_Field_Evidence$18[A, B, C](self)(typeA, typeB, typeC)
+    def evidence$17: Rep[Manifest[B]] = leftHashSemiJoinOp_Field_Evidence$17[A, B, C](self)(typeA, typeB, typeC)
+    def evidence$16: Rep[Manifest[A]] = leftHashSemiJoinOp_Field_Evidence$16[A, B, C](self)(typeA, typeB, typeC)
+    def rightHash: Rep[(B => C)] = leftHashSemiJoinOp_Field_RightHash[A, B, C](self)(typeA, typeB, typeC)
+    def leftHash: Rep[(A => C)] = leftHashSemiJoinOp_Field_LeftHash[A, B, C](self)(typeA, typeB, typeC)
+    def joinCond: Rep[((A, B) => Boolean)] = leftHashSemiJoinOp_Field_JoinCond[A, B, C](self)(typeA, typeB, typeC)
+    def rightParent: Rep[Operator[B]] = leftHashSemiJoinOp_Field_RightParent[A, B, C](self)(typeA, typeB, typeC)
+    def leftParent: Rep[Operator[A]] = leftHashSemiJoinOp_Field_LeftParent[A, B, C](self)(typeA, typeB, typeC)
+    def NullDynamicRecord: Rep[A] = leftHashSemiJoinOp_Field_NullDynamicRecord[A, B, C](self)(typeA, typeB, typeC)
+  }
+  object LeftHashSemiJoinOp {
+
+  }
+  // constructors
+  def __newLeftHashSemiJoinOp[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]])(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit evidence$16: Manifest[A], evidence$17: Manifest[B], evidence$18: Manifest[C], typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[LeftHashSemiJoinOp[A, B, C]] = leftHashSemiJoinOpNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)(typeA, typeB, typeC, evidence$16, evidence$17, evidence$18)
+  // case classes
+  case class LeftHashSemiJoinOpNew[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$16: Manifest[A], val evidence$17: Manifest[B], val evidence$18: Manifest[C]) extends ConstructorDef[LeftHashSemiJoinOp[A, B, C]](List(typeA, typeB, typeC), "LeftHashSemiJoinOp", List(List(leftParent, rightParent), List(joinCond), List(leftHash), List(rightHash))) {
+    override def curriedConstructor = (copy[A, B, C] _).curried
+  }
+
+  case class LeftHashSemiJoinOpForeach[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], f: Rep[((A) => Unit)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$18: Manifest[C], val evidence$17: Manifest[B], val evidence$16: Manifest[A]) extends FunctionDef[Unit](Some(self), "foreach", List(List(f))) {
+    override def curriedConstructor = (copy[A, B, C] _).curried
+  }
+
+  case class LeftHashSemiJoinOpFindFirst[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], cond: Rep[((A) => Boolean)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$18: Manifest[C], val evidence$17: Manifest[B], val evidence$16: Manifest[A]) extends FunctionDef[A](Some(self), "findFirst", List(List(cond))) {
+    override def curriedConstructor = (copy[A, B, C] _).curried
+  }
+
+  case class LeftHashSemiJoinOpNullDynamicRecord[A, B, C, D](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val typeD: TypeRep[D], val evidence$2: Manifest[D], val evidence$18: Manifest[C], val evidence$17: Manifest[B], val evidence$16: Manifest[A]) extends FunctionDef[D](Some(self), "NullDynamicRecord", List()) {
+    override def curriedConstructor = (copy[A, B, C, D] _)
+  }
+
+  case class LeftHashSemiJoinOpOpen[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$18: Manifest[C], val evidence$17: Manifest[B], val evidence$16: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
+    override def curriedConstructor = (copy[A, B, C] _)
+  }
+
+  case class LeftHashSemiJoinOpNext[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$18: Manifest[C], val evidence$17: Manifest[B], val evidence$16: Manifest[A]) extends FunctionDef[A](Some(self), "next", List(List())) {
+    override def curriedConstructor = (copy[A, B, C] _)
+  }
+
+  case class LeftHashSemiJoinOpClose[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$18: Manifest[C], val evidence$17: Manifest[B], val evidence$16: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
+    override def curriedConstructor = (copy[A, B, C] _)
+  }
+
+  case class LeftHashSemiJoinOpReset[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$18: Manifest[C], val evidence$17: Manifest[B], val evidence$16: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
+    override def curriedConstructor = (copy[A, B, C] _)
+  }
+
+  case class LeftHashSemiJoinOp_Field_Hm[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[HashMap[C, ArrayBuffer[B]]](self, "hm") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  case class LeftHashSemiJoinOp_Field_Evidence$18[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[Manifest[C]](self, "evidence$18") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  case class LeftHashSemiJoinOp_Field_Evidence$17[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[Manifest[B]](self, "evidence$17") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  case class LeftHashSemiJoinOp_Field_Evidence$16[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[Manifest[A]](self, "evidence$16") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  case class LeftHashSemiJoinOp_Field_RightHash[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[(B => C)](self, "rightHash") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  case class LeftHashSemiJoinOp_Field_LeftHash[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[(A => C)](self, "leftHash") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  case class LeftHashSemiJoinOp_Field_JoinCond[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[((A, B) => Boolean)](self, "joinCond") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  case class LeftHashSemiJoinOp_Field_RightParent[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[Operator[B]](self, "rightParent") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  case class LeftHashSemiJoinOp_Field_LeftParent[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[Operator[A]](self, "leftParent") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  case class LeftHashSemiJoinOp_Field_NullDynamicRecord[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[A](self, "NullDynamicRecord") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def leftHashSemiJoinOpNew[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$16: Manifest[A], evidence$17: Manifest[B], evidence$18: Manifest[C]): Rep[LeftHashSemiJoinOp[A, B, C]] = LeftHashSemiJoinOpNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)
+  def leftHashSemiJoinOpForeach[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], f: Rep[((A) => Unit)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$18: Manifest[C], evidence$17: Manifest[B], evidence$16: Manifest[A]): Rep[Unit] = LeftHashSemiJoinOpForeach[A, B, C](self, f)
+  def leftHashSemiJoinOpFindFirst[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], cond: Rep[((A) => Boolean)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$18: Manifest[C], evidence$17: Manifest[B], evidence$16: Manifest[A]): Rep[A] = LeftHashSemiJoinOpFindFirst[A, B, C](self, cond)
+  def leftHashSemiJoinOpNullDynamicRecord[A, B, C, D](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], typeD: TypeRep[D], evidence$2: Manifest[D], evidence$18: Manifest[C], evidence$17: Manifest[B], evidence$16: Manifest[A]): Rep[D] = LeftHashSemiJoinOpNullDynamicRecord[A, B, C, D](self)
+  def leftHashSemiJoinOpOpen[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$18: Manifest[C], evidence$17: Manifest[B], evidence$16: Manifest[A]): Rep[Unit] = LeftHashSemiJoinOpOpen[A, B, C](self)
+  def leftHashSemiJoinOpNext[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$18: Manifest[C], evidence$17: Manifest[B], evidence$16: Manifest[A]): Rep[A] = LeftHashSemiJoinOpNext[A, B, C](self)
+  def leftHashSemiJoinOpClose[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$18: Manifest[C], evidence$17: Manifest[B], evidence$16: Manifest[A]): Rep[Unit] = LeftHashSemiJoinOpClose[A, B, C](self)
+  def leftHashSemiJoinOpReset[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$18: Manifest[C], evidence$17: Manifest[B], evidence$16: Manifest[A]): Rep[Unit] = LeftHashSemiJoinOpReset[A, B, C](self)
+  def leftHashSemiJoinOp_Field_Hm[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashMap[C, ArrayBuffer[B]]] = LeftHashSemiJoinOp_Field_Hm[A, B, C](self)
+  def leftHashSemiJoinOp_Field_Evidence$18[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Manifest[C]] = LeftHashSemiJoinOp_Field_Evidence$18[A, B, C](self)
+  def leftHashSemiJoinOp_Field_Evidence$17[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Manifest[B]] = LeftHashSemiJoinOp_Field_Evidence$17[A, B, C](self)
+  def leftHashSemiJoinOp_Field_Evidence$16[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Manifest[A]] = LeftHashSemiJoinOp_Field_Evidence$16[A, B, C](self)
+  def leftHashSemiJoinOp_Field_RightHash[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = LeftHashSemiJoinOp_Field_RightHash[A, B, C](self)
+  def leftHashSemiJoinOp_Field_LeftHash[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = LeftHashSemiJoinOp_Field_LeftHash[A, B, C](self)
+  def leftHashSemiJoinOp_Field_JoinCond[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = LeftHashSemiJoinOp_Field_JoinCond[A, B, C](self)
+  def leftHashSemiJoinOp_Field_RightParent[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = LeftHashSemiJoinOp_Field_RightParent[A, B, C](self)
+  def leftHashSemiJoinOp_Field_LeftParent[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = LeftHashSemiJoinOp_Field_LeftParent[A, B, C](self)
+  def leftHashSemiJoinOp_Field_NullDynamicRecord[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[A] = LeftHashSemiJoinOp_Field_NullDynamicRecord[A, B, C](self)
+  type LeftHashSemiJoinOp[A, B, C] = ch.epfl.data.legobase.queryengine.volcano.LeftHashSemiJoinOp[A, B, C]
+  case class LeftHashSemiJoinOpType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[LeftHashSemiJoinOp[A, B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LeftHashSemiJoinOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    private implicit val tagC = typeC.typeTag
+    val name = s"LeftHashSemiJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
+    val typeArguments = List(typeA, typeB, typeC)
+    val typeTag = scala.reflect.runtime.universe.typeTag[LeftHashSemiJoinOp[A, B, C]]
+  }
+  implicit def typeLeftHashSemiJoinOp[A: TypeRep, B: TypeRep, C: TypeRep] = LeftHashSemiJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
+}
+trait LeftHashSemiJoinOpImplicits { this: LeftHashSemiJoinOpComponent =>
+  // Add implicit conversions here!
+}
+trait LeftHashSemiJoinOpImplementations { self: DeepDSL =>
+  override def leftHashSemiJoinOpOpen[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$18: Manifest[C], evidence$17: Manifest[B], evidence$16: Manifest[A]): Rep[Unit] = {
+    {
+      self.leftParent.open();
+      self.rightParent.open();
+      self.rightParent.foreach(__lambda(((t: this.Rep[B]) => {
+        val k: this.Rep[C] = __app(self.rightHash).apply(t);
+        val v: this.Rep[scala.collection.mutable.ArrayBuffer[B]] = self.hm.getOrElseUpdate(k, ArrayBuffer.apply[B]());
+        v.append(t)
+      })))
+    }
+  }
+  override def leftHashSemiJoinOpNext[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$18: Manifest[C], evidence$17: Manifest[B], evidence$16: Manifest[A]): Rep[A] = {
+    self.leftParent.findFirst(__lambda(((t: this.Rep[A]) => {
+      val k: this.Rep[C] = __app(self.leftHash).apply(t);
+      __ifThenElse(self.hm.contains(k), {
+        val tmpBuffer: this.Rep[scala.collection.mutable.ArrayBuffer[B]] = self.hm.apply(k);
+        infix_$bang$eq(tmpBuffer.indexWhere(__lambda(((e: this.Rep[B]) => __app(self.joinCond).apply(t, e)))), unit(-1))
+      }, unit(false))
+    })))
+  }
+  override def leftHashSemiJoinOpClose[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$18: Manifest[C], evidence$17: Manifest[B], evidence$16: Manifest[A]): Rep[Unit] = {
+    unit(())
+  }
+  override def leftHashSemiJoinOpReset[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$18: Manifest[C], evidence$17: Manifest[B], evidence$16: Manifest[A]): Rep[Unit] = {
+    {
+      self.rightParent.reset();
+      self.leftParent.reset();
+      self.hm.clear()
+    }
+  }
+}
+trait LeftHashSemiJoinOpComponent extends LeftHashSemiJoinOpOps with LeftHashSemiJoinOpImplicits { self: OperatorsComponent => }
+trait OperatorsComponent extends OperatorComponent with ScanOpComponent with SelectOpComponent with AggOpComponent with SortOpComponent with MapOpComponent with PrintOpComponent with HashJoinOpComponent with WindowOpComponent with LeftHashSemiJoinOpComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent with DoubleComponent with IntComponent with LongComponent with ArrayComponent with LINEITEMRecordComponent with K2DBScannerComponent with IntegerComponent with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase { self: DeepDSL => }

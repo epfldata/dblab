@@ -6,7 +6,7 @@ import scala.language.implicitConversions
 import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
 
-trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopUnrolling with OperatorImplementations with ScanOpImplementations with SelectOpImplementations with AggOpImplementations with SortOpImplementations with MapOpImplementations with PrintOpImplementations with WindowOpImplementations with HashJoinOpImplementations {
+trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopUnrolling with OperatorImplementations with ScanOpImplementations with SelectOpImplementations with AggOpImplementations with SortOpImplementations with MapOpImplementations with PrintOpImplementations with WindowOpImplementations with HashJoinOpImplementations with LeftHashSemiJoinOpImplementations {
   def reifyInline[T: TypeRep](e: => Rep[T]): Rep[T] = e
 
   override def operatorOpen[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = self match {
@@ -31,6 +31,12 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
       type Y = pardis.shallow.AbstractRecord
       type Z = Any
       hashJoinOpOpen(self.asInstanceOf[Rep[HashJoinOp[X, Y, Z]]])(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], x.typeC.asInstanceOf[TypeRep[Z]], manifest[Z], manifest[Y], manifest[X])
+    }
+    case Def(x: LeftHashSemiJoinOpNew[_, _, _]) => {
+      type X = Any
+      type Y = Any
+      type Z = Any
+      leftHashSemiJoinOpOpen(self.asInstanceOf[Rep[LeftHashSemiJoinOp[X, Y, Z]]])(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], x.typeC.asInstanceOf[TypeRep[Z]], manifest[Z], manifest[Y], manifest[X])
     }
     case _ => super.operatorOpen(self)
   }
@@ -57,6 +63,12 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
       type Y = pardis.shallow.AbstractRecord
       type Z = Any
       hashJoinOpNext(self.asInstanceOf[Rep[HashJoinOp[X, Y, Z]]])(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], x.typeC.asInstanceOf[TypeRep[Z]], manifest[Z], manifest[Y], manifest[X]).asInstanceOf[Rep[A]]
+    }
+    case Def(x: LeftHashSemiJoinOpNew[_, _, _]) => {
+      type X = Any
+      type Y = Any
+      type Z = Any
+      leftHashSemiJoinOpNext(self.asInstanceOf[Rep[LeftHashSemiJoinOp[X, Y, Z]]])(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], x.typeC.asInstanceOf[TypeRep[Z]], manifest[Z], manifest[Y], manifest[X]).asInstanceOf[Rep[A]]
     }
     case _ => super.operatorNext(self)
   }
@@ -179,6 +191,29 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
   }
 
   override def hashJoinOpNullDynamicRecord[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C, D](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], typeD: TypeRep[D], evidence$2: Manifest[D], evidence$12: Manifest[C], evidence$11: Manifest[B], evidence$10: Manifest[A]): Rep[D] = infix_asInstanceOf(unit[Any](null))(typeD)
+
+  override def leftHashSemiJoinOp_Field_JoinCond[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = self match {
+    case Def(x: LeftHashSemiJoinOpNew[_, _, _]) => x.joinCond
+    case _                                      => super.leftHashSemiJoinOp_Field_JoinCond(self)
+  }
+
+  override def leftHashSemiJoinOp_Field_RightHash[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = self match {
+    case Def(x: LeftHashSemiJoinOpNew[_, _, _]) => x.rightHash
+    case _                                      => super.leftHashSemiJoinOp_Field_RightHash(self)
+  }
+  override def leftHashSemiJoinOp_Field_LeftHash[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = self match {
+    case Def(x: LeftHashSemiJoinOpNew[_, _, _]) => x.leftHash
+    case _                                      => super.leftHashSemiJoinOp_Field_LeftHash(self)
+  }
+  override def leftHashSemiJoinOp_Field_RightParent[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = self match {
+    case Def(x: LeftHashSemiJoinOpNew[_, _, _]) => x.rightParent
+    case _                                      => super.leftHashSemiJoinOp_Field_RightParent(self)
+  }
+  override def leftHashSemiJoinOp_Field_LeftParent[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = self match {
+    case Def(x: LeftHashSemiJoinOpNew[_, _, _]) => x.leftParent
+    case _                                      => super.leftHashSemiJoinOp_Field_LeftParent(self)
+  }
+  // override def leftHashSemiJoinOpNullDynamicRecord[A, B, C, D](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], typeD: TypeRep[D], evidence$2: Manifest[D], evidence$18: Manifest[C], evidence$17: Manifest[B], evidence$16: Manifest[A]): Rep[D] = infix_asInstanceOf(unit[Any](null))(typeD)
 
   override def loadLineitem(): Rep[Array[LINEITEMRecord]] = {
     val file = unit(Config.datapath + "lineitem.tbl")
