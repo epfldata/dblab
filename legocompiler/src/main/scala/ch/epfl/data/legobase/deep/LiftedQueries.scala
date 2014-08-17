@@ -227,11 +227,28 @@ class LiftedQueries {
       })
     }
 
+    def q6 = {
+      val lineitemTable = loadLineitem()
+      runQuery({
+        val constantDate1 = parseDate(unit("1996-01-01"))
+        val constantDate2 = parseDate(unit("1997-01-01"))
+        val lineitemScan = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_SHIPDATE >= constantDate1 && x.L_SHIPDATE < constantDate2 && x.L_DISCOUNT >= unit(0.08) && x.L_DISCOUNT <= unit(0.1) && x.L_QUANTITY < unit(24) })
+        val aggOp = __newAggOp(lineitemScan, unit(1))(__lambda { x => unit("Total") })(__lambda { (t, currAgg) => { (t.L_EXTENDEDPRICE * t.L_DISCOUNT) + currAgg } })
+        val po = __newPrintOp2(aggOp)(__lambda { kv => printf(unit("%.4f\n"), kv.aggs(unit(0))) })
+        po.open
+        po.next
+        printf(unit("(%d rows)\n"), po.numRows)
+        unit(())
+      })
+
+    }
+
     def q1Block = reifyBlock(q1)
     def q2Block = reifyBlock(q2)
     def q3Block = reifyBlock(q3)
     def q4Block = reifyBlock(q4)
     def q5Block = reifyBlock(q5)
+    def q6Block = reifyBlock(q6)
   }
 
   def Q1() =
@@ -248,4 +265,7 @@ class LiftedQueries {
 
   def Q5() =
     context.q5Block
+
+  def Q6() =
+    context.q6Block
 }
