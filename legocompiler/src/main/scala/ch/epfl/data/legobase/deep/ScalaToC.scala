@@ -109,7 +109,8 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       pclose(p)
       ReadVal(cnt)
     case OptimalStringNew(x) => x.correspondingNode
-    case s @ PardisStruct(tag, elems) =>
+    case s @ PardisStruct(tag, elems, methods) =>
+      // TODO if needed method generation should be added
       val x = malloc(unit(1))(s.tp)
       structCopy(x, s)
       ReadVal(x)(typePointer(s.tp))
