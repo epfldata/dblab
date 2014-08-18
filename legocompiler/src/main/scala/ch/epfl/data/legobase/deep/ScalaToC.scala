@@ -29,7 +29,7 @@ trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base 
   }
 }
 
-class t3(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
+class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
   import IR._
   import CNodes._
   import CTypes._
@@ -266,7 +266,7 @@ object t1 extends TransformerFunction with HashMapOps with DeepDSL {
 }
 */
 
-class t2(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
+class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
   import IR._
   import CNodes._
   import CTypes._

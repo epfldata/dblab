@@ -52,9 +52,9 @@ object Main extends LegoRunner {
     val dceBlock = dce.optimize(operatorlessBlock)
 
     // Convert Scala constructs to C
-    val scalaToC = new t3(lq.context)
+    val scalaToC = new ScalaConstructsToCTranformer(lq.context)
     val transformedBlock = scalaToC.transformBlock(dceBlock)
-    val scalaToC2 = new t2(lq.context)
+    val scalaToC2 = new ScalaCollectionsToGLibTransfomer(lq.context)
     val transformedBlock2 = scalaToC2.transformBlock(transformedBlock)
 
     val ir2Program = new { val IR = lq.context } with IRToProgram {}
