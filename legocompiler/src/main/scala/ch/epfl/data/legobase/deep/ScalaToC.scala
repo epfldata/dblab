@@ -304,13 +304,14 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case op @ TreeSetSize(t)            => NameAlias(None, "g_tree_nnodes", List(List(t)))
     case op @ TreeSet$minus$eq(self, t) => NameAlias(None, "g_tree_remove", List(List(self, t)))
     case op @ TreeSet$plus$eq(self, t)  => NameAlias(None, "g_tree_insert", List(List(self, t)))*/
-    case ar @ AGGRecordNew2(k, v) =>
-      val data = field(k, "data")(k.tp)
-      val s = __new(("key", false, data), ("aggs", false, v))(transformType(ar.tp))
-      val x = malloc(unit(1))(s.tp)
-      structCopy(x, s)
-      ReadVal(x)(typePointer(s.tp).asInstanceOf[PardisType[Pointer[Any]]])
-    case _ => super.transformDef(node)
+    // case ar @ AGGRecordNew2(k, v) =>
+    //   // System.out.println(s"tp for $k is ${k.tp}")
+    //   val data = field(k, "data")(k.tp)
+    //   val s = __new(("key", false, data), ("aggs", false, v))(transformType(ar.tp))
+    //   val x = malloc(unit(1))(s.tp)
+    //   structCopy(x, s)
+    //   ReadVal(x)(typePointer(s.tp).asInstanceOf[PardisType[Pointer[Any]]])
+    case _               => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
 }
 /*
