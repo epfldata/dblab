@@ -66,13 +66,7 @@ trait ArrayOps extends Base { this: DeepDSL =>
   def arrayClone[T](self: Rep[Array[T]])(implicit typeT: TypeRep[T]): Rep[Array[T]] = ArrayClone[T](self)
   def array_Field__length[T](self: Rep[Array[T]])(implicit typeT: TypeRep[T]): Rep[Int] = Array_Field__length[T](self)
   type Array[T] = scala.Array[T]
-  case class ArrayType[T](typeT: TypeRep[T]) extends TypeRep[Array[T]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ArrayType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagT = typeT.typeTag
-    val name = s"Array[${typeT.name}]"
-    val typeArguments = List(typeT)
-    val typeTag = scala.reflect.runtime.universe.typeTag[Array[T]]
-  }
+  val ArrayType = ch.epfl.data.pardis.ir.ArrayType
   implicit def typeArray[T: TypeRep] = ArrayType(implicitly[TypeRep[T]])
 }
 trait ArrayImplicits { this: ArrayComponent =>

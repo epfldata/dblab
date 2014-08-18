@@ -100,28 +100,19 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
     case _ => super.transformDef(node)
   }
 
-  // WindowRecord
-  // GroupByClass
-  // LINEITEMRecord
-  // SUPPLIERRecord
-  // PARTSUPPRecord
-  // REGIONRecord
-  // PARTRecord
-  // NATIONRecord
-  // CUSTOMERRecord
-  // ORDERSRecord
   object CaseClassNew extends DefExtractor {
     def unapply[T](exp: Def[T]): Option[Def[T]] =
       exp match {
-        case _: Q3GRPRecordNew | _: WindowRecordNew[_, _] | _: GroupByClassNew | _: LINEITEMRecordNew | _: SUPPLIERRecordNew | _: PARTSUPPRecordNew | _: REGIONRecordNew | _: PARTRecordNew | _: NATIONRecordNew | _: CUSTOMERRecordNew | _: ORDERSRecordNew | _: AGGRecordNew2[_] => Some(exp)
-        case _ => None
+        case _: ConstructorDef[_] if exp.tp.isRecord => Some(exp)
+        case _                                       => None
       }
   }
 
   object LoweredNew extends RepExtractor {
     def unapply[T](exp: Rep[T]): Option[Def[T]] = exp match {
       case Def(d) => d.tp match {
-        case Q3GRPRecordType | AGGRecordType(_) | SUPPLIERRecordType | PARTSUPPRecordType | REGIONRecordType | PARTRecordType | NATIONRecordType | CUSTOMERRecordType | ORDERSRecordType | LINEITEMRecordType | WindowRecordType(_, _) | LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | GroupByClassType => Some(d)
+        case x if x.isRecord => Some(d)
+        case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) => Some(d)
         case _ => None
       }
       case _ => None

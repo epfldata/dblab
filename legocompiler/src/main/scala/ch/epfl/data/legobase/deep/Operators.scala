@@ -80,6 +80,7 @@ trait OperatorOps extends Base { this: OperatorsComponent =>
     private implicit val tagA = typeA.typeTag
     val name = s"Operator[${typeA.name}]"
     val typeArguments = List(typeA)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[Operator[A]]
   }
   implicit def typeOperator[A: TypeRep] = OperatorType(implicitly[TypeRep[A]])
@@ -215,6 +216,7 @@ trait ScanOpOps extends Base { this: OperatorsComponent =>
     private implicit val tagA = typeA.typeTag
     val name = s"ScanOp[${typeA.name}]"
     val typeArguments = List(typeA)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[ScanOp[A]]
   }
   implicit def typeScanOp[A: TypeRep] = ScanOpType(implicitly[TypeRep[A]])
@@ -336,6 +338,7 @@ trait SelectOpOps extends Base { this: OperatorsComponent =>
     private implicit val tagA = typeA.typeTag
     val name = s"SelectOp[${typeA.name}]"
     val typeArguments = List(typeA)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[SelectOp[A]]
   }
   implicit def typeSelectOp[A: TypeRep] = SelectOpType(implicitly[TypeRep[A]])
@@ -517,6 +520,7 @@ trait AggOpOps extends Base { this: OperatorsComponent =>
     private implicit val tagB = typeB.typeTag
     val name = s"AggOp[${typeA.name}, ${typeB.name}]"
     val typeArguments = List(typeA, typeB)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[AggOp[A, B]]
   }
   implicit def typeAggOp[A: TypeRep, B: TypeRep] = AggOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
@@ -663,6 +667,7 @@ trait SortOpOps extends Base { this: OperatorsComponent =>
     private implicit val tagA = typeA.typeTag
     val name = s"SortOp[${typeA.name}]"
     val typeArguments = List(typeA)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[SortOp[A]]
   }
   implicit def typeSortOp[A: TypeRep] = SortOpType(implicitly[TypeRep[A]])
@@ -796,6 +801,7 @@ trait MapOpOps extends Base { this: OperatorsComponent =>
     private implicit val tagA = typeA.typeTag
     val name = s"MapOp[${typeA.name}]"
     val typeArguments = List(typeA)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[MapOp[A]]
   }
   implicit def typeMapOp[A: TypeRep] = MapOpType(implicitly[TypeRep[A]])
@@ -943,6 +949,7 @@ trait PrintOpOps extends Base { this: OperatorsComponent =>
     private implicit val tagA = typeA.typeTag
     val name = s"PrintOp[${typeA.name}]"
     val typeArguments = List(typeA)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[PrintOp[A]]
   }
   implicit def typePrintOp[A: TypeRep] = PrintOpType(implicitly[TypeRep[A]])
@@ -1172,6 +1179,7 @@ trait HashJoinOpOps extends Base { this: OperatorsComponent =>
     private implicit val tagC = typeC.typeTag
     val name = s"HashJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
     val typeArguments = List(typeA, typeB, typeC)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[HashJoinOp[A, B, C]]
   }
   implicit def typeHashJoinOp[A <: ch.epfl.data.pardis.shallow.AbstractRecord: TypeRep, B <: ch.epfl.data.pardis.shallow.AbstractRecord: TypeRep, C: TypeRep] = HashJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
@@ -1368,6 +1376,7 @@ trait WindowOpOps extends Base { this: OperatorsComponent =>
     private implicit val tagC = typeC.typeTag
     val name = s"WindowOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
     val typeArguments = List(typeA, typeB, typeC)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[WindowOp[A, B, C]]
   }
   implicit def typeWindowOp[A: TypeRep, B: TypeRep, C: TypeRep] = WindowOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
@@ -1552,6 +1561,7 @@ trait LeftHashSemiJoinOpOps extends Base { this: OperatorsComponent =>
     private implicit val tagC = typeC.typeTag
     val name = s"LeftHashSemiJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
     val typeArguments = List(typeA, typeB, typeC)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[LeftHashSemiJoinOp[A, B, C]]
   }
   implicit def typeLeftHashSemiJoinOp[A: TypeRep, B: TypeRep, C: TypeRep] = LeftHashSemiJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
@@ -1756,6 +1766,7 @@ trait NestedLoopsJoinOpOps extends Base { this: OperatorsComponent =>
     private implicit val tagB = typeB.typeTag
     val name = s"NestedLoopsJoinOp[${typeA.name}, ${typeB.name}]"
     val typeArguments = List(typeA, typeB)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[NestedLoopsJoinOp[A, B]]
   }
   implicit def typeNestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.AbstractRecord: TypeRep, B <: ch.epfl.data.pardis.shallow.AbstractRecord: TypeRep] = NestedLoopsJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])

@@ -50,6 +50,7 @@ trait GroupByClassOps extends Base { this: DeepDSL =>
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GroupByClassType
     val name = "GroupByClass"
     val typeArguments = Nil
+    override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[GroupByClass]
   }
   implicit val typeGroupByClass = GroupByClassType
@@ -112,6 +113,7 @@ trait Q3GRPRecordOps extends Base { this: DeepDSL =>
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q3GRPRecordType
     val name = "Q3GRPRecord"
     val typeArguments = Nil
+    override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q3GRPRecord]
   }
   implicit val typeQ3GRPRecord = Q3GRPRecordType
@@ -167,6 +169,7 @@ trait AGGRecordOps extends Base { this: DeepDSL =>
     private implicit val tagB = typeB.typeTag
     val name = s"AGGRecord[${typeB.name}]"
     val typeArguments = List(typeB)
+    override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[AGGRecord[B]]
   }
   implicit def typeAGGRecord[B: TypeRep] = AGGRecordType(implicitly[TypeRep[B]])
@@ -333,6 +336,7 @@ trait LINEITEMRecordOps extends Base { this: DeepDSL =>
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LINEITEMRecordType
     val name = "LINEITEMRecord"
     val typeArguments = Nil
+    override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[LINEITEMRecord]
   }
   implicit val typeLINEITEMRecord = LINEITEMRecordType
@@ -427,6 +431,7 @@ trait SUPPLIERRecordOps extends Base { this: DeepDSL =>
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SUPPLIERRecordType
     val name = "SUPPLIERRecord"
     val typeArguments = Nil
+    override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[SUPPLIERRecord]
   }
   implicit val typeSUPPLIERRecord = SUPPLIERRecordType
@@ -505,6 +510,7 @@ trait PARTSUPPRecordOps extends Base { this: DeepDSL =>
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PARTSUPPRecordType
     val name = "PARTSUPPRecord"
     val typeArguments = Nil
+    override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[PARTSUPPRecord]
   }
   implicit val typePARTSUPPRecord = PARTSUPPRecordType
@@ -567,6 +573,7 @@ trait REGIONRecordOps extends Base { this: DeepDSL =>
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = REGIONRecordType
     val name = "REGIONRecord"
     val typeArguments = Nil
+    override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[REGIONRecord]
   }
   implicit val typeREGIONRecord = REGIONRecordType
@@ -637,6 +644,7 @@ trait NATIONRecordOps extends Base { this: DeepDSL =>
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = NATIONRecordType
     val name = "NATIONRecord"
     val typeArguments = Nil
+    override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[NATIONRecord]
   }
   implicit val typeNATIONRecord = NATIONRecordType
@@ -747,6 +755,7 @@ trait PARTRecordOps extends Base { this: DeepDSL =>
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PARTRecordType
     val name = "PARTRecord"
     val typeArguments = Nil
+    override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[PARTRecord]
   }
   implicit val typePARTRecord = PARTRecordType
@@ -849,6 +858,7 @@ trait CUSTOMERRecordOps extends Base { this: DeepDSL =>
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = CUSTOMERRecordType
     val name = "CUSTOMERRecord"
     val typeArguments = Nil
+    override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[CUSTOMERRecord]
   }
   implicit val typeCUSTOMERRecord = CUSTOMERRecordType
@@ -959,6 +969,7 @@ trait ORDERSRecordOps extends Base { this: DeepDSL =>
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ORDERSRecordType
     val name = "ORDERSRecord"
     val typeArguments = Nil
+    override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[ORDERSRecord]
   }
   implicit val typeORDERSRecord = ORDERSRecordType
@@ -1094,6 +1105,7 @@ trait OptimalStringOps extends Base { this: DeepDSL =>
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = OptimalStringType
     val name = "OptimalString"
     val typeArguments = Nil
+
     val typeTag = scala.reflect.runtime.universe.typeTag[OptimalString]
   }
   implicit val typeOptimalString = OptimalStringType
@@ -1212,6 +1224,7 @@ trait K2DBScannerOps extends Base { this: DeepDSL =>
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = K2DBScannerType
     val name = "K2DBScanner"
     val typeArguments = Nil
+
     val typeTag = scala.reflect.runtime.universe.typeTag[K2DBScanner]
   }
   implicit val typeK2DBScanner = K2DBScannerType
@@ -1268,6 +1281,7 @@ trait WindowRecordOps extends Base { this: DeepDSL =>
     private implicit val tagC = typeC.typeTag
     val name = s"WindowRecord[${typeB.name}, ${typeC.name}]"
     val typeArguments = List(typeB, typeC)
+    override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[WindowRecord[B, C]]
   }
   implicit def typeWindowRecord[B: TypeRep, C: TypeRep] = WindowRecordType(implicitly[TypeRep[B]], implicitly[TypeRep[C]])
