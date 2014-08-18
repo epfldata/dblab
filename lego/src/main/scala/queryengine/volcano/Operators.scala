@@ -94,14 +94,14 @@ class MetaInfo
         i += 1
       }
     }
-    keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
+    keySet = Set(hm.keySet.toSeq: _*)
   }
   def next() = {
     if (hm.size != 0) {
       val key = keySet.head
       keySet.remove(key)
       val elem = hm.remove(key)
-      /*ch.epfl.data.legobase.queryengine.GenericEngine.*/ newAGGRecord(key, elem.get)
+      newAGGRecord(key, elem.get)
     } else NullDynamicRecord
   }
   def close() {}

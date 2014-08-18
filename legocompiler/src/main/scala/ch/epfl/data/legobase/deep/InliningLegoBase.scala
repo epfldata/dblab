@@ -220,7 +220,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     val size = fileLineCount(file)
     // Load Relation 
     val s = __newK2DBScanner(file)
-    var i = __newVar[Int](0)
+    var i = __newVar[Int](unit[Int](0))
     val hm = __newArray[LINEITEMRecord](size)
     __whileDo(s.hasNext, {
       val newEntry = __newLINEITEMRecord(
@@ -240,7 +240,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
         loadString(25, s),
         loadString(10, s),
         loadString(44, s))
-      hm.update(i, newEntry)
+      hm.update(readVar(i), newEntry)
       __assign(i, readVar(i) + unit(1))
       unit()
     })
