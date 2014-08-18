@@ -22,6 +22,7 @@ trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base 
     else if (m.name.startsWith("Array")) structName(m.typeArguments.last)
     else if (m.name.startsWith("Pointer")) structName(m.typeArguments.last)
     else if (m.name == "Byte") "char"
+    else if (m.name == "Double") "double"
     else {
       System.out.println("WARNING: Default structName given: " + m.name);
       super.structName(m)
@@ -34,6 +35,23 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
   import CNodes._
   import CTypes._
 
+  override def transformType[T: PardisType]: PardisType[Any] = ({
+    val tp = typeRep[T]
+    if (pardisTypeIsPrimitive[T]) super.transformType[T]
+    else if (tp.name.startsWith("Array")) typeCArray(transformType(tp.typeArguments(0)))
+    else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
+    else if (tp.name.contains("HashMap")) typePointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
+    else if (tp.name.contains("Record")) typePointer(tp)
+    else if (tp.isInstanceOf[RecordType[_]])
+      if (tp.typeArguments == List()) typePointer(tp)
+      else typePointer(transformType(tp.typeArguments(0))) // check that
+    else if (tp.name.contains("Option")) typePointer(transformType(tp.typeArguments(0)))
+    else {
+      System.out.println("WARNING: Default transformType called: " + tp)
+      super.transformType[T]
+    }
+  }).asInstanceOf[PardisType[Any]]
+
   def pardisTypeIsPrimitive[T: PardisType] = {
     val tp = typeRep[T]
     tp == IntType || tp == DoubleType || tp == UnitType ||
@@ -41,23 +59,6 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       tp == CharacterType
   }
 
-  override def transformType[T: PardisType]: PardisType[Any] = ({
-    val tp = typeRep[T]
-    if (pardisTypeIsPrimitive[T]) super.transformType[T]
-    else if (tp.name.startsWith("Array")) typeCArray(transformType(tp.typeArguments(0)))
-    else if (tp.name.contains("HashMap")) typePointer(typeGHashTable)
-    else if (tp.name.contains("Set")) typePointer(typeGList)
-    else if (tp.name.contains("Seq")) typePointer(typeGList)
-    else if (tp.name.contains("Record")) typePointer(tp)
-    else if (tp.name.contains("Option")) transformType(tp.typeArguments(0))
-    else if (tp.isInstanceOf[RecordType[_]])
-      if (tp.typeArguments == List()) typePointer(tp)
-      else typePointer(transformType(tp.typeArguments(0))) // check that
-    else {
-      System.out.println("WARNING: Default transformType called: " + tp)
-      super.transformType[T]
-    }
-  }).asInstanceOf[PardisType[Any]]
   /*override def transformType[T: Manifest]: Manifest[Any] = {
     else if (tp.runtimeClass.toString.contains("PardisVar")) {
       val vartype = tp.typeArguments.head
@@ -204,6 +205,8 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     case ParseDate(Constant(d)) =>
       val data = d.split("-").map(x => x.toInt)
       ReadVal(Constant((data(0) * 10000) + (data(1) * 100) + data(2)))
+    case imtf @ PardisStructImmutableField(s, f) =>
+      PardisStructImmutableField(s, f)(transformType(imtf.tp))
     case _ =>
       super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
@@ -271,6 +274,15 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   import IR._
   import CNodes._
   import CTypes._
+  override def transformType[T: PardisType]: PardisType[Any] = ({
+    val tp = typeRep[T]
+    if (tp.name.startsWith("CArray")) typePointer(typeCArray(transformType(tp.typeArguments(0))))
+    else if (tp.name.contains("Seq")) typePointer(typeGList(transformType(tp.typeArguments(0))))
+    else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
+    else if (tp.name.contains("Option")) typePointer(transformType(tp.typeArguments(0)))
+    else super.transformType[T]
+  }).asInstanceOf[PardisType[Any]]
+
   def eq[A: PardisType] = doLambda2((x: Rep[A], y: Rep[A]) => unit(true))
   def hash[A: PardisType] = doLambda((x: Rep[A]) => unit(5))
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
@@ -280,24 +292,27 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       val nB = typePointer(transformType(nm.typeB))
       GHashTableNew(eq(nA), hash(nA))(nA, nB, IntType)
     case HashMapSize(map)                    => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
-    case HashMapKeySet(map)                  => NameAlias[Pointer[GList]](None, "g_hash_table_get_keys", List(List(map)))
-    case ma @ HashMapApply(map, key)         => NameAlias(None, "g_hash_table_lookup", List(List(map, key)))(ma.typeA)
+    case HashMapKeySet(map)                  => NameAlias[Pointer[GList[FILE]]](None, "g_hash_table_get_keys", List(List(map)))
+    case ma @ HashMapApply(map, key)         => NameAlias(None, "g_hash_table_lookup", List(List(map, key)))(transformType(map.tp.typeArguments(0).typeArguments(1)))
     /*case mc @ HashMapContains(map, key)      => NameAlias[Boolean](None, "g_hash_table_contains", List(List(map, key)))*/
     case mu @ HashMapUpdate(map, key, value) => NameAlias[Unit](None, "g_hash_table_insert", List(List(map, key, value)))
     case hmgu @ HashMapGetOrElseUpdate(map, key, value) =>
       val v = transformDef(HashMapApply(map, key))
       val res = __ifThenElse(infix_==(toAtom(v), Constant(null)), {
-        val newB = transformBlockTyped[T, T](value)
-        ReadVal(newB)(newB.tp)
-        transformDef(HashMapUpdate(map, key, newB))
-      }, v)
-      ReadVal(res)
+        val newB = transformBlockTyped(value)(typeRep[T], transformType(value.tp))
+        toAtom(newB)
+        val res = ReadVal(newB.res)(newB.tp.asInstanceOf[PardisType[Any]])
+        toAtom(transformDef(HashMapUpdate(map.asInstanceOf[Expression[HashMap[Any, Any]]], key, res)))
+        res
+      }, v)(v.tp.asInstanceOf[PardisType[Any]])
+      ReadVal(res)(res.tp)
     case mr @ HashMapRemove(map, key) =>
-      val x = NameAlias(None, "g_hash_table_lookup", List(List(map, key)))(transformType(mr.typeB))
-      NameAlias[Unit](None, "g_hash_table_remove", List(List(map, key)))(UnitType)
-      x
-    case nm @ SetNew(s)  => ReadVal(transformExp[Any, T](s))(transformType(s.tp).asInstanceOf[PardisType[T]])
-    case nm @ SetNew2()  => PardisCast(Constant(null).asInstanceOf[Expression[Any]])(nm.tp.asInstanceOf[PardisType[Any]], typePointer(typeGList))
+      val x = toAtom(transformDef(HashMapApply(map, key)))
+      toAtom(NameAlias[Unit](None, "g_hash_table_remove", List(List(map, key)))(UnitType))
+      ReadVal(x)(transformType(map.tp.typeArguments(0).typeArguments(1)))
+    case nm @ SetNew(s) => ReadVal(transformExp[Any, T](s))(transformType(s.tp).asInstanceOf[PardisType[T]])
+    case nm @ SetNew2() =>
+      PardisCast(Constant(0.asInstanceOf[Any]))(transformType(nm.tp), transformType(nm.tp))
     case sh @ SetHead(s) => NameAlias(None, "g_list_first", List(List(s)))(transformType(s.tp))
     case SetRemove(s, e) => NameAlias(None, "g_list_remove", List(List(s, e)))(UnitType)
     case SetToSeq(set)   => ReadVal(set)(transformType(set.tp).asInstanceOf[PardisType[Set[Any]]])
@@ -305,13 +320,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case op @ TreeSetSize(t)            => NameAlias(None, "g_tree_nnodes", List(List(t)))
     case op @ TreeSet$minus$eq(self, t) => NameAlias(None, "g_tree_remove", List(List(self, t)))
     case op @ TreeSet$plus$eq(self, t)  => NameAlias(None, "g_tree_insert", List(List(self, t)))*/
-    // case ar @ AGGRecordNew2(k, v) =>
-    //   // System.out.println(s"tp for $k is ${k.tp}")
-    //   val data = field(k, "data")(k.tp)
-    //   val s = __new(("key", false, data), ("aggs", false, v))(transformType(ar.tp))
-    //   val x = malloc(unit(1))(s.tp)
-    //   structCopy(x, s)
-    //   ReadVal(x)(typePointer(s.tp).asInstanceOf[PardisType[Pointer[Any]]])
+    case imtf @ PardisStructImmutableField(s, f) =>
+      PardisStructImmutableField(s, f)(transformType(imtf.tp))
     case _               => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
 }
