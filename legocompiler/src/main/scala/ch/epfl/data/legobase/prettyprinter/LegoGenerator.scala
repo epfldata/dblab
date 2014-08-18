@@ -42,7 +42,9 @@ object OrderingFactory {
   def main(args: Array[String]) {
     run(args)
   }
+  def main() = 
   """
+  //Temporary fix for def main(), check if generated code for Scala runs
 
   def apply(program: PardisProgram) {
     generate(program)

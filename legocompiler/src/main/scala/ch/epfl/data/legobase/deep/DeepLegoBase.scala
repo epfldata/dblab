@@ -8,6 +8,122 @@ import scalalib._
 import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
 
+trait GroupByClassOps extends Base { this: DeepDSL =>
+  implicit class GroupByClassRep(self: Rep[GroupByClass]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = groupByClassGetField(self, key)
+    def L_LINESTATUS: Rep[Character] = groupByClass_Field_L_LINESTATUS(self)
+    def L_RETURNFLAG: Rep[Character] = groupByClass_Field_L_RETURNFLAG(self)
+  }
+  object GroupByClass {
+
+  }
+  // constructors
+  def __newGroupByClass(L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character]): Rep[GroupByClass] = groupByClassNew(L_RETURNFLAG, L_LINESTATUS)
+  // case classes
+  case class GroupByClassNew(L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character]) extends ConstructorDef[GroupByClass](List(), "GroupByClass", List(List(L_RETURNFLAG, L_LINESTATUS))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class GroupByClassGetField(self: Rep[GroupByClass], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class GroupByClass_Field_L_LINESTATUS(self: Rep[GroupByClass]) extends FieldDef[Character](self, "L_LINESTATUS") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class GroupByClass_Field_L_RETURNFLAG(self: Rep[GroupByClass]) extends FieldDef[Character](self, "L_RETURNFLAG") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def groupByClassNew(L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character]): Rep[GroupByClass] = GroupByClassNew(L_RETURNFLAG, L_LINESTATUS)
+  def groupByClassGetField(self: Rep[GroupByClass], key: Rep[String]): Rep[Option[Any]] = GroupByClassGetField(self, key)
+  def groupByClass_Field_L_LINESTATUS(self: Rep[GroupByClass]): Rep[Character] = GroupByClass_Field_L_LINESTATUS(self)
+  def groupByClass_Field_L_RETURNFLAG(self: Rep[GroupByClass]): Rep[Character] = GroupByClass_Field_L_RETURNFLAG(self)
+  type GroupByClass = ch.epfl.data.legobase.queryengine.GroupByClass
+  case object GroupByClassType extends TypeRep[GroupByClass] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GroupByClassType
+    val name = "GroupByClass"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[GroupByClass]
+  }
+  implicit val typeGroupByClass = GroupByClassType
+}
+trait GroupByClassImplicits { this: GroupByClassComponent =>
+  // Add implicit conversions here!
+}
+trait GroupByClassImplementations { self: DeepDSL =>
+
+}
+trait GroupByClassComponent extends GroupByClassOps with GroupByClassImplicits { self: DeepDSL => }
+
+trait Q3GRPRecordOps extends Base { this: DeepDSL =>
+  implicit class Q3GRPRecordRep(self: Rep[Q3GRPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q3GRPRecordGetField(self, key)
+    def O_SHIPPRIORITY: Rep[Int] = q3GRPRecord_Field_O_SHIPPRIORITY(self)
+    def O_ORDERDATE: Rep[Long] = q3GRPRecord_Field_O_ORDERDATE(self)
+    def L_ORDERKEY: Rep[Int] = q3GRPRecord_Field_L_ORDERKEY(self)
+  }
+  object Q3GRPRecord {
+
+  }
+  // constructors
+  def __newQ3GRPRecord(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Long], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = q3GRPRecordNew(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
+  // case classes
+  case class Q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Long], O_SHIPPRIORITY: Rep[Int]) extends ConstructorDef[Q3GRPRecord](List(), "Q3GRPRecord", List(List(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q3GRPRecordGetField(self: Rep[Q3GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q3GRPRecord_Field_O_SHIPPRIORITY(self: Rep[Q3GRPRecord]) extends FieldDef[Int](self, "O_SHIPPRIORITY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q3GRPRecord_Field_O_ORDERDATE(self: Rep[Q3GRPRecord]) extends FieldDef[Long](self, "O_ORDERDATE") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q3GRPRecord_Field_L_ORDERKEY(self: Rep[Q3GRPRecord]) extends FieldDef[Int](self, "L_ORDERKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Long], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = Q3GRPRecordNew(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
+  def q3GRPRecordGetField(self: Rep[Q3GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q3GRPRecordGetField(self, key)
+  def q3GRPRecord_Field_O_SHIPPRIORITY(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_O_SHIPPRIORITY(self)
+  def q3GRPRecord_Field_O_ORDERDATE(self: Rep[Q3GRPRecord]): Rep[Long] = Q3GRPRecord_Field_O_ORDERDATE(self)
+  def q3GRPRecord_Field_L_ORDERKEY(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_L_ORDERKEY(self)
+  type Q3GRPRecord = ch.epfl.data.legobase.queryengine.Q3GRPRecord
+  case object Q3GRPRecordType extends TypeRep[Q3GRPRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q3GRPRecordType
+    val name = "Q3GRPRecord"
+    val typeArguments = Nil
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q3GRPRecord]
+  }
+  implicit val typeQ3GRPRecord = Q3GRPRecordType
+}
+trait Q3GRPRecordImplicits { this: Q3GRPRecordComponent =>
+  // Add implicit conversions here!
+}
+trait Q3GRPRecordImplementations { self: DeepDSL =>
+
+}
+trait Q3GRPRecordComponent extends Q3GRPRecordOps with Q3GRPRecordImplicits { self: DeepDSL => }
+
 trait AGGRecordOps extends Base { this: DeepDSL =>
   implicit class AGGRecordRep[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = aGGRecordGetField[B](self, key)(typeB)
@@ -20,7 +136,7 @@ trait AGGRecordOps extends Base { this: DeepDSL =>
   // constructors
   def __newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)(typeB)
   // case classes
-  case class AGGRecordNew[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit val typeB: TypeRep[B]) extends FunctionDef[AGGRecord[B]](None, "new AGGRecord", List(List(key, aggs))) {
+  case class AGGRecordNew[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit val typeB: TypeRep[B]) extends ConstructorDef[AGGRecord[B]](List(typeB), "AGGRecord", List(List(key, aggs))) {
     override def curriedConstructor = (copy[B] _).curried
   }
 
@@ -89,7 +205,7 @@ trait LINEITEMRecordOps extends Base { this: DeepDSL =>
   // constructors
   def __newLINEITEMRecord(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character], L_SHIPDATE: Rep[Long], L_COMMITDATE: Rep[Long], L_RECEIPTDATE: Rep[Long], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = lINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
   // case classes
-  case class LINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character], L_SHIPDATE: Rep[Long], L_COMMITDATE: Rep[Long], L_RECEIPTDATE: Rep[Long], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]) extends FunctionDef[LINEITEMRecord](None, "new LINEITEMRecord", List(List(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT))) {
+  case class LINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character], L_SHIPDATE: Rep[Long], L_COMMITDATE: Rep[Long], L_RECEIPTDATE: Rep[Long], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]) extends ConstructorDef[LINEITEMRecord](List(), "LINEITEMRecord", List(List(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -246,7 +362,7 @@ trait SUPPLIERRecordOps extends Base { this: DeepDSL =>
   // constructors
   def __newSUPPLIERRecord(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]): Rep[SUPPLIERRecord] = sUPPLIERRecordNew(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT)
   // case classes
-  case class SUPPLIERRecordNew(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]) extends FunctionDef[SUPPLIERRecord](None, "new SUPPLIERRecord", List(List(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT))) {
+  case class SUPPLIERRecordNew(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]) extends ConstructorDef[SUPPLIERRecord](List(), "SUPPLIERRecord", List(List(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -338,7 +454,7 @@ trait PARTSUPPRecordOps extends Base { this: DeepDSL =>
   // constructors
   def __newPARTSUPPRecord(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]): Rep[PARTSUPPRecord] = pARTSUPPRecordNew(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT)
   // case classes
-  case class PARTSUPPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]) extends FunctionDef[PARTSUPPRecord](None, "new PARTSUPPRecord", List(List(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT))) {
+  case class PARTSUPPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]) extends ConstructorDef[PARTSUPPRecord](List(), "PARTSUPPRecord", List(List(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -414,7 +530,7 @@ trait REGIONRecordOps extends Base { this: DeepDSL =>
   // constructors
   def __newREGIONRecord(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]): Rep[REGIONRecord] = rEGIONRecordNew(R_REGIONKEY, R_NAME, R_COMMENT)
   // case classes
-  case class REGIONRecordNew(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]) extends FunctionDef[REGIONRecord](None, "new REGIONRecord", List(List(R_REGIONKEY, R_NAME, R_COMMENT))) {
+  case class REGIONRecordNew(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]) extends ConstructorDef[REGIONRecord](List(), "REGIONRecord", List(List(R_REGIONKEY, R_NAME, R_COMMENT))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -477,7 +593,7 @@ trait NATIONRecordOps extends Base { this: DeepDSL =>
   // constructors
   def __newNATIONRecord(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]): Rep[NATIONRecord] = nATIONRecordNew(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT)
   // case classes
-  case class NATIONRecordNew(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]) extends FunctionDef[NATIONRecord](None, "new NATIONRecord", List(List(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT))) {
+  case class NATIONRecordNew(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]) extends ConstructorDef[NATIONRecord](List(), "NATIONRecord", List(List(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -552,7 +668,7 @@ trait PARTRecordOps extends Base { this: DeepDSL =>
   // constructors
   def __newPARTRecord(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]): Rep[PARTRecord] = pARTRecordNew(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT)
   // case classes
-  case class PARTRecordNew(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]) extends FunctionDef[PARTRecord](None, "new PARTRecord", List(List(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT))) {
+  case class PARTRecordNew(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]) extends ConstructorDef[PARTRecord](List(), "PARTRecord", List(List(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -661,7 +777,7 @@ trait CUSTOMERRecordOps extends Base { this: DeepDSL =>
   // constructors
   def __newCUSTOMERRecord(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[CUSTOMERRecord] = cUSTOMERRecordNew(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT)
   // case classes
-  case class CUSTOMERRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends FunctionDef[CUSTOMERRecord](None, "new CUSTOMERRecord", List(List(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT))) {
+  case class CUSTOMERRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends ConstructorDef[CUSTOMERRecord](List(), "CUSTOMERRecord", List(List(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -764,7 +880,7 @@ trait ORDERSRecordOps extends Base { this: DeepDSL =>
   // constructors
   def __newORDERSRecord(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Character], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Long], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = oRDERSRecordNew(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
   // case classes
-  case class ORDERSRecordNew(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Character], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Long], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]) extends FunctionDef[ORDERSRecord](None, "new ORDERSRecord", List(List(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT))) {
+  case class ORDERSRecordNew(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Character], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Long], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]) extends ConstructorDef[ORDERSRecord](List(), "ORDERSRecord", List(List(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -880,7 +996,7 @@ trait OptimalStringOps extends Base { this: DeepDSL =>
   // constructors
   def __newOptimalString(data: Rep[Array[Byte]]): Rep[OptimalString] = optimalStringNew(data)
   // case classes
-  case class OptimalStringNew(data: Rep[Array[Byte]]) extends FunctionDef[OptimalString](None, "new OptimalString", List(List(data))) {
+  case class OptimalStringNew(data: Rep[Array[Byte]]) extends ConstructorDef[OptimalString](List(), "OptimalString", List(List(data))) {
     override def curriedConstructor = (copy _)
   }
 
@@ -1013,7 +1129,7 @@ trait K2DBScannerOps extends Base { this: DeepDSL =>
   // constructors
   def __newK2DBScanner(filename: Rep[String]): Rep[K2DBScanner] = k2DBScannerNew(filename)
   // case classes
-  case class K2DBScannerNew(filename: Rep[String]) extends FunctionDef[K2DBScanner](None, "new K2DBScanner", List(List(filename))) {
+  case class K2DBScannerNew(filename: Rep[String]) extends ConstructorDef[K2DBScanner](List(), "K2DBScanner", List(List(filename))) {
     override def curriedConstructor = (copy _)
   }
 
@@ -1120,7 +1236,7 @@ trait WindowRecordOps extends Base { this: DeepDSL =>
   // constructors
   def __newWindowRecord[B, C](key: Rep[B], wnd: Rep[C])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowRecord[B, C]] = windowRecordNew[B, C](key, wnd)(typeB, typeC)
   // case classes
-  case class WindowRecordNew[B, C](key: Rep[B], wnd: Rep[C])(implicit val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FunctionDef[WindowRecord[B, C]](None, "new WindowRecord", List(List(key, wnd))) {
+  case class WindowRecordNew[B, C](key: Rep[B], wnd: Rep[C])(implicit val typeB: TypeRep[B], val typeC: TypeRep[C]) extends ConstructorDef[WindowRecord[B, C]](List(typeB, typeC), "WindowRecord", List(List(key, wnd))) {
     override def curriedConstructor = (copy[B, C] _).curried
   }
 
@@ -1166,6 +1282,8 @@ trait WindowRecordComponent extends WindowRecordOps with WindowRecordImplicits {
 
 trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent
   with DoubleComponent with IntComponent with LongComponent with ArrayComponent
+  with GroupByClassComponent
+  with Q3GRPRecordComponent
   with LINEITEMRecordComponent
   with SUPPLIERRecordComponent
   with PARTSUPPRecordComponent

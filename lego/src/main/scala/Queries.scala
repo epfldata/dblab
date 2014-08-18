@@ -18,6 +18,9 @@ trait GenericQuery extends ScalaImpl with storagemanager.Loader {
       query
     }
   }
+
+  def dateToString(long: Long): String = dateToString(new java.util.Date(long))
+
   def dateToString(dt: java.util.Date): String = {
     (dt.getYear + 1900) + "" +
       {
@@ -32,7 +35,6 @@ trait GenericQuery extends ScalaImpl with storagemanager.Loader {
 }
 
 trait Q1 extends GenericQuery {
-  case class GroupByClass(val L_RETURNFLAG: java.lang.Character, val L_LINESTATUS: java.lang.Character);
   def Q1(numRuns: Int) {
     val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
@@ -117,18 +119,6 @@ trait Q2 extends GenericQuery {
 }
 
 trait Q3 extends GenericQuery {
-  case class Q3GRPRecord(
-    val L_ORDERKEY: Int,
-    val O_ORDERDATE: Long,
-    val O_SHIPPRIORITY: Int) extends CaseClassRecord {
-    def getField(key: String): Option[Any] = key match {
-      case "L_ORDERKEY"     => Some(L_ORDERKEY)
-      case "O_ORDERDATE"    => Some(O_ORDERDATE)
-      case "O_SHIPPRIORITY" => Some(O_SHIPPRIORITY)
-      case _                => None
-    }
-  }
-
   def Q3(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
@@ -158,7 +148,7 @@ trait Q3 extends GenericQuery {
         val po = PrintOp(sortOp)(kv => {
           // TODO: The date is not printed properly (but is correct), and fails 
           // in the comparison with result file. Rest of fields OK.
-          printf("%d|%.4f|%s|%d\n", kv.key.L_ORDERKEY, kv.aggs(0), dateToString(new java.util.Date(kv.key.O_ORDERDATE)), kv.key.O_SHIPPRIORITY)
+          printf("%d|%.4f|%s|%d\n", kv.key.L_ORDERKEY, kv.aggs(0), dateToString(kv.key.O_ORDERDATE), kv.key.O_SHIPPRIORITY)
           i += 1
         }, () => i < 10)
         po.open
@@ -256,18 +246,6 @@ trait Q6 extends GenericQuery {
   }
 }
 trait Q7 extends GenericQuery {
-  case class Q7GRPRecord(
-    val SUPP_NATION: LBString,
-    val CUST_NATION: LBString,
-    val L_YEAR: Long) extends CaseClassRecord {
-    def getField(key: String): Option[Any] = key match {
-      case "SUPP_NATION" => Some(SUPP_NATION)
-      case "CUST_NATION" => Some(CUST_NATION)
-      case "L_YEAR"      => Some(L_YEAR)
-      case _             => None
-    }
-  }
-
   def Q7(numRuns: Int) {
     val nationTable = loadNation()
     val ordersTable = loadOrders()
@@ -371,16 +349,6 @@ trait Q8 extends GenericQuery {
 }
 
 trait Q9 extends GenericQuery {
-  case class Q9GRPRecord(
-    val NATION: LBString,
-    val O_YEAR: Long) extends CaseClassRecord {
-    def getField(key: String): Option[Any] = key match {
-      case "NATION" => Some(NATION)
-      case "O_YEAR" => Some(O_YEAR)
-      case _        => None
-    }
-  }
-
   def Q9(numRuns: Int) {
     val partTable = loadPart()
     val nationTable = loadNation()
@@ -424,25 +392,6 @@ trait Q9 extends GenericQuery {
 }
 
 trait Q10 extends GenericQuery {
-  case class Q10GRPRecord(
-    val C_CUSTKEY: Int,
-    val C_NAME: LBString,
-    val C_ACCTBAL: Double,
-    val C_PHONE: LBString,
-    val N_NAME: LBString,
-    val C_ADDRESS: LBString,
-    val C_COMMENT: LBString) extends CaseClassRecord {
-    def getField(key: String): Option[Any] = key match {
-      case "C_CUSTKEY" => Some(C_CUSTKEY)
-      case "C_NAME"    => Some(C_NAME)
-      case "C_ACCTBAL" => Some(C_ACCTBAL)
-      case "C_PHONE"   => Some(C_PHONE)
-      case "N_NAME"    => Some(N_NAME)
-      case "C_ADDRESS" => Some(C_ADDRESS)
-      case "C_COMMENT" => Some(C_COMMENT)
-      case _           => None
-    }
-  }
 
   def Q10(numRuns: Int) {
     val lineitemTable = loadLineitem()
@@ -658,31 +607,6 @@ trait Q15 extends GenericQuery {
 }
 
 trait Q16 extends GenericQuery {
-  case class Q16GRPRecord1(
-    val P_BRAND: LBString,
-    val P_TYPE: LBString,
-    val P_SIZE: Int,
-    val PS_SUPPKEY: Int) extends CaseClassRecord {
-    def getField(key: String): Option[Any] = key match {
-      case "P_BRAND"    => Some(P_BRAND)
-      case "P_TYPE"     => Some(P_TYPE)
-      case "P_SIZE"     => Some(P_SIZE)
-      case "PS_SUPPKEY" => Some(PS_SUPPKEY)
-      case _            => None
-    }
-  }
-  case class Q16GRPRecord2(
-    val P_BRAND: LBString,
-    val P_TYPE: LBString,
-    val P_SIZE: Int) extends CaseClassRecord {
-    def getField(key: String): Option[Any] = key match {
-      case "P_BRAND" => Some(P_BRAND)
-      case "P_TYPE"  => Some(P_TYPE)
-      case "P_SIZE"  => Some(P_SIZE)
-      case _         => None
-    }
-  }
-
   def Q16(numRuns: Int) {
     val supplierTable = loadSupplier()
     val partTable = loadPart()
@@ -764,21 +688,6 @@ trait Q17 extends GenericQuery {
 // Danger, Will Robinson!: Query takes a long time to complete in Scala (but we 
 // knew that already!)
 trait Q18 extends GenericQuery {
-  case class Q18GRPRecord(
-    val C_NAME: LBString,
-    val C_CUSTKEY: Int,
-    val O_ORDERKEY: Int,
-    val O_ORDERDATE: Long,
-    val O_TOTALPRICE: Double) extends CaseClassRecord {
-    def getField(key: String): Option[Any] = key match {
-      case "C_NAME"       => Some(C_NAME)
-      case "C_CUSTKEY"    => Some(C_CUSTKEY)
-      case "O_ORDERKEY"   => Some(O_ORDERKEY)
-      case "O_ORDERDATE"  => Some(O_ORDERDATE)
-      case "O_TOTALPRICE" => Some(O_TOTALPRICE)
-      case _              => None
-    }
-  }
   def Q18(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
@@ -812,7 +721,7 @@ trait Q18 extends GenericQuery {
         })
         var j = 0
         val po = PrintOp(sortOp)(kv => {
-          printf("%s|%d|%d|%s|%.2f|%.2f\n", kv.key.C_NAME.string, kv.key.C_CUSTKEY, kv.key.O_ORDERKEY, dateToString(new java.util.Date(kv.key.O_ORDERDATE)), kv.key.O_TOTALPRICE, kv.aggs(0))
+          printf("%s|%d|%d|%s|%.2f|%.2f\n", kv.key.C_NAME.string, kv.key.C_CUSTKEY, kv.key.O_ORDERKEY, dateToString(kv.key.O_ORDERDATE), kv.key.O_TOTALPRICE, kv.aggs(0))
           j += 1
         }, () => j < 100)
         po.open
@@ -880,18 +789,6 @@ trait Q19 extends GenericQuery {
 }
 
 trait Q20 extends GenericQuery {
-  case class Q20GRPRecord(
-    val PS_PARTKEY: Int,
-    val PS_SUPPKEY: Int,
-    val PS_AVAILQTY: Int) extends CaseClassRecord {
-    def getField(key: String): Option[Any] = key match {
-      case "PS_PARTKEY"  => Some(PS_PARTKEY)
-      case "PS_SUPPKEY"  => Some(PS_SUPPKEY)
-      case "PS_AVAILQTY" => Some(PS_AVAILQTY)
-      case _             => None
-    }
-  }
-
   def Q20(numRuns: Int) {
     val partTable = loadPart()
     val nationTable = loadNation()

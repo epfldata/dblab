@@ -6,6 +6,7 @@ import deep._
 import prettyprinter._
 import optimization._
 import pardis.optimization._
+import ch.epfl.data.pardis.ir._
 import pardis.ir.pardisTypeImplicits._
 
 object Main extends LegoRunner {
@@ -33,18 +34,38 @@ object Main extends LegoRunner {
     case "Q1"   => query1()
     case "Q1_U" => query1_unoptimized()
     case "Q2"   => query2()
+    case "Q3"   => query3()
+    case "Q4"   => query4()
     case "Q5"   => query5()
+    case "Q6"   => query6()
   }
 
   def query1_unoptimized() {
     val lq = new LiftedQueries()
-    val block = lq.Q1
+    val block = lq.Q1_U
 
-    val ir2Program = new { val IR = lq.context } with IRToProgram {
-    }
+    // Lowering (e.g. case classes to records)
+    val lowering = new LBLowering(lq.context, lq.context)
+    val loweredBlock = lowering.lower(block)
+    val parameterPromotion = new LBParameterPromotion(lq.context)
+    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
 
-    val finalProgram = ir2Program.createProgram(block)
-    println(finalProgram)
+    // DCE
+    val dce = new DCE(lq.context)
+    val dceBlock = dce.optimize(operatorlessBlock)
+
+    // Convert Scala constructs to C
+    val scalaToC = new ScalaConstructsToCTranformer(lq.context)
+    val transformedBlock = scalaToC.transformBlock(dceBlock)
+    val scalaToC2 = new ScalaCollectionsToGLibTransfomer(lq.context)
+    val transformedBlock2 = scalaToC2.transformBlock(transformedBlock)
+
+    val ir2Program = new { val IR = lq.context } with IRToProgram {}
+
+    System.out.println(transformedBlock2)
+
+    val finalProgram = ir2Program.createProgram(transformedBlock2)
+
     val LegoGenerator = new LegoCGenerator(2, true)
     LegoGenerator.apply(finalProgram)
   }
@@ -98,10 +119,28 @@ object Main extends LegoRunner {
     compileQuery(lq, block, 2, false)
   }
 
+  def query3() {
+    val lq = new LiftedQueries()
+    val block = lq.Q3
+    compileQuery(lq, block, 3, false)
+  }
+
+  def query4() {
+    val lq = new LiftedQueries()
+    val block = lq.Q4
+    compileQuery(lq, block, 4, true)
+  }
+
   def query5() {
     val lq = new LiftedQueries()
     val block = lq.Q5
     compileQuery(lq, block, 5, false)
+  }
+
+  def query6() {
+    val lq = new LiftedQueries()
+    val block = lq.Q6
+    compileQuery(lq, block, 6, false)
   }
 
   // test1()

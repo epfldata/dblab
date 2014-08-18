@@ -94,14 +94,14 @@ class MetaInfo
         i += 1
       }
     }
-    keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
+    keySet = Set(hm.keySet.toSeq: _*)
   }
   def next() = {
     if (hm.size != 0) {
       val key = keySet.head
       keySet.remove(key)
       val elem = hm.remove(key)
-      /*ch.epfl.data.legobase.queryengine.GenericEngine.*/ newAGGRecord(key, elem.get)
+      newAGGRecord(key, elem.get)
     } else NullDynamicRecord
   }
   def close() {}
@@ -227,7 +227,7 @@ class MetaInfo
   def reset() { parent.reset; hm.clear; open }
 }
 
-case class LeftHashSemiJoinOp[A: Manifest, B: Manifest, C: Manifest](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
+@deep case class LeftHashSemiJoinOp[A: Manifest, B: Manifest, C: Manifest](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   val hm = new HashMap[C, ArrayBuffer[B]]()
   def open() = {
     leftParent.open
@@ -251,6 +251,7 @@ case class LeftHashSemiJoinOp[A: Manifest, B: Manifest, C: Manifest](leftParent:
   def reset() { rightParent.reset; leftParent.reset; hm.clear; }
 }
 
+@deep
 case class NestedLoopsJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord: Manifest](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
   var leftTuple = NullDynamicRecord[A]
   var rightTuple = NullDynamicRecord[B]
