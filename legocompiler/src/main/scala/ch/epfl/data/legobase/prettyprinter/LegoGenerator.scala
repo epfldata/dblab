@@ -22,7 +22,6 @@ import pardis.shallow._
 package legobase
 
 $getShallowHeader
-import queryengine.AGGRecord
 import scala.collection.mutable.Set
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.TreeSet

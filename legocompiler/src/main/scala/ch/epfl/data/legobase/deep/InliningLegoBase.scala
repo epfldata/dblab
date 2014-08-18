@@ -14,9 +14,9 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     case Def(x: SortOpNew[_])  => self.asInstanceOf[Rep[SortOp[A]]].open
     case Def(x: MapOpNew[_])   => self.asInstanceOf[Rep[MapOp[A]]].open
     case Def(x: AggOpNew[_, _]) => {
-      type X = A
+      type X = Any
       type Y = Any
-      aggOpOpen(self.asInstanceOf[Rep[AggOp[X, Y]]])
+      aggOpOpen(self.asInstanceOf[Rep[AggOp[X, Y]]])(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], manifest[Y], manifest[X])
     }
     case Def(x: ScanOpNew[_])   => self.asInstanceOf[Rep[ScanOp[A]]].open
     case Def(x: SelectOpNew[_]) => self.asInstanceOf[Rep[SelectOp[A]]].open
@@ -46,9 +46,9 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     case Def(x: SortOpNew[_])  => self.asInstanceOf[Rep[SortOp[A]]].next
     case Def(x: MapOpNew[_])   => self.asInstanceOf[Rep[MapOp[A]]].next
     case Def(x: AggOpNew[_, _]) => {
-      type X = A
+      type X = Any
       type Y = Any
-      aggOpNext[X, Y](self.asInstanceOf[Rep[AggOp[X, Y]]]).asInstanceOf[Rep[A]]
+      aggOpNext(self.asInstanceOf[Rep[AggOp[X, Y]]])(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], manifest[Y], manifest[X]).asInstanceOf[Rep[A]]
     }
     case Def(x: ScanOpNew[_])   => self.asInstanceOf[Rep[ScanOp[A]]].next
     case Def(x: SelectOpNew[_]) => self.asInstanceOf[Rep[SelectOp[A]]].next
