@@ -1592,4 +1592,208 @@ trait LeftHashSemiJoinOpImplementations { self: DeepDSL =>
   }
 }
 trait LeftHashSemiJoinOpComponent extends LeftHashSemiJoinOpOps with LeftHashSemiJoinOpImplicits { self: OperatorsComponent => }
-trait OperatorsComponent extends OperatorComponent with ScanOpComponent with SelectOpComponent with AggOpComponent with SortOpComponent with MapOpComponent with PrintOpComponent with HashJoinOpComponent with WindowOpComponent with LeftHashSemiJoinOpComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent with DoubleComponent with IntComponent with LongComponent with ArrayComponent with LINEITEMRecordComponent with K2DBScannerComponent with IntegerComponent with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase { self: DeepDSL => }
+trait NestedLoopsJoinOpOps extends Base { this: OperatorsComponent =>
+  implicit class NestedLoopsJoinOpRep[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$20: Manifest[B], evidence$19: Manifest[A]) {
+    def foreach(f: Rep[(DynamicCompositeRecord[A, B] => Unit)]): Rep[Unit] = nestedLoopsJoinOpForeach[A, B](self, f)(typeA, typeB, evidence$20, evidence$19)
+    def findFirst(cond: Rep[(DynamicCompositeRecord[A, B] => Boolean)]): Rep[DynamicCompositeRecord[A, B]] = nestedLoopsJoinOpFindFirst[A, B](self, cond)(typeA, typeB, evidence$20, evidence$19)
+    def NullDynamicRecord[D](implicit typeD: TypeRep[D], evidence$2: Manifest[D]): Rep[D] = nestedLoopsJoinOpNullDynamicRecord[A, B, D](self)(typeA, typeB, typeD, evidence$2, evidence$20, evidence$19)
+    def open(): Rep[Unit] = nestedLoopsJoinOpOpen[A, B](self)(typeA, typeB, evidence$20, evidence$19)
+    def next(): Rep[DynamicCompositeRecord[A, B]] = nestedLoopsJoinOpNext[A, B](self)(typeA, typeB, evidence$20, evidence$19)
+    def close(): Rep[Unit] = nestedLoopsJoinOpClose[A, B](self)(typeA, typeB, evidence$20, evidence$19)
+    def reset(): Rep[Unit] = nestedLoopsJoinOpReset[A, B](self)(typeA, typeB, evidence$20, evidence$19)
+    def cnt_=(x$1: Rep[Int]): Rep[Unit] = nestedLoopsJoinOp_Field_Cnt_$eq[A, B](self, x$1)(typeA, typeB)
+    def cnt: Rep[Int] = nestedLoopsJoinOp_Field_Cnt[A, B](self)(typeA, typeB)
+    def rightTuple_=(x$1: Rep[B]): Rep[Unit] = nestedLoopsJoinOp_Field_RightTuple_$eq[A, B](self, x$1)(typeA, typeB)
+    def rightTuple: Rep[B] = nestedLoopsJoinOp_Field_RightTuple[A, B](self)(typeA, typeB)
+    def leftTuple_=(x$1: Rep[A]): Rep[Unit] = nestedLoopsJoinOp_Field_LeftTuple_$eq[A, B](self, x$1)(typeA, typeB)
+    def leftTuple: Rep[A] = nestedLoopsJoinOp_Field_LeftTuple[A, B](self)(typeA, typeB)
+    def evidence$20: Rep[Manifest[B]] = nestedLoopsJoinOp_Field_Evidence$20[A, B](self)(typeA, typeB)
+    def evidence$19: Rep[Manifest[A]] = nestedLoopsJoinOp_Field_Evidence$19[A, B](self)(typeA, typeB)
+    def joinCond: Rep[((A, B) => Boolean)] = nestedLoopsJoinOp_Field_JoinCond[A, B](self)(typeA, typeB)
+    def rightAlias: Rep[String] = nestedLoopsJoinOp_Field_RightAlias[A, B](self)(typeA, typeB)
+    def leftAlias: Rep[String] = nestedLoopsJoinOp_Field_LeftAlias[A, B](self)(typeA, typeB)
+    def rightParent: Rep[Operator[B]] = nestedLoopsJoinOp_Field_RightParent[A, B](self)(typeA, typeB)
+    def leftParent: Rep[Operator[A]] = nestedLoopsJoinOp_Field_LeftParent[A, B](self)(typeA, typeB)
+    def NullDynamicRecord: Rep[DynamicCompositeRecord[A, B]] = nestedLoopsJoinOp_Field_NullDynamicRecord[A, B](self)(typeA, typeB)
+  }
+  object NestedLoopsJoinOp {
+
+  }
+  // constructors
+  def __newNestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String])(joinCond: Rep[((A, B) => Boolean)])(implicit evidence$19: Manifest[A], evidence$20: Manifest[B], typeA: TypeRep[A], typeB: TypeRep[B]): Rep[NestedLoopsJoinOp[A, B]] = nestedLoopsJoinOpNew[A, B](leftParent, rightParent, leftAlias, rightAlias, joinCond)(typeA, typeB, evidence$19, evidence$20)
+  // case classes
+  case class NestedLoopsJoinOpNew[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$19: Manifest[A], val evidence$20: Manifest[B]) extends ConstructorDef[NestedLoopsJoinOp[A, B]](List(typeA, typeB), "NestedLoopsJoinOp", List(List(leftParent, rightParent, leftAlias, rightAlias), List(joinCond))) {
+    override def curriedConstructor = (copy[A, B] _).curried
+  }
+
+  case class NestedLoopsJoinOpForeach[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]], f: Rep[((DynamicCompositeRecord[A, B]) => Unit)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$20: Manifest[B], val evidence$19: Manifest[A]) extends FunctionDef[Unit](Some(self), "foreach", List(List(f))) {
+    override def curriedConstructor = (copy[A, B] _).curried
+  }
+
+  case class NestedLoopsJoinOpFindFirst[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]], cond: Rep[((DynamicCompositeRecord[A, B]) => Boolean)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$20: Manifest[B], val evidence$19: Manifest[A]) extends FunctionDef[DynamicCompositeRecord[A, B]](Some(self), "findFirst", List(List(cond))) {
+    override def curriedConstructor = (copy[A, B] _).curried
+  }
+
+  case class NestedLoopsJoinOpNullDynamicRecord[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, D](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeD: TypeRep[D], val evidence$2: Manifest[D], val evidence$20: Manifest[B], val evidence$19: Manifest[A]) extends FunctionDef[D](Some(self), "NullDynamicRecord", List()) {
+    override def curriedConstructor = (copy[A, B, D] _)
+  }
+
+  case class NestedLoopsJoinOpOpen[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$20: Manifest[B], val evidence$19: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
+    override def curriedConstructor = (copy[A, B] _)
+  }
+
+  case class NestedLoopsJoinOpNext[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$20: Manifest[B], val evidence$19: Manifest[A]) extends FunctionDef[DynamicCompositeRecord[A, B]](Some(self), "next", List(List())) {
+    override def curriedConstructor = (copy[A, B] _)
+  }
+
+  case class NestedLoopsJoinOpClose[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$20: Manifest[B], val evidence$19: Manifest[A]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
+    override def curriedConstructor = (copy[A, B] _)
+  }
+
+  case class NestedLoopsJoinOpReset[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$20: Manifest[B], val evidence$19: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
+    override def curriedConstructor = (copy[A, B] _)
+  }
+
+  case class NestedLoopsJoinOp_Field_Cnt_$eq[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[Int](self, "cnt", x$1) {
+    override def curriedConstructor = (copy[A, B] _).curried
+  }
+
+  case class NestedLoopsJoinOp_Field_Cnt[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldGetter[Int](self, "cnt") {
+    override def curriedConstructor = (copy[A, B] _)
+  }
+
+  case class NestedLoopsJoinOp_Field_RightTuple_$eq[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[B])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[B](self, "rightTuple", x$1) {
+    override def curriedConstructor = (copy[A, B] _).curried
+  }
+
+  case class NestedLoopsJoinOp_Field_RightTuple[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldGetter[B](self, "rightTuple") {
+    override def curriedConstructor = (copy[A, B] _)
+  }
+
+  case class NestedLoopsJoinOp_Field_LeftTuple_$eq[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[A])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[A](self, "leftTuple", x$1) {
+    override def curriedConstructor = (copy[A, B] _).curried
+  }
+
+  case class NestedLoopsJoinOp_Field_LeftTuple[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldGetter[A](self, "leftTuple") {
+    override def curriedConstructor = (copy[A, B] _)
+  }
+
+  case class NestedLoopsJoinOp_Field_Evidence$20[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[Manifest[B]](self, "evidence$20") {
+    override def curriedConstructor = (copy[A, B] _)
+    override def isPure = true
+
+  }
+
+  case class NestedLoopsJoinOp_Field_Evidence$19[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[Manifest[A]](self, "evidence$19") {
+    override def curriedConstructor = (copy[A, B] _)
+    override def isPure = true
+
+  }
+
+  case class NestedLoopsJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[((A, B) => Boolean)](self, "joinCond") {
+    override def curriedConstructor = (copy[A, B] _)
+    override def isPure = true
+
+  }
+
+  case class NestedLoopsJoinOp_Field_RightAlias[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[String](self, "rightAlias") {
+    override def curriedConstructor = (copy[A, B] _)
+    override def isPure = true
+
+  }
+
+  case class NestedLoopsJoinOp_Field_LeftAlias[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[String](self, "leftAlias") {
+    override def curriedConstructor = (copy[A, B] _)
+    override def isPure = true
+
+  }
+
+  case class NestedLoopsJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[Operator[B]](self, "rightParent") {
+    override def curriedConstructor = (copy[A, B] _)
+    override def isPure = true
+
+  }
+
+  case class NestedLoopsJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[Operator[A]](self, "leftParent") {
+    override def curriedConstructor = (copy[A, B] _)
+    override def isPure = true
+
+  }
+
+  case class NestedLoopsJoinOp_Field_NullDynamicRecord[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[DynamicCompositeRecord[A, B]](self, "NullDynamicRecord") {
+    override def curriedConstructor = (copy[A, B] _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def nestedLoopsJoinOpNew[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$19: Manifest[A], evidence$20: Manifest[B]): Rep[NestedLoopsJoinOp[A, B]] = NestedLoopsJoinOpNew[A, B](leftParent, rightParent, leftAlias, rightAlias, joinCond)
+  def nestedLoopsJoinOpForeach[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]], f: Rep[((DynamicCompositeRecord[A, B]) => Unit)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$20: Manifest[B], evidence$19: Manifest[A]): Rep[Unit] = NestedLoopsJoinOpForeach[A, B](self, f)
+  def nestedLoopsJoinOpFindFirst[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]], cond: Rep[((DynamicCompositeRecord[A, B]) => Boolean)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$20: Manifest[B], evidence$19: Manifest[A]): Rep[DynamicCompositeRecord[A, B]] = NestedLoopsJoinOpFindFirst[A, B](self, cond)
+  def nestedLoopsJoinOpNullDynamicRecord[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, D](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeD: TypeRep[D], evidence$2: Manifest[D], evidence$20: Manifest[B], evidence$19: Manifest[A]): Rep[D] = NestedLoopsJoinOpNullDynamicRecord[A, B, D](self)
+  def nestedLoopsJoinOpOpen[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$20: Manifest[B], evidence$19: Manifest[A]): Rep[Unit] = NestedLoopsJoinOpOpen[A, B](self)
+  def nestedLoopsJoinOpNext[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$20: Manifest[B], evidence$19: Manifest[A]): Rep[DynamicCompositeRecord[A, B]] = NestedLoopsJoinOpNext[A, B](self)
+  def nestedLoopsJoinOpClose[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$20: Manifest[B], evidence$19: Manifest[A]): Rep[Unit] = NestedLoopsJoinOpClose[A, B](self)
+  def nestedLoopsJoinOpReset[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$20: Manifest[B], evidence$19: Manifest[A]): Rep[Unit] = NestedLoopsJoinOpReset[A, B](self)
+  def nestedLoopsJoinOp_Field_Cnt_$eq[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOp_Field_Cnt_$eq[A, B](self, x$1)
+  def nestedLoopsJoinOp_Field_Cnt[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = NestedLoopsJoinOp_Field_Cnt[A, B](self)
+  def nestedLoopsJoinOp_Field_RightTuple_$eq[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[B])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOp_Field_RightTuple_$eq[A, B](self, x$1)
+  def nestedLoopsJoinOp_Field_RightTuple[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[B] = NestedLoopsJoinOp_Field_RightTuple[A, B](self)
+  def nestedLoopsJoinOp_Field_LeftTuple_$eq[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[A])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOp_Field_LeftTuple_$eq[A, B](self, x$1)
+  def nestedLoopsJoinOp_Field_LeftTuple[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[A] = NestedLoopsJoinOp_Field_LeftTuple[A, B](self)
+  def nestedLoopsJoinOp_Field_Evidence$20[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Manifest[B]] = NestedLoopsJoinOp_Field_Evidence$20[A, B](self)
+  def nestedLoopsJoinOp_Field_Evidence$19[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Manifest[A]] = NestedLoopsJoinOp_Field_Evidence$19[A, B](self)
+  def nestedLoopsJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[((A, B) => Boolean)] = NestedLoopsJoinOp_Field_JoinCond[A, B](self)
+  def nestedLoopsJoinOp_Field_RightAlias[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[String] = NestedLoopsJoinOp_Field_RightAlias[A, B](self)
+  def nestedLoopsJoinOp_Field_LeftAlias[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[String] = NestedLoopsJoinOp_Field_LeftAlias[A, B](self)
+  def nestedLoopsJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[B]] = NestedLoopsJoinOp_Field_RightParent[A, B](self)
+  def nestedLoopsJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[A]] = NestedLoopsJoinOp_Field_LeftParent[A, B](self)
+  def nestedLoopsJoinOp_Field_NullDynamicRecord[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[DynamicCompositeRecord[A, B]] = NestedLoopsJoinOp_Field_NullDynamicRecord[A, B](self)
+  type NestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord] = ch.epfl.data.legobase.queryengine.volcano.NestedLoopsJoinOp[A, B]
+  case class NestedLoopsJoinOpType[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[NestedLoopsJoinOp[A, B]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = NestedLoopsJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.AbstractRecord]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.AbstractRecord]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    val name = s"NestedLoopsJoinOp[${typeA.name}, ${typeB.name}]"
+    val typeArguments = List(typeA, typeB)
+    val typeTag = scala.reflect.runtime.universe.typeTag[NestedLoopsJoinOp[A, B]]
+  }
+  implicit def typeNestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.AbstractRecord: TypeRep, B <: ch.epfl.data.pardis.shallow.AbstractRecord: TypeRep] = NestedLoopsJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
+}
+trait NestedLoopsJoinOpImplicits { this: NestedLoopsJoinOpComponent =>
+  // Add implicit conversions here!
+}
+trait NestedLoopsJoinOpImplementations { self: DeepDSL =>
+  override def nestedLoopsJoinOpOpen[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$20: Manifest[B], evidence$19: Manifest[A]): Rep[Unit] = {
+    {
+      self.rightParent.open();
+      self.leftParent.open();
+      self.leftTuple_$eq(self.leftParent.next())
+    }
+  }
+  override def nestedLoopsJoinOpNext[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$20: Manifest[B], evidence$19: Manifest[A]): Rep[DynamicCompositeRecord[A, B]] = {
+    {
+      var exit: this.Var[Boolean] = __newVar(unit(false));
+      __whileDo(infix_$eq$eq(readVar(exit), unit(false)).$amp$amp(infix_$bang$eq(self.leftTuple, self.NullDynamicRecord[A])), {
+        self.rightTuple_$eq(self.rightParent.findFirst(__lambda(((t: this.Rep[B]) => __app(self.joinCond).apply(self.leftTuple, t)))));
+        __ifThenElse(infix_$eq$eq(self.rightTuple, self.NullDynamicRecord[B]), {
+          self.rightParent.reset();
+          self.leftTuple_$eq(self.leftParent.next())
+        }, __assign(exit, unit(true)))
+      });
+      __ifThenElse(infix_$bang$eq(self.leftTuple, self.NullDynamicRecord[A]), RecordOps[A](self.leftTuple).concatenateDynamic[B](self.rightTuple, self.leftAlias, self.rightAlias), self.NullDynamicRecord)
+    }
+  }
+  override def nestedLoopsJoinOpClose[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$20: Manifest[B], evidence$19: Manifest[A]): Rep[Unit] = {
+    unit(())
+  }
+  override def nestedLoopsJoinOpReset[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$20: Manifest[B], evidence$19: Manifest[A]): Rep[Unit] = {
+    {
+      self.rightParent.reset();
+      self.leftParent.reset();
+      self.leftTuple_$eq(self.NullDynamicRecord[A])
+    }
+  }
+}
+trait NestedLoopsJoinOpComponent extends NestedLoopsJoinOpOps with NestedLoopsJoinOpImplicits { self: OperatorsComponent => }
+trait OperatorsComponent extends OperatorComponent with ScanOpComponent with SelectOpComponent with AggOpComponent with SortOpComponent with MapOpComponent with PrintOpComponent with HashJoinOpComponent with WindowOpComponent with LeftHashSemiJoinOpComponent with NestedLoopsJoinOpComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent with DoubleComponent with IntComponent with LongComponent with ArrayComponent with LINEITEMRecordComponent with K2DBScannerComponent with IntegerComponent with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase { self: DeepDSL => }

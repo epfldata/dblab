@@ -251,6 +251,7 @@ class MetaInfo
   def reset() { rightParent.reset; leftParent.reset; hm.clear; }
 }
 
+@deep
 case class NestedLoopsJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord: Manifest](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
   var leftTuple = NullDynamicRecord[A]
   var rightTuple = NullDynamicRecord[B]
