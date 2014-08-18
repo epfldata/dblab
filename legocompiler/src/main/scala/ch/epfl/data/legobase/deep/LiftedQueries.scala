@@ -18,7 +18,7 @@ class LiftedQueries {
       runQuery {
         val constantDate = parseDate(unit("1998-08-11"))
         val lineitemScan = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_SHIPDATE <= constantDate })
-        /*  val aggOp = __newAggOp(lineitemScan, unit(9))(__lambda { x =>
+        val aggOp = __newAggOp(lineitemScan, unit(9))(__lambda { x =>
           groupByClassNew(
             x.L_RETURNFLAG, x.L_LINESTATUS)
         })(
@@ -28,7 +28,7 @@ class LiftedQueries {
           __lambda { (t, currAgg) => { (t.L_EXTENDEDPRICE * (unit(1.0) - t.L_DISCOUNT)) + currAgg } },
           __lambda { (t, currAgg) => { (t.L_EXTENDEDPRICE * (unit(1.0) - t.L_DISCOUNT) * (unit(1.0) + t.L_TAX)) + currAgg } },
           __lambda { (t, currAgg) => { currAgg + unit(1) } })
-        val mapOp = __newMapOp(aggOp)(__lambda { (kv) => kv.aggs(6) = kv.aggs(1) / kv.aggs(5) }, // AVG(L_QUANTITY)
+        /*val mapOp = __newMapOp(aggOp)(__lambda { (kv) => kv.aggs(6) = kv.aggs(1) / kv.aggs(5) }, // AVG(L_QUANTITY)
           __lambda { (kv) => kv.aggs(7) = kv.aggs(2) / kv.aggs(5) }, // AVG(L_EXTENDEDPRICE)
           __lambda { (kv) => kv.aggs(8) = kv.aggs(0) / kv.aggs(5) }) // AVG(L_DISCOUNT)
         val sortOp = __newSortOp(mapOp)(__lambda { (kv1, kv2) =>
@@ -41,14 +41,11 @@ class LiftedQueries {
               unit(()))
             res
           }
-        })
+        })*/
         val po = __newPrintOp2(aggOp)(__lambda { kv =>
           printf(unit("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n"),
             kv.key.L_RETURNFLAG, kv.key.L_LINESTATUS, kv.aggs(1), kv.aggs(2), kv.aggs(3), kv.aggs(4),
             kv.aggs(6), kv.aggs(7), kv.aggs(8), kv.aggs(5))
-        })*/
-        val po = __newPrintOp2(lineitemScan)(__lambda { kv =>
-          printf(unit("RECORD FOUND\n"))
         })
 
         po.open
