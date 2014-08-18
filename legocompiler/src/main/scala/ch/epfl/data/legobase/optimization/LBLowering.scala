@@ -19,8 +19,8 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val maa = ma.asInstanceOf[TypeRep[Any]]
       val marrDouble = implicitly[to.TypeRep[to.Array[to.Double]]]
       val magg = typeRep[AGGRecord[Any]].rebuild(mb).asInstanceOf[TypeRep[Any]]
-
-      to.__newDef[AggOp[Any, Any]](("hm", false, to.__newHashMap()(to.overloaded2, apply(mb), apply(marrDouble))),
+      val hm = to.__newHashMap()(to.overloaded2, apply(mb), apply(marrDouble))
+      to.__newDef[AggOp[Any, Any]](("hm", false, hm),
         ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(magg))),
         ("keySet", true, to.Set()(apply(mb), to.overloaded2)),
         ("numAggs", false, an.numAggs)).asInstanceOf[to.Def[T]]
@@ -113,7 +113,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
   object CaseClassNew extends DefExtractor {
     def unapply[T](exp: Def[T]): Option[Def[T]] =
       exp match {
-        case _: Q3GRPRecordNew | _: WindowRecordNew[_, _] | _: GroupByClassNew | _: LINEITEMRecordNew | _: SUPPLIERRecordNew | _: PARTSUPPRecordNew | _: REGIONRecordNew | _: PARTRecordNew | _: NATIONRecordNew | _: CUSTOMERRecordNew | _: ORDERSRecordNew /* | _: AGGRecordNew[_]*/ => Some(exp)
+        case _: Q3GRPRecordNew | _: WindowRecordNew[_, _] | _: GroupByClassNew | _: LINEITEMRecordNew | _: SUPPLIERRecordNew | _: PARTSUPPRecordNew | _: REGIONRecordNew | _: PARTRecordNew | _: NATIONRecordNew | _: CUSTOMERRecordNew | _: ORDERSRecordNew | _: AGGRecordNew2[_] => Some(exp)
         case _ => None
       }
   }
@@ -121,7 +121,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
   object LoweredNew extends RepExtractor {
     def unapply[T](exp: Rep[T]): Option[Def[T]] = exp match {
       case Def(d) => d.tp match {
-        case Q3GRPRecordType | /*AGGRecordType(_) | */ SUPPLIERRecordType | PARTSUPPRecordType | REGIONRecordType | PARTRecordType | NATIONRecordType | CUSTOMERRecordType | ORDERSRecordType | LINEITEMRecordType | WindowRecordType(_, _) | LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | GroupByClassType => Some(d)
+        case Q3GRPRecordType | AGGRecordType(_) | SUPPLIERRecordType | PARTSUPPRecordType | REGIONRecordType | PARTRecordType | NATIONRecordType | CUSTOMERRecordType | ORDERSRecordType | LINEITEMRecordType | WindowRecordType(_, _) | LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | GroupByClassType => Some(d)
         case _ => None
       }
       case _ => None
