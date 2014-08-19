@@ -39,9 +39,9 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     val tp = typeRep[T]
     if (pardisTypeIsPrimitive[T]) super.transformType[T]
     else if (tp.name.startsWith("Array")) typeCArray(transformType(tp.typeArguments(0)))
-    // AMIR: yannis should commit appropriate pardis
-    // else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
-    // else if (tp.name.contains("HashMap")) typePointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
+    else if (tp.name.contains("TreeSet")) typePointer(typeGTree(transformType(tp.typeArguments(0))))
+    else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
+    else if (tp.name.contains("HashMap")) typePointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
     else if (tp.name.contains("Record")) typePointer(tp)
     else if (tp.isInstanceOf[RecordType[_]])
       if (tp.typeArguments == List()) typePointer(tp)
@@ -114,7 +114,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     case s @ PardisStruct(tag, elems, methods) =>
       // TODO if needed method generation should be added
       val x = malloc(unit(1))(s.tp)
-      structCopy(x, s)
+      structCopy(x, PardisStruct(tag, elems, methods.map(m => m.copy(body = transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef]))))
       ReadVal(x)(typePointer(s.tp))
     // Mapping Scala Array to C Array
     case a @ ArrayNew(x) =>
@@ -188,6 +188,16 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
           val v = boolean$bar$bar(case1, newB.res.asInstanceOf[Expression[Boolean]])
           ReadVal(v)(BooleanType)
         case _ => or
+      }
+    }
+    case and @ Boolean$amp$amp(case1, case2) => {
+      case2 match {
+        case b @ PardisBlock(stmt, res) =>
+          val newB = transformBlockTyped[Boolean, T](b)
+          ReadVal(newB)(newB.tp)
+          val v = boolean$amp$amp(case1, newB.res.asInstanceOf[Expression[Boolean]])
+          ReadVal(v)(BooleanType)
+        case _ => and
       }
     }
     // Profiling and utils functions mapping
@@ -271,33 +281,65 @@ object t1 extends TransformerFunction with HashMapOps with DeepDSL {
 }
 */
 
-class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
+class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
   import CNodes._
   import CTypes._
+
+  def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
+    traverseBlock(node)
+    transformProgram(node)
+  }
+
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
     if (tp.name.startsWith("CArray")) typePointer(typeCArray(transformType(tp.typeArguments(0))))
-    // AMIR: yannis should commit appropriate pardis
-    // else if (tp.name.contains("Seq")) typePointer(typeGList(transformType(tp.typeArguments(0))))
-    // else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
+    else if (tp.name.contains("Seq")) typePointer(typeGList(transformType(tp.typeArguments(0))))
+    else if (tp.name.contains("Option")) typePointer(transformType(tp.typeArguments(0)))
+    else if (tp.name.contains("TreeSet")) typePointer(typeGTree(transformType(tp.typeArguments(0))))
+    else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
     else if (tp.name.contains("Option")) typePointer(transformType(tp.typeArguments(0)))
     else super.transformType[T]
   }).asInstanceOf[PardisType[Any]]
 
-  def eq[A: PardisType] = doLambda2((x: Rep[A], y: Rep[A]) => unit(true))
-  def hash[A: PardisType] = doLambda((x: Rep[A]) => unit(5))
+  override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
+    case Stm(s, OrderingNew(o)) => Nil
+    case _                      => super.transformStmToMultiple(stm)
+  }
+
+  def eq[A: PardisType] = {
+    // System.out.println("eq called for " + typeRep[A])
+    val structDef = getStructDef[A].get
+    val eqMethod = transformDef(structDef.methods.find(_.name == "equals").get.body.asInstanceOf[PardisLambda2[A, A, Boolean]])
+    // System.out.println("tp for " + eqMethod.tp + ", class: " + eqMethod.tp.getClass)
+    // System.out.println("tp classes for args : " + eqMethod.tp.typeArguments.map(_.getClass))
+    // System.out.println("tp for inputs: " + eqMethod.i1.tp + ",  " + eqMethod.i2.tp)
+    toAtom(eqMethod)(eqMethod.tp)
+  }
+  // def hash[A: PardisType] = doLambda((x: Rep[A]) => unit(5))
+  def hash[A: PardisType] = {
+    // System.out.println("eq called for " + typeRep[A])
+    val structDef = getStructDef[A].get
+    val hashMethod = transformDef(structDef.methods.find(_.name == "hash").get.body.asInstanceOf[PardisLambda[A, Int]])
+    // System.out.println("tp for " + eqMethod.tp + ", class: " + eqMethod.tp.getClass)
+    // System.out.println("tp classes for args : " + eqMethod.tp.typeArguments.map(_.getClass))
+    // System.out.println("tp for inputs: " + eqMethod.i1.tp + ",  " + eqMethod.i2.tp)
+    toAtom(hashMethod)(hashMethod.tp)
+  }
+  def treeHead[A: PardisType, B: PardisType] = doLambda3((s1: Rep[A], s2: Rep[A], s3: Rep[Pointer[B]]) => {
+    pointer_assign(s3.asInstanceOf[Expression[Pointer[Any]]], s2)
+    unit(0)
+  })
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     case nm @ HashMapNew2() =>
       System.out.println(nm.typeA)
-      val nA = typePointer(transformType(nm.typeA))
+      val nA = typePointer(transformType(nm.typeA)).asInstanceOf[TypeRep[Any]]
       val nB = typePointer(transformType(nm.typeB))
-      GHashTableNew(eq(nA), hash(nA))(nA, nB, IntType)
+      // GHashTableNew(hash(nA), eq(nA))(nA, nB, IntType)
+      GHashTableNew(hash(nm.typeA), eq(nm.typeA))(nA, nB, IntType)
     case HashMapSize(map)                    => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
-    // AMIR: yannis should commit appropriate pardis
-    // case HashMapKeySet(map)                  => NameAlias[Pointer[GList[FILE]]](None, "g_hash_table_get_keys", List(List(map)))
+    case HashMapKeySet(map)                  => NameAlias[Pointer[GList[FILE]]](None, "g_hash_table_get_keys", List(List(map)))
     case ma @ HashMapApply(map, key)         => NameAlias(None, "g_hash_table_lookup", List(List(map, key)))(transformType(map.tp.typeArguments(0).typeArguments(1)))
-    /*case mc @ HashMapContains(map, key)      => NameAlias[Boolean](None, "g_hash_table_contains", List(List(map, key)))*/
     case mu @ HashMapUpdate(map, key, value) => NameAlias[Unit](None, "g_hash_table_insert", List(List(map, key, value)))
     case hmgu @ HashMapGetOrElseUpdate(map, key, value) =>
       val v = transformDef(HashMapApply(map, key))
@@ -307,24 +349,51 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         val res = ReadVal(newB.res)(newB.tp.asInstanceOf[PardisType[Any]])
         toAtom(transformDef(HashMapUpdate(map.asInstanceOf[Expression[HashMap[Any, Any]]], key, res)))
         res
-      }, v)(v.tp.asInstanceOf[PardisType[Any]])
+      }, toAtom(v))(v.tp.asInstanceOf[PardisType[Any]])
       ReadVal(res)(res.tp)
     case mr @ HashMapRemove(map, key) =>
       val x = toAtom(transformDef(HashMapApply(map, key)))
       toAtom(NameAlias[Unit](None, "g_hash_table_remove", List(List(map, key)))(UnitType))
       ReadVal(x)(transformType(map.tp.typeArguments(0).typeArguments(1)))
+
     case nm @ SetNew(s) => ReadVal(transformExp[Any, T](s))(transformType(s.tp).asInstanceOf[PardisType[T]])
     case nm @ SetNew2() =>
-      PardisCast(Constant(0.asInstanceOf[Any]))(transformType(nm.tp), transformType(nm.tp))
-    case sh @ SetHead(s) => NameAlias(None, "g_list_first", List(List(s)))(transformType(s.tp))
-    case SetRemove(s, e) => NameAlias(None, "g_list_remove", List(List(s, e)))(UnitType)
-    case SetToSeq(set)   => ReadVal(set)(transformType(set.tp).asInstanceOf[PardisType[Set[Any]]])
-    /*case op @ TreeSetHead(t)            => NameAlias(None, "g_tree_head", List(List(t)))
-    case op @ TreeSetSize(t)            => NameAlias(None, "g_tree_nnodes", List(List(t)))
-    case op @ TreeSet$minus$eq(self, t) => NameAlias(None, "g_tree_remove", List(List(self, t)))
-    case op @ TreeSet$plus$eq(self, t)  => NameAlias(None, "g_tree_insert", List(List(self, t)))*/
+      val newType = transformType(nm.tp)
+      PardisCast(Constant(0.asInstanceOf[Any]))(newType, newType)
+    case sh @ SetHead(s) =>
+      val x = toAtom(NameAlias(None, "g_list_first", List(List(s)))(transformType(s.tp)))
+      val f = field(x, "data")(s.tp.typeArguments(0).typeArguments(0))
+      ReadVal(f)(f.tp)
+    case SetRemove(s, e) =>
+      s.correspondingNode match {
+        case PardisReadVar(x) =>
+          val newHead = NameAlias(None, "g_list_remove", List(List(s, e)))(transformType(s.tp))
+          PardisAssign(x, newHead)
+        case _ => throw new Exception("SET NOT A VAR, GO CHANGE IT TO A VAR!")
+      }
+    case SetToSeq(set) => ReadVal(set)(transformType(set.tp).asInstanceOf[PardisType[Set[Any]]])
+    case ts @ TreeSetNew2(Def(OrderingNew(Def(Lambda2(f, i1, i2, o))))) =>
+      NameAlias(None, "g_tree_new", List(List(Lambda2(f, i2, i1, o))))(transformType(ts.tp))
+    case tsa @ TreeSet$plus$eq(t, s)    => NameAlias[Unit](None, "g_tree_insert", List(List(t, s, s)))
+    case op @ TreeSet$minus$eq(self, t) => NameAlias[Boolean](None, "g_tree_remove", List(List(self, t)))
+    case op @ TreeSetSize(t)            => NameAlias[Int](None, "g_tree_nnodes", List(List(t)))
+    case op @ TreeSetHead(t) =>
+      val elemType = t.tp.typeArguments(0).typeArguments(0)
+      val init = infix_asInstanceOf(Constant(null))(elemType)
+      toAtom(NameAlias[Unit](None, "g_tree_foreach", List(List(t, treeHead(elemType, elemType), &(init)(elemType.asInstanceOf[PardisType[Any]])))))
+      ReadVal(init)(init.tp)
     case imtf @ PardisStructImmutableField(s, f) =>
       PardisStructImmutableField(s, f)(transformType(imtf.tp))
+    case HashCode(t) => t.tp match {
+      // TODO other cases should be added here
+      case x if x.isPrimitive             => PardisCast(t)(x, IntType)
+      case x if x.name == "Character"     => PardisCast(t)(x, IntType)
+      case x if x.name == "OptimalString" => ArrayLength(t.asInstanceOf[Rep[Array[Any]]])
+      case x if x.isArray                 => ArrayLength(t.asInstanceOf[Rep[Array[Any]]])
+      // case x if x.isRecord                => ReadVal(hash(x))
+      // case x                              => sys.error(s"don't know how to generate hash function for type $x")
+      case x                              => super.transformDef(node)
+    }
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
 }
