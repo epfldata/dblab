@@ -6,6 +6,7 @@ package deep
 import scalalib._
 import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
+import pardis.deep.scalalib._
 trait OperatorOps extends Base { this: OperatorsComponent =>
   implicit class OperatorRep[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]) {
     def open(): Rep[Unit] = operatorOpen[A](self)(typeA, evidence$1)

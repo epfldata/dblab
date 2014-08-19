@@ -198,7 +198,7 @@ trait ManifestOps { this: DeepDSL =>
 }
 
 // TODO needs generation of partial evaluation for every node
-trait IntPE extends scalalib.IntOps { this: DeepDSL =>
+trait IntPE extends pardis.deep.scalalib.IntOps { this: DeepDSL =>
   case class Int$plus5PE(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "+", List(List(x))) {
     override def isPure = true
     override def partialEvaluable: Boolean = true

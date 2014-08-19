@@ -39,8 +39,9 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     val tp = typeRep[T]
     if (pardisTypeIsPrimitive[T]) super.transformType[T]
     else if (tp.name.startsWith("Array")) typeCArray(transformType(tp.typeArguments(0)))
-    else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
-    else if (tp.name.contains("HashMap")) typePointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
+    // AMIR: yannis should commit appropriate pardis
+    // else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
+    // else if (tp.name.contains("HashMap")) typePointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
     else if (tp.name.contains("Record")) typePointer(tp)
     else if (tp.isInstanceOf[RecordType[_]])
       if (tp.typeArguments == List()) typePointer(tp)
@@ -277,8 +278,9 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
     if (tp.name.startsWith("CArray")) typePointer(typeCArray(transformType(tp.typeArguments(0))))
-    else if (tp.name.contains("Seq")) typePointer(typeGList(transformType(tp.typeArguments(0))))
-    else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
+    // AMIR: yannis should commit appropriate pardis
+    // else if (tp.name.contains("Seq")) typePointer(typeGList(transformType(tp.typeArguments(0))))
+    // else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
     else if (tp.name.contains("Option")) typePointer(transformType(tp.typeArguments(0)))
     else super.transformType[T]
   }).asInstanceOf[PardisType[Any]]
@@ -292,7 +294,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       val nB = typePointer(transformType(nm.typeB))
       GHashTableNew(eq(nA), hash(nA))(nA, nB, IntType)
     case HashMapSize(map)                    => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
-    case HashMapKeySet(map)                  => NameAlias[Pointer[GList[FILE]]](None, "g_hash_table_get_keys", List(List(map)))
+    // AMIR: yannis should commit appropriate pardis
+    // case HashMapKeySet(map)                  => NameAlias[Pointer[GList[FILE]]](None, "g_hash_table_get_keys", List(List(map)))
     case ma @ HashMapApply(map, key)         => NameAlias(None, "g_hash_table_lookup", List(List(map, key)))(transformType(map.tp.typeArguments(0).typeArguments(1)))
     /*case mc @ HashMapContains(map, key)      => NameAlias[Boolean](None, "g_hash_table_contains", List(List(map, key)))*/
     case mu @ HashMapUpdate(map, key, value) => NameAlias[Unit](None, "g_hash_table_insert", List(List(map, key, value)))
@@ -322,7 +325,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case op @ TreeSet$plus$eq(self, t)  => NameAlias(None, "g_tree_insert", List(List(self, t)))*/
     case imtf @ PardisStructImmutableField(s, f) =>
       PardisStructImmutableField(s, f)(transformType(imtf.tp))
-    case _               => super.transformDef(node)
+    case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
 }
 /*

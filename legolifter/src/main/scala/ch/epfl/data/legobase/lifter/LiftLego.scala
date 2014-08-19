@@ -31,12 +31,14 @@ object LiftLego {
 
   def generateNumber(implicit al: AutoLifter) {
     val liftedCodes = List(
-      al.autoLift[MirrorInt],
+      // TODO should be ported to pardis
+      // al.autoLift[MirrorInt],
       al.autoLift[MirrorDouble],
       al.autoLift[MirrorCharacter],
       al.autoLift[MirrorLong],
-      al.autoLift[MirrorInteger],
-      al.autoLift[MirrorBoolean])
+      al.autoLift[MirrorInteger] // TODO should be ported to pardis
+      // , al.autoLift[MirrorBoolean]
+      )
     val liftedCode = liftedCodes.mkString("\n")
     val file = "DeepScalaNumber"
     printToFile(new java.io.File(s"$folder/scalalib/$file.scala")) { pw =>
@@ -83,6 +85,7 @@ package deep
 import scalalib._
 import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
+import pardis.deep.scalalib._
 
 $liftedCode
 trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent 
