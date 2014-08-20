@@ -139,7 +139,7 @@ case class Q20GRPRecord(
 }
 
 object GenericEngine {
-  def newAGGRecord[B: Manifest](k: B, a: Array[Double]) = new AGGRecord(k, a)
+  def newAGGRecord[B](k: B, a: Array[Double]) = new AGGRecord(k, a)
   def newWindowRecord[B, C](k: B, w: C) = new WindowRecord(k, w)
   //def parseDate(x: String): Long
   //def parseString(x: String): Array[Byte]
