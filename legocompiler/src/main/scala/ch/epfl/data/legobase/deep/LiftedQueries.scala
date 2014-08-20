@@ -14,7 +14,7 @@ class LiftedQueries {
   val context = new LoweringLegoBase {
     // val context = new DeepDSL {
     def q1_u = {
-      val lineitemTable = loadLineitem()
+      val lineitemTable = Loader.loadLineitem()
       runQuery {
         val constantDate = parseDate(unit("1998-08-11"))
         val lineitemScan = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_SHIPDATE <= constantDate })
@@ -55,7 +55,7 @@ class LiftedQueries {
     }
 
     def q1 = {
-      val lineitemTable = loadLineitem()
+      val lineitemTable = Loader.loadLineitem()
       unit()
       runQuery {
         val constantDate = parseDate(unit("1998-08-11"))
@@ -96,11 +96,11 @@ class LiftedQueries {
     }
 
     def q2 = {
-      val partTable = loadPart()
-      val partsuppTable = loadPartsupp()
-      val nationTable = loadNation()
-      val regionTable = loadRegion()
-      val supplierTable = loadSupplier()
+      val partTable = Loader.loadPart()
+      val partsuppTable = Loader.loadPartsupp()
+      val nationTable = Loader.loadNation()
+      val regionTable = Loader.loadRegion()
+      val supplierTable = Loader.loadSupplier()
       runQuery {
         val africa = parseString(unit("AFRICA"))
         val tin = parseString(unit("TIN"))
@@ -152,9 +152,9 @@ class LiftedQueries {
     }
 
     def q3 = {
-      val lineitemTable = loadLineitem()
-      val ordersTable = loadOrders()
-      val customerTable = loadCustomer()
+      val lineitemTable = Loader.loadLineitem()
+      val ordersTable = Loader.loadOrders()
+      val customerTable = Loader.loadCustomer()
       runQuery({
         val constantDate = parseDate(unit("1995-03-04"))
         val scanCustomer = __newSelectOp(__newScanOp(customerTable))(__lambda { x => x.C_MKTSEGMENT __== parseString(unit("HOUSEHOLD")) })
@@ -198,8 +198,8 @@ class LiftedQueries {
     }
 
     def q4 = {
-      val lineitemTable = loadLineitem()
-      val ordersTable = loadOrders()
+      val lineitemTable = Loader.loadLineitem()
+      val ordersTable = Loader.loadOrders()
 
       runQuery({
         val constantDate1 = parseDate(unit("1993-11-01"))
@@ -226,12 +226,12 @@ class LiftedQueries {
     }
 
     def q5 = {
-      val lineitemTable = loadLineitem()
-      val nationTable = loadNation()
-      val customerTable = loadCustomer()
-      val supplierTable = loadSupplier()
-      val regionTable = loadRegion()
-      val ordersTable = loadOrders()
+      val lineitemTable = Loader.loadLineitem()
+      val nationTable = Loader.loadNation()
+      val customerTable = Loader.loadCustomer()
+      val supplierTable = Loader.loadSupplier()
+      val regionTable = Loader.loadRegion()
+      val ordersTable = Loader.loadOrders()
       runQuery({
         val constantDate1 = parseDate(unit("1996-01-01"))
         val constantDate2 = parseDate(unit("1997-01-01"))
@@ -266,7 +266,7 @@ class LiftedQueries {
     }
 
     def q6 = {
-      val lineitemTable = loadLineitem()
+      val lineitemTable = Loader.loadLineitem()
       runQuery({
         val constantDate1 = parseDate(unit("1996-01-01"))
         val constantDate2 = parseDate(unit("1997-01-01"))

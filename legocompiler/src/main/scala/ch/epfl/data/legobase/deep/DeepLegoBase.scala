@@ -1119,6 +1119,99 @@ trait OptimalStringImplementations { self: DeepDSL =>
 }
 trait OptimalStringComponent extends OptimalStringOps with OptimalStringImplicits { self: DeepDSL => }
 
+trait LoaderOps extends Base { this: DeepDSL =>
+  implicit class LoaderRep(self: Rep[Loader]) {
+
+  }
+  object Loader {
+    def loadString(size: Rep[Int], s: Rep[K2DBScanner]): Rep[OptimalString] = loaderLoadStringObject(size, s)
+    def fileLineCount(file: Rep[String]): Rep[Int] = loaderFileLineCountObject(file)
+    def loadRegion(): Rep[Array[REGIONRecord]] = loaderLoadRegionObject()
+    def loadPartsupp(): Rep[Array[PARTSUPPRecord]] = loaderLoadPartsuppObject()
+    def loadPart(): Rep[Array[PARTRecord]] = loaderLoadPartObject()
+    def loadNation(): Rep[Array[NATIONRecord]] = loaderLoadNationObject()
+    def loadSupplier(): Rep[Array[SUPPLIERRecord]] = loaderLoadSupplierObject()
+    def loadLineitem(): Rep[Array[LINEITEMRecord]] = loaderLoadLineitemObject()
+    def loadOrders(): Rep[Array[ORDERSRecord]] = loaderLoadOrdersObject()
+    def loadCustomer(): Rep[Array[CUSTOMERRecord]] = loaderLoadCustomerObject()
+  }
+  // constructors
+  def __newLoader(): Rep[Loader] = loaderNew()
+  // case classes
+  case class LoaderNew() extends ConstructorDef[Loader](List(), "Loader", List(List())) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+
+  case class LoaderLoadStringObject(size: Rep[Int], s: Rep[K2DBScanner]) extends FunctionDef[OptimalString](None, "Loader.loadString", List(List(size, s))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class LoaderFileLineCountObject(file: Rep[String]) extends FunctionDef[Int](None, "Loader.fileLineCount", List(List(file))) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class LoaderLoadRegionObject() extends FunctionDef[Array[REGIONRecord]](None, "Loader.loadRegion", List(List())) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+
+  case class LoaderLoadPartsuppObject() extends FunctionDef[Array[PARTSUPPRecord]](None, "Loader.loadPartsupp", List(List())) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+
+  case class LoaderLoadPartObject() extends FunctionDef[Array[PARTRecord]](None, "Loader.loadPart", List(List())) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+
+  case class LoaderLoadNationObject() extends FunctionDef[Array[NATIONRecord]](None, "Loader.loadNation", List(List())) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+
+  case class LoaderLoadSupplierObject() extends FunctionDef[Array[SUPPLIERRecord]](None, "Loader.loadSupplier", List(List())) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+
+  case class LoaderLoadLineitemObject() extends FunctionDef[Array[LINEITEMRecord]](None, "Loader.loadLineitem", List(List())) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+
+  case class LoaderLoadOrdersObject() extends FunctionDef[Array[ORDERSRecord]](None, "Loader.loadOrders", List(List())) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+
+  case class LoaderLoadCustomerObject() extends FunctionDef[Array[CUSTOMERRecord]](None, "Loader.loadCustomer", List(List())) {
+    override def curriedConstructor = (x: Any) => copy()
+  }
+
+  // method definitions
+  def loaderNew(): Rep[Loader] = LoaderNew()
+  def loaderLoadStringObject(size: Rep[Int], s: Rep[K2DBScanner]): Rep[OptimalString] = LoaderLoadStringObject(size, s)
+  def loaderFileLineCountObject(file: Rep[String]): Rep[Int] = LoaderFileLineCountObject(file)
+  def loaderLoadRegionObject(): Rep[Array[REGIONRecord]] = LoaderLoadRegionObject()
+  def loaderLoadPartsuppObject(): Rep[Array[PARTSUPPRecord]] = LoaderLoadPartsuppObject()
+  def loaderLoadPartObject(): Rep[Array[PARTRecord]] = LoaderLoadPartObject()
+  def loaderLoadNationObject(): Rep[Array[NATIONRecord]] = LoaderLoadNationObject()
+  def loaderLoadSupplierObject(): Rep[Array[SUPPLIERRecord]] = LoaderLoadSupplierObject()
+  def loaderLoadLineitemObject(): Rep[Array[LINEITEMRecord]] = LoaderLoadLineitemObject()
+  def loaderLoadOrdersObject(): Rep[Array[ORDERSRecord]] = LoaderLoadOrdersObject()
+  def loaderLoadCustomerObject(): Rep[Array[CUSTOMERRecord]] = LoaderLoadCustomerObject()
+  type Loader = ch.epfl.data.legobase.storagemanager.Loader
+  case object LoaderType extends TypeRep[Loader] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LoaderType
+    val name = "Loader"
+    val typeArguments = Nil
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[Loader]
+  }
+  implicit val typeLoader = LoaderType
+}
+trait LoaderImplicits { this: LoaderComponent =>
+  // Add implicit conversions here!
+}
+trait LoaderImplementations { self: DeepDSL =>
+
+}
+trait LoaderComponent extends LoaderOps with LoaderImplicits { self: DeepDSL => }
+
 trait K2DBScannerOps extends Base { this: DeepDSL =>
   implicit class K2DBScannerRep(self: Rep[K2DBScanner]) {
     def next_int(): Rep[Int] = k2DBScannerNext_int(self)
@@ -1308,6 +1401,7 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowReco
   with CUSTOMERRecordComponent
   with ORDERSRecordComponent
   with OptimalStringComponent
+  with LoaderComponent
   with K2DBScannerComponent with IntegerComponent
   with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent
   with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase

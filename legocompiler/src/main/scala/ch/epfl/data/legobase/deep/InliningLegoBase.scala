@@ -215,7 +215,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
   }
   // override def leftHashSemiJoinOpNullDynamicRecord[A, B, C, D](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], typeD: TypeRep[D], evidence$2: Manifest[D], evidence$18: Manifest[C], evidence$17: Manifest[B], evidence$16: Manifest[A]): Rep[D] = infix_asInstanceOf(unit[Any](null))(typeD)
 
-  override def loadLineitem(): Rep[Array[LINEITEMRecord]] = {
+  override def loaderLoadLineitemObject(): Rep[Array[LINEITEMRecord]] = {
     val file = unit(Config.datapath + "lineitem.tbl")
     val size = fileLineCount(file)
     // Load Relation 
@@ -247,7 +247,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     hm
   }
 
-  override def loadSupplier(): Rep[Array[SUPPLIERRecord]] = {
+  override def loaderLoadSupplierObject(): Rep[Array[SUPPLIERRecord]] = {
     val file = unit(Config.datapath + "supplier.tbl")
     val size = fileLineCount(file)
     // Load Relation 
@@ -264,7 +264,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     hm
   }
 
-  override def loadPartsupp(): Rep[Array[PARTSUPPRecord]] = {
+  override def loaderLoadPartsuppObject(): Rep[Array[PARTSUPPRecord]] = {
     val file = unit(Config.datapath + "partsupp.tbl")
     val size = fileLineCount(file)
     // Load Relation 
@@ -280,7 +280,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     hm
   }
 
-  override def loadCustomer(): Rep[Array[CUSTOMERRecord]] = {
+  override def loaderLoadCustomerObject(): Rep[Array[CUSTOMERRecord]] = {
     val file = unit(Config.datapath + "customer.tbl")
     val size = fileLineCount(file)
     // Load Relation 
@@ -296,7 +296,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     hm
   }
 
-  override def loadOrders(): Rep[Array[ORDERSRecord]] = {
+  override def loaderLoadOrdersObject(): Rep[Array[ORDERSRecord]] = {
     val file = unit(Config.datapath + "orders.tbl")
     val size = fileLineCount(file)
     // Load Relation 
@@ -313,7 +313,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     hm
   }
 
-  override def loadNation(): Rep[Array[NATIONRecord]] = {
+  override def loaderLoadNationObject(): Rep[Array[NATIONRecord]] = {
     val file = unit(Config.datapath + "nation.tbl")
     val size = fileLineCount(file)
     // Load Relation 
@@ -329,7 +329,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     hm
   }
 
-  override def loadPart(): Rep[Array[PARTRecord]] = {
+  override def loaderLoadPartObject(): Rep[Array[PARTRecord]] = {
     val file = unit(Config.datapath + "part.tbl")
     val size = fileLineCount(file)
     // Load Relation 
@@ -346,7 +346,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     hm
   }
 
-  override def loadRegion(): Rep[Array[REGIONRecord]] = {
+  override def loaderLoadRegionObject(): Rep[Array[REGIONRecord]] = {
     val file = unit(Config.datapath + "region.tbl")
     val size = fileLineCount(file)
     // Load Relation 

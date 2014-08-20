@@ -71,6 +71,7 @@ $liftedCode
       al.autoLift[queryengine.TPCHRelations.CUSTOMERRecord],
       al.autoLift[queryengine.TPCHRelations.ORDERSRecord],
       al.autoLift[pardis.shallow.OptimalString],
+      al.autoLift[storagemanager.Loader],
       al.autoLift[storagemanager.K2DBScanner](Custom(component = "DeepDSL", excludedFields = List(CMethod("br"), CMethod("sdf")))),
       al.autoLift[queryengine.WindowRecord[Any, Any]])
     val liftedCode = liftedCodes.mkString("\n")
@@ -101,6 +102,7 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowReco
   with CUSTOMERRecordComponent
   with ORDERSRecordComponent
   with OptimalStringComponent
+  with LoaderComponent
   with K2DBScannerComponent with IntegerComponent 
   with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent 
   with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase

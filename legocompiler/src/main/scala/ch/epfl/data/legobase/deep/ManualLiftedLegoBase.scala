@@ -12,41 +12,41 @@ import pardis.ir.pardisTypeImplicits._
 trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE { this: DeepDSL =>
 
   /* TODO These methods should be lifted from storagemanager.Loader */
-  case class LoadLineItem() extends FunctionDef[Array[LINEITEMRecord]](None, "loadLineitem", List(Nil)) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
-  def loadLineitem(): Rep[Array[LINEITEMRecord]] = LoadLineItem()
-  case class LoadPart() extends FunctionDef[Array[PARTRecord]](None, "loadPart", List(Nil)) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
-  def loadPart(): Rep[Array[PARTRecord]] = LoadPart()
-  case class LoadPartsupp() extends FunctionDef[Array[PARTSUPPRecord]](None, "loadPartsupp", List(Nil)) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
-  def loadPartsupp(): Rep[Array[PARTSUPPRecord]] = LoadPartsupp()
-  case class LoadNation() extends FunctionDef[Array[NATIONRecord]](None, "loadNation", List(Nil)) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
-  def loadNation(): Rep[Array[NATIONRecord]] = LoadNation()
+  // case class LoadLineItem() extends FunctionDef[Array[LINEITEMRecord]](None, "loadLineitem", List(Nil)) {
+  //   override def curriedConstructor = (x: Any) => copy()
+  // }
+  // def loadLineitem(): Rep[Array[LINEITEMRecord]] = LoadLineItem()
+  // case class LoadPart() extends FunctionDef[Array[PARTRecord]](None, "loadPart", List(Nil)) {
+  //   override def curriedConstructor = (x: Any) => copy()
+  // }
+  // def loadPart(): Rep[Array[PARTRecord]] = LoadPart()
+  // case class LoadPartsupp() extends FunctionDef[Array[PARTSUPPRecord]](None, "loadPartsupp", List(Nil)) {
+  //   override def curriedConstructor = (x: Any) => copy()
+  // }
+  // def loadPartsupp(): Rep[Array[PARTSUPPRecord]] = LoadPartsupp()
+  // case class LoadNation() extends FunctionDef[Array[NATIONRecord]](None, "loadNation", List(Nil)) {
+  //   override def curriedConstructor = (x: Any) => copy()
+  // }
+  // def loadNation(): Rep[Array[NATIONRecord]] = LoadNation()
 
-  case class LoadRegion() extends FunctionDef[Array[REGIONRecord]](None, "loadRegion", List(Nil)) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
-  def loadRegion(): Rep[Array[REGIONRecord]] = LoadRegion()
+  // case class LoadRegion() extends FunctionDef[Array[REGIONRecord]](None, "loadRegion", List(Nil)) {
+  //   override def curriedConstructor = (x: Any) => copy()
+  // }
+  // def loadRegion(): Rep[Array[REGIONRecord]] = LoadRegion()
 
-  case class LoadSupplier() extends FunctionDef[Array[SUPPLIERRecord]](None, "loadSupplier", List(Nil)) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
-  def loadSupplier(): Rep[Array[SUPPLIERRecord]] = LoadSupplier()
+  // case class LoadSupplier() extends FunctionDef[Array[SUPPLIERRecord]](None, "loadSupplier", List(Nil)) {
+  //   override def curriedConstructor = (x: Any) => copy()
+  // }
+  // def loadSupplier(): Rep[Array[SUPPLIERRecord]] = LoadSupplier()
 
-  case class LoadOrders() extends FunctionDef[Array[ORDERSRecord]](None, "loadOrders", List(Nil)) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
-  def loadOrders(): Rep[Array[ORDERSRecord]] = LoadOrders()
-  case class LoadCustomer() extends FunctionDef[Array[CUSTOMERRecord]](None, "loadCustomer", List(Nil)) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
-  def loadCustomer(): Rep[Array[CUSTOMERRecord]] = LoadCustomer()
+  // case class LoadOrders() extends FunctionDef[Array[ORDERSRecord]](None, "loadOrders", List(Nil)) {
+  //   override def curriedConstructor = (x: Any) => copy()
+  // }
+  // def loadOrders(): Rep[Array[ORDERSRecord]] = LoadOrders()
+  // case class LoadCustomer() extends FunctionDef[Array[CUSTOMERRecord]](None, "loadCustomer", List(Nil)) {
+  //   override def curriedConstructor = (x: Any) => copy()
+  // }
+  // def loadCustomer(): Rep[Array[CUSTOMERRecord]] = LoadCustomer()
 
   case class FileLineCount(file: Rep[String]) extends FunctionDef[Int](None, "fileLineCount", List(List(file))) {
     override def curriedConstructor = (copy _)

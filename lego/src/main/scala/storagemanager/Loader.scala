@@ -4,6 +4,11 @@ package storagemanager
 
 import utils.Utilities._
 
+// FIXME just to cheat on auto-lifter
+class Loader {
+
+}
+
 object Loader {
   import queryengine.TPCHRelations._
   def loadString(size: Int, s: K2DBScanner) = {
