@@ -27,11 +27,11 @@ trait HashMapOps extends Base { this: DeepDSL =>
   def __newHashMap[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit overload1: Overloaded1, typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, B]] = hashMapNew1[A, B](contents)(typeA, typeB)
   def __newHashMap[A, B]()(implicit overload2: Overloaded2, typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, B]] = hashMapNew2[A, B]()(typeA, typeB)
   // case classes
-  case class HashMapNew1[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[HashMap[A, B]](None, "new HashMap", List(List(contents))) {
+  case class HashMapNew1[A, B](contents: Rep[Contents[A, DefaultEntry[A, B]]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[HashMap[A, B]](List(typeA, typeB), "HashMap", List(List(contents))) {
     override def curriedConstructor = (copy[A, B] _)
   }
 
-  case class HashMapNew2[A, B]()(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[HashMap[A, B]](None, "new HashMap", List(List())) {
+  case class HashMapNew2[A, B]()(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[HashMap[A, B]](List(typeA, typeB), "HashMap", List(List())) {
     override def curriedConstructor = (x: Any) => copy[A, B]()
   }
 
@@ -103,6 +103,7 @@ trait HashMapOps extends Base { this: DeepDSL =>
     private implicit val tagB = typeB.typeTag
     val name = s"HashMap[${typeA.name}, ${typeB.name}]"
     val typeArguments = List(typeA, typeB)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[HashMap[A, B]]
   }
   implicit def typeHashMap[A: TypeRep, B: TypeRep] = HashMapType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
@@ -123,7 +124,7 @@ trait SetOps extends Base { this: DeepDSL =>
     def remove(elem: Rep[A]): Rep[Boolean] = setRemove[A](self, elem)(typeA)
   }
   object Set {
-    def apply[T](seq: Rep[Seq[T]])(implicit typeT: TypeRep[T], overload1: Overloaded1): Rep[Set[T]] = setApplyObject1[T](seq)(typeT)
+    def apply[T](elems: Rep[Seq[T]])(implicit typeT: TypeRep[T], overload1: Overloaded1): Rep[Set[T]] = setApplyObject1[T](elems)(typeT)
     def apply[T]()(implicit typeT: TypeRep[T], overload2: Overloaded2): Rep[Set[T]] = setApplyObject2[T]()(typeT)
   }
   // constructors
@@ -151,7 +152,7 @@ trait SetOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A] _).curried
   }
 
-  case class SetApplyObject1[T](seq: Rep[Seq[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Set[T]](None, "Set.apply", List(List(seq))) {
+  case class SetApplyObject1[T](elems: Rep[Seq[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Set[T]](None, "Set.apply", List(List(elems))) {
     override def curriedConstructor = (copy[T] _)
   }
 
@@ -164,7 +165,7 @@ trait SetOps extends Base { this: DeepDSL =>
   def setApply[A](self: Rep[Set[A]], elem: Rep[A])(implicit typeA: TypeRep[A]): Rep[Boolean] = SetApply[A](self, elem)
   def setToSeq[A](self: Rep[Set[A]])(implicit typeA: TypeRep[A]): Rep[Seq[A]] = SetToSeq[A](self)
   def setRemove[A](self: Rep[Set[A]], elem: Rep[A])(implicit typeA: TypeRep[A]): Rep[Boolean] = SetRemove[A](self, elem)
-  def setApplyObject1[T](seq: Rep[Seq[T]])(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetApplyObject1[T](seq)
+  def setApplyObject1[T](elems: Rep[Seq[T]])(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetApplyObject1[T](elems)
   def setApplyObject2[T]()(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetApplyObject2[T]()
   type Set[A] = scala.collection.mutable.Set[A]
   case class SetType[A](typeA: TypeRep[A]) extends TypeRep[Set[A]] {
@@ -172,6 +173,7 @@ trait SetOps extends Base { this: DeepDSL =>
     private implicit val tagA = typeA.typeTag
     val name = s"Set[${typeA.name}]"
     val typeArguments = List(typeA)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[Set[A]]
   }
   implicit def typeSet[A: TypeRep] = SetType(implicitly[TypeRep[A]])
@@ -198,7 +200,7 @@ trait TreeSetOps extends Base { this: DeepDSL =>
   // constructors
   def __newTreeSet[A]()(ordering: Rep[Ordering[A]])(implicit typeA: TypeRep[A]): Rep[TreeSet[A]] = treeSetNew[A](ordering)(typeA)
   // case classes
-  case class TreeSetNew[A](ordering: Rep[Ordering[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[TreeSet[A]](None, "new TreeSet", List(List(), List(ordering))) {
+  case class TreeSetNew[A](ordering: Rep[Ordering[A]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[TreeSet[A]](List(typeA), "TreeSet", List(List(), List(ordering))) {
     override def curriedConstructor = (copy[A] _)
   }
 
@@ -241,6 +243,7 @@ trait TreeSetOps extends Base { this: DeepDSL =>
     private implicit val tagA = typeA.typeTag
     val name = s"TreeSet[${typeA.name}]"
     val typeArguments = List(typeA)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[TreeSet[A]]
   }
   implicit def typeTreeSet[A: TypeRep] = TreeSetType(implicitly[TypeRep[A]])
@@ -266,7 +269,7 @@ trait DefaultEntryOps extends Base { this: DeepDSL =>
   // constructors
   def __newDefaultEntry[A, B](key: Rep[A], value: Rep[B])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[DefaultEntry[A, B]] = defaultEntryNew[A, B](key, value)(typeA, typeB)
   // case classes
-  case class DefaultEntryNew[A, B](key: Rep[A], value: Rep[B])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[DefaultEntry[A, B]](None, "new DefaultEntry", List(List(key, value))) {
+  case class DefaultEntryNew[A, B](key: Rep[A], value: Rep[B])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[DefaultEntry[A, B]](List(typeA, typeB), "DefaultEntry", List(List(key, value))) {
     override def curriedConstructor = (copy[A, B] _).curried
   }
 
@@ -301,6 +304,7 @@ trait DefaultEntryOps extends Base { this: DeepDSL =>
     private implicit val tagB = typeB.typeTag
     val name = s"DefaultEntry[${typeA.name}, ${typeB.name}]"
     val typeArguments = List(typeA, typeB)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[DefaultEntry[A, B]]
   }
   implicit def typeDefaultEntry[A: TypeRep, B: TypeRep] = DefaultEntryType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
@@ -331,11 +335,11 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
   def __newArrayBuffer[A](initialSize: Rep[Int])(implicit overload1: Overloaded1, typeA: TypeRep[A]): Rep[ArrayBuffer[A]] = arrayBufferNew1[A](initialSize)(typeA)
   def __newArrayBuffer[A]()(implicit overload2: Overloaded2, typeA: TypeRep[A]): Rep[ArrayBuffer[A]] = arrayBufferNew2[A]()(typeA)
   // case classes
-  case class ArrayBufferNew1[A](initialSize: Rep[Int])(implicit val typeA: TypeRep[A]) extends FunctionDef[ArrayBuffer[A]](None, "new ArrayBuffer", List(List(initialSize))) {
+  case class ArrayBufferNew1[A](initialSize: Rep[Int])(implicit val typeA: TypeRep[A]) extends ConstructorDef[ArrayBuffer[A]](List(typeA), "ArrayBuffer", List(List(initialSize))) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class ArrayBufferNew2[A]()(implicit val typeA: TypeRep[A]) extends FunctionDef[ArrayBuffer[A]](None, "new ArrayBuffer", List(List())) {
+  case class ArrayBufferNew2[A]()(implicit val typeA: TypeRep[A]) extends ConstructorDef[ArrayBuffer[A]](List(typeA), "ArrayBuffer", List(List())) {
     override def curriedConstructor = (x: Any) => copy[A]()
   }
 
@@ -399,6 +403,7 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
     private implicit val tagA = typeA.typeTag
     val name = s"ArrayBuffer[${typeA.name}]"
     val typeArguments = List(typeA)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[ArrayBuffer[A]]
   }
   implicit def typeArrayBuffer[A: TypeRep] = ArrayBufferType(implicitly[TypeRep[A]])

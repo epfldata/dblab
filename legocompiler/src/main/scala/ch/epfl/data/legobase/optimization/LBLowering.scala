@@ -12,19 +12,6 @@ import pardis.optimization._
 class LBLowering(override val from: InliningLegoBase, override val to: LoweringLegoBase) extends Lowering[InliningLegoBase, LoweringLegoBase](from, to) {
   import from._
 
-  // override def transformType[T: TypeRep]: TypeRep[Any] = {
-  //   val tp = typeRep[T].asInstanceOf[TypeRep[Any]]
-  //   // Amir: it's a hack until TypeReps are comming
-  //   // if (tp.isInstanceOf[ArrayBufferType[_]]) {
-  //   //   System.out.println()
-  //   //   val arg = tp.typeArguments.head
-  //   //   tp.rebuild(arg).asInstanceOf[TypeRep[Any]]
-  //   // } else {
-  //   //   super.transformType[T]
-  //   // }
-  //   tp.rebuild(tp.typeArguments.map(x => transformType(x)): _*).asInstanceOf[TypeRep[Any]]
-  // }
-
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = node match {
     case an: AggOpNew[_, _] => {
       val ma = an.typeA
@@ -32,8 +19,8 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val maa = ma.asInstanceOf[TypeRep[Any]]
       val marrDouble = implicitly[to.TypeRep[to.Array[to.Double]]]
       val magg = typeRep[AGGRecord[Any]].rebuild(mb).asInstanceOf[TypeRep[Any]]
-
-      to.__newDef[AggOp[Any, Any]](("hm", false, to.__newHashMap()(to.overloaded2, apply(mb), apply(marrDouble))),
+      val hm = to.__newHashMap()(to.overloaded2, apply(mb), apply(marrDouble))
+      to.__newDef[AggOp[Any, Any]](("hm", false, hm),
         ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(magg))),
         ("keySet", true, to.Set()(apply(mb), to.overloaded2)),
         ("numAggs", false, an.numAggs)).asInstanceOf[to.Def[T]]
@@ -76,14 +63,6 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val mba = mb.asInstanceOf[TypeRep[Any]]
       type HashJoinOpTp = HashJoinOp[pardis.shallow.AbstractRecord, pardis.shallow.AbstractRecord, Any]
       val tp = ho.tp.asInstanceOf[TypeRep[HashJoinOpTp]]
-      // trait A extends pardis.shallow.AbstractRecord
-      // implicit val manifestASynthetic: TypeRep[A] = ma.asInstanceOf[TypeRep[A]]
-      // trait B extends pardis.shallow.AbstractRecord
-      // implicit val manifestBSynthetic: TypeRep[B] = mb.asInstanceOf[TypeRep[B]]
-      // class C
-      // implicit val manifestCSynthetic: TypeRep[C] = mc.asInstanceOf[TypeRep[C]]
-      // val marrBuffA = manifest[ArrayBuffer[A]].asInstanceOf[TypeRep[Any]]
-      // val mCompRec = manifest[DynamicCompositeRecord[A, B]].asInstanceOf[TypeRep[Any]]
       val marrBuffA = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(ma).asInstanceOf[TypeRep[Any]]
       val mCompRec = implicitly[TypeRep[DynamicCompositeRecord[pardis.shallow.AbstractRecord, pardis.shallow.AbstractRecord]]].rebuild(ma, mb).asInstanceOf[TypeRep[Any]]
       to.__newDef[HashJoinOpTp](("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffA))),
@@ -97,67 +76,43 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val mb = wo.typeB
       val mc = wo.typeC
       val maa = ma.asInstanceOf[TypeRep[Any]]
-      // class A
-      // implicit val manifestASynthetic: TypeRep[A] = ma.asInstanceOf[TypeRep[A]]
-      // class B
-      // implicit val manifestBSynthetic: TypeRep[B] = mb.asInstanceOf[TypeRep[B]]
-      // class C
-      // implicit val manifestCSynthetic: TypeRep[C] = mc.asInstanceOf[TypeRep[C]]
-      // val marrBuffA = manifest[ArrayBuffer[A]].asInstanceOf[TypeRep[Any]]
-      // val mwinRecBC = manifest[WindowRecord[B, C]].asInstanceOf[TypeRep[Any]]
       val marrBuffA = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(ma).asInstanceOf[TypeRep[Any]]
       val mwinRecBC = implicitly[TypeRep[WindowRecord[Any, Any]]].rebuild(mb, mc).asInstanceOf[TypeRep[Any]]
       to.__newDef[WindowOp[Any, Any, Any]](("hm", false, to.__newHashMap()(to.overloaded2, apply(mb), apply(marrBuffA))),
         ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(mwinRecBC))),
         ("keySet", true, to.Set()(apply(mb), to.overloaded2))).asInstanceOf[to.Def[T]]
     }
+    case lho: LeftHashSemiJoinOpNew[_, _, _] => {
+      val ma = lho.typeA
+      val mb = lho.typeB
+      val mc = lho.typeC
+      val maa = ma.asInstanceOf[TypeRep[Any]]
+      val marrBuffB = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(mb).asInstanceOf[TypeRep[Any]]
+      to.__newDef[LeftHashSemiJoinOp[Any, Any, Any]](("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffB))),
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(ma)))).asInstanceOf[to.Def[T]]
+    }
     case pc @ PardisCast(exp) => {
-      // System.out.print("--->")
-      // System.out.print(pc)
-      // System.out.print("<---")
-      // System.out.println(transformType(pc.castTp))
       PardisCast(transformExp[Any, Any](exp))(transformType(exp.tp), transformType(pc.castTp)).asInstanceOf[to.Def[T]]
     }
-    case ab @ ArrayBufferNew2_2() => {
-      ArrayBufferNew2_2()(transformType(ab.typeA)).asInstanceOf[to.Def[T]]
+    case ab @ ArrayBufferNew2() => {
+      ArrayBufferNew2()(transformType(ab.typeA)).asInstanceOf[to.Def[T]]
     }
-    case hm @ HashMapNew2_2() => {
-      HashMapNew2_2()(transformType(hm.typeA), transformType(hm.typeB)).asInstanceOf[to.Def[T]]
-    }
-    // case PardisLambda(f, i, o) => {
-    //   val newI = newSym(i)
-    //   subst += i -> newI
-    //   System.err.println(s"-->${newI.id}")
-    //   System.err.println(s"tp " + newI.tp)
-    //   System.err.println(s"manToString" + pardis.utils.Utils.manifestToString(newI.tp))
-    //   val newO = transformBlockTyped(o).asInstanceOf[Block[Any]]
-    //   to.Lambda(f, newI, newO)
-    // }
     case _ => super.transformDef(node)
   }
 
-  // WindowRecord
-  // GroupByClass
-  // LINEITEMRecord
-  // SUPPLIERRecord
-  // PARTSUPPRecord
-  // REGIONRecord
-  // PARTRecord
-  // NATIONRecord
-  // CUSTOMERRecord
-  // ORDERSRecord
   object CaseClassNew extends DefExtractor {
     def unapply[T](exp: Def[T]): Option[Def[T]] =
       exp match {
-        case _: WindowRecordNew[_, _] | _: GroupByClassNew | _: LINEITEMRecordNew | _: SUPPLIERRecordNew | _: PARTSUPPRecordNew | _: REGIONRecordNew | _: PARTRecordNew | _: NATIONRecordNew | _: CUSTOMERRecordNew | _: ORDERSRecordNew => Some(exp)
-        case _ => None
+        case _: ConstructorDef[_] if exp.tp.isRecord => Some(exp)
+        case _                                       => None
       }
   }
 
   object LoweredNew extends RepExtractor {
     def unapply[T](exp: Rep[T]): Option[Def[T]] = exp match {
       case Def(d) => d.tp match {
-        case SUPPLIERRecordType | PARTSUPPRecordType | REGIONRecordType | PARTRecordType | NATIONRecordType | CUSTOMERRecordType | ORDERSRecordType | LINEITEMRecordType | WindowRecordType(_, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | GroupByClassType => Some(d)
+        case x if x.isRecord => Some(d)
+        case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) => Some(d)
         case _ => None
       }
       case _ => None

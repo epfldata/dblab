@@ -31,12 +31,14 @@ object LiftLego {
 
   def generateNumber(implicit al: AutoLifter) {
     val liftedCodes = List(
-      al.autoLift[MirrorInt],
+      // TODO should be ported to pardis
+      // al.autoLift[MirrorInt],
       al.autoLift[MirrorDouble],
       al.autoLift[MirrorCharacter],
       al.autoLift[MirrorLong],
-      al.autoLift[MirrorInteger],
-      al.autoLift[MirrorBoolean])
+      al.autoLift[MirrorInteger] // TODO should be ported to pardis
+      // , al.autoLift[MirrorBoolean]
+      )
     val liftedCode = liftedCodes.mkString("\n")
     val file = "DeepScalaNumber"
     printToFile(new java.io.File(s"$folder/scalalib/$file.scala")) { pw =>
@@ -57,15 +59,17 @@ $liftedCode
 
   def generateLegoBase(implicit al: AutoLifter) {
     val liftedCodes = List(
+      al.autoLift[queryengine.GroupByClass],
+      al.autoLift[queryengine.Q3GRPRecord],
       al.autoLift[queryengine.AGGRecord[Any]],
-      al.autoLift[storagemanager.TPCHRelations.LINEITEMRecord],
-      al.autoLift[storagemanager.TPCHRelations.SUPPLIERRecord],
-      al.autoLift[storagemanager.TPCHRelations.PARTSUPPRecord],
-      al.autoLift[storagemanager.TPCHRelations.REGIONRecord],
-      al.autoLift[storagemanager.TPCHRelations.NATIONRecord],
-      al.autoLift[storagemanager.TPCHRelations.PARTRecord],
-      al.autoLift[storagemanager.TPCHRelations.CUSTOMERRecord],
-      al.autoLift[storagemanager.TPCHRelations.ORDERSRecord],
+      al.autoLift[queryengine.TPCHRelations.LINEITEMRecord],
+      al.autoLift[queryengine.TPCHRelations.SUPPLIERRecord],
+      al.autoLift[queryengine.TPCHRelations.PARTSUPPRecord],
+      al.autoLift[queryengine.TPCHRelations.REGIONRecord],
+      al.autoLift[queryengine.TPCHRelations.NATIONRecord],
+      al.autoLift[queryengine.TPCHRelations.PARTRecord],
+      al.autoLift[queryengine.TPCHRelations.CUSTOMERRecord],
+      al.autoLift[queryengine.TPCHRelations.ORDERSRecord],
       al.autoLift[pardis.shallow.OptimalString],
       al.autoLift[storagemanager.K2DBScanner](Custom(component = "DeepDSL", excludedFields = List(CMethod("br"), CMethod("sdf")))),
       al.autoLift[queryengine.WindowRecord[Any, Any]])
@@ -81,10 +85,13 @@ package deep
 import scalalib._
 import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
+import pardis.deep.scalalib._
 
 $liftedCode
 trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent 
   with DoubleComponent with IntComponent with LongComponent with ArrayComponent 
+  with GroupByClassComponent
+  with Q3GRPRecordComponent
   with LINEITEMRecordComponent
   with SUPPLIERRecordComponent
   with PARTSUPPRecordComponent

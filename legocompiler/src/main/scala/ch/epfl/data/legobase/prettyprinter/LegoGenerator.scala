@@ -12,7 +12,7 @@ class LegoScalaGenerator(val query: Int, val shallow: Boolean = false) extends S
   def getShallowHeader: String = if (shallow) """
 import queryengine._
 import queryengine.volcano._
-import storagemanager.TPCHRelations._
+import queryengine.TPCHRelations._
 import pardis.shallow._
   """
   else
@@ -22,12 +22,13 @@ import pardis.shallow._
 package legobase
 
 $getShallowHeader
-import queryengine.AGGRecord
 import scala.collection.mutable.Set
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.TreeSet
 import scala.collection.mutable.ArrayBuffer
 import storagemanager.K2DBScanner
+import storagemanager.Loader._
+import queryengine.GenericEngine._
 import pardis.shallow.OptimalString
 
 object OrderingFactory {
@@ -37,12 +38,14 @@ object OrderingFactory {
 }
 """
 
-  override def getTraitSignature(): Document = s"""object LEGO_QUERY extends LegoRunner with GenericQuery {
+  override def getTraitSignature(): Document = s"""object LEGO_QUERY extends LegoRunner {
   def executeQuery(query: String): Unit = main()
   def main(args: Array[String]) {
     run(args)
   }
+  def main() = 
   """
+  //Temporary fix for def main(), check if generated code for Scala runs
 
   def apply(program: PardisProgram) {
     generate(program)
