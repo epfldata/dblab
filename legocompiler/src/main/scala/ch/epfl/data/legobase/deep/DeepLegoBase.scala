@@ -332,7 +332,7 @@ trait LINEITEMRecordOps extends Base { this: DeepDSL =>
   def lINEITEMRecord_Field_L_SUPPKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_SUPPKEY(self)
   def lINEITEMRecord_Field_L_PARTKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_PARTKEY(self)
   def lINEITEMRecord_Field_L_ORDERKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_ORDERKEY(self)
-  type LINEITEMRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.LINEITEMRecord
+  type LINEITEMRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord
   case object LINEITEMRecordType extends TypeRep[LINEITEMRecord] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LINEITEMRecordType
     val name = "LINEITEMRecord"
@@ -427,7 +427,7 @@ trait SUPPLIERRecordOps extends Base { this: DeepDSL =>
   def sUPPLIERRecord_Field_S_ADDRESS(self: Rep[SUPPLIERRecord]): Rep[OptimalString] = SUPPLIERRecord_Field_S_ADDRESS(self)
   def sUPPLIERRecord_Field_S_NAME(self: Rep[SUPPLIERRecord]): Rep[OptimalString] = SUPPLIERRecord_Field_S_NAME(self)
   def sUPPLIERRecord_Field_S_SUPPKEY(self: Rep[SUPPLIERRecord]): Rep[Int] = SUPPLIERRecord_Field_S_SUPPKEY(self)
-  type SUPPLIERRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.SUPPLIERRecord
+  type SUPPLIERRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord
   case object SUPPLIERRecordType extends TypeRep[SUPPLIERRecord] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SUPPLIERRecordType
     val name = "SUPPLIERRecord"
@@ -506,7 +506,7 @@ trait PARTSUPPRecordOps extends Base { this: DeepDSL =>
   def pARTSUPPRecord_Field_PS_AVAILQTY(self: Rep[PARTSUPPRecord]): Rep[Int] = PARTSUPPRecord_Field_PS_AVAILQTY(self)
   def pARTSUPPRecord_Field_PS_SUPPKEY(self: Rep[PARTSUPPRecord]): Rep[Int] = PARTSUPPRecord_Field_PS_SUPPKEY(self)
   def pARTSUPPRecord_Field_PS_PARTKEY(self: Rep[PARTSUPPRecord]): Rep[Int] = PARTSUPPRecord_Field_PS_PARTKEY(self)
-  type PARTSUPPRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.PARTSUPPRecord
+  type PARTSUPPRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord
   case object PARTSUPPRecordType extends TypeRep[PARTSUPPRecord] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PARTSUPPRecordType
     val name = "PARTSUPPRecord"
@@ -569,7 +569,7 @@ trait REGIONRecordOps extends Base { this: DeepDSL =>
   def rEGIONRecord_Field_R_COMMENT(self: Rep[REGIONRecord]): Rep[OptimalString] = REGIONRecord_Field_R_COMMENT(self)
   def rEGIONRecord_Field_R_NAME(self: Rep[REGIONRecord]): Rep[OptimalString] = REGIONRecord_Field_R_NAME(self)
   def rEGIONRecord_Field_R_REGIONKEY(self: Rep[REGIONRecord]): Rep[Int] = REGIONRecord_Field_R_REGIONKEY(self)
-  type REGIONRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.REGIONRecord
+  type REGIONRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.REGIONRecord
   case object REGIONRecordType extends TypeRep[REGIONRecord] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = REGIONRecordType
     val name = "REGIONRecord"
@@ -640,7 +640,7 @@ trait NATIONRecordOps extends Base { this: DeepDSL =>
   def nATIONRecord_Field_N_REGIONKEY(self: Rep[NATIONRecord]): Rep[Int] = NATIONRecord_Field_N_REGIONKEY(self)
   def nATIONRecord_Field_N_NAME(self: Rep[NATIONRecord]): Rep[OptimalString] = NATIONRecord_Field_N_NAME(self)
   def nATIONRecord_Field_N_NATIONKEY(self: Rep[NATIONRecord]): Rep[Int] = NATIONRecord_Field_N_NATIONKEY(self)
-  type NATIONRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.NATIONRecord
+  type NATIONRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord
   case object NATIONRecordType extends TypeRep[NATIONRecord] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = NATIONRecordType
     val name = "NATIONRecord"
@@ -751,7 +751,7 @@ trait PARTRecordOps extends Base { this: DeepDSL =>
   def pARTRecord_Field_P_MFGR(self: Rep[PARTRecord]): Rep[OptimalString] = PARTRecord_Field_P_MFGR(self)
   def pARTRecord_Field_P_NAME(self: Rep[PARTRecord]): Rep[OptimalString] = PARTRecord_Field_P_NAME(self)
   def pARTRecord_Field_P_PARTKEY(self: Rep[PARTRecord]): Rep[Int] = PARTRecord_Field_P_PARTKEY(self)
-  type PARTRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.PARTRecord
+  type PARTRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord
   case object PARTRecordType extends TypeRep[PARTRecord] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PARTRecordType
     val name = "PARTRecord"
@@ -854,7 +854,7 @@ trait CUSTOMERRecordOps extends Base { this: DeepDSL =>
   def cUSTOMERRecord_Field_C_ADDRESS(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_ADDRESS(self)
   def cUSTOMERRecord_Field_C_NAME(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_NAME(self)
   def cUSTOMERRecord_Field_C_CUSTKEY(self: Rep[CUSTOMERRecord]): Rep[Int] = CUSTOMERRecord_Field_C_CUSTKEY(self)
-  type CUSTOMERRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.CUSTOMERRecord
+  type CUSTOMERRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord
   case object CUSTOMERRecordType extends TypeRep[CUSTOMERRecord] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = CUSTOMERRecordType
     val name = "CUSTOMERRecord"
@@ -965,7 +965,7 @@ trait ORDERSRecordOps extends Base { this: DeepDSL =>
   def oRDERSRecord_Field_O_ORDERSTATUS(self: Rep[ORDERSRecord]): Rep[Character] = ORDERSRecord_Field_O_ORDERSTATUS(self)
   def oRDERSRecord_Field_O_CUSTKEY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_CUSTKEY(self)
   def oRDERSRecord_Field_O_ORDERKEY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_ORDERKEY(self)
-  type ORDERSRecord = ch.epfl.data.legobase.storagemanager.TPCHRelations.ORDERSRecord
+  type ORDERSRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord
   case object ORDERSRecordType extends TypeRep[ORDERSRecord] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ORDERSRecordType
     val name = "ORDERSRecord"

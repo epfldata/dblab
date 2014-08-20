@@ -6,35 +6,11 @@ import queryengine.volcano._
 import ch.epfl.data.pardis.shallow.{ CaseClassRecord }
 import ch.epfl.data.pardis.shallow.{ AbstractRecord, DynamicCompositeRecord }
 
-trait Queries extends Q1 with Q2 with Q3 with Q4 with Q5 with Q6 with Q7 with Q8 with Q9 with Q10 with Q11 with Q12 with Q13 with Q14 with Q15 with Q16 with Q17 with Q18 with Q19 with Q20 with Q21 with Q22
+object Queries {
 
-trait GenericQuery extends ScalaImpl with storagemanager.Loader {
-  var profile = true
+  import storagemanager.Loader._
+  import GenericEngine._
 
-  def runQuery[T](query: => T): T = {
-    if (profile) {
-      utils.Utilities.time(query, "finish")
-    } else {
-      query
-    }
-  }
-
-  def dateToString(long: Long): String = dateToString(new java.util.Date(long))
-
-  def dateToString(dt: java.util.Date): String = {
-    (dt.getYear + 1900) + "" +
-      {
-        val m = dt.getMonth + 1
-        if (m < 10) "0" + m else m
-      } + "" +
-      {
-        val d = dt.getDate
-        if (d < 10) "0" + d else d
-      }
-  }
-}
-
-trait Q1 extends GenericQuery {
   def Q1(numRuns: Int) {
     val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
@@ -67,9 +43,7 @@ trait Q1 extends GenericQuery {
       }
     }
   }
-}
 
-trait Q2 extends GenericQuery {
   def Q2(numRuns: Int) {
     import queryengine._
     val partTable = loadPart()
@@ -116,9 +90,7 @@ trait Q2 extends GenericQuery {
       }
     }
   }
-}
 
-trait Q3 extends GenericQuery {
   def Q3(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
@@ -158,9 +130,7 @@ trait Q3 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q4 extends GenericQuery {
   def Q4(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
@@ -185,9 +155,7 @@ trait Q4 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q5 extends GenericQuery {
   def Q5(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val nationTable = loadNation()
@@ -225,9 +193,7 @@ trait Q5 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q6 extends GenericQuery {
   def Q6(numRuns: Int) {
     val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
@@ -244,8 +210,6 @@ trait Q6 extends GenericQuery {
       })
     }
   }
-}
-trait Q7 extends GenericQuery {
   def Q7(numRuns: Int) {
     val nationTable = loadNation()
     val ordersTable = loadOrders()
@@ -293,9 +257,7 @@ trait Q7 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q8 extends GenericQuery {
   def Q8(numRuns: Int) {
     val nationTable = loadNation()
     val regionTable = loadRegion()
@@ -346,9 +308,7 @@ trait Q8 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q9 extends GenericQuery {
   def Q9(numRuns: Int) {
     val partTable = loadPart()
     val nationTable = loadNation()
@@ -389,9 +349,6 @@ trait Q9 extends GenericQuery {
       })
     }
   }
-}
-
-trait Q10 extends GenericQuery {
 
   def Q10(numRuns: Int) {
     val lineitemTable = loadLineitem()
@@ -433,9 +390,7 @@ trait Q10 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q11 extends GenericQuery {
   def Q11(numRuns: Int) {
     val partsuppTable = loadPartsupp()
     val supplierTable = loadSupplier()
@@ -472,9 +427,7 @@ trait Q11 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q12 extends GenericQuery {
   def Q12(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
@@ -503,9 +456,7 @@ trait Q12 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q13 extends GenericQuery {
   def Q13(numRuns: Int) {
     val customerTable = loadCustomer()
     val ordersTable = loadOrders()
@@ -541,9 +492,7 @@ trait Q13 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q14 extends GenericQuery {
   def Q14(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val partTable = loadPart()
@@ -571,9 +520,7 @@ trait Q14 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q15 extends GenericQuery {
   def Q15(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val supplierTable = loadSupplier()
@@ -604,9 +551,7 @@ trait Q15 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q16 extends GenericQuery {
   def Q16(numRuns: Int) {
     val supplierTable = loadSupplier()
     val partTable = loadPart()
@@ -652,9 +597,7 @@ trait Q16 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q17 extends GenericQuery {
   def Q17(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val partTable = loadPart()
@@ -683,11 +626,9 @@ trait Q17 extends GenericQuery {
       })
     }
   }
-}
 
-// Danger, Will Robinson!: Query takes a long time to complete in Scala (but we 
-// knew that already!)
-trait Q18 extends GenericQuery {
+  // Danger, Will Robinson!: Query takes a long time to complete in Scala (but we 
+  // knew that already
   def Q18(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
@@ -731,9 +672,7 @@ trait Q18 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q19 extends GenericQuery {
   def Q19(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val partTable = loadPart()
@@ -786,9 +725,7 @@ trait Q19 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q20 extends GenericQuery {
   def Q20(numRuns: Int) {
     val partTable = loadPart()
     val nationTable = loadNation()
@@ -824,9 +761,7 @@ trait Q20 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q21 extends GenericQuery {
   def Q21(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val supplierTable = loadSupplier()
@@ -865,9 +800,7 @@ trait Q21 extends GenericQuery {
       })
     }
   }
-}
 
-trait Q22 extends GenericQuery {
   def Q22(numRuns: Int) {
     val customerTable = loadCustomer()
     val ordersTable = loadOrders()
@@ -920,4 +853,3 @@ trait Q22 extends GenericQuery {
     }
   }
 }
-

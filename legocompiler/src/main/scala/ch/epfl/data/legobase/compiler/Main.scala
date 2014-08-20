@@ -129,7 +129,7 @@ object Main extends LegoRunner {
   def query4() {
     val lq = new LiftedQueries()
     val block = lq.Q4
-    compileQuery(lq, block, 4, true)
+    compileQuery(lq, block, 4, false)
   }
 
   def query5() {
