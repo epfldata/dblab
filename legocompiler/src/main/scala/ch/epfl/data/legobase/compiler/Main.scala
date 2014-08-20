@@ -53,7 +53,6 @@ object Main extends LegoRunner {
     // DCE
     val dce = new DCE(lq.context)
     val dceBlock = dce.optimize(operatorlessBlock)
-    // val dceBlock = operatorlessBlock
 
     // Convert Scala constructs to C
     val scalaToC = new ScalaConstructsToCTranformer(lq.context)
