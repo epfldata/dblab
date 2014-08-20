@@ -128,11 +128,6 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
     override def curriedConstructor = (copy[A] _)
   }
 
-  /* This thing is needed and maybe it should be transformed to Equals trait in pardis */
-  implicit class AllRepOps[T: TypeRep](self: Rep[T]) {
-    def __==[T2: TypeRep](o: Rep[T2]): Rep[Boolean] = infix_==(self, o)
-  }
-
   // this one is needed to rewrire `ArrayBuffer.apply()` to `new ArrayBuffer()`
   override def arrayBufferApplyObject[T]()(implicit typeT: TypeRep[T]): Rep[ArrayBuffer[T]] = __newArrayBuffer[T]()
 
@@ -203,7 +198,7 @@ trait ManifestOps { this: DeepDSL =>
 }
 
 // TODO needs generation of partial evaluation for every node
-trait IntPE extends scalalib.IntOps { this: DeepDSL =>
+trait IntPE extends pardis.deep.scalalib.IntOps { this: DeepDSL =>
   case class Int$plus5PE(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "+", List(List(x))) {
     override def isPure = true
     override def partialEvaluable: Boolean = true

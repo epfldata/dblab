@@ -58,7 +58,7 @@ object Main extends LegoRunner {
     val scalaToC = new ScalaConstructsToCTranformer(lq.context)
     val transformedBlock = scalaToC.transformBlock(dceBlock)
     val scalaToC2 = new ScalaCollectionsToGLibTransfomer(lq.context)
-    val transformedBlock2 = scalaToC2.transformBlock(transformedBlock)
+    val transformedBlock2 = scalaToC2.optimize(transformedBlock)
 
     val ir2Program = new { val IR = lq.context } with IRToProgram {}
 
@@ -128,7 +128,7 @@ object Main extends LegoRunner {
   def query4() {
     val lq = new LiftedQueries()
     val block = lq.Q4
-    compileQuery(lq, block, 4, true)
+    compileQuery(lq, block, 4, false)
   }
 
   def query5() {

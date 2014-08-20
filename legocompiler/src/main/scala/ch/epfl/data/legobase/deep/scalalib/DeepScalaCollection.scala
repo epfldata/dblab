@@ -103,6 +103,7 @@ trait HashMapOps extends Base { this: DeepDSL =>
     private implicit val tagB = typeB.typeTag
     val name = s"HashMap[${typeA.name}, ${typeB.name}]"
     val typeArguments = List(typeA, typeB)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[HashMap[A, B]]
   }
   implicit def typeHashMap[A: TypeRep, B: TypeRep] = HashMapType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
@@ -172,6 +173,7 @@ trait SetOps extends Base { this: DeepDSL =>
     private implicit val tagA = typeA.typeTag
     val name = s"Set[${typeA.name}]"
     val typeArguments = List(typeA)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[Set[A]]
   }
   implicit def typeSet[A: TypeRep] = SetType(implicitly[TypeRep[A]])
@@ -241,6 +243,7 @@ trait TreeSetOps extends Base { this: DeepDSL =>
     private implicit val tagA = typeA.typeTag
     val name = s"TreeSet[${typeA.name}]"
     val typeArguments = List(typeA)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[TreeSet[A]]
   }
   implicit def typeTreeSet[A: TypeRep] = TreeSetType(implicitly[TypeRep[A]])
@@ -301,6 +304,7 @@ trait DefaultEntryOps extends Base { this: DeepDSL =>
     private implicit val tagB = typeB.typeTag
     val name = s"DefaultEntry[${typeA.name}, ${typeB.name}]"
     val typeArguments = List(typeA, typeB)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[DefaultEntry[A, B]]
   }
   implicit def typeDefaultEntry[A: TypeRep, B: TypeRep] = DefaultEntryType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
@@ -399,6 +403,7 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
     private implicit val tagA = typeA.typeTag
     val name = s"ArrayBuffer[${typeA.name}]"
     val typeArguments = List(typeA)
+
     val typeTag = scala.reflect.runtime.universe.typeTag[ArrayBuffer[A]]
   }
   implicit def typeArrayBuffer[A: TypeRep] = ArrayBufferType(implicitly[TypeRep[A]])

@@ -23,11 +23,12 @@ package deep
 import scalalib._
 import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
+import pardis.deep.scalalib._
 """,
   """OperatorsComponent""")
 class MetaInfo
 
-@deep abstract class Operator[+A: Manifest] {
+@deep abstract class Operator[+A] {
   def open()
   def next(): A
   def close()
@@ -52,10 +53,10 @@ class MetaInfo
   }
 
   val NullDynamicRecord = null.asInstanceOf[A]
-  def NullDynamicRecord[D: Manifest] = null.asInstanceOf[D]
+  def NullDynamicRecord[D](implicit di: DummyImplicit) = null.asInstanceOf[D]
 }
 
-@deep case class ScanOp[A: Manifest](table: Array[A]) extends Operator[A] {
+@deep class ScanOp[A](table: Array[A]) extends Operator[A] {
   var i = 0
   def open() {}
   def next() = {
@@ -69,17 +70,14 @@ class MetaInfo
   def reset() { i = 0 }
 }
 
-@deep case class SelectOp[A: Manifest](parent: Operator[A])(selectPred: A => Boolean) extends Operator[A] {
+@deep class SelectOp[A](parent: Operator[A])(selectPred: A => Boolean) extends Operator[A] {
   def open() = { parent.open; }
   def next() = parent findFirst selectPred
   def close() = {}
   def reset() { parent.reset }
 }
 
-@deep case class AggOp[A: Manifest, B: Manifest](parent: Operator[A], numAggs: Int)(val grp: A => B)(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
-  val mA = manifest[A]
-  val mB = manifest[B]
-
+@deep class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: A => B)(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
   val hm = new HashMap[B, Array[Double]]()
   var keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
 
@@ -108,7 +106,7 @@ class MetaInfo
   def reset() { parent.reset; hm.clear; open }
 }
 
-@deep case class SortOp[A: Manifest](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends Operator[A] {
+@deep class SortOp[A](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends Operator[A] {
   val sortedTree = new /*scala.collection.mutable.*/ TreeSet()(
     new Ordering[A] {
       def compare(o1: A, o2: A) = orderingFunc(o1, o2)
@@ -129,7 +127,7 @@ class MetaInfo
 }
 
 // Limited version of map -- touches data in place and does not create new data
-@deep case class MapOp[A: Manifest](parent: Operator[A])(aggFuncs: Function1[A, Unit]*) extends Operator[A] {
+@deep class MapOp[A](parent: Operator[A])(aggFuncs: Function1[A, Unit]*) extends Operator[A] {
   def open() = { parent.open; }
   def next() = {
     val t: A = parent.next
@@ -142,7 +140,7 @@ class MetaInfo
   def reset { parent.reset }
 }
 
-@deep case class PrintOp[A: Manifest](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean = () => true) extends Operator[A] {
+@deep class PrintOp[A](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean = () => true) extends Operator[A] {
   var numRows = 0
   def open() = { parent.open; }
   def next() = {
@@ -158,7 +156,7 @@ class MetaInfo
   def reset() { parent.reset }
 }
 
-@deep case class HashJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord: Manifest, C: Manifest](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
+@deep class HashJoinOp[A <: AbstractRecord, B <: AbstractRecord, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   var tmpCount = -1
   var tmpBuffer = ArrayBuffer[A]()
   val hm = new HashMap[C, ArrayBuffer[A]]()
@@ -202,7 +200,7 @@ class MetaInfo
   def reset() { rightParent.reset; leftParent.reset; hm.clear; tmpLine = NullDynamicRecord[B]; tmpCount = 0; tmpBuffer.clear }
 }
 
-@deep case class WindowOp[A: Manifest, B: Manifest, C: Manifest](parent: Operator[A])(val grp: Function1[A, B])(val wndf: ArrayBuffer[A] => C) extends Operator[WindowRecord[B, C]] {
+@deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: ArrayBuffer[A] => C) extends Operator[WindowRecord[B, C]] {
   val hm = HashMap[B, ArrayBuffer[A]]()
   var keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
 
@@ -227,7 +225,7 @@ class MetaInfo
   def reset() { parent.reset; hm.clear; open }
 }
 
-@deep case class LeftHashSemiJoinOp[A: Manifest, B: Manifest, C: Manifest](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
+@deep class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   val hm = new HashMap[C, ArrayBuffer[B]]()
   def open() = {
     leftParent.open
@@ -252,7 +250,7 @@ class MetaInfo
 }
 
 @deep
-case class NestedLoopsJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord: Manifest](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
+class NestedLoopsJoinOp[A <: AbstractRecord, B <: AbstractRecord](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
   var leftTuple = NullDynamicRecord[A]
   var rightTuple = NullDynamicRecord[B]
 
@@ -281,7 +279,7 @@ case class NestedLoopsJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord:
   def reset() = { rightParent.reset; leftParent.reset; leftTuple = NullDynamicRecord[A]; }
 }
 
-case class SubquerySingleResult[A: Manifest](parent: Operator[A]) extends Operator[A] {
+class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   def close() {
     throw new Exception("PULL ENGINE BUG:: Close function in SubqueryResult should never be called!!!!\n")
   }
@@ -297,7 +295,7 @@ case class SubquerySingleResult[A: Manifest](parent: Operator[A]) extends Operat
   def getResult = { parent.open; parent.next; }
 }
 
-case class HashJoinAnti[A: Manifest, B: Manifest, C: Manifest](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
+class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   val hm = new HashMap[C, ArrayBuffer[A]]()
   var keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
 
@@ -360,7 +358,7 @@ case class HashJoinAnti[A: Manifest, B: Manifest, C: Manifest](leftParent: Opera
   def reset() { rightParent.reset; leftParent.reset; hm.clear; }
 }
 
-case class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
+class ViewOp[A](parent: Operator[A]) extends Operator[A] {
   var idx = 0
   var size = 0
   val table = ArrayBuffer[A]()
@@ -381,7 +379,7 @@ case class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
   def reset() { idx = 0 }
 }
 
-case class LeftOuterJoinOp[A <: AbstractRecord: Manifest, B <: AbstractRecord: Manifest, C: Manifest](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
+class LeftOuterJoinOp[A <: AbstractRecord, B <: AbstractRecord: Manifest, C](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   var tmpCount = -1
   var tmpBuffer = ArrayBuffer[B]()
   var tmpLine = NullDynamicRecord[A]

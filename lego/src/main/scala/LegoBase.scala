@@ -4,15 +4,7 @@ package legobase
 import utils.Utilities._
 import java.io.PrintStream
 
-trait ScalaImpl {
-  val sdf = new java.text.SimpleDateFormat("yyyy-MM-dd")
-  def parseDate(x: String): Long = {
-    sdf.parse(x).getTime
-  }
-  def parseString(x: String): LBString = LBString(x.getBytes)
-}
-
-trait LegoRunner extends GenericQuery {
+trait LegoRunner {
   val numRuns: scala.Int = 1
   var currQuery: java.lang.String = ""
   Config.checkResults = true
@@ -59,7 +51,9 @@ trait LegoRunner extends GenericQuery {
   }
 }
 
-object MiniDB extends LegoRunner with storagemanager.Loader with Queries {
+object MiniDB extends LegoRunner {
+  import Queries._
+
   def executeQuery(query: String): Unit = query match {
     case "Q1"     => Q1(numRuns)
     case "Q2"     => Q2(numRuns)

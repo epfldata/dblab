@@ -3,6 +3,7 @@ package scala
 import ch.epfl.data._
 import autolifter.annotations._
 
+// TODO should be ported to pardis
 @reflect[Int]
 final abstract class MirrorInt {
   @pure def toByte: Byte
@@ -364,6 +365,7 @@ final abstract class MirrorLong {
   @pure def %(x: Double): Double
 }
 
+// TODO should be ported to pardis
 @reflect[Boolean]
 final abstract class MirrorBoolean {
   @pure def unary_! : Boolean
