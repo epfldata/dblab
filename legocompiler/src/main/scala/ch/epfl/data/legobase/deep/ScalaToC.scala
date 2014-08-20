@@ -222,26 +222,36 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case _                      => super.transformStmToMultiple(stm)
   }
 
-  def eq[A: PardisType] = {
+  // Set of hash and record functions
+  def string_hash = {
+    doLambda((s: Rep[String]) => { unit(5) })
+  }
+  def string_eq = {
+    doLambda2((s1: Rep[String], s2: Rep[String]) => unit(true))
+  }
+  def record_eq[A: PardisType] = {
     val structDef = getStructDef[A].get
     val eqMethod = transformDef(structDef.methods.find(_.name == "equals").get.body.asInstanceOf[PardisLambda2[A, A, Boolean]])
     toAtom(eqMethod)(eqMethod.tp)
   }
-  def hash[A: PardisType] = {
+  def record_hash[A: PardisType] = {
     val structDef = getStructDef[A].get
     val hashMethod = transformDef(structDef.methods.find(_.name == "hash").get.body.asInstanceOf[PardisLambda[A, Int]])
     toAtom(hashMethod)(hashMethod.tp)
   }
+  // ------------------------------
   def treeHead[A: PardisType, B: PardisType] = doLambda3((s1: Rep[A], s2: Rep[A], s3: Rep[Pointer[B]]) => {
     pointer_assign(s3.asInstanceOf[Expression[Pointer[Any]]], s2)
     unit(0)
   })
+
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     /* HashMap Operations */
     case nm @ HashMapNew2() =>
       val nA = typePointer(transformType(nm.typeA)).asInstanceOf[TypeRep[Any]]
       val nB = typePointer(transformType(nm.typeB))
-      GHashTableNew(hash(nm.typeA), eq(nm.typeA))(nA, nB, IntType)
+      if (nm.typeA == StringType) GHashTableNew(string_hash, string_eq)(StringType, nB, IntType)
+      else GHashTableNew(record_hash(nm.typeA), record_eq(nm.typeA))(nA, nB, IntType)
     case HashMapSize(map)                    => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
     case HashMapKeySet(map)                  => NameAlias[Pointer[GList[FILE]]](None, "g_hash_table_get_keys", List(List(map)))
     case ma @ HashMapApply(map, key)         => NameAlias(None, "g_hash_table_lookup", List(List(map, key)))(transformType(map.tp.typeArguments(0).typeArguments(1)))

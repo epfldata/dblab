@@ -12,48 +12,6 @@ import scala.language.reflectiveCalls
 /* This class is the manually completely lifted version of Query1 which ideally should be lifted by YY */
 class LiftedQueries {
   val context = new LoweringLegoBase {
-    // val context = new DeepDSL {
-    def q1_u = {
-      val lineitemTable = loadLineitem()
-      runQuery {
-        val constantDate = parseDate(unit("1998-08-11"))
-        val lineitemScan = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_SHIPDATE <= constantDate })
-        val aggOp = __newAggOp(lineitemScan, unit(9))(__lambda { x =>
-          groupByClassNew(
-            x.L_RETURNFLAG, x.L_LINESTATUS)
-        })(
-          __lambda { (t, currAgg) => { t.L_DISCOUNT + currAgg } },
-          __lambda { (t, currAgg) => { t.L_QUANTITY + currAgg } },
-          __lambda { (t, currAgg) => { t.L_EXTENDEDPRICE + currAgg } },
-          __lambda { (t, currAgg) => { (t.L_EXTENDEDPRICE * (unit(1.0) - t.L_DISCOUNT)) + currAgg } },
-          __lambda { (t, currAgg) => { (t.L_EXTENDEDPRICE * (unit(1.0) - t.L_DISCOUNT) * (unit(1.0) + t.L_TAX)) + currAgg } },
-          __lambda { (t, currAgg) => { currAgg + unit(1) } })
-        val mapOp = __newMapOp(aggOp)(__lambda { (kv) => kv.aggs(6) = kv.aggs(1) / kv.aggs(5) }, // AVG(L_QUANTITY)
-          __lambda { (kv) => kv.aggs(7) = kv.aggs(2) / kv.aggs(5) }, // AVG(L_EXTENDEDPRICE)
-          __lambda { (kv) => kv.aggs(8) = kv.aggs(0) / kv.aggs(5) }) // AVG(L_DISCOUNT)
-        val sortOp = __newSortOp(mapOp)(__lambda { (kv1, kv2) =>
-          {
-            // TODO YY should automatically virtualize it
-            val res = __newVar(kv1.key.L_RETURNFLAG - kv2.key.L_RETURNFLAG)
-
-            __ifThenElse(infix_==(res, unit(0)),
-              __assign(res, kv1.key.L_LINESTATUS - kv2.key.L_LINESTATUS),
-              unit(()))
-            res
-          }
-        })
-        val po = __newPrintOp2(sortOp)(__lambda { kv =>
-          printf(unit("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n"),
-            kv.key.L_RETURNFLAG, kv.key.L_LINESTATUS, kv.aggs(1), kv.aggs(2), kv.aggs(3), kv.aggs(4),
-            kv.aggs(6), kv.aggs(7), kv.aggs(8), kv.aggs(5))
-        })
-
-        po.open
-        po.next
-        printf(unit("(%d rows)\n"), po.numRows)
-      }
-    }
-
     def q1 = {
       val lineitemTable = loadLineitem()
       unit()
@@ -278,23 +236,23 @@ class LiftedQueries {
         printf(unit("(%d rows)\n"), po.numRows)
         unit(())
       })
-
     }
 
     def q1Block = reifyBlock(q1)
-    def q1_uBlock = reifyBlock(q1_u)
+    def q1_CBlock = reifyBlock(q1)
     def q2Block = reifyBlock(q2)
     def q3Block = reifyBlock(q3)
     def q4Block = reifyBlock(q4)
     def q5Block = reifyBlock(q5)
     def q6Block = reifyBlock(q6)
+    def q6_CBlock = reifyBlock(q6)
   }
 
   def Q1() =
     context.q1Block
 
-  def Q1_U() =
-    context.q1_uBlock
+  def Q1_C() =
+    context.q1Block
 
   def Q2() =
     context.q2Block
@@ -310,4 +268,7 @@ class LiftedQueries {
 
   def Q6() =
     context.q6Block
+
+  def Q6_C() =
+    context.q6_CBlock
 }

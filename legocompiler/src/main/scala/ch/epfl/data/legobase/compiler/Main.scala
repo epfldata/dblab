@@ -32,17 +32,48 @@ object Main extends LegoRunner {
 
   def executeQuery(query: String): Unit = query match {
     case "Q1"   => query1()
-    case "Q1_U" => query1_unoptimized()
+    case "Q1_C" => query1_C()
     case "Q2"   => query2()
     case "Q3"   => query3()
     case "Q4"   => query4()
     case "Q5"   => query5()
     case "Q6"   => query6()
+    case "Q6_C" => query6_C()
   }
 
-  def query1_unoptimized() {
+  def query1_C() {
     val lq = new LiftedQueries()
-    val block = lq.Q1_U
+    val block = lq.Q1
+
+    // Lowering (e.g. case classes to records)
+    val lowering = new LBLowering(lq.context, lq.context)
+    val loweredBlock = lowering.lower(block)
+    val parameterPromotion = new LBParameterPromotion(lq.context)
+    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
+
+    // DCE
+    val dce = new DCE(lq.context)
+    val dceBlock = dce.optimize(operatorlessBlock)
+
+    // Convert Scala constructs to C
+    val scalaToC = new ScalaConstructsToCTranformer(lq.context)
+    val transformedBlock = scalaToC.transformBlock(dceBlock)
+    val scalaToC2 = new ScalaCollectionsToGLibTransfomer(lq.context)
+    val transformedBlock2 = scalaToC2.optimize(transformedBlock)
+
+    val ir2Program = new { val IR = lq.context } with IRToProgram {}
+
+    System.out.println(transformedBlock2)
+
+    val finalProgram = ir2Program.createProgram(transformedBlock2)
+
+    val LegoGenerator = new LegoCGenerator(2, true)
+    LegoGenerator.apply(finalProgram)
+  }
+
+  def query6_C() {
+    val lq = new LiftedQueries()
+    val block = lq.Q6_C
 
     // Lowering (e.g. case classes to records)
     val lowering = new LBLowering(lq.context, lq.context)
