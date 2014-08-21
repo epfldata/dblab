@@ -217,7 +217,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
 
   override def loaderLoadLineitemObject(): Rep[Array[LINEITEMRecord]] = {
     val file = unit(Config.datapath + "lineitem.tbl")
-    val size = fileLineCount(file)
+    val size = Loader.fileLineCount(file)
     // Load Relation 
     val s = __newK2DBScanner(file)
     var i = __newVar[Int](unit[Int](0))
@@ -249,7 +249,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
 
   override def loaderLoadSupplierObject(): Rep[Array[SUPPLIERRecord]] = {
     val file = unit(Config.datapath + "supplier.tbl")
-    val size = fileLineCount(file)
+    val size = Loader.fileLineCount(file)
     // Load Relation 
     val s = __newK2DBScanner(file)
     var i = __newVar[Int](0)
@@ -266,7 +266,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
 
   override def loaderLoadPartsuppObject(): Rep[Array[PARTSUPPRecord]] = {
     val file = unit(Config.datapath + "partsupp.tbl")
-    val size = fileLineCount(file)
+    val size = Loader.fileLineCount(file)
     // Load Relation 
     val s = __newK2DBScanner(file)
     var i = __newVar[Int](0)
@@ -282,7 +282,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
 
   override def loaderLoadCustomerObject(): Rep[Array[CUSTOMERRecord]] = {
     val file = unit(Config.datapath + "customer.tbl")
-    val size = fileLineCount(file)
+    val size = Loader.fileLineCount(file)
     // Load Relation 
     val s = __newK2DBScanner(file)
     var i = __newVar[Int](0)
@@ -298,7 +298,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
 
   override def loaderLoadOrdersObject(): Rep[Array[ORDERSRecord]] = {
     val file = unit(Config.datapath + "orders.tbl")
-    val size = fileLineCount(file)
+    val size = Loader.fileLineCount(file)
     // Load Relation 
     val s = __newK2DBScanner(file)
     var i = __newVar[Int](0)
@@ -315,7 +315,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
 
   override def loaderLoadNationObject(): Rep[Array[NATIONRecord]] = {
     val file = unit(Config.datapath + "nation.tbl")
-    val size = fileLineCount(file)
+    val size = Loader.fileLineCount(file)
     // Load Relation 
     val s = __newK2DBScanner(file)
     var i = __newVar[Int](0)
@@ -331,7 +331,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
 
   override def loaderLoadPartObject(): Rep[Array[PARTRecord]] = {
     val file = unit(Config.datapath + "part.tbl")
-    val size = fileLineCount(file)
+    val size = Loader.fileLineCount(file)
     // Load Relation 
     val s = __newK2DBScanner(file)
     var i = __newVar[Int](0)
@@ -348,7 +348,7 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
 
   override def loaderLoadRegionObject(): Rep[Array[REGIONRecord]] = {
     val file = unit(Config.datapath + "region.tbl")
-    val size = fileLineCount(file)
+    val size = Loader.fileLineCount(file)
     // Load Relation 
     val s = __newK2DBScanner(file)
     var i = __newVar[Int](0)

@@ -99,7 +99,7 @@ class MetaInfo
       val key = keySet.head
       keySet.remove(key)
       val elem = hm.remove(key)
-      newAGGRecord(key, elem.get)
+      new AGGRecord(key, elem.get)
     } else NullDynamicRecord
   }
   def close() {}
@@ -218,7 +218,7 @@ class MetaInfo
       val key = keySet.head
       keySet.remove(key)
       val elem = hm.remove(key).get // we're sure that it is Some(x)
-      newWindowRecord(key, wndf(elem))
+      new WindowRecord(key, wndf(elem))
     } else NullDynamicRecord
   }
   def close() {}

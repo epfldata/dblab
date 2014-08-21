@@ -5,7 +5,7 @@ package storagemanager
 import utils.Utilities._
 
 // FIXME just to cheat on auto-lifter
-class Loader {
+trait Loader {
 
 }
 

@@ -10,59 +10,6 @@ import pardis.shallow.CaseClassRecord
 import pardis.ir.pardisTypeImplicits._
 
 trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE { this: DeepDSL =>
-
-  /* TODO These methods should be lifted from storagemanager.Loader */
-  // case class LoadLineItem() extends FunctionDef[Array[LINEITEMRecord]](None, "loadLineitem", List(Nil)) {
-  //   override def curriedConstructor = (x: Any) => copy()
-  // }
-  // def loadLineitem(): Rep[Array[LINEITEMRecord]] = LoadLineItem()
-  // case class LoadPart() extends FunctionDef[Array[PARTRecord]](None, "loadPart", List(Nil)) {
-  //   override def curriedConstructor = (x: Any) => copy()
-  // }
-  // def loadPart(): Rep[Array[PARTRecord]] = LoadPart()
-  // case class LoadPartsupp() extends FunctionDef[Array[PARTSUPPRecord]](None, "loadPartsupp", List(Nil)) {
-  //   override def curriedConstructor = (x: Any) => copy()
-  // }
-  // def loadPartsupp(): Rep[Array[PARTSUPPRecord]] = LoadPartsupp()
-  // case class LoadNation() extends FunctionDef[Array[NATIONRecord]](None, "loadNation", List(Nil)) {
-  //   override def curriedConstructor = (x: Any) => copy()
-  // }
-  // def loadNation(): Rep[Array[NATIONRecord]] = LoadNation()
-
-  // case class LoadRegion() extends FunctionDef[Array[REGIONRecord]](None, "loadRegion", List(Nil)) {
-  //   override def curriedConstructor = (x: Any) => copy()
-  // }
-  // def loadRegion(): Rep[Array[REGIONRecord]] = LoadRegion()
-
-  // case class LoadSupplier() extends FunctionDef[Array[SUPPLIERRecord]](None, "loadSupplier", List(Nil)) {
-  //   override def curriedConstructor = (x: Any) => copy()
-  // }
-  // def loadSupplier(): Rep[Array[SUPPLIERRecord]] = LoadSupplier()
-
-  // case class LoadOrders() extends FunctionDef[Array[ORDERSRecord]](None, "loadOrders", List(Nil)) {
-  //   override def curriedConstructor = (x: Any) => copy()
-  // }
-  // def loadOrders(): Rep[Array[ORDERSRecord]] = LoadOrders()
-  // case class LoadCustomer() extends FunctionDef[Array[CUSTOMERRecord]](None, "loadCustomer", List(Nil)) {
-  //   override def curriedConstructor = (x: Any) => copy()
-  // }
-  // def loadCustomer(): Rep[Array[CUSTOMERRecord]] = LoadCustomer()
-
-  case class FileLineCount(file: Rep[String]) extends FunctionDef[Int](None, "fileLineCount", List(List(file))) {
-    override def curriedConstructor = (copy _)
-  }
-  def fileLineCount(file: Rep[String]): Rep[Int] = FileLineCount(file)
-
-  /* These methods should be lifted from Legobase.scala */
-  case class ParseDate(date: Rep[String]) extends FunctionDef[Long](None, "parseDate", List(List(date))) {
-    override def curriedConstructor = (copy _)
-  }
-  def parseDate(date: Rep[String]): Rep[Long] = ParseDate(date)
-  case class ParseString(string: Rep[String]) extends FunctionDef[LBString](None, "parseString", List(List(string))) {
-    override def curriedConstructor = (copy _)
-  }
-  def parseString(string: Rep[String]): Rep[LBString] = ParseString(string)
-
   /* TODO These methods should be lifted from scala.Predef */
   case class Println(x: Rep[Any]) extends FunctionDef[Unit](None, "println", List(List(x))) {
     override def curriedConstructor = (copy _)
@@ -78,19 +25,6 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   //   override def curriedConstructor = (copy _).curried
   // }
   // def printf(text: Rep[String], xs: Rep[Any]*): Rep[Unit] = Printf(text, __liftSeq(xs.toSeq))
-
-  /* TODO This method should be lifted from Queries.scala */
-  def runQuery[T: TypeRep](query: => Rep[T]): Rep[T] = {
-    val b = reifyBlock(query)
-    RunQuery(b)
-  }
-  case class RunQuery[T: TypeRep](query: Block[T]) extends FunctionDef[T](None, "runQuery", List(List(query))) {
-    override def curriedConstructor = (copy[T] _)
-  }
-  def dateToString(long: Rep[Long]): Rep[String] = DateToString(long)
-  case class DateToString(long: Rep[Long]) extends FunctionDef[String](None, "dateToString", List(List(long))) {
-    override def curriedConstructor = (copy _)
-  }
 
   // FIXME handling default values (which needs macro or a compiler plugin)
   def __newPrintOp2[A](parent: Rep[Operator[A]])(printFunc: Rep[(A => Unit)], limit: Rep[(() => Boolean)] = {
@@ -113,10 +47,10 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   type Char = Character
 
   /* TODO should be automatically generated from GenericEngine */
-  object GenericEngine {
-    def newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)
-    def newWindowRecord[B, C](key: Rep[B], wnd: Rep[C])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowRecord[B, C]] = __newWindowRecord(key, wnd)
-  }
+  // object GenericEngine {
+  //   def newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)
+  //   def newWindowRecord[B, C](key: Rep[B], wnd: Rep[C])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowRecord[B, C]] = __newWindowRecord(key, wnd)
+  // }
 
   // TODO this thing should be removed, ideally every literal should be lifted using YY
   implicit def liftInt(i: scala.Int): Rep[Int] = unit(i)

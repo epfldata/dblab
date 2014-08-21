@@ -2,11 +2,12 @@ package ch.epfl.data
 package legobase
 package queryengine
 
+// FIXME just to cheat on auto-lifter
+trait GenericEngine {
+
+}
+
 object GenericEngine {
-  def newAGGRecord[B](k: B, a: Array[Double]) = new AGGRecord(k, a)
-  def newWindowRecord[B, C](k: B, w: C) = new WindowRecord(k, w)
-  //def parseDate(x: String): Long
-  //def parseString(x: String): Array[Byte]
   def runQuery[T](query: => T): T = {
     // if (profile) {
     utils.Utilities.time(query, "finish")
@@ -15,9 +16,8 @@ object GenericEngine {
     // }
   }
 
-  def dateToString(long: Long): String = dateToString(new java.util.Date(long))
-
-  def dateToString(dt: java.util.Date): String = {
+  def dateToString(long: Long): String = {
+    val dt = new java.util.Date(long)
     (dt.getYear + 1900) + "" +
       {
         val m = dt.getMonth + 1
@@ -29,10 +29,10 @@ object GenericEngine {
       }
   }
 
-  val sdf = new java.text.SimpleDateFormat("yyyy-MM-dd")
+  private val simpleDateFormatter = new java.text.SimpleDateFormat("yyyy-MM-dd")
 
   def parseDate(x: String): Long = {
-    sdf.parse(x).getTime
+    simpleDateFormatter.parse(x).getTime
   }
   def parseString(x: String): LBString = LBString(x.getBytes)
 }

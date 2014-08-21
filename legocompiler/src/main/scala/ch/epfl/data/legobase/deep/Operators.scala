@@ -494,7 +494,7 @@ trait AggOpImplementations { self: DeepDSL =>
       val key: this.Rep[B] = self.keySet.head;
       self.keySet.remove(key);
       val elem: this.Rep[Option[Array[Double]]] = self.hm.remove(key);
-      GenericEngine.newAGGRecord[B](key, elem.get)
+      __newAGGRecord(key, elem.get)
     }, self.NullDynamicRecord)
   }
   override def aggOpClose[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
@@ -1274,7 +1274,7 @@ trait WindowOpImplementations { self: DeepDSL =>
       val key: this.Rep[B] = self.keySet.head;
       self.keySet.remove(key);
       val elem: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.remove(key).get;
-      GenericEngine.newWindowRecord[B, C](key, __app(self.wndf).apply(elem))
+      __newWindowRecord(key, __app(self.wndf).apply(elem))
     }, self.NullDynamicRecord)
   }
   override def windowOpClose[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {

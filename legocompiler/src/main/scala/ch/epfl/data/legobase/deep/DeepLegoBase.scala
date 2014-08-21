@@ -183,6 +183,61 @@ trait AGGRecordImplementations { self: DeepDSL =>
 }
 trait AGGRecordComponent extends AGGRecordOps with AGGRecordImplicits { self: DeepDSL => }
 
+trait GenericEngineOps extends Base { this: DeepDSL =>
+  implicit class GenericEngineRep(self: Rep[GenericEngine]) {
+
+  }
+  object GenericEngine {
+    def runQuery[T](query: => Rep[T])(implicit typeT: TypeRep[T]): Rep[T] = genericEngineRunQueryObject[T](query)(typeT)
+    def dateToString(long: Rep[Long]): Rep[String] = genericEngineDateToStringObject(long)
+    def parseDate(x: Rep[String]): Rep[Long] = genericEngineParseDateObject(x)
+    def parseString(x: Rep[String]): Rep[OptimalString] = genericEngineParseStringObject(x)
+  }
+  // constructors
+
+  // case classes
+  case class GenericEngineRunQueryObject[T](queryOutput: Block[T])(implicit val typeT: TypeRep[T]) extends FunctionDef[T](None, "GenericEngine.runQuery", List(List(queryOutput))) {
+    override def curriedConstructor = (copy[T] _)
+  }
+
+  case class GenericEngineDateToStringObject(long: Rep[Long]) extends FunctionDef[String](None, "GenericEngine.dateToString", List(List(long))) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class GenericEngineParseDateObject(x: Rep[String]) extends FunctionDef[Long](None, "GenericEngine.parseDate", List(List(x))) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class GenericEngineParseStringObject(x: Rep[String]) extends FunctionDef[OptimalString](None, "GenericEngine.parseString", List(List(x))) {
+    override def curriedConstructor = (copy _)
+  }
+
+  // method definitions
+  def genericEngineRunQueryObject[T](query: => Rep[T])(implicit typeT: TypeRep[T]): Rep[T] = {
+    val queryOutput = reifyBlock(query)
+    GenericEngineRunQueryObject[T](queryOutput)
+  }
+  def genericEngineDateToStringObject(long: Rep[Long]): Rep[String] = GenericEngineDateToStringObject(long)
+  def genericEngineParseDateObject(x: Rep[String]): Rep[Long] = GenericEngineParseDateObject(x)
+  def genericEngineParseStringObject(x: Rep[String]): Rep[OptimalString] = GenericEngineParseStringObject(x)
+  type GenericEngine = ch.epfl.data.legobase.queryengine.GenericEngine
+  case object GenericEngineType extends TypeRep[GenericEngine] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GenericEngineType
+    val name = "GenericEngine"
+    val typeArguments = Nil
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[GenericEngine]
+  }
+  implicit val typeGenericEngine = GenericEngineType
+}
+trait GenericEngineImplicits { this: GenericEngineComponent =>
+  // Add implicit conversions here!
+}
+trait GenericEngineImplementations { self: DeepDSL =>
+
+}
+trait GenericEngineComponent extends GenericEngineOps with GenericEngineImplicits { self: DeepDSL => }
+
 trait LINEITEMRecordOps extends Base { this: DeepDSL =>
   implicit class LINEITEMRecordRep(self: Rep[LINEITEMRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = lINEITEMRecordGetField(self, key)
@@ -1136,12 +1191,8 @@ trait LoaderOps extends Base { this: DeepDSL =>
     def loadCustomer(): Rep[Array[CUSTOMERRecord]] = loaderLoadCustomerObject()
   }
   // constructors
-  def __newLoader(): Rep[Loader] = loaderNew()
-  // case classes
-  case class LoaderNew() extends ConstructorDef[Loader](List(), "Loader", List(List())) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
 
+  // case classes
   case class LoaderLoadStringObject(size: Rep[Int], s: Rep[K2DBScanner]) extends FunctionDef[OptimalString](None, "Loader.loadString", List(List(size, s))) {
     override def curriedConstructor = (copy _).curried
   }
@@ -1183,7 +1234,6 @@ trait LoaderOps extends Base { this: DeepDSL =>
   }
 
   // method definitions
-  def loaderNew(): Rep[Loader] = LoaderNew()
   def loaderLoadStringObject(size: Rep[Int], s: Rep[K2DBScanner]): Rep[OptimalString] = LoaderLoadStringObject(size, s)
   def loaderFileLineCountObject(file: Rep[String]): Rep[Int] = LoaderFileLineCountObject(file)
   def loaderLoadRegionObject(): Rep[Array[REGIONRecord]] = LoaderLoadRegionObject()
@@ -1392,6 +1442,7 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowReco
   with DoubleComponent with IntComponent with LongComponent with ArrayComponent
   with GroupByClassComponent
   with Q3GRPRecordComponent
+  with GenericEngineComponent
   with LINEITEMRecordComponent
   with SUPPLIERRecordComponent
   with PARTSUPPRecordComponent

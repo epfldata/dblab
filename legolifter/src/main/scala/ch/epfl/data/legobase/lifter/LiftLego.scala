@@ -62,6 +62,7 @@ $liftedCode
       al.autoLift[queryengine.GroupByClass],
       al.autoLift[queryengine.Q3GRPRecord],
       al.autoLift[queryengine.AGGRecord[Any]],
+      al.autoLift[queryengine.GenericEngine],
       al.autoLift[queryengine.TPCHRelations.LINEITEMRecord],
       al.autoLift[queryengine.TPCHRelations.SUPPLIERRecord],
       al.autoLift[queryengine.TPCHRelations.PARTSUPPRecord],
@@ -93,6 +94,7 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowReco
   with DoubleComponent with IntComponent with LongComponent with ArrayComponent 
   with GroupByClassComponent
   with Q3GRPRecordComponent
+  with GenericEngineComponent
   with LINEITEMRecordComponent
   with SUPPLIERRecordComponent
   with PARTSUPPRecordComponent

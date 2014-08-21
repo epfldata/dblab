@@ -87,7 +87,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       __ifThenElse(infix_==(fscanf(s, unit("%d-%d-%d|"), &(x), &(y), &(z)), eof), break, unit)
       ((toAtom(ReadVal(x)) * unit(10000)) + (toAtom(ReadVal(y)) * unit(100)) + toAtom(ReadVal(z))).correspondingNode
     case K2DBScannerHasNext(s) => ReadVal(Constant(true))
-    case FileLineCount(Constant(x: String)) =>
+    case LoaderFileLineCountObject(Constant(x: String)) =>
       val p = popen(unit("wc -l " + x), unit("r"))
       val cnt = readVar(__newVar[Int](0))
       fscanf(p, unit("%d"), &(cnt))
@@ -177,7 +177,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     // Profiling and utils functions mapping
     case pc @ PardisCast(Constant(null)) =>
       PardisCast(Constant(0.asInstanceOf[Any]))(transformType(pc.castFrom), transformType(pc.castTp))
-    case RunQuery(b) =>
+    case GenericEngineRunQueryObject(b) =>
       val diff = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val start = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val end = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
@@ -187,7 +187,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       val tm = timeval_subtract(&(diff), &(end), &(start))
       Printf(unit("Generated code run in %ld milliseconds."), tm)
     case OptionGet(x) => ReadVal(x.asInstanceOf[Expression[Any]])(transformType(x.tp))
-    case ParseDate(Constant(d)) =>
+    case GenericEngineParseDateObject(Constant(d)) =>
       val data = d.split("-").map(x => x.toInt)
       ReadVal(Constant((data(0) * 10000) + (data(1) * 100) + data(2)))
     case imtf @ PardisStructImmutableField(s, f) =>

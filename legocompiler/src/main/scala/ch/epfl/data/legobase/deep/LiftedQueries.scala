@@ -15,8 +15,8 @@ class LiftedQueries {
     // val context = new DeepDSL {
     def q1_u = {
       val lineitemTable = Loader.loadLineitem()
-      runQuery {
-        val constantDate = parseDate(unit("1998-08-11"))
+      GenericEngine.runQuery {
+        val constantDate = GenericEngine.parseDate(unit("1998-08-11"))
         val lineitemScan = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_SHIPDATE <= constantDate })
         val aggOp = __newAggOp(lineitemScan, unit(9))(__lambda { x =>
           groupByClassNew(
@@ -57,8 +57,8 @@ class LiftedQueries {
     def q1 = {
       val lineitemTable = Loader.loadLineitem()
       unit()
-      runQuery {
-        val constantDate = parseDate(unit("1998-08-11"))
+      GenericEngine.runQuery {
+        val constantDate = GenericEngine.parseDate(unit("1998-08-11"))
         val lineitemScan = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_SHIPDATE <= constantDate })
         val aggOp = __newAggOp(lineitemScan, unit(9))(__lambda { x =>
           __newGroupByClass(
@@ -101,9 +101,9 @@ class LiftedQueries {
       val nationTable = Loader.loadNation()
       val regionTable = Loader.loadRegion()
       val supplierTable = Loader.loadSupplier()
-      runQuery {
-        val africa = parseString(unit("AFRICA"))
-        val tin = parseString(unit("TIN"))
+      GenericEngine.runQuery {
+        val africa = GenericEngine.parseString(unit("AFRICA"))
+        val tin = GenericEngine.parseString(unit("TIN"))
         val partsuppScan = __newScanOp(partsuppTable)
         val supplierScan = __newScanOp(supplierTable)
         val jo1 = __newHashJoinOp2(supplierScan, partsuppScan)(__lambda { (x, y) => x.S_SUPPKEY __== y.PS_SUPPKEY })(__lambda { x => x.S_SUPPKEY })(__lambda { x => x.PS_SUPPKEY })
@@ -155,9 +155,9 @@ class LiftedQueries {
       val lineitemTable = Loader.loadLineitem()
       val ordersTable = Loader.loadOrders()
       val customerTable = Loader.loadCustomer()
-      runQuery({
-        val constantDate = parseDate(unit("1995-03-04"))
-        val scanCustomer = __newSelectOp(__newScanOp(customerTable))(__lambda { x => x.C_MKTSEGMENT __== parseString(unit("HOUSEHOLD")) })
+      GenericEngine.runQuery({
+        val constantDate = GenericEngine.parseDate(unit("1995-03-04"))
+        val scanCustomer = __newSelectOp(__newScanOp(customerTable))(__lambda { x => x.C_MKTSEGMENT __== GenericEngine.parseString(unit("HOUSEHOLD")) })
         val scanOrders = __newSelectOp(__newScanOp(ordersTable))(__lambda { x => x.O_ORDERDATE < constantDate })
         val scanLineitem = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_SHIPDATE > constantDate })
         val jo1 = __newHashJoinOp2(scanCustomer, scanOrders)(__lambda { (x, y) => x.C_CUSTKEY __== y.O_CUSTKEY })(__lambda { x => x.C_CUSTKEY })(__lambda { x => x.O_CUSTKEY })
@@ -186,7 +186,7 @@ class LiftedQueries {
           {
             // TODO: The date is not printed properly (but is correct), and fails 
             // in the comparison with result file. Rest of fields OK.
-            printf(unit("%d|%.4f|%s|%d\n"), kv.key.L_ORDERKEY, kv.aggs(unit(0)), dateToString(kv.key.O_ORDERDATE), kv.key.O_SHIPPRIORITY)
+            printf(unit("%d|%.4f|%s|%d\n"), kv.key.L_ORDERKEY, kv.aggs(unit(0)), GenericEngine.dateToString(kv.key.O_ORDERDATE), kv.key.O_SHIPPRIORITY)
             __assign(i, readVar(i) + unit(1))
           }
         }, __lambda { () => readVar(i) < unit(10) })
@@ -201,9 +201,9 @@ class LiftedQueries {
       val lineitemTable = Loader.loadLineitem()
       val ordersTable = Loader.loadOrders()
 
-      runQuery({
-        val constantDate1 = parseDate(unit("1993-11-01"))
-        val constantDate2 = parseDate(unit("1993-08-01"))
+      GenericEngine.runQuery({
+        val constantDate1 = GenericEngine.parseDate(unit("1993-11-01"))
+        val constantDate2 = GenericEngine.parseDate(unit("1993-08-01"))
         val scanOrders = __newSelectOp(__newScanOp(ordersTable))(__lambda { x => x.O_ORDERDATE < constantDate1 && x.O_ORDERDATE >= constantDate2 })
         val scanLineitem = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_COMMITDATE < x.L_RECEIPTDATE })
         val hj = __newLeftHashSemiJoinOp(scanOrders, scanLineitem)(__lambda { (x, y) => x.O_ORDERKEY __== y.L_ORDERKEY })(__lambda { x => x.O_ORDERKEY })(__lambda { x => x.L_ORDERKEY })
@@ -232,10 +232,10 @@ class LiftedQueries {
       val supplierTable = Loader.loadSupplier()
       val regionTable = Loader.loadRegion()
       val ordersTable = Loader.loadOrders()
-      runQuery({
-        val constantDate1 = parseDate(unit("1996-01-01"))
-        val constantDate2 = parseDate(unit("1997-01-01"))
-        val scanRegion = __newSelectOp(__newScanOp(regionTable))(__lambda { x => infix_==(x.R_NAME, parseString(unit("ASIA"))) })
+      GenericEngine.runQuery({
+        val constantDate1 = GenericEngine.parseDate(unit("1996-01-01"))
+        val constantDate2 = GenericEngine.parseDate(unit("1997-01-01"))
+        val scanRegion = __newSelectOp(__newScanOp(regionTable))(__lambda { x => infix_==(x.R_NAME, GenericEngine.parseString(unit("ASIA"))) })
         val scanNation = __newScanOp(nationTable)
         val scanSupplier = __newScanOp(supplierTable)
         val scanCustomer = __newScanOp(customerTable)
@@ -267,9 +267,9 @@ class LiftedQueries {
 
     def q6 = {
       val lineitemTable = Loader.loadLineitem()
-      runQuery({
-        val constantDate1 = parseDate(unit("1996-01-01"))
-        val constantDate2 = parseDate(unit("1997-01-01"))
+      GenericEngine.runQuery({
+        val constantDate1 = GenericEngine.parseDate(unit("1996-01-01"))
+        val constantDate2 = GenericEngine.parseDate(unit("1997-01-01"))
         val lineitemScan = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_SHIPDATE >= constantDate1 && x.L_SHIPDATE < constantDate2 && x.L_DISCOUNT >= unit(0.08) && x.L_DISCOUNT <= unit(0.1) && x.L_QUANTITY < unit(24) })
         val aggOp = __newAggOp(lineitemScan, unit(1))(__lambda { x => unit("Total") })(__lambda { (t, currAgg) => { (t.L_EXTENDEDPRICE * t.L_DISCOUNT) + currAgg } })
         val po = __newPrintOp2(aggOp)(__lambda { kv => printf(unit("%.4f\n"), kv.aggs(unit(0))) })
