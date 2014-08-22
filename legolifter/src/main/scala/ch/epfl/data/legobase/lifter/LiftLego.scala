@@ -107,7 +107,7 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowReco
   with LoaderComponent
   with K2DBScannerComponent with IntegerComponent 
   with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent 
-  with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase
+  with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase with QueryComponent
 """)
     }
   }

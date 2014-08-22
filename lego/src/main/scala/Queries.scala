@@ -5,6 +5,25 @@ import queryengine._
 import queryengine.volcano._
 import ch.epfl.data.pardis.shallow.{ CaseClassRecord }
 import ch.epfl.data.pardis.shallow.{ AbstractRecord, DynamicCompositeRecord }
+import ch.epfl.data.autolifter.annotations.{ deep, metadeep, dontLift }
+
+// This is a temporary solution until we introduce dependency management and adopt policies. Not a priority now!
+@metadeep(
+  "legocompiler/src/main/scala/ch/epfl/data/legobase/deep",
+  """
+package ch.epfl.data
+package legobase
+package deep
+
+import scalalib._
+import pardis.ir._
+import pardis.ir.pardisTypeImplicits._
+import pardis.deep.scalalib._
+""",
+  """QueryComponent""")
+class MetaInfo
+
+@deep trait Queries
 
 object Queries {
 
@@ -13,37 +32,37 @@ object Queries {
 
   def Q1(numRuns: Int) {
     val lineitemTable = loadLineitem()
-    for (i <- 0 until numRuns) {
-      runQuery {
-        val constantDate: Long = parseDate("1998-08-11")
-        val lineitemScan = new SelectOp(new ScanOp(lineitemTable))(x => x.L_SHIPDATE <= constantDate)
-        val aggOp = new AggOp(lineitemScan, 9)(x => new GroupByClass(
-          x.L_RETURNFLAG, x.L_LINESTATUS))((t, currAgg) => { t.L_DISCOUNT + currAgg },
-          (t, currAgg) => { t.L_QUANTITY + currAgg },
-          (t, currAgg) => { t.L_EXTENDEDPRICE + currAgg },
-          (t, currAgg) => { (t.L_EXTENDEDPRICE * (1.0 - t.L_DISCOUNT)) + currAgg },
-          (t, currAgg) => { (t.L_EXTENDEDPRICE * (1.0 - t.L_DISCOUNT) * (1.0 + t.L_TAX)) + currAgg },
-          (t, currAgg) => { currAgg + 1 })
-        val mapOp = new MapOp(aggOp)(kv => kv.aggs(6) = kv.aggs(1) / kv.aggs(5), // AVG(L_QUANTITY)
-          kv => kv.aggs(7) = kv.aggs(2) / kv.aggs(5), // AVG(L_EXTENDEDPRICE)
-          kv => kv.aggs(8) = kv.aggs(0) / kv.aggs(5)) // AVG(L_DISCOUNT)
-        val sortOp = new SortOp(mapOp)((kv1, kv2) => {
-          var res = kv1.key.L_RETURNFLAG - kv2.key.L_RETURNFLAG
-          if (res == 0)
-            res = kv1.key.L_LINESTATUS - kv2.key.L_LINESTATUS
-          res
-        })
-        val po = new PrintOp(sortOp)(kv => printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n",
-          kv.key.L_RETURNFLAG, kv.key.L_LINESTATUS, kv.aggs(1), kv.aggs(2), kv.aggs(3), kv.aggs(4),
-          kv.aggs(6), kv.aggs(7), kv.aggs(8), kv.aggs(5)))
-        po.open
-        po.next
-        printf("(%d rows)\n", po.numRows)
-        ()
-      }
+    // for (i <- 0 until numRuns) {
+    runQuery {
+      val constantDate: Long = parseDate("1998-08-11")
+      val lineitemScan = new SelectOp(new ScanOp(lineitemTable))(x => x.L_SHIPDATE <= constantDate)
+      val aggOp = new AggOp(lineitemScan, 9)(x => new GroupByClass(
+        x.L_RETURNFLAG, x.L_LINESTATUS))((t, currAgg) => { t.L_DISCOUNT + currAgg },
+        (t, currAgg) => { t.L_QUANTITY + currAgg },
+        (t, currAgg) => { t.L_EXTENDEDPRICE + currAgg },
+        (t, currAgg) => { (t.L_EXTENDEDPRICE * (1.0 - t.L_DISCOUNT)) + currAgg },
+        (t, currAgg) => { (t.L_EXTENDEDPRICE * (1.0 - t.L_DISCOUNT) * (1.0 + t.L_TAX)) + currAgg },
+        (t, currAgg) => { currAgg + 1 })
+      val mapOp = new MapOp(aggOp)(kv => kv.aggs(6) = kv.aggs(1) / kv.aggs(5), // AVG(L_QUANTITY)
+        kv => kv.aggs(7) = kv.aggs(2) / kv.aggs(5), // AVG(L_EXTENDEDPRICE)
+        kv => kv.aggs(8) = kv.aggs(0) / kv.aggs(5)) // AVG(L_DISCOUNT)
+      val sortOp = new SortOp(mapOp)((kv1, kv2) => {
+        var res = kv1.key.L_RETURNFLAG - kv2.key.L_RETURNFLAG
+        if (res == 0)
+          res = kv1.key.L_LINESTATUS - kv2.key.L_LINESTATUS
+        res
+      })
+      val po = new PrintOp(sortOp)(kv => printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n",
+        kv.key.L_RETURNFLAG, kv.key.L_LINESTATUS, kv.aggs(1), kv.aggs(2), kv.aggs(3), kv.aggs(4),
+        kv.aggs(6), kv.aggs(7), kv.aggs(8), kv.aggs(5)), () => true)
+      po.open
+      po.next
+      printf("(%d rows)\n", po.numRows)
+      ()
     }
+    // }
   }
-
+  @dontLift
   def Q2(numRuns: Int) {
     import queryengine._
     val partTable = loadPart()
@@ -90,7 +109,7 @@ object Queries {
       }
     }
   }
-
+  @dontLift
   def Q3(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
@@ -130,7 +149,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q4(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
@@ -147,7 +166,7 @@ object Queries {
           val k1 = kv1.key; val k2 = kv2.key
           k1 diff k2
         })
-        val po = new PrintOp(sortOp)(kv => printf("%s|%.0f\n", kv.key.string, kv.aggs(0)))
+        val po = new PrintOp(sortOp)(kv => printf("%s|%.0f\n", kv.key.string, kv.aggs(0)), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -155,7 +174,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q5(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val nationTable = loadNation()
@@ -185,7 +204,7 @@ object Queries {
           else if (x.aggs(0) > y.aggs(0)) -1
           else 0
         })
-        val po = new PrintOp(sortOp)(kv => printf("%s|%.4f\n", kv.key.string, kv.aggs(0)))
+        val po = new PrintOp(sortOp)(kv => printf("%s|%.4f\n", kv.key.string, kv.aggs(0)), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -193,7 +212,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q6(numRuns: Int) {
     val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
@@ -202,7 +221,7 @@ object Queries {
         val constantDate2: Long = parseDate("1997-01-01")
         val lineitemScan = new SelectOp(new ScanOp(lineitemTable))(x => x.L_SHIPDATE >= constantDate1 && x.L_SHIPDATE < constantDate2 && x.L_DISCOUNT >= 0.08 && x.L_DISCOUNT <= 0.1 && x.L_QUANTITY < 24)
         val aggOp = new AggOp(lineitemScan, 1)(x => "Total")((t, currAgg) => { (t.L_EXTENDEDPRICE * t.L_DISCOUNT) + currAgg })
-        val po = new PrintOp(aggOp)(kv => printf("%.4f\n", kv.aggs(0)))
+        val po = new PrintOp(aggOp)(kv => printf("%.4f\n", kv.aggs(0)), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -210,6 +229,7 @@ object Queries {
       })
     }
   }
+  @dontLift
   def Q7(numRuns: Int) {
     val nationTable = loadNation()
     val ordersTable = loadOrders()
@@ -249,7 +269,7 @@ object Queries {
             }
           }
         })
-        val po = new PrintOp(so)(kv => printf("%s|%s|%d|%.4f\n", kv.key.SUPP_NATION.string, kv.key.CUST_NATION.string, kv.key.L_YEAR, kv.aggs(0)))
+        val po = new PrintOp(so)(kv => printf("%s|%s|%d|%.4f\n", kv.key.SUPP_NATION.string, kv.key.CUST_NATION.string, kv.key.L_YEAR, kv.aggs(0)), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -257,7 +277,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q8(numRuns: Int) {
     val nationTable = loadNation()
     val regionTable = loadRegion()
@@ -300,7 +320,7 @@ object Queries {
           else if (x.key > y.key) 1
           else 0
         })
-        val po = new PrintOp(sortOp)(kv => printf("%d|%.5f\n", kv.key, kv.aggs(2)))
+        val po = new PrintOp(sortOp)(kv => printf("%d|%.5f\n", kv.key, kv.aggs(2)), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -308,7 +328,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q9(numRuns: Int) {
     val partTable = loadPart()
     val nationTable = loadNation()
@@ -341,7 +361,7 @@ object Queries {
             else 0
           } else r
         })
-        val po = new PrintOp(sortOp)(kv => printf("%s|%d|%.4f\n", kv.key.NATION.string, kv.key.O_YEAR, kv.aggs(0)))
+        val po = new PrintOp(sortOp)(kv => printf("%s|%d|%.4f\n", kv.key.NATION.string, kv.key.O_YEAR, kv.aggs(0)), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -349,7 +369,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q10(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val nationTable = loadNation()
@@ -390,7 +410,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q11(numRuns: Int) {
     val partsuppTable = loadPartsupp()
     val supplierTable = loadSupplier()
@@ -419,7 +439,7 @@ object Queries {
           else if (x.wnd < y.wnd) 1
           else 0
         })
-        val po = new PrintOp(sortOp)(kv => printf("%d|%.2f\n", kv.key, kv.wnd))
+        val po = new PrintOp(sortOp)(kv => printf("%d|%.2f\n", kv.key, kv.wnd), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -427,7 +447,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q12(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
@@ -448,7 +468,7 @@ object Queries {
 
           (t, currAgg) => { if (t.O_ORDERPRIORITY[LBString] =!= URGENT && t.O_ORDERPRIORITY[LBString] =!= HIGH) currAgg + 1 else currAgg })
         val sortOp = new SortOp(aggOp)((x, y) => x.key diff y.key)
-        val po = new PrintOp(sortOp)(kv => printf("%s|%.0f|%.0f\n", kv.key.string, kv.aggs(0), kv.aggs(1)))
+        val po = new PrintOp(sortOp)(kv => printf("%s|%.0f|%.0f\n", kv.key.string, kv.aggs(0), kv.aggs(1)), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -456,7 +476,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q13(numRuns: Int) {
     val customerTable = loadCustomer()
     val ordersTable = loadOrders()
@@ -484,7 +504,7 @@ object Queries {
             else 0
           }
         })
-        val po = new PrintOp(sortOp)(kv => printf("%.0f|%.0f\n", kv.key, kv.aggs(0)))
+        val po = new PrintOp(sortOp)(kv => printf("%.0f|%.0f\n", kv.key, kv.aggs(0)), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -492,7 +512,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q14(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val partTable = loadPart()
@@ -512,7 +532,7 @@ object Queries {
           },
           (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
         val mapOp = new MapOp(aggOp)(kv => kv.aggs(2) = (kv.aggs(0) * 100) / kv.aggs(1))
-        val po = new PrintOp(mapOp)(kv => printf("%.4f\n", kv.aggs(2)))
+        val po = new PrintOp(mapOp)(kv => printf("%.4f\n", kv.aggs(2)), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -520,7 +540,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q15(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val supplierTable = loadSupplier()
@@ -543,7 +563,7 @@ object Queries {
         // Calcuate result
         val scanSupplier = new ScanOp(supplierTable)
         val jo = new HashJoinOp(scanSupplier, vo)((x, y) => x.S_SUPPKEY == y.key && y.aggs(0) == maxRevenue)(x => x.S_SUPPKEY)(x => x.key)
-        val po = new PrintOp(jo)(kv => printf("%d|%s|%s|%s|%.4f\n", kv.S_SUPPKEY, kv.S_NAME[LBString].string, kv.S_ADDRESS[LBString].string, kv.S_PHONE[LBString].string, kv.getField("aggs").get.asInstanceOf[Array[Double]](0)))
+        val po = new PrintOp(jo)(kv => printf("%d|%s|%s|%s|%.4f\n", kv.S_SUPPKEY, kv.S_NAME[LBString].string, kv.S_ADDRESS[LBString].string, kv.S_PHONE[LBString].string, kv.getField("aggs").get.asInstanceOf[Array[Double]](0)), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -551,7 +571,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q16(numRuns: Int) {
     val supplierTable = loadSupplier()
     val partTable = loadPart()
@@ -589,7 +609,7 @@ object Queries {
             res
           }
         })
-        val po = new PrintOp(sortOp)(x => printf("%s|%s|%d|%.0f\n", x.key.P_BRAND.string, x.key.P_TYPE.string, x.key.P_SIZE, x.aggs(0)))
+        val po = new PrintOp(sortOp)(x => printf("%s|%s|%d|%.0f\n", x.key.P_BRAND.string, x.key.P_TYPE.string, x.key.P_SIZE, x.aggs(0)), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -597,7 +617,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q17(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val partTable = loadPart()
@@ -618,7 +638,7 @@ object Queries {
           }) / 7.0
         })
         val aggOp = new AggOp(wo, 1)(x => "Total")((t, currAgg) => currAgg + t.wnd)
-        val po = new PrintOp(aggOp)(kv => printf("%.6f\n", kv.aggs(0)))
+        val po = new PrintOp(aggOp)(kv => printf("%.6f\n", kv.aggs(0)), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -628,7 +648,7 @@ object Queries {
   }
 
   // Danger, Will Robinson!: Query takes a long time to complete in Scala (but we 
-  // knew that already
+  @dontLift // knew that already
   def Q18(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
@@ -672,7 +692,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q19(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val partTable = loadPart()
@@ -717,7 +737,7 @@ object Queries {
             x.L_QUANTITY[Double] >= 26 && x.L_QUANTITY[Double] <= 36 && x.P_SIZE[Int] <= 15)
         val aggOp = new AggOp(jo, 1)(x => "Total")(
           (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
-        val po = new PrintOp(aggOp)(kv => printf("%.4f\n", kv.aggs(0)))
+        val po = new PrintOp(aggOp)(kv => printf("%.4f\n", kv.aggs(0)), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -725,7 +745,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q20(numRuns: Int) {
     val partTable = loadPart()
     val nationTable = loadNation()
@@ -753,7 +773,7 @@ object Queries {
           // TODO: Possible bug here in ArrayByteOps. Diff does not work
           (x.S_NAME[LBString] zip y.S_NAME[LBString]).foldLeft(0)((res, e) => { if (res == 0) e._1.asInstanceOf[Byte] - e._2.asInstanceOf[Byte] else res })
         })
-        val po = new PrintOp(sortOp)(kv => printf("%s|%s\n", kv.S_NAME[LBString].string, kv.S_ADDRESS[LBString].string))
+        val po = new PrintOp(sortOp)(kv => printf("%s|%s\n", kv.S_NAME[LBString].string, kv.S_ADDRESS[LBString].string), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -761,7 +781,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q21(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val supplierTable = loadSupplier()
@@ -790,7 +810,7 @@ object Queries {
         })
         var i = 0
         val po = new PrintOp(sortOp)(kv => {
-          printf("%s|%.0f\n", kv.key.string, kv.aggs(0))
+          printf("%s|%.0f\n", kv.key.string, kv.aggs(0), () => true)
           i += 1
         }, () => i < 100)
         po.open
@@ -800,7 +820,7 @@ object Queries {
       })
     }
   }
-
+  @dontLift
   def Q22(numRuns: Int) {
     val customerTable = loadCustomer()
     val ordersTable = loadOrders()
@@ -844,7 +864,7 @@ object Queries {
           if (res == 0) res = x.key(1) - y.key(1)
           res
         })
-        val po = new PrintOp(sortOp)(kv => printf("%s|%.0f|%.2f\n", kv.key.string, kv.aggs(1), kv.aggs(0)))
+        val po = new PrintOp(sortOp)(kv => printf("%s|%.0f|%.2f\n", kv.key.string, kv.aggs(1), kv.aggs(0)), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)

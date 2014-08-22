@@ -9,7 +9,7 @@ import pardis.shallow.AbstractRecord
 import pardis.shallow.CaseClassRecord
 import pardis.ir.pardisTypeImplicits._
 
-trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE { this: DeepDSL =>
+trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE with RichIntOps { this: DeepDSL =>
   /* TODO These methods should be lifted from scala.Predef */
   case class Println(x: Rep[Any]) extends FunctionDef[Unit](None, "println", List(List(x))) {
     override def curriedConstructor = (copy _)
@@ -81,6 +81,8 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   case class AGGRecordNew2[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit val typeB: TypeRep[B]) extends ConstructorDef[AGGRecord[B]](List(), "AGGRecord", List(List(key, aggs))) {
     override def curriedConstructor = (copy[B] _).curried
   }
+
+  def Character2char(c: Rep[Character]): Rep[Character] = c
 }
 
 // TODO should be generated automatically
@@ -140,4 +142,20 @@ trait IntPE extends pardis.deep.scalalib.IntOps { this: DeepDSL =>
     override def curriedConstructor = (copy _).curried
   }
   override def int$plus5(self: Rep[Int], x: Rep[Int]): Rep[Int] = Int$plus5PE(self, x)
+}
+
+trait RichIntOps { this: DeepDSL =>
+  // def intWrapper(i: Rep[Int]): Rep[RichInt] = i
+
+  // implicit class RichIntOps(self: Rep[RichInt]) {
+  //   def until(to: Rep[Int]): Rep[Int] = richIntUntil(self, to)
+  // }
+
+  // def richIntUntil(self: Rep[RichInt], to: Rep[Int]) = RichIntUntil(self, to)
+
+  // case class RichIntUntil(self: Rep[RichInt], to: Rep[Int]) extends FunctionDef[RichInt](Some(self), "until", List(List(to))) {
+  //   override def curriedConstructor = (copy _).curried
+  // }
+
+  // type RichInt = Int
 }

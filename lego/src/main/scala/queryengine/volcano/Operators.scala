@@ -140,7 +140,7 @@ class MetaInfo
   def reset { parent.reset }
 }
 
-@deep class PrintOp[A](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean = () => true) extends Operator[A] {
+@deep class PrintOp[A](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean) extends Operator[A] {
   var numRows = 0
   def open() = { parent.open; }
   def next() = {
