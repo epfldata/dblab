@@ -35,6 +35,7 @@ object Main extends LegoRunner {
     case "Q1_C" => query1_C()
     case "Q2"   => query2()
     case "Q3"   => query3()
+    case "Q3_C" => query3_C()
     case "Q4"   => query4()
     case "Q5"   => query5()
     case "Q6"   => query6()
@@ -56,16 +57,36 @@ object Main extends LegoRunner {
     val dceBlock = dce.optimize(operatorlessBlock)
 
     // Convert Scala constructs to C
-    val scalaToC = new ScalaConstructsToCTranformer(lq.context)
-    val transformedBlock = scalaToC.transformBlock(dceBlock)
-    val scalaToC2 = new ScalaCollectionsToGLibTransfomer(lq.context)
-    val transformedBlock2 = scalaToC2.optimize(transformedBlock)
+    val cBlock = CTransformersPipeline(lq.context, dceBlock)
 
     val ir2Program = new { val IR = lq.context } with IRToProgram {}
 
-    System.out.println(transformedBlock2)
+    val finalProgram = ir2Program.createProgram(cBlock)
 
-    val finalProgram = ir2Program.createProgram(transformedBlock2)
+    val LegoGenerator = new LegoCGenerator(2, true)
+    LegoGenerator.apply(finalProgram)
+  }
+
+  def query3_C() {
+    val lq = new LiftedQueries()
+    val block = lq.Q3_C
+
+    // Lowering (e.g. case classes to records)
+    val lowering = new LBLowering(lq.context, lq.context)
+    val loweredBlock = lowering.lower(block)
+    val parameterPromotion = new LBParameterPromotion(lq.context)
+    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
+
+    // DCE
+    val dce = new DCE(lq.context)
+    val dceBlock = dce.optimize(operatorlessBlock)
+
+    // Convert Scala constructs to C
+    val cBlock = CTransformersPipeline(lq.context, dceBlock)
+
+    val ir2Program = new { val IR = lq.context } with IRToProgram {}
+
+    val finalProgram = ir2Program.createProgram(cBlock)
 
     val LegoGenerator = new LegoCGenerator(2, true)
     LegoGenerator.apply(finalProgram)
@@ -86,16 +107,11 @@ object Main extends LegoRunner {
     val dceBlock = dce.optimize(operatorlessBlock)
 
     // Convert Scala constructs to C
-    val scalaToC = new ScalaConstructsToCTranformer(lq.context)
-    val transformedBlock = scalaToC.transformBlock(dceBlock)
-    val scalaToC2 = new ScalaCollectionsToGLibTransfomer(lq.context)
-    val transformedBlock2 = scalaToC2.optimize(transformedBlock)
+    val cBlock = CTransformersPipeline(lq.context, dceBlock)
 
     val ir2Program = new { val IR = lq.context } with IRToProgram {}
 
-    System.out.println(transformedBlock2)
-
-    val finalProgram = ir2Program.createProgram(transformedBlock2)
+    val finalProgram = ir2Program.createProgram(cBlock)
 
     val LegoGenerator = new LegoCGenerator(2, true)
     LegoGenerator.apply(finalProgram)

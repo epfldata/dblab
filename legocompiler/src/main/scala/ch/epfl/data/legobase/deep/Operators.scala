@@ -1107,7 +1107,8 @@ trait HashJoinOpImplementations { self: DeepDSL =>
         __ifThenElse(self.hm.contains(k), {
           self.tmpBuffer_$eq(self.hm.apply(k));
           self.tmpCount_$eq(self.tmpBuffer.indexWhere(__lambda(((e: this.Rep[A]) => __app(self.joinCond).apply(e, t)))));
-          infix_$bang$eq(self.tmpCount, unit(-1))
+          infix_$bang$eq(self.tmpCount, unit(-1));
+          unit(true)
         }, unit(false))
       })))), unit(()));
       __ifThenElse(infix_$bang$eq(self.tmpLine, self.NullDynamicRecord[B]).$amp$amp(infix_$bang$eq(self.tmpCount, unit(-1))), {
