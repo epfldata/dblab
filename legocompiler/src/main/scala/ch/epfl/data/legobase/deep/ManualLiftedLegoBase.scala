@@ -26,14 +26,6 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   // }
   // def printf(text: Rep[String], xs: Rep[Any]*): Rep[Unit] = Printf(text, __liftSeq(xs.toSeq))
 
-  // FIXME handling default values (which needs macro or a compiler plugin)
-  def __newPrintOp2[A](parent: Rep[Operator[A]])(printFunc: Rep[(A => Unit)], limit: Rep[(() => Boolean)] = {
-    __lambda(() => unit(true))
-  })(implicit evidence$9: Manifest[A], typeA: TypeRep[A]): Rep[PrintOp[A]] = {
-    __newPrintOp(parent)(printFunc, limit)
-  }
-
-  // def __newHashJoinOp2[A <: AbstractRecord, B <: AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String] = unit(""), rightAlias: Rep[String] = unit(""))(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit evidence$10: Manifest[A], evidence$11: Manifest[B], evidence$12: Manifest[C], typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = __newHashJoinOp[A, B, C](leftParent, rightParent, leftAlias, rightAlias)(joinCond)(leftHash)(rightHash)
   override def hashJoinOpNew2[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = hashJoinOpNew1[A, B, C](leftParent, rightParent, unit(""), unit(""), joinCond, leftHash, rightHash)
 
   // TODO scala.Char class should be lifted instead of the java one
