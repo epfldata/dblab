@@ -163,9 +163,9 @@ class LiftedQueries {
         val constantDate = parseDate(unit("1995-03-04"))
         val scanCustomer = __newSelectOp(__newScanOp(customerTable))(__lambda { x => x.C_MKTSEGMENT __== parseString(unit("HOUSEHOLD")) })
         val scanOrders = __newSelectOp(__newScanOp(ordersTable))(__lambda { x => x.O_ORDERDATE < constantDate })
-        /*val scanLineitem = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_SHIPDATE > constantDate })*/
+        val scanLineitem = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_SHIPDATE > constantDate })
         val jo1 = __newHashJoinOp2(scanCustomer, scanOrders)(__lambda { (x, y) => x.C_CUSTKEY __== y.O_CUSTKEY })(__lambda { x => x.C_CUSTKEY })(__lambda { x => x.O_CUSTKEY })
-        /*        val jo2 = __newHashJoinOp2(jo1, scanLineitem)(__lambda { (x, y) => x.f.O_ORDERKEY[Int] __== y.L_ORDERKEY })(__lambda { x => x.f.O_ORDERKEY[Int] })(__lambda { x => x.L_ORDERKEY })
+        val jo2 = __newHashJoinOp2(jo1, scanLineitem)(__lambda { (x, y) => x.f.O_ORDERKEY[Int] __== y.L_ORDERKEY })(__lambda { x => x.f.O_ORDERKEY[Int] })(__lambda { x => x.L_ORDERKEY })
         val aggOp = __newAggOp(jo2, 1)(__lambda { x => __newQ3GRPRecord(x.f.L_ORDERKEY[Int], x.f.O_ORDERDATE[Long], x.f.O_SHIPPRIORITY[Int]) })(__lambda { (t, currAgg) => { currAgg + (t.f.L_EXTENDEDPRICE[Double] * (unit(1.0) - t.f.L_DISCOUNT[Double])) } })
         val sortOp = __newSortOp(aggOp)(__lambda { (kv1, kv2) =>
           {
@@ -188,11 +188,10 @@ class LiftedQueries {
         var i = __newVar(unit(0))
         val po = __newPrintOp2(sortOp)(__lambda { kv =>
           {
-            printf(unit("%d|%.4f|%s|%d\n"), kv.key.L_ORDERKEY, kv.aggs(unit(0)), dateToString(kv.key.O_ORDERDATE), kv.key.O_SHIPPRIORITY)
+            printf(unit("%d|%.4f|%ld|%d\n"), kv.key.L_ORDERKEY, kv.aggs(unit(0)), kv.key.O_ORDERDATE, kv.key.O_SHIPPRIORITY)
             __assign(i, readVar(i) + unit(1))
           }
-        }, __lambda { () => readVar(i) < unit(10) })*/
-        val po = __newPrintOp2(jo1)(__lambda { kv => printf(unit("RECORD FOUND\n")) })
+        }, __lambda { () => readVar(i) < unit(10) })
         po.open
         po.next
         printf(unit("(%d rows)\n"), po.numRows)

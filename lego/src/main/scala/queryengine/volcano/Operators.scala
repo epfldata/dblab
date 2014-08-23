@@ -173,6 +173,7 @@ class MetaInfo
       }
     }
   }
+
   def next() = {
     if (tmpCount != -1) {
       while (tmpCount < tmpBuffer.size && !joinCond(tmpBuffer(tmpCount), tmpLine)) tmpCount += 1
@@ -184,7 +185,15 @@ class MetaInfo
           val k = rightHash(t)
           if (hm.contains(k)) {
             tmpBuffer = hm(k)
-            tmpCount = tmpBuffer.indexWhere(e => joinCond(e, t))
+            //tmpCount = tmpBuffer.indexWhere(e => joinCond(e,t))
+            var i = 0
+            var found = false
+            while (!found && i < tmpBuffer.size) {
+              if (joinCond(tmpBuffer(i), t)) found = true
+              else i += 1
+            }
+            tmpCount = if (i == tmpBuffer.size) -1 else i
+
             tmpCount != -1
           } else false
         }

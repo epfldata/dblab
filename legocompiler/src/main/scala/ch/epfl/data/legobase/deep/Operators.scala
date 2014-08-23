@@ -1106,7 +1106,14 @@ trait HashJoinOpImplementations { self: DeepDSL =>
         val k: this.Rep[C] = __app(self.rightHash).apply(t);
         __ifThenElse(self.hm.contains(k), {
           self.tmpBuffer_$eq(self.hm.apply(k));
-          self.tmpCount_$eq(self.tmpBuffer.indexWhere(__lambda(((e: this.Rep[A]) => __app(self.joinCond).apply(e, t)))));
+          //self.tmpCount_$eq(self.tmpBuffer.indexWhere(__lambda(((e: this.Rep[A]) => __app(self.joinCond).apply(e, t)))));
+          var i: this.Var[Int] = __newVar(unit(0));
+          var found: this.Var[Boolean] = __newVar(unit(false));
+          __whileDo(infix_$eq$eq(readVar(found), unit(false)).$amp$amp(readVar(i).$less(self.tmpBuffer.size)), {
+            __ifThenElse(__app(self.joinCond).apply(self.tmpBuffer.apply(i), t), __assign(found, unit(true)), __assign(i, readVar(i).$plus(unit(1))))
+          })
+          self.tmpCount_$eq(__ifThenElse(infix_$eq$eq(i, self.tmpBuffer.size), -1, i))
+
           infix_$bang$eq(self.tmpCount, unit(-1));
           unit(true)
         }, unit(false))

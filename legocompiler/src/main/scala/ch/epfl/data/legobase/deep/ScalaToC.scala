@@ -35,10 +35,10 @@ object CTransformersPipeline {
     val b1 = new ScalaScannerToCFileTransformer(context).transformBlock(b0)
     val b2 = new ScalaConstructsToCTranformer(context).transformBlock(b1)
     val b3 = new ScalaCollectionsToGLibTransfomer(context).optimize(b2)
-    System.out.println(b3)
+    //System.out.println(b3)
     // Also write to file to facilitate debugging
     val pw = new java.io.PrintWriter(new java.io.File("tree_debug_dump.txt"))
-    pw.println(b3.toString)
+    //pw.println(b3.toString)
     b3
   }
 }
@@ -226,8 +226,9 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       ReadVal(Constant((data(0) * 10000) + (data(1) * 100) + data(2)))
     case imtf @ PardisStructImmutableField(s, f) =>
       PardisStructImmutableField(s, f)(transformType(imtf.tp))
-    case ParseString(s) => ReadVal(s)
-    case _              => super.transformDef(node)
+    case ParseString(s)  => ReadVal(s)
+    case DateToString(d) => ReadVal(d)(LongType)
+    case _               => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
 }
 
@@ -344,11 +345,11 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       val x = sizeof()(abn.tp.typeArguments(0))
       NameAlias(None, "g_array_new", List(List(Constant(null), Constant(true), x)))(typeGArray(abn.tp.typeArguments(0)))
     case aba @ ArrayBufferApply(a, i) =>
-      NameAlias(None, "g_array_index", List(List(a, i)))(transformType(aba.tp))
+      if ((aba.tp.isPrimitive) || (aba.name.contains("DynamicCompositeRecord"))) NameAlias(None, "g_array_index", List(List(a, typeOf()(aba.tp), i)))(transformType(aba.tp))
+      else NameAlias(None, "g_array_index", List(List(a, typeOf()(typePointer(aba.tp)), i)))(transformType(aba.tp))
     case abap @ ArrayBufferAppend(a, e) =>
       NameAlias[Unit](None, "g_array_append_val", List(List(a, e)))
-    case ArrayBufferIndexWhere(a, f) => ReadVal(Constant(0))
-    case ArrayBufferSize(a)          => ReadVal(field(a, "len")(IntType))
+    case ArrayBufferSize(a) => ReadVal(field(a, "len")(IntType))
 
     /* Other operations */
     case imtf @ PardisStructImmutableField(s, f) =>
