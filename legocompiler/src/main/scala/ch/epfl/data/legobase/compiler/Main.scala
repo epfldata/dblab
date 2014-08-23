@@ -70,7 +70,7 @@ object Main extends LegoRunner {
     LegoGenerator.apply(finalProgram)
   }
 
-  def compileQuery(lq: LiftedQueries, block: pardis.ir.PardisBlock[Unit], number: Int, shallow: Boolean) {
+  def compileQuery(initContext: LoweringLegoBase, block: pardis.ir.PardisBlock[Unit], number: Int, shallow: Boolean) {
 
     // println(block)
     // LegoGenerator.apply(block)
@@ -78,7 +78,7 @@ object Main extends LegoRunner {
     val loweringContext = new LoweringLegoBase {}
 
     // val loweredBlock = lowering.transformProgram(block)
-    val lowering = new LBLowering(lq.context, loweringContext)
+    val lowering = new LBLowering(initContext, loweringContext)
     val loweredBlock = lowering.lower(block)
     // val loweredBlock = block
 
@@ -108,39 +108,51 @@ object Main extends LegoRunner {
   }
 
   def query1() {
-    val lq = new LiftedQueries()
-    val block = lq.Q1
-    compileQuery(lq, block, 1, false)
+    // val lq = new LiftedQueries()
+    // val block = lq.Q1
+    val context = new LoweringLegoBase {}
+    val block = context.reifyBlock { context.Queries.Q1(context.unit(1)) }
+    compileQuery(context, block, 1, false)
   }
 
   def query2() {
-    val lq = new LiftedQueries()
-    val block = lq.Q2
-    compileQuery(lq, block, 2, false)
+    // val lq = new LiftedQueries()
+    // val block = lq.Q2
+    val context = new LoweringLegoBase {}
+    val block = context.reifyBlock { context.Queries.Q2(context.unit(1)) }
+    compileQuery(context, block, 2, false)
   }
 
   def query3() {
-    val lq = new LiftedQueries()
-    val block = lq.Q3
-    compileQuery(lq, block, 3, false)
+    // val lq = new LiftedQueries()
+    // val block = lq.Q3
+    val context = new LoweringLegoBase {}
+    val block = context.reifyBlock { context.Queries.Q3(context.unit(1)) }
+    compileQuery(context, block, 3, false)
   }
 
   def query4() {
-    val lq = new LiftedQueries()
-    val block = lq.Q4
-    compileQuery(lq, block, 4, false)
+    // val lq = new LiftedQueries()
+    // val block = lq.Q4
+    val context = new LoweringLegoBase {}
+    val block = context.reifyBlock { context.Queries.Q4(context.unit(1)) }
+    compileQuery(context, block, 4, false)
   }
 
   def query5() {
-    val lq = new LiftedQueries()
-    val block = lq.Q5
-    compileQuery(lq, block, 5, false)
+    // val lq = new LiftedQueries()
+    // val block = lq.Q5
+    val context = new LoweringLegoBase {}
+    val block = context.reifyBlock { context.Queries.Q5(context.unit(1)) }
+    compileQuery(context, block, 5, false)
   }
 
   def query6() {
-    val lq = new LiftedQueries()
-    val block = lq.Q6
-    compileQuery(lq, block, 6, false)
+    // val lq = new LiftedQueries()
+    // val block = lq.Q6
+    val context = new LoweringLegoBase {}
+    val block = context.reifyBlock { context.Queries.Q6(context.unit(1)) }
+    compileQuery(context, block, 6, false)
   }
 
   // test1()

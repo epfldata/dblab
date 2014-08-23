@@ -106,13 +106,13 @@ class LiftedQueries {
         val tin = GenericEngine.parseString(unit("TIN"))
         val partsuppScan = __newScanOp(partsuppTable)
         val supplierScan = __newScanOp(supplierTable)
-        val jo1 = __newHashJoinOp2(supplierScan, partsuppScan)(__lambda { (x, y) => x.S_SUPPKEY __== y.PS_SUPPKEY })(__lambda { x => x.S_SUPPKEY })(__lambda { x => x.PS_SUPPKEY })
+        val jo1 = __newHashJoinOp(supplierScan, partsuppScan)(__lambda { (x, y) => x.S_SUPPKEY __== y.PS_SUPPKEY })(__lambda { x => x.S_SUPPKEY })(__lambda { x => x.PS_SUPPKEY })
         val nationScan = __newScanOp(nationTable)
-        val jo2 = __newHashJoinOp2(nationScan, jo1)(__lambda { (x, y) => x.N_NATIONKEY __== y.f.S_NATIONKEY[Int] })(__lambda { x => x.N_NATIONKEY })(__lambda { x => x.f.S_NATIONKEY[Int] })
+        val jo2 = __newHashJoinOp(nationScan, jo1)(__lambda { (x, y) => x.N_NATIONKEY __== y.f.S_NATIONKEY[Int] })(__lambda { x => x.N_NATIONKEY })(__lambda { x => x.f.S_NATIONKEY[Int] })
         val partScan = __newSelectOp(__newScanOp(partTable))(__lambda { x => (x.P_SIZE __== unit(43)) && x.P_TYPE.endsWith(tin) })
-        val jo3 = __newHashJoinOp2(partScan, jo2)(__lambda { (x, y) => x.P_PARTKEY __== y.f.PS_PARTKEY[Int] })(__lambda { x => x.P_PARTKEY })(__lambda { x => x.f.PS_PARTKEY[Int] })
+        val jo3 = __newHashJoinOp(partScan, jo2)(__lambda { (x, y) => x.P_PARTKEY __== y.f.PS_PARTKEY[Int] })(__lambda { x => x.P_PARTKEY })(__lambda { x => x.f.PS_PARTKEY[Int] })
         val regionScan = __newSelectOp(__newScanOp(regionTable))(__lambda { x => x.R_NAME === africa }) // for comparing equality of LBString we should use === instead of ==
-        val jo4 = __newHashJoinOp2(regionScan, jo3)(__lambda { (x, y) => x.R_REGIONKEY __== y.f.N_REGIONKEY[Int] })(__lambda { x => x.R_REGIONKEY })(__lambda { x => x.f.N_REGIONKEY[Int] })
+        val jo4 = __newHashJoinOp(regionScan, jo3)(__lambda { (x, y) => x.R_REGIONKEY __== y.f.N_REGIONKEY[Int] })(__lambda { x => x.R_REGIONKEY })(__lambda { x => x.f.N_REGIONKEY[Int] })
         val wo = __newWindowOp(jo4)(__lambda { x => x.f.P_PARTKEY[Int] })(__lambda { x => x.minBy(__lambda { y => y.f.PS_SUPPLYCOST[Double] }) })
         val so = __newSortOp(wo)(__lambda {
           (x, y) =>
@@ -160,8 +160,8 @@ class LiftedQueries {
         val scanCustomer = __newSelectOp(__newScanOp(customerTable))(__lambda { x => x.C_MKTSEGMENT __== GenericEngine.parseString(unit("HOUSEHOLD")) })
         val scanOrders = __newSelectOp(__newScanOp(ordersTable))(__lambda { x => x.O_ORDERDATE < constantDate })
         val scanLineitem = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_SHIPDATE > constantDate })
-        val jo1 = __newHashJoinOp2(scanCustomer, scanOrders)(__lambda { (x, y) => x.C_CUSTKEY __== y.O_CUSTKEY })(__lambda { x => x.C_CUSTKEY })(__lambda { x => x.O_CUSTKEY })
-        val jo2 = __newHashJoinOp2(jo1, scanLineitem)(__lambda { (x, y) => x.f.O_ORDERKEY[Int] __== y.L_ORDERKEY })(__lambda { x => x.f.O_ORDERKEY[Int] })(__lambda { x => x.L_ORDERKEY })
+        val jo1 = __newHashJoinOp(scanCustomer, scanOrders)(__lambda { (x, y) => x.C_CUSTKEY __== y.O_CUSTKEY })(__lambda { x => x.C_CUSTKEY })(__lambda { x => x.O_CUSTKEY })
+        val jo2 = __newHashJoinOp(jo1, scanLineitem)(__lambda { (x, y) => x.f.O_ORDERKEY[Int] __== y.L_ORDERKEY })(__lambda { x => x.f.O_ORDERKEY[Int] })(__lambda { x => x.L_ORDERKEY })
         val aggOp = __newAggOp(jo2, 1)(__lambda { x => __newQ3GRPRecord(x.f.L_ORDERKEY[Int], x.f.O_ORDERDATE[Long], x.f.O_SHIPPRIORITY[Int]) })(__lambda { (t, currAgg) => { currAgg + (t.f.L_EXTENDEDPRICE[Double] * (unit(1.0) - t.f.L_DISCOUNT[Double])) } })
         val sortOp = __newSortOp(aggOp)(__lambda { (kv1, kv2) =>
           {
@@ -241,11 +241,11 @@ class LiftedQueries {
         val scanCustomer = __newScanOp(customerTable)
         val scanLineitem = __newScanOp(lineitemTable)
         val scanOrders = __newSelectOp(__newScanOp(ordersTable))(__lambda { x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE < constantDate2 })
-        val jo1 = __newHashJoinOp2(scanRegion, scanNation)(__lambda { (x, y) => infix_==(x.R_REGIONKEY, y.N_REGIONKEY) })(__lambda { x => x.R_REGIONKEY })(__lambda { x => x.N_REGIONKEY })
-        val jo2 = __newHashJoinOp2(jo1, scanSupplier)(__lambda { (x, y) => infix_==(x.f.N_NATIONKEY[Int], y.S_NATIONKEY) })(__lambda { x => x.f.N_NATIONKEY[Int] })(__lambda { x => x.S_NATIONKEY })
-        val jo3 = __newHashJoinOp2(jo2, scanCustomer)(__lambda { (x, y) => infix_==(x.f.N_NATIONKEY[Int], y.C_NATIONKEY) })(__lambda { x => x.f.S_NATIONKEY[Int] })(__lambda { x => x.C_NATIONKEY })
-        val jo4 = __newHashJoinOp2(jo3, scanOrders)(__lambda { (x, y) => infix_==(x.f.C_CUSTKEY[Int], y.O_CUSTKEY) })(__lambda { x => x.f.C_CUSTKEY[Int] })(__lambda { x => x.O_CUSTKEY })
-        val jo5 = __newSelectOp(__newHashJoinOp2(jo4, scanLineitem)(__lambda { (x, y) => infix_==(x.f.O_ORDERKEY[Int], y.L_ORDERKEY) })(__lambda { x => x.f.O_ORDERKEY[Int] })(__lambda { x => x.L_ORDERKEY }))(__lambda { x => infix_==(x.f.S_SUPPKEY[Int], x.f.L_SUPPKEY[Int]) })
+        val jo1 = __newHashJoinOp(scanRegion, scanNation)(__lambda { (x, y) => infix_==(x.R_REGIONKEY, y.N_REGIONKEY) })(__lambda { x => x.R_REGIONKEY })(__lambda { x => x.N_REGIONKEY })
+        val jo2 = __newHashJoinOp(jo1, scanSupplier)(__lambda { (x, y) => infix_==(x.f.N_NATIONKEY[Int], y.S_NATIONKEY) })(__lambda { x => x.f.N_NATIONKEY[Int] })(__lambda { x => x.S_NATIONKEY })
+        val jo3 = __newHashJoinOp(jo2, scanCustomer)(__lambda { (x, y) => infix_==(x.f.N_NATIONKEY[Int], y.C_NATIONKEY) })(__lambda { x => x.f.S_NATIONKEY[Int] })(__lambda { x => x.C_NATIONKEY })
+        val jo4 = __newHashJoinOp(jo3, scanOrders)(__lambda { (x, y) => infix_==(x.f.C_CUSTKEY[Int], y.O_CUSTKEY) })(__lambda { x => x.f.C_CUSTKEY[Int] })(__lambda { x => x.O_CUSTKEY })
+        val jo5 = __newSelectOp(__newHashJoinOp(jo4, scanLineitem)(__lambda { (x, y) => infix_==(x.f.O_ORDERKEY[Int], y.L_ORDERKEY) })(__lambda { x => x.f.O_ORDERKEY[Int] })(__lambda { x => x.L_ORDERKEY }))(__lambda { x => infix_==(x.f.S_SUPPKEY[Int], x.f.L_SUPPKEY[Int]) })
         val aggOp = __newAggOp(jo5, unit(1))(__lambda { x => x.f.N_NAME[LBString] })(
           __lambda { (t, currAgg) => { currAgg + t.f.L_EXTENDEDPRICE[Double] * (unit(1.0) - t.f.L_DISCOUNT[Double]) } })
         val sortOp = __newSortOp(aggOp)(__lambda { (x, y) =>

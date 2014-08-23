@@ -56,7 +56,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       to.__newDef[SortOp[Any]](("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](apply(so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]]))(apply(maa)))(apply(maa))),
         ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(maa)))).asInstanceOf[to.Def[T]]
     }
-    case ho: HashJoinOpNew[_, _, _] => {
+    case ho: HashJoinOpNew1[_, _, _] => {
       val ma = ho.typeA
       val mb = ho.typeB
       val mc = ho.typeC
