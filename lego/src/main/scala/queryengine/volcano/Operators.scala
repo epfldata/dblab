@@ -252,7 +252,7 @@ class MetaInfo
 }
 
 @deep
-class NestedLoopsJoinOp[A <: AbstractRecord, B <: AbstractRecord](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
+class NestedLoopsJoinOp[A <: AbstractRecord, B <: AbstractRecord](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String, rightAlias: String)(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
   var leftTuple = NullDynamicRecord[A]
   var rightTuple = NullDynamicRecord[B]
 

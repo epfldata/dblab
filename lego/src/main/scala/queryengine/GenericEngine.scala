@@ -29,6 +29,10 @@ object GenericEngine {
       }
   }
 
+  def dateToYear(long: Long): Int = {
+    new java.util.Date(long).getYear + 1900
+  }
+
   private val simpleDateFormatter = new java.text.SimpleDateFormat("yyyy-MM-dd")
 
   def parseDate(x: String): Long = {

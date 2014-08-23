@@ -127,6 +127,219 @@ trait Q3GRPRecordImplementations { self: DeepDSL =>
 }
 trait Q3GRPRecordComponent extends Q3GRPRecordOps with Q3GRPRecordImplicits { self: DeepDSL => }
 
+trait Q7GRPRecordOps extends Base { this: DeepDSL =>
+  implicit class Q7GRPRecordRep(self: Rep[Q7GRPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q7GRPRecordGetField(self, key)
+    def L_YEAR: Rep[Long] = q7GRPRecord_Field_L_YEAR(self)
+    def CUST_NATION: Rep[OptimalString] = q7GRPRecord_Field_CUST_NATION(self)
+    def SUPP_NATION: Rep[OptimalString] = q7GRPRecord_Field_SUPP_NATION(self)
+  }
+  object Q7GRPRecord {
+
+  }
+  // constructors
+  def __newQ7GRPRecord(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Long]): Rep[Q7GRPRecord] = q7GRPRecordNew(SUPP_NATION, CUST_NATION, L_YEAR)
+  // case classes
+  case class Q7GRPRecordNew(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Long]) extends ConstructorDef[Q7GRPRecord](List(), "Q7GRPRecord", List(List(SUPP_NATION, CUST_NATION, L_YEAR))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q7GRPRecordGetField(self: Rep[Q7GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q7GRPRecord_Field_L_YEAR(self: Rep[Q7GRPRecord]) extends FieldDef[Long](self, "L_YEAR") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q7GRPRecord_Field_CUST_NATION(self: Rep[Q7GRPRecord]) extends FieldDef[OptimalString](self, "CUST_NATION") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q7GRPRecord_Field_SUPP_NATION(self: Rep[Q7GRPRecord]) extends FieldDef[OptimalString](self, "SUPP_NATION") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def q7GRPRecordNew(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Long]): Rep[Q7GRPRecord] = Q7GRPRecordNew(SUPP_NATION, CUST_NATION, L_YEAR)
+  def q7GRPRecordGetField(self: Rep[Q7GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q7GRPRecordGetField(self, key)
+  def q7GRPRecord_Field_L_YEAR(self: Rep[Q7GRPRecord]): Rep[Long] = Q7GRPRecord_Field_L_YEAR(self)
+  def q7GRPRecord_Field_CUST_NATION(self: Rep[Q7GRPRecord]): Rep[OptimalString] = Q7GRPRecord_Field_CUST_NATION(self)
+  def q7GRPRecord_Field_SUPP_NATION(self: Rep[Q7GRPRecord]): Rep[OptimalString] = Q7GRPRecord_Field_SUPP_NATION(self)
+  type Q7GRPRecord = ch.epfl.data.legobase.queryengine.Q7GRPRecord
+  case object Q7GRPRecordType extends TypeRep[Q7GRPRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q7GRPRecordType
+    val name = "Q7GRPRecord"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q7GRPRecord]
+  }
+  implicit val typeQ7GRPRecord = Q7GRPRecordType
+}
+trait Q7GRPRecordImplicits { this: Q7GRPRecordComponent =>
+  // Add implicit conversions here!
+}
+trait Q7GRPRecordImplementations { self: DeepDSL =>
+
+}
+trait Q7GRPRecordComponent extends Q7GRPRecordOps with Q7GRPRecordImplicits { self: DeepDSL => }
+
+trait Q9GRPRecordOps extends Base { this: DeepDSL =>
+  implicit class Q9GRPRecordRep(self: Rep[Q9GRPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q9GRPRecordGetField(self, key)
+    def O_YEAR: Rep[Long] = q9GRPRecord_Field_O_YEAR(self)
+    def NATION: Rep[OptimalString] = q9GRPRecord_Field_NATION(self)
+  }
+  object Q9GRPRecord {
+
+  }
+  // constructors
+  def __newQ9GRPRecord(NATION: Rep[OptimalString], O_YEAR: Rep[Long]): Rep[Q9GRPRecord] = q9GRPRecordNew(NATION, O_YEAR)
+  // case classes
+  case class Q9GRPRecordNew(NATION: Rep[OptimalString], O_YEAR: Rep[Long]) extends ConstructorDef[Q9GRPRecord](List(), "Q9GRPRecord", List(List(NATION, O_YEAR))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q9GRPRecordGetField(self: Rep[Q9GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q9GRPRecord_Field_O_YEAR(self: Rep[Q9GRPRecord]) extends FieldDef[Long](self, "O_YEAR") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q9GRPRecord_Field_NATION(self: Rep[Q9GRPRecord]) extends FieldDef[OptimalString](self, "NATION") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def q9GRPRecordNew(NATION: Rep[OptimalString], O_YEAR: Rep[Long]): Rep[Q9GRPRecord] = Q9GRPRecordNew(NATION, O_YEAR)
+  def q9GRPRecordGetField(self: Rep[Q9GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q9GRPRecordGetField(self, key)
+  def q9GRPRecord_Field_O_YEAR(self: Rep[Q9GRPRecord]): Rep[Long] = Q9GRPRecord_Field_O_YEAR(self)
+  def q9GRPRecord_Field_NATION(self: Rep[Q9GRPRecord]): Rep[OptimalString] = Q9GRPRecord_Field_NATION(self)
+  type Q9GRPRecord = ch.epfl.data.legobase.queryengine.Q9GRPRecord
+  case object Q9GRPRecordType extends TypeRep[Q9GRPRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q9GRPRecordType
+    val name = "Q9GRPRecord"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q9GRPRecord]
+  }
+  implicit val typeQ9GRPRecord = Q9GRPRecordType
+}
+trait Q9GRPRecordImplicits { this: Q9GRPRecordComponent =>
+  // Add implicit conversions here!
+}
+trait Q9GRPRecordImplementations { self: DeepDSL =>
+
+}
+trait Q9GRPRecordComponent extends Q9GRPRecordOps with Q9GRPRecordImplicits { self: DeepDSL => }
+
+trait Q10GRPRecordOps extends Base { this: DeepDSL =>
+  implicit class Q10GRPRecordRep(self: Rep[Q10GRPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q10GRPRecordGetField(self, key)
+    def C_COMMENT: Rep[OptimalString] = q10GRPRecord_Field_C_COMMENT(self)
+    def C_ADDRESS: Rep[OptimalString] = q10GRPRecord_Field_C_ADDRESS(self)
+    def N_NAME: Rep[OptimalString] = q10GRPRecord_Field_N_NAME(self)
+    def C_PHONE: Rep[OptimalString] = q10GRPRecord_Field_C_PHONE(self)
+    def C_ACCTBAL: Rep[Double] = q10GRPRecord_Field_C_ACCTBAL(self)
+    def C_NAME: Rep[OptimalString] = q10GRPRecord_Field_C_NAME(self)
+    def C_CUSTKEY: Rep[Int] = q10GRPRecord_Field_C_CUSTKEY(self)
+  }
+  object Q10GRPRecord {
+
+  }
+  // constructors
+  def __newQ10GRPRecord(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[Q10GRPRecord] = q10GRPRecordNew(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT)
+  // case classes
+  case class Q10GRPRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends ConstructorDef[Q10GRPRecord](List(), "Q10GRPRecord", List(List(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q10GRPRecordGetField(self: Rep[Q10GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q10GRPRecord_Field_C_COMMENT(self: Rep[Q10GRPRecord]) extends FieldDef[OptimalString](self, "C_COMMENT") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q10GRPRecord_Field_C_ADDRESS(self: Rep[Q10GRPRecord]) extends FieldDef[OptimalString](self, "C_ADDRESS") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q10GRPRecord_Field_N_NAME(self: Rep[Q10GRPRecord]) extends FieldDef[OptimalString](self, "N_NAME") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q10GRPRecord_Field_C_PHONE(self: Rep[Q10GRPRecord]) extends FieldDef[OptimalString](self, "C_PHONE") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q10GRPRecord_Field_C_ACCTBAL(self: Rep[Q10GRPRecord]) extends FieldDef[Double](self, "C_ACCTBAL") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q10GRPRecord_Field_C_NAME(self: Rep[Q10GRPRecord]) extends FieldDef[OptimalString](self, "C_NAME") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q10GRPRecord_Field_C_CUSTKEY(self: Rep[Q10GRPRecord]) extends FieldDef[Int](self, "C_CUSTKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def q10GRPRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[Q10GRPRecord] = Q10GRPRecordNew(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT)
+  def q10GRPRecordGetField(self: Rep[Q10GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q10GRPRecordGetField(self, key)
+  def q10GRPRecord_Field_C_COMMENT(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_COMMENT(self)
+  def q10GRPRecord_Field_C_ADDRESS(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_ADDRESS(self)
+  def q10GRPRecord_Field_N_NAME(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_N_NAME(self)
+  def q10GRPRecord_Field_C_PHONE(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_PHONE(self)
+  def q10GRPRecord_Field_C_ACCTBAL(self: Rep[Q10GRPRecord]): Rep[Double] = Q10GRPRecord_Field_C_ACCTBAL(self)
+  def q10GRPRecord_Field_C_NAME(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_NAME(self)
+  def q10GRPRecord_Field_C_CUSTKEY(self: Rep[Q10GRPRecord]): Rep[Int] = Q10GRPRecord_Field_C_CUSTKEY(self)
+  type Q10GRPRecord = ch.epfl.data.legobase.queryengine.Q10GRPRecord
+  case object Q10GRPRecordType extends TypeRep[Q10GRPRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q10GRPRecordType
+    val name = "Q10GRPRecord"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q10GRPRecord]
+  }
+  implicit val typeQ10GRPRecord = Q10GRPRecordType
+}
+trait Q10GRPRecordImplicits { this: Q10GRPRecordComponent =>
+  // Add implicit conversions here!
+}
+trait Q10GRPRecordImplementations { self: DeepDSL =>
+
+}
+trait Q10GRPRecordComponent extends Q10GRPRecordOps with Q10GRPRecordImplicits { self: DeepDSL => }
+
 trait AGGRecordOps extends Base { this: DeepDSL =>
   implicit class AGGRecordRep[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = aGGRecordGetField[B](self, key)(typeB)
@@ -190,6 +403,7 @@ trait GenericEngineOps extends Base { this: DeepDSL =>
   object GenericEngine {
     def runQuery[T](query: => Rep[T])(implicit typeT: TypeRep[T]): Rep[T] = genericEngineRunQueryObject[T](query)(typeT)
     def dateToString(long: Rep[Long]): Rep[String] = genericEngineDateToStringObject(long)
+    def dateToYear(long: Rep[Long]): Rep[Int] = genericEngineDateToYearObject(long)
     def parseDate(x: Rep[String]): Rep[Long] = genericEngineParseDateObject(x)
     def parseString(x: Rep[String]): Rep[OptimalString] = genericEngineParseStringObject(x)
   }
@@ -201,6 +415,10 @@ trait GenericEngineOps extends Base { this: DeepDSL =>
   }
 
   case class GenericEngineDateToStringObject(long: Rep[Long]) extends FunctionDef[String](None, "GenericEngine.dateToString", List(List(long))) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class GenericEngineDateToYearObject(long: Rep[Long]) extends FunctionDef[Int](None, "GenericEngine.dateToYear", List(List(long))) {
     override def curriedConstructor = (copy _)
   }
 
@@ -218,6 +436,7 @@ trait GenericEngineOps extends Base { this: DeepDSL =>
     GenericEngineRunQueryObject[T](queryOutput)
   }
   def genericEngineDateToStringObject(long: Rep[Long]): Rep[String] = GenericEngineDateToStringObject(long)
+  def genericEngineDateToYearObject(long: Rep[Long]): Rep[Int] = GenericEngineDateToYearObject(long)
   def genericEngineParseDateObject(x: Rep[String]): Rep[Long] = GenericEngineParseDateObject(x)
   def genericEngineParseStringObject(x: Rep[String]): Rep[OptimalString] = GenericEngineParseStringObject(x)
   type GenericEngine = ch.epfl.data.legobase.queryengine.GenericEngine
@@ -1442,6 +1661,9 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowReco
   with DoubleComponent with IntComponent with LongComponent with ArrayComponent
   with GroupByClassComponent
   with Q3GRPRecordComponent
+  with Q7GRPRecordComponent
+  with Q9GRPRecordComponent
+  with Q10GRPRecordComponent
   with GenericEngineComponent
   with LINEITEMRecordComponent
   with SUPPLIERRecordComponent

@@ -38,6 +38,7 @@ object Main extends LegoRunner {
     case "Q4"   => query4()
     case "Q5"   => query5()
     case "Q6"   => query6()
+    case "Q7"   => query7()
   }
 
   def query1_unoptimized() {
@@ -75,20 +76,26 @@ object Main extends LegoRunner {
     // println(block)
     // LegoGenerator.apply(block)
 
-    val loweringContext = new LoweringLegoBase {}
+    // val loweringContext = new LoweringLegoBase {}
+    val loweringContext = initContext
 
-    // val loweredBlock = lowering.transformProgram(block)
-    val lowering = new LBLowering(initContext, loweringContext)
-    val loweredBlock = lowering.lower(block)
-    // val loweredBlock = block
+    val operatorlessBlock =
+      if (shallow) {
+        block
+      } else {
+        // val loweredBlock = lowering.transformProgram(block)
+        val lowering = new LBLowering(initContext, loweringContext)
+        val loweredBlock = lowering.lower(block)
+        // val loweredBlock = block
 
-    val parameterPromotion = new LBParameterPromotion(loweringContext)
+        val parameterPromotion = new LBParameterPromotion(loweringContext)
 
-    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
-    // val operatorlessBlock = loweredBlock
+        val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
+        // val operatorlessBlock = loweredBlock
+        operatorlessBlock
+      }
 
     val dce = new DCE(loweringContext)
-
     val dceBlock = dce.optimize(operatorlessBlock)
     // val dceBlock = operatorlessBlock
 
@@ -141,5 +148,11 @@ object Main extends LegoRunner {
     val context = new LoweringLegoBase {}
     val block = context.reifyBlock { context.Queries.Q6(context.unit(1)) }
     compileQuery(context, block, 6, false)
+  }
+
+  def query7() {
+    val context = new LoweringLegoBase {}
+    val block = context.reifyBlock { context.Queries.Q7(context.unit(1)) }
+    compileQuery(context, block, 7, false)
   }
 }

@@ -61,6 +61,9 @@ $liftedCode
     val liftedCodes = List(
       al.autoLift[queryengine.GroupByClass],
       al.autoLift[queryengine.Q3GRPRecord],
+      al.autoLift[queryengine.Q7GRPRecord],
+      al.autoLift[queryengine.Q9GRPRecord],
+      al.autoLift[queryengine.Q10GRPRecord],
       al.autoLift[queryengine.AGGRecord[Any]],
       al.autoLift[queryengine.GenericEngine],
       al.autoLift[queryengine.TPCHRelations.LINEITEMRecord],
@@ -94,6 +97,9 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowReco
   with DoubleComponent with IntComponent with LongComponent with ArrayComponent 
   with GroupByClassComponent
   with Q3GRPRecordComponent
+  with Q7GRPRecordComponent
+  with Q9GRPRecordComponent
+  with Q10GRPRecordComponent
   with GenericEngineComponent
   with LINEITEMRecordComponent
   with SUPPLIERRecordComponent
