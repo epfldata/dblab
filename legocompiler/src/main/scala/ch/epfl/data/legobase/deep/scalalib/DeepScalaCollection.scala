@@ -325,6 +325,7 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
     def indexWhere(p: Rep[(A => Boolean)]): Rep[Int] = arrayBufferIndexWhere[A](self, p)(typeA)
     def clear(): Rep[Unit] = arrayBufferClear[A](self)(typeA)
     def minBy[B](f: Rep[(A => B)])(implicit typeB: TypeRep[B], cmp: Ordering[B]): Rep[A] = arrayBufferMinBy[A, B](self, f)(typeA, typeB, cmp)
+    def foldLeft[B](z: Rep[B])(op: Rep[((B, A) => B)])(implicit typeB: TypeRep[B]): Rep[B] = arrayBufferFoldLeft[A, B](self, z, op)(typeA, typeB)
     def append(elem: Rep[A]): Rep[Unit] = arrayBufferAppend[A](self, elem)(typeA)
     def initialSize: Rep[Int] = arrayBuffer_Field_InitialSize[A](self)(typeA)
   }
@@ -371,6 +372,10 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B] _).curried
   }
 
+  case class ArrayBufferFoldLeft[A, B](self: Rep[ArrayBuffer[A]], z: Rep[B], op: Rep[((B, A) => B)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[B](Some(self), "foldLeft", List(List(z), List(op))) {
+    override def curriedConstructor = (copy[A, B] _).curried
+  }
+
   case class ArrayBufferAppend[A](self: Rep[ArrayBuffer[A]], elem: Rep[A])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "append", List(List(elem))) {
     override def curriedConstructor = (copy[A] _).curried
   }
@@ -394,6 +399,7 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
   def arrayBufferIndexWhere[A](self: Rep[ArrayBuffer[A]], p: Rep[((A) => Boolean)])(implicit typeA: TypeRep[A]): Rep[Int] = ArrayBufferIndexWhere[A](self, p)
   def arrayBufferClear[A](self: Rep[ArrayBuffer[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ArrayBufferClear[A](self)
   def arrayBufferMinBy[A, B](self: Rep[ArrayBuffer[A]], f: Rep[((A) => B)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], cmp: Ordering[B]): Rep[A] = ArrayBufferMinBy[A, B](self, f)
+  def arrayBufferFoldLeft[A, B](self: Rep[ArrayBuffer[A]], z: Rep[B], op: Rep[((B, A) => B)])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[B] = ArrayBufferFoldLeft[A, B](self, z, op)
   def arrayBufferAppend[A](self: Rep[ArrayBuffer[A]], elem: Rep[A])(implicit typeA: TypeRep[A]): Rep[Unit] = ArrayBufferAppend[A](self, elem)
   def arrayBuffer_Field_InitialSize[A](self: Rep[ArrayBuffer[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ArrayBuffer_Field_InitialSize[A](self)
   def arrayBufferApplyObject[T]()(implicit typeT: TypeRep[T]): Rep[ArrayBuffer[T]] = ArrayBufferApplyObject[T]()

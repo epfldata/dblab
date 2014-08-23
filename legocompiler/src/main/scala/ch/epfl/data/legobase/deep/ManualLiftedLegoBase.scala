@@ -28,6 +28,8 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   override def hashJoinOpNew2[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = hashJoinOpNew1[A, B, C](leftParent, rightParent, unit(""), unit(""), joinCond, leftHash, rightHash)
 
+  def __newException(msg: Rep[String]) = new Exception(msg.toString)
+
   // TODO scala.Char class should be lifted instead of the java one
   case class Character$minus1(self: Rep[Character], x: Rep[Character]) extends FunctionDef[Int](Some(self), "-", List(List(x))) {
     override def curriedConstructor = (copy _).curried

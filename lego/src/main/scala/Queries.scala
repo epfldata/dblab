@@ -411,45 +411,42 @@ object Queries {
     // }
   }
 
-  // Amir: Lifting needs:
-  //  1) ViewOp
-  //  2) SubquerySingleResult
-  @dontLift
+  // @dontLift
   def Q11(numRuns: Int) {
     val partsuppTable = loadPartsupp()
     val supplierTable = loadSupplier()
     val nationTable = loadNation()
-    for (i <- 0 until numRuns) {
-      runQuery({
-        val uk = parseString("UNITED KINGDOM")
-        val scanSupplier = new ScanOp(supplierTable)
-        val scanNation = new SelectOp(new ScanOp(nationTable))(x => x.N_NAME === uk)
-        val jo1 = new HashJoinOp(scanNation, scanSupplier)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY)
-        val scanPartsupp = new ScanOp(partsuppTable)
-        val jo2 = new HashJoinOp(jo1, scanPartsupp)((x, y) => x.S_SUPPKEY == y.PS_SUPPKEY)(x => x.S_SUPPKEY[Int])(x => x.PS_SUPPKEY)
-        val wo = new WindowOp(jo2)(x => x.PS_PARTKEY[Int])(x => {
-          x.foldLeft(0.0) { (cnt, e) => cnt + (e.PS_SUPPLYCOST[Double] * e.PS_AVAILQTY[Int]) }
-        })
-        wo.open
-        val vo = new ViewOp(wo)
-        // Calculate total sum
-        val aggOp = new AggOp(vo, 1)(x => "Total")((t, currAgg) => currAgg + t.wnd)
-        val total = new SubquerySingleResult(aggOp).getResult.aggs(0) * 0.0001
-        // Calculate final result
-        vo.reset
-        val so = new SelectOp(vo)(x => x.wnd > total)
-        val sortOp = new SortOp(so)((x, y) => {
-          if (x.wnd > y.wnd) -1
-          else if (x.wnd < y.wnd) 1
-          else 0
-        })
-        val po = new PrintOp(sortOp)(kv => printf("%d|%.2f\n", kv.key, kv.wnd), () => true)
-        po.open
-        po.next
-        printf("(%d rows)\n", po.numRows)
-        ()
+    // for (i <- 0 until numRuns) {
+    runQuery({
+      val uk = parseString("UNITED KINGDOM")
+      val scanSupplier = new ScanOp(supplierTable)
+      val scanNation = new SelectOp(new ScanOp(nationTable))(x => x.N_NAME === uk)
+      val jo1 = new HashJoinOp(scanNation, scanSupplier)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY)
+      val scanPartsupp = new ScanOp(partsuppTable)
+      val jo2 = new HashJoinOp(jo1, scanPartsupp)((x, y) => x.S_SUPPKEY[Int] == y.PS_SUPPKEY)(x => x.S_SUPPKEY[Int])(x => x.PS_SUPPKEY)
+      val wo = new WindowOp(jo2)(x => x.PS_PARTKEY[Int])(x => {
+        x.foldLeft(0.0) { (cnt, e) => cnt + (e.PS_SUPPLYCOST[Double] * e.PS_AVAILQTY[Int]) }
       })
-    }
+      wo.open
+      val vo = new ViewOp(wo)
+      // Calculate total sum
+      val aggOp = new AggOp(vo, 1)(x => "Total")((t, currAgg) => currAgg + t.wnd)
+      val total = new SubquerySingleResult(aggOp).getResult.aggs(0) * 0.0001
+      // Calculate final result
+      vo.reset
+      val so = new SelectOp(vo)(x => x.wnd > total)
+      val sortOp = new SortOp(so)((x, y) => {
+        if (x.wnd > y.wnd) -1
+        else if (x.wnd < y.wnd) 1
+        else 0
+      })
+      val po = new PrintOp(sortOp)(kv => printf("%d|%.2f\n", kv.key, kv.wnd), () => true)
+      po.open
+      po.next
+      printf("(%d rows)\n", po.numRows)
+      ()
+    })
+    // }
   }
   // @dontLift
   def Q12(numRuns: Int) {
@@ -548,9 +545,8 @@ object Queries {
     // }
   }
 
-  // Amir: Lifting needs:
-  //  1) ViewOp
-  //  2) SubquerySingleResult
+  // Amir: Lifting needs the following fix:
+  //  1) agg record does not have a concrete type, but an abstract type!
   @dontLift
   def Q15(numRuns: Int) {
     val lineitemTable = loadLineitem()
@@ -633,36 +629,34 @@ object Queries {
     }
   }
 
-  // Amir: Lifting needs
-  //   1) lifting foldLeft for ArrayBuffer
-  @dontLift
+  // @dontLift
   def Q17(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val partTable = loadPart()
-    for (i <- 0 until numRuns) {
-      runQuery({
-        val medbag = parseString("MED BAG")
-        val brand15 = parseString("Brand#15")
-        val scanLineitem = new ScanOp(lineitemTable)
-        val scanPart = new SelectOp(new ScanOp(partTable))(x => x.P_CONTAINER === medbag && x.P_BRAND === brand15)
-        val jo = new HashJoinOp(scanPart, scanLineitem)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY)
-        val wo = new WindowOp(jo)(x => x.L_PARTKEY[Int])(x => {
-          val sum = x.foldLeft(0.0)((cnt, e) => cnt + e.L_QUANTITY[Double])
-          val count = x.size
-          val avg = 0.2 * (sum / count)
-          x.foldLeft(0.0)((cnt, e) => {
-            if (e.L_QUANTITY[Double] < avg) cnt + e.L_EXTENDEDPRICE[Double]
-            else cnt
-          }) / 7.0
-        })
-        val aggOp = new AggOp(wo, 1)(x => "Total")((t, currAgg) => currAgg + t.wnd)
-        val po = new PrintOp(aggOp)(kv => printf("%.6f\n", kv.aggs(0)), () => true)
-        po.open
-        po.next
-        printf("(%d rows)\n", po.numRows)
-        ()
+    // for (i <- 0 until numRuns) {
+    runQuery({
+      val medbag = parseString("MED BAG")
+      val brand15 = parseString("Brand#15")
+      val scanLineitem = new ScanOp(lineitemTable)
+      val scanPart = new SelectOp(new ScanOp(partTable))(x => x.P_CONTAINER === medbag && x.P_BRAND === brand15)
+      val jo = new HashJoinOp(scanPart, scanLineitem)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY)
+      val wo = new WindowOp(jo)(x => x.L_PARTKEY[Int])(x => {
+        val sum = x.foldLeft(0.0)((cnt, e) => cnt + e.L_QUANTITY[Double])
+        val count = x.size
+        val avg = 0.2 * (sum / count)
+        x.foldLeft(0.0)((cnt, e) => {
+          if (e.L_QUANTITY[Double] < avg) cnt + e.L_EXTENDEDPRICE[Double]
+          else cnt
+        }) / 7.0
       })
-    }
+      val aggOp = new AggOp(wo, 1)(x => "Total")((t, currAgg) => currAgg + t.wnd)
+      val po = new PrintOp(aggOp)(kv => printf("%.6f\n", kv.aggs(0)), () => true)
+      po.open
+      po.next
+      printf("(%d rows)\n", po.numRows)
+      ()
+    })
+    // }
   }
 
   // Amir: Lifting needs the following fix:

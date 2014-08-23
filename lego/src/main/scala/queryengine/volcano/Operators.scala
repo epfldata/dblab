@@ -281,6 +281,7 @@ class NestedLoopsJoinOp[A <: AbstractRecord, B <: AbstractRecord](leftParent: Op
   def reset() = { rightParent.reset; leftParent.reset; leftTuple = NullDynamicRecord[A]; }
 }
 
+@deep
 class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   def close() {
     throw new Exception("PULL ENGINE BUG:: Close function in SubqueryResult should never be called!!!!\n")
@@ -288,7 +289,7 @@ class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   def open() {
     throw new Exception("PULL ENGINE BUG:: Open function in SubqueryResult should never be called!!!!\n")
   }
-  def next() = {
+  override def next(): A = {
     throw new Exception("PULL ENGINE BUG:: Next function in SubqueryResult should never be called!!!!\n")
   }
   def reset() {
@@ -360,6 +361,7 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
   def reset() { rightParent.reset; leftParent.reset; hm.clear; }
 }
 
+@deep
 class ViewOp[A](parent: Operator[A]) extends Operator[A] {
   var idx = 0
   var size = 0

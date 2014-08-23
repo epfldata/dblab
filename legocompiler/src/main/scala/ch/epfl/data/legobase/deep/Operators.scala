@@ -1646,4 +1646,260 @@ trait NestedLoopsJoinOpImplementations { self: DeepDSL =>
   }
 }
 trait NestedLoopsJoinOpComponent extends NestedLoopsJoinOpOps with NestedLoopsJoinOpImplicits { self: OperatorsComponent => }
-trait OperatorsComponent extends OperatorComponent with ScanOpComponent with SelectOpComponent with AggOpComponent with SortOpComponent with MapOpComponent with PrintOpComponent with HashJoinOpComponent with WindowOpComponent with LeftHashSemiJoinOpComponent with NestedLoopsJoinOpComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent with DoubleComponent with IntComponent with LongComponent with ArrayComponent with LINEITEMRecordComponent with K2DBScannerComponent with IntegerComponent with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase { self: DeepDSL => }
+trait SubquerySingleResultOps extends Base { this: OperatorsComponent =>
+  implicit class SubquerySingleResultRep[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]) {
+    def foreach(f: Rep[(A => Unit)]): Rep[Unit] = subquerySingleResultForeach[A](self, f)(typeA)
+    def findFirst(cond: Rep[(A => Boolean)]): Rep[A] = subquerySingleResultFindFirst[A](self, cond)(typeA)
+    def NullDynamicRecord[D](implicit typeD: TypeRep[D], di: DummyImplicit): Rep[D] = subquerySingleResultNullDynamicRecord[A, D](self)(typeA, typeD, di)
+    def close(): Rep[Unit] = subquerySingleResultClose[A](self)(typeA)
+    def open(): Rep[Unit] = subquerySingleResultOpen[A](self)(typeA)
+    def next(): Rep[A] = subquerySingleResultNext[A](self)(typeA)
+    def reset(): Rep[Unit] = subquerySingleResultReset[A](self)(typeA)
+    def getResult: Rep[A] = subquerySingleResultGetResult[A](self)(typeA)
+    def parent: Rep[Operator[A]] = subquerySingleResult_Field_Parent[A](self)(typeA)
+    def NullDynamicRecord: Rep[A] = subquerySingleResult_Field_NullDynamicRecord[A](self)(typeA)
+  }
+  object SubquerySingleResult {
+
+  }
+  // constructors
+  def __newSubquerySingleResult[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[SubquerySingleResult[A]] = subquerySingleResultNew[A](parent)(typeA)
+  // case classes
+  case class SubquerySingleResultNew[A](parent: Rep[Operator[A]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[SubquerySingleResult[A]](List(typeA), "SubquerySingleResult", List(List(parent))) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class SubquerySingleResultForeach[A](self: Rep[SubquerySingleResult[A]], f: Rep[((A) => Unit)])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "foreach", List(List(f))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class SubquerySingleResultFindFirst[A](self: Rep[SubquerySingleResult[A]], cond: Rep[((A) => Boolean)])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "findFirst", List(List(cond))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class SubquerySingleResultNullDynamicRecord[A, D](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A], val typeD: TypeRep[D], val di: DummyImplicit) extends FunctionDef[D](Some(self), "NullDynamicRecord", List()) {
+    override def curriedConstructor = (copy[A, D] _)
+  }
+
+  case class SubquerySingleResultClose[A](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class SubquerySingleResultOpen[A](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class SubquerySingleResultNext[A](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "next", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class SubquerySingleResultReset[A](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class SubquerySingleResultGetResult[A](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "getResult", List()) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class SubquerySingleResult_Field_Parent[A](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Operator[A]](self, "parent") {
+    override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
+  }
+
+  case class SubquerySingleResult_Field_NullDynamicRecord[A](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[A](self, "NullDynamicRecord") {
+    override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def subquerySingleResultNew[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[SubquerySingleResult[A]] = SubquerySingleResultNew[A](parent)
+  def subquerySingleResultForeach[A](self: Rep[SubquerySingleResult[A]], f: Rep[((A) => Unit)])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultForeach[A](self, f)
+  def subquerySingleResultFindFirst[A](self: Rep[SubquerySingleResult[A]], cond: Rep[((A) => Boolean)])(implicit typeA: TypeRep[A]): Rep[A] = SubquerySingleResultFindFirst[A](self, cond)
+  def subquerySingleResultNullDynamicRecord[A, D](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A], typeD: TypeRep[D], di: DummyImplicit): Rep[D] = SubquerySingleResultNullDynamicRecord[A, D](self)
+  def subquerySingleResultClose[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultClose[A](self)
+  def subquerySingleResultOpen[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultOpen[A](self)
+  def subquerySingleResultNext[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[A] = SubquerySingleResultNext[A](self)
+  def subquerySingleResultReset[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultReset[A](self)
+  def subquerySingleResultGetResult[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[A] = SubquerySingleResultGetResult[A](self)
+  def subquerySingleResult_Field_Parent[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = SubquerySingleResult_Field_Parent[A](self)
+  def subquerySingleResult_Field_NullDynamicRecord[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[A] = SubquerySingleResult_Field_NullDynamicRecord[A](self)
+  type SubquerySingleResult[A] = ch.epfl.data.legobase.queryengine.volcano.SubquerySingleResult[A]
+  case class SubquerySingleResultType[A](typeA: TypeRep[A]) extends TypeRep[SubquerySingleResult[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SubquerySingleResultType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"SubquerySingleResult[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[SubquerySingleResult[A]]
+  }
+  implicit def typeSubquerySingleResult[A: TypeRep] = SubquerySingleResultType(implicitly[TypeRep[A]])
+}
+trait SubquerySingleResultImplicits { this: SubquerySingleResultComponent =>
+  // Add implicit conversions here!
+}
+trait SubquerySingleResultImplementations { self: DeepDSL =>
+  override def subquerySingleResultClose[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    throw __newException(unit("PULL ENGINE BUG:: Close function in SubqueryResult should never be called!!!!\n"))
+  }
+  override def subquerySingleResultOpen[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    throw __newException(unit("PULL ENGINE BUG:: Open function in SubqueryResult should never be called!!!!\n"))
+  }
+  override def subquerySingleResultNext[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[A] = {
+    throw __newException(unit("PULL ENGINE BUG:: Next function in SubqueryResult should never be called!!!!\n"))
+  }
+  override def subquerySingleResultReset[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    throw __newException(unit("PULL ENGINE BUG:: Reset function in SubqueryResult should never be called!!!!\n"))
+  }
+  override def subquerySingleResultGetResult[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[A] = {
+    {
+      self.parent.open();
+      self.parent.next()
+    }
+  }
+}
+trait SubquerySingleResultComponent extends SubquerySingleResultOps with SubquerySingleResultImplicits { self: OperatorsComponent => }
+trait ViewOpOps extends Base { this: OperatorsComponent =>
+  implicit class ViewOpRep[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]) {
+    def foreach(f: Rep[(A => Unit)]): Rep[Unit] = viewOpForeach[A](self, f)(typeA)
+    def findFirst(cond: Rep[(A => Boolean)]): Rep[A] = viewOpFindFirst[A](self, cond)(typeA)
+    def NullDynamicRecord[D](implicit typeD: TypeRep[D], di: DummyImplicit): Rep[D] = viewOpNullDynamicRecord[A, D](self)(typeA, typeD, di)
+    def open(): Rep[Unit] = viewOpOpen[A](self)(typeA)
+    def next(): Rep[A] = viewOpNext[A](self)(typeA)
+    def close(): Rep[Unit] = viewOpClose[A](self)(typeA)
+    def reset(): Rep[Unit] = viewOpReset[A](self)(typeA)
+    def table: Rep[ArrayBuffer[A]] = viewOp_Field_Table[A](self)(typeA)
+    def size_=(x$1: Rep[Int]): Rep[Unit] = viewOp_Field_Size_$eq[A](self, x$1)(typeA)
+    def size: Rep[Int] = viewOp_Field_Size[A](self)(typeA)
+    def idx_=(x$1: Rep[Int]): Rep[Unit] = viewOp_Field_Idx_$eq[A](self, x$1)(typeA)
+    def idx: Rep[Int] = viewOp_Field_Idx[A](self)(typeA)
+    def parent: Rep[Operator[A]] = viewOp_Field_Parent[A](self)(typeA)
+    def NullDynamicRecord: Rep[A] = viewOp_Field_NullDynamicRecord[A](self)(typeA)
+  }
+  object ViewOp {
+
+  }
+  // constructors
+  def __newViewOp[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[ViewOp[A]] = viewOpNew[A](parent)(typeA)
+  // case classes
+  case class ViewOpNew[A](parent: Rep[Operator[A]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[ViewOp[A]](List(typeA), "ViewOp", List(List(parent))) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ViewOpForeach[A](self: Rep[ViewOp[A]], f: Rep[((A) => Unit)])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "foreach", List(List(f))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class ViewOpFindFirst[A](self: Rep[ViewOp[A]], cond: Rep[((A) => Boolean)])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "findFirst", List(List(cond))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class ViewOpNullDynamicRecord[A, D](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A], val typeD: TypeRep[D], val di: DummyImplicit) extends FunctionDef[D](Some(self), "NullDynamicRecord", List()) {
+    override def curriedConstructor = (copy[A, D] _)
+  }
+
+  case class ViewOpOpen[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ViewOpNext[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "next", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ViewOpClose[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ViewOpReset[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ViewOp_Field_Table[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[ArrayBuffer[A]](self, "table") {
+    override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
+  }
+
+  case class ViewOp_Field_Size_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit val typeA: TypeRep[A]) extends FieldSetter[Int](self, "size", x$1) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class ViewOp_Field_Size[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldGetter[Int](self, "size") {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ViewOp_Field_Idx_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit val typeA: TypeRep[A]) extends FieldSetter[Int](self, "idx", x$1) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class ViewOp_Field_Idx[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldGetter[Int](self, "idx") {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ViewOp_Field_Parent[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Operator[A]](self, "parent") {
+    override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
+  }
+
+  case class ViewOp_Field_NullDynamicRecord[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[A](self, "NullDynamicRecord") {
+    override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def viewOpNew[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[ViewOp[A]] = ViewOpNew[A](parent)
+  def viewOpForeach[A](self: Rep[ViewOp[A]], f: Rep[((A) => Unit)])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOpForeach[A](self, f)
+  def viewOpFindFirst[A](self: Rep[ViewOp[A]], cond: Rep[((A) => Boolean)])(implicit typeA: TypeRep[A]): Rep[A] = ViewOpFindFirst[A](self, cond)
+  def viewOpNullDynamicRecord[A, D](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], typeD: TypeRep[D], di: DummyImplicit): Rep[D] = ViewOpNullDynamicRecord[A, D](self)
+  def viewOpOpen[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOpOpen[A](self)
+  def viewOpNext[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[A] = ViewOpNext[A](self)
+  def viewOpClose[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOpClose[A](self)
+  def viewOpReset[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOpReset[A](self)
+  def viewOp_Field_Table[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[ArrayBuffer[A]] = ViewOp_Field_Table[A](self)
+  def viewOp_Field_Size_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Size_$eq[A](self, x$1)
+  def viewOp_Field_Size[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ViewOp_Field_Size[A](self)
+  def viewOp_Field_Idx_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Idx_$eq[A](self, x$1)
+  def viewOp_Field_Idx[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ViewOp_Field_Idx[A](self)
+  def viewOp_Field_Parent[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = ViewOp_Field_Parent[A](self)
+  def viewOp_Field_NullDynamicRecord[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[A] = ViewOp_Field_NullDynamicRecord[A](self)
+  type ViewOp[A] = ch.epfl.data.legobase.queryengine.volcano.ViewOp[A]
+  case class ViewOpType[A](typeA: TypeRep[A]) extends TypeRep[ViewOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ViewOpType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"ViewOp[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[ViewOp[A]]
+  }
+  implicit def typeViewOp[A: TypeRep] = ViewOpType(implicitly[TypeRep[A]])
+}
+trait ViewOpImplicits { this: ViewOpComponent =>
+  // Add implicit conversions here!
+}
+trait ViewOpImplementations { self: DeepDSL =>
+  override def viewOpOpen[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    {
+      self.parent.open();
+      self.parent.foreach(__lambda(((t: this.Rep[A]) => self.table.append(t))));
+      self.size_$eq(self.table.size)
+    }
+  }
+  override def viewOpNext[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[A] = {
+    __ifThenElse(self.idx.$less(self.size), {
+      val e: this.Rep[A] = self.table.apply(self.idx);
+      self.idx_$eq(self.idx.$plus(unit(1)));
+      e
+    }, self.NullDynamicRecord)
+  }
+  override def viewOpClose[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    unit(())
+  }
+  override def viewOpReset[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    self.idx_$eq(unit(0))
+  }
+}
+trait ViewOpComponent extends ViewOpOps with ViewOpImplicits { self: OperatorsComponent => }
+trait OperatorsComponent extends OperatorComponent with ScanOpComponent with SelectOpComponent with AggOpComponent with SortOpComponent with MapOpComponent with PrintOpComponent with HashJoinOpComponent with WindowOpComponent with LeftHashSemiJoinOpComponent with NestedLoopsJoinOpComponent with SubquerySingleResultComponent with ViewOpComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent with DoubleComponent with IntComponent with LongComponent with ArrayComponent with LINEITEMRecordComponent with K2DBScannerComponent with IntegerComponent with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase { self: DeepDSL => }

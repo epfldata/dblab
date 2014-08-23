@@ -103,6 +103,18 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
         ("rightTuple", true, to.infix_asInstanceOf(to.unit[Any](null))(apply(mb))),
         ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(mCompRec))))(tp).asInstanceOf[to.Def[T]]
     }
+    case vo: ViewOpNew[_] => {
+      val ma = vo.typeA
+      // val marrBuffA = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(ma).asInstanceOf[TypeRep[Any]]
+      to.__newDef[ViewOp[Any]](
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(ma))),
+        ("idx", true, to.unit[Int](0)),
+        ("size", true, to.unit[Int](0)),
+        ("table", false, to.ArrayBuffer()(apply(ma)))).asInstanceOf[to.Def[T]]
+    }
+    case sr: SubquerySingleResultNew[_] => {
+      to.__newDef[SubquerySingleResult[Any]]().asInstanceOf[to.Def[T]]
+    }
     case pc @ PardisCast(exp) => {
       PardisCast(transformExp[Any, Any](exp))(transformType(exp.tp), transformType(pc.castTp)).asInstanceOf[to.Def[T]]
     }
@@ -124,7 +136,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
     def unapply[T](exp: Rep[T]): Option[Def[T]] = exp match {
       case Def(d) => d.tp match {
         case x if x.isRecord => Some(d)
-        case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | NestedLoopsJoinOpType(_, _) => Some(d)
+        case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | NestedLoopsJoinOpType(_, _) | ViewOpType(_) => Some(d)
         case _ => None
       }
       case _ => None
