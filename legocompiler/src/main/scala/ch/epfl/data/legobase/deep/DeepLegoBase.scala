@@ -340,6 +340,148 @@ trait Q10GRPRecordImplementations { self: DeepDSL =>
 }
 trait Q10GRPRecordComponent extends Q10GRPRecordOps with Q10GRPRecordImplicits { self: DeepDSL => }
 
+trait Q18GRPRecordOps extends Base { this: DeepDSL =>
+  implicit class Q18GRPRecordRep(self: Rep[Q18GRPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q18GRPRecordGetField(self, key)
+    def O_TOTALPRICE: Rep[Double] = q18GRPRecord_Field_O_TOTALPRICE(self)
+    def O_ORDERDATE: Rep[Long] = q18GRPRecord_Field_O_ORDERDATE(self)
+    def O_ORDERKEY: Rep[Int] = q18GRPRecord_Field_O_ORDERKEY(self)
+    def C_CUSTKEY: Rep[Int] = q18GRPRecord_Field_C_CUSTKEY(self)
+    def C_NAME: Rep[OptimalString] = q18GRPRecord_Field_C_NAME(self)
+  }
+  object Q18GRPRecord {
+
+  }
+  // constructors
+  def __newQ18GRPRecord(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Long], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = q18GRPRecordNew(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
+  // case classes
+  case class Q18GRPRecordNew(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Long], O_TOTALPRICE: Rep[Double]) extends ConstructorDef[Q18GRPRecord](List(), "Q18GRPRecord", List(List(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q18GRPRecordGetField(self: Rep[Q18GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q18GRPRecord_Field_O_TOTALPRICE(self: Rep[Q18GRPRecord]) extends FieldDef[Double](self, "O_TOTALPRICE") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q18GRPRecord_Field_O_ORDERDATE(self: Rep[Q18GRPRecord]) extends FieldDef[Long](self, "O_ORDERDATE") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q18GRPRecord_Field_O_ORDERKEY(self: Rep[Q18GRPRecord]) extends FieldDef[Int](self, "O_ORDERKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q18GRPRecord_Field_C_CUSTKEY(self: Rep[Q18GRPRecord]) extends FieldDef[Int](self, "C_CUSTKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q18GRPRecord_Field_C_NAME(self: Rep[Q18GRPRecord]) extends FieldDef[OptimalString](self, "C_NAME") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def q18GRPRecordNew(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Long], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = Q18GRPRecordNew(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
+  def q18GRPRecordGetField(self: Rep[Q18GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q18GRPRecordGetField(self, key)
+  def q18GRPRecord_Field_O_TOTALPRICE(self: Rep[Q18GRPRecord]): Rep[Double] = Q18GRPRecord_Field_O_TOTALPRICE(self)
+  def q18GRPRecord_Field_O_ORDERDATE(self: Rep[Q18GRPRecord]): Rep[Long] = Q18GRPRecord_Field_O_ORDERDATE(self)
+  def q18GRPRecord_Field_O_ORDERKEY(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_O_ORDERKEY(self)
+  def q18GRPRecord_Field_C_CUSTKEY(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_C_CUSTKEY(self)
+  def q18GRPRecord_Field_C_NAME(self: Rep[Q18GRPRecord]): Rep[OptimalString] = Q18GRPRecord_Field_C_NAME(self)
+  type Q18GRPRecord = ch.epfl.data.legobase.queryengine.Q18GRPRecord
+  case object Q18GRPRecordType extends TypeRep[Q18GRPRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q18GRPRecordType
+    val name = "Q18GRPRecord"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q18GRPRecord]
+  }
+  implicit val typeQ18GRPRecord = Q18GRPRecordType
+}
+trait Q18GRPRecordImplicits { this: Q18GRPRecordComponent =>
+  // Add implicit conversions here!
+}
+trait Q18GRPRecordImplementations { self: DeepDSL =>
+
+}
+trait Q18GRPRecordComponent extends Q18GRPRecordOps with Q18GRPRecordImplicits { self: DeepDSL => }
+
+trait Q20GRPRecordOps extends Base { this: DeepDSL =>
+  implicit class Q20GRPRecordRep(self: Rep[Q20GRPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q20GRPRecordGetField(self, key)
+    def PS_AVAILQTY: Rep[Int] = q20GRPRecord_Field_PS_AVAILQTY(self)
+    def PS_SUPPKEY: Rep[Int] = q20GRPRecord_Field_PS_SUPPKEY(self)
+    def PS_PARTKEY: Rep[Int] = q20GRPRecord_Field_PS_PARTKEY(self)
+  }
+  object Q20GRPRecord {
+
+  }
+  // constructors
+  def __newQ20GRPRecord(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]): Rep[Q20GRPRecord] = q20GRPRecordNew(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY)
+  // case classes
+  case class Q20GRPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]) extends ConstructorDef[Q20GRPRecord](List(), "Q20GRPRecord", List(List(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q20GRPRecordGetField(self: Rep[Q20GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q20GRPRecord_Field_PS_AVAILQTY(self: Rep[Q20GRPRecord]) extends FieldDef[Int](self, "PS_AVAILQTY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q20GRPRecord_Field_PS_SUPPKEY(self: Rep[Q20GRPRecord]) extends FieldDef[Int](self, "PS_SUPPKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q20GRPRecord_Field_PS_PARTKEY(self: Rep[Q20GRPRecord]) extends FieldDef[Int](self, "PS_PARTKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def q20GRPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]): Rep[Q20GRPRecord] = Q20GRPRecordNew(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY)
+  def q20GRPRecordGetField(self: Rep[Q20GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q20GRPRecordGetField(self, key)
+  def q20GRPRecord_Field_PS_AVAILQTY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_AVAILQTY(self)
+  def q20GRPRecord_Field_PS_SUPPKEY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_SUPPKEY(self)
+  def q20GRPRecord_Field_PS_PARTKEY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_PARTKEY(self)
+  type Q20GRPRecord = ch.epfl.data.legobase.queryengine.Q20GRPRecord
+  case object Q20GRPRecordType extends TypeRep[Q20GRPRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q20GRPRecordType
+    val name = "Q20GRPRecord"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q20GRPRecord]
+  }
+  implicit val typeQ20GRPRecord = Q20GRPRecordType
+}
+trait Q20GRPRecordImplicits { this: Q20GRPRecordComponent =>
+  // Add implicit conversions here!
+}
+trait Q20GRPRecordImplementations { self: DeepDSL =>
+
+}
+trait Q20GRPRecordComponent extends Q20GRPRecordOps with Q20GRPRecordImplicits { self: DeepDSL => }
+
 trait AGGRecordOps extends Base { this: DeepDSL =>
   implicit class AGGRecordRep[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = aGGRecordGetField[B](self, key)(typeB)
@@ -1664,6 +1806,8 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowReco
   with Q7GRPRecordComponent
   with Q9GRPRecordComponent
   with Q10GRPRecordComponent
+  with Q18GRPRecordComponent
+  with Q20GRPRecordComponent
   with GenericEngineComponent
   with LINEITEMRecordComponent
   with SUPPLIERRecordComponent

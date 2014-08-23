@@ -277,7 +277,7 @@ object Queries {
     })
     // }
   }
-  @dontLift
+  // @dontLift
   def Q8(numRuns: Int) {
     val nationTable = loadNation()
     val regionTable = loadRegion()
@@ -286,49 +286,49 @@ object Queries {
     val lineitemTable = loadLineitem()
     val customerTable = loadCustomer()
     val supplierTable = loadSupplier()
-    for (i <- 0 until numRuns) {
-      runQuery({
-        val constantDate1 = parseDate("1995-01-01")
-        val constantDate2 = parseDate("1996-12-31")
-        val asia = parseString("ASIA")
-        val indonesia = parseString("INDONESIA")
-        val medAnonNick = parseString("MEDIUM ANODIZED NICKEL")
-        val scanLineitem = new ScanOp(lineitemTable)
-        val scanPart = new SelectOp(new ScanOp(partTable))(x => x.P_TYPE === medAnonNick)
-        val jo1 = new HashJoinOp(scanPart, scanLineitem)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY)
-        val scanOrders = new SelectOp(new ScanOp(ordersTable))(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE <= constantDate2)
-        val jo2 = new HashJoinOp(jo1, scanOrders)((x, y) => x.L_ORDERKEY == y.O_ORDERKEY)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)
-        val scanCustomer = new ScanOp(customerTable)
-        val jo3 = new HashJoinOp(jo2, scanCustomer)((x, y) => x.O_CUSTKEY == y.C_CUSTKEY)(x => x.O_CUSTKEY[Int])(x => x.C_CUSTKEY)
-        val scanNation1 = new ScanOp(nationTable)
-        val jo4 = new HashJoinOp(scanNation1, jo3)((x, y) => x.N_NATIONKEY == y.C_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.C_NATIONKEY[Int])
-        val scanRegion = new SelectOp(new ScanOp(regionTable))(x => x.R_NAME === asia)
-        val jo5 = new HashJoinOp(scanRegion, jo4)((x, y) => x.R_REGIONKEY == y.N_REGIONKEY[Int])(x => x.R_REGIONKEY)(x => x.N_REGIONKEY[Int])
-        val scanSupplier = new ScanOp(supplierTable)
-        val jo6 = new HashJoinOp(scanSupplier, jo5)((x, y) => x.S_SUPPKEY == y.L_SUPPKEY[Int])(x => x.S_SUPPKEY)(x => x.L_SUPPKEY[Int])
-        val scanNation2 = new ScanOp(nationTable)
-        val jo7 = new HashJoinOp(scanNation2, jo6, "REC1_", "REC2_")((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])
-        val aggOp = new AggOp(jo7, 3)(x => dateToYear(x.REC2_O_ORDERDATE[Long]))(
-          (t, currAgg) => { currAgg + (t.REC2_L_EXTENDEDPRICE[Double] * (1.0 - t.REC2_L_DISCOUNT[Double])) },
-          (t, currAgg) => {
-            if (t.REC1_N_NAME[LBString] === indonesia) currAgg + (t.REC2_L_EXTENDEDPRICE[Double] * (1.0 - t.REC2_L_DISCOUNT[Double]))
-            else currAgg
-          })
-        val mapOp = new MapOp(aggOp)(x => x.aggs(2) = x.aggs(1) / x.aggs(0))
-        val sortOp = new SortOp(mapOp)((x, y) => {
-          if (x.key < y.key) -1
-          else if (x.key > y.key) 1
-          else 0
+    // for (i <- 0 until numRuns) {
+    runQuery({
+      val constantDate1 = parseDate("1995-01-01")
+      val constantDate2 = parseDate("1996-12-31")
+      val asia = parseString("ASIA")
+      val indonesia = parseString("INDONESIA")
+      val medAnonNick = parseString("MEDIUM ANODIZED NICKEL")
+      val scanLineitem = new ScanOp(lineitemTable)
+      val scanPart = new SelectOp(new ScanOp(partTable))(x => x.P_TYPE === medAnonNick)
+      val jo1 = new HashJoinOp(scanPart, scanLineitem)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY)
+      val scanOrders = new SelectOp(new ScanOp(ordersTable))(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE <= constantDate2)
+      val jo2 = new HashJoinOp(jo1, scanOrders)((x, y) => x.L_ORDERKEY[Int] == y.O_ORDERKEY)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)
+      val scanCustomer = new ScanOp(customerTable)
+      val jo3 = new HashJoinOp(jo2, scanCustomer)((x, y) => x.O_CUSTKEY[Int] == y.C_CUSTKEY)(x => x.O_CUSTKEY[Int])(x => x.C_CUSTKEY)
+      val scanNation1 = new ScanOp(nationTable)
+      val jo4 = new HashJoinOp(scanNation1, jo3)((x, y) => x.N_NATIONKEY == y.C_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.C_NATIONKEY[Int])
+      val scanRegion = new SelectOp(new ScanOp(regionTable))(x => x.R_NAME === asia)
+      val jo5 = new HashJoinOp(scanRegion, jo4)((x, y) => x.R_REGIONKEY == y.N_REGIONKEY[Int])(x => x.R_REGIONKEY)(x => x.N_REGIONKEY[Int])
+      val scanSupplier = new ScanOp(supplierTable)
+      val jo6 = new HashJoinOp(scanSupplier, jo5)((x, y) => x.S_SUPPKEY == y.L_SUPPKEY[Int])(x => x.S_SUPPKEY)(x => x.L_SUPPKEY[Int])
+      val scanNation2 = new ScanOp(nationTable)
+      val jo7 = new HashJoinOp(scanNation2, jo6, "REC1_", "REC2_")((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])
+      val aggOp = new AggOp(jo7, 3)(x => dateToYear(x.REC2_O_ORDERDATE[Long]))(
+        (t, currAgg) => { currAgg + (t.REC2_L_EXTENDEDPRICE[Double] * (1.0 - t.REC2_L_DISCOUNT[Double])) },
+        (t, currAgg) => {
+          if (t.REC1_N_NAME[LBString] === indonesia) currAgg + (t.REC2_L_EXTENDEDPRICE[Double] * (1.0 - t.REC2_L_DISCOUNT[Double]))
+          else currAgg
         })
-        val po = new PrintOp(sortOp)(kv => printf("%d|%.5f\n", kv.key, kv.aggs(2)), () => true)
-        po.open
-        po.next
-        printf("(%d rows)\n", po.numRows)
-        ()
+      val mapOp = new MapOp(aggOp)(x => x.aggs(2) = x.aggs(1) / x.aggs(0))
+      val sortOp = new SortOp(mapOp)((x, y) => {
+        if (x.key < y.key) -1
+        else if (x.key > y.key) 1
+        else 0
       })
-    }
+      val po = new PrintOp(sortOp)(kv => printf("%d|%.5f\n", kv.key, kv.aggs(2)), () => true)
+      po.open
+      po.next
+      printf("(%d rows)\n", po.numRows)
+      ()
+    })
+    // }
   }
-  @dontLift
+  // @dontLift
   def Q9(numRuns: Int) {
     val partTable = loadPart()
     val nationTable = loadNation()
@@ -336,80 +336,84 @@ object Queries {
     val partsuppTable = loadPartsupp()
     val supplierTable = loadSupplier()
     val lineitemTable = loadLineitem()
-    for (i <- 0 until numRuns) {
-      runQuery({
-        val ghost = parseString("ghost")
-        val soNation = new ScanOp(nationTable)
-        val soSupplier = new ScanOp(supplierTable)
-        val soLineitem = new ScanOp(lineitemTable)
-        val soPart = new SelectOp(new ScanOp(partTable))(x => x.P_NAME.containsSlice(ghost))
-        val soPartsupp = new ScanOp(partsuppTable)
-        val soOrders = new ScanOp(ordersTable)
-        val hj1 = new HashJoinOp(soNation, soSupplier)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY)
-        val hj2 = new HashJoinOp(hj1, soLineitem)((x, y) => x.S_SUPPKEY[Int] == y.L_SUPPKEY)(x => x.S_SUPPKEY[Int])(x => x.L_SUPPKEY)
-        val hj3 = new HashJoinOp(soPart, hj2)((x, y) => x.P_PARTKEY == y.L_PARTKEY[Int])(x => x.P_PARTKEY)(x => x.L_PARTKEY[Int])
-        val hj4 = new HashJoinOp(soPartsupp, hj3)((x, y) => x.PS_PARTKEY == y.L_PARTKEY[Int] && x.PS_SUPPKEY == y.L_SUPPKEY[Int])(x => x.PS_PARTKEY)(x => x.L_PARTKEY[Int])
-        val hj5 = new HashJoinOp(hj4, soOrders)((x, y) => x.L_ORDERKEY == y.O_ORDERKEY)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)
-        val aggOp = new AggOp(hj5, 1)(x => new Q9GRPRecord(x.N_NAME[LBString], dateToYear(x.O_ORDERDATE[Long])))(
-          (t, currAgg) => { currAgg + ((t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))) - ((1.0 * t.PS_SUPPLYCOST[Double]) * t.L_QUANTITY[Double]) })
-        val sortOp = new SortOp(aggOp)((kv1, kv2) => {
-          val k1 = kv1.key; val k2 = kv2.key
-          val r = k1.NATION diff k2.NATION
-          if (r == 0) {
-            if (k1.O_YEAR < k2.O_YEAR) 1
-            else if (k1.O_YEAR > k2.O_YEAR) -1
-            else 0
-          } else r
-        })
-        val po = new PrintOp(sortOp)(kv => printf("%s|%d|%.4f\n", kv.key.NATION.string, kv.key.O_YEAR, kv.aggs(0)), () => true)
-        po.open
-        po.next
-        printf("(%d rows)\n", po.numRows)
-        ()
+    // for (i <- 0 until numRuns) {
+    runQuery({
+      val ghost = parseString("ghost")
+      val soNation = new ScanOp(nationTable)
+      val soSupplier = new ScanOp(supplierTable)
+      val soLineitem = new ScanOp(lineitemTable)
+      val soPart = new SelectOp(new ScanOp(partTable))(x => x.P_NAME.containsSlice(ghost))
+      val soPartsupp = new ScanOp(partsuppTable)
+      val soOrders = new ScanOp(ordersTable)
+      val hj1 = new HashJoinOp(soNation, soSupplier)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY)
+      val hj2 = new HashJoinOp(hj1, soLineitem)((x, y) => x.S_SUPPKEY[Int] == y.L_SUPPKEY)(x => x.S_SUPPKEY[Int])(x => x.L_SUPPKEY)
+      val hj3 = new HashJoinOp(soPart, hj2)((x, y) => x.P_PARTKEY == y.L_PARTKEY[Int])(x => x.P_PARTKEY)(x => x.L_PARTKEY[Int])
+      val hj4 = new HashJoinOp(soPartsupp, hj3)((x, y) => x.PS_PARTKEY == y.L_PARTKEY[Int] && x.PS_SUPPKEY == y.L_SUPPKEY[Int])(x => x.PS_PARTKEY)(x => x.L_PARTKEY[Int])
+      val hj5 = new HashJoinOp(hj4, soOrders)((x, y) => x.L_ORDERKEY[Int] == y.O_ORDERKEY)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)
+      val aggOp = new AggOp(hj5, 1)(x => new Q9GRPRecord(x.N_NAME[LBString], dateToYear(x.O_ORDERDATE[Long])))(
+        (t, currAgg) => { currAgg + ((t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))) - ((1.0 * t.PS_SUPPLYCOST[Double]) * t.L_QUANTITY[Double]) })
+      val sortOp = new SortOp(aggOp)((kv1, kv2) => {
+        val k1 = kv1.key; val k2 = kv2.key
+        val r = k1.NATION diff k2.NATION
+        if (r == 0) {
+          if (k1.O_YEAR < k2.O_YEAR) 1
+          else if (k1.O_YEAR > k2.O_YEAR) -1
+          else 0
+        } else r
       })
-    }
+      val po = new PrintOp(sortOp)(kv => printf("%s|%d|%.4f\n", kv.key.NATION.string, kv.key.O_YEAR, kv.aggs(0)), () => true)
+      po.open
+      po.next
+      printf("(%d rows)\n", po.numRows)
+      ()
+    })
+    // }
   }
-  @dontLift
+  // @dontLift
   def Q10(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val nationTable = loadNation()
     val customerTable = loadCustomer()
     val ordersTable = loadOrders()
-    for (i <- 0 until numRuns) {
-      runQuery({
-        val constantDate1 = parseDate("1994-11-01")
-        val constantDate2 = parseDate("1995-02-01")
-        val so1 = new SelectOp(new ScanOp(ordersTable))(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE < constantDate2)
-        val so2 = new ScanOp(customerTable)
-        val hj1 = new HashJoinOp(so1, so2)((x, y) => x.O_CUSTKEY == y.C_CUSTKEY)(x => x.O_CUSTKEY)(x => x.C_CUSTKEY)
-        val so3 = new ScanOp(nationTable)
-        val hj2 = new HashJoinOp(so3, hj1)((x, y) => x.N_NATIONKEY == y.C_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.C_NATIONKEY[Int])
-        val so4 = new SelectOp(new ScanOp(lineitemTable))(x => x.L_RETURNFLAG == 'R')
-        val hj3 = new HashJoinOp(hj2, so4)((x, y) => x.O_ORDERKEY[Int] == y.L_ORDERKEY)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY)
-        val aggOp = new AggOp(hj3, 1)(x => new Q10GRPRecord(x.C_CUSTKEY[Int],
-          x.C_NAME[LBString], x.C_ACCTBAL[Double],
-          x.C_PHONE[LBString], x.N_NAME[LBString],
-          x.C_ADDRESS[LBString], x.C_COMMENT[LBString]))((t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])).asInstanceOf[Double] })
-        val sortOp = new SortOp(aggOp)((kv1, kv2) => {
-          val k1 = kv1.aggs(0); val k2 = kv2.aggs(0)
-          if (k1 < k2) 1
-          else if (k1 > k2) -1
-          else 0
-        })
-        var j = 0
-        val po = new PrintOp(sortOp)(kv => {
-          printf("%d|%s|%.4f|%.2f|%s|%s|%s|%s\n", kv.key.C_CUSTKEY, kv.key.C_NAME.string, kv.aggs(0),
-            kv.key.C_ACCTBAL, kv.key.N_NAME.string, kv.key.C_ADDRESS.string, kv.key.C_PHONE.string,
-            kv.key.C_COMMENT.string)
-          j += 1
-        }, () => j < 20)
-        po.open
-        po.next
-        printf("(%d rows)\n", po.numRows)
-        ()
+    // for (i <- 0 until numRuns) {
+    runQuery({
+      val constantDate1 = parseDate("1994-11-01")
+      val constantDate2 = parseDate("1995-02-01")
+      val so1 = new SelectOp(new ScanOp(ordersTable))(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE < constantDate2)
+      val so2 = new ScanOp(customerTable)
+      val hj1 = new HashJoinOp(so1, so2)((x, y) => x.O_CUSTKEY == y.C_CUSTKEY)(x => x.O_CUSTKEY)(x => x.C_CUSTKEY)
+      val so3 = new ScanOp(nationTable)
+      val hj2 = new HashJoinOp(so3, hj1)((x, y) => x.N_NATIONKEY == y.C_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.C_NATIONKEY[Int])
+      val so4 = new SelectOp(new ScanOp(lineitemTable))(x => x.L_RETURNFLAG == 'R')
+      val hj3 = new HashJoinOp(hj2, so4)((x, y) => x.O_ORDERKEY[Int] == y.L_ORDERKEY)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY)
+      val aggOp = new AggOp(hj3, 1)(x => new Q10GRPRecord(x.C_CUSTKEY[Int],
+        x.C_NAME[LBString], x.C_ACCTBAL[Double],
+        x.C_PHONE[LBString], x.N_NAME[LBString],
+        x.C_ADDRESS[LBString], x.C_COMMENT[LBString]))((t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])).asInstanceOf[Double] })
+      val sortOp = new SortOp(aggOp)((kv1, kv2) => {
+        val k1 = kv1.aggs(0); val k2 = kv2.aggs(0)
+        if (k1 < k2) 1
+        else if (k1 > k2) -1
+        else 0
       })
-    }
+      var j = 0
+      val po = new PrintOp(sortOp)(kv => {
+        printf("%d|%s|%.4f|%.2f|%s|%s|%s|%s\n", kv.key.C_CUSTKEY, kv.key.C_NAME.string, kv.aggs(0),
+          kv.key.C_ACCTBAL, kv.key.N_NAME.string, kv.key.C_ADDRESS.string, kv.key.C_PHONE.string,
+          kv.key.C_COMMENT.string)
+        j += 1
+      }, () => j < 20)
+      po.open
+      po.next
+      printf("(%d rows)\n", po.numRows)
+      ()
+    })
+    // }
   }
+
+  // Amir: Lifting needs:
+  //  1) ViewOp
+  //  2) SubquerySingleResult
   @dontLift
   def Q11(numRuns: Int) {
     val partsuppTable = loadPartsupp()
@@ -447,35 +451,38 @@ object Queries {
       })
     }
   }
-  @dontLift
+  // @dontLift
   def Q12(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
-    for (i <- 0 until numRuns) {
-      runQuery({
-        val mail = parseString("MAIL")
-        val ship = parseString("SHIP")
-        val constantDate = parseDate("1995-01-01")
-        val constantDate2 = parseDate("1994-01-01")
-        val so1 = new ScanOp(ordersTable)
-        val so2 = new SelectOp(new ScanOp(lineitemTable))(x =>
-          x.L_RECEIPTDATE < constantDate && x.L_COMMITDATE < constantDate && x.L_SHIPDATE < constantDate && x.L_SHIPDATE < x.L_COMMITDATE && x.L_COMMITDATE < x.L_RECEIPTDATE && x.L_RECEIPTDATE >= constantDate2 && (x.L_SHIPMODE === mail || x.L_SHIPMODE === ship))
-        val jo = new HashJoinOp(so1, so2)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)
-        val URGENT = parseString("1-URGENT")
-        val HIGH = parseString("2-HIGH")
-        val aggOp = new AggOp(jo, 2)(x => x.L_SHIPMODE[LBString])(
-          (t, currAgg) => { if (t.O_ORDERPRIORITY[LBString] === URGENT || t.O_ORDERPRIORITY[LBString] === HIGH) currAgg + 1 else currAgg },
+    // for (i <- 0 until numRuns) {
+    runQuery({
+      val mail = parseString("MAIL")
+      val ship = parseString("SHIP")
+      val constantDate = parseDate("1995-01-01")
+      val constantDate2 = parseDate("1994-01-01")
+      val so1 = new ScanOp(ordersTable)
+      val so2 = new SelectOp(new ScanOp(lineitemTable))(x =>
+        x.L_RECEIPTDATE < constantDate && x.L_COMMITDATE < constantDate && x.L_SHIPDATE < constantDate && x.L_SHIPDATE < x.L_COMMITDATE && x.L_COMMITDATE < x.L_RECEIPTDATE && x.L_RECEIPTDATE >= constantDate2 && (x.L_SHIPMODE === mail || x.L_SHIPMODE === ship))
+      val jo = new HashJoinOp(so1, so2)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)
+      val URGENT = parseString("1-URGENT")
+      val HIGH = parseString("2-HIGH")
+      val aggOp = new AggOp(jo, 2)(x => x.L_SHIPMODE[LBString])(
+        (t, currAgg) => { if (t.O_ORDERPRIORITY[LBString] === URGENT || t.O_ORDERPRIORITY[LBString] === HIGH) currAgg + 1 else currAgg },
 
-          (t, currAgg) => { if (t.O_ORDERPRIORITY[LBString] =!= URGENT && t.O_ORDERPRIORITY[LBString] =!= HIGH) currAgg + 1 else currAgg })
-        val sortOp = new SortOp(aggOp)((x, y) => x.key diff y.key)
-        val po = new PrintOp(sortOp)(kv => printf("%s|%.0f|%.0f\n", kv.key.string, kv.aggs(0), kv.aggs(1)), () => true)
-        po.open
-        po.next
-        printf("(%d rows)\n", po.numRows)
-        ()
-      })
-    }
+        (t, currAgg) => { if (t.O_ORDERPRIORITY[LBString] =!= URGENT && t.O_ORDERPRIORITY[LBString] =!= HIGH) currAgg + 1 else currAgg })
+      val sortOp = new SortOp(aggOp)((x, y) => x.key diff y.key)
+      val po = new PrintOp(sortOp)(kv => printf("%s|%.0f|%.0f\n", kv.key.string, kv.aggs(0), kv.aggs(1)), () => true)
+      po.open
+      po.next
+      printf("(%d rows)\n", po.numRows)
+      ()
+    })
+    // }
   }
+
+  // Amir: Lifting needs:
+  //  1) LeftOuterJoinOp
   @dontLift
   def Q13(numRuns: Int) {
     val customerTable = loadCustomer()
@@ -512,34 +519,38 @@ object Queries {
       })
     }
   }
-  @dontLift
+  // @dontLift
   def Q14(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val partTable = loadPart()
-    for (i <- 0 until numRuns) {
-      runQuery({
-        val promo = parseString("PROMO")
-        val constantDate = parseDate("1994-04-01")
-        val constantDate2 = parseDate("1994-03-01")
-        val so1 = new ScanOp(partTable)
-        val so2 = new SelectOp(new ScanOp(lineitemTable))(x => x.L_SHIPDATE >= constantDate2 && x.L_SHIPDATE < constantDate)
-        val jo = new HashJoinOp(so1, so2)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY)
-        val aggOp = new AggOp(jo, 3)(x => "Total")(
-          (t, currAgg) => {
-            if (t.P_TYPE[LBString] startsWith promo)
-              currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))
-            else currAgg
-          },
-          (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
-        val mapOp = new MapOp(aggOp)(kv => kv.aggs(2) = (kv.aggs(0) * 100) / kv.aggs(1))
-        val po = new PrintOp(mapOp)(kv => printf("%.4f\n", kv.aggs(2)), () => true)
-        po.open
-        po.next
-        printf("(%d rows)\n", po.numRows)
-        ()
-      })
-    }
+    // for (i <- 0 until numRuns) {
+    runQuery({
+      val promo = parseString("PROMO")
+      val constantDate = parseDate("1994-04-01")
+      val constantDate2 = parseDate("1994-03-01")
+      val so1 = new ScanOp(partTable)
+      val so2 = new SelectOp(new ScanOp(lineitemTable))(x => x.L_SHIPDATE >= constantDate2 && x.L_SHIPDATE < constantDate)
+      val jo = new HashJoinOp(so1, so2)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY)
+      val aggOp = new AggOp(jo, 3)(x => "Total")(
+        (t, currAgg) => {
+          if (t.P_TYPE[LBString] startsWith promo)
+            currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))
+          else currAgg
+        },
+        (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
+      val mapOp = new MapOp(aggOp)(kv => kv.aggs(2) = (kv.aggs(0) * 100) / kv.aggs(1))
+      val po = new PrintOp(mapOp)(kv => printf("%.4f\n", kv.aggs(2)), () => true)
+      po.open
+      po.next
+      printf("(%d rows)\n", po.numRows)
+      ()
+    })
+    // }
   }
+
+  // Amir: Lifting needs:
+  //  1) ViewOp
+  //  2) SubquerySingleResult
   @dontLift
   def Q15(numRuns: Int) {
     val lineitemTable = loadLineitem()
@@ -563,7 +574,7 @@ object Queries {
         // Calcuate result
         val scanSupplier = new ScanOp(supplierTable)
         val jo = new HashJoinOp(scanSupplier, vo)((x, y) => x.S_SUPPKEY == y.key && y.aggs(0) == maxRevenue)(x => x.S_SUPPKEY)(x => x.key)
-        val po = new PrintOp(jo)(kv => printf("%d|%s|%s|%s|%.4f\n", kv.S_SUPPKEY, kv.S_NAME[LBString].string, kv.S_ADDRESS[LBString].string, kv.S_PHONE[LBString].string, kv.getField("aggs").get.asInstanceOf[Array[Double]](0)), () => true)
+        val po = new PrintOp(jo)(kv => printf("%d|%s|%s|%s|%.4f\n", kv.S_SUPPKEY, kv.S_NAME[LBString].string, kv.S_ADDRESS[LBString].string, kv.S_PHONE[LBString].string, kv.aggs[Array[Double]].apply(0)), () => true)
         po.open
         po.next
         printf("(%d rows)\n", po.numRows)
@@ -571,6 +582,10 @@ object Queries {
       })
     }
   }
+
+  // Amir: Lifting needs:
+  //  1) HashJoinAnti
+  //  2) lifting corresponding records
   @dontLift
   def Q16(numRuns: Int) {
     val supplierTable = loadSupplier()
@@ -617,6 +632,9 @@ object Queries {
       })
     }
   }
+
+  // Amir: Lifting needs
+  //   1) lifting foldLeft for ArrayBuffer
   @dontLift
   def Q17(numRuns: Int) {
     val lineitemTable = loadLineitem()
@@ -647,6 +665,8 @@ object Queries {
     }
   }
 
+  // Amir: Lifting needs the following fix:
+  //  1) having two agg record in the same application
   // Danger, Will Robinson!: Query takes a long time to complete in Scala (but we 
   @dontLift // knew that already
   def Q18(numRuns: Int) {
@@ -663,11 +683,10 @@ object Queries {
           (t, currAgg) => { currAgg + t.L_QUANTITY }))(x => x.aggs(0) > 300)
         // Hash Join with orders
         val jo1 = new HashJoinOp(aggOp1, scanOrders)((x, y) => y.O_ORDERKEY == x.key)(x => x.key)(x => x.O_ORDERKEY)
-        val jo2 = new HashJoinOp(jo1, scanCustomer)((x, y) => x.O_CUSTKEY == y.C_CUSTKEY)(x => x.O_CUSTKEY[Int])(x => x.C_CUSTKEY)
+        val jo2 = new HashJoinOp(jo1, scanCustomer)((x, y) => x.O_CUSTKEY[Int] == y.C_CUSTKEY)(x => x.O_CUSTKEY[Int])(x => x.C_CUSTKEY)
         val aggOp2 = new AggOp(jo2, 1)(x => new Q18GRPRecord(x.C_NAME[LBString], x.C_CUSTKEY[Int],
           x.O_ORDERKEY[Int], x.O_ORDERDATE[Long], x.O_TOTALPRICE[Double]))(
-          // Why doesn't a simple t.aggs work here?
-          (t, currAgg) => { currAgg + (t.getField("aggs").get.asInstanceOf[Array[Double]])(0) } // aggs(0) => L_QUANTITY"
+          (t, currAgg) => { currAgg + (t.aggs[Array[Double]]).apply(0) } // aggs(0) => L_QUANTITY"
           )
         val sortOp = new SortOp(aggOp2)((kv1, kv2) => {
           val k1 = kv1.key.O_TOTALPRICE; val k2 = kv2.key.O_TOTALPRICE
@@ -692,59 +711,62 @@ object Queries {
       })
     }
   }
-  @dontLift
+  // @dontLift
   def Q19(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val partTable = loadPart()
-    for (i <- 0 until numRuns) {
-      runQuery({
-        val Brand31 = parseString("Brand#31")
-        val Brand43 = parseString("Brand#43")
-        val SMBOX = parseString("SM BOX")
-        val SMCASE = parseString("SM CASE")
-        val SMPACK = parseString("SM PACK")
-        val SMPKG = parseString("SM PKG")
-        val MEDBAG = parseString("MED BAG")
-        val MEDBOX = parseString("MED BOX")
-        val MEDPACK = parseString("MED PACK")
-        val MEDPKG = parseString("MED PKG")
-        val LGBOX = parseString("LG BOX")
-        val LGCASE = parseString("LG CASE")
-        val LGPACK = parseString("LG PACK")
-        val LGPKG = parseString("LG PKG")
-        val DELIVERINPERSON = parseString("DELIVER IN PERSON")
-        val AIR = parseString("AIR")
-        val AIRREG = parseString("AIRREG")
+    // for (i <- 0 until numRuns) {
+    runQuery({
+      val Brand31 = parseString("Brand#31")
+      val Brand43 = parseString("Brand#43")
+      val SMBOX = parseString("SM BOX")
+      val SMCASE = parseString("SM CASE")
+      val SMPACK = parseString("SM PACK")
+      val SMPKG = parseString("SM PKG")
+      val MEDBAG = parseString("MED BAG")
+      val MEDBOX = parseString("MED BOX")
+      val MEDPACK = parseString("MED PACK")
+      val MEDPKG = parseString("MED PKG")
+      val LGBOX = parseString("LG BOX")
+      val LGCASE = parseString("LG CASE")
+      val LGPACK = parseString("LG PACK")
+      val LGPKG = parseString("LG PKG")
+      val DELIVERINPERSON = parseString("DELIVER IN PERSON")
+      val AIR = parseString("AIR")
+      val AIRREG = parseString("AIRREG")
 
-        val so1 = new SelectOp(new ScanOp(partTable))(x => x.P_SIZE >= 1 &&
-          (x.P_SIZE <= 5 && x.P_BRAND === Brand31 && (x.P_CONTAINER === SMBOX || x.P_CONTAINER === SMCASE ||
-            x.P_CONTAINER === SMPACK || x.P_CONTAINER === SMPKG)) ||
-            (x.P_SIZE <= 10 && x.P_BRAND === Brand43 && (x.P_CONTAINER === MEDBAG || x.P_CONTAINER === MEDBOX ||
-              x.P_CONTAINER === MEDPACK || x.P_CONTAINER === MEDPKG)) ||
-              (x.P_SIZE <= 15 && x.P_BRAND === Brand43 && (x.P_CONTAINER === LGBOX || x.P_CONTAINER === LGCASE ||
-                x.P_CONTAINER === LGPACK || x.P_CONTAINER === LGPKG)))
-        val so2 = new SelectOp(new ScanOp(lineitemTable))(x =>
-          ((x.L_QUANTITY <= 36 && x.L_QUANTITY >= 26) || (x.L_QUANTITY <= 25 && x.L_QUANTITY >= 15) ||
-            (x.L_QUANTITY <= 14 && x.L_QUANTITY >= 4)) && x.L_SHIPINSTRUCT === DELIVERINPERSON &&
-            (x.L_SHIPMODE === AIR || x.L_SHIPMODE === AIRREG))
-        val jo = new SelectOp(new HashJoinOp(so1, so2)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY))(
-          x => x.P_BRAND[LBString] === Brand31 &&
-            (x.P_CONTAINER[LBString] === SMBOX || x.P_CONTAINER[LBString] === SMCASE || x.P_CONTAINER[LBString] === SMPACK || x.P_CONTAINER[LBString] === SMPKG) &&
-            x.L_QUANTITY[Double] >= 4 && x.L_QUANTITY[Double] <= 14 && x.P_SIZE[Int] <= 5 || x.P_BRAND[LBString] === Brand43 &&
-            (x.P_CONTAINER[LBString] === MEDBAG || x.P_CONTAINER[LBString] === MEDBOX || x.P_CONTAINER[LBString] === MEDPACK || x.P_CONTAINER[LBString] === MEDPKG) &&
-            x.L_QUANTITY[Double] >= 15 && x.L_QUANTITY[Double] <= 25 && x.P_SIZE[Int] <= 10 || x.P_BRAND[LBString] === Brand43 &&
-            (x.P_CONTAINER[LBString] === LGBOX || x.P_CONTAINER[LBString] === LGCASE || x.P_CONTAINER[LBString] === LGPACK || x.P_CONTAINER[LBString] === LGPKG) &&
-            x.L_QUANTITY[Double] >= 26 && x.L_QUANTITY[Double] <= 36 && x.P_SIZE[Int] <= 15)
-        val aggOp = new AggOp(jo, 1)(x => "Total")(
-          (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
-        val po = new PrintOp(aggOp)(kv => printf("%.4f\n", kv.aggs(0)), () => true)
-        po.open
-        po.next
-        printf("(%d rows)\n", po.numRows)
-        ()
-      })
-    }
+      val so1 = new SelectOp(new ScanOp(partTable))(x => x.P_SIZE >= 1 &&
+        (x.P_SIZE <= 5 && x.P_BRAND === Brand31 && (x.P_CONTAINER === SMBOX || x.P_CONTAINER === SMCASE ||
+          x.P_CONTAINER === SMPACK || x.P_CONTAINER === SMPKG)) ||
+          (x.P_SIZE <= 10 && x.P_BRAND === Brand43 && (x.P_CONTAINER === MEDBAG || x.P_CONTAINER === MEDBOX ||
+            x.P_CONTAINER === MEDPACK || x.P_CONTAINER === MEDPKG)) ||
+            (x.P_SIZE <= 15 && x.P_BRAND === Brand43 && (x.P_CONTAINER === LGBOX || x.P_CONTAINER === LGCASE ||
+              x.P_CONTAINER === LGPACK || x.P_CONTAINER === LGPKG)))
+      val so2 = new SelectOp(new ScanOp(lineitemTable))(x =>
+        ((x.L_QUANTITY <= 36 && x.L_QUANTITY >= 26) || (x.L_QUANTITY <= 25 && x.L_QUANTITY >= 15) ||
+          (x.L_QUANTITY <= 14 && x.L_QUANTITY >= 4)) && x.L_SHIPINSTRUCT === DELIVERINPERSON &&
+          (x.L_SHIPMODE === AIR || x.L_SHIPMODE === AIRREG))
+      val jo = new SelectOp(new HashJoinOp(so1, so2)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY))(
+        x => x.P_BRAND[LBString] === Brand31 &&
+          (x.P_CONTAINER[LBString] === SMBOX || x.P_CONTAINER[LBString] === SMCASE || x.P_CONTAINER[LBString] === SMPACK || x.P_CONTAINER[LBString] === SMPKG) &&
+          x.L_QUANTITY[Double] >= 4 && x.L_QUANTITY[Double] <= 14 && x.P_SIZE[Int] <= 5 || x.P_BRAND[LBString] === Brand43 &&
+          (x.P_CONTAINER[LBString] === MEDBAG || x.P_CONTAINER[LBString] === MEDBOX || x.P_CONTAINER[LBString] === MEDPACK || x.P_CONTAINER[LBString] === MEDPKG) &&
+          x.L_QUANTITY[Double] >= 15 && x.L_QUANTITY[Double] <= 25 && x.P_SIZE[Int] <= 10 || x.P_BRAND[LBString] === Brand43 &&
+          (x.P_CONTAINER[LBString] === LGBOX || x.P_CONTAINER[LBString] === LGCASE || x.P_CONTAINER[LBString] === LGPACK || x.P_CONTAINER[LBString] === LGPKG) &&
+          x.L_QUANTITY[Double] >= 26 && x.L_QUANTITY[Double] <= 36 && x.P_SIZE[Int] <= 15)
+      val aggOp = new AggOp(jo, 1)(x => "Total")(
+        (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
+      val po = new PrintOp(aggOp)(kv => printf("%.4f\n", kv.aggs(0)), () => true)
+      po.open
+      po.next
+      printf("(%d rows)\n", po.numRows)
+      ()
+    })
+    // }
   }
+  // Amir: Check if it works on bigger data, because Yannis told that diff method of ArrayByteOps does not work
+  // Amir: Lifting needs the following fix:
+  //  1) agg record does not have a concrete type, but an abstract type!
   @dontLift
   def Q20(numRuns: Int) {
     val partTable = loadPart()
@@ -771,7 +793,8 @@ object Queries {
         val jo4 = new HashJoinOp(scanNation, jo3)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])
         val sortOp = new SortOp(jo4)((x, y) => {
           // TODO: Possible bug here in ArrayByteOps. Diff does not work
-          (x.S_NAME[LBString] zip y.S_NAME[LBString]).foldLeft(0)((res, e) => { if (res == 0) e._1.asInstanceOf[Byte] - e._2.asInstanceOf[Byte] else res })
+          // (x.S_NAME[LBString] zip y.S_NAME[LBString]).foldLeft(0)((res, e) => { if (res == 0) e._1.asInstanceOf[Byte] - e._2.asInstanceOf[Byte] else res })
+          x.S_NAME[LBString] diff y.S_NAME[LBString]
         })
         val po = new PrintOp(sortOp)(kv => printf("%s|%s\n", kv.S_NAME[LBString].string, kv.S_ADDRESS[LBString].string), () => true)
         po.open
@@ -781,6 +804,9 @@ object Queries {
       })
     }
   }
+
+  // Amir: Lifting needs
+  //   1) HashJoinAnti
   @dontLift
   def Q21(numRuns: Int) {
     val lineitemTable = loadLineitem()
@@ -820,6 +846,10 @@ object Queries {
       })
     }
   }
+
+  // Amir: Lifting needs
+  //   1) HashJoinAnti
+  ///  2) SubquerySingleResult
   @dontLift
   def Q22(numRuns: Int) {
     val customerTable = loadCustomer()

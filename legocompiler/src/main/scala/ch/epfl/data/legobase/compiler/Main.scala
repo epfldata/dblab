@@ -39,6 +39,12 @@ object Main extends LegoRunner {
     case "Q5"   => query5()
     case "Q6"   => query6()
     case "Q7"   => query7()
+    case "Q8"   => query8()
+    case "Q9"   => query9()
+    case "Q10"  => query10()
+    case "Q12"  => query12()
+    case "Q14"  => query14()
+    case "Q19"  => query19()
   }
 
   def query1_unoptimized() {
@@ -154,5 +160,41 @@ object Main extends LegoRunner {
     val context = new LoweringLegoBase {}
     val block = context.reifyBlock { context.Queries.Q7(context.unit(1)) }
     compileQuery(context, block, 7, false)
+  }
+
+  def query8() {
+    val context = new LoweringLegoBase {}
+    val block = context.reifyBlock { context.Queries.Q8(context.unit(1)) }
+    compileQuery(context, block, 8, false)
+  }
+
+  def query9() {
+    val context = new LoweringLegoBase {}
+    val block = context.reifyBlock { context.Queries.Q9(context.unit(1)) }
+    compileQuery(context, block, 9, false)
+  }
+
+  def query10() {
+    val context = new LoweringLegoBase {}
+    val block = context.reifyBlock { context.Queries.Q10(context.unit(1)) }
+    compileQuery(context, block, 10, false)
+  }
+
+  def query12() {
+    val context = new LoweringLegoBase {}
+    val block = context.reifyBlock { context.Queries.Q12(context.unit(1)) }
+    compileQuery(context, block, 12, false)
+  }
+
+  def query14() {
+    val context = new LoweringLegoBase {}
+    val block = context.reifyBlock { context.Queries.Q14(context.unit(1)) }
+    compileQuery(context, block, 14, false)
+  }
+
+  def query19() {
+    val context = new LoweringLegoBase {}
+    val block = context.reifyBlock { context.Queries.Q19(context.unit(1)) }
+    compileQuery(context, block, 19, false)
   }
 }
