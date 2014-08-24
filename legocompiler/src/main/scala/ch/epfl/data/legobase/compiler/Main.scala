@@ -52,7 +52,7 @@ object Main extends LegoRunner {
       case "Q12"   => compileQuery(context, reifyBlock { Queries.Q12(unit(1)) }, 12, false, false)
       case "Q12_C" => compileQuery(context, reifyBlock { Queries.Q12(unit(1)) }, 12, false, true)
       case "Q13"   => compileQuery(context, reifyBlock { Queries.Q13(unit(1)) }, 13, false, false)
-      //case "Q13_C" => compileQuery(context, reifyBlock { Queries.Q13(unit(1)) }, 13, false, true)
+      case "Q13_C" => compileQuery(context, reifyBlock { Queries.Q13(unit(1)) }, 13, false, true)
       case "Q14"   => compileQuery(context, reifyBlock { Queries.Q14(unit(1)) }, 14, false, false)
       case "Q14_C" => compileQuery(context, reifyBlock { Queries.Q14(unit(1)) }, 14, false, true)
       case "Q15"   => compileQuery(context, reifyBlock { Queries.Q15(unit(1)) }, 15, false, false)
