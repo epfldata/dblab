@@ -30,24 +30,25 @@ object Main extends LegoRunner {
     // }
   }
 
-  def executeQuery(query: String): Unit = query match {
-    case "Q1"   => query1()
-    case "Q1_C" => query1_C()
-    case "Q2"   => query2()
-    case "Q2_C" => query2_C()
-    case "Q3"   => query3()
-    case "Q3_C" => query3_C()
-    case "Q4"   => query4()
-    case "Q4_C" => query4_C()
-    case "Q5"   => query5()
-    case "Q5_C" => query5_C()
-    case "Q6"   => query6()
-    case "Q6_C" => query6_C()
+  def executeQuery(query: String): Unit = {
+    val lq = new LiftedQueries()
+    query match {
+      case "Q1"   => compileQuery(lq, lq.Q1, 1, false, false)
+      case "Q1_C" => compileQuery(lq, lq.Q1, 1, false, true)
+      case "Q2"   => compileQuery(lq, lq.Q2, 2, false, false)
+      case "Q2_C" => compileQuery(lq, lq.Q2, 2, false, true)
+      case "Q3"   => compileQuery(lq, lq.Q3, 3, false, false)
+      case "Q3_C" => compileQuery(lq, lq.Q3, 3, false, true)
+      case "Q4"   => compileQuery(lq, lq.Q4, 4, false, false)
+      case "Q4_C" => compileQuery(lq, lq.Q4, 4, false, true)
+      case "Q5"   => compileQuery(lq, lq.Q5, 5, false, false)
+      case "Q5_C" => compileQuery(lq, lq.Q5, 5, false, true)
+      case "Q6"   => compileQuery(lq, lq.Q6, 6, false, false)
+      case "Q6_C" => compileQuery(lq, lq.Q6, 6, false, true)
+    }
   }
 
-  def query1_C() {
-    val lq = new LiftedQueries()
-    val block = lq.Q1
+  def compileQuery(lq: LiftedQueries, block: pardis.ir.PardisBlock[Unit], number: Int, shallow: Boolean, generateCCode: Boolean) {
 
     // Lowering (e.g. case classes to records)
     val lowering = new LBLowering(lq.context, lq.context)
@@ -59,215 +60,20 @@ object Main extends LegoRunner {
     val dce = new DCE(lq.context)
     val dceBlock = dce.optimize(operatorlessBlock)
 
-    // Convert Scala constructs to C
-    val cBlock = CTransformersPipeline(lq.context, dceBlock)
-
-    val ir2Program = new { val IR = lq.context } with IRToProgram {}
-
-    val finalProgram = ir2Program.createProgram(cBlock)
-
-    val LegoGenerator = new LegoCGenerator(2, true)
-    LegoGenerator.apply(finalProgram)
-  }
-
-  def query2_C() {
-    val lq = new LiftedQueries()
-    val block = lq.Q2_C
-
-    // Lowering (e.g. case classes to records)
-    val lowering = new LBLowering(lq.context, lq.context)
-    val loweredBlock = lowering.lower(block)
-    val parameterPromotion = new LBParameterPromotion(lq.context)
-    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
-
-    // DCE
-    val dce = new DCE(lq.context)
-    val dceBlock = dce.optimize(operatorlessBlock)
+    // Partial evaluation
+    val partiallyEvaluator = new PartialyEvaluate(lq.context)
+    val partiallyEvaluatedBlock = partiallyEvaluator.optimize(dceBlock)
 
     // Convert Scala constructs to C
-    val cBlock = CTransformersPipeline(lq.context, dceBlock)
-
-    val ir2Program = new { val IR = lq.context } with IRToProgram {}
-
-    val finalProgram = ir2Program.createProgram(cBlock)
-
-    val LegoGenerator = new LegoCGenerator(2, true)
-    LegoGenerator.apply(finalProgram)
-  }
-
-  def query3_C() {
-    val lq = new LiftedQueries()
-    val block = lq.Q3_C
-
-    // Lowering (e.g. case classes to records)
-    val lowering = new LBLowering(lq.context, lq.context)
-    val loweredBlock = lowering.lower(block)
-    val parameterPromotion = new LBParameterPromotion(lq.context)
-    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
-
-    // DCE
-    val dce = new DCE(lq.context)
-    val dceBlock = dce.optimize(operatorlessBlock)
-
-    // Convert Scala constructs to C
-    val cBlock = CTransformersPipeline(lq.context, dceBlock)
-
-    val ir2Program = new { val IR = lq.context } with IRToProgram {}
-
-    val finalProgram = ir2Program.createProgram(cBlock)
-
-    val LegoGenerator = new LegoCGenerator(2, true)
-    LegoGenerator.apply(finalProgram)
-  }
-
-  def query4_C() {
-    val lq = new LiftedQueries()
-    val block = lq.Q4_C
-
-    // Lowering (e.g. case classes to records)
-    val lowering = new LBLowering(lq.context, lq.context)
-    val loweredBlock = lowering.lower(block)
-    val parameterPromotion = new LBParameterPromotion(lq.context)
-    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
-
-    // DCE
-    val dce = new DCE(lq.context)
-    val dceBlock = dce.optimize(operatorlessBlock)
-
-    // Convert Scala constructs to C
-    val cBlock = CTransformersPipeline(lq.context, dceBlock)
-
-    val ir2Program = new { val IR = lq.context } with IRToProgram {}
-
-    val finalProgram = ir2Program.createProgram(cBlock)
-
-    val LegoGenerator = new LegoCGenerator(2, true)
-    LegoGenerator.apply(finalProgram)
-  }
-
-  def query5_C() {
-    val lq = new LiftedQueries()
-    val block = lq.Q5_C
-
-    // Lowering (e.g. case classes to records)
-    val lowering = new LBLowering(lq.context, lq.context)
-    val loweredBlock = lowering.lower(block)
-    val parameterPromotion = new LBParameterPromotion(lq.context)
-    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
-
-    // DCE
-    val dce = new DCE(lq.context)
-    val dceBlock = dce.optimize(operatorlessBlock)
-
-    // Convert Scala constructs to C
-    val cBlock = CTransformersPipeline(lq.context, dceBlock)
-
-    val ir2Program = new { val IR = lq.context } with IRToProgram {}
-
-    val finalProgram = ir2Program.createProgram(cBlock)
-
-    val LegoGenerator = new LegoCGenerator(2, true)
-    LegoGenerator.apply(finalProgram)
-  }
-
-  def query6_C() {
-    val lq = new LiftedQueries()
-    val block = lq.Q6_C
-
-    // Lowering (e.g. case classes to records)
-    val lowering = new LBLowering(lq.context, lq.context)
-    val loweredBlock = lowering.lower(block)
-    val parameterPromotion = new LBParameterPromotion(lq.context)
-    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
-
-    // DCE
-    val dce = new DCE(lq.context)
-    val dceBlock = dce.optimize(operatorlessBlock)
-
-    // Convert Scala constructs to C
-    val cBlock = CTransformersPipeline(lq.context, dceBlock)
-
-    val ir2Program = new { val IR = lq.context } with IRToProgram {}
-
-    val finalProgram = ir2Program.createProgram(cBlock)
-
-    val LegoGenerator = new LegoCGenerator(2, true)
-    LegoGenerator.apply(finalProgram)
-  }
-
-  def compileQuery(lq: LiftedQueries, block: pardis.ir.PardisBlock[Unit], number: Int, shallow: Boolean) {
-
-    // println(block)
-    // LegoGenerator.apply(block)
-
-    val loweringContext = new LoweringLegoBase {}
-
-    // val loweredBlock = lowering.transformProgram(block)
-    val lowering = new LBLowering(lq.context, loweringContext)
-    val loweredBlock = lowering.lower(block)
-    // val loweredBlock = block
-
-    val parameterPromotion = new LBParameterPromotion(loweringContext)
-
-    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
-    // val operatorlessBlock = loweredBlock
-
-    val dce = new DCE(loweringContext)
-
-    val dceBlock = dce.optimize(operatorlessBlock)
-    // val dceBlock = operatorlessBlock
-
-    val partialyEvaluator = new PartialyEvaluate(loweringContext)
-
-    val partialyEvaluated = partialyEvaluator.optimize(dceBlock)
-    // val partialyEvaluated = dceBlock
-
-    val ir2Program = new { val IR = loweringContext } with IRToProgram {
+    val finalBlock = {
+      if (generateCCode) CTransformersPipeline(lq.context, dceBlock)
+      else partiallyEvaluatedBlock
     }
 
-    val finalProgram = ir2Program.createProgram(partialyEvaluated)
-
-    println(finalProgram)
-    val LegoGenerator = new LegoScalaGenerator(number, shallow)
-    LegoGenerator.apply(finalProgram)
+    // Generate final program 
+    val ir2Program = new { val IR = lq.context } with IRToProgram {}
+    val finalProgram = ir2Program.createProgram(finalBlock)
+    if (generateCCode) (new LegoCGenerator(shallow, "Q" + number)).apply(finalProgram)
+    else (new LegoScalaGenerator(shallow, "Q" + number)).apply(finalProgram)
   }
-
-  def query1() {
-    val lq = new LiftedQueries()
-    val block = lq.Q1
-    compileQuery(lq, block, 1, false)
-  }
-
-  def query2() {
-    val lq = new LiftedQueries()
-    val block = lq.Q2
-    compileQuery(lq, block, 2, false)
-  }
-
-  def query3() {
-    val lq = new LiftedQueries()
-    val block = lq.Q3
-    compileQuery(lq, block, 3, false)
-  }
-
-  def query4() {
-    val lq = new LiftedQueries()
-    val block = lq.Q4
-    compileQuery(lq, block, 4, false)
-  }
-
-  def query5() {
-    val lq = new LiftedQueries()
-    val block = lq.Q5
-    compileQuery(lq, block, 5, false)
-  }
-
-  def query6() {
-    val lq = new LiftedQueries()
-    val block = lq.Q6
-    compileQuery(lq, block, 6, false)
-  }
-
-  // test1()
-  // test2()
 }

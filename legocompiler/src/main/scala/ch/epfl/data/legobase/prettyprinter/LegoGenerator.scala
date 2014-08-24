@@ -7,7 +7,7 @@ import pardis.ir._
 import pardis.prettyprinter._
 import scala.language.implicitConversions
 
-class LegoScalaGenerator(val query: Int, val shallow: Boolean = false) extends ScalaCodeGenerator {
+class LegoScalaGenerator(val shallow: Boolean = false, val outputFileName: String = "generatedProgram") extends ScalaCodeGenerator {
 
   def getShallowHeader: String = if (shallow) """
 import queryengine._
@@ -48,12 +48,12 @@ object OrderingFactory {
   //Temporary fix for def main(), check if generated code for Scala runs
 
   def apply(program: PardisProgram) {
-    generate(program)
+    generate(program, outputFileName)
   }
 }
 
-class LegoCGenerator(val query: Int, val shallow: Boolean = false) extends CCodeGenerator {
+class LegoCGenerator(val shallow: Boolean = false, val outputFileName: String = "generatedProgram") extends CCodeGenerator {
   def apply(program: PardisProgram) {
-    generate(program)
+    generate(program, outputFileName)
   }
 }

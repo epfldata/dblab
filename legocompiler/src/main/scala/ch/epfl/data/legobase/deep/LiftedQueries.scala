@@ -155,50 +155,6 @@ class LiftedQueries {
       })
     }
 
-    def q3_C = {
-      val lineitemTable = loadLineitem()
-      val ordersTable = loadOrders()
-      val customerTable = loadCustomer()
-      runQuery({
-        val constantDate = parseDate(unit("1995-03-04"))
-        val scanCustomer = __newSelectOp(__newScanOp(customerTable))(__lambda { x => x.C_MKTSEGMENT __== parseString(unit("HOUSEHOLD")) })
-        val scanOrders = __newSelectOp(__newScanOp(ordersTable))(__lambda { x => x.O_ORDERDATE < constantDate })
-        val scanLineitem = __newSelectOp(__newScanOp(lineitemTable))(__lambda { x => x.L_SHIPDATE > constantDate })
-        val jo1 = __newHashJoinOp2(scanCustomer, scanOrders)(__lambda { (x, y) => x.C_CUSTKEY __== y.O_CUSTKEY })(__lambda { x => x.C_CUSTKEY })(__lambda { x => x.O_CUSTKEY })
-        val jo2 = __newHashJoinOp2(jo1, scanLineitem)(__lambda { (x, y) => x.f.O_ORDERKEY[Int] __== y.L_ORDERKEY })(__lambda { x => x.f.O_ORDERKEY[Int] })(__lambda { x => x.L_ORDERKEY })
-        val aggOp = __newAggOp(jo2, 1)(__lambda { x => __newQ3GRPRecord(x.f.L_ORDERKEY[Int], x.f.O_ORDERDATE[Long], x.f.O_SHIPPRIORITY[Int]) })(__lambda { (t, currAgg) => { currAgg + (t.f.L_EXTENDEDPRICE[Double] * (unit(1.0) - t.f.L_DISCOUNT[Double])) } })
-        val sortOp = __newSortOp(aggOp)(__lambda { (kv1, kv2) =>
-          {
-            val agg1 = kv1.aggs(unit(0))
-            val agg2 = kv2.aggs(unit(0))
-            __ifThenElse(agg1 < agg2,
-              unit(1),
-              __ifThenElse(agg1 > agg2,
-                unit(-1), {
-                  val k1 = kv1.key.O_ORDERDATE
-                  val k2 = kv2.key.O_ORDERDATE
-                  __ifThenElse(k1 < k2,
-                    unit(-1),
-                    __ifThenElse(k1 > k2,
-                      unit(1),
-                      unit(0)))
-                }))
-          }
-        })
-        var i = __newVar(unit(0))
-        val po = __newPrintOp2(sortOp)(__lambda { kv =>
-          {
-            printf(unit("%d|%.4f|%ld|%d\n"), kv.key.L_ORDERKEY, kv.aggs(unit(0)), kv.key.O_ORDERDATE, kv.key.O_SHIPPRIORITY)
-            __assign(i, readVar(i) + unit(1))
-          }
-        }, __lambda { () => readVar(i) < unit(10) })
-        po.open
-        po.next
-        printf(unit("(%d rows)\n"), po.numRows)
-        unit(())
-      })
-    }
-
     def q4 = {
       val lineitemTable = loadLineitem()
       val ordersTable = loadOrders()
@@ -284,46 +240,15 @@ class LiftedQueries {
     def q1Block = reifyBlock(q1)
     def q2Block = reifyBlock(q2)
     def q3Block = reifyBlock(q3)
-    def q3_CBlock = reifyBlock(q3_C)
     def q4Block = reifyBlock(q4)
     def q5Block = reifyBlock(q5)
     def q6Block = reifyBlock(q6)
-    def q6_CBlock = reifyBlock(q6)
   }
 
-  def Q1() =
-    context.q1Block
-
-  def Q1_C() =
-    context.q1Block
-
-  def Q2() =
-    context.q2Block
-
-  def Q2_C() =
-    context.q2Block
-
-  def Q3() =
-    context.q3Block
-
-  def Q3_C() =
-    context.q3_CBlock
-
-  def Q4() =
-    context.q4Block
-
-  def Q4_C() =
-    context.q4Block
-
-  def Q5() =
-    context.q5Block
-
-  def Q5_C() =
-    context.q5Block
-
-  def Q6() =
-    context.q6Block
-
-  def Q6_C() =
-    context.q6_CBlock
+  def Q1() = context.q1Block
+  def Q2() = context.q2Block
+  def Q3() = context.q3Block
+  def Q4() = context.q4Block
+  def Q5() = context.q5Block
+  def Q6() = context.q6Block
 }

@@ -33,13 +33,14 @@ trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base 
 object CTransformersPipeline {
   def apply[A: PardisType](context: LoweringLegoBase, b0: PardisBlock[A]) = {
     val b1 = new ScalaScannerToCFileTransformer(context).transformBlock(b0)
-    val b2 = new ScalaConstructsToCTranformer(context).transformBlock(b1)
-    val b3 = new ScalaCollectionsToGLibTransfomer(context).optimize(b2)
-    System.out.println(b3)
+    val b2 = new ScalaArrayToCStructTransformer(context).transformBlock(b1)
+    val b3 = new ScalaConstructsToCTranformer(context).transformBlock(b2)
+    val b4 = new ScalaCollectionsToGLibTransfomer(context).optimize(b3)
+    System.out.println(b4)
     // Also write to file to facilitate debugging
     val pw = new java.io.PrintWriter(new java.io.File("tree_debug_dump.txt"))
-    pw.println(b3.toString)
-    b3
+    pw.println(b4.toString)
+    b4
   }
 }
 
@@ -98,23 +99,22 @@ class ScalaScannerToCFileTransformer(override val IR: LoweringLegoBase) extends 
   }).asInstanceOf[to.Def[T]]
 }
 
-class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
+class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
   import IR._
   import CNodes._
   import CTypes._
-
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
     if (tp.isPrimitive) super.transformType[T]
     else if (tp.name.startsWith("ArrayBuffer")) typePointer(typeGArray(transformType(tp.typeArguments(0))))
     else if (tp.isArray) typePointer(typeCArray(tp.typeArguments(0)))
-    else if (tp.name.contains("TreeSet")) typePointer(typeGTree(transformType(tp.typeArguments(0))))
-    else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
-    else if (tp.name.contains("HashMap")) typePointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
     else if (tp.isRecord) {
       if (tp.typeArguments == List()) typePointer(tp)
       else typePointer(transformType(tp.typeArguments(0)))
-    } else if (tp.name.contains("Option")) typePointer(transformType(tp.typeArguments(0)))
+    } else if (tp.name.contains("TreeSet")) typePointer(typeGTree(transformType(tp.typeArguments(0))))
+    else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
+    else if (tp.name.contains("HashMap")) typePointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
+    else if (tp.name.contains("Option")) typePointer(transformType(tp.typeArguments(0)))
     else {
       System.out.println("WARNING: Default transformType called: " + tp)
       super.transformType[T]
@@ -122,23 +122,6 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
   }).asInstanceOf[PardisType[Any]]
 
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
-    case OptimalStringNew(x)     => x.correspondingNode
-    case OptimalStringString(x)  => x.correspondingNode
-    case OptimalStringDiff(x, y) => StrCmp(x, y)
-    case OptimalStringEndsWith(x, y) =>
-      val lenx = strlen(x)
-      val leny = strlen(y)
-      val len = lenx - leny
-      Equal(StrNCmp(x + len, y, len), Constant(0))
-    case OptimalStringCompare(x, y)   => StrCmp(x, y)
-    case OptimalString$eq$eq$eq(x, y) => Equal(StrCmp(x, y), Constant(0))
-
-    case s @ PardisStruct(tag, elems, methods) =>
-      // TODO if needed method generation should be added
-      val x = malloc(unit(1))(s.tp)
-      structCopy(x, PardisStruct(tag, elems, methods.map(m => m.copy(body = transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef]))))
-      ReadVal(x)(typePointer(s.tp))
-    // Mapping Scala Array to C Array
     case a @ ArrayNew(x) =>
       // Get type of elements stored in array
       val elemType = a.tp.typeArguments(0)
@@ -180,6 +163,49 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       val s = transformExp[Any, T](a)
       val arr = field(s, "length")(IntType)
       ReadVal(arr)(IntType)
+    case s @ PardisStruct(tag, elems, methods) =>
+      // TODO if needed method generation should be added
+      val x = malloc(unit(1))(s.tp)
+      structCopy(x, PardisStruct(tag, elems, methods.map(m => m.copy(body = transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef]))))
+      ReadVal(x)(typePointer(s.tp))
+
+    case pc @ PardisCast(Constant(null)) =>
+      PardisCast(Constant(0.asInstanceOf[Any]))(transformType(pc.castFrom), transformType(pc.castTp))
+    case _ => super.transformDef(node)
+  }).asInstanceOf[to.Def[T]]
+}
+
+class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
+  import IR._
+  import CNodes._
+  import CTypes._
+
+  override def transformType[T: PardisType]: PardisType[Any] = ({
+    val tp = typeRep[T]
+    if (tp.isPrimitive) super.transformType[T]
+    else if (tp.name.startsWith("ArrayBuffer")) typePointer(typeGArray(transformType(tp.typeArguments(0))))
+    else if (tp.name.contains("TreeSet")) typePointer(typeGTree(transformType(tp.typeArguments(0))))
+    else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
+    else if (tp.name.contains("HashMap")) typePointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
+    else if (tp.name.contains("Option")) typePointer(transformType(tp.typeArguments(0)))
+    else {
+      System.out.println("WARNING: Default transformType called: " + tp)
+      super.transformType[T]
+    }
+  }).asInstanceOf[PardisType[Any]]
+
+  override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
+    case OptimalStringNew(x)     => x.correspondingNode
+    case OptimalStringString(x)  => x.correspondingNode
+    case OptimalStringDiff(x, y) => StrCmp(x, y)
+    case OptimalStringEndsWith(x, y) =>
+      val lenx = strlen(x)
+      val leny = strlen(y)
+      val len = lenx - leny
+      Equal(StrNCmp(x + len, y, len), Constant(0))
+    case OptimalStringCompare(x, y)   => StrCmp(x, y)
+    case OptimalString$eq$eq$eq(x, y) => Equal(StrCmp(x, y), Constant(0))
+
     case PardisReadVal(s) =>
       val ss = transformExp[Any, T](s)
       PardisReadVal(ss)(ss.tp.asInstanceOf[PardisType[T]])
@@ -219,8 +245,6 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       else eq
     }
     // Profiling and utils functions mapping
-    case pc @ PardisCast(Constant(null)) =>
-      PardisCast(Constant(0.asInstanceOf[Any]))(transformType(pc.castFrom), transformType(pc.castTp))
     case RunQuery(b) =>
       val diff = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val start = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
@@ -237,7 +261,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     case imtf @ PardisStructImmutableField(s, f) =>
       PardisStructImmutableField(s, f)(transformType(imtf.tp))
     case ParseString(s)  => ReadVal(s)
-    case DateToString(d) => ReadVal(d)(LongType)
+    case DateToString(d) => NameAlias[String](None, "ltoa", List(List(d)))
     case _               => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
 }
@@ -255,7 +279,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
     if (tp.name.contains("ArrayBuffer")) typePointer(typeGArray(transformType(tp.typeArguments(0))))
-    else if (tp.name.startsWith("CArray")) tp //typePointer(typeCArray(transformType(tp.typeArguments(0))))
+    else if (tp.name.startsWith("CArray")) tp
     else if (tp.name.contains("Seq")) typePointer(typeGList(transformType(tp.typeArguments(0))))
     else if (tp.name.contains("TreeSet")) typePointer(typeGTree(transformType(tp.typeArguments(0))))
     else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
