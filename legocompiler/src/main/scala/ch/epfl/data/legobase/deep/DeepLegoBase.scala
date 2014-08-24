@@ -340,6 +340,140 @@ trait Q10GRPRecordImplementations { self: DeepDSL =>
 }
 trait Q10GRPRecordComponent extends Q10GRPRecordOps with Q10GRPRecordImplicits { self: DeepDSL => }
 
+trait Q16GRPRecord1Ops extends Base { this: DeepDSL =>
+  implicit class Q16GRPRecord1Rep(self: Rep[Q16GRPRecord1]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q16GRPRecord1GetField(self, key)
+    def PS_SUPPKEY: Rep[Int] = q16GRPRecord1_Field_PS_SUPPKEY(self)
+    def P_SIZE: Rep[Int] = q16GRPRecord1_Field_P_SIZE(self)
+    def P_TYPE: Rep[OptimalString] = q16GRPRecord1_Field_P_TYPE(self)
+    def P_BRAND: Rep[OptimalString] = q16GRPRecord1_Field_P_BRAND(self)
+  }
+  object Q16GRPRecord1 {
+
+  }
+  // constructors
+  def __newQ16GRPRecord1(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]): Rep[Q16GRPRecord1] = q16GRPRecord1New(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY)
+  // case classes
+  case class Q16GRPRecord1New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]) extends ConstructorDef[Q16GRPRecord1](List(), "Q16GRPRecord1", List(List(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q16GRPRecord1GetField(self: Rep[Q16GRPRecord1], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q16GRPRecord1_Field_PS_SUPPKEY(self: Rep[Q16GRPRecord1]) extends FieldDef[Int](self, "PS_SUPPKEY") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q16GRPRecord1_Field_P_SIZE(self: Rep[Q16GRPRecord1]) extends FieldDef[Int](self, "P_SIZE") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q16GRPRecord1_Field_P_TYPE(self: Rep[Q16GRPRecord1]) extends FieldDef[OptimalString](self, "P_TYPE") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q16GRPRecord1_Field_P_BRAND(self: Rep[Q16GRPRecord1]) extends FieldDef[OptimalString](self, "P_BRAND") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def q16GRPRecord1New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]): Rep[Q16GRPRecord1] = Q16GRPRecord1New(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY)
+  def q16GRPRecord1GetField(self: Rep[Q16GRPRecord1], key: Rep[String]): Rep[Option[Any]] = Q16GRPRecord1GetField(self, key)
+  def q16GRPRecord1_Field_PS_SUPPKEY(self: Rep[Q16GRPRecord1]): Rep[Int] = Q16GRPRecord1_Field_PS_SUPPKEY(self)
+  def q16GRPRecord1_Field_P_SIZE(self: Rep[Q16GRPRecord1]): Rep[Int] = Q16GRPRecord1_Field_P_SIZE(self)
+  def q16GRPRecord1_Field_P_TYPE(self: Rep[Q16GRPRecord1]): Rep[OptimalString] = Q16GRPRecord1_Field_P_TYPE(self)
+  def q16GRPRecord1_Field_P_BRAND(self: Rep[Q16GRPRecord1]): Rep[OptimalString] = Q16GRPRecord1_Field_P_BRAND(self)
+  type Q16GRPRecord1 = ch.epfl.data.legobase.queryengine.Q16GRPRecord1
+  case object Q16GRPRecord1Type extends TypeRep[Q16GRPRecord1] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q16GRPRecord1Type
+    val name = "Q16GRPRecord1"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q16GRPRecord1]
+  }
+  implicit val typeQ16GRPRecord1 = Q16GRPRecord1Type
+}
+trait Q16GRPRecord1Implicits { this: Q16GRPRecord1Component =>
+  // Add implicit conversions here!
+}
+trait Q16GRPRecord1Implementations { self: DeepDSL =>
+
+}
+trait Q16GRPRecord1Component extends Q16GRPRecord1Ops with Q16GRPRecord1Implicits { self: DeepDSL => }
+
+trait Q16GRPRecord2Ops extends Base { this: DeepDSL =>
+  implicit class Q16GRPRecord2Rep(self: Rep[Q16GRPRecord2]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q16GRPRecord2GetField(self, key)
+    def P_SIZE: Rep[Int] = q16GRPRecord2_Field_P_SIZE(self)
+    def P_TYPE: Rep[OptimalString] = q16GRPRecord2_Field_P_TYPE(self)
+    def P_BRAND: Rep[OptimalString] = q16GRPRecord2_Field_P_BRAND(self)
+  }
+  object Q16GRPRecord2 {
+
+  }
+  // constructors
+  def __newQ16GRPRecord2(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]): Rep[Q16GRPRecord2] = q16GRPRecord2New(P_BRAND, P_TYPE, P_SIZE)
+  // case classes
+  case class Q16GRPRecord2New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]) extends ConstructorDef[Q16GRPRecord2](List(), "Q16GRPRecord2", List(List(P_BRAND, P_TYPE, P_SIZE))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q16GRPRecord2GetField(self: Rep[Q16GRPRecord2], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q16GRPRecord2_Field_P_SIZE(self: Rep[Q16GRPRecord2]) extends FieldDef[Int](self, "P_SIZE") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q16GRPRecord2_Field_P_TYPE(self: Rep[Q16GRPRecord2]) extends FieldDef[OptimalString](self, "P_TYPE") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Q16GRPRecord2_Field_P_BRAND(self: Rep[Q16GRPRecord2]) extends FieldDef[OptimalString](self, "P_BRAND") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def q16GRPRecord2New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]): Rep[Q16GRPRecord2] = Q16GRPRecord2New(P_BRAND, P_TYPE, P_SIZE)
+  def q16GRPRecord2GetField(self: Rep[Q16GRPRecord2], key: Rep[String]): Rep[Option[Any]] = Q16GRPRecord2GetField(self, key)
+  def q16GRPRecord2_Field_P_SIZE(self: Rep[Q16GRPRecord2]): Rep[Int] = Q16GRPRecord2_Field_P_SIZE(self)
+  def q16GRPRecord2_Field_P_TYPE(self: Rep[Q16GRPRecord2]): Rep[OptimalString] = Q16GRPRecord2_Field_P_TYPE(self)
+  def q16GRPRecord2_Field_P_BRAND(self: Rep[Q16GRPRecord2]): Rep[OptimalString] = Q16GRPRecord2_Field_P_BRAND(self)
+  type Q16GRPRecord2 = ch.epfl.data.legobase.queryengine.Q16GRPRecord2
+  case object Q16GRPRecord2Type extends TypeRep[Q16GRPRecord2] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q16GRPRecord2Type
+    val name = "Q16GRPRecord2"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q16GRPRecord2]
+  }
+  implicit val typeQ16GRPRecord2 = Q16GRPRecord2Type
+}
+trait Q16GRPRecord2Implicits { this: Q16GRPRecord2Component =>
+  // Add implicit conversions here!
+}
+trait Q16GRPRecord2Implementations { self: DeepDSL =>
+
+}
+trait Q16GRPRecord2Component extends Q16GRPRecord2Ops with Q16GRPRecord2Implicits { self: DeepDSL => }
+
 trait Q18GRPRecordOps extends Base { this: DeepDSL =>
   implicit class Q18GRPRecordRep(self: Rep[Q18GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q18GRPRecordGetField(self, key)
@@ -1806,6 +1940,8 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowReco
   with Q7GRPRecordComponent
   with Q9GRPRecordComponent
   with Q10GRPRecordComponent
+  with Q16GRPRecord1Component
+  with Q16GRPRecord2Component
   with Q18GRPRecordComponent
   with Q20GRPRecordComponent
   with GenericEngineComponent

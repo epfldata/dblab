@@ -298,7 +298,8 @@ class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   def getResult = { parent.open; parent.next; }
 }
 
-class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
+@deep
+class HashJoinAnti[A, B, C](val leftParent: Operator[A], val rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   val hm = new HashMap[C, ArrayBuffer[A]]()
   var keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
 
@@ -337,7 +338,7 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
           // could use filter in scala and assign the result to the hm)
           var removed = 0
           for (i <- 0 until elems.size) {
-            var idx = i - removed
+            val idx = i - removed
             val e = elems(idx)
             if (joinCond(e, t)) {
               removeFromList(elems, e, idx);

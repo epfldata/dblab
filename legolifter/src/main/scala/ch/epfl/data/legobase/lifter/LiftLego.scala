@@ -15,6 +15,7 @@ import scala.collection.mutable.MirrorSet
 import scala.collection.mutable.MirrorTreeSet
 import scala.collection.mutable.MirrorDefaultEntry
 import scala.collection.mutable.MirrorArrayBuffer
+import scala.collection.mutable.MirrorRange
 
 object LiftLego {
   val reportToFile = true
@@ -36,7 +37,8 @@ object LiftLego {
       al.autoLift[MirrorDouble],
       al.autoLift[MirrorCharacter],
       al.autoLift[MirrorLong],
-      al.autoLift[MirrorInteger] // TODO should be ported to pardis
+      al.autoLift[MirrorInteger],
+      al.autoLift[MirrorByte] // TODO should be ported to pardis
       // , al.autoLift[MirrorBoolean]
       )
     val liftedCode = liftedCodes.mkString("\n")
@@ -64,6 +66,8 @@ $liftedCode
       al.autoLift[queryengine.Q7GRPRecord],
       al.autoLift[queryengine.Q9GRPRecord],
       al.autoLift[queryengine.Q10GRPRecord],
+      al.autoLift[queryengine.Q16GRPRecord1],
+      al.autoLift[queryengine.Q16GRPRecord2],
       al.autoLift[queryengine.Q18GRPRecord],
       al.autoLift[queryengine.Q20GRPRecord],
       al.autoLift[queryengine.AGGRecord[Any]],
@@ -102,6 +106,8 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowReco
   with Q7GRPRecordComponent
   with Q9GRPRecordComponent
   with Q10GRPRecordComponent
+  with Q16GRPRecord1Component
+  with Q16GRPRecord2Component
   with Q18GRPRecordComponent
   with Q20GRPRecordComponent
   with GenericEngineComponent
@@ -128,7 +134,8 @@ trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowReco
       al.autoLift[MirrorSet[Any]](Custom("DeepDSL")),
       al.autoLift[MirrorTreeSet[Any]](Custom("DeepDSL")),
       al.autoLift[MirrorDefaultEntry[Any, Any]](Custom("DeepDSL")),
-      al.autoLift[MirrorArrayBuffer[Any]](Custom("DeepDSL")))
+      al.autoLift[MirrorArrayBuffer[Any]](Custom("DeepDSL")),
+      al.autoLift[MirrorRange](Custom("DeepDSL")))
     val liftedCode = liftedCodes.mkString("\n")
     val file = "DeepScalaCollection"
     printToFile(new java.io.File(s"$folder/scalalib/$file.scala")) { pw =>

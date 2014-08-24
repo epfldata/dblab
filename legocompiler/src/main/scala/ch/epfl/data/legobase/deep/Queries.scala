@@ -26,10 +26,13 @@ trait QueriesOps extends Base { this: QueryComponent =>
     def Q12(numRuns: Rep[Int]): Rep[Unit] = queriesQ12Object(numRuns)
     def Q14(numRuns: Rep[Int]): Rep[Unit] = queriesQ14Object(numRuns)
     def Q15(numRuns: Rep[Int]): Rep[Unit] = queriesQ15Object(numRuns)
+    def Q16(numRuns: Rep[Int]): Rep[Unit] = queriesQ16Object(numRuns)
     def Q17(numRuns: Rep[Int]): Rep[Unit] = queriesQ17Object(numRuns)
     def Q18(numRuns: Rep[Int]): Rep[Unit] = queriesQ18Object(numRuns)
     def Q19(numRuns: Rep[Int]): Rep[Unit] = queriesQ19Object(numRuns)
     def Q20(numRuns: Rep[Int]): Rep[Unit] = queriesQ20Object(numRuns)
+    def Q21(numRuns: Rep[Int]): Rep[Unit] = queriesQ21Object(numRuns)
+    def Q22(numRuns: Rep[Int]): Rep[Unit] = queriesQ22Object(numRuns)
   }
   // constructors
 
@@ -90,6 +93,10 @@ trait QueriesOps extends Base { this: QueryComponent =>
     override def curriedConstructor = (copy _)
   }
 
+  case class QueriesQ16Object(numRuns: Rep[Int]) extends FunctionDef[Unit](None, "Queries.Q16", List(List(numRuns))) {
+    override def curriedConstructor = (copy _)
+  }
+
   case class QueriesQ17Object(numRuns: Rep[Int]) extends FunctionDef[Unit](None, "Queries.Q17", List(List(numRuns))) {
     override def curriedConstructor = (copy _)
   }
@@ -103,6 +110,14 @@ trait QueriesOps extends Base { this: QueryComponent =>
   }
 
   case class QueriesQ20Object(numRuns: Rep[Int]) extends FunctionDef[Unit](None, "Queries.Q20", List(List(numRuns))) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class QueriesQ21Object(numRuns: Rep[Int]) extends FunctionDef[Unit](None, "Queries.Q21", List(List(numRuns))) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class QueriesQ22Object(numRuns: Rep[Int]) extends FunctionDef[Unit](None, "Queries.Q22", List(List(numRuns))) {
     override def curriedConstructor = (copy _)
   }
 
@@ -121,10 +136,13 @@ trait QueriesOps extends Base { this: QueryComponent =>
   def queriesQ12Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ12Object(numRuns)
   def queriesQ14Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ14Object(numRuns)
   def queriesQ15Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ15Object(numRuns)
+  def queriesQ16Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ16Object(numRuns)
   def queriesQ17Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ17Object(numRuns)
   def queriesQ18Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ18Object(numRuns)
   def queriesQ19Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ19Object(numRuns)
   def queriesQ20Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ20Object(numRuns)
+  def queriesQ21Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ21Object(numRuns)
+  def queriesQ22Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ22Object(numRuns)
   type Queries = ch.epfl.data.legobase.Queries
   case object QueriesType extends TypeRep[Queries] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = QueriesType
@@ -555,6 +573,43 @@ trait QueriesImplementations { self: DeepDSL =>
       })
     }
   }
+  override def queriesQ16Object(numRuns: Rep[Int]): Rep[Unit] = {
+    {
+      val supplierTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]] = Loader.loadSupplier();
+      val partTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord]] = Loader.loadPart();
+      val partsuppTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord]] = Loader.loadPartsupp();
+      GenericEngine.runQuery[Unit]({
+        val str1: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("Customer"));
+        val str2: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("Complaints"));
+        val brand21: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("Brand#21"));
+        val promoPlated: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("PROMO PLATED"));
+        val partScan: this.Rep[ch.epfl.data.legobase.queryengine.volcano.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord]] = __newSelectOp(__newScanOp(partTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord]) => x.P_BRAND.startsWith(brand21).unary_$bang.$amp$amp(x.P_TYPE.startsWith(promoPlated).unary_$bang).$amp$amp(infix_$eq$eq(x.P_SIZE, unit(23)).$bar$bar(infix_$eq$eq(x.P_SIZE, unit(3))).$bar$bar(infix_$eq$eq(x.P_SIZE, unit(33))).$bar$bar(infix_$eq$eq(x.P_SIZE, unit(29))).$bar$bar(infix_$eq$eq(x.P_SIZE, unit(40))).$bar$bar(infix_$eq$eq(x.P_SIZE, unit(27))).$bar$bar(infix_$eq$eq(x.P_SIZE, unit(22))).$bar$bar(infix_$eq$eq(x.P_SIZE, unit(4)))))));
+        val partsuppScan: this.Rep[ch.epfl.data.legobase.queryengine.volcano.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord]] = __newScanOp(partsuppTable);
+        val jo1: this.Rep[ch.epfl.data.legobase.queryengine.volcano.HashJoinOp[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord, Int]] = __newHashJoinOp(partScan, partsuppScan)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord], y: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord]) => infix_$eq$eq(x.P_PARTKEY, y.PS_PARTKEY))))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord]) => x.P_PARTKEY)))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord]) => x.PS_PARTKEY)));
+        val supplierScan: this.Rep[ch.epfl.data.legobase.queryengine.volcano.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]] = __newSelectOp(__newScanOp(supplierTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]) => {
+          val idxu: this.Rep[Int] = x.S_COMMENT.indexOfSlice(str1, unit(0));
+          val idxp: this.Rep[Int] = x.S_COMMENT.indexOfSlice(str2, idxu);
+          infix_$bang$eq(idxu, unit(-1)).$amp$amp(infix_$bang$eq(idxp, unit(-1)))
+        })));
+        val jo2: this.Rep[ch.epfl.data.legobase.queryengine.volcano.HashJoinAnti[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord, Int]] = __newHashJoinAnti(jo1, supplierScan)(__lambda(((x: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord]], y: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]) => infix_$eq$eq(x.selectDynamic[Int](unit("PS_SUPPKEY")), y.S_SUPPKEY))))(__lambda(((x: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord]]) => x.selectDynamic[Int](unit("PS_SUPPKEY")))))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]) => x.S_SUPPKEY)));
+        val aggOp: this.Rep[ch.epfl.data.legobase.queryengine.volcano.AggOp[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord], ch.epfl.data.legobase.queryengine.Q16GRPRecord1]] = __newAggOp(jo2, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord]]) => __newQ16GRPRecord1(x.selectDynamic[ch.epfl.data.legobase.LBString](unit("P_BRAND")), x.selectDynamic[ch.epfl.data.legobase.LBString](unit("P_TYPE")), x.selectDynamic[Int](unit("P_SIZE")), x.selectDynamic[Int](unit("PS_SUPPKEY"))))))(__lambda(((t: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord]], currAgg: this.Rep[Double]) => currAgg)));
+        val aggOp2: this.Rep[ch.epfl.data.legobase.queryengine.volcano.AggOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q16GRPRecord1], ch.epfl.data.legobase.queryengine.Q16GRPRecord2]] = __newAggOp(aggOp, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q16GRPRecord1]]) => __newQ16GRPRecord2(x.key.P_BRAND, x.key.P_TYPE, x.key.P_SIZE))))(__lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q16GRPRecord1]], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
+        val sortOp: this.Rep[ch.epfl.data.legobase.queryengine.volcano.SortOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q16GRPRecord2]]] = __newSortOp(aggOp2)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q16GRPRecord2]], y: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q16GRPRecord2]]) => __ifThenElse(x.aggs.apply(unit(0)).$less(y.aggs.apply(unit(0))), unit(1), __ifThenElse(x.aggs.apply(unit(0)).$greater(y.aggs.apply(unit(0))), unit(-1), {
+          var res: this.Var[Int] = __newVar(x.key.P_BRAND.diff(y.key.P_BRAND));
+          __ifThenElse(infix_$eq$eq(readVar(res), unit(0)), {
+            __assign(res, x.key.P_TYPE.diff(y.key.P_TYPE));
+            __ifThenElse(infix_$eq$eq(readVar(res), unit(0)), __assign(res, x.key.P_SIZE.$minus(y.key.P_SIZE)), unit(()))
+          }, unit(()));
+          readVar(res)
+        })))));
+        val po: this.Rep[ch.epfl.data.legobase.queryengine.volcano.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q16GRPRecord2]]] = __newPrintOp(sortOp)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q16GRPRecord2]]) => printf(unit("%s|%s|%d|%.0f\n"), x.key.P_BRAND.string, x.key.P_TYPE.string, x.key.P_SIZE, x.aggs.apply(unit(0))))), __lambda((() => unit(true))));
+        po.open();
+        po.next();
+        printf(unit("(%d rows)\n"), po.numRows);
+        unit(())
+      })
+    }
+  }
   override def queriesQ17Object(numRuns: Rep[Int]): Rep[Unit] = {
     {
       val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
@@ -673,6 +728,77 @@ trait QueriesImplementations { self: DeepDSL =>
         val jo4: this.Rep[ch.epfl.data.legobase.queryengine.volcano.HashJoinOp[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q20GRPRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord], Int]] = __newHashJoinOp(scanNation, jo3)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord], y: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q20GRPRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]]) => infix_$eq$eq(x.N_NATIONKEY, y.selectDynamic[Int](unit("S_NATIONKEY"))))))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord]) => x.N_NATIONKEY)))(__lambda(((x: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q20GRPRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]]) => x.selectDynamic[Int](unit("S_NATIONKEY")))));
         val sortOp: this.Rep[ch.epfl.data.legobase.queryengine.volcano.SortOp[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q20GRPRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]]]] = __newSortOp(jo4)(__lambda(((x: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q20GRPRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]]], y: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q20GRPRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]]]) => x.selectDynamic[ch.epfl.data.legobase.LBString](unit("S_NAME")).diff(y.selectDynamic[ch.epfl.data.legobase.LBString](unit("S_NAME"))))));
         val po: this.Rep[ch.epfl.data.legobase.queryengine.volcano.PrintOp[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q20GRPRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q20GRPRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]]]) => printf(unit("%s|%s\n"), kv.selectDynamic[ch.epfl.data.legobase.LBString](unit("S_NAME")).string, kv.selectDynamic[ch.epfl.data.legobase.LBString](unit("S_ADDRESS")).string))), __lambda((() => unit(true))));
+        po.open();
+        po.next();
+        printf(unit("(%d rows)\n"), po.numRows);
+        unit(())
+      })
+    }
+  }
+  override def queriesQ21Object(numRuns: Rep[Int]): Rep[Unit] = {
+    {
+      val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
+      val supplierTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]] = Loader.loadSupplier();
+      val ordersTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = Loader.loadOrders();
+      val nationTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord]] = Loader.loadNation();
+      GenericEngine.runQuery[Unit]({
+        val morocco: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("MOROCCO"));
+        val lineitemScan1: this.Rep[ch.epfl.data.legobase.queryengine.volcano.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = __newSelectOp(__newScanOp(lineitemTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]) => x.L_RECEIPTDATE.$greater(x.L_COMMITDATE))));
+        val lineitemScan2: this.Rep[ch.epfl.data.legobase.queryengine.volcano.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = __newScanOp(lineitemTable);
+        val lineitemScan3: this.Rep[ch.epfl.data.legobase.queryengine.volcano.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = __newSelectOp(__newScanOp(lineitemTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]) => x.L_RECEIPTDATE.$greater(x.L_COMMITDATE))));
+        val supplierScan: this.Rep[ch.epfl.data.legobase.queryengine.volcano.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]] = __newScanOp(supplierTable);
+        val nationScan: this.Rep[ch.epfl.data.legobase.queryengine.volcano.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord]] = __newSelectOp(__newScanOp(nationTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord]) => x.N_NAME.$eq$eq$eq(morocco))));
+        val ordersScan: this.Rep[ch.epfl.data.legobase.queryengine.volcano.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = __newSelectOp(__newScanOp(ordersTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]) => infix_$eq$eq(x.O_ORDERSTATUS, unit('F')))));
+        val jo1: this.Rep[ch.epfl.data.legobase.queryengine.volcano.HashJoinOp[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord, Int]] = __newHashJoinOp(nationScan, supplierScan)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord], y: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]) => infix_$eq$eq(x.N_NATIONKEY, y.S_NATIONKEY))))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord]) => x.N_NATIONKEY)))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]) => x.S_NATIONKEY)));
+        val jo2: this.Rep[ch.epfl.data.legobase.queryengine.volcano.HashJoinOp[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord, Int]] = __newHashJoinOp(jo1, lineitemScan1)(__lambda(((x: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]], y: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]) => infix_$eq$eq(x.selectDynamic[Int](unit("S_SUPPKEY")), y.L_SUPPKEY))))(__lambda(((x: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]]) => x.selectDynamic[Int](unit("S_SUPPKEY")))))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]) => x.L_SUPPKEY)));
+        val jo3: this.Rep[ch.epfl.data.legobase.queryengine.volcano.LeftHashSemiJoinOp[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord, Int]] = __newLeftHashSemiJoinOp(jo2, lineitemScan2)(__lambda(((x: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]], y: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]) => infix_$eq$eq(x.selectDynamic[Int](unit("L_ORDERKEY")), y.L_ORDERKEY).$amp$amp(infix_$bang$eq(x.selectDynamic[Int](unit("L_SUPPKEY")), y.L_SUPPKEY)))))(__lambda(((x: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]]) => x.selectDynamic[Int](unit("L_ORDERKEY")))))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]) => x.L_ORDERKEY)));
+        val jo4: this.Rep[ch.epfl.data.legobase.queryengine.volcano.HashJoinAnti[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord, Int]] = __newHashJoinAnti(jo3, lineitemScan3)(__lambda(((x: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]], y: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]) => infix_$eq$eq(x.selectDynamic[Int](unit("L_ORDERKEY")), y.L_ORDERKEY).$amp$amp(infix_$bang$eq(x.selectDynamic[Int](unit("L_SUPPKEY")), y.L_SUPPKEY)))))(__lambda(((x: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]]) => x.selectDynamic[Int](unit("L_ORDERKEY")))))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]) => x.L_ORDERKEY)));
+        val jo5: this.Rep[ch.epfl.data.legobase.queryengine.volcano.HashJoinOp[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord, ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord], Int]] = __newHashJoinOp(ordersScan, jo4)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord], y: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]]) => infix_$eq$eq(x.O_ORDERKEY, y.selectDynamic[Int](unit("L_ORDERKEY"))))))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]) => x.O_ORDERKEY)))(__lambda(((x: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]]) => x.selectDynamic[Int](unit("L_ORDERKEY")))));
+        val aggOp: this.Rep[ch.epfl.data.legobase.queryengine.volcano.AggOp[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord, ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]], ch.epfl.data.legobase.LBString]] = __newAggOp(jo5, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord, ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]]]) => x.selectDynamic[ch.epfl.data.legobase.LBString](unit("S_NAME")))))(__lambda(((t: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord, ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]]], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
+        val sortOp: this.Rep[ch.epfl.data.legobase.queryengine.volcano.SortOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.LBString]]] = __newSortOp(aggOp)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.LBString]], y: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.LBString]]) => {
+          val a1: this.Rep[Double] = x.aggs.apply(unit(0));
+          val a2: this.Rep[Double] = y.aggs.apply(unit(0));
+          __ifThenElse(a1.$less(a2), unit(1), __ifThenElse(a1.$greater(a2), unit(-1), x.key.diff(y.key)))
+        })));
+        var i: this.Var[Int] = __newVar(unit(0));
+        val po: this.Rep[ch.epfl.data.legobase.queryengine.volcano.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.LBString]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.LBString]]) => {
+          printf(unit("%s|%.0f\n"), kv.key.string, kv.aggs.apply(unit(0)), __lambda((() => unit(true))));
+          __assign(i, readVar(i).$plus(unit(1)))
+        })), __lambda((() => readVar(i).$less(unit(100)))));
+        po.open();
+        po.next();
+        printf(unit("(%d rows)\n"), po.numRows);
+        unit(())
+      })
+    }
+  }
+  override def queriesQ22Object(numRuns: Rep[Int]): Rep[Unit] = {
+    {
+      val customerTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = Loader.loadCustomer();
+      val ordersTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = Loader.loadOrders();
+      GenericEngine.runQuery[Unit]({
+        val v23: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("23"));
+        val v29: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("29"));
+        val v22: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("22"));
+        val v20: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("20"));
+        val v24: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("24"));
+        val v26: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("26"));
+        val v25: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("25"));
+        val customerScan1: this.Rep[ch.epfl.data.legobase.queryengine.volcano.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = __newSelectOp(__newScanOp(customerTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]) => x.C_ACCTBAL.$greater(unit(0.0)).$amp$amp(x.C_PHONE.startsWith(v23).$bar$bar(x.C_PHONE.startsWith(v29).$bar$bar(x.C_PHONE.startsWith(v22).$bar$bar(x.C_PHONE.startsWith(v20).$bar$bar(x.C_PHONE.startsWith(v24).$bar$bar(x.C_PHONE.startsWith(v26).$bar$bar(x.C_PHONE.startsWith(v25)))))))))));
+        val aggOp1: this.Rep[ch.epfl.data.legobase.queryengine.volcano.AggOp[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord, String]] = __newAggOp(customerScan1, unit(3))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]) => unit("AVG_C_ACCTBAL"))))(__lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord], currAgg: this.Rep[Double]) => t.C_ACCTBAL.$plus(currAgg))), __lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
+        val mapOp: this.Rep[ch.epfl.data.legobase.queryengine.volcano.MapOp[ch.epfl.data.legobase.queryengine.AGGRecord[String]]] = __newMapOp(aggOp1)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[String]]) => kv.aggs.update(unit(2), kv.aggs.apply(unit(0)).$div(kv.aggs.apply(unit(1)))))));
+        mapOp.open();
+        val nestedAVG: this.Rep[Double] = __newSubquerySingleResult(mapOp).getResult.aggs.apply(unit(2));
+        val customerScan2: this.Rep[ch.epfl.data.legobase.queryengine.volcano.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = __newSelectOp(__newScanOp(customerTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]) => x.C_ACCTBAL.$greater(nestedAVG).$amp$amp(x.C_PHONE.startsWith(v23).$bar$bar(x.C_PHONE.startsWith(v29).$bar$bar(x.C_PHONE.startsWith(v22).$bar$bar(x.C_PHONE.startsWith(v20).$bar$bar(x.C_PHONE.startsWith(v24).$bar$bar(x.C_PHONE.startsWith(v26).$bar$bar(x.C_PHONE.startsWith(v25)))))))))));
+        val ordersScan: this.Rep[ch.epfl.data.legobase.queryengine.volcano.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = __newScanOp(ordersTable);
+        val jo: this.Rep[ch.epfl.data.legobase.queryengine.volcano.HashJoinAnti[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord, Int]] = __newHashJoinAnti(customerScan2, ordersScan)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord], y: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]) => infix_$eq$eq(x.C_CUSTKEY, y.O_CUSTKEY))))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]) => x.C_CUSTKEY)))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]) => x.O_CUSTKEY)));
+        val aggOp2: this.Rep[ch.epfl.data.legobase.queryengine.volcano.AggOp[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord, ch.epfl.data.pardis.shallow.OptimalString]] = __newAggOp(jo, unit(2))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]) => x.C_PHONE.slice(unit(0), unit(2)))))(__lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord], currAgg: this.Rep[Double]) => t.C_ACCTBAL.$plus(currAgg))), __lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
+        val sortOp: this.Rep[ch.epfl.data.legobase.queryengine.volcano.SortOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.pardis.shallow.OptimalString]]] = __newSortOp(aggOp2)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.pardis.shallow.OptimalString]], y: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.pardis.shallow.OptimalString]]) => {
+          var res: this.Var[Int] = __newVar(x.key.apply(unit(0)).$minus(y.key.apply(unit(0))));
+          __ifThenElse(infix_$eq$eq(readVar(res), unit(0)), __assign(res, x.key.apply(unit(1)).$minus(y.key.apply(unit(1)))), unit(()));
+          readVar(res)
+        })));
+        val po: this.Rep[ch.epfl.data.legobase.queryengine.volcano.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.pardis.shallow.OptimalString]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.pardis.shallow.OptimalString]]) => printf(unit("%s|%.0f|%.2f\n"), kv.key.string, kv.aggs.apply(unit(1)), kv.aggs.apply(unit(0))))), __lambda((() => unit(true))));
         po.open();
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);

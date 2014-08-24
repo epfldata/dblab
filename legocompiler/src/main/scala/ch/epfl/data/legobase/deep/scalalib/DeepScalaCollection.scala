@@ -327,6 +327,7 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
     def minBy[B](f: Rep[(A => B)])(implicit typeB: TypeRep[B], cmp: Ordering[B]): Rep[A] = arrayBufferMinBy[A, B](self, f)(typeA, typeB, cmp)
     def foldLeft[B](z: Rep[B])(op: Rep[((B, A) => B)])(implicit typeB: TypeRep[B]): Rep[B] = arrayBufferFoldLeft[A, B](self, z, op)(typeA, typeB)
     def append(elem: Rep[A]): Rep[Unit] = arrayBufferAppend[A](self, elem)(typeA)
+    def remove(n: Rep[Int]): Rep[A] = arrayBufferRemove[A](self, n)(typeA)
     def initialSize: Rep[Int] = arrayBuffer_Field_InitialSize[A](self)(typeA)
   }
   object ArrayBuffer {
@@ -346,14 +347,10 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
 
   case class ArrayBufferSize[A](self: Rep[ArrayBuffer[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Int](Some(self), "size", List()) {
     override def curriedConstructor = (copy[A] _)
-    override def isPure = true
-
   }
 
   case class ArrayBufferApply[A](self: Rep[ArrayBuffer[A]], i: Rep[Int])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "apply", List(List(i))) {
     override def curriedConstructor = (copy[A] _).curried
-    override def isPure = true
-
   }
 
   case class ArrayBufferUpdate[A](self: Rep[ArrayBuffer[A]], i: Rep[Int], x: Rep[A])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "update", List(List(i, x))) {
@@ -380,6 +377,10 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A] _).curried
   }
 
+  case class ArrayBufferRemove[A](self: Rep[ArrayBuffer[A]], n: Rep[Int])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "remove", List(List(n))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
   case class ArrayBuffer_Field_InitialSize[A](self: Rep[ArrayBuffer[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Int](self, "initialSize") {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
@@ -401,6 +402,7 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
   def arrayBufferMinBy[A, B](self: Rep[ArrayBuffer[A]], f: Rep[((A) => B)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], cmp: Ordering[B]): Rep[A] = ArrayBufferMinBy[A, B](self, f)
   def arrayBufferFoldLeft[A, B](self: Rep[ArrayBuffer[A]], z: Rep[B], op: Rep[((B, A) => B)])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[B] = ArrayBufferFoldLeft[A, B](self, z, op)
   def arrayBufferAppend[A](self: Rep[ArrayBuffer[A]], elem: Rep[A])(implicit typeA: TypeRep[A]): Rep[Unit] = ArrayBufferAppend[A](self, elem)
+  def arrayBufferRemove[A](self: Rep[ArrayBuffer[A]], n: Rep[Int])(implicit typeA: TypeRep[A]): Rep[A] = ArrayBufferRemove[A](self, n)
   def arrayBuffer_Field_InitialSize[A](self: Rep[ArrayBuffer[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ArrayBuffer_Field_InitialSize[A](self)
   def arrayBufferApplyObject[T]()(implicit typeT: TypeRep[T]): Rep[ArrayBuffer[T]] = ArrayBufferApplyObject[T]()
   type ArrayBuffer[A] = scala.collection.mutable.ArrayBuffer[A]
@@ -421,4 +423,67 @@ trait ArrayBufferImplementations { self: DeepDSL =>
 
 }
 trait ArrayBufferComponent extends ArrayBufferOps with ArrayBufferImplicits { self: DeepDSL => }
+
+trait RangeOps extends Base { this: DeepDSL =>
+  implicit class RangeRep(self: Rep[Range]) {
+    def foreach[U](f: Rep[(Int => U)])(implicit typeU: TypeRep[U]): Rep[Unit] = rangeForeach[U](self, f)(typeU)
+    def step: Rep[Int] = range_Field_Step(self)
+    def end: Rep[Int] = range_Field_End(self)
+    def start: Rep[Int] = range_Field_Start(self)
+  }
+  object Range {
+
+  }
+  // constructors
+  def __newRange(start: Rep[Int], end: Rep[Int], step: Rep[Int]): Rep[Range] = rangeNew(start, end, step)
+  // case classes
+  case class RangeNew(start: Rep[Int], end: Rep[Int], step: Rep[Int]) extends ConstructorDef[Range](List(), "Range", List(List(start, end, step))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class RangeForeach[U](self: Rep[Range], f: Rep[((Int) => U)])(implicit val typeU: TypeRep[U]) extends FunctionDef[Unit](Some(self), "foreach", List(List(f))) {
+    override def curriedConstructor = (copy[U] _).curried
+  }
+
+  case class Range_Field_Step(self: Rep[Range]) extends FieldDef[Int](self, "step") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Range_Field_End(self: Rep[Range]) extends FieldDef[Int](self, "end") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  case class Range_Field_Start(self: Rep[Range]) extends FieldDef[Int](self, "start") {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def rangeNew(start: Rep[Int], end: Rep[Int], step: Rep[Int]): Rep[Range] = RangeNew(start, end, step)
+  def rangeForeach[U](self: Rep[Range], f: Rep[((Int) => U)])(implicit typeU: TypeRep[U]): Rep[Unit] = RangeForeach[U](self, f)
+  def range_Field_Step(self: Rep[Range]): Rep[Int] = Range_Field_Step(self)
+  def range_Field_End(self: Rep[Range]): Rep[Int] = Range_Field_End(self)
+  def range_Field_Start(self: Rep[Range]): Rep[Int] = Range_Field_Start(self)
+  type Range = scala.collection.immutable.Range
+  case object RangeType extends TypeRep[Range] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = RangeType
+    val name = "Range"
+    val typeArguments = Nil
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[Range]
+  }
+  implicit val typeRange = RangeType
+}
+trait RangeImplicits { this: RangeComponent =>
+  // Add implicit conversions here!
+}
+trait RangeImplementations { self: DeepDSL =>
+
+}
+trait RangeComponent extends RangeOps with RangeImplicits { self: DeepDSL => }
 
