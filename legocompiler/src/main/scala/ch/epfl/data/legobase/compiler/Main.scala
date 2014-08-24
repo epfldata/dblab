@@ -96,8 +96,12 @@ object Main extends LegoRunner {
 
     // Convert Scala constructs to C
     val finalBlock = {
-      if (generateCCode) CTransformersPipeline(context, dceBlock)
-      else partiallyEvaluatedBlock
+      if (generateCCode) {
+        val cBlock = CTransformersPipeline(context, dceBlock)
+        val dceC = new DCECLang(context)
+        dceC.optimize(cBlock)
+        // cBlock
+      } else partiallyEvaluatedBlock
     }
 
     // Generate final program 
