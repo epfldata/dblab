@@ -1546,6 +1546,7 @@ trait OptimalStringOps extends Base { this: DeepDSL =>
     def compare(o: Rep[OptimalString]): Rep[Int] = optimalStringCompare(self, o)
     def ===(o: Rep[OptimalString]): Rep[Boolean] = optimalString$eq$eq$eq(self, o)
     def =!=(o: Rep[OptimalString]): Rep[Boolean] = optimalString$eq$bang$eq(self, o)
+    def +(o: Rep[Any]): Rep[OptimalString] = optimalString$plus(self, o)
     def string: Rep[String] = optimalStringString(self)
     def zip(o: Rep[OptimalString]): Rep[Array[Tuple2[Byte, Byte]]] = optimalStringZip(self, o)
     def foldLeft(c: Rep[Int])(f: Rep[((Int, Byte) => Int)]): Rep[Int] = optimalStringFoldLeft(self, c, f)
@@ -1606,6 +1607,10 @@ trait OptimalStringOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy _).curried
   }
 
+  case class OptimalString$plus(self: Rep[OptimalString], o: Rep[Any]) extends FunctionDef[OptimalString](Some(self), "+", List(List(o))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
   case class OptimalStringString(self: Rep[OptimalString]) extends FunctionDef[String](Some(self), "string", List()) {
     override def curriedConstructor = (copy _)
   }
@@ -1645,6 +1650,7 @@ trait OptimalStringOps extends Base { this: DeepDSL =>
   def optimalStringCompare(self: Rep[OptimalString], o: Rep[OptimalString]): Rep[Int] = OptimalStringCompare(self, o)
   def optimalString$eq$eq$eq(self: Rep[OptimalString], o: Rep[OptimalString]): Rep[Boolean] = OptimalString$eq$eq$eq(self, o)
   def optimalString$eq$bang$eq(self: Rep[OptimalString], o: Rep[OptimalString]): Rep[Boolean] = OptimalString$eq$bang$eq(self, o)
+  def optimalString$plus(self: Rep[OptimalString], o: Rep[Any]): Rep[OptimalString] = OptimalString$plus(self, o)
   def optimalStringString(self: Rep[OptimalString]): Rep[String] = OptimalStringString(self)
   def optimalStringZip(self: Rep[OptimalString], o: Rep[OptimalString]): Rep[Array[Tuple2[Byte, Byte]]] = OptimalStringZip(self, o)
   def optimalStringFoldLeft(self: Rep[OptimalString], c: Rep[Int], f: Rep[((Int, Byte) => Int)]): Rep[Int] = OptimalStringFoldLeft(self, c, f)

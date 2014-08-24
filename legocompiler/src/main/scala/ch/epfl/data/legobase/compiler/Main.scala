@@ -21,243 +21,89 @@ object Main extends LegoRunner {
     Config.checkResults = false
 
     run(args)
-    // if (args.length == 4 && args(3) == "copy") {
-    //   import java.io.{ File, FileInputStream, FileOutputStream }
-    //   val src = new File("generator-out/lala.scala")
-    //   val dest = new File("legocompiler/src/test/scala/Generated.scala")
-    //   new FileOutputStream(dest) getChannel () transferFrom (
-    //     new FileInputStream(src) getChannel, 0, Long.MaxValue)
-    // }
   }
 
-  def executeQuery(query: String): Unit = query match {
-    case "Q1"   => query1()
-    case "Q1_U" => query1_unoptimized()
-    case "Q2"   => query2()
-    case "Q3"   => query3()
-    case "Q4"   => query4()
-    case "Q5"   => query5()
-    case "Q6"   => query6()
-    case "Q7"   => query7()
-    case "Q8"   => query8()
-    case "Q9"   => query9()
-    case "Q10"  => query10()
-    case "Q11"  => query11()
-    case "Q12"  => query12()
-    case "Q13"  => query13()
-    case "Q14"  => query14()
-    case "Q15"  => query15()
-    case "Q16"  => query16()
-    case "Q17"  => query17()
-    case "Q18"  => query18()
-    case "Q19"  => query19()
-    case "Q20"  => query20()
-    case "Q21"  => query21()
-    case "Q22"  => query22()
-  }
-
-  def query1_unoptimized() {
+  def executeQuery(query: String): Unit = {
     val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q1(context.unit(1)) }
+    import context._
+    query match {
+      case "Q1"    => compileQuery(context, reifyBlock { Queries.Q1(unit(1)) }, 1, false, false)
+      case "Q1_C"  => compileQuery(context, reifyBlock { Queries.Q1(unit(1)) }, 1, false, true)
+      case "Q2"    => compileQuery(context, reifyBlock { Queries.Q2(unit(1)) }, 2, false, false)
+      case "Q2_C"  => compileQuery(context, reifyBlock { Queries.Q2(unit(1)) }, 2, false, true)
+      case "Q3"    => compileQuery(context, reifyBlock { Queries.Q3(unit(1)) }, 3, false, false)
+      case "Q3_C"  => compileQuery(context, reifyBlock { Queries.Q3(unit(1)) }, 3, false, true)
+      case "Q4"    => compileQuery(context, reifyBlock { Queries.Q4(unit(1)) }, 4, false, false)
+      case "Q4_C"  => compileQuery(context, reifyBlock { Queries.Q4(unit(1)) }, 4, false, true)
+      case "Q5"    => compileQuery(context, reifyBlock { Queries.Q5(unit(1)) }, 5, false, false)
+      case "Q5_C"  => compileQuery(context, reifyBlock { Queries.Q5(unit(1)) }, 5, false, true)
+      case "Q6"    => compileQuery(context, reifyBlock { Queries.Q6(unit(1)) }, 6, false, false)
+      case "Q6_C"  => compileQuery(context, reifyBlock { Queries.Q6(unit(1)) }, 6, false, true)
+      case "Q7"    => compileQuery(context, reifyBlock { Queries.Q7(unit(1)) }, 7, false, false)
+      case "Q7_C"  => compileQuery(context, reifyBlock { Queries.Q7(unit(1)) }, 7, false, true)
+      case "Q8"    => compileQuery(context, reifyBlock { Queries.Q8(unit(1)) }, 8, false, false)
+      case "Q8_C"  => compileQuery(context, reifyBlock { Queries.Q8(unit(1)) }, 8, false, true)
+      case "Q9"    => compileQuery(context, reifyBlock { Queries.Q9(unit(1)) }, 9, false, false)
+      case "Q9_C"  => compileQuery(context, reifyBlock { Queries.Q9(unit(1)) }, 9, false, true)
+      case "Q10"   => compileQuery(context, reifyBlock { Queries.Q10(unit(1)) }, 10, false, false)
+      case "Q10_C" => compileQuery(context, reifyBlock { Queries.Q10(unit(1)) }, 10, false, true)
+      case "Q11"   => compileQuery(context, reifyBlock { Queries.Q11(unit(1)) }, 11, false, false)
+      case "Q11_C" => compileQuery(context, reifyBlock { Queries.Q11(unit(1)) }, 11, false, true)
+      case "Q12"   => compileQuery(context, reifyBlock { Queries.Q12(unit(1)) }, 12, false, false)
+      case "Q12_C" => compileQuery(context, reifyBlock { Queries.Q12(unit(1)) }, 12, false, true)
+      case "Q13"   => compileQuery(context, reifyBlock { Queries.Q13(unit(1)) }, 13, false, false)
+      //case "Q13_C" => compileQuery(context, reifyBlock { Queries.Q13(unit(1)) }, 13, false, true)
+      case "Q14"   => compileQuery(context, reifyBlock { Queries.Q14(unit(1)) }, 14, false, false)
+      case "Q14_C" => compileQuery(context, reifyBlock { Queries.Q14(unit(1)) }, 14, false, true)
+      case "Q15"   => compileQuery(context, reifyBlock { Queries.Q15(unit(1)) }, 15, false, false)
+      case "Q15_C" => compileQuery(context, reifyBlock { Queries.Q15(unit(1)) }, 15, false, true)
+      case "Q16"   => compileQuery(context, reifyBlock { Queries.Q16(unit(1)) }, 16, false, false)
+      case "Q16_C" => compileQuery(context, reifyBlock { Queries.Q16(unit(1)) }, 16, false, true)
+      case "Q17"   => compileQuery(context, reifyBlock { Queries.Q17(unit(1)) }, 17, false, false)
+      case "Q17_C" => compileQuery(context, reifyBlock { Queries.Q17(unit(1)) }, 17, false, true)
+      case "Q18"   => compileQuery(context, reifyBlock { Queries.Q18(unit(1)) }, 18, false, false)
+      case "Q18_C" => compileQuery(context, reifyBlock { Queries.Q18(unit(1)) }, 18, false, true)
+      case "Q19"   => compileQuery(context, reifyBlock { Queries.Q19(unit(1)) }, 19, false, false)
+      case "Q19_C" => compileQuery(context, reifyBlock { Queries.Q19(unit(1)) }, 19, false, true)
+      case "Q20"   => compileQuery(context, reifyBlock { Queries.Q20(unit(1)) }, 20, false, false)
+      case "Q20_C" => compileQuery(context, reifyBlock { Queries.Q20(unit(1)) }, 20, false, true)
+      case "Q21"   => compileQuery(context, reifyBlock { Queries.Q21(unit(1)) }, 21, false, false)
+      case "Q21_C" => compileQuery(context, reifyBlock { Queries.Q21(unit(1)) }, 21, false, true)
+      case "Q22"   => compileQuery(context, reifyBlock { Queries.Q22(unit(1)) }, 22, false, false)
+      case "Q22_C" => compileQuery(context, reifyBlock { Queries.Q22(unit(1)) }, 22, false, true)
+    }
+  }
 
+  def compileQuery(context: LoweringLegoBase, block: pardis.ir.PardisBlock[Unit], number: Int, shallow: Boolean, generateCCode: Boolean) {
     // Lowering (e.g. case classes to records)
-    val lowering = new LBLowering(context, context)
-    val loweredBlock = lowering.lower(block)
-    val parameterPromotion = new LBParameterPromotion(context)
-    val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
+    val loweredBlock = {
+      if (shallow) block
+      else {
+        val lowering = new LBLowering(context, context)
+        val loweredBlock0 = lowering.lower(block)
+        val parameterPromotion = new LBParameterPromotion(context)
+        parameterPromotion.optimize(loweredBlock0)
+      }
+    }
 
     // DCE
     val dce = new DCE(context)
-    val dceBlock = dce.optimize(operatorlessBlock)
+    val dceBlock = dce.optimize(loweredBlock)
+
+    // Partial evaluation
+    val partiallyEvaluator = new PartialyEvaluate(context)
+    val partiallyEvaluatedBlock = partiallyEvaluator.optimize(dceBlock)
 
     // Convert Scala constructs to C
-    val scalaToC = new ScalaConstructsToCTranformer(context)
-    val transformedBlock = scalaToC.transformBlock(dceBlock)
-    val scalaToC2 = new ScalaCollectionsToGLibTransfomer(context)
-    val transformedBlock2 = scalaToC2.optimize(transformedBlock)
-
-    val ir2Program = new { val IR = context } with IRToProgram {}
-
-    System.out.println(transformedBlock2)
-
-    val finalProgram = ir2Program.createProgram(transformedBlock2)
-
-    val LegoGenerator = new LegoCGenerator(2, true)
-    LegoGenerator.apply(finalProgram)
-  }
-
-  def compileQuery(initContext: LoweringLegoBase, block: pardis.ir.PardisBlock[Unit], number: Int, shallow: Boolean) {
-
-    // println(block)
-    // LegoGenerator.apply(block)
-
-    // val loweringContext = new LoweringLegoBase {}
-    val loweringContext = initContext
-
-    val operatorlessBlock =
-      if (shallow) {
-        block
-      } else {
-        // val loweredBlock = lowering.transformProgram(block)
-        val lowering = new LBLowering(initContext, loweringContext)
-        val loweredBlock = lowering.lower(block)
-        // val loweredBlock = block
-
-        val parameterPromotion = new LBParameterPromotion(loweringContext)
-
-        val operatorlessBlock = parameterPromotion.optimize(loweredBlock)
-        // val operatorlessBlock = loweredBlock
-        operatorlessBlock
-      }
-
-    val dce = new DCE(loweringContext)
-    val dceBlock = dce.optimize(operatorlessBlock)
-    // val dceBlock = operatorlessBlock
-
-    val partialyEvaluator = new PartialyEvaluate(loweringContext)
-
-    val partialyEvaluated = partialyEvaluator.optimize(dceBlock)
-    // val partialyEvaluated = dceBlock
-
-    val ir2Program = new { val IR = loweringContext } with IRToProgram {
+    val finalBlock = {
+      if (generateCCode) CTransformersPipeline(context, dceBlock)
+      else partiallyEvaluatedBlock
     }
 
-    val finalProgram = ir2Program.createProgram(partialyEvaluated)
-
-    println(finalProgram)
-    val LegoGenerator = new LegoScalaGenerator(number, shallow)
-    LegoGenerator.apply(finalProgram)
-  }
-
-  def query1() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q1(context.unit(1)) }
-    compileQuery(context, block, 1, false)
-  }
-
-  def query2() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q2(context.unit(1)) }
-    compileQuery(context, block, 2, false)
-  }
-
-  def query3() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q3(context.unit(1)) }
-    compileQuery(context, block, 3, false)
-  }
-
-  def query4() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q4(context.unit(1)) }
-    compileQuery(context, block, 4, false)
-  }
-
-  def query5() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q5(context.unit(1)) }
-    compileQuery(context, block, 5, false)
-  }
-
-  def query6() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q6(context.unit(1)) }
-    compileQuery(context, block, 6, false)
-  }
-
-  def query7() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q7(context.unit(1)) }
-    compileQuery(context, block, 7, false)
-  }
-
-  def query8() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q8(context.unit(1)) }
-    compileQuery(context, block, 8, false)
-  }
-
-  def query9() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q9(context.unit(1)) }
-    compileQuery(context, block, 9, false)
-  }
-
-  def query10() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q10(context.unit(1)) }
-    compileQuery(context, block, 10, false)
-  }
-
-  def query11() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q11(context.unit(1)) }
-    compileQuery(context, block, 11, false)
-  }
-
-  def query12() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q12(context.unit(1)) }
-    compileQuery(context, block, 12, false)
-  }
-
-  def query13() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q13(context.unit(1)) }
-    compileQuery(context, block, 13, false)
-  }
-
-  def query14() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q14(context.unit(1)) }
-    compileQuery(context, block, 14, false)
-  }
-
-  def query15() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q15(context.unit(1)) }
-    compileQuery(context, block, 15, false)
-  }
-
-  def query16() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q16(context.unit(1)) }
-    compileQuery(context, block, 16, false)
-  }
-
-  def query17() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q17(context.unit(1)) }
-    compileQuery(context, block, 17, false)
-  }
-
-  def query18() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q18(context.unit(1)) }
-    compileQuery(context, block, 18, false)
-  }
-
-  def query19() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q19(context.unit(1)) }
-    compileQuery(context, block, 19, false)
-  }
-
-  def query20() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q20(context.unit(1)) }
-    compileQuery(context, block, 20, false)
-  }
-
-  def query21() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q21(context.unit(1)) }
-    compileQuery(context, block, 21, false)
-  }
-
-  def query22() {
-    val context = new LoweringLegoBase {}
-    val block = context.reifyBlock { context.Queries.Q22(context.unit(1)) }
-    compileQuery(context, block, 22, false)
+    // Generate final program 
+    val ir2Program = new { val IR = context } with IRToProgram {}
+    val finalProgram = ir2Program.createProgram(finalBlock)
+    if (generateCCode) (new LegoCGenerator(shallow, "Q" + number)).apply(finalProgram)
+    else (new LegoScalaGenerator(shallow, "Q" + number)).apply(finalProgram)
   }
 }
