@@ -125,6 +125,13 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     case OptimalStringNew(x)     => x.correspondingNode
     case OptimalStringString(x)  => x.correspondingNode
     case OptimalStringDiff(x, y) => StrCmp(x, y)
+    case OptimalStringEndsWith(x, y) =>
+      val lenx = strlen(x)
+      val leny = strlen(y)
+      val len = lenx - leny
+      Equal(StrNCmp(x + len, y, len), Constant(0))
+    case OptimalStringCompare(x, y)   => StrCmp(x, y)
+    case OptimalString$eq$eq$eq(x, y) => Equal(StrCmp(x, y), Constant(0))
 
     case s @ PardisStruct(tag, elems, methods) =>
       // TODO if needed method generation should be added
@@ -262,7 +269,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
 
   // Set of hash and record functions
-  def string_hash = doLambda((s: Rep[String]) => { unit(5) })
+  def string_hash = doLambda((s: Rep[String]) => { unit(5) }) //TODO Proper hashing
   def string_eq = doLambda2((s1: Rep[String], s2: Rep[String]) => infix_==(strcmp(s1, s2), 0))
   def int_hash = doLambda((s: Rep[Int]) => s)
   def int_eq = doLambda2((s1: Rep[Int], s2: Rep[Int]) => infix_==(s1, s2))
@@ -354,6 +361,23 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case abap @ ArrayBufferAppend(a, e) =>
       NameAlias[Unit](None, "g_array_append_val", List(List(a, e)))
     case ArrayBufferSize(a) => ReadVal(field(a, "len")(IntType))
+    case ArrayBufferMinBy(a, f @ Def(Lambda(fun, input, o))) =>
+      val len = transformDef(ArrayBufferSize(a))
+      var i = __newVar[Int](1)
+      var min = __newVar(transformDef(ArrayBufferApply(a, (Constant(0)))))
+      System.out.println("xaxaxaxa" + min.tp)
+
+      var minBy = __newVar(fun(min).asInstanceOf[Expression[Int]])
+      __whileDo(readVar(i) < len, {
+        val e = transformDef(ArrayBufferApply(a, readVar(i)))
+        val eminBy = fun(e).asInstanceOf[Expression[Int]]
+        __ifThenElse(eminBy < readVar(minBy), {
+          __assign(min, e)
+          __assign(minBy, eminBy)
+        }, unit())
+        __assign(i, readVar(i) + unit(1))
+      })
+      ReadVar(min)
 
     /* Other operations */
     case imtf @ PardisStructImmutableField(s, f) =>
