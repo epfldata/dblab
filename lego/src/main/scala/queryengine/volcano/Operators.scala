@@ -250,7 +250,14 @@ class MetaInfo
       val k = leftHash(t)
       if (hm.contains(k)) {
         val tmpBuffer = hm(k)
-        tmpBuffer.indexWhere(e => joinCond(t, e)) != -1
+        //tmpBuffer.indexWhere(e => joinCond(t, e)) != -1
+        var i = 0
+        var found = false
+        while (!found && i < tmpBuffer.size) {
+          if (joinCond(t, tmpBuffer(i))) found = true
+          else i += 1
+        }
+        i != tmpBuffer.size
       } else false
     }
   }

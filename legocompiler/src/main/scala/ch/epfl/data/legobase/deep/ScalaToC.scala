@@ -35,10 +35,10 @@ object CTransformersPipeline {
     val b1 = new ScalaScannerToCFileTransformer(context).transformBlock(b0)
     val b2 = new ScalaConstructsToCTranformer(context).transformBlock(b1)
     val b3 = new ScalaCollectionsToGLibTransfomer(context).optimize(b2)
-    //System.out.println(b3)
+    System.out.println(b3)
     // Also write to file to facilitate debugging
     val pw = new java.io.PrintWriter(new java.io.File("tree_debug_dump.txt"))
-    //pw.println(b3.toString)
+    pw.println(b3.toString)
     b3
   }
 }
@@ -122,7 +122,10 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
   }).asInstanceOf[PardisType[Any]]
 
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
-    case OptimalStringNew(x) => x.correspondingNode
+    case OptimalStringNew(x)     => x.correspondingNode
+    case OptimalStringString(x)  => x.correspondingNode
+    case OptimalStringDiff(x, y) => StrCmp(x, y)
+
     case s @ PardisStruct(tag, elems, methods) =>
       // TODO if needed method generation should be added
       val x = malloc(unit(1))(s.tp)
@@ -260,7 +263,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
   // Set of hash and record functions
   def string_hash = doLambda((s: Rep[String]) => { unit(5) })
-  def string_eq = doLambda2((s1: Rep[String], s2: Rep[String]) => unit(true))
+  def string_eq = doLambda2((s1: Rep[String], s2: Rep[String]) => infix_==(strcmp(s1, s2), 0))
   def int_hash = doLambda((s: Rep[Int]) => s)
   def int_eq = doLambda2((s1: Rep[Int], s2: Rep[Int]) => infix_==(s1, s2))
   def record_eq[A: PardisType] = {
@@ -284,7 +287,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case nm @ HashMapNew2() =>
       val nA = typePointer(transformType(nm.typeA)).asInstanceOf[TypeRep[Any]]
       val nB = typePointer(transformType(nm.typeB))
-      if (nm.typeA == StringType) GHashTableNew(string_hash, string_eq)(StringType, nB, IntType)
+
+      if ((nm.typeA == StringType) || (nm.typeA == OptimalStringType)) GHashTableNew(string_hash, string_eq)(StringType, nB, IntType)
       else if (nm.typeA == IntType) GHashTableNew(int_hash, int_eq)(IntType, nB, IntType)
       else GHashTableNew(record_hash(nm.typeA), record_eq(nm.typeA))(nA, nB, IntType)
     case HashMapSize(map)   => NameAlias[Int](None, "g_hash_table_size", List(List(map)))

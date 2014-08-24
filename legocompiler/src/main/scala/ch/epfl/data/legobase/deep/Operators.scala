@@ -1443,7 +1443,13 @@ trait LeftHashSemiJoinOpImplementations { self: DeepDSL =>
       val k: this.Rep[C] = __app(self.leftHash).apply(t);
       __ifThenElse(self.hm.contains(k), {
         val tmpBuffer: this.Rep[scala.collection.mutable.ArrayBuffer[B]] = self.hm.apply(k);
-        infix_$bang$eq(tmpBuffer.indexWhere(__lambda(((e: this.Rep[B]) => __app(self.joinCond).apply(t, e)))), unit(-1))
+        //infix_$bang$eq(tmpBuffer.indexWhere(__lambda(((e: this.Rep[B]) => __app(self.joinCond).apply(t, e)))), unit(-1))
+        var i: this.Var[Int] = __newVar(unit(0));
+        var found: this.Var[Boolean] = __newVar(unit(false));
+        __whileDo(infix_$eq$eq(readVar(found), unit(false)).$amp$amp(readVar(i).$less(tmpBuffer.size)), {
+          __ifThenElse(__app(self.joinCond).apply(t, tmpBuffer.apply(i)), __assign(found, unit(true)), __assign(i, readVar(i).$plus(unit(1))))
+        })
+        infix_$bang$eq(readVar(i), tmpBuffer.size);
       }, unit(false))
     })))
   }
