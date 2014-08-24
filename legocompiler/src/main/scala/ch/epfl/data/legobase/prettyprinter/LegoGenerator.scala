@@ -27,8 +27,8 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.TreeSet
 import scala.collection.mutable.ArrayBuffer
 import storagemanager.K2DBScanner
-import storagemanager.Loader._
-import queryengine.GenericEngine._
+import storagemanager.Loader
+import queryengine.GenericEngine
 import pardis.shallow.OptimalString
 
 object OrderingFactory {

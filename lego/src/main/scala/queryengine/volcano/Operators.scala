@@ -99,7 +99,7 @@ class MetaInfo
       val key = keySet.head
       keySet.remove(key)
       val elem = hm.remove(key)
-      newAGGRecord(key, elem.get)
+      new AGGRecord(key, elem.get)
     } else NullDynamicRecord
   }
   def close() {}
@@ -140,7 +140,7 @@ class MetaInfo
   def reset { parent.reset }
 }
 
-@deep class PrintOp[A](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean = () => true) extends Operator[A] {
+@deep class PrintOp[A](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean) extends Operator[A] {
   var numRows = 0
   def open() = { parent.open; }
   def next() = {
@@ -156,7 +156,9 @@ class MetaInfo
   def reset() { parent.reset }
 }
 
-@deep class HashJoinOp[A <: AbstractRecord, B <: AbstractRecord, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
+@deep class HashJoinOp[A <: AbstractRecord, B <: AbstractRecord, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String, rightAlias: String)(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
+  def this(leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) = this(leftParent, rightParent, "", "")(joinCond)(leftHash)(rightHash)
+  // @deep class HashJoinOp[A <: AbstractRecord, B <: AbstractRecord, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   var tmpCount = -1
   var tmpBuffer = ArrayBuffer[A]()
   val hm = new HashMap[C, ArrayBuffer[A]]()
@@ -227,7 +229,7 @@ class MetaInfo
       val key = keySet.head
       keySet.remove(key)
       val elem = hm.remove(key).get // we're sure that it is Some(x)
-      newWindowRecord(key, wndf(elem))
+      new WindowRecord(key, wndf(elem))
     } else NullDynamicRecord
   }
   def close() {}
@@ -266,7 +268,7 @@ class MetaInfo
 }
 
 @deep
-class NestedLoopsJoinOp[A <: AbstractRecord, B <: AbstractRecord](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
+class NestedLoopsJoinOp[A <: AbstractRecord, B <: AbstractRecord](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String, rightAlias: String)(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
   var leftTuple = NullDynamicRecord[A]
   var rightTuple = NullDynamicRecord[B]
 
@@ -295,6 +297,7 @@ class NestedLoopsJoinOp[A <: AbstractRecord, B <: AbstractRecord](leftParent: Op
   def reset() = { rightParent.reset; leftParent.reset; leftTuple = NullDynamicRecord[A]; }
 }
 
+@deep
 class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   def close() {
     throw new Exception("PULL ENGINE BUG:: Close function in SubqueryResult should never be called!!!!\n")
@@ -302,7 +305,7 @@ class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   def open() {
     throw new Exception("PULL ENGINE BUG:: Open function in SubqueryResult should never be called!!!!\n")
   }
-  def next() = {
+  override def next(): A = {
     throw new Exception("PULL ENGINE BUG:: Next function in SubqueryResult should never be called!!!!\n")
   }
   def reset() {
@@ -311,7 +314,8 @@ class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   def getResult = { parent.open; parent.next; }
 }
 
-class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
+@deep
+class HashJoinAnti[A, B, C](val leftParent: Operator[A], val rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   val hm = new HashMap[C, ArrayBuffer[A]]()
   var keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
 
@@ -350,7 +354,7 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
           // could use filter in scala and assign the result to the hm)
           var removed = 0
           for (i <- 0 until elems.size) {
-            var idx = i - removed
+            val idx = i - removed
             val e = elems(idx)
             if (joinCond(e, t)) {
               removeFromList(elems, e, idx);
@@ -374,6 +378,7 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
   def reset() { rightParent.reset; leftParent.reset; hm.clear; }
 }
 
+@deep
 class ViewOp[A](parent: Operator[A]) extends Operator[A] {
   var idx = 0
   var size = 0

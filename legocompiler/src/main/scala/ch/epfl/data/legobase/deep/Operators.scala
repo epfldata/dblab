@@ -494,7 +494,7 @@ trait AggOpImplementations { self: DeepDSL =>
       val key: this.Rep[B] = self.keySet.head;
       self.keySet.remove(key);
       val elem: this.Rep[Option[Array[Double]]] = self.hm.remove(key);
-      GenericEngine.newAGGRecord[B](key, elem.get)
+      __newAGGRecord(key, elem.get)
     }, self.NullDynamicRecord)
   }
   override def aggOpClose[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
@@ -932,9 +932,14 @@ trait HashJoinOpOps extends Base { this: OperatorsComponent =>
 
   }
   // constructors
-  def __newHashJoinOp[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String])(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = hashJoinOpNew[A, B, C](leftParent, rightParent, leftAlias, rightAlias, joinCond, leftHash, rightHash)(typeA, typeB, typeC)
+  def __newHashJoinOp[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String])(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit overload1: Overloaded1, typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = hashJoinOpNew1[A, B, C](leftParent, rightParent, leftAlias, rightAlias, joinCond, leftHash, rightHash)(typeA, typeB, typeC)
+  def __newHashJoinOp[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]])(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit overload2: Overloaded2, typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = hashJoinOpNew2[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)(typeA, typeB, typeC)
   // case classes
-  case class HashJoinOpNew[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends ConstructorDef[HashJoinOp[A, B, C]](List(typeA, typeB, typeC), "HashJoinOp", List(List(leftParent, rightParent, leftAlias, rightAlias), List(joinCond), List(leftHash), List(rightHash))) {
+  case class HashJoinOpNew1[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends ConstructorDef[HashJoinOp[A, B, C]](List(typeA, typeB, typeC), "HashJoinOp", List(List(leftParent, rightParent, leftAlias, rightAlias), List(joinCond), List(leftHash), List(rightHash))) {
+    override def curriedConstructor = (copy[A, B, C] _).curried
+  }
+
+  case class HashJoinOpNew2[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends ConstructorDef[HashJoinOp[A, B, C]](List(typeA, typeB, typeC), "HashJoinOp", List(List(leftParent, rightParent), List(joinCond), List(leftHash), List(rightHash))) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -1045,7 +1050,8 @@ trait HashJoinOpOps extends Base { this: OperatorsComponent =>
   }
 
   // method definitions
-  def hashJoinOpNew[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = HashJoinOpNew[A, B, C](leftParent, rightParent, leftAlias, rightAlias, joinCond, leftHash, rightHash)
+  def hashJoinOpNew1[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = HashJoinOpNew1[A, B, C](leftParent, rightParent, leftAlias, rightAlias, joinCond, leftHash, rightHash)
+  def hashJoinOpNew2[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = HashJoinOpNew2[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)
   def hashJoinOpForeach[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]], f: Rep[((DynamicCompositeRecord[A, B]) => Unit)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOpForeach[A, B, C](self, f)
   def hashJoinOpFindFirst[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[HashJoinOp[A, B, C]], cond: Rep[((DynamicCompositeRecord[A, B]) => Boolean)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[DynamicCompositeRecord[A, B]] = HashJoinOpFindFirst[A, B, C](self, cond)
   def hashJoinOpNullDynamicRecord[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C, D](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], typeD: TypeRep[D], di: DummyImplicit): Rep[D] = HashJoinOpNullDynamicRecord[A, B, C, D](self)
@@ -1277,7 +1283,7 @@ trait WindowOpImplementations { self: DeepDSL =>
       val key: this.Rep[B] = self.keySet.head;
       self.keySet.remove(key);
       val elem: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.remove(key).get;
-      GenericEngine.newWindowRecord[B, C](key, __app(self.wndf).apply(elem))
+      __newWindowRecord(key, __app(self.wndf).apply(elem))
     }, self.NullDynamicRecord)
   }
   override def windowOpClose[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
@@ -1646,4 +1652,466 @@ trait NestedLoopsJoinOpImplementations { self: DeepDSL =>
   }
 }
 trait NestedLoopsJoinOpComponent extends NestedLoopsJoinOpOps with NestedLoopsJoinOpImplicits { self: OperatorsComponent => }
-trait OperatorsComponent extends OperatorComponent with ScanOpComponent with SelectOpComponent with AggOpComponent with SortOpComponent with MapOpComponent with PrintOpComponent with HashJoinOpComponent with WindowOpComponent with LeftHashSemiJoinOpComponent with NestedLoopsJoinOpComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent with DoubleComponent with IntComponent with LongComponent with ArrayComponent with LINEITEMRecordComponent with K2DBScannerComponent with IntegerComponent with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase { self: DeepDSL => }
+trait SubquerySingleResultOps extends Base { this: OperatorsComponent =>
+  implicit class SubquerySingleResultRep[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]) {
+    def foreach(f: Rep[(A => Unit)]): Rep[Unit] = subquerySingleResultForeach[A](self, f)(typeA)
+    def findFirst(cond: Rep[(A => Boolean)]): Rep[A] = subquerySingleResultFindFirst[A](self, cond)(typeA)
+    def NullDynamicRecord[D](implicit typeD: TypeRep[D], di: DummyImplicit): Rep[D] = subquerySingleResultNullDynamicRecord[A, D](self)(typeA, typeD, di)
+    def close(): Rep[Unit] = subquerySingleResultClose[A](self)(typeA)
+    def open(): Rep[Unit] = subquerySingleResultOpen[A](self)(typeA)
+    def next(): Rep[A] = subquerySingleResultNext[A](self)(typeA)
+    def reset(): Rep[Unit] = subquerySingleResultReset[A](self)(typeA)
+    def getResult: Rep[A] = subquerySingleResultGetResult[A](self)(typeA)
+    def parent: Rep[Operator[A]] = subquerySingleResult_Field_Parent[A](self)(typeA)
+    def NullDynamicRecord: Rep[A] = subquerySingleResult_Field_NullDynamicRecord[A](self)(typeA)
+  }
+  object SubquerySingleResult {
+
+  }
+  // constructors
+  def __newSubquerySingleResult[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[SubquerySingleResult[A]] = subquerySingleResultNew[A](parent)(typeA)
+  // case classes
+  case class SubquerySingleResultNew[A](parent: Rep[Operator[A]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[SubquerySingleResult[A]](List(typeA), "SubquerySingleResult", List(List(parent))) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class SubquerySingleResultForeach[A](self: Rep[SubquerySingleResult[A]], f: Rep[((A) => Unit)])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "foreach", List(List(f))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class SubquerySingleResultFindFirst[A](self: Rep[SubquerySingleResult[A]], cond: Rep[((A) => Boolean)])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "findFirst", List(List(cond))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class SubquerySingleResultNullDynamicRecord[A, D](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A], val typeD: TypeRep[D], val di: DummyImplicit) extends FunctionDef[D](Some(self), "NullDynamicRecord", List()) {
+    override def curriedConstructor = (copy[A, D] _)
+  }
+
+  case class SubquerySingleResultClose[A](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class SubquerySingleResultOpen[A](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class SubquerySingleResultNext[A](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "next", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class SubquerySingleResultReset[A](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class SubquerySingleResultGetResult[A](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "getResult", List()) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class SubquerySingleResult_Field_Parent[A](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Operator[A]](self, "parent") {
+    override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
+  }
+
+  case class SubquerySingleResult_Field_NullDynamicRecord[A](self: Rep[SubquerySingleResult[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[A](self, "NullDynamicRecord") {
+    override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def subquerySingleResultNew[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[SubquerySingleResult[A]] = SubquerySingleResultNew[A](parent)
+  def subquerySingleResultForeach[A](self: Rep[SubquerySingleResult[A]], f: Rep[((A) => Unit)])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultForeach[A](self, f)
+  def subquerySingleResultFindFirst[A](self: Rep[SubquerySingleResult[A]], cond: Rep[((A) => Boolean)])(implicit typeA: TypeRep[A]): Rep[A] = SubquerySingleResultFindFirst[A](self, cond)
+  def subquerySingleResultNullDynamicRecord[A, D](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A], typeD: TypeRep[D], di: DummyImplicit): Rep[D] = SubquerySingleResultNullDynamicRecord[A, D](self)
+  def subquerySingleResultClose[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultClose[A](self)
+  def subquerySingleResultOpen[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultOpen[A](self)
+  def subquerySingleResultNext[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[A] = SubquerySingleResultNext[A](self)
+  def subquerySingleResultReset[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultReset[A](self)
+  def subquerySingleResultGetResult[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[A] = SubquerySingleResultGetResult[A](self)
+  def subquerySingleResult_Field_Parent[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = SubquerySingleResult_Field_Parent[A](self)
+  def subquerySingleResult_Field_NullDynamicRecord[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[A] = SubquerySingleResult_Field_NullDynamicRecord[A](self)
+  type SubquerySingleResult[A] = ch.epfl.data.legobase.queryengine.volcano.SubquerySingleResult[A]
+  case class SubquerySingleResultType[A](typeA: TypeRep[A]) extends TypeRep[SubquerySingleResult[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SubquerySingleResultType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"SubquerySingleResult[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[SubquerySingleResult[A]]
+  }
+  implicit def typeSubquerySingleResult[A: TypeRep] = SubquerySingleResultType(implicitly[TypeRep[A]])
+}
+trait SubquerySingleResultImplicits { this: SubquerySingleResultComponent =>
+  // Add implicit conversions here!
+}
+trait SubquerySingleResultImplementations { self: DeepDSL =>
+  override def subquerySingleResultClose[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    throw __newException(unit("PULL ENGINE BUG:: Close function in SubqueryResult should never be called!!!!\n"))
+  }
+  override def subquerySingleResultOpen[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    throw __newException(unit("PULL ENGINE BUG:: Open function in SubqueryResult should never be called!!!!\n"))
+  }
+  override def subquerySingleResultNext[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[A] = {
+    throw __newException(unit("PULL ENGINE BUG:: Next function in SubqueryResult should never be called!!!!\n"))
+  }
+  override def subquerySingleResultReset[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    throw __newException(unit("PULL ENGINE BUG:: Reset function in SubqueryResult should never be called!!!!\n"))
+  }
+  override def subquerySingleResultGetResult[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[A] = {
+    {
+      self.parent.open();
+      self.parent.next()
+    }
+  }
+}
+trait SubquerySingleResultComponent extends SubquerySingleResultOps with SubquerySingleResultImplicits { self: OperatorsComponent => }
+trait HashJoinAntiOps extends Base { this: OperatorsComponent =>
+  implicit class HashJoinAntiRep[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) {
+    def foreach(f: Rep[(A => Unit)]): Rep[Unit] = hashJoinAntiForeach[A, B, C](self, f)(typeA, typeB, typeC)
+    def findFirst(cond: Rep[(A => Boolean)]): Rep[A] = hashJoinAntiFindFirst[A, B, C](self, cond)(typeA, typeB, typeC)
+    def NullDynamicRecord[D](implicit typeD: TypeRep[D], di: DummyImplicit): Rep[D] = hashJoinAntiNullDynamicRecord[A, B, C, D](self)(typeA, typeB, typeC, typeD, di)
+    def removeFromList(elemList: Rep[ArrayBuffer[A]], e: Rep[A], idx: Rep[Int]): Rep[A] = hashJoinAntiRemoveFromList[A, B, C](self, elemList, e, idx)(typeA, typeB, typeC)
+    def open(): Rep[Unit] = hashJoinAntiOpen[A, B, C](self)(typeA, typeB, typeC)
+    def next(): Rep[A] = hashJoinAntiNext[A, B, C](self)(typeA, typeB, typeC)
+    def close(): Rep[Unit] = hashJoinAntiClose[A, B, C](self)(typeA, typeB, typeC)
+    def reset(): Rep[Unit] = hashJoinAntiReset[A, B, C](self)(typeA, typeB, typeC)
+    def keySet_=(x$1: Rep[Set[C]]): Rep[Unit] = hashJoinAnti_Field_KeySet_$eq[A, B, C](self, x$1)(typeA, typeB, typeC)
+    def keySet: Rep[Set[C]] = hashJoinAnti_Field_KeySet[A, B, C](self)(typeA, typeB, typeC)
+    def hm: Rep[HashMap[C, ArrayBuffer[A]]] = hashJoinAnti_Field_Hm[A, B, C](self)(typeA, typeB, typeC)
+    def rightHash: Rep[(B => C)] = hashJoinAnti_Field_RightHash[A, B, C](self)(typeA, typeB, typeC)
+    def leftHash: Rep[(A => C)] = hashJoinAnti_Field_LeftHash[A, B, C](self)(typeA, typeB, typeC)
+    def joinCond: Rep[((A, B) => Boolean)] = hashJoinAnti_Field_JoinCond[A, B, C](self)(typeA, typeB, typeC)
+    def rightParent: Rep[Operator[B]] = hashJoinAnti_Field_RightParent[A, B, C](self)(typeA, typeB, typeC)
+    def leftParent: Rep[Operator[A]] = hashJoinAnti_Field_LeftParent[A, B, C](self)(typeA, typeB, typeC)
+    def NullDynamicRecord: Rep[A] = hashJoinAnti_Field_NullDynamicRecord[A, B, C](self)(typeA, typeB, typeC)
+  }
+  object HashJoinAnti {
+
+  }
+  // constructors
+  def __newHashJoinAnti[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]])(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinAnti[A, B, C]] = hashJoinAntiNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)(typeA, typeB, typeC)
+  // case classes
+  case class HashJoinAntiNew[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends ConstructorDef[HashJoinAnti[A, B, C]](List(typeA, typeB, typeC), "HashJoinAnti", List(List(leftParent, rightParent), List(joinCond), List(leftHash), List(rightHash))) {
+    override def curriedConstructor = (copy[A, B, C] _).curried
+  }
+
+  case class HashJoinAntiForeach[A, B, C](self: Rep[HashJoinAnti[A, B, C]], f: Rep[((A) => Unit)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FunctionDef[Unit](Some(self), "foreach", List(List(f))) {
+    override def curriedConstructor = (copy[A, B, C] _).curried
+  }
+
+  case class HashJoinAntiFindFirst[A, B, C](self: Rep[HashJoinAnti[A, B, C]], cond: Rep[((A) => Boolean)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FunctionDef[A](Some(self), "findFirst", List(List(cond))) {
+    override def curriedConstructor = (copy[A, B, C] _).curried
+  }
+
+  case class HashJoinAntiNullDynamicRecord[A, B, C, D](self: Rep[HashJoinAnti[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val typeD: TypeRep[D], val di: DummyImplicit) extends FunctionDef[D](Some(self), "NullDynamicRecord", List()) {
+    override def curriedConstructor = (copy[A, B, C, D] _)
+  }
+
+  case class HashJoinAntiRemoveFromList[A, B, C](self: Rep[HashJoinAnti[A, B, C]], elemList: Rep[ArrayBuffer[A]], e: Rep[A], idx: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FunctionDef[A](Some(self), "removeFromList", List(List(elemList, e, idx))) {
+    override def curriedConstructor = (copy[A, B, C] _).curried
+  }
+
+  case class HashJoinAntiOpen[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
+    override def curriedConstructor = (copy[A, B, C] _)
+  }
+
+  case class HashJoinAntiNext[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FunctionDef[A](Some(self), "next", List(List())) {
+    override def curriedConstructor = (copy[A, B, C] _)
+  }
+
+  case class HashJoinAntiClose[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
+    override def curriedConstructor = (copy[A, B, C] _)
+  }
+
+  case class HashJoinAntiReset[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
+    override def curriedConstructor = (copy[A, B, C] _)
+  }
+
+  case class HashJoinAnti_Field_KeySet_$eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Set[C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Set[C]](self, "keySet", x$1) {
+    override def curriedConstructor = (copy[A, B, C] _).curried
+  }
+
+  case class HashJoinAnti_Field_KeySet[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldGetter[Set[C]](self, "keySet") {
+    override def curriedConstructor = (copy[A, B, C] _)
+  }
+
+  case class HashJoinAnti_Field_Hm[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[HashMap[C, ArrayBuffer[A]]](self, "hm") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  case class HashJoinAnti_Field_RightHash[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[(B => C)](self, "rightHash") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  case class HashJoinAnti_Field_LeftHash[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[(A => C)](self, "leftHash") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  case class HashJoinAnti_Field_JoinCond[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[((A, B) => Boolean)](self, "joinCond") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  case class HashJoinAnti_Field_RightParent[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[Operator[B]](self, "rightParent") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  case class HashJoinAnti_Field_LeftParent[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[Operator[A]](self, "leftParent") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  case class HashJoinAnti_Field_NullDynamicRecord[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[A](self, "NullDynamicRecord") {
+    override def curriedConstructor = (copy[A, B, C] _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def hashJoinAntiNew[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinAnti[A, B, C]] = HashJoinAntiNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)
+  def hashJoinAntiForeach[A, B, C](self: Rep[HashJoinAnti[A, B, C]], f: Rep[((A) => Unit)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAntiForeach[A, B, C](self, f)
+  def hashJoinAntiFindFirst[A, B, C](self: Rep[HashJoinAnti[A, B, C]], cond: Rep[((A) => Boolean)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[A] = HashJoinAntiFindFirst[A, B, C](self, cond)
+  def hashJoinAntiNullDynamicRecord[A, B, C, D](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], typeD: TypeRep[D], di: DummyImplicit): Rep[D] = HashJoinAntiNullDynamicRecord[A, B, C, D](self)
+  def hashJoinAntiRemoveFromList[A, B, C](self: Rep[HashJoinAnti[A, B, C]], elemList: Rep[ArrayBuffer[A]], e: Rep[A], idx: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[A] = HashJoinAntiRemoveFromList[A, B, C](self, elemList, e, idx)
+  def hashJoinAntiOpen[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAntiOpen[A, B, C](self)
+  def hashJoinAntiNext[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[A] = HashJoinAntiNext[A, B, C](self)
+  def hashJoinAntiClose[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAntiClose[A, B, C](self)
+  def hashJoinAntiReset[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAntiReset[A, B, C](self)
+  def hashJoinAnti_Field_KeySet_$eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Set[C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAnti_Field_KeySet_$eq[A, B, C](self, x$1)
+  def hashJoinAnti_Field_KeySet[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Set[C]] = HashJoinAnti_Field_KeySet[A, B, C](self)
+  def hashJoinAnti_Field_Hm[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashMap[C, ArrayBuffer[A]]] = HashJoinAnti_Field_Hm[A, B, C](self)
+  def hashJoinAnti_Field_RightHash[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = HashJoinAnti_Field_RightHash[A, B, C](self)
+  def hashJoinAnti_Field_LeftHash[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = HashJoinAnti_Field_LeftHash[A, B, C](self)
+  def hashJoinAnti_Field_JoinCond[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = HashJoinAnti_Field_JoinCond[A, B, C](self)
+  def hashJoinAnti_Field_RightParent[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = HashJoinAnti_Field_RightParent[A, B, C](self)
+  def hashJoinAnti_Field_LeftParent[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = HashJoinAnti_Field_LeftParent[A, B, C](self)
+  def hashJoinAnti_Field_NullDynamicRecord[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[A] = HashJoinAnti_Field_NullDynamicRecord[A, B, C](self)
+  type HashJoinAnti[A, B, C] = ch.epfl.data.legobase.queryengine.volcano.HashJoinAnti[A, B, C]
+  case class HashJoinAntiType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[HashJoinAnti[A, B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = HashJoinAntiType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    private implicit val tagC = typeC.typeTag
+    val name = s"HashJoinAnti[${typeA.name}, ${typeB.name}, ${typeC.name}]"
+    val typeArguments = List(typeA, typeB, typeC)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[HashJoinAnti[A, B, C]]
+  }
+  implicit def typeHashJoinAnti[A: TypeRep, B: TypeRep, C: TypeRep] = HashJoinAntiType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
+}
+trait HashJoinAntiImplicits { this: HashJoinAntiComponent =>
+  // Add implicit conversions here!
+}
+trait HashJoinAntiImplementations { self: DeepDSL =>
+  override def hashJoinAntiRemoveFromList[A, B, C](self: Rep[HashJoinAnti[A, B, C]], elemList: Rep[ArrayBuffer[A]], e: Rep[A], idx: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[A] = {
+    {
+      elemList.remove(idx);
+      __ifThenElse(infix_$eq$eq(elemList.size, unit(0)), {
+        val lh: this.Rep[C] = __app(self.leftHash).apply(e);
+        self.keySet.remove(lh);
+        self.hm.remove(lh);
+        unit(())
+      }, unit(()));
+      e
+    }
+  }
+  override def hashJoinAntiOpen[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
+    {
+      self.leftParent.open();
+      self.rightParent.open();
+      self.leftParent.foreach(__lambda(((t: this.Rep[A]) => {
+        val k: this.Rep[C] = __app(self.leftHash).apply(t);
+        val v: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.getOrElseUpdate(k, ArrayBuffer.apply[A]());
+        v.append(t)
+      })));
+      self.rightParent.foreach(__lambda(((t: this.Rep[B]) => {
+        val k: this.Rep[C] = __app(self.rightHash).apply(t);
+        __ifThenElse(self.hm.contains(k), {
+          val elems: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.apply(k);
+          var removed: this.Var[Int] = __newVar(unit(0));
+          intWrapper(unit(0)).until(elems.size).foreach[Unit](__lambda(((i: this.Rep[Int]) => {
+            val idx: this.Rep[Int] = i.$minus(readVar(removed));
+            val e: this.Rep[A] = elems.apply(idx);
+            __ifThenElse(__app(self.joinCond).apply(e, t), {
+              self.removeFromList(elems, e, idx);
+              __assign(removed, readVar(removed).$plus(unit(1)))
+            }, unit(()))
+          })))
+        }, unit(()))
+      })));
+      self.keySet_$eq(Set.apply[C](self.hm.keySet.toSeq))
+    }
+  }
+  override def hashJoinAntiNext[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[A] = {
+    __ifThenElse(infix_$bang$eq(self.hm.size, unit(0)), {
+      val k: this.Rep[C] = self.keySet.head;
+      val elemList: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.apply(k);
+      self.removeFromList(elemList, elemList.apply(unit(0)), unit(0))
+    }, self.NullDynamicRecord)
+  }
+  override def hashJoinAntiClose[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
+    unit(())
+  }
+  override def hashJoinAntiReset[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
+    {
+      self.rightParent.reset();
+      self.leftParent.reset();
+      self.hm.clear()
+    }
+  }
+}
+trait HashJoinAntiComponent extends HashJoinAntiOps with HashJoinAntiImplicits { self: OperatorsComponent => }
+trait ViewOpOps extends Base { this: OperatorsComponent =>
+  implicit class ViewOpRep[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]) {
+    def foreach(f: Rep[(A => Unit)]): Rep[Unit] = viewOpForeach[A](self, f)(typeA)
+    def findFirst(cond: Rep[(A => Boolean)]): Rep[A] = viewOpFindFirst[A](self, cond)(typeA)
+    def NullDynamicRecord[D](implicit typeD: TypeRep[D], di: DummyImplicit): Rep[D] = viewOpNullDynamicRecord[A, D](self)(typeA, typeD, di)
+    def open(): Rep[Unit] = viewOpOpen[A](self)(typeA)
+    def next(): Rep[A] = viewOpNext[A](self)(typeA)
+    def close(): Rep[Unit] = viewOpClose[A](self)(typeA)
+    def reset(): Rep[Unit] = viewOpReset[A](self)(typeA)
+    def table: Rep[ArrayBuffer[A]] = viewOp_Field_Table[A](self)(typeA)
+    def size_=(x$1: Rep[Int]): Rep[Unit] = viewOp_Field_Size_$eq[A](self, x$1)(typeA)
+    def size: Rep[Int] = viewOp_Field_Size[A](self)(typeA)
+    def idx_=(x$1: Rep[Int]): Rep[Unit] = viewOp_Field_Idx_$eq[A](self, x$1)(typeA)
+    def idx: Rep[Int] = viewOp_Field_Idx[A](self)(typeA)
+    def parent: Rep[Operator[A]] = viewOp_Field_Parent[A](self)(typeA)
+    def NullDynamicRecord: Rep[A] = viewOp_Field_NullDynamicRecord[A](self)(typeA)
+  }
+  object ViewOp {
+
+  }
+  // constructors
+  def __newViewOp[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[ViewOp[A]] = viewOpNew[A](parent)(typeA)
+  // case classes
+  case class ViewOpNew[A](parent: Rep[Operator[A]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[ViewOp[A]](List(typeA), "ViewOp", List(List(parent))) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ViewOpForeach[A](self: Rep[ViewOp[A]], f: Rep[((A) => Unit)])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "foreach", List(List(f))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class ViewOpFindFirst[A](self: Rep[ViewOp[A]], cond: Rep[((A) => Boolean)])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "findFirst", List(List(cond))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class ViewOpNullDynamicRecord[A, D](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A], val typeD: TypeRep[D], val di: DummyImplicit) extends FunctionDef[D](Some(self), "NullDynamicRecord", List()) {
+    override def curriedConstructor = (copy[A, D] _)
+  }
+
+  case class ViewOpOpen[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ViewOpNext[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "next", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ViewOpClose[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "close", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ViewOpReset[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ViewOp_Field_Table[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[ArrayBuffer[A]](self, "table") {
+    override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
+  }
+
+  case class ViewOp_Field_Size_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit val typeA: TypeRep[A]) extends FieldSetter[Int](self, "size", x$1) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class ViewOp_Field_Size[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldGetter[Int](self, "size") {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ViewOp_Field_Idx_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit val typeA: TypeRep[A]) extends FieldSetter[Int](self, "idx", x$1) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class ViewOp_Field_Idx[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldGetter[Int](self, "idx") {
+    override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ViewOp_Field_Parent[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Operator[A]](self, "parent") {
+    override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
+  }
+
+  case class ViewOp_Field_NullDynamicRecord[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[A](self, "NullDynamicRecord") {
+    override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def viewOpNew[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[ViewOp[A]] = ViewOpNew[A](parent)
+  def viewOpForeach[A](self: Rep[ViewOp[A]], f: Rep[((A) => Unit)])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOpForeach[A](self, f)
+  def viewOpFindFirst[A](self: Rep[ViewOp[A]], cond: Rep[((A) => Boolean)])(implicit typeA: TypeRep[A]): Rep[A] = ViewOpFindFirst[A](self, cond)
+  def viewOpNullDynamicRecord[A, D](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], typeD: TypeRep[D], di: DummyImplicit): Rep[D] = ViewOpNullDynamicRecord[A, D](self)
+  def viewOpOpen[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOpOpen[A](self)
+  def viewOpNext[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[A] = ViewOpNext[A](self)
+  def viewOpClose[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOpClose[A](self)
+  def viewOpReset[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOpReset[A](self)
+  def viewOp_Field_Table[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[ArrayBuffer[A]] = ViewOp_Field_Table[A](self)
+  def viewOp_Field_Size_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Size_$eq[A](self, x$1)
+  def viewOp_Field_Size[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ViewOp_Field_Size[A](self)
+  def viewOp_Field_Idx_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Idx_$eq[A](self, x$1)
+  def viewOp_Field_Idx[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ViewOp_Field_Idx[A](self)
+  def viewOp_Field_Parent[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = ViewOp_Field_Parent[A](self)
+  def viewOp_Field_NullDynamicRecord[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[A] = ViewOp_Field_NullDynamicRecord[A](self)
+  type ViewOp[A] = ch.epfl.data.legobase.queryengine.volcano.ViewOp[A]
+  case class ViewOpType[A](typeA: TypeRep[A]) extends TypeRep[ViewOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ViewOpType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"ViewOp[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[ViewOp[A]]
+  }
+  implicit def typeViewOp[A: TypeRep] = ViewOpType(implicitly[TypeRep[A]])
+}
+trait ViewOpImplicits { this: ViewOpComponent =>
+  // Add implicit conversions here!
+}
+trait ViewOpImplementations { self: DeepDSL =>
+  override def viewOpOpen[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    {
+      self.parent.open();
+      self.parent.foreach(__lambda(((t: this.Rep[A]) => self.table.append(t))));
+      self.size_$eq(self.table.size)
+    }
+  }
+  override def viewOpNext[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[A] = {
+    __ifThenElse(self.idx.$less(self.size), {
+      val e: this.Rep[A] = self.table.apply(self.idx);
+      self.idx_$eq(self.idx.$plus(unit(1)));
+      e
+    }, self.NullDynamicRecord)
+  }
+  override def viewOpClose[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    unit(())
+  }
+  override def viewOpReset[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    self.idx_$eq(unit(0))
+  }
+}
+trait ViewOpComponent extends ViewOpOps with ViewOpImplicits { self: OperatorsComponent => }
+trait OperatorsComponent extends OperatorComponent with ScanOpComponent with SelectOpComponent with AggOpComponent with SortOpComponent with MapOpComponent with PrintOpComponent with HashJoinOpComponent with WindowOpComponent with LeftHashSemiJoinOpComponent with NestedLoopsJoinOpComponent with SubquerySingleResultComponent with HashJoinAntiComponent with ViewOpComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent with DoubleComponent with IntComponent with LongComponent with ArrayComponent with LINEITEMRecordComponent with K2DBScannerComponent with IntegerComponent with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase { self: DeepDSL => }

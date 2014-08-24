@@ -12,6 +12,8 @@ import pardis.optimization._
 class LBLowering(override val from: InliningLegoBase, override val to: LoweringLegoBase) extends Lowering[InliningLegoBase, LoweringLegoBase](from, to) {
   import from._
 
+  // override val lowerStructs: Boolean = false
+
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = node match {
     case an: AggOpNew[_, _] => {
       val ma = an.typeA
@@ -56,7 +58,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       to.__newDef[SortOp[Any]](("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](apply(so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]]))(apply(maa)))(apply(maa))),
         ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(maa)))).asInstanceOf[to.Def[T]]
     }
-    case ho: HashJoinOpNew[_, _, _] => {
+    case ho: HashJoinOpNew1[_, _, _] => {
       val ma = ho.typeA
       val mb = ho.typeB
       val mc = ho.typeC
@@ -91,6 +93,38 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       to.__newDef[LeftHashSemiJoinOp[Any, Any, Any]](("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffB))),
         ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(ma)))).asInstanceOf[to.Def[T]]
     }
+    case nlo: NestedLoopsJoinOpNew[_, _] => {
+      val ma = nlo.typeA
+      val mb = nlo.typeB
+      type NestedLoopsJoinOpTp = NestedLoopsJoinOp[pardis.shallow.AbstractRecord, pardis.shallow.AbstractRecord]
+      val tp = nlo.tp.asInstanceOf[TypeRep[NestedLoopsJoinOpTp]]
+      val mCompRec = implicitly[TypeRep[DynamicCompositeRecord[pardis.shallow.AbstractRecord, pardis.shallow.AbstractRecord]]].rebuild(ma, mb).asInstanceOf[TypeRep[Any]]
+      to.__newDef[NestedLoopsJoinOpTp](("leftTuple", true, to.infix_asInstanceOf(to.unit[Any](null))(apply(ma))),
+        ("rightTuple", true, to.infix_asInstanceOf(to.unit[Any](null))(apply(mb))),
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(mCompRec))))(tp).asInstanceOf[to.Def[T]]
+    }
+    case vo: ViewOpNew[_] => {
+      val ma = vo.typeA
+      // val marrBuffA = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(ma).asInstanceOf[TypeRep[Any]]
+      to.__newDef[ViewOp[Any]](
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(ma))),
+        ("idx", true, to.unit[Int](0)),
+        ("size", true, to.unit[Int](0)),
+        ("table", false, to.ArrayBuffer()(apply(ma)))).asInstanceOf[to.Def[T]]
+    }
+    case sr: SubquerySingleResultNew[_] => {
+      to.__newDef[SubquerySingleResult[Any]]().asInstanceOf[to.Def[T]]
+    }
+    case ho: HashJoinAntiNew[_, _, _] => {
+      val ma = ho.typeA
+      val mb = ho.typeB
+      val mc = ho.typeC
+      val mba = mb.asInstanceOf[TypeRep[Any]]
+      val marrBuffA = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(ma).asInstanceOf[TypeRep[Any]]
+      to.__newDef[HashJoinAnti[Any, Any, Any]](("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffA))),
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(ma))),
+        ("keySet", true, to.Set()(apply(mc), to.overloaded2))).asInstanceOf[to.Def[T]]
+    }
     case pc @ PardisCast(exp) => {
       PardisCast(transformExp[Any, Any](exp))(transformType(exp.tp), transformType(pc.castTp)).asInstanceOf[to.Def[T]]
     }
@@ -112,7 +146,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
     def unapply[T](exp: Rep[T]): Option[Def[T]] = exp match {
       case Def(d) => d.tp match {
         case x if x.isRecord => Some(d)
-        case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) => Some(d)
+        case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | NestedLoopsJoinOpType(_, _) | ViewOpType(_) | HashJoinAntiType(_, _, _) => Some(d)
         case _ => None
       }
       case _ => None
