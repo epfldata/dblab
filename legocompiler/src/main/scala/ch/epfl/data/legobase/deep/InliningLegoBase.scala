@@ -6,7 +6,7 @@ import scala.language.implicitConversions
 import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
 
-trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopUnrolling with OperatorImplementations with ScanOpImplementations with SelectOpImplementations with AggOpImplementations with SortOpImplementations with MapOpImplementations with PrintOpImplementations with WindowOpImplementations with HashJoinOpImplementations with LeftHashSemiJoinOpImplementations with QueriesImplementations with NestedLoopsJoinOpImplementations with SubquerySingleResultImplementations with ViewOpImplementations with HashJoinAntiImplementations {
+trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopUnrolling with OperatorImplementations with ScanOpImplementations with SelectOpImplementations with AggOpImplementations with SortOpImplementations with MapOpImplementations with PrintOpImplementations with WindowOpImplementations with HashJoinOpImplementations with LeftHashSemiJoinOpImplementations with QueriesImplementations with NestedLoopsJoinOpImplementations with SubquerySingleResultImplementations with ViewOpImplementations with HashJoinAntiImplementations with LeftOuterJoinOpImplementations {
   override def operatorOpen[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = self match {
     case Def(x: PrintOpNew[_]) => self.asInstanceOf[Rep[PrintOp[A]]].open
     case Def(x: SortOpNew[_])  => self.asInstanceOf[Rep[SortOp[A]]].open
@@ -50,6 +50,12 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
       type Y = Any
       type Z = Any
       hashJoinAntiOpen(self.asInstanceOf[Rep[HashJoinAnti[X, Y, Z]]])(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], x.typeC.asInstanceOf[TypeRep[Z]])
+    }
+    case Def(x: LeftOuterJoinOpNew[_, _, _]) => {
+      type X = pardis.shallow.AbstractRecord
+      type Y = pardis.shallow.AbstractRecord
+      type Z = Any
+      leftOuterJoinOpOpen(self.asInstanceOf[Rep[LeftOuterJoinOp[X, Y, Z]]])(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], x.typeC.asInstanceOf[TypeRep[Z]], x.evidence$1.asInstanceOf[Manifest[Y]])
     }
     case _ => super.operatorOpen(self)
   }
@@ -135,6 +141,12 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
       type Y = Any
       type Z = Any
       hashJoinAntiNext(self.asInstanceOf[Rep[HashJoinAnti[X, Y, Z]]])(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], x.typeC.asInstanceOf[TypeRep[Z]]).asInstanceOf[Rep[A]]
+    }
+    case Def(x: LeftOuterJoinOpNew[_, _, _]) => {
+      type X = pardis.shallow.AbstractRecord
+      type Y = pardis.shallow.AbstractRecord
+      type Z = Any
+      leftOuterJoinOpNext(self.asInstanceOf[Rep[LeftOuterJoinOp[X, Y, Z]]])(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], x.typeC.asInstanceOf[TypeRep[Z]], x.evidence$1.asInstanceOf[Manifest[Y]]).asInstanceOf[Rep[A]]
     }
     case _ => super.operatorNext(self)
   }
@@ -344,6 +356,29 @@ trait InliningLegoBase extends DeepDSL with pardis.ir.InlineFunctions with LoopU
     case Def(x: HashJoinAntiNew[_, _, _]) => x.rightHash
     case _                                => super.hashJoinAnti_Field_RightHash(self)
   }
+
+  override def leftOuterJoinOp_Field_RightHash[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = self match {
+    case Def(x: LeftOuterJoinOpNew[_, _, _]) => x.rightHash
+    case _                                   => super.leftOuterJoinOp_Field_RightHash(self)
+  }
+  override def leftOuterJoinOp_Field_LeftHash[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = self match {
+    case Def(x: LeftOuterJoinOpNew[_, _, _]) => x.leftHash
+    case _                                   => super.leftOuterJoinOp_Field_LeftHash(self)
+  }
+  override def leftOuterJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = self match {
+    case Def(x: LeftOuterJoinOpNew[_, _, _]) => x.joinCond
+    case _                                   => super.leftOuterJoinOp_Field_JoinCond(self)
+  }
+  override def leftOuterJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = self match {
+    case Def(x: LeftOuterJoinOpNew[_, _, _]) => x.rightParent
+    case _                                   => super.leftOuterJoinOp_Field_RightParent(self)
+  }
+  override def leftOuterJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = self match {
+    case Def(x: LeftOuterJoinOpNew[_, _, _]) => x.leftParent
+    case _                                   => super.leftOuterJoinOp_Field_LeftParent(self)
+  }
+
+  override def leftOuterJoinOpNullDynamicRecord[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C, D](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], typeD: TypeRep[D], di: DummyImplicit, evidence$1: Manifest[B]): Rep[D] = infix_asInstanceOf(unit[Any](null))(typeD)
 
   override def loaderLoadLineitemObject(): Rep[Array[LINEITEMRecord]] = {
     val file = unit(Config.datapath + "lineitem.tbl")

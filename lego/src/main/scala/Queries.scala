@@ -479,7 +479,7 @@ object Queries {
 
   // Amir: Lifting needs:
   //  1) LeftOuterJoinOp
-  @dontLift
+  // @dontLift
   def Q13(numRuns: Int) {
     val customerTable = loadCustomer()
     val ordersTable = loadOrders()
@@ -495,7 +495,7 @@ object Queries {
         })
         val jo = new LeftOuterJoinOp(scanCustomer, scanOrders)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY)
         val aggOp1 = new AggOp(jo, 1)(x => x.C_CUSTKEY[Int])(
-          (t, currAgg) => { if (t.O_ORDERKEY != 0.0) currAgg + 1 else currAgg })
+          (t, currAgg) => { if (t.O_ORDERKEY[Int] != 0.0) currAgg + 1 else currAgg })
         val aggOp2 = new AggOp(aggOp1, 1)(x => x.aggs(0))(
           (t, currAgg) => { currAgg + 1 })
         val sortOp = new SortOp(aggOp2)((x, y) => {

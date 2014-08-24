@@ -44,6 +44,7 @@ object Main extends LegoRunner {
     case "Q10"  => query10()
     case "Q11"  => query11()
     case "Q12"  => query12()
+    case "Q13"  => query13()
     case "Q14"  => query14()
     case "Q15"  => query15()
     case "Q16"  => query16()
@@ -198,6 +199,12 @@ object Main extends LegoRunner {
     val context = new LoweringLegoBase {}
     val block = context.reifyBlock { context.Queries.Q12(context.unit(1)) }
     compileQuery(context, block, 12, false)
+  }
+
+  def query13() {
+    val context = new LoweringLegoBase {}
+    val block = context.reifyBlock { context.Queries.Q13(context.unit(1)) }
+    compileQuery(context, block, 13, false)
   }
 
   def query14() {

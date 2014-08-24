@@ -125,6 +125,23 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
         ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(ma))),
         ("keySet", true, to.Set()(apply(mc), to.overloaded2))).asInstanceOf[to.Def[T]]
     }
+    case loj: LeftOuterJoinOpNew[_, _, _] => {
+      val ma = loj.typeA
+      val mb = loj.typeB
+      val mc = loj.typeC
+      val maa = ma.asInstanceOf[TypeRep[Any]]
+      val mba = mb.asInstanceOf[TypeRep[Any]]
+      type LeftOuterJoinOpTp = LeftOuterJoinOp[pardis.shallow.AbstractRecord, pardis.shallow.AbstractRecord, Any]
+      val tp = loj.tp.asInstanceOf[TypeRep[LeftOuterJoinOpTp]]
+      val marrBuffB = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(mb).asInstanceOf[TypeRep[Any]]
+      val mCompRec = implicitly[TypeRep[DynamicCompositeRecord[pardis.shallow.AbstractRecord, pardis.shallow.AbstractRecord]]].rebuild(ma, mb).asInstanceOf[TypeRep[Any]]
+      to.__newDef[LeftOuterJoinOpTp](("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffB))),
+        ("NullDynamicRecord", false, to.infix_asInstanceOf(to.unit[Any](null))(apply(mCompRec))),
+        ("tmpCount", true, to.unit[Int](-1)),
+        ("tmpLine", true, to.infix_asInstanceOf(to.unit[Any](null))(apply(maa))),
+        ("tmpBuffer", true, to.ArrayBuffer()(apply(mb))),
+        ("defaultB", false, transformDef(to.StructDefault()((mba)))))(tp).asInstanceOf[to.Def[T]]
+    }
     case pc @ PardisCast(exp) => {
       PardisCast(transformExp[Any, Any](exp))(transformType(exp.tp), transformType(pc.castTp)).asInstanceOf[to.Def[T]]
     }
@@ -146,7 +163,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
     def unapply[T](exp: Rep[T]): Option[Def[T]] = exp match {
       case Def(d) => d.tp match {
         case x if x.isRecord => Some(d)
-        case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | NestedLoopsJoinOpType(_, _) | ViewOpType(_) | HashJoinAntiType(_, _, _) => Some(d)
+        case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | NestedLoopsJoinOpType(_, _) | ViewOpType(_) | HashJoinAntiType(_, _, _) | LeftOuterJoinOpType(_, _, _) => Some(d)
         case _ => None
       }
       case _ => None

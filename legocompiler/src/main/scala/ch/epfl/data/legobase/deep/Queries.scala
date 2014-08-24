@@ -24,6 +24,7 @@ trait QueriesOps extends Base { this: QueryComponent =>
     def Q10(numRuns: Rep[Int]): Rep[Unit] = queriesQ10Object(numRuns)
     def Q11(numRuns: Rep[Int]): Rep[Unit] = queriesQ11Object(numRuns)
     def Q12(numRuns: Rep[Int]): Rep[Unit] = queriesQ12Object(numRuns)
+    def Q13(numRuns: Rep[Int]): Rep[Unit] = queriesQ13Object(numRuns)
     def Q14(numRuns: Rep[Int]): Rep[Unit] = queriesQ14Object(numRuns)
     def Q15(numRuns: Rep[Int]): Rep[Unit] = queriesQ15Object(numRuns)
     def Q16(numRuns: Rep[Int]): Rep[Unit] = queriesQ16Object(numRuns)
@@ -85,6 +86,10 @@ trait QueriesOps extends Base { this: QueryComponent =>
     override def curriedConstructor = (copy _)
   }
 
+  case class QueriesQ13Object(numRuns: Rep[Int]) extends FunctionDef[Unit](None, "Queries.Q13", List(List(numRuns))) {
+    override def curriedConstructor = (copy _)
+  }
+
   case class QueriesQ14Object(numRuns: Rep[Int]) extends FunctionDef[Unit](None, "Queries.Q14", List(List(numRuns))) {
     override def curriedConstructor = (copy _)
   }
@@ -134,6 +139,7 @@ trait QueriesOps extends Base { this: QueryComponent =>
   def queriesQ10Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ10Object(numRuns)
   def queriesQ11Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ11Object(numRuns)
   def queriesQ12Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ12Object(numRuns)
+  def queriesQ13Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ13Object(numRuns)
   def queriesQ14Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ14Object(numRuns)
   def queriesQ15Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ15Object(numRuns)
   def queriesQ16Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ16Object(numRuns)
@@ -525,6 +531,31 @@ trait QueriesImplementations { self: DeepDSL =>
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       })
+    }
+  }
+  override def queriesQ13Object(numRuns: Rep[Int]): Rep[Unit] = {
+    {
+      val customerTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = Loader.loadCustomer();
+      val ordersTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = Loader.loadOrders();
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
+        val unusual: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("unusual"));
+        val packages: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("packages"));
+        val scanCustomer: this.Rep[ch.epfl.data.legobase.queryengine.volcano.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = __newScanOp(customerTable);
+        val scanOrders: this.Rep[ch.epfl.data.legobase.queryengine.volcano.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = __newSelectOp(__newScanOp(ordersTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]) => {
+          val idxu: this.Rep[Int] = x.O_COMMENT.indexOfSlice(unusual, unit(0));
+          val idxp: this.Rep[Int] = x.O_COMMENT.indexOfSlice(packages, idxu);
+          infix_$bang$eq(idxu, unit(-1)).$amp$amp(infix_$bang$eq(idxp, unit(-1))).unary_$bang
+        })));
+        val jo: this.Rep[ch.epfl.data.legobase.queryengine.volcano.LeftOuterJoinOp[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord, Int]] = __newLeftOuterJoinOp(scanCustomer, scanOrders)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord], y: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]) => infix_$eq$eq(x.C_CUSTKEY, y.O_CUSTKEY))))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]) => x.C_CUSTKEY)))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]) => x.O_CUSTKEY)));
+        val aggOp1: this.Rep[ch.epfl.data.legobase.queryengine.volcano.AggOp[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord], Int]] = __newAggOp(jo, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]]) => x.selectDynamic[Int](unit("C_CUSTKEY")))))(__lambda(((t: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord, ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]], currAgg: this.Rep[Double]) => __ifThenElse(infix_$bang$eq(t.selectDynamic[Int](unit("O_ORDERKEY")), unit(0.0)), currAgg.$plus(unit(1)), currAgg))));
+        val aggOp2: this.Rep[ch.epfl.data.legobase.queryengine.volcano.AggOp[ch.epfl.data.legobase.queryengine.AGGRecord[Int], Double]] = __newAggOp(aggOp1, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[Int]]) => x.aggs.apply(unit(0)))))(__lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[Int]], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
+        val sortOp: this.Rep[ch.epfl.data.legobase.queryengine.volcano.SortOp[ch.epfl.data.legobase.queryengine.AGGRecord[Double]]] = __newSortOp(aggOp2)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[Double]], y: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[Double]]) => __ifThenElse(x.aggs.apply(unit(0)).$less(y.aggs.apply(unit(0))), unit(1), __ifThenElse(x.aggs.apply(unit(0)).$greater(y.aggs.apply(unit(0))), unit(-1), __ifThenElse(x.key.$less(y.key), unit(1), __ifThenElse(x.key.$greater(y.key), unit(-1), unit(0))))))));
+        val po: this.Rep[ch.epfl.data.legobase.queryengine.volcano.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[Double]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[Double]]) => printf(unit("%.0f|%.0f\n"), kv.key, kv.aggs.apply(unit(0))))), __lambda((() => unit(true))));
+        po.open();
+        po.next();
+        printf(unit("(%d rows)\n"), po.numRows);
+        unit(())
+      }))))
     }
   }
   override def queriesQ14Object(numRuns: Rep[Int]): Rep[Unit] = {

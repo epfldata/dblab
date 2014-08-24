@@ -56,7 +56,7 @@ class MetaInfo
   def NullDynamicRecord[D](implicit di: DummyImplicit) = null.asInstanceOf[D]
 }
 
-@deep class ScanOp[A](table: Array[A]) extends Operator[A] {
+@deep class ScanOp[A](val table: Array[A]) extends Operator[A] {
   var i = 0
   def open() {}
   def next() = {
@@ -77,7 +77,7 @@ class MetaInfo
   def reset() { parent.reset }
 }
 
-@deep class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: A => B)(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
+@deep class AggOp[A, B](parent: Operator[A], val numAggs: Int)(val grp: A => B)(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
   val hm = new HashMap[B, Array[Double]]()
   var keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
 
@@ -384,6 +384,7 @@ class ViewOp[A](parent: Operator[A]) extends Operator[A] {
   def reset() { idx = 0 }
 }
 
+@deep
 class LeftOuterJoinOp[A <: AbstractRecord, B <: AbstractRecord: Manifest, C](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   var tmpCount = -1
   var tmpBuffer = ArrayBuffer[B]()
@@ -407,7 +408,7 @@ class LeftOuterJoinOp[A <: AbstractRecord, B <: AbstractRecord: Manifest, C](val
     if (tmpCount != -1) {
       while (tmpCount < tmpBuffer.size && !joinCond(tmpLine, tmpBuffer(tmpCount))) tmpCount += 1
       if (tmpCount != tmpBuffer.size) {
-        res = tmpLine.concatenateDynamic(tmpBuffer(tmpCount))
+        res = tmpLine.concatenateDynamic(tmpBuffer(tmpCount), "", "")
         tmpCount += 1
       }
     }
@@ -420,10 +421,10 @@ class LeftOuterJoinOp[A <: AbstractRecord, B <: AbstractRecord: Manifest, C](val
           tmpBuffer = hm(k)
           tmpCount = tmpBuffer.indexWhere(e => joinCond(tmpLine, e))
           if (tmpCount != -1) {
-            res = tmpLine.concatenateDynamic(tmpBuffer(tmpCount))
+            res = tmpLine.concatenateDynamic(tmpBuffer(tmpCount), "", "")
             tmpCount += 1
-          } else res = tmpLine.concatenateDynamic(defaultB)
-        } else res = tmpLine.concatenateDynamic(defaultB);
+          } else res = tmpLine.concatenateDynamic(defaultB, "", "")
+        } else res = tmpLine.concatenateDynamic(defaultB, "", "")
       }
     }
     res
