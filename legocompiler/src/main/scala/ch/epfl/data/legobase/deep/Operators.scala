@@ -1940,14 +1940,17 @@ trait HashJoinAntiImplementations { self: DeepDSL =>
         __ifThenElse(self.hm.contains(k), {
           val elems: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.apply(k);
           var removed: this.Var[Int] = __newVar(unit(0));
-          intWrapper(unit(0)).until(elems.size).foreach[Unit](__lambda(((i: this.Rep[Int]) => {
-            val idx: this.Rep[Int] = i.$minus(readVar(removed));
+          var i: this.Var[Int] = __newVar(unit(0));
+          val finalCnt: this.Rep[Int] = elems.size;
+          __whileDo(readVar(i).$less(finalCnt), {
+            val idx: this.Rep[Int] = readVar(i).$minus(readVar(removed));
             val e: this.Rep[A] = elems.apply(idx);
             __ifThenElse(__app(self.joinCond).apply(e, t), {
               self.removeFromList(elems, e, idx);
               __assign(removed, readVar(removed).$plus(unit(1)))
-            }, unit(()))
-          })))
+            }, unit(()));
+            __assign(i, readVar(i).$plus(unit(1)))
+          })
         }, unit(()))
       })));
       self.keySet_$eq(Set.apply[C](self.hm.keySet.toSeq))

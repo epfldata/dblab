@@ -566,7 +566,7 @@ object Queries {
       // Calcuate result
       val scanSupplier = new ScanOp(supplierTable)
       val jo = new HashJoinOp(scanSupplier, vo)((x, y) => x.S_SUPPKEY == y.key && y.aggs(0) == maxRevenue)(x => x.S_SUPPKEY)(x => x.key)
-      val po = new PrintOp(jo)(kv => printf("%d|%s|%s|%s|%.4f\n", kv.S_SUPPKEY, kv.S_NAME[LBString].string, kv.S_ADDRESS[LBString].string, kv.S_PHONE[LBString].string, kv.aggs[Array[Double]].apply(0)), () => true)
+      val po = new PrintOp(jo)(kv => printf("%d|%s|%s|%s|%.4f\n", kv.S_SUPPKEY[Int], kv.S_NAME[LBString].string, kv.S_ADDRESS[LBString].string, kv.S_PHONE[LBString].string, kv.aggs[Array[Double]].apply(0)), () => true)
       po.open
       po.next
       printf("(%d rows)\n", po.numRows)
@@ -802,8 +802,8 @@ object Queries {
       val ordersScan = new SelectOp(new ScanOp(ordersTable))(x => x.O_ORDERSTATUS == 'F')
       val jo1 = new HashJoinOp(nationScan, supplierScan)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY)
       val jo2 = new HashJoinOp(jo1, lineitemScan1)((x, y) => x.S_SUPPKEY[Int] == y.L_SUPPKEY)(x => x.S_SUPPKEY[Int])(x => x.L_SUPPKEY)
-      val jo3 = new LeftHashSemiJoinOp(jo2, lineitemScan2)((x, y) => x.L_ORDERKEY[Int] == y.L_ORDERKEY && x.L_SUPPKEY[Int] != y.L_SUPPKEY)(x => x.L_ORDERKEY[Int])(x => x.L_ORDERKEY)
-      val jo4 = new HashJoinAnti(jo3, lineitemScan3)((x, y) => x.L_ORDERKEY[Int] == y.L_ORDERKEY && x.L_SUPPKEY[Int] != y.L_SUPPKEY)(x => x.L_ORDERKEY[Int])(x => x.L_ORDERKEY)
+      val jo3 = new LeftHashSemiJoinOp(jo2, lineitemScan2)((x, y) => (x.L_ORDERKEY[Int] == y.L_ORDERKEY) && (x.L_SUPPKEY[Int] != y.L_SUPPKEY))(x => x.L_ORDERKEY[Int])(x => x.L_ORDERKEY)
+      val jo4 = new HashJoinAnti(jo3, lineitemScan3)((x, y) => (x.L_ORDERKEY[Int] == y.L_ORDERKEY) && (x.L_SUPPKEY[Int] != y.L_SUPPKEY))(x => x.L_ORDERKEY[Int])(x => x.L_ORDERKEY)
       val jo5 = new HashJoinOp(ordersScan, jo4)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY[Int])(x => x.O_ORDERKEY)(x => x.L_ORDERKEY[Int])
       val aggOp = new AggOp(jo5, 1)(x => x.S_NAME[LBString])((t, currAgg) => { currAgg + 1 })
       val sortOp = new SortOp(aggOp)((x, y) => {
@@ -814,7 +814,7 @@ object Queries {
       })
       var i = 0
       val po = new PrintOp(sortOp)(kv => {
-        printf("%s|%.0f\n", kv.key.string, kv.aggs(0), () => true)
+        printf("%s|%.0f\n", kv.key.string, kv.aggs(0))
         i += 1
       }, () => i < 100)
       po.open
@@ -852,10 +852,10 @@ object Queries {
       val nestedAVG = new SubquerySingleResult(mapOp).getResult.aggs(2)
       // External Query
       val customerScan2 = new SelectOp(new ScanOp(customerTable))(x => {
-        x.C_ACCTBAL > nestedAVG && (
-          x.C_PHONE.startsWith(v23) || (x.C_PHONE.startsWith(v29) || (x.C_PHONE.startsWith(v22) ||
-            (x.C_PHONE.startsWith(v20) || (x.C_PHONE.startsWith(v24) || (x.C_PHONE.startsWith(v26) ||
-              x.C_PHONE.startsWith(v25)))))))
+        (x.C_PHONE.startsWith(v23) || (x.C_PHONE.startsWith(v29) || (x.C_PHONE.startsWith(v22) ||
+          (x.C_PHONE.startsWith(v20) || (x.C_PHONE.startsWith(v24) || (x.C_PHONE.startsWith(v26) ||
+            x.C_PHONE.startsWith(v25))))))) &&
+            x.C_ACCTBAL > nestedAVG
       })
       val ordersScan = new ScanOp(ordersTable)
       val jo = new HashJoinAnti(customerScan2, ordersScan)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY)

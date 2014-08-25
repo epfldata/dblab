@@ -36,11 +36,14 @@ object CTransformersPipeline {
     val b2 = new ScalaArrayToCStructTransformer(context).transformBlock(b1)
     val b3 = new ScalaConstructsToCTranformer(context).transformBlock(b2)
     val b4 = new ScalaCollectionsToGLibTransfomer(context).optimize(b3)
-    System.out.println(b4)
+    val b5 = new OptimalStringToCTransformer(context).transformBlock(b4)
+    val finalBlock = b5
+    System.out.println(finalBlock)
     // Also write to file to facilitate debugging
     val pw = new java.io.PrintWriter(new java.io.File("tree_debug_dump.txt"))
     pw.println(b4.toString)
-    b4
+    pw.flush()
+    finalBlock
   }
 }
 
@@ -195,20 +198,6 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
   }).asInstanceOf[PardisType[Any]]
 
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
-    case OptimalStringNew(x)     => x.correspondingNode
-    case OptimalStringString(x)  => x.correspondingNode
-    case OptimalStringDiff(x, y) => StrCmp(x, y)
-    case OptimalStringEndsWith(x, y) =>
-      val lenx = strlen(x)
-      val leny = strlen(y)
-      val len = lenx - leny
-      Equal(StrNCmp(x + len, y, len), Constant(0))
-    case OptimalStringStartsWith(x, y) =>
-      Equal(StrNCmp(x, y, StrLen(y)), Constant(0))
-    case OptimalStringCompare(x, y)     => StrCmp(x, y)
-    case OptimalString$eq$eq$eq(x, y)   => Equal(StrCmp(x, y), Constant(0))
-    case OptimalString$eq$bang$eq(x, y) => NotEqual(StrCmp(x, y), Constant(0))
-
     case PardisReadVal(s) =>
       val ss = transformExp[Any, T](s)
       PardisReadVal(ss)(ss.tp.asInstanceOf[PardisType[T]])
@@ -222,6 +211,19 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     case PardisReadVar(PardisVar(s)) =>
       val ss = transformExp[Any, T](s)
       PardisReadVar(PardisVar(ss.asInstanceOf[Expression[PardisVar[Any]]]))(ss.tp.asInstanceOf[PardisType[Any]])
+    /*case or @ Boolean$bar$bar(case1, case2) => {
+      case2 match {
+        case b @ PardisBlock(stmt, res) =>
+          ReadVal(__ifThenElse(case1, {
+            val newB = transformBlockTyped[Boolean, T](b)
+            ReadVal(newB)(newB.tp)
+          }, Constant(true)))
+        //          val v = boolean$bar$bar(case1, newB.res.asInstanceOf[Expression[Boolean]])
+        //        ReadVal(v)(BooleanType)
+        case _ => or
+      }
+    }*/
+
     case or @ Boolean$bar$bar(case1, case2) => {
       case2 match {
         case b @ PardisBlock(stmt, res) =>
@@ -235,11 +237,11 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     case and @ Boolean$amp$amp(case1, case2) => {
       case2 match {
         case b @ PardisBlock(stmt, res) =>
-          val newB = transformBlockTyped[Boolean, T](b)
-          ReadVal(newB)(newB.tp)
-          val v = boolean$amp$amp(case1, newB.res.asInstanceOf[Expression[Boolean]])
-          ReadVal(v)(BooleanType)
-        case _ => and
+          ReadVal(__ifThenElse(case1, {
+            val newB = transformBlockTyped[Boolean, T](b)
+            ReadVal(newB)(newB.tp)
+          }, Constant(false)))
+        case _ => case2
       }
     }
     case BooleanUnary_$bang(b) => NameAlias[Boolean](None, "!", List(List(b)))
@@ -266,6 +268,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     case GenericEngineParseStringObject(s)  => ReadVal(s)
     case GenericEngineDateToStringObject(d) => NameAlias[String](None, "ltoa", List(List(d)))
     case GenericEngineDateToYearObject(d)   => ReadVal(d.asInstanceOf[Expression[Long]] / Constant(10000))
+    case IntToLong(x)                       => ReadVal(x)
     case _                                  => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
 }
@@ -301,6 +304,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   def string_eq = doLambda2((s1: Rep[String], s2: Rep[String]) => infix_==(strcmp(s1, s2), 0))
   def int_hash = doLambda((s: Rep[Int]) => s)
   def int_eq = doLambda2((s1: Rep[Int], s2: Rep[Int]) => infix_==(s1, s2))
+  def double_hash = doLambda((s: Rep[Double]) => s / 10)
+  def double_eq = doLambda2((s1: Rep[Double], s2: Rep[Double]) => infix_==(s1, s2))
   def record_eq[A: PardisType] = {
     val structDef = getStructDef[A].get
     val eqMethod = transformDef(structDef.methods.find(_.name == "equals").get.body.asInstanceOf[PardisLambda2[A, A, Boolean]])
@@ -325,6 +330,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
       if ((nm.typeA == StringType) || (nm.typeA == OptimalStringType)) GHashTableNew(string_hash, string_eq)(StringType, nB, IntType)
       else if (nm.typeA == IntType) GHashTableNew(int_hash, int_eq)(IntType, nB, IntType)
+      else if (nm.typeA == DoubleType) GHashTableNew(double_hash, double_eq)(DoubleType, nB, DoubleType)
       else GHashTableNew(record_hash(nm.typeA), record_eq(nm.typeA))(nA, nB, IntType)
     case HashMapSize(map)   => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
     case HashMapKeySet(map) => NameAlias[Pointer[GList[FILE]]](None, "g_hash_table_get_keys", List(List(map)))
@@ -388,7 +394,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       else NameAlias(None, "g_array_index", List(List(a, typeOf()(typePointer(aba.tp)), i)))(transformType(aba.tp))
     case abap @ ArrayBufferAppend(a, e) =>
       NameAlias[Unit](None, "g_array_append_val", List(List(a, e)))
-    case ArrayBufferSize(a) => ReadVal(field(a, "len")(IntType))
+    case ArrayBufferSize(a) => PardisStructFieldGetter(a, "len")(IntType)
     case ArrayBufferMinBy(a, f @ Def(Lambda(fun, input, o))) =>
       val len = transformDef(ArrayBufferSize(a))
       var i = __newVar[Int](1)
@@ -415,6 +421,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         __assign(idx, readVar(idx) + unit(1))
       })
       ReadVar(agg)
+    case ArrayBufferRemove(a, e) => NameAlias[Unit](None, "g_array_remove_index", List(List(a, e)))
 
     /* Other operations */
     case imtf @ PardisStructImmutableField(s, f) =>
@@ -422,11 +429,53 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case HashCode(t) => t.tp match {
       case x if x.isPrimitive             => PardisCast(t)(x, IntType)
       case x if x.name == "Character"     => PardisCast(t)(x, IntType)
-      case x if x.name == "OptimalString" => ArrayLength(t.asInstanceOf[Rep[Array[Any]]])
+      case x if x.name == "OptimalString" => OptimalStringLength(t.asInstanceOf[Expression[OptimalString]])
       case x if x.isArray                 => ArrayLength(t.asInstanceOf[Rep[Array[Any]]])
       // Handle any additional cases here
       case x                              => super.transformDef(node)
     }
+    case _ => super.transformDef(node)
+  }).asInstanceOf[to.Def[T]]
+}
+
+class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
+  import IR._
+  import CNodes._
+  import CTypes._
+
+  override def transformExp[T: TypeRep, S: TypeRep](exp: Rep[T]): Rep[S] = exp match {
+    case t: typeOf[_] => typeOf()(apply(t.tp)).asInstanceOf[Rep[S]]
+    case _            => super.transformExp[T, S](exp)
+  }
+
+  override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
+    case OptimalStringNew(x)     => x.correspondingNode
+    case OptimalStringString(x)  => x.correspondingNode
+    case OptimalStringDiff(x, y) => StrCmp(x, y)
+    case OptimalStringEndsWith(x, y) =>
+      val lenx = strlen(x)
+      val leny = strlen(y)
+      val len = lenx - leny
+      Equal(StrNCmp(x + len, y, len), Constant(0))
+    case OptimalStringStartsWith(x, y) =>
+      Equal(StrNCmp(x, y, StrLen(y)), Constant(0))
+    case OptimalStringCompare(x, y)       => Equal(StrCmp(x, y), Constant(0))
+    case OptimalStringLength(x)           => StrLen(x)
+    case OptimalString$eq$eq$eq(x, y)     => Equal(StrCmp(x, y), Constant(0))
+    case OptimalString$eq$bang$eq(x, y)   => NotEqual(StrCmp(x, y), Constant(0))
+    case OptimalStringContainsSlice(x, y) => NotEqual(StrStr(x, y), Constant(null))
+    case OptimalStringIndexOfSlice(x, y, idx) =>
+      val substr = strstr(x + idx, y)
+      val res = __ifThenElse(Equal(substr, Constant(null)), Constant(-1), StrSubtract(substr, x))(IntType)
+      ReadVal(res)
+    case OptimalStringApply(x, idx) =>
+      val z = infix_asInstanceOf(x)(typeArray(typePointer(CharType)))
+      ArrayApply(z, idx)
+    case OptimalStringSlice(x, start, end) =>
+      val len = end - start + unit(1)
+      val newbuf = malloc(len)(CharType)
+      strncpy(newbuf, x + len, len - unit(1))
+      ReadVal(newbuf)
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
 }

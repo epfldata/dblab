@@ -353,13 +353,16 @@ class HashJoinAnti[A, B, C](val leftParent: Operator[A], val rightParent: Operat
           // making it easy to generate C code as well (otherwise we
           // could use filter in scala and assign the result to the hm)
           var removed = 0
-          for (i <- 0 until elems.size) {
+          var i = 0
+          val finalCnt = elems.size
+          while (i < finalCnt) {
             val idx = i - removed
             val e = elems(idx)
             if (joinCond(e, t)) {
               removeFromList(elems, e, idx);
               removed += 1
             }
+            i += 1
           }
         }
       }
