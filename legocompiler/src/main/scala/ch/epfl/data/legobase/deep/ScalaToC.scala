@@ -203,8 +203,11 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       val leny = strlen(y)
       val len = lenx - leny
       Equal(StrNCmp(x + len, y, len), Constant(0))
-    case OptimalStringCompare(x, y)   => StrCmp(x, y)
-    case OptimalString$eq$eq$eq(x, y) => Equal(StrCmp(x, y), Constant(0))
+    case OptimalStringStartsWith(x, y) =>
+      Equal(StrNCmp(x, y, StrLen(y)), Constant(0))
+    case OptimalStringCompare(x, y)     => StrCmp(x, y)
+    case OptimalString$eq$eq$eq(x, y)   => Equal(StrCmp(x, y), Constant(0))
+    case OptimalString$eq$bang$eq(x, y) => NotEqual(StrCmp(x, y), Constant(0))
 
     case PardisReadVal(s) =>
       val ss = transformExp[Any, T](s)
@@ -262,6 +265,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       PardisStructImmutableField(s, f)(transformType(imtf.tp))
     case GenericEngineParseStringObject(s)  => ReadVal(s)
     case GenericEngineDateToStringObject(d) => NameAlias[String](None, "ltoa", List(List(d)))
+    case GenericEngineDateToYearObject(d)   => ReadVal(d.asInstanceOf[Expression[Long]] / Constant(10000))
     case _                                  => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
 }
@@ -389,8 +393,6 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       val len = transformDef(ArrayBufferSize(a))
       var i = __newVar[Int](1)
       var min = __newVar(transformDef(ArrayBufferApply(a, (Constant(0)))))
-      System.out.println("xaxaxaxa" + min.tp)
-
       var minBy = __newVar(fun(min).asInstanceOf[Expression[Int]])
       __whileDo(readVar(i) < len, {
         val e = transformDef(ArrayBufferApply(a, readVar(i)))
@@ -402,6 +404,17 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         __assign(i, readVar(i) + unit(1))
       })
       ReadVar(min)
+    case ArrayBufferFoldLeft(a, cnt, Def(Lambda2(fun, input1, input2, o))) =>
+      var idx = __newVar[Int](0)
+      val len = transformDef(ArrayBufferSize(a))
+      var agg = __newVar(cnt)
+      __whileDo(readVar(idx) < len, {
+        val e = transformDef(ArrayBufferApply(a.asInstanceOf[Expression[scala.collection.mutable.ArrayBuffer[Any]]], readVar(idx))(a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]))
+        val z = fun(agg, toAtom(e)(a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]))
+        __assign(agg, z)
+        __assign(idx, readVar(idx) + unit(1))
+      })
+      ReadVar(agg)
 
     /* Other operations */
     case imtf @ PardisStructImmutableField(s, f) =>
