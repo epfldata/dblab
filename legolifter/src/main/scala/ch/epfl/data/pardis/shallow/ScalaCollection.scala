@@ -63,15 +63,22 @@ final class MirrorDefaultEntry[A, B](val key: A, var value: B) {
 @reflect[ArrayBuffer[_]]
 final class MirrorArrayBuffer[A](protected val initialSize: Int) {
   def this() = this(16)
-  @pure def size: Int = ???
-  @pure def apply(i: Int): A = ???
+  def size: Int = ???
+  def apply(i: Int): A = ???
   @write def update(i: Int, x: A): Unit = ???
   def indexWhere(p: A => Boolean): Int = ???
   def clear(): Unit = ???
   def minBy[B](f: A => B)(implicit cmp: Ordering[B]): A = ???
+  def foldLeft[B](z: B)(op: (B, A) => B): B = ???
   @write def append(elem: A): Unit = ???
+  @write def remove(n: Int): A = ???
 }
 
 object MirrorArrayBuffer {
   def apply[T](): MirrorArrayBuffer[T] = ???
+}
+
+@reflect[Range]
+class MirrorRange(val start: Int, val end: Int, val step: Int) {
+  def foreach[U](f: Int => U): Unit = ???
 }

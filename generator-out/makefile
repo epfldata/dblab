@@ -27,6 +27,6 @@ compile:
 		end=`$(DATE_CMD) +'%H 3600 * %M 60 * + %S + 1000 * %N 1000000 / + p' | dc`; 		   \
 		echo "Compiling C code for query $$file using Clang took "`echo "$$end - $$start" | bc`" msec"; \
 	done
-
+	
 clean:
 	rm *.out *.output
