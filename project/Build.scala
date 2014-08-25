@@ -70,7 +70,7 @@ object LegoBuild extends Build {
           val fileName = args(2) + "_Generated.scala"
           val filePath = cgDir / fileName
           println("Generated " + fileName)
-          IO.copyFile(new java.io.File("generator-out") / "lala.scala", filePath)
+          IO.copyFile(new java.io.File("generator-out") / (args(2) + ".scala"), filePath)
           println("Run it using `test-run`")
           // println("classpath:" + (cp.files :+ filePath).mkString("\n"))
           // toError(r.run("ch.epfl.data.legobase.LEGO_QUERY", cp.files/* :+ cgDir*/, args, s.log))

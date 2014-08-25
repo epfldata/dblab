@@ -379,6 +379,11 @@ final abstract class MirrorBoolean {
   @pure def ^(x: Boolean): Boolean
 }
 
+@reflect[Byte]
+final abstract class MirrorByte {
+  @pure def -(x: Byte): Int
+}
+
 @reflect[java.lang.Integer]
 abstract class MirrorInteger(val value: Int) {
   override def equals(x$1: Any): Boolean = ???

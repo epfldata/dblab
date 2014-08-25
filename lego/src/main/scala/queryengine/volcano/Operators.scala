@@ -56,7 +56,7 @@ class MetaInfo
   def NullDynamicRecord[D](implicit di: DummyImplicit) = null.asInstanceOf[D]
 }
 
-@deep class ScanOp[A](table: Array[A]) extends Operator[A] {
+@deep class ScanOp[A](val table: Array[A]) extends Operator[A] {
   var i = 0
   def open() {}
   def next() = {
@@ -77,7 +77,7 @@ class MetaInfo
   def reset() { parent.reset }
 }
 
-@deep class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: A => B)(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
+@deep class AggOp[A, B](parent: Operator[A], val numAggs: Int)(val grp: A => B)(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
   val hm = new HashMap[B, Array[Double]]()
   var keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
 
@@ -99,7 +99,7 @@ class MetaInfo
       val key = keySet.head
       keySet.remove(key)
       val elem = hm.remove(key)
-      newAGGRecord(key, elem.get)
+      new AGGRecord(key, elem.get)
     } else NullDynamicRecord
   }
   def close() {}
@@ -140,7 +140,7 @@ class MetaInfo
   def reset { parent.reset }
 }
 
-@deep class PrintOp[A](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean = () => true) extends Operator[A] {
+@deep class PrintOp[A](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean) extends Operator[A] {
   var numRows = 0
   def open() = { parent.open; }
   def next() = {
@@ -156,7 +156,9 @@ class MetaInfo
   def reset() { parent.reset }
 }
 
-@deep class HashJoinOp[A <: AbstractRecord, B <: AbstractRecord, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
+@deep class HashJoinOp[A <: AbstractRecord, B <: AbstractRecord, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String, rightAlias: String)(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
+  def this(leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) = this(leftParent, rightParent, "", "")(joinCond)(leftHash)(rightHash)
+  // @deep class HashJoinOp[A <: AbstractRecord, B <: AbstractRecord, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   var tmpCount = -1
   var tmpBuffer = ArrayBuffer[A]()
   val hm = new HashMap[C, ArrayBuffer[A]]()
@@ -173,6 +175,7 @@ class MetaInfo
       }
     }
   }
+
   def next() = {
     if (tmpCount != -1) {
       while (tmpCount < tmpBuffer.size && !joinCond(tmpBuffer(tmpCount), tmpLine)) tmpCount += 1
@@ -184,7 +187,15 @@ class MetaInfo
           val k = rightHash(t)
           if (hm.contains(k)) {
             tmpBuffer = hm(k)
-            tmpCount = tmpBuffer.indexWhere(e => joinCond(e, t))
+            //tmpCount = tmpBuffer.indexWhere(e => joinCond(e,t))
+            var i = 0
+            var found = false
+            while (!found && i < tmpBuffer.size) {
+              if (joinCond(tmpBuffer(i), t)) found = true
+              else i += 1
+            }
+            tmpCount = if (i == tmpBuffer.size) -1 else i
+
             tmpCount != -1
           } else false
         }
@@ -218,7 +229,7 @@ class MetaInfo
       val key = keySet.head
       keySet.remove(key)
       val elem = hm.remove(key).get // we're sure that it is Some(x)
-      newWindowRecord(key, wndf(elem))
+      new WindowRecord(key, wndf(elem))
     } else NullDynamicRecord
   }
   def close() {}
@@ -241,7 +252,14 @@ class MetaInfo
       val k = leftHash(t)
       if (hm.contains(k)) {
         val tmpBuffer = hm(k)
-        tmpBuffer.indexWhere(e => joinCond(t, e)) != -1
+        //tmpBuffer.indexWhere(e => joinCond(t, e)) != -1
+        var i = 0
+        var found = false
+        while (!found && i < tmpBuffer.size) {
+          if (joinCond(t, tmpBuffer(i))) found = true
+          else i += 1
+        }
+        i != tmpBuffer.size
       } else false
     }
   }
@@ -250,7 +268,7 @@ class MetaInfo
 }
 
 @deep
-class NestedLoopsJoinOp[A <: AbstractRecord, B <: AbstractRecord](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
+class NestedLoopsJoinOp[A <: AbstractRecord, B <: AbstractRecord](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String, rightAlias: String)(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
   var leftTuple = NullDynamicRecord[A]
   var rightTuple = NullDynamicRecord[B]
 
@@ -279,6 +297,7 @@ class NestedLoopsJoinOp[A <: AbstractRecord, B <: AbstractRecord](leftParent: Op
   def reset() = { rightParent.reset; leftParent.reset; leftTuple = NullDynamicRecord[A]; }
 }
 
+@deep
 class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   def close() {
     throw new Exception("PULL ENGINE BUG:: Close function in SubqueryResult should never be called!!!!\n")
@@ -286,7 +305,7 @@ class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   def open() {
     throw new Exception("PULL ENGINE BUG:: Open function in SubqueryResult should never be called!!!!\n")
   }
-  def next() = {
+  override def next(): A = {
     throw new Exception("PULL ENGINE BUG:: Next function in SubqueryResult should never be called!!!!\n")
   }
   def reset() {
@@ -295,7 +314,8 @@ class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   def getResult = { parent.open; parent.next; }
 }
 
-class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
+@deep
+class HashJoinAnti[A, B, C](val leftParent: Operator[A], val rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   val hm = new HashMap[C, ArrayBuffer[A]]()
   var keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
 
@@ -334,7 +354,7 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
           // could use filter in scala and assign the result to the hm)
           var removed = 0
           for (i <- 0 until elems.size) {
-            var idx = i - removed
+            val idx = i - removed
             val e = elems(idx)
             if (joinCond(e, t)) {
               removeFromList(elems, e, idx);
@@ -358,6 +378,7 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
   def reset() { rightParent.reset; leftParent.reset; hm.clear; }
 }
 
+@deep
 class ViewOp[A](parent: Operator[A]) extends Operator[A] {
   var idx = 0
   var size = 0
@@ -379,6 +400,7 @@ class ViewOp[A](parent: Operator[A]) extends Operator[A] {
   def reset() { idx = 0 }
 }
 
+@deep
 class LeftOuterJoinOp[A <: AbstractRecord, B <: AbstractRecord: Manifest, C](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   var tmpCount = -1
   var tmpBuffer = ArrayBuffer[B]()
@@ -402,7 +424,7 @@ class LeftOuterJoinOp[A <: AbstractRecord, B <: AbstractRecord: Manifest, C](val
     if (tmpCount != -1) {
       while (tmpCount < tmpBuffer.size && !joinCond(tmpLine, tmpBuffer(tmpCount))) tmpCount += 1
       if (tmpCount != tmpBuffer.size) {
-        res = tmpLine.concatenateDynamic(tmpBuffer(tmpCount))
+        res = tmpLine.concatenateDynamic(tmpBuffer(tmpCount), "", "")
         tmpCount += 1
       }
     }
@@ -415,10 +437,10 @@ class LeftOuterJoinOp[A <: AbstractRecord, B <: AbstractRecord: Manifest, C](val
           tmpBuffer = hm(k)
           tmpCount = tmpBuffer.indexWhere(e => joinCond(tmpLine, e))
           if (tmpCount != -1) {
-            res = tmpLine.concatenateDynamic(tmpBuffer(tmpCount))
+            res = tmpLine.concatenateDynamic(tmpBuffer(tmpCount), "", "")
             tmpCount += 1
-          } else res = tmpLine.concatenateDynamic(defaultB)
-        } else res = tmpLine.concatenateDynamic(defaultB);
+          } else res = tmpLine.concatenateDynamic(defaultB, "", "")
+        } else res = tmpLine.concatenateDynamic(defaultB, "", "")
       }
     }
     res
