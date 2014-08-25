@@ -81,15 +81,51 @@ object LegoBuild extends Build {
     .setPreference(AlignSingleLineCaseStatements, true)
   }
 
+  // addCommandAlias("test-gen", ";project legocompiler; project root; clean")
+
+  val generate_test = InputKey[Unit]("generate-test")
+  val test_run = InputKey[Unit]("test-run")
+
   lazy val lego            = Project(id = "root",             base = file("."), settings = defaults) aggregate (lego_core, legolifter, legocompiler)
+<<<<<<< HEAD
   lazy val lego_core       = Project(id = "lego-core",        base = file("lego"),
    settings = defaults ++ generatorSettings ++  Seq(name := "lego-core",  scalacOptions ++= Seq("-optimize"))) // hack for being able to generate implementations
   lazy val legolifter = Project(id = "legolifter", base = file("legolifter"),
     settings = defaults ++ generatorSettings ++ Seq(name := "legolifter"))
     .dependsOn(lego_core)
+=======
+  lazy val lego_core       = Project(id = "lego-core",        base = file("lego")  , settings = defaults ++ 
+    Seq(name := "lego-core",
+      libraryDependencies += "ch.epfl.data" % "autolifter_2.11" % "0.1-SNAPSHOT",
+      libraryDependencies += "ch.epfl.data" % "pardis-library_2.11" % "0.1-SNAPSHOT",
+      scalacOptions ++= Seq("-optimize"))) // hack for being able to generate implementation
+  lazy val legolifter = Project(id = "legolifter", base = file("legolifter"), settings = defaults ++ Seq(name := "legolifter",
+      libraryDependencies += "ch.epfl.data" % "autolifter_2.11" % "0.1-SNAPSHOT")) dependsOn(lego_core)
+>>>>>>> f43025f4afe856c1217cd9d1ea2cf77f1bec6996
   lazy val legocompiler = Project(id = "legocompiler", base = file("legocompiler"), settings = defaults ++ Seq(name := "legocompiler",
       libraryDependencies ++= Seq("ch.epfl.lamp" % "yin-yang_2.11" % "0.1-SNAPSHOT",
         "ch.epfl.data" % "pardis-core_2.11" % "0.1-SNAPSHOT"
         ),
+      generate_test <<= inputTask { (argTask: TaskKey[Seq[String]]) =>
+        (argTask, sourceDirectory in Test, fullClasspath in Compile, runner in Compile, streams) map { (args, srcDir, cp, r, s) =>
+          val cgDir = srcDir / "scala" / "generated"
+          IO.delete(cgDir ** "*.scala" get)
+          toError(r.run("ch.epfl.data.legobase.compiler.Main", cp.files, args, s.log))
+          val fileName = args(2) + "_Generated.scala"
+          val filePath = cgDir / fileName
+          println("Generated " + fileName)
+          IO.copyFile(new java.io.File("generator-out") / (args(2) + ".scala"), filePath)
+          println("Run it using `test-run`")
+          // println("classpath:" + (cp.files :+ filePath).mkString("\n"))
+          // toError(r.run("ch.epfl.data.legobase.LEGO_QUERY", cp.files/* :+ cgDir*/, args, s.log))
+          // test_run.value
+        }
+      },
+      fullRunInputTask(
+        test_run
+        ,
+        Test,
+        "ch.epfl.data.legobase.LEGO_QUERY"
+      ),
       scalacOptions in Test ++= Seq("-optimize"))) dependsOn(lego_core)
 }
