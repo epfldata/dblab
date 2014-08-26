@@ -100,7 +100,7 @@ object Main extends LegoRunner {
         val cBlock = CTransformersPipeline(context, dceBlock)
         val dceC = new DCECLang(context)
         dceC.optimize(cBlock)
-        // cBlock
+        //cBlock
       } else partiallyEvaluatedBlock
     }
 

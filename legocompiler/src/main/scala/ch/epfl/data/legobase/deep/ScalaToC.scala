@@ -24,7 +24,7 @@ trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base 
     else if (m.name == "Byte") "char"
     else if (m.name == "Double") "double"
     else {
-      System.out.println("WARNING: Default structName given: " + m.name);
+      //      System.out.println("WARNING: Default structName given: " + m.name);
       super.structName(m)
     }
   }
@@ -119,7 +119,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
     else if (tp.name.contains("HashMap")) typePointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
     else if (tp.name.contains("Option")) typePointer(transformType(tp.typeArguments(0)))
     else {
-      System.out.println("WARNING: Default transformType called: " + tp)
+      //      System.out.println("WARNING: Default transformType called: " + tp)
       super.transformType[T]
     }
   }).asInstanceOf[PardisType[Any]]
@@ -192,7 +192,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     else if (tp.name.contains("HashMap")) typePointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
     else if (tp.name.contains("Option")) typePointer(transformType(tp.typeArguments(0)))
     else {
-      System.out.println("WARNING: Default transformType called: " + tp)
+      //      System.out.println("WARNING: Default transformType called: " + tp)
       super.transformType[T]
     }
   }).asInstanceOf[PardisType[Any]]
@@ -263,12 +263,13 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     case GenericEngineParseDateObject(Constant(d)) =>
       val data = d.split("-").map(x => x.toInt)
       ReadVal(Constant((data(0) * 10000) + (data(1) * 100) + data(2)))
-    case imtf @ PardisStructImmutableField(s, f) =>
-      PardisStructImmutableField(s, f)(transformType(imtf.tp))
+    //    case imtf @ PardisStructImmutableField(s, f) =>
+    //    PardisStructImmutableField(s, f)(transformType(imtf.tp))
     case GenericEngineParseStringObject(s)  => ReadVal(s)
     case GenericEngineDateToStringObject(d) => NameAlias[String](None, "ltoa", List(List(d)))
     case GenericEngineDateToYearObject(d)   => ReadVal(d.asInstanceOf[Expression[Long]] / Constant(10000))
     case IntToLong(x)                       => ReadVal(x)
+    case DoubleToInt(x)                     => PardisCast[Double, Int](x)
     case _                                  => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
 }
@@ -424,8 +425,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case ArrayBufferRemove(a, e) => NameAlias[Unit](None, "g_array_remove_index", List(List(a, e)))
 
     /* Other operations */
-    case imtf @ PardisStructImmutableField(s, f) =>
-      PardisStructImmutableField(s, f)(transformType(imtf.tp))
+    //  case imtf @ PardisStructImmutableField(s, f) =>
+    //  PardisStructImmutableField(s, f)(transformType(imtf.tp))
     case HashCode(t) => t.tp match {
       case x if x.isPrimitive             => PardisCast(t)(x, IntType)
       case x if x.name == "Character"     => PardisCast(t)(x, IntType)

@@ -2326,7 +2326,10 @@ trait LeftOuterJoinOpImplementations { self: DeepDSL =>
           val k: this.Rep[C] = __app(self.leftHash).apply(self.tmpLine);
           __ifThenElse(self.hm.contains(k), {
             self.tmpBuffer_$eq(self.hm.apply(k));
-            self.tmpCount_$eq(self.tmpBuffer.indexWhere(__lambda(((e: this.Rep[B]) => __app(self.joinCond).apply(self.tmpLine, e)))));
+            var i: this.Var[Int] = __newVar(unit(0));
+            var found: this.Var[Boolean] = __newVar(unit(false));
+            __whileDo(readVar(found).unary_$bang.$amp$amp(readVar(i).$less(self.tmpBuffer.size)), __ifThenElse(__app(self.joinCond).apply(self.tmpLine, self.tmpBuffer.apply(i)), __assign(found, unit(true)), __assign(i, readVar(i).$plus(unit(1)))));
+            self.tmpCount_$eq(readVar(i));
             __ifThenElse(infix_$bang$eq(self.tmpCount, unit(-1)), {
               __assign(res, RecordOps[A](self.tmpLine).concatenateDynamic[B](self.tmpBuffer.apply(self.tmpCount), unit(""), unit("")));
               self.tmpCount_$eq(self.tmpCount.$plus(unit(1)))

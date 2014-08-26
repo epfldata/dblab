@@ -438,7 +438,14 @@ class LeftOuterJoinOp[A <: AbstractRecord, B <: AbstractRecord: Manifest, C](val
         val k = leftHash(tmpLine)
         if (hm.contains(k)) {
           tmpBuffer = hm(k)
-          tmpCount = tmpBuffer.indexWhere(e => joinCond(tmpLine, e))
+          //          tmpCount = tmpBuffer.indexWhere(e => joinCond(tmpLine, e))
+          var i = 0
+          var found = false
+          while (!found && i < tmpBuffer.size) {
+            if (joinCond(tmpLine, tmpBuffer(i))) found = true
+            else i += 1
+          }
+          tmpCount = i
           if (tmpCount != -1) {
             res = tmpLine.concatenateDynamic(tmpBuffer(tmpCount), "", "")
             tmpCount += 1

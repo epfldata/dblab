@@ -537,7 +537,7 @@ trait QueriesImplementations { self: DeepDSL =>
     {
       val customerTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = Loader.loadCustomer();
       val ordersTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = Loader.loadOrders();
-      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
+      GenericEngine.runQuery[Unit]({
         val unusual: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("unusual"));
         val packages: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("packages"));
         val scanCustomer: this.Rep[ch.epfl.data.legobase.queryengine.volcano.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = __newScanOp(customerTable);
@@ -555,7 +555,7 @@ trait QueriesImplementations { self: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      }))))
+      })
     }
   }
   override def queriesQ14Object(numRuns: Rep[Int]): Rep[Unit] = {
