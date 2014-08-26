@@ -10,25 +10,26 @@ import scala.collection.mutable.Set
 import scala.collection.mutable.TreeSet
 import GenericEngine._
 import ch.epfl.data.autolifter.annotations.{ deep, metadeep }
-import ch.epfl.data.pardis.shallow.{ AbstractRecord, DynamicCompositeRecord, Record }
+import ch.epfl.data.pardis.shallow.{ Record, DynamicCompositeRecord }
 
 // This is a temporary solution until we introduce dependency management and adopt policies. Not a priority now!
-@metadeep(
-  "legocompiler/src/main/scala/ch/epfl/data/legobase/deep",
-  """
-package ch.epfl.data
-package legobase
-package deep
+// @metadeep(
+//   "legocompiler/src/main/scala/ch/epfl/data/legobase/deep/volcano",
+//   """
+// package ch.epfl.data
+// package legobase
+// package deep
+// package volcano
 
-import scalalib._
-import pardis.ir._
-import pardis.ir.pardisTypeImplicits._
-import pardis.deep.scalalib._
-""",
-  """OperatorsComponent""")
-class MetaInfo
+// import scalalib._
+// import pardis.ir._
+// import pardis.ir.pardisTypeImplicits._
+// import pardis.deep.scalalib._
+// """,
+//   """OperatorsComponent""")
+// class MetaInfo
 
-@deep abstract class Operator[+A] {
+/*@deep*/ abstract class Operator[+A] {
   def open()
   def next(): A
   def close()
@@ -56,7 +57,7 @@ class MetaInfo
   def NullDynamicRecord[D](implicit di: DummyImplicit) = null.asInstanceOf[D]
 }
 
-@deep class ScanOp[A](val table: Array[A]) extends Operator[A] {
+/*@deep*/ class ScanOp[A](val table: Array[A]) extends Operator[A] {
   var i = 0
   def open() {}
   def next() = {
@@ -70,16 +71,16 @@ class MetaInfo
   def reset() { i = 0 }
 }
 
-@deep class SelectOp[A](parent: Operator[A])(selectPred: A => Boolean) extends Operator[A] {
+/*@deep*/ class SelectOp[A](parent: Operator[A])(selectPred: A => Boolean) extends Operator[A] {
   def open() = { parent.open; }
   def next() = parent findFirst selectPred
   def close() = {}
   def reset() { parent.reset }
 }
 
-@deep class AggOp[A, B](parent: Operator[A], val numAggs: Int)(val grp: A => B)(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
+/*@deep*/ class AggOp[A, B](parent: Operator[A], val numAggs: Int)(val grp: A => B)(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
   val hm = new HashMap[B, Array[Double]]()
-  var keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
+  var keySet = Set(hm.keySet.toSeq: _*)
 
   def open() {
     parent.open
@@ -106,8 +107,8 @@ class MetaInfo
   def reset() { parent.reset; hm.clear; open }
 }
 
-@deep class SortOp[A](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends Operator[A] {
-  val sortedTree = new /*scala.collection.mutable.*/ TreeSet()(
+/*@deep*/ class SortOp[A](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends Operator[A] {
+  val sortedTree = new TreeSet()(
     new Ordering[A] {
       def compare(o1: A, o2: A) = orderingFunc(o1, o2)
     })
@@ -127,7 +128,7 @@ class MetaInfo
 }
 
 // Limited version of map -- touches data in place and does not create new data
-@deep class MapOp[A](parent: Operator[A])(aggFuncs: Function1[A, Unit]*) extends Operator[A] {
+/*@deep*/ class MapOp[A](parent: Operator[A])(aggFuncs: Function1[A, Unit]*) extends Operator[A] {
   def open() = { parent.open; }
   def next() = {
     val t: A = parent.next
@@ -140,7 +141,7 @@ class MetaInfo
   def reset { parent.reset }
 }
 
-@deep class PrintOp[A](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean) extends Operator[A] {
+/*@deep*/ class PrintOp[A](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean) extends Operator[A] {
   var numRows = 0
   def open() = { parent.open; }
   def next() = {
@@ -156,9 +157,8 @@ class MetaInfo
   def reset() { parent.reset }
 }
 
-@deep class HashJoinOp[A <: AbstractRecord, B <: AbstractRecord, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String, rightAlias: String)(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
+/*@deep*/ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String, rightAlias: String)(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   def this(leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) = this(leftParent, rightParent, "", "")(joinCond)(leftHash)(rightHash)
-  // @deep class HashJoinOp[A <: AbstractRecord, B <: AbstractRecord, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   var tmpCount = -1
   var tmpBuffer = ArrayBuffer[A]()
   val hm = new HashMap[C, ArrayBuffer[A]]()
@@ -211,9 +211,9 @@ class MetaInfo
   def reset() { rightParent.reset; leftParent.reset; hm.clear; tmpLine = NullDynamicRecord[B]; tmpCount = 0; tmpBuffer.clear }
 }
 
-@deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: ArrayBuffer[A] => C) extends Operator[WindowRecord[B, C]] {
+/*@deep*/ class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: ArrayBuffer[A] => C) extends Operator[WindowRecord[B, C]] {
   val hm = HashMap[B, ArrayBuffer[A]]()
-  var keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
+  var keySet = Set(hm.keySet.toSeq: _*)
 
   def open() {
     parent.open
@@ -222,7 +222,7 @@ class MetaInfo
       val v = hm.getOrElseUpdate(key, ArrayBuffer[A]())
       v.append(t)
     }
-    keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
+    keySet = Set(hm.keySet.toSeq: _*)
   }
   def next() = {
     if (hm.size != 0) {
@@ -236,7 +236,7 @@ class MetaInfo
   def reset() { parent.reset; hm.clear; open }
 }
 
-@deep class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
+/*@deep*/ class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   val hm = new HashMap[C, ArrayBuffer[B]]()
   def open() = {
     leftParent.open
@@ -267,8 +267,8 @@ class MetaInfo
   def reset() { rightParent.reset; leftParent.reset; hm.clear; }
 }
 
-@deep
-class NestedLoopsJoinOp[A <: AbstractRecord, B <: AbstractRecord](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String, rightAlias: String)(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
+/*@deep*/
+class NestedLoopsJoinOp[A <: Record, B <: Record](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String, rightAlias: String)(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
   var leftTuple = NullDynamicRecord[A]
   var rightTuple = NullDynamicRecord[B]
 
@@ -297,7 +297,7 @@ class NestedLoopsJoinOp[A <: AbstractRecord, B <: AbstractRecord](leftParent: Op
   def reset() = { rightParent.reset; leftParent.reset; leftTuple = NullDynamicRecord[A]; }
 }
 
-@deep
+/*@deep*/
 class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   def close() {
     throw new Exception("PULL ENGINE BUG:: Close function in SubqueryResult should never be called!!!!\n")
@@ -314,10 +314,10 @@ class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   def getResult = { parent.open; parent.next; }
 }
 
-@deep
+/*@deep*/
 class HashJoinAnti[A, B, C](val leftParent: Operator[A], val rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   val hm = new HashMap[C, ArrayBuffer[A]]()
-  var keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
+  var keySet = Set(hm.keySet.toSeq: _*)
 
   def removeFromList(elemList: ArrayBuffer[A], e: A, idx: Int) = {
     elemList.remove(idx)
@@ -367,7 +367,7 @@ class HashJoinAnti[A, B, C](val leftParent: Operator[A], val rightParent: Operat
         }
       }
     }
-    keySet = /*scala.collection.mutable.*/ Set(hm.keySet.toSeq: _*)
+    keySet = Set(hm.keySet.toSeq: _*)
   }
   // Step 3: Return everything that left in the hash table
   def next() = {
@@ -381,7 +381,7 @@ class HashJoinAnti[A, B, C](val leftParent: Operator[A], val rightParent: Operat
   def reset() { rightParent.reset; leftParent.reset; hm.clear; }
 }
 
-@deep
+/*@deep*/
 class ViewOp[A](parent: Operator[A]) extends Operator[A] {
   var idx = 0
   var size = 0
@@ -403,8 +403,8 @@ class ViewOp[A](parent: Operator[A]) extends Operator[A] {
   def reset() { idx = 0 }
 }
 
-@deep
-class LeftOuterJoinOp[A <: AbstractRecord, B <: AbstractRecord: Manifest, C](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
+/*@deep*/
+class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   var tmpCount = -1
   var tmpBuffer = ArrayBuffer[B]()
   var tmpLine = NullDynamicRecord[A]

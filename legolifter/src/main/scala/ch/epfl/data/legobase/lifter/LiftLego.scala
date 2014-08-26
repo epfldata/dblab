@@ -99,7 +99,7 @@ import pardis.ir.pardisTypeImplicits._
 import pardis.deep.scalalib._
 
 $liftedCode
-trait DeepDSL extends OperatorsComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent 
+trait DeepDSL extends push.OperatorsComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent 
   with DoubleComponent with IntComponent with LongComponent with ArrayComponent 
   with GroupByClassComponent
   with Q3GRPRecordComponent

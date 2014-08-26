@@ -6,9 +6,14 @@ An efficient query engine in Scala programming language
 Installation
 ============
 
-TODO
+LegoBase interpreter requeires Pardis Library (https://github.com/amirsh/pardis) project `pardis-library`.
 
-Clone these project and checkout to the appropriate branch. Then, run `sbt publish-local`.
+LegoBase compiler requires Pardis Compiler (https://github.com/amirsh/pardis) project `pardis-core`.
+
+Clone this project and checkout to the desired branch. Then, after going to sbt console, 
+run `project pardis-library` for going to Pardis Library project and run `project pardis-core` for 
+going to Pardis Compiler project.
+run `publish-local` on the projects you need.
 
 Testing
 =======

@@ -11,7 +11,7 @@ class LegoScalaGenerator(val shallow: Boolean = false, val outputFileName: Strin
 
   def getShallowHeader: String = if (shallow) """
 import queryengine._
-import queryengine.volcano._
+import queryengine.push._
 import queryengine.TPCHRelations._
 import pardis.shallow._
   """

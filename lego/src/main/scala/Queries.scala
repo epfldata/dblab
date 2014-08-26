@@ -2,9 +2,12 @@ package ch.epfl.data
 package legobase
 
 import queryengine._
-import queryengine.volcano._
-import ch.epfl.data.pardis.shallow.{ CaseClassRecord }
-import ch.epfl.data.pardis.shallow.{ AbstractRecord, DynamicCompositeRecord }
+/**
+ *   In order to change from pull engine to push engine the next line should be commented and the line after
+ *   should be uncommented.
+ */
+// import queryengine.volcano._
+import queryengine.push._
 import ch.epfl.data.autolifter.annotations.{ deep, metadeep, dontLift }
 
 // This is a temporary solution until we introduce dependency management and adopt policies. Not a priority now!

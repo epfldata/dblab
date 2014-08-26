@@ -5,8 +5,6 @@ package deep
 import scala.reflect.runtime.universe.{ typeTag => tag }
 import scala.language.implicitConversions
 import pardis.utils.Utils.{ pardisTypeToString => t2s }
-import pardis.shallow.AbstractRecord
-import pardis.shallow.CaseClassRecord
 import pardis.ir.pardisTypeImplicits._
 
 trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE with RichIntOps with scalalib.ByteComponent { this: DeepDSL =>
@@ -25,8 +23,6 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   //   override def curriedConstructor = (copy _).curried
   // }
   // def printf(text: Rep[String], xs: Rep[Any]*): Rep[Unit] = Printf(text, __liftSeq(xs.toSeq))
-
-  override def hashJoinOpNew2[A <: ch.epfl.data.pardis.shallow.AbstractRecord, B <: ch.epfl.data.pardis.shallow.AbstractRecord, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = hashJoinOpNew1[A, B, C](leftParent, rightParent, unit(""), unit(""), joinCond, leftHash, rightHash)
 
   def __newException(msg: Rep[String]) = new Exception(msg.toString)
 
