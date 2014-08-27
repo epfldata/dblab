@@ -19,7 +19,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
   import CTypes._
 
   /* If you want to disable this optimization, set this flag to `false` */
-  val enabled = true
+  val enabled = false
 
   def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     traverseBlock(node)
@@ -101,4 +101,9 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
     }
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
+
+  override def transformExp[T: TypeRep, S: TypeRep](exp: Rep[T]): Rep[S] = exp match {
+    case t: typeOf[_] => typeOf()(apply(t.tp)).asInstanceOf[Rep[S]]
+    case _            => super.transformExp[T, S](exp)
+  }
 }

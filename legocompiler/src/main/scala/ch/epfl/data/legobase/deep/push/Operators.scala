@@ -1038,8 +1038,9 @@ trait HashJoinOpImplementations { self: DeepDSL =>
   override def hashJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
     {
       self.leftParent.next();
-      self.mode_$eq(unit(1));
-      self.rightParent.next()
+      self.mode_$eq(self.mode.$plus(unit(1)));
+      self.rightParent.next();
+      self.mode_$eq(self.mode.$plus(unit(1)))
     }
   }
   override def hashJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
@@ -1047,7 +1048,7 @@ trait HashJoinOpImplementations { self: DeepDSL =>
       val k: this.Rep[C] = __app(self.leftHash).apply(infix_asInstanceOf[A](tuple));
       val v: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.getOrElseUpdate(k, ArrayBuffer.apply[A]());
       v.append(infix_asInstanceOf[A](tuple))
-    }, {
+    }, __ifThenElse(infix_$eq$eq(self.mode, unit(1)), {
       val k: this.Rep[C] = __app(self.rightHash).apply(infix_asInstanceOf[B](tuple));
       __ifThenElse(self.hm.contains(k), {
         val tmpBuffer: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.apply(k);
@@ -1061,7 +1062,7 @@ trait HashJoinOpImplementations { self: DeepDSL =>
           __assign(tmpCount, readVar(tmpCount).$plus(unit(1)))
         })
       }, unit(()))
-    })
+    }, unit(())))
   }
 }
 trait HashJoinOpComponent extends HashJoinOpOps with HashJoinOpImplicits { self: OperatorsComponent => }

@@ -145,15 +145,16 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
   }
   def next() {
     leftParent.next
-    mode = 1
+    mode += 1
     rightParent.next
+    mode += 1
   }
   def consume(tuple: Record) {
     if (mode == 0) {
       val k = leftHash(tuple.asInstanceOf[A])
       val v = hm.getOrElseUpdate(k, ArrayBuffer[A]())
       v.append(tuple.asInstanceOf[A])
-    } else {
+    } else if (mode == 1) {
       val k = rightHash(tuple.asInstanceOf[B])
       if (hm.contains(k)) {
         val tmpBuffer = hm(k)
