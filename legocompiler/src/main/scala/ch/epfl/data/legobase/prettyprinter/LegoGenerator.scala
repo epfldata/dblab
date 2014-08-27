@@ -38,7 +38,7 @@ object OrderingFactory {
 }
 """
 
-  override def getTraitSignature(): Document = s"""object LEGO_QUERY extends LegoRunner {
+  override def getTraitSignature(): Document = s"""object $outputFileName extends LegoRunner {
   def executeQuery(query: String): Unit = main()
   def main(args: Array[String]) {
     run(args)
