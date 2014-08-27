@@ -72,7 +72,7 @@ object LegoBuild extends Build {
             val filePath = cgDir / fileName
             println("Generated " + fileName)
             IO.copyFile(new java.io.File("generator-out") / (args(2) + ".scala"), filePath)
-            println("Run it using `test:run`")
+            println(s"Run it using `test:run ${args(0)} ${args(1)} ${args(2)}`")
           } else if (args(2) == "testsuite") {
             for(i <- 1 to 22) {
               val newArgs = args.dropRight(1) :+ s"Q$i"
