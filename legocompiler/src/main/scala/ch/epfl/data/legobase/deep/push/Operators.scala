@@ -1383,8 +1383,10 @@ trait LeftHashSemiJoinOpImplementations { self: DeepDSL =>
       val k: this.Rep[C] = __app(self.leftHash).apply(infix_asInstanceOf[A](tuple));
       __ifThenElse(self.hm.contains(k), {
         val tmpBuffer: this.Rep[scala.collection.mutable.ArrayBuffer[B]] = self.hm.apply(k);
-        val idx: this.Rep[Int] = tmpBuffer.indexWhere(__lambda(((e: this.Rep[B]) => __app(self.joinCond).apply(infix_asInstanceOf[A](tuple), e))));
-        __ifThenElse(infix_$bang$eq(idx, unit(-1)), self.child.consume(infix_asInstanceOf[ch.epfl.data.pardis.shallow.Record](tuple)), unit(()))
+        var i: this.Var[Int] = __newVar(unit(0));
+        var found: this.Var[Boolean] = __newVar(unit(false));
+        __whileDo(readVar(found).unary_$bang.$amp$amp(readVar(i).$less(tmpBuffer.size)), __ifThenElse(__app(self.joinCond).apply(infix_asInstanceOf[A](tuple), tmpBuffer.apply(readVar(i))), __assign(found, unit(true)), __assign(i, readVar(i).$plus(unit(1)))));
+        __ifThenElse(infix_$eq$eq(readVar(found), unit(true)), self.child.consume(infix_asInstanceOf[ch.epfl.data.pardis.shallow.Record](tuple)), unit(()))
       }, unit(()))
     })
   }
@@ -1898,14 +1900,17 @@ trait HashJoinAntiImplementations { self: DeepDSL =>
       __ifThenElse(self.hm.contains(k), {
         val elems: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.apply(k);
         var removed: this.Var[Int] = __newVar(unit(0));
-        intWrapper(unit(0)).until(elems.size).foreach[Unit](__lambda(((i: this.Rep[Int]) => {
-          var idx: this.Var[Int] = __newVar(i.$minus(readVar(removed)));
+        var i: this.Var[Int] = __newVar(unit(0));
+        val len: this.Rep[Int] = elems.size;
+        __whileDo(readVar(i).$less(len), {
+          var idx: this.Var[Int] = __newVar(readVar(i).$minus(readVar(removed)));
           val e: this.Rep[A] = elems.apply(readVar(idx));
           __ifThenElse(__app(self.joinCond).apply(e, t), {
             self.removeFromList(elems, e, readVar(idx));
             __assign(removed, readVar(removed).$plus(unit(1)))
-          }, unit(()))
-        })))
+          }, unit(()));
+          __assign(i, readVar(i).$plus(unit(1)))
+        })
       }, unit(()))
     })
   }

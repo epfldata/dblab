@@ -223,8 +223,15 @@ class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator
       val k = leftHash(tuple.asInstanceOf[A])
       if (hm.contains(k)) {
         val tmpBuffer = hm(k)
-        val idx = tmpBuffer.indexWhere(e => joinCond(tuple.asInstanceOf[A], e))
-        if (idx != -1)
+        //        val idx = tmpBuffer.indexWhere(e => joinCond(tuple.asInstanceOf[A], e))
+        var i = 0
+        var found = false
+        while (!found && i < tmpBuffer.size) {
+          if (joinCond(tuple.asInstanceOf[A], tmpBuffer(i))) found = true
+          else i += 1
+        }
+
+        if (found == true)
           child.consume(tuple.asInstanceOf[Record])
       }
     }
@@ -333,13 +340,16 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
         // making it easy to generate C code as well (otherwise we
         // could use filter in scala and assign the result to the hm)
         var removed = 0
-        for (i <- 0 until elems.size) {
+        var i = 0;
+        val len = elems.size
+        while (i < len) {
           var idx = i - removed
           val e = elems(idx)
           if (joinCond(e, t)) {
             removeFromList(elems, e, idx);
             removed += 1
           }
+          i += 1
         }
       }
     }

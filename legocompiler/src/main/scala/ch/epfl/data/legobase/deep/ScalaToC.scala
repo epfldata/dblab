@@ -42,7 +42,7 @@ object CTransformersPipeline {
     System.out.println(finalBlock)
     // Also write to file to facilitate debugging
     val pw = new java.io.PrintWriter(new java.io.File("tree_debug_dump.txt"))
-    pw.println(b4.toString)
+    pw.println(finalBlock.toString)
     pw.flush()
     finalBlock
   }
@@ -147,14 +147,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       val arr = field(s, "array")(typeArray(typePointer(newTp)))
       ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, v)
     }
-    case ArrayFilter(a, op) =>
-      val s = transformExp[Any, T](a)
-      // Get type of elements stored in array
-      val elemType = a.tp.typeArguments(0)
-      // Get type of internal array
-      val newTp = if (elemType.isPrimitive) elemType else typePointer(elemType)
-      val arr = field(s, "array")(newTp)
-      ReadVal(arr)(arr.tp)
+    case ArrayFilter(a, op) => field(a, "array")(transformType(a.tp)).correspondingNode
     case ArrayApply(a, i) =>
       val s = transformExp[Any, T](a)
       // Get type of elements stored in array
@@ -264,8 +257,8 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     case GenericEngineParseDateObject(Constant(d)) =>
       val data = d.split("-").map(x => x.toInt)
       ReadVal(Constant((data(0) * 10000) + (data(1) * 100) + data(2)))
-    //    case imtf @ PardisStructImmutableField(s, f) =>
-    //    PardisStructImmutableField(s, f)(transformType(imtf.tp))
+    case imtf @ PardisStructImmutableField(s, f) =>
+      PardisStructImmutableField(s, f)(transformType(imtf.tp))
     case GenericEngineParseStringObject(s)  => ReadVal(s)
     case GenericEngineDateToStringObject(d) => NameAlias[String](None, "ltoa", List(List(d)))
     case GenericEngineDateToYearObject(d)   => ReadVal(d.asInstanceOf[Expression[Long]] / Constant(10000))
@@ -426,8 +419,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case ArrayBufferRemove(a, e) => NameAlias[Unit](None, "g_array_remove_index", List(List(a, e)))
 
     /* Other operations */
-    //  case imtf @ PardisStructImmutableField(s, f) =>
-    //  PardisStructImmutableField(s, f)(transformType(imtf.tp))
+    case imtf @ PardisStructImmutableField(s, f) =>
+      PardisStructImmutableField(s, f)(transformType(imtf.tp))
     case HashCode(t) => t.tp match {
       case x if x.isPrimitive             => PardisCast(t)(x, IntType)
       case x if x.name == "Character"     => PardisCast(t)(x, IntType)
@@ -461,7 +454,7 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Top
       Equal(StrNCmp(x + len, y, len), Constant(0))
     case OptimalStringStartsWith(x, y) =>
       Equal(StrNCmp(x, y, StrLen(y)), Constant(0))
-    case OptimalStringCompare(x, y)       => Equal(StrCmp(x, y), Constant(0))
+    case OptimalStringCompare(x, y)       => StrCmp(x, y)
     case OptimalStringLength(x)           => StrLen(x)
     case OptimalString$eq$eq$eq(x, y)     => Equal(StrCmp(x, y), Constant(0))
     case OptimalString$eq$bang$eq(x, y)   => NotEqual(StrCmp(x, y), Constant(0))
