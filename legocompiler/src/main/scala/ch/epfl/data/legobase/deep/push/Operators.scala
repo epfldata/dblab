@@ -580,10 +580,10 @@ trait AggOpImplementations { self: DeepDSL =>
   override def aggOpNext[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
     {
       self.parent.next();
-      val keySet: this.Rep[scala.collection.mutable.Set[B]] = Set.apply[B](self.hm.keySet.toSeq);
+      var keySet: this.Var[scala.collection.mutable.Set[B]] = __newVar(Set.apply[B](self.hm.keySet.toSeq));
       __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
-        val key: this.Rep[B] = keySet.head;
-        keySet.remove(key);
+        val key: this.Rep[B] = readVar(keySet).head;
+        readVar(keySet).remove(key);
         val elem: this.Rep[Option[Array[Double]]] = self.hm.remove(key);
         self.child.consume(__newAGGRecord(key, elem.get))
       })
@@ -1193,10 +1193,10 @@ trait WindowOpImplementations { self: DeepDSL =>
   override def windowOpNext[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
     {
       self.parent.next();
-      val keySet: this.Rep[scala.collection.mutable.Set[B]] = Set.apply[B](self.hm.keySet.toSeq);
+      var keySet: this.Var[scala.collection.mutable.Set[B]] = __newVar(Set.apply[B](self.hm.keySet.toSeq));
       __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
-        val k: this.Rep[B] = keySet.head;
-        keySet.remove(k);
+        val k: this.Rep[B] = readVar(keySet).head;
+        readVar(keySet).remove(k);
         val elem: this.Rep[Option[scala.collection.mutable.ArrayBuffer[A]]] = self.hm.remove(k);
         self.child.consume(__newWindowRecord[B, C](k, __app(self.wndf).apply(elem.get)))
       })

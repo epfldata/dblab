@@ -37,7 +37,8 @@ object CTransformersPipeline {
     val b3 = new ScalaConstructsToCTranformer(context).transformBlock(b2)
     val b4 = new ScalaCollectionsToGLibTransfomer(context).optimize(b3)
     val b5 = new OptimalStringToCTransformer(context).transformBlock(b4)
-    val finalBlock = b5
+    val b6 = new optimization.MemoryManagementTransfomer(context).optimize(b5)
+    val finalBlock = b6
     System.out.println(finalBlock)
     // Also write to file to facilitate debugging
     val pw = new java.io.PrintWriter(new java.io.File("tree_debug_dump.txt"))
@@ -250,15 +251,15 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       else eq
     }
     // Profiling and utils functions mapping
-    case GenericEngineRunQueryObject(b) =>
-      val diff = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
-      val start = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
-      val end = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
-      gettimeofday(&(start))
-      toAtom(transformBlock(b))
-      gettimeofday(&(end))
-      val tm = timeval_subtract(&(diff), &(end), &(start))
-      Printf(unit("Generated code run in %ld milliseconds."), tm)
+    // case GenericEngineRunQueryObject(b) =>
+    //   val diff = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
+    //   val start = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
+    //   val end = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
+    //   gettimeofday(&(start))
+    //   toAtom(transformBlock(b))
+    //   gettimeofday(&(end))
+    //   val tm = timeval_subtract(&(diff), &(end), &(start))
+    //   Printf(unit("Generated code run in %ld milliseconds."), tm)
     case OptionGet(x) => ReadVal(x.asInstanceOf[Expression[Any]])(transformType(x.tp))
     case GenericEngineParseDateObject(Constant(d)) =>
       val data = d.split("-").map(x => x.toInt)

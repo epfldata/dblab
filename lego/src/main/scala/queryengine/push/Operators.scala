@@ -81,7 +81,7 @@ class MetaInfo
   def open() { parent.child = this; parent.open }
   def next() {
     parent.next
-    val keySet = Set(hm.keySet.toSeq: _*)
+    var keySet = Set(hm.keySet.toSeq: _*)
     while (!stop && hm.size != 0) {
       val key = keySet.head
       keySet.remove(key)
@@ -181,7 +181,7 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
   def reset() { parent.reset; hm.clear; open }
   def next() {
     parent.next
-    val keySet = Set(hm.keySet.toSeq: _*)
+    var keySet = Set(hm.keySet.toSeq: _*)
     while (!stop && hm.size != 0) {
       val k = keySet.head
       keySet.remove(k)
