@@ -469,7 +469,7 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Top
     case OptimalStringSlice(x, start, end) =>
       val len = end - start + unit(1)
       val newbuf = malloc(len)(CharType)
-      strncpy(newbuf, x + len, len - unit(1))
+      strncpy(newbuf, x + start, len - unit(1))
       ReadVal(newbuf)
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
