@@ -23,6 +23,8 @@ object Main extends LegoRunner {
     run(args)
   }
 
+  val hashMapToArray = true
+
   def executeQuery(query: String): Unit = {
     val context = new LoweringLegoBase {}
     import context._
@@ -86,9 +88,18 @@ object Main extends LegoRunner {
       }
     }
 
+    val afterHashMapToArray = {
+      if (hashMapToArray) {
+        val hm2Arr = new HashMapToArrayTransformer(context)
+        hm2Arr.optimize(new PartialyEvaluate(context).optimize(new DCE(context).optimize(loweredBlock)))
+      } else {
+        loweredBlock
+      }
+    }
+
     // DCE
     val dce = new DCE(context)
-    val dceBlock = dce.optimize(loweredBlock)
+    val dceBlock = dce.optimize(afterHashMapToArray)
 
     // Partial evaluation
     val partiallyEvaluator = new PartialyEvaluate(context)

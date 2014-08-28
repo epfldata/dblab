@@ -13,7 +13,7 @@ import ch.epfl.data.pardis.ir.pardisTypeImplicits._
  *  Transforms `malloc`s inside the part which runs the query into buffers which are allocated
  *  at the loading time.
  */
-class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) {
   import IR._
   import CNodes._
   import CTypes._
