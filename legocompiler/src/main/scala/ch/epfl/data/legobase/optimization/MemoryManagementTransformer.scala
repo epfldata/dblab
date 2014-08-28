@@ -77,6 +77,11 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
     }
   }
 
+  override def transformExp[T: TypeRep, S: TypeRep](exp: Rep[T]): Rep[S] = exp match {
+    case t: typeOf[_] => typeOf()(apply(t.tp)).asInstanceOf[Rep[S]]
+    case _            => super.transformExp[T, S](exp)
+  }
+
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     // Profiling and utils functions mapping
     case GenericEngineRunQueryObject(b) =>
@@ -101,9 +106,4 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
     }
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
-
-  override def transformExp[T: TypeRep, S: TypeRep](exp: Rep[T]): Rep[S] = exp match {
-    case t: typeOf[_] => typeOf()(apply(t.tp)).asInstanceOf[Rep[S]]
-    case _            => super.transformExp[T, S](exp)
-  }
 }
