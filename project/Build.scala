@@ -12,6 +12,42 @@ object LegoBuild extends Build {
     ScalariformKeys.preferences in Test    := formattingPreferences
   )
 
+  // We can make an SBT plugin out of these. However, for the time being this is good enough.
+  val generatorMode = SettingKey[Boolean]("generator-mode",
+    "Is the compiler used for generating the deep embedding")
+
+  def embed = Command.command("embed") { state =>
+    val cleaned = Project.runTask(Keys.clean in Compile, state)
+    cleaned match {
+      case Some((state, _)) =>
+        Project.evaluateTask(Keys.compile in Compile,
+          (Project extract state).append(Seq(generatorMode := true), state))
+        Project.evaluateTask(Keys.clean in Compile, state)
+        state
+      case None =>
+        state
+    }
+  }
+
+  def generatorSettings: Seq[Setting[_]] = Seq(
+    libraryDependencies += "ch.epfl.data" % "autolifter_2.11" % "0.1-SNAPSHOT",
+    generatorMode := false,
+    scalacOptions ++= {
+      if(generatorMode.value) {
+        val cpath = update.value.matching(configurationFilter()).classpath
+        val plugin = cpath.files.find(_.getName contains "autolifter").get.absString
+        val yy_core = cpath.files.find(_.getName contains "yy-core").get.absString
+        val yy = cpath.files.find(_.getName contains "yin-yang").get.absString
+        Seq(
+          s"-Xplugin:$plugin:$yy_core:$yy",
+          "-Ystop-after:backend-generator"
+        )
+      } else
+        Seq()
+    },
+    commands += embed
+  )
+
   lazy val defaults = Project.defaultSettings ++ formatSettings ++ Seq(
     resolvers +=  "OSSH" at "https://oss.sonatype.org/content/groups/public",
     resolvers += Resolver.sonatypeRepo("snapshots"),
@@ -51,13 +87,14 @@ object LegoBuild extends Build {
   val test_run = InputKey[Unit]("test-run")
 
   lazy val lego            = Project(id = "root",             base = file("."), settings = defaults) aggregate (lego_core, legolifter, legocompiler)
-  lazy val lego_core       = Project(id = "lego-core",        base = file("lego")  , settings = defaults ++ 
-    Seq(name := "lego-core",
-      libraryDependencies += "ch.epfl.data" % "autolifter_2.11" % "0.1-SNAPSHOT",
-      libraryDependencies += "ch.epfl.data" % "pardis-library_2.11" % "0.1-SNAPSHOT",
-      scalacOptions ++= Seq("-optimize"))) // hack for being able to generate implementation
-  lazy val legolifter = Project(id = "legolifter", base = file("legolifter"), settings = defaults ++ Seq(name := "legolifter",
-      libraryDependencies += "ch.epfl.data" % "autolifter_2.11" % "0.1-SNAPSHOT")) dependsOn(lego_core)
+  lazy val lego_core       = Project(id = "lego-core",        base = file("lego"),
+   settings = defaults ++ generatorSettings ++  Seq(
+     name := "lego-core",
+     scalacOptions ++= Seq("-optimize"),
+     libraryDependencies += "ch.epfl.data" % "pardis-library_2.11" % "0.1-SNAPSHOT")) // hack for being able to generate implementations
+  lazy val legolifter = Project(id = "legolifter", base = file("legolifter"),
+    settings = defaults ++ generatorSettings ++ Seq(name := "legolifter"))
+    .dependsOn(lego_core)
   lazy val legocompiler = Project(id = "legocompiler", base = file("legocompiler"), settings = defaults ++ Seq(name := "legocompiler",
       libraryDependencies ++= Seq("ch.epfl.lamp" % "yin-yang_2.11" % "0.1-SNAPSHOT",
         "ch.epfl.data" % "pardis-core_2.11" % "0.1-SNAPSHOT"
