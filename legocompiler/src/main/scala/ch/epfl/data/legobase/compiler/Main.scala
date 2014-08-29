@@ -81,7 +81,7 @@ object Main extends LegoRunner {
     val loweredBlock = {
       if (shallow) block
       else {
-        val lowering = new LBLowering(context, context)
+        val lowering = new LBLowering(context, context, generateCCode)
         val loweredBlock0 = lowering.lower(block)
         val parameterPromotion = new LBParameterPromotion(context)
         parameterPromotion.optimize(loweredBlock0)

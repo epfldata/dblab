@@ -21,24 +21,27 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
   case object WindowOpCase extends Kind
   case object OtherCase extends Kind
 
-  case class HashMapStruct[K, V](sym: Sym[Any], size: Var[Int], keySet: Var[Set[K]], arr: Rep[Array[NextContainer[ArrayBuffer[V]]]])(implicit val keyType: TypeRep[K], valueType: TypeRep[V])
+  case class HashMapStruct[K, V](sym: Sym[Any], size: Var[Int], keySet: Var[Set[K]], arr: Rep[Array[NextContainer[ArrayBuffer[V]]]], lastElem: Var[NextContainer[ArrayBuffer[V]]])(implicit val keyType: TypeRep[K], valueType: TypeRep[V])
 
   val hashMapKinds = collection.mutable.Map[Sym[Any], Kind]()
   val hashMapExtractor = collection.mutable.Map[Sym[Any], Rep[Any => Any]]()
   val hashMapStructs = collection.mutable.Map[Sym[Any], HashMapStruct[Any, Any]]()
   val arrayBufferHashMaps = collection.mutable.Map[Sym[Any], Sym[Any]]()
+  val keySetHashMaps = collection.mutable.Map[Var[Any], Sym[Any]]()
 
   def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     traverseBlock(node)
     System.out.println(hashMapKinds.mkString("\n"))
     System.out.println("==========")
     System.out.println(arrayBufferHashMaps.mkString("\n"))
+    System.out.println("====<>====")
+    System.out.println(keySetHashMaps.mkString("\n"))
     transformProgram(node)
   }
 
   override def traverseDef(node: Def[_]): Unit = node match {
     case ArrayBufferAppend(ret @ Def(HashMapGetOrElseUpdate(hm, _, _)), _) => {
-      // this will override the value written by the next one
+      // this will override the value written by the pattern
       hashMapKinds(hm.asInstanceOf[Sym[Any]]) = OtherCase
       arrayBufferHashMaps(ret.asInstanceOf[Sym[Any]]) = hm.asInstanceOf[Sym[Any]]
     }
@@ -49,6 +52,9 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       if (getKind(hm) != AggOpCase)
         hashMapKinds(hm.asInstanceOf[Sym[Any]]) = WindowOpCase
       arrayBufferHashMaps(ret.asInstanceOf[Sym[Any]]) = hm.asInstanceOf[Sym[Any]]
+    }
+    case ReadVar(v @ Var(Def(NewVar(Def(SetNew(Def(SetToSeq(Def(HashMapKeySet(hm)))))))))) => {
+      keySetHashMaps(v.asInstanceOf[Var[Any]]) = hm.asInstanceOf[Sym[Any]]
     }
     case HashMapClear(_) => enabled = false
     case _               => super.traverseDef(node)
@@ -63,15 +69,24 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
     }
   }
 
-  val ARRAY_SIZE = 100
+  val ARRAY_SIZE = 1000000
 
   override def transformStm(stm: Stm[_]): to.Stm[_] = stm match {
     case Stm(sym, hmn @ HashMapNew3(_)) if isNotAggOp(sym) => {
+      implicit val manValue = sym.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
       val size = __newVar[Int](unit(0))
       val keySet = __newVar(Set()(hmn.typeA, overloaded2))(SetType(hmn.typeA))
-      val arr = __newArray(unit(ARRAY_SIZE))(NextContainerType(ArrayBufferType(hmn.typeB)))
+      val arrBufTp = NextContainerType(ArrayBufferType(hmn.typeB))
+      val arr = __newArray(unit(ARRAY_SIZE))(arrBufTp)
+      // val lastElemNull = infix_asInstanceOf(unit(null))(arrBufTp)
+      val lastElemNull = __newNextContainer[ArrayBuffer[Value]](ArrayBuffer[Value](), unit(null))
+      System.out.println("last elem: " + lastElemNull)
+      // val lastElem = __newVar(lastElemNull)(arrBufTp)
+      val lastElem = __newVar(lastElemNull)
+      // val lastElem = null
+      // val lastElem = __newVar(unit(null))
       val hmSym = sym.asInstanceOf[Sym[Any]]
-      hashMapStructs(hmSym) = HashMapStruct(hmSym, size, keySet, arr)(hmn.typeA, hmn.typeB)
+      hashMapStructs(hmSym) = HashMapStruct(hmSym, size, keySet, arr, lastElem.asInstanceOf[Var[NextContainer[ArrayBuffer[Any]]]])(hmn.typeA, hmn.typeB)
       // does not reify this statment in the following way
       stm
     }
@@ -110,6 +125,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
 
   def checkForHashSym[T](hm: Rep[T], p: Sym[Any] => Boolean): Boolean = enabled && p(hm.asInstanceOf[Sym[Any]])
   def checkForArrayBuffer[T](rt: Rep[T], p: Sym[Any] => Boolean): Boolean = enabled && arrayBufferHashMaps.get(rt.asInstanceOf[Sym[Any]]).map(x => p(x)).getOrElse(false)
+  def checkForSet[T](v: Var[T], p: Sym[Any] => Boolean): Boolean = enabled && keySetHashMaps.get(v.asInstanceOf[Var[Any]]).map(x => p(x)).getOrElse(false)
 
   def isWindowOp[T](hm: Rep[T]) = checkForHashSym(hm, x => getKind(x) == WindowOpCase)
   def isWindowOpArrayBuffer[T](rt: Rep[T]) = checkForArrayBuffer(rt, x => getKind(x) == WindowOpCase)
@@ -154,18 +170,27 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
     }
     case HashMapContains(hm, key) if isNotAggOp(hm) => {
       val elem = proceedHashMap(hm, key)
-      NotEqual(elem, unit(null))
+      /* here is an optimization */
+      // implicit val manKey = hm.tp.typeArguments(0).asInstanceOf[TypeRep[Key]]
+      // implicit val manValue = hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
+      // val hmStruct = hashMapStructs(hm.asInstanceOf[Sym[Any]]).asInstanceOf[HashMapStruct[Key, Value]]
+      // __assign(hmStruct.lastElem, readVar(elem))
+      NotEqual(readVar(elem), unit(null))
     }
     case HashMapApply(hm, key) if isNotAggOp(hm) => {
       val elem = proceedHashMap(hm, key)
       currentElement(elem)(hm)
-      // ReadVal(readVar(elem).current)
+      /* here is an optimization */
+      // implicit val manKey = hm.tp.typeArguments(0).asInstanceOf[TypeRep[Key]]
+      // implicit val manValue = hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
+      // val hmStruct = hashMapStructs(hm.asInstanceOf[Sym[Any]]).asInstanceOf[HashMapStruct[Key, Value]]
+      // ReadVal(readVar(hmStruct.lastElem).current)
     }
     case HashMapKeySet(hm) if isNotAggOp(hm) => {
       val hmStruct = getStruct[Key, Value](hm)
       ReadVar(hmStruct.keySet)(SetType(hmStruct.keyType))
     }
-    case HashMapRemove(hm, k) if isWindowOp(hm) => {
+    case HashMapRemove(hm, k) if isWindowOp(hm) => { // hence, it's for WindowOp
       implicit val manKey = hm.tp.typeArguments(0).asInstanceOf[TypeRep[Key]]
       implicit val manValue = hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
       val hmStruct = hashMapStructs(hm.asInstanceOf[Sym[Any]]).asInstanceOf[HashMapStruct[Key, Value]]
@@ -178,7 +203,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       currentElement(elem)(hm)
       // ReadVal(readVar(elem).current)
     }
-    case HashMapRemove(hm, k) if isNotAggOp(hm) => { // hence, it's for AntiHashJoin
+    case HashMapRemove(hm, k) if isNotAggOp(hm) => { // hence, it's for HashAntiJoin
       implicit val manKey = hm.tp.typeArguments(0).asInstanceOf[TypeRep[Key]]
       implicit val manValue = hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
       val hmStruct = hashMapStructs(hm.asInstanceOf[Sym[Any]]).asInstanceOf[HashMapStruct[Key, Value]]
@@ -188,6 +213,22 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       readVar(keySet).remove(key)
       ReadVal(__assign(size, readVar(size) - 1))
       // ReadVal(readVar(elem).current)
+    }
+    case SetHead(Def(ReadVar(v))) if checkForSet(v, x => getKind(x) != AggOpCase) => {
+      val hm = keySetHashMaps(v)
+      implicit val manKey = hm.tp.typeArguments(0).asInstanceOf[TypeRep[Key]]
+      implicit val manValue = hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
+      val hmStruct = hashMapStructs(hm.asInstanceOf[Sym[Any]]).asInstanceOf[HashMapStruct[Key, Value]]
+      val keySet = readVar(hmStruct.keySet)
+      ReadVal(keySet.head)
+    }
+    case SetRemove(Def(ReadVar(v)), k) if checkForSet(v, x => getKind(x) != AggOpCase) => {
+      val hm = keySetHashMaps(v)
+      implicit val manKey = hm.tp.typeArguments(0).asInstanceOf[TypeRep[Key]]
+      implicit val manValue = hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
+      val hmStruct = hashMapStructs(hm.asInstanceOf[Sym[Any]]).asInstanceOf[HashMapStruct[Key, Value]]
+      val keySet = readVar(hmStruct.keySet)
+      ReadVal(keySet.remove(k.asInstanceOf[Rep[Key]]))
     }
     // case ArrayBufferAppend(sym, v) if isNotAggOpArrayBuffer(sym) => {
     //   implicit val manValue = v.tp.asInstanceOf[TypeRep[Value]]

@@ -9,7 +9,7 @@ import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
 import pardis.optimization._
 
-class LBLowering(override val from: InliningLegoBase, override val to: LoweringLegoBase) extends Lowering[InliningLegoBase, LoweringLegoBase](from, to) {
+class LBLowering(override val from: InliningLegoBase, override val to: LoweringLegoBase, override val generateHashAndEqual: Boolean) extends Lowering[InliningLegoBase, LoweringLegoBase](from, to) {
   import from._
 
   // override val lowerStructs: Boolean = false
