@@ -122,6 +122,7 @@ trait SetOps extends Base { this: DeepDSL =>
     def apply(elem: Rep[A]): Rep[Boolean] = setApply[A](self, elem)(typeA)
     def toSeq: Rep[Seq[A]] = setToSeq[A](self)(typeA)
     def remove(elem: Rep[A]): Rep[Boolean] = setRemove[A](self, elem)(typeA)
+    def +(elem: Rep[A]): Rep[Set[A]] = set$plus[A](self, elem)(typeA)
   }
   object Set {
     def apply[T](elems: Rep[Seq[T]])(implicit typeT: TypeRep[T], overload1: Overloaded1): Rep[Set[T]] = setApplyObject1[T](elems)(typeT)
@@ -132,23 +133,21 @@ trait SetOps extends Base { this: DeepDSL =>
   // case classes
   case class SetHead[A](self: Rep[Set[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "head", List()) {
     override def curriedConstructor = (copy[A] _)
-    override def isPure = true
-
   }
 
   case class SetApply[A](self: Rep[Set[A]], elem: Rep[A])(implicit val typeA: TypeRep[A]) extends FunctionDef[Boolean](Some(self), "apply", List(List(elem))) {
     override def curriedConstructor = (copy[A] _).curried
-    override def isPure = true
-
   }
 
   case class SetToSeq[A](self: Rep[Set[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Seq[A]](Some(self), "toSeq", List()) {
     override def curriedConstructor = (copy[A] _)
-    override def isPure = true
-
   }
 
   case class SetRemove[A](self: Rep[Set[A]], elem: Rep[A])(implicit val typeA: TypeRep[A]) extends FunctionDef[Boolean](Some(self), "remove", List(List(elem))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class Set$plus[A](self: Rep[Set[A]], elem: Rep[A])(implicit val typeA: TypeRep[A]) extends FunctionDef[Set[A]](Some(self), "+", List(List(elem))) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -165,6 +164,7 @@ trait SetOps extends Base { this: DeepDSL =>
   def setApply[A](self: Rep[Set[A]], elem: Rep[A])(implicit typeA: TypeRep[A]): Rep[Boolean] = SetApply[A](self, elem)
   def setToSeq[A](self: Rep[Set[A]])(implicit typeA: TypeRep[A]): Rep[Seq[A]] = SetToSeq[A](self)
   def setRemove[A](self: Rep[Set[A]], elem: Rep[A])(implicit typeA: TypeRep[A]): Rep[Boolean] = SetRemove[A](self, elem)
+  def set$plus[A](self: Rep[Set[A]], elem: Rep[A])(implicit typeA: TypeRep[A]): Rep[Set[A]] = Set$plus[A](self, elem)
   def setApplyObject1[T](elems: Rep[Seq[T]])(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetApplyObject1[T](elems)
   def setApplyObject2[T]()(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetApplyObject2[T]()
   type Set[A] = scala.collection.mutable.Set[A]

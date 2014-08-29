@@ -28,14 +28,12 @@ class MirrorHashMap[A, B](contents: HashTable.Contents[A, DefaultEntry[A, B]]) {
 
 @reflect[Set[_]]
 trait MirrorSet[A] {
-  @pure
   def head: A = ???
-  @pure
   def apply(elem: A): Boolean = ???
-  @pure
   def toSeq: Seq[A] = ???
   @write
   def remove(elem: A): Boolean = ???
+  def +(elem: A): Set[A] = ???
 }
 
 object MirrorSet {

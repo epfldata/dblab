@@ -128,10 +128,14 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       val hashKey = key2Hash(key)
       val currElem = readVar(elem)
       val arr = hmStruct.arr
+      val keySet = hmStruct.keySet
+      val size = hmStruct.size
       __ifThenElse(infix_==(currElem, unit(null)), {
         val newElem = __newNextContainer[ArrayBuffer[Value]](ArrayBuffer[Value](), arr(hashKey))
         arr(hashKey) = newElem
         __assign(elem, newElem)
+        __assign(size, readVar(size) + unit(1))
+        __assign(keySet, readVar(keySet) + key)
       }, unit(()))
       currentElement(elem)(hm)
       // ReadVal(readVar(elem).current)
@@ -152,8 +156,16 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       val hmStruct = getStruct[Key, Value](hm)
       ReadVar(hmStruct.keySet)(SetType(hmStruct.keyType))
     }
-    case HashMapRemove(hm, key) if isWindowOp(hm) => {
+    case HashMapRemove(hm, k) if isWindowOp(hm) => {
+      implicit val manKey = hm.tp.typeArguments(0).asInstanceOf[TypeRep[Key]]
+      implicit val manValue = hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
+      val hmStruct = hashMapStructs(hm.asInstanceOf[Sym[Any]]).asInstanceOf[HashMapStruct[Key, Value]]
+      val key = k.asInstanceOf[Rep[Key]]
+      val keySet = hmStruct.keySet
+      val size = hmStruct.size
       val elem = proceedHashMap(hm, key)
+      readVar(keySet).remove(key)
+      __assign(size, readVar(size) - 1)
       currentElement(elem)(hm)
       // ReadVal(readVar(elem).current)
     }
