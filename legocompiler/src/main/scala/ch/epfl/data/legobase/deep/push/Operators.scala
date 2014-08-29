@@ -8,6 +8,7 @@ import scalalib._
 import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
 import pardis.deep.scalalib._
+import pardis.effects._
 trait OperatorOps extends Base { this: OperatorsComponent =>
   implicit class OperatorRep[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = operatorOpen[A](self)(typeA)

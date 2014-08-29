@@ -25,6 +25,7 @@ import ch.epfl.data.pardis.shallow.{ Record, DynamicCompositeRecord }
 // import pardis.ir._
 // import pardis.ir.pardisTypeImplicits._
 // import pardis.deep.scalalib._
+// import pardis.effects._
 // """,
 //   """OperatorsComponent""")
 // class MetaInfo

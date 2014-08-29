@@ -7,6 +7,7 @@ package scalalib
 
 import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
+import pardis.effects._
 
 trait ArrayOps extends Base { this: DeepDSL =>
   implicit class ArrayRep[T](self: Rep[Array[T]])(implicit typeT: TypeRep[T]) {
@@ -29,14 +30,12 @@ trait ArrayOps extends Base { this: DeepDSL =>
 
   case class ArrayLength[T](self: Rep[Array[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Int](Some(self), "length", List()) {
     override def curriedConstructor = (copy[T] _)
-    override def isPure = true
-
+    override def effect = Read(self)
   }
 
   case class ArrayApply[T](self: Rep[Array[T]], i: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[T](Some(self), "apply", List(List(i))) {
     override def curriedConstructor = (copy[T] _).curried
-    override def isPure = true
-
+    override def effect = Read(self)
   }
 
   case class ArrayUpdate[T](self: Rep[Array[T]], i: Rep[Int], x: Rep[T])(implicit val typeT: TypeRep[T]) extends FunctionDef[Unit](Some(self), "update", List(List(i, x))) {

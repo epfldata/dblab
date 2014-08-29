@@ -152,6 +152,7 @@ package scalalib
 
 import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
+import pardis.effects._
 
 $liftedCode
 """)
@@ -174,6 +175,7 @@ package scalalib
 
 import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
+import pardis.effects._
 
 $liftedCode
 """)

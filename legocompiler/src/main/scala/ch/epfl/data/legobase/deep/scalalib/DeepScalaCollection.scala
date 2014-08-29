@@ -7,6 +7,7 @@ package scalalib
 
 import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
+import pardis.effects._
 
 trait HashMapOps extends Base { this: DeepDSL =>
   implicit class HashMapRep[A, B](self: Rep[HashMap[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]) {
@@ -45,20 +46,17 @@ trait HashMapOps extends Base { this: DeepDSL =>
 
   case class HashMapSize[A, B](self: Rep[HashMap[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[Int](Some(self), "size", List()) {
     override def curriedConstructor = (copy[A, B] _)
-    override def isPure = true
-
+    override def effect = Read(self)
   }
 
   case class HashMapContains[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[Boolean](Some(self), "contains", List(List(key))) {
     override def curriedConstructor = (copy[A, B] _).curried
-    override def isPure = true
-
+    override def effect = Read(self)
   }
 
   case class HashMapApply[A, B](self: Rep[HashMap[A, B]], key: Rep[A])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[B](Some(self), "apply", List(List(key))) {
     override def curriedConstructor = (copy[A, B] _).curried
-    override def isPure = true
-
+    override def effect = Read(self)
   }
 
   case class HashMapUpdate[A, B](self: Rep[HashMap[A, B]], key: Rep[A], value: Rep[B])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[Unit](Some(self), "update", List(List(key, value))) {
@@ -134,14 +132,17 @@ trait SetOps extends Base { this: DeepDSL =>
   // case classes
   case class SetHead[A](self: Rep[Set[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "head", List()) {
     override def curriedConstructor = (copy[A] _)
+    override def effect = Read(self)
   }
 
   case class SetApply[A](self: Rep[Set[A]], elem: Rep[A])(implicit val typeA: TypeRep[A]) extends FunctionDef[Boolean](Some(self), "apply", List(List(elem))) {
     override def curriedConstructor = (copy[A] _).curried
+    override def effect = Read(self)
   }
 
   case class SetToSeq[A](self: Rep[Set[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Seq[A]](Some(self), "toSeq", List()) {
     override def curriedConstructor = (copy[A] _)
+    override def effect = Read(self)
   }
 
   case class SetRemove[A](self: Rep[Set[A]], elem: Rep[A])(implicit val typeA: TypeRep[A]) extends FunctionDef[Boolean](Some(self), "remove", List(List(elem))) {
@@ -150,6 +151,7 @@ trait SetOps extends Base { this: DeepDSL =>
 
   case class Set$plus[A](self: Rep[Set[A]], elem: Rep[A])(implicit val typeA: TypeRep[A]) extends FunctionDef[Set[A]](Some(self), "+", List(List(elem))) {
     override def curriedConstructor = (copy[A] _).curried
+    override def effect = Read(self)
   }
 
   case class Set$plus$eq[A](self: Rep[Set[A]], elem: Rep[A])(implicit val typeA: TypeRep[A]) extends FunctionDef[Set[A]](Some(self), "+=", List(List(elem))) {
@@ -212,14 +214,12 @@ trait TreeSetOps extends Base { this: DeepDSL =>
 
   case class TreeSetHead[A](self: Rep[TreeSet[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "head", List()) {
     override def curriedConstructor = (copy[A] _)
-    override def isPure = true
-
+    override def effect = Read(self)
   }
 
   case class TreeSetSize[A](self: Rep[TreeSet[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Int](Some(self), "size", List()) {
     override def curriedConstructor = (copy[A] _)
-    override def isPure = true
-
+    override def effect = Read(self)
   }
 
   case class TreeSet$minus$eq[A](self: Rep[TreeSet[A]], elem: Rep[A])(implicit val typeA: TypeRep[A]) extends FunctionDef[TreeSet[A]](Some(self), "-=", List(List(elem))) {
@@ -354,10 +354,12 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
 
   case class ArrayBufferSize[A](self: Rep[ArrayBuffer[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Int](Some(self), "size", List()) {
     override def curriedConstructor = (copy[A] _)
+    override def effect = Read(self)
   }
 
   case class ArrayBufferApply[A](self: Rep[ArrayBuffer[A]], i: Rep[Int])(implicit val typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "apply", List(List(i))) {
     override def curriedConstructor = (copy[A] _).curried
+    override def effect = Read(self)
   }
 
   case class ArrayBufferUpdate[A](self: Rep[ArrayBuffer[A]], i: Rep[Int], x: Rep[A])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "update", List(List(i, x))) {
@@ -390,6 +392,7 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
 
   case class ArrayBufferIsEmpty[A](self: Rep[ArrayBuffer[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Boolean](Some(self), "isEmpty", List()) {
     override def curriedConstructor = (copy[A] _)
+    override def effect = Read(self)
   }
 
   case class ArrayBuffer_Field_InitialSize[A](self: Rep[ArrayBuffer[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Int](self, "initialSize") {
