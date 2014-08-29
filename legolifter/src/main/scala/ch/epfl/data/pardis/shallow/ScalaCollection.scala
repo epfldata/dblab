@@ -34,6 +34,7 @@ trait MirrorSet[A] {
   @write
   def remove(elem: A): Boolean = ???
   def +(elem: A): Set[A] = ???
+  def +=(elem: A): Set[A] = ???
 }
 
 object MirrorSet {
@@ -70,6 +71,7 @@ final class MirrorArrayBuffer[A](protected val initialSize: Int) {
   def foldLeft[B](z: B)(op: (B, A) => B): B = ???
   @write def append(elem: A): Unit = ???
   @write def remove(n: Int): A = ???
+  def isEmpty: Boolean = ???
 }
 
 object MirrorArrayBuffer {

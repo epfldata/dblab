@@ -123,6 +123,7 @@ trait SetOps extends Base { this: DeepDSL =>
     def toSeq: Rep[Seq[A]] = setToSeq[A](self)(typeA)
     def remove(elem: Rep[A]): Rep[Boolean] = setRemove[A](self, elem)(typeA)
     def +(elem: Rep[A]): Rep[Set[A]] = set$plus[A](self, elem)(typeA)
+    def +=(elem: Rep[A]): Rep[Set[A]] = set$plus$eq[A](self, elem)(typeA)
   }
   object Set {
     def apply[T](elems: Rep[Seq[T]])(implicit typeT: TypeRep[T], overload1: Overloaded1): Rep[Set[T]] = setApplyObject1[T](elems)(typeT)
@@ -151,6 +152,10 @@ trait SetOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A] _).curried
   }
 
+  case class Set$plus$eq[A](self: Rep[Set[A]], elem: Rep[A])(implicit val typeA: TypeRep[A]) extends FunctionDef[Set[A]](Some(self), "+=", List(List(elem))) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
   case class SetApplyObject1[T](elems: Rep[Seq[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Set[T]](None, "Set.apply", List(List(elems))) {
     override def curriedConstructor = (copy[T] _)
   }
@@ -165,6 +170,7 @@ trait SetOps extends Base { this: DeepDSL =>
   def setToSeq[A](self: Rep[Set[A]])(implicit typeA: TypeRep[A]): Rep[Seq[A]] = SetToSeq[A](self)
   def setRemove[A](self: Rep[Set[A]], elem: Rep[A])(implicit typeA: TypeRep[A]): Rep[Boolean] = SetRemove[A](self, elem)
   def set$plus[A](self: Rep[Set[A]], elem: Rep[A])(implicit typeA: TypeRep[A]): Rep[Set[A]] = Set$plus[A](self, elem)
+  def set$plus$eq[A](self: Rep[Set[A]], elem: Rep[A])(implicit typeA: TypeRep[A]): Rep[Set[A]] = Set$plus$eq[A](self, elem)
   def setApplyObject1[T](elems: Rep[Seq[T]])(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetApplyObject1[T](elems)
   def setApplyObject2[T]()(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetApplyObject2[T]()
   type Set[A] = scala.collection.mutable.Set[A]
@@ -328,6 +334,7 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
     def foldLeft[B](z: Rep[B])(op: Rep[((B, A) => B)])(implicit typeB: TypeRep[B]): Rep[B] = arrayBufferFoldLeft[A, B](self, z, op)(typeA, typeB)
     def append(elem: Rep[A]): Rep[Unit] = arrayBufferAppend[A](self, elem)(typeA)
     def remove(n: Rep[Int]): Rep[A] = arrayBufferRemove[A](self, n)(typeA)
+    def isEmpty: Rep[Boolean] = arrayBufferIsEmpty[A](self)(typeA)
     def initialSize: Rep[Int] = arrayBuffer_Field_InitialSize[A](self)(typeA)
   }
   object ArrayBuffer {
@@ -381,6 +388,10 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A] _).curried
   }
 
+  case class ArrayBufferIsEmpty[A](self: Rep[ArrayBuffer[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Boolean](Some(self), "isEmpty", List()) {
+    override def curriedConstructor = (copy[A] _)
+  }
+
   case class ArrayBuffer_Field_InitialSize[A](self: Rep[ArrayBuffer[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Int](self, "initialSize") {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
@@ -403,6 +414,7 @@ trait ArrayBufferOps extends Base { this: DeepDSL =>
   def arrayBufferFoldLeft[A, B](self: Rep[ArrayBuffer[A]], z: Rep[B], op: Rep[((B, A) => B)])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[B] = ArrayBufferFoldLeft[A, B](self, z, op)
   def arrayBufferAppend[A](self: Rep[ArrayBuffer[A]], elem: Rep[A])(implicit typeA: TypeRep[A]): Rep[Unit] = ArrayBufferAppend[A](self, elem)
   def arrayBufferRemove[A](self: Rep[ArrayBuffer[A]], n: Rep[Int])(implicit typeA: TypeRep[A]): Rep[A] = ArrayBufferRemove[A](self, n)
+  def arrayBufferIsEmpty[A](self: Rep[ArrayBuffer[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = ArrayBufferIsEmpty[A](self)
   def arrayBuffer_Field_InitialSize[A](self: Rep[ArrayBuffer[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ArrayBuffer_Field_InitialSize[A](self)
   def arrayBufferApplyObject[T]()(implicit typeT: TypeRep[T]): Rep[ArrayBuffer[T]] = ArrayBufferApplyObject[T]()
   type ArrayBuffer[A] = scala.collection.mutable.ArrayBuffer[A]
