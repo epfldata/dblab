@@ -41,7 +41,8 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val maa = ma.asInstanceOf[TypeRep[Any]]
       val marrDouble = implicitly[to.TypeRep[to.Array[to.Double]]]
       val magg = typeRep[AGGRecord[Any]].rebuild(mb).asInstanceOf[TypeRep[Any]]
-      val hm = to.__newHashMap()(to.overloaded2, apply(mb), apply(marrDouble))
+      // val hm = to.__newHashMap()(to.overloaded2, apply(mb), apply(marrDouble))
+      val hm = to.__newHashMap4()(apply(mb))
       to.__newDef[AggOp[Any, Any]](("hm", false, hm),
         ("keySet", true, to.Set()(apply(mb), to.overloaded2)),
         stop).asInstanceOf[to.Def[T]]
