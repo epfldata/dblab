@@ -63,7 +63,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
     }
   }
 
-  val ARRAY_SIZE = 1000000
+  val ARRAY_SIZE = 100
 
   override def transformStm(stm: Stm[_]): to.Stm[_] = stm match {
     case Stm(sym, hmn @ HashMapNew3(_)) if isNotAggOp(sym) => {
@@ -101,7 +101,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
     val elem = __newVar(arr(hashKey))
     __whileDo(infix_!=(readVar(elem), unit(null)) && {
       val currentBuffer = readVar(elem).current
-      !currentBuffer.isEmpty && infix_!=(__app(ext).apply(currentBuffer.apply(unit(0))), key)
+      currentBuffer.isEmpty || infix_!=(__app(ext).apply(currentBuffer.apply(unit(0))), key)
     }, {
       __assign(elem, readVar(elem).next)
     })
@@ -113,10 +113,10 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
 
   def isWindowOp[T](hm: Rep[T]) = checkForHashSym(hm, x => getKind(x) == WindowOpCase)
   def isWindowOpArrayBuffer[T](rt: Rep[T]) = checkForArrayBuffer(rt, x => getKind(x) == WindowOpCase)
-  // def isNotAggOp[T](hm: Rep[T]) = checkForHashSym(hm, x => getKind(x) != AggOpCase)
-  // def isNotAggOpArrayBuffer[T](rt: Rep[T]) = checkForArrayBuffer(rt, x => getKind(x) != AggOpCase)
-  def isNotAggOp[T](hm: Rep[T]) = checkForHashSym(hm, x => getKind(x) == WindowOpCase)
-  def isNotAggOpArrayBuffer[T](rt: Rep[T]) = checkForArrayBuffer(rt, x => getKind(x) == WindowOpCase)
+  def isNotAggOp[T](hm: Rep[T]) = checkForHashSym(hm, x => getKind(x) != AggOpCase)
+  def isNotAggOpArrayBuffer[T](rt: Rep[T]) = checkForArrayBuffer(rt, x => getKind(x) != AggOpCase)
+  // def isNotAggOp[T](hm: Rep[T]) = checkForHashSym(hm, x => getKind(x) == WindowOpCase)
+  // def isNotAggOpArrayBuffer[T](rt: Rep[T]) = checkForArrayBuffer(rt, x => getKind(x) == WindowOpCase)
 
   def currentElement(e: Var[Any])(hm: Rep[_]): Def[Any] = {
     implicit val manValue = hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
