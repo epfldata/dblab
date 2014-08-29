@@ -85,7 +85,8 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val tp = ho.tp.asInstanceOf[TypeRep[HashJoinOpTp]]
       val marrBuffA = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(ma).asInstanceOf[TypeRep[Any]]
       val mCompRec = implicitly[TypeRep[DynamicCompositeRecord[pardis.shallow.Record, pardis.shallow.Record]]].rebuild(ma, mb).asInstanceOf[TypeRep[Any]]
-      to.__newDef[HashJoinOpTp](("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffA))),
+      to.__newDef[HashJoinOpTp]( //("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffA))),
+        ("hm", false, to.__newHashMap3[Any, Any](ho.leftHash.asInstanceOf[Rep[Any => Any]])(apply(mc), apply(ma.asInstanceOf[TypeRep[Any]]))),
         stop)(tp).asInstanceOf[to.Def[T]]
     }
     case wo: WindowOpNew[_, _, _] => {
@@ -95,7 +96,8 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val maa = ma.asInstanceOf[TypeRep[Any]]
       val marrBuffA = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(ma).asInstanceOf[TypeRep[Any]]
       val mwinRecBC = implicitly[TypeRep[WindowRecord[Any, Any]]].rebuild(mb, mc).asInstanceOf[TypeRep[Any]]
-      to.__newDef[WindowOp[Any, Any, Any]](("hm", false, to.__newHashMap()(to.overloaded2, apply(mb), apply(marrBuffA))),
+      to.__newDef[WindowOp[Any, Any, Any]]( //("hm", false, to.__newHashMap()(to.overloaded2, apply(mb), apply(marrBuffA))),
+        ("hm", false, to.__newHashMap3[Any, Any](wo.grp.asInstanceOf[Rep[Any => Any]])(apply(mb), apply(ma))),
         stop).asInstanceOf[to.Def[T]]
     }
     case lho: LeftHashSemiJoinOpNew[_, _, _] => {
@@ -104,7 +106,8 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val mc = lho.typeC
       val maa = ma.asInstanceOf[TypeRep[Any]]
       val marrBuffB = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(mb).asInstanceOf[TypeRep[Any]]
-      to.__newDef[LeftHashSemiJoinOp[Any, Any, Any]](("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffB))),
+      to.__newDef[LeftHashSemiJoinOp[Any, Any, Any]]( //("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffB))),
+        ("hm", false, to.__newHashMap3[Any, Any](lho.rightHash.asInstanceOf[Rep[Any => Any]])(apply(mc), apply(mb))),
         stop).asInstanceOf[to.Def[T]]
     }
     case nlo: NestedLoopsJoinOpNew[_, _] => {
@@ -118,7 +121,6 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
     }
     case vo: ViewOpNew[_] => {
       val ma = vo.typeA
-      // val marrBuffA = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(ma).asInstanceOf[TypeRep[Any]]
       to.__newDef[ViewOp[Any]](
         stop,
         ("idx", true, to.unit[Int](0)),
@@ -135,7 +137,8 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val mc = ho.typeC
       val mba = mb.asInstanceOf[TypeRep[Any]]
       val marrBuffA = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(ma).asInstanceOf[TypeRep[Any]]
-      to.__newDef[HashJoinAnti[Any, Any, Any]](("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffA))),
+      to.__newDef[HashJoinAnti[Any, Any, Any]]( //("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffA))),
+        ("hm", false, to.__newHashMap3[Any, Any](ho.leftHash.asInstanceOf[Rep[Any => Any]])(apply(mc), apply(ma))),
         stop,
         ("keySet", true, to.Set()(apply(mc), to.overloaded2))).asInstanceOf[to.Def[T]]
     }
@@ -149,7 +152,8 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val tp = loj.tp.asInstanceOf[TypeRep[LeftOuterJoinOpTp]]
       val marrBuffB = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(mb).asInstanceOf[TypeRep[Any]]
       val mCompRec = implicitly[TypeRep[DynamicCompositeRecord[pardis.shallow.Record, pardis.shallow.Record]]].rebuild(ma, mb).asInstanceOf[TypeRep[Any]]
-      to.__newDef[LeftOuterJoinOpTp](("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffB))),
+      to.__newDef[LeftOuterJoinOpTp]( //("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffB))),
+        ("hm", false, to.__newHashMap3[Any, Any](loj.rightHash.asInstanceOf[Rep[Any => Any]])(apply(mc), apply(mb))),
         stop,
         ("defaultB", false, transformDef(to.StructDefault()((mba)))))(tp).asInstanceOf[to.Def[T]]
     }

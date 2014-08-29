@@ -424,6 +424,60 @@ trait ArrayBufferImplementations { self: DeepDSL =>
 }
 trait ArrayBufferComponent extends ArrayBufferOps with ArrayBufferImplicits { self: DeepDSL => }
 
+trait NextContainerOps extends Base { this: DeepDSL =>
+  implicit class NextContainerRep[T](self: Rep[NextContainer[T]])(implicit typeT: TypeRep[T]) {
+    def next_=(x$1: Rep[NextContainer[T]]): Rep[Unit] = nextContainer_Field_Next_$eq[T](self, x$1)(typeT)
+    def next: Rep[NextContainer[T]] = nextContainer_Field_Next[T](self)(typeT)
+    def current: Rep[T] = nextContainer_Field_Current[T](self)(typeT)
+  }
+  object NextContainer {
+
+  }
+  // constructors
+  def __newNextContainer[T](current: Rep[T], next: Rep[NextContainer[T]])(implicit typeT: TypeRep[T]): Rep[NextContainer[T]] = nextContainerNew[T](current, next)(typeT)
+  // case classes
+  case class NextContainerNew[T](current: Rep[T], next: Rep[NextContainer[T]])(implicit val typeT: TypeRep[T]) extends ConstructorDef[NextContainer[T]](List(typeT), "NextContainer", List(List(current, next))) {
+    override def curriedConstructor = (copy[T] _).curried
+  }
+
+  case class NextContainer_Field_Next_$eq[T](self: Rep[NextContainer[T]], x$1: Rep[NextContainer[T]])(implicit val typeT: TypeRep[T]) extends FieldSetter[NextContainer[T]](self, "next", x$1) {
+    override def curriedConstructor = (copy[T] _).curried
+  }
+
+  case class NextContainer_Field_Next[T](self: Rep[NextContainer[T]])(implicit val typeT: TypeRep[T]) extends FieldGetter[NextContainer[T]](self, "next") {
+    override def curriedConstructor = (copy[T] _)
+  }
+
+  case class NextContainer_Field_Current[T](self: Rep[NextContainer[T]])(implicit val typeT: TypeRep[T]) extends FieldDef[T](self, "current") {
+    override def curriedConstructor = (copy[T] _)
+    override def isPure = true
+
+  }
+
+  // method definitions
+  def nextContainerNew[T](current: Rep[T], next: Rep[NextContainer[T]])(implicit typeT: TypeRep[T]): Rep[NextContainer[T]] = NextContainerNew[T](current, next)
+  def nextContainer_Field_Next_$eq[T](self: Rep[NextContainer[T]], x$1: Rep[NextContainer[T]])(implicit typeT: TypeRep[T]): Rep[Unit] = NextContainer_Field_Next_$eq[T](self, x$1)
+  def nextContainer_Field_Next[T](self: Rep[NextContainer[T]])(implicit typeT: TypeRep[T]): Rep[NextContainer[T]] = NextContainer_Field_Next[T](self)
+  def nextContainer_Field_Current[T](self: Rep[NextContainer[T]])(implicit typeT: TypeRep[T]): Rep[T] = NextContainer_Field_Current[T](self)
+  type NextContainer[T] = ch.epfl.data.legobase.NextContainer[T]
+  case class NextContainerType[T](typeT: TypeRep[T]) extends TypeRep[NextContainer[T]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = NextContainerType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagT = typeT.typeTag
+    val name = s"NextContainer[${typeT.name}]"
+    val typeArguments = List(typeT)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[NextContainer[T]]
+  }
+  implicit def typeNextContainer[T: TypeRep] = NextContainerType(implicitly[TypeRep[T]])
+}
+trait NextContainerImplicits { this: NextContainerComponent =>
+  // Add implicit conversions here!
+}
+trait NextContainerImplementations { self: DeepDSL =>
+
+}
+trait NextContainerComponent extends NextContainerOps with NextContainerImplicits { self: DeepDSL => }
+
 trait RangeOps extends Base { this: DeepDSL =>
   implicit class RangeRep(self: Rep[Range]) {
     def foreach[U](f: Rep[(Int => U)])(implicit typeU: TypeRep[U]): Rep[Unit] = rangeForeach[U](self, f)(typeU)

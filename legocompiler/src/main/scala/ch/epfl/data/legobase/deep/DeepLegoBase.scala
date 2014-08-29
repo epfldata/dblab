@@ -1968,6 +1968,7 @@ trait DeepDSL extends push.OperatorsComponent with AGGRecordComponent with Windo
   with OptimalStringComponent
   with LoaderComponent
   with K2DBScannerComponent with IntegerComponent
+  with NextContainerComponent
   with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent
   with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase with QueryComponent
 

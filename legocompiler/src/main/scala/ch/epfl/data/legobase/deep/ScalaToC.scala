@@ -322,6 +322,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     /* HashMap Operations */
+    case nm @ HashMapNew3(_) => transformDef(HashMapNew2()(nm.typeA, ArrayBufferType(nm.typeB)))
     case nm @ HashMapNew2() =>
       val nA = typePointer(transformType(nm.typeA)).asInstanceOf[TypeRep[Any]]
       val nB = typePointer(transformType(nm.typeB))

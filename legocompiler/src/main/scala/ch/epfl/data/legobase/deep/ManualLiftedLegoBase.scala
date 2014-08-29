@@ -7,7 +7,7 @@ import scala.language.implicitConversions
 import pardis.utils.Utils.{ pardisTypeToString => t2s }
 import pardis.ir.pardisTypeImplicits._
 
-trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE with RichIntOps with scalalib.ByteComponent { this: DeepDSL =>
+trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE with RichIntOps with scalalib.ByteComponent with LegoHashMap { this: DeepDSL =>
   /* TODO These methods should be lifted from scala.Predef */
   case class Println(x: Rep[Any]) extends FunctionDef[Unit](None, "println", List(List(x))) {
     override def curriedConstructor = (copy _)
@@ -145,4 +145,14 @@ trait RichIntOps extends scalalib.RangeComponent { this: DeepDSL =>
   def richIntUntil(self: Rep[RichInt], to: Rep[Int]): Rep[Range] = rangeNew(self, to, unit(1))
 
   type RichInt = Int
+}
+
+trait LegoHashMap { this: DeepDSL =>
+  def __newHashMap3[A, B](extract: Rep[B => A])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, ArrayBuffer[B]]] = hashMapNew3[A, B](extract)(typeA, typeB)
+  def hashMapNew3[A, B](extract: Rep[B => A])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, ArrayBuffer[B]]] = HashMapNew3[A, B](extract)(typeA, typeB)
+
+  case class HashMapNew3[A, B](extract: Rep[B => A])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[HashMap[A, ArrayBuffer[B]]](List(typeA, ArrayBufferType(typeB)), "HashMap", List(List())) {
+    override def curriedConstructor = copy[A, B] _
+    override def funArgs = List(extract)
+  }
 }

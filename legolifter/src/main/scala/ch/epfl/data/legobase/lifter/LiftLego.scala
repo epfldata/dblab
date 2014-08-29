@@ -122,6 +122,7 @@ trait DeepDSL extends push.OperatorsComponent with AGGRecordComponent with Windo
   with OptimalStringComponent
   with LoaderComponent
   with K2DBScannerComponent with IntegerComponent 
+  with NextContainerComponent
   with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent 
   with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase with QueryComponent
 """)
@@ -135,6 +136,7 @@ trait DeepDSL extends push.OperatorsComponent with AGGRecordComponent with Windo
       al.autoLift[MirrorTreeSet[Any]](Custom("DeepDSL")),
       al.autoLift[MirrorDefaultEntry[Any, Any]](Custom("DeepDSL")),
       al.autoLift[MirrorArrayBuffer[Any]](Custom("DeepDSL")),
+      al.autoLift[ch.epfl.data.legobase.NextContainer[_]],
       al.autoLift[MirrorRange](Custom("DeepDSL")))
     val liftedCode = liftedCodes.mkString("\n")
     val file = "DeepScalaCollection"
