@@ -1054,13 +1054,15 @@ trait HashJoinOpImplementations { self: DeepDSL =>
       __ifThenElse(self.hm.contains(k), {
         val tmpBuffer: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.apply(k);
         var tmpCount: this.Var[Int] = __newVar(unit(0));
-        __whileDo(self.stop.unary_$bang.$amp$amp(readVar(tmpCount).$less(tmpBuffer.size)), {
-          var bufElem: this.Var[A] = __newVar(tmpBuffer.apply(readVar(tmpCount)));
-          __ifThenElse(__app(self.joinCond).apply(readVar(bufElem), infix_asInstanceOf[B](tuple)), {
-            val res: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]] = RecordOps[A](tmpBuffer.apply(readVar(tmpCount))).concatenateDynamic[B](infix_asInstanceOf[B](tuple), self.leftAlias, self.rightAlias);
+        var break: this.Var[Boolean] = __newVar(unit(false));
+        __whileDo(self.stop.unary_$bang.$amp$amp(readVar(break).unary_$bang), {
+          val bufElem: this.Rep[A] = tmpBuffer.apply(readVar(tmpCount));
+          __ifThenElse(__app(self.joinCond).apply(bufElem, infix_asInstanceOf[B](tuple)), {
+            val res: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]] = RecordOps[A](bufElem).concatenateDynamic[B](infix_asInstanceOf[B](tuple), self.leftAlias, self.rightAlias);
             self.child.consume(res)
           }, unit(()));
-          __assign(tmpCount, readVar(tmpCount).$plus(unit(1)))
+          __assign(tmpCount, readVar(tmpCount).$plus(unit(1)));
+          __ifThenElse(readVar(tmpCount).$greater$eq(tmpBuffer.size), __assign(break, unit(true)), unit(()))
         })
       }, unit(()))
     }, unit(())))

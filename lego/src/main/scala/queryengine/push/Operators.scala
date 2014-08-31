@@ -160,13 +160,15 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
       if (hm.contains(k)) {
         val tmpBuffer = hm(k)
         var tmpCount = 0
-        while (!stop && tmpCount < tmpBuffer.size) {
-          var bufElem = tmpBuffer(tmpCount)
+        var break = false
+        while (!stop && !break) {
+          val bufElem = tmpBuffer(tmpCount) // We know there is at least one element
           if (joinCond(bufElem, tuple.asInstanceOf[B])) {
-            val res = tmpBuffer(tmpCount).concatenateDynamic(tuple.asInstanceOf[B], leftAlias, rightAlias)
+            val res = bufElem.concatenateDynamic(tuple.asInstanceOf[B], leftAlias, rightAlias)
             child.consume(res)
           }
           tmpCount += 1
+          if (tmpCount >= tmpBuffer.size) break = true
         }
       }
     }

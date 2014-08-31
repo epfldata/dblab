@@ -179,35 +179,35 @@ object Queries {
   }
 
   def Q5(numRuns: Int) {
-    val lineitemTable = loadLineitem()
+    // val lineitemTable = loadLineitem()
     val nationTable = loadNation()
-    val customerTable = loadCustomer()
-    val supplierTable = loadSupplier()
+    //val customerTable = loadCustomer()
+    //val supplierTable = loadSupplier()
     val regionTable = loadRegion()
-    val ordersTable = loadOrders()
+    //val ordersTable = loadOrders()
     // for (i <- 0 until numRuns) {
     runQuery({
       val constantDate1 = parseDate("1996-01-01")
       val constantDate2 = parseDate("1997-01-01")
       val scanRegion = new SelectOp(new ScanOp(regionTable))(x => x.R_NAME === parseString("ASIA"))
       val scanNation = new ScanOp(nationTable)
-      val scanSupplier = new ScanOp(supplierTable)
-      val scanCustomer = new ScanOp(customerTable)
-      val scanLineitem = new ScanOp(lineitemTable)
-      val scanOrders = new SelectOp(new ScanOp(ordersTable))(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE < constantDate2)
+      //      val scanSupplier = new ScanOp(supplierTable)
+      //    val scanCustomer = new ScanOp(customerTable)
+      //      val scanLineitem = new ScanOp(lineitemTable)
+      //    val scanOrders = new SelectOp(new ScanOp(ordersTable))(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE < constantDate2)
       val jo1 = new HashJoinOp(scanRegion, scanNation)((x, y) => x.R_REGIONKEY == y.N_REGIONKEY)(x => x.R_REGIONKEY)(x => x.N_REGIONKEY)
-      val jo2 = new HashJoinOp(jo1, scanSupplier)((x, y) => x.N_NATIONKEY[Int] == y.S_NATIONKEY)(x => x.N_NATIONKEY[Int])(x => x.S_NATIONKEY)
+      /*val jo2 = new HashJoinOp(jo1, scanSupplier)((x, y) => x.N_NATIONKEY[Int] == y.S_NATIONKEY)(x => x.N_NATIONKEY[Int])(x => x.S_NATIONKEY)
       val jo3 = new HashJoinOp(jo2, scanCustomer)((x, y) => x.N_NATIONKEY[Int] == y.C_NATIONKEY)(x => x.S_NATIONKEY[Int])(x => x.C_NATIONKEY)
       val jo4 = new HashJoinOp(jo3, scanOrders)((x, y) => x.C_CUSTKEY[Int] == y.O_CUSTKEY)(x => x.C_CUSTKEY[Int])(x => x.O_CUSTKEY)
-      val jo5 = new SelectOp(new HashJoinOp(jo4, scanLineitem)((x, y) => x.O_ORDERKEY[Int] == y.L_ORDERKEY)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY))(x => x.S_SUPPKEY[Int] == x.L_SUPPKEY[Int])
-      val aggOp = new AggOp(jo5, 1)(x => x.N_NAME[LBString])(
+      val jo5 = new SelectOp(new HashJoinOp(jo4, scanLineitem)((x, y) => x.O_ORDERKEY[Int] == y.L_ORDERKEY)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY))(x => x.S_SUPPKEY[Int] == x.L_SUPPKEY[Int])*/
+      /*val aggOp = new AggOp(jo5, 1)(x => x.N_NAME[LBString])(
         (t, currAgg) => { currAgg + t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]) })
       val sortOp = new SortOp(aggOp)((x, y) => {
         if (x.aggs(0) < y.aggs(0)) 1
         else if (x.aggs(0) > y.aggs(0)) -1
         else 0
-      })
-      val po = new PrintOp(sortOp)(kv => printf("%s|%.4f\n", kv.key.string, kv.aggs(0)), () => true)
+      })*/
+      val po = new PrintOp(jo1)(kv => { printf("Record found\n") /*printf("%s|%.4f\n", kv.key.string, kv.aggs(0))*/ }, () => true)
       po.open
       po.next
       printf("(%d rows)\n", po.numRows)

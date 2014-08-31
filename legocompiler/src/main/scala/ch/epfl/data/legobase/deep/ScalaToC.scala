@@ -23,8 +23,9 @@ trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base 
     else if (m.name.startsWith("Pointer")) structName(m.typeArguments.last)
     else if (m.name == "Byte") "char"
     else if (m.name == "Double") "double"
+    else if (m.name.contains("Record")) m.name.replaceAll("struct ", "")
     else {
-      //      System.out.println("WARNING: Default structName given: " + m.name);
+      System.out.println("WARNING: Default structName given: " + m.name);
       super.structName(m)
     }
   }
@@ -42,7 +43,7 @@ object CTransformersPipeline {
     System.out.println(finalBlock)
     // Also write to file to facilitate debugging
     val pw = new java.io.PrintWriter(new java.io.File("tree_debug_dump.txt"))
-    pw.println(finalBlock.toString)
+    pw.println(b0.toString)
     pw.flush()
     finalBlock
   }
