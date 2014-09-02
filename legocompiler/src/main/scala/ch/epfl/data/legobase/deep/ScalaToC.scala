@@ -3,17 +3,18 @@ package legobase
 package deep
 
 import scala.language.existentials
-import ch.epfl.data.pardis.shallow.OptimalString
+import pardis.shallow.OptimalString
 import scala.collection.mutable.ArrayBuffer
-import ch.epfl.data.pardis.ir._
-import ch.epfl.data.pardis.ir.pardisTypeImplicits._
-import ch.epfl.data.legobase.deep.scalalib._
+import pardis.ir._
+import pardis.ir.pardisTypeImplicits._
+import pardis.deep.scalalib._
+import pardis.deep.scalalib.collection._
 import legobase.deep._
 import pardis.optimization._
 import scala.language.implicitConversions
-import ch.epfl.data.pardis.utils.Utils._
+import pardis.utils.Utils._
 import scala.reflect.runtime.universe
-import ch.epfl.data.pardis.ir.StructTags._
+import pardis.ir.StructTags._
 
 trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base =>
   import CNodes._
@@ -322,8 +323,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     /* HashMap Operations */
-    case nm @ HashMapNew3(_) => transformDef(HashMapNew2()(nm.typeA, ArrayBufferType(nm.typeB)))
-    case nm @ HashMapNew2() =>
+    case nm @ HashMapNew3(_) => transformDef(HashMapNew()(nm.typeA, ArrayBufferType(nm.typeB)))
+    case nm @ HashMapNew() =>
       val nA = typePointer(transformType(nm.typeA)).asInstanceOf[TypeRep[Any]]
       val nB = typePointer(transformType(nm.typeB))
 

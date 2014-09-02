@@ -7,7 +7,7 @@ import scala.language.implicitConversions
 import pardis.utils.Utils.{ pardisTypeToString => t2s }
 import pardis.ir.pardisTypeImplicits._
 
-trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE with RichIntOps with scalalib.ByteComponent with LegoHashMap { this: DeepDSL =>
+trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE with RichIntOps with pardis.deep.scalalib.ByteComponent with LegoHashMap { this: DeepDSL =>
   /* TODO These methods should be lifted from scala.Predef */
   case class Println(x: Rep[Any]) extends FunctionDef[Unit](None, "println", List(List(x))) {
     override def curriedConstructor = (copy _)
@@ -27,15 +27,15 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   def __newException(msg: Rep[String]) = new Exception(msg.toString)
 
   // TODO scala.Char class should be lifted instead of the java one
-  case class Character$minus1(self: Rep[Character], x: Rep[Character]) extends FunctionDef[Int](Some(self), "-", List(List(x))) {
-    override def curriedConstructor = (copy _).curried
-  }
+  // case class Character$minus1(self: Rep[Character], x: Rep[Character]) extends FunctionDef[Int](Some(self), "-", List(List(x))) {
+  //   override def curriedConstructor = (copy _).curried
+  // }
 
-  implicit class CharacterRep2(self: Rep[Character]) {
-    def -(o: Rep[Character]): Rep[Int] = Character$minus1(self, o)
-  }
+  // implicit class CharacterRep2(self: Rep[Character]) {
+  //   def -(o: Rep[Character]): Rep[Int] = Character$minus1(self, o)
+  // }
 
-  type Char = Character
+  // type Char = Character
 
   /* TODO should be automatically generated from GenericEngine */
   // object GenericEngine {
@@ -87,7 +87,7 @@ trait OptionOps { this: DeepDSL =>
   }
 }
 
-trait SetOps extends scalalib.SetOps { this: DeepDSL =>
+trait SetOps extends pardis.deep.scalalib.collection.SetOps { this: DeepDSL =>
   case class SetNew[T: TypeRep](seq: Rep[Seq[T]]) extends FunctionDef[Set[T]](None, "Set", List(List(__varArg(seq)))) {
     override def curriedConstructor = copy[T] _
   }
@@ -135,7 +135,7 @@ trait IntPE extends pardis.deep.scalalib.IntOps { this: DeepDSL =>
   override def int$plus5(self: Rep[Int], x: Rep[Int]): Rep[Int] = Int$plus5PE(self, x)
 }
 
-trait RichIntOps extends scalalib.RangeComponent { this: DeepDSL =>
+trait RichIntOps extends pardis.deep.scalalib.collection.RangeComponent { this: DeepDSL =>
   def intWrapper(i: Rep[Int]): Rep[RichInt] = i
 
   implicit class RichIntOps(self: Rep[RichInt]) {

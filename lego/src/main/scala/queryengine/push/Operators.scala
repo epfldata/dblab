@@ -21,13 +21,14 @@ package legobase
 package deep
 package push
 
-import scalalib._
 import pardis.ir._
 import pardis.ir.pardisTypeImplicits._
 import pardis.deep.scalalib._
+import pardis.deep.scalalib.collection._
 import pardis.effects._
 """,
-  """OperatorsComponent""")
+  """OperatorsComponent""",
+  "DeepDSL")
 class MetaInfo
 
 @deep abstract class Operator[+A] {

@@ -3,8 +3,11 @@ package legobase
 package storagemanager
 
 import utils.Utilities._
+import ch.epfl.data.autolifter.annotations.needs
+import queryengine.TPCHRelations._
 
 // FIXME just to cheat on auto-lifter
+@needs[(Int, K2DBScanner, LINEITEMRecord, ORDERSRecord, CUSTOMERRecord, SUPPLIERRecord, PARTSUPPRecord, REGIONRecord, NATIONRecord, PARTRecord)]
 trait Loader {
 
 }

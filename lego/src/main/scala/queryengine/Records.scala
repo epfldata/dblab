@@ -24,7 +24,7 @@ case class WindowRecord[B, C](
   }
 }
 
-case class GroupByClass(val L_RETURNFLAG: java.lang.Character, val L_LINESTATUS: java.lang.Character) extends CaseClassRecord {
+case class GroupByClass(val L_RETURNFLAG: Char, val L_LINESTATUS: Char) extends CaseClassRecord {
   def getField(key: String): Option[Any] = key match {
     case "L_RETURNFLAG" => Some(L_RETURNFLAG)
     case "L_LINESTATUS" => Some(L_LINESTATUS)
