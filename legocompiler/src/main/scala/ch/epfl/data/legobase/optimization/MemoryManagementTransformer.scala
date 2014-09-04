@@ -19,7 +19,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
   import CTypes._
 
   /* If you want to disable this optimization, set this flag to `false` */
-  val enabled = false
+  val enabled = true
 
   def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     traverseBlock(node)
@@ -44,7 +44,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
     case _ => super.traverseDef(node)
   }
 
-  val POOL_SIZE = 10000000
+  val POOL_SIZE = 12000000
 
   def cForLoop(start: Int, end: Int, f: Rep[Int] => Rep[Unit]) {
     val index = __newVar[Int](unit(start))
@@ -57,19 +57,25 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
   def mallocToInstance(node: Malloc[Any]): MallocInstance = MallocInstance(node.typeT, node)
 
   def createBuffers() {
-    val mallocInstances = mallocNodes.map(m => mallocToInstance(m)).distinct
+    System.out.println("Creating buffers for mallocNodes: " + mallocNodes.mkString("\n"))
+    System.out.println("")
+    val mallocInstances = mallocNodes.map(m => mallocToInstance(m)).distinct.filter(t => !t.tp.name.contains("CArray") /* && !t.tp.name.contains("Pointer")*/ )
     for (mallocInstance <- mallocInstances) {
       val mallocTp = mallocInstance.tp
+      System.out.println("Type is: " + mallocTp)
       val mallocNode = mallocInstance.node
-      // val elemTp = mallocTp.typeArguments(0)
+      //	 val elemTp = mallocTp.typeArguments(0)
       val index = __newVar[Int](unit(0))
-      val pool = malloc(unit(POOL_SIZE))(typePointer(mallocTp))
+      val elemType = mallocTp
+      val poolType = typePointer(elemType)
+      System.out.println("Result types: " + elemType + " / " + poolType)
+      val pool = malloc(unit(POOL_SIZE))(poolType)
       cForLoop(0, POOL_SIZE, (i: Rep[Int]) => {
-        val allocatedSpace = malloc(mallocNode.numElems)(mallocTp)
+        val allocatedSpace = malloc(unit(1))(elemType)
         // arrayUpdate(pool.asInstanceOf[Expression[Array[Any]]], i, allocatedSpace)(typePointer(mallocTp).asInstanceOf[PardisType[Any]])
         // val currentPool = infix_asInstanceOf(pool.asInstanceOf[Rep[Int]] + i)(pool.tp)
         // pointer_assign(currentPool.asInstanceOf[Expression[Pointer[Any]]], allocatedSpace)
-        pointer_assign(pool, i, allocatedSpace)
+        pointer_assign(pool.asInstanceOf[Expression[Pointer[Any]]], i, allocatedSpace)
         unit(())
       })
       mallocBuffers += mallocInstance -> BufferInfo(pool.asInstanceOf[Sym[Any]], index)
@@ -96,7 +102,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
       gettimeofday(&(end))
       val tm = timeval_subtract(&(diff), &(end), &(start))
       Printf(unit("Generated code run in %ld milliseconds."), tm)
-    case m @ Malloc(numElems) if startCollecting => {
+    case m @ Malloc(numElems) if startCollecting && !m.tp.name.contains("CArray") /* && !m.tp.name.contains("Pointer") */ => {
       val mallocInstance = mallocToInstance(m)
       val bufferInfo = mallocBuffers(mallocInstance)
       val p = pointer_content(bufferInfo.pool.asInstanceOf[Rep[Pointer[Any]]], readVar(bufferInfo.index))(m.tp.asInstanceOf[PardisType[Any]])

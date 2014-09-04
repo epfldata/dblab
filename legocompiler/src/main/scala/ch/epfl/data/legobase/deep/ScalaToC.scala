@@ -38,14 +38,8 @@ object CTransformersPipeline {
     val b3 = new ScalaConstructsToCTranformer(context).transformBlock(b2)
     val b4 = new ScalaCollectionsToGLibTransfomer(context).optimize(b3)
     val b5 = new OptimalStringToCTransformer(context).transformBlock(b4)
-    // val b6 = new optimization.MemoryManagementTransfomer(context).optimize(b5)
-    val finalBlock = b5
-    System.out.println(finalBlock)
-    // Also write to file to facilitate debugging
-    val pw = new java.io.PrintWriter(new java.io.File("tree_debug_dump.txt"))
-    pw.println(b0.toString)
-    pw.flush()
-    finalBlock
+    val b6 = new optimization.MemoryManagementTransfomer(context).optimize(b5)
+    b6
   }
 }
 
@@ -118,7 +112,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       else typePointer(transformType(tp.typeArguments(0)))
     } else if (tp.name.contains("TreeSet")) typePointer(typeGTree(transformType(tp.typeArguments(0))))
     else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
-    else if (tp.name.contains("HashMap")) typePointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
+    else if (tp.name.startsWith("HashMap")) typePointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
     else if (tp.name.contains("Option")) typePointer(transformType(tp.typeArguments(0)))
     else {
       //      System.out.println("WARNING: Default transformType called: " + tp)
@@ -248,7 +242,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       else eq
     }
     // Profiling and utils functions mapping
-    case GenericEngineRunQueryObject(b) =>
+    /*case GenericEngineRunQueryObject(b) =>
       val diff = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val start = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val end = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
@@ -256,7 +250,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       toAtom(transformBlock(b))
       gettimeofday(&(end))
       val tm = timeval_subtract(&(diff), &(end), &(start))
-      Printf(unit("Generated code run in %ld milliseconds."), tm)
+      Printf(unit("Generated code run in %ld milliseconds."), tm)*/
     case OptionGet(x) => ReadVal(x.asInstanceOf[Expression[Any]])(transformType(x.tp))
     case GenericEngineParseDateObject(Constant(d)) =>
       val data = d.split("-").map(x => x.toInt)
@@ -323,7 +317,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     /* HashMap Operations */
-    case nm @ HashMapNew3(_) => transformDef(HashMapNew2()(nm.typeA, ArrayBufferType(nm.typeB)))
+    case nm @ HashMapNew3(_, _) => transformDef(HashMapNew2()(nm.typeA, ArrayBufferType(nm.typeB)))
     case nm @ HashMapNew2() =>
       val nA = typePointer(transformType(nm.typeA)).asInstanceOf[TypeRep[Any]]
       val nB = typePointer(transformType(nm.typeB))

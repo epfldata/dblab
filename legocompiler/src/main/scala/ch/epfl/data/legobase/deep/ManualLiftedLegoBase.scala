@@ -148,12 +148,12 @@ trait RichIntOps extends scalalib.RangeComponent { this: DeepDSL =>
 }
 
 trait LegoHashMap { this: DeepDSL =>
-  def __newHashMap3[A, B](extract: Rep[B => A])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, ArrayBuffer[B]]] = hashMapNew3[A, B](extract)(typeA, typeB)
-  def hashMapNew3[A, B](extract: Rep[B => A])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, ArrayBuffer[B]]] = HashMapNew3[A, B](extract)(typeA, typeB)
+  def __newHashMap3[A, B](extract: Rep[B => A], size: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, ArrayBuffer[B]]] = hashMapNew3[A, B](extract, size)(typeA, typeB)
+  def hashMapNew3[A, B](extract: Rep[B => A], size: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, ArrayBuffer[B]]] = HashMapNew3[A, B](extract, size)(typeA, typeB)
 
-  case class HashMapNew3[A, B](extract: Rep[B => A])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[HashMap[A, ArrayBuffer[B]]](List(typeA, ArrayBufferType(typeB)), "HashMap", List(List())) {
-    override def curriedConstructor = copy[A, B] _
-    override def funArgs = List(extract)
+  case class HashMapNew3[A, B](extract: Rep[B => A], size: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[HashMap[A, ArrayBuffer[B]]](List(typeA, ArrayBufferType(typeB)), "HashMap", List(List())) {
+    override def rebuild(children: FunctionArg*) = HashMapNew3[A, B](children(0).asInstanceOf[Rep[B => A]], children(1).asInstanceOf[Rep[Int]])
+    override def funArgs = List(extract, size)
   }
 
   def __newHashMap4[A]()(implicit typeA: TypeRep[A]): Rep[HashMap[A, Array[Double]]] = hashMapNew4[A]()(typeA)

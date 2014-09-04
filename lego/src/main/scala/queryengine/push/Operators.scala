@@ -37,10 +37,12 @@ class MetaInfo
   def consume(tuple: Record)
   var child: Operator[Any] = null
   var stop = false
+  val expectedSize: Int
 }
 
 @deep class ScanOp[A](table: Array[A]) extends Operator[A] {
   var i = 0
+  val expectedSize = table.length
   def open() {}
   def next() {
     while (!stop && i < table.length) {
@@ -55,7 +57,10 @@ class MetaInfo
 
 @deep class PrintOp[A](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean) extends Operator[A] { self =>
   var numRows = (0)
-  def open() { parent.child = self; parent.open }
+  val expectedSize = parent.expectedSize
+  def open() {
+    parent.child = self; parent.open;
+  }
   def next() = parent.next
   def consume(tuple: Record) {
     if (limit() == false) parent.stop = (true)
@@ -68,7 +73,10 @@ class MetaInfo
 }
 
 @deep class SelectOp[A](parent: Operator[A])(selectPred: A => Boolean) extends Operator[A] {
-  def open() { parent.child = this; parent.open }
+  val expectedSize = parent.expectedSize / 2 // Assume 50% selectivity
+  def open() {
+    parent.child = this; parent.open
+  }
   def next() = parent.next
   def reset() { parent.reset }
   def consume(tuple: Record) {
@@ -79,6 +87,7 @@ class MetaInfo
 @deep class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B])(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
   val hm = HashMap[B, Array[Double]]()
 
+  val expectedSize = parent.expectedSize
   def open() { parent.child = this; parent.open }
   def next() {
     parent.next
@@ -103,6 +112,8 @@ class MetaInfo
 }
 
 @deep class MapOp[A](parent: Operator[A])(aggFuncs: Function1[A, Unit]*) extends Operator[A] {
+
+  val expectedSize = parent.expectedSize
   def reset { parent.reset }
   def open() { parent.child = this; parent.open }
   def next() { parent.next }
@@ -113,6 +124,8 @@ class MetaInfo
 }
 
 @deep class SortOp[A](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends Operator[A] {
+
+  val expectedSize = parent.expectedSize
   val sortedTree = new TreeSet()(
     new Ordering[A] {
       def compare(o1: A, o2: A) = orderingFunc(o1, o2)
@@ -135,10 +148,14 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
   def this(leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) = this(leftParent, rightParent, "", "")(joinCond)(leftHash)(rightHash)
   var mode: scala.Int = 0
 
+  val expectedSize = leftParent.expectedSize * 10 // Assume 1 tuple from the left side joins with 10 from the right
   val hm = HashMap[C, ArrayBuffer[A]]()
 
-  def reset() { rightParent.reset; leftParent.reset; hm.clear; }
+  def reset() {
+    rightParent.reset; leftParent.reset; hm.clear;
+  }
   def open() = {
+    printf("xaxaxaxaxaaxxa %d\n", expectedSize)
     leftParent.child = this
     rightParent.child = this
     leftParent.open
@@ -161,7 +178,7 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
         val tmpBuffer = hm(k)
         var tmpCount = 0
         var break = false
-        while (!stop && !break) {
+        while ( /*!stop && */ !break) {
           val bufElem = tmpBuffer(tmpCount) // We know there is at least one element
           if (joinCond(bufElem, tuple.asInstanceOf[B])) {
             val res = bufElem.concatenateDynamic(tuple.asInstanceOf[B], leftAlias, rightAlias)
@@ -177,6 +194,8 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
 
 @deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: ArrayBuffer[A] => C) extends Operator[WindowRecord[B, C]] {
   val hm = HashMap[B, ArrayBuffer[A]]()
+
+  val expectedSize = parent.expectedSize
 
   def open() {
     parent.child = this
@@ -205,6 +224,7 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
 class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   var mode: scala.Int = 0
   val hm = HashMap[C, ArrayBuffer[B]]()
+  val expectedSize = leftParent.expectedSize
 
   def open() {
     leftParent.child = this
@@ -241,10 +261,12 @@ class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator
     }
   }
 }
+
 @deep
 class NestedLoopsJoinOp[A <: Record, B <: Record](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
   var mode: scala.Int = 0
   var leftTuple = null.asInstanceOf[A]
+  val expectedSize = leftParent.expectedSize
 
   def open() {
     rightParent.child = this
@@ -271,6 +293,7 @@ class NestedLoopsJoinOp[A <: Record, B <: Record](leftParent: Operator[A], right
 @deep
 class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   var result = null.asInstanceOf[A]
+  val expectedSize = 1
   def open() {
     throw new Exception("PUSH ENGINE BUG:: Open function in SubqueryResult should never be called!!!!\n")
   }
@@ -296,6 +319,7 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
   var mode: scala.Int = 0
   val hm = HashMap[C, ArrayBuffer[A]]()
   var keySet = Set(hm.keySet.toSeq: _*)
+  val expectedSize = leftParent.expectedSize
 
   def removeFromList(elemList: ArrayBuffer[A], e: A, idx: Int) = {
     elemList.remove(idx)
@@ -364,6 +388,7 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
 class ViewOp[A](parent: Operator[A]) extends Operator[A] {
   var idx = 0
   val table = ArrayBuffer[A]()
+  val expectedSize = parent.expectedSize
 
   def open() {
     parent.child = this
@@ -390,6 +415,7 @@ class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Ope
   var mode: scala.Int = 0
   val hm = HashMap[C, ArrayBuffer[B]]()
   val defaultB = Record.getDefaultRecord[B]()
+  val expectedSize = leftParent.expectedSize
 
   def open() = {
     leftParent.child = this
