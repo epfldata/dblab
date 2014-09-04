@@ -36,6 +36,12 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
   //     case _ => super.traverseDef(node)
   //   }
 
+  override def lower[T: TypeRep](node: Block[T]): to.Block[T] = {
+    val res = super.lower[T](node)
+    // System.out.println("after lowering:" + res)
+    res
+  }
+
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = node match {
     case an: AggOpNew[_, _] => {
       val ma = an.typeA

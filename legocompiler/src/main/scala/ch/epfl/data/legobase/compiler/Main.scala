@@ -94,12 +94,14 @@ object Main extends LegoRunner {
       }
     }
 
-    writeASTToDumpFile(loweredBlock)
+    // writeASTToDumpFile(loweredBlock)
 
     val afterHashMapToArray = {
       if (hashMapToArray) {
         val hm2Arr = new HashMapToArrayTransformer(context)
-        val hmBlock = hm2Arr.optimize(new PartialyEvaluate(context).optimize(new DCE(context).optimize(loweredBlock)))
+        val afterPE = new PartialyEvaluate(context).optimize(new DCE(context).optimize(loweredBlock))
+        writeASTToDumpFile(afterPE)
+        val hmBlock = hm2Arr.optimize(afterPE)
         hmBlock
       } else {
         loweredBlock
@@ -124,7 +126,7 @@ object Main extends LegoRunner {
       } else partiallyEvaluatedBlock
     }
 
-    System.out.println(finalBlock)
+    // System.out.println(finalBlock)
     // Generate final program 
     val ir2Program = new { val IR = context } with IRToProgram {}
     val finalProgram = ir2Program.createProgram(finalBlock)
