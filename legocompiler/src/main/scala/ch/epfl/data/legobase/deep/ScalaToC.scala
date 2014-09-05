@@ -163,9 +163,6 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       val x = malloc(unit(1))(s.tp)
       structCopy(x, PardisStruct(tag, elems, methods.map(m => m.copy(body = transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef]))))
       ReadVal(x)(typePointer(s.tp))
-
-    case pc @ PardisCast(Constant(null)) =>
-      PardisCast(Constant(0.asInstanceOf[Any]))(transformType(pc.castFrom), transformType(pc.castTp))
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
 }

@@ -84,6 +84,13 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
     }
   }
 
+  override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
+    case Stm(sym, ArrayBufferNew2()) => Nil
+    case Stm(sym, SetHead(s))        => Nil
+    case Stm(sym, SetRemove(s, k))   => Nil
+    case _                           => super.transformStmToMultiple(stm)
+  }
+
   override def transformStm(stm: Stm[_]): to.Stm[_] = stm match {
     // case Stm(sym, hmn @ HashMapNew3(_)) if !isAggOp(sym) => {
     //implicit val manValue = sym.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
@@ -198,20 +205,16 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
     // ReadVar(elem)(elem.tp).asInstanceOf[Def[Any]]
   }
 
-  override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
-    case Stm(sym, ArrayBufferNew2()) => Nil
-    case _                           => super.transformStmToMultiple(stm)
-  }
-
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
     if (tp.name.startsWith("HashMap")) {
-      System.out.println(tp.name)
-      System.out.println(tp.typeArguments)
-      typeArray(tp.typeArguments(1).typeArguments(0))
+      if (tp.typeArguments(1).typeArguments.size != 0) typeArray(tp.typeArguments(1).typeArguments(0))
+      else typeArray(tp.typeArguments(1))
     } else if (tp.name.contains("ArrayBuffer")) typePardisVariable(tp.typeArguments(0))
     else super.transformType[T]
   }).asInstanceOf[PardisType[Any]]
+
+  val counterMap = new scala.collection.mutable.HashMap[Expression[_], Var[Int]]()
 
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     case ps @ PardisStruct(tag, elems, methods) =>
@@ -219,43 +222,65 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       PardisStruct(tag, elems ++ List(PardisStructArg("next", true, init)), methods)
 
     case hmn @ HashMapNew3(_, size) =>
-      val arr = arrayNew(size)(hmn.typeB) //)(typeArray(hmn.typeB))
+      val arr = arrayNew(size)(hmn.typeB)
       val index = __newVar[Int](0)
       __whileDo(readVar(index) < size, {
-        val init = malloc(unit(1))(hmn.typeB) //typeRep(hmn.typeB))
+        val init = malloc(unit(1))(hmn.typeB)
         arrayUpdate(arr, readVar(index), init)
         val e = arrayApply(arr, readVar(index))(hmn.typeB)
         toAtom(PardisStructFieldSetter(e, "next", Constant(null)))
         __assign(index, readVar(index) + unit(1))
         unit()
       })
+      counterMap += arr -> __newVar[Int](unit(0))
       ReadVal(arr)(arr.tp)
 
-    case HashMapGetOrElseUpdate(hm, k, v) if !isAggOp(hm) => {
-      implicit val manValue = hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
+    case hmgeu @ HashMapGetOrElseUpdate(hm, k, v) /*if !isAggOp(hm)*/ => {
+      implicit val manValue = transformType(hm.tp) /*.typeArguments(1).typeArguments(0)*/ .asInstanceOf[TypeRep[Value]]
       val key = k.asInstanceOf[Rep[Key]]
-      val hashKey = key2Hash(key, hm.size)
+      val size = arrayLength(transformExp(hm)(hm.tp, typeArray(hmgeu.typeB)))
+      val hashKey = key2Hash(key, size)
       val lhm = transformExp(hm)(hm.tp, typeArray(manValue))
       val ptrValue = typePointer(manValue)
       val bucket = __newVar(ArrayApply(lhm, hashKey)(manValue))(manValue)
-      ReadVar(bucket)(manValue) //TODO ADD WHILE HERE
+      ReadVar(bucket)(manValue)
     }
-    case HashMapContains(hm, k) if !isAggOp(hm) => {
+    case hmcnt @ HashMapContains(hm, k) /*if !isAggOp(hm)*/ => {
       implicit val manValue = hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
       val key = k.asInstanceOf[Rep[Key]]
-      val hashKey = key2Hash(key, hm.size)
+      val size = arrayLength(transformExp(hm)(hm.tp, typeArray(hmcnt.typeB)))
+      val hashKey = key2Hash(key, size)
       val lhm = transformExp(hm)(hm.tp, typeArray(manValue))
       val bucket = ArrayApply(lhm, hashKey)(manValue)
       val elem = PardisStructFieldGetter(bucket, "next")(manValue)
       ReadVal(infix_!=(elem, unit(null)))
     }
-    case HashMapApply(hm, k) if !isAggOp(hm) => {
+    case hmapp @ HashMapApply(hm, k) /*if !isAggOp(hm)*/ => {
       implicit val manValue = hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
       val key = k.asInstanceOf[Rep[Key]]
-      val hashKey = key2Hash(key, hm.size)
+      val size = arrayLength(transformExp(hm)(hm.tp, typeArray(hmapp.typeB)))
+      val hashKey = key2Hash(key, size)
       val lhm = transformExp(hm)(hm.tp, typeArray(manValue))
       val bucket = __newVar(ArrayApply(lhm, hashKey)(manValue))(manValue)
       ReadVar(bucket)
+    }
+    case hmr @ HashMapRemove(hm, k) => {
+      implicit val manValue = hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
+      val key = k.asInstanceOf[Rep[Key]]
+      val size = arrayLength(transformExp(hm)(hm.tp, typeArray(hmr.typeB)))
+      val hashKey = key2Hash(key, size)
+      val lhm = transformExp(hm)(hm.tp, typeArray(manValue))
+      val bucket = __newVar(ArrayApply(lhm, hashKey)(manValue))(manValue)
+      val headNext = toAtom(PardisStructFieldGetter(bucket, "next")(manValue))
+      //val headNextNext = toAtom(PardisStructFieldGetter)
+      //toAtom(PardisStructFieldSetter(bucket, "next", headNext))
+      ReadVal(headNext)
+    }
+    case hmz @ HashMapSize(hm) => {
+      System.out.println(counterMap.mkString("\n"))
+      hm match {
+        case Def(ReadVal(x)) => ReadVar(counterMap(x))
+      }
     }
 
     //case abf @ ArrayBufferNew2() => PardisCast(Constant(null))(typeRep[Null], abf.tp.typeArguments(0))

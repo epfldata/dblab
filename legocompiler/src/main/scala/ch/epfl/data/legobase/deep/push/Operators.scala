@@ -489,7 +489,7 @@ trait AggOpOps extends Base { this: OperatorsComponent =>
     def reset(): Rep[Unit] = aggOpReset[A, B](self)(typeA, typeB)
     def consume(tuple: Rep[Record]): Rep[Unit] = aggOpConsume[A, B](self, tuple)(typeA, typeB)
     def expectedSize: Rep[Int] = aggOp_Field_ExpectedSize[A, B](self)(typeA, typeB)
-    def hm: Rep[HashMap[B, Array[Double]]] = aggOp_Field_Hm[A, B](self)(typeA, typeB)
+    def hm: Rep[HashMap[B, AGGRecord[B]]] = aggOp_Field_Hm[A, B](self)(typeA, typeB)
     def aggFuncs: Rep[Seq[((A, Double) => Double)]] = aggOp_Field_AggFuncs[A, B](self)(typeA, typeB)
     def grp: Rep[(A => B)] = aggOp_Field_Grp[A, B](self)(typeA, typeB)
     def numAggs: Rep[Int] = aggOp_Field_NumAggs[A, B](self)(typeA, typeB)
@@ -531,7 +531,7 @@ trait AggOpOps extends Base { this: OperatorsComponent =>
 
   }
 
-  case class AggOp_Field_Hm[A, B](self: Rep[AggOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[HashMap[B, Array[Double]]](self, "hm") {
+  case class AggOp_Field_Hm[A, B](self: Rep[AggOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[HashMap[B, AGGRecord[B]]](self, "hm") {
     override def curriedConstructor = (copy[A, B] _)
     override def isPure = true
 
@@ -587,7 +587,7 @@ trait AggOpOps extends Base { this: OperatorsComponent =>
   def aggOpReset[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = AggOpReset[A, B](self)
   def aggOpConsume[A, B](self: Rep[AggOp[A, B]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = AggOpConsume[A, B](self, tuple)
   def aggOp_Field_ExpectedSize[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = AggOp_Field_ExpectedSize[A, B](self)
-  def aggOp_Field_Hm[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[B, Array[Double]]] = AggOp_Field_Hm[A, B](self)
+  def aggOp_Field_Hm[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[B, AGGRecord[B]]] = AggOp_Field_Hm[A, B](self)
   def aggOp_Field_AggFuncs[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Seq[((A, Double) => Double)]] = AggOp_Field_AggFuncs[A, B](self)
   def aggOp_Field_Grp[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[(A => B)] = AggOp_Field_Grp[A, B](self)
   def aggOp_Field_NumAggs[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = AggOp_Field_NumAggs[A, B](self)
@@ -625,8 +625,8 @@ trait AggOpImplementations { self: DeepDSL =>
       __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
         val key: this.Rep[B] = readVar(keySet).head;
         readVar(keySet).remove(key);
-        val elem: this.Rep[Option[Array[Double]]] = self.hm.remove(key);
-        self.child.consume(__newAGGRecord(key, elem.get))
+        val elem: this.Rep[Option[ch.epfl.data.legobase.queryengine.AGGRecord[B]]] = self.hm.remove(key);
+        self.child.consume(elem.get)
       })
     }
   }
@@ -640,7 +640,8 @@ trait AggOpImplementations { self: DeepDSL =>
   override def aggOpConsume[A, B](self: Rep[AggOp[A, B]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
     {
       val key: this.Rep[B] = __app(self.grp).apply(infix_asInstanceOf[A](tuple));
-      val aggs: this.Rep[Array[Double]] = self.hm.getOrElseUpdate(key, __newArray[Double](self.numAggs));
+      val elem: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[B]] = self.hm.getOrElseUpdate(key, __newAGGRecord(key, __newArray[Double](self.numAggs)));
+      val aggs: this.Rep[Array[Double]] = elem.aggs;
       var i: this.Var[Int] = __newVar(unit(0));
       self.aggFuncs.foreach[Unit](__lambda(((aggFun: this.Rep[(A, Double) => Double]) => {
         aggs.update(readVar(i), __app(aggFun).apply(infix_asInstanceOf[A](tuple), aggs.apply(readVar(i))));
@@ -1094,7 +1095,6 @@ trait HashJoinOpImplementations { self: DeepDSL =>
   }
   override def hashJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
     {
-      printf(unit("xaxaxaxaxaaxxa %d\n"), self.expectedSize);
       self.leftParent.child_$eq(self);
       self.rightParent.child_$eq(self);
       self.leftParent.open();

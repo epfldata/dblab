@@ -44,8 +44,6 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
     case _ => super.traverseDef(node)
   }
 
-  val POOL_SIZE = 12000000
-
   def cForLoop(start: Int, end: Int, f: Rep[Int] => Rep[Unit]) {
     val index = __newVar[Int](unit(start))
     __whileDo(readVar(index) < unit(end), {
@@ -62,24 +60,21 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
     val mallocInstances = mallocNodes.map(m => mallocToInstance(m)).distinct.filter(t => !t.tp.name.contains("CArray") /* && !t.tp.name.contains("Pointer")*/ )
     for (mallocInstance <- mallocInstances) {
       val mallocTp = mallocInstance.tp
-      System.out.println("Type is: " + mallocTp)
       val mallocNode = mallocInstance.node
       //	 val elemTp = mallocTp.typeArguments(0)
       val index = __newVar[Int](unit(0))
       val elemType = mallocTp
       val poolType = typePointer(elemType)
-      System.out.println("Result types: " + elemType + " / " + poolType)
-      val pool = malloc(unit(POOL_SIZE))(poolType)
+      //val POOL_SIZE = 12000000 * (poolType.toString.split("_").length + 1)
+      val POOL_SIZE = 100000
+      val pool = malloc(POOL_SIZE)(poolType)
       cForLoop(0, POOL_SIZE, (i: Rep[Int]) => {
         val allocatedSpace = malloc(unit(1))(elemType)
-        // arrayUpdate(pool.asInstanceOf[Expression[Array[Any]]], i, allocatedSpace)(typePointer(mallocTp).asInstanceOf[PardisType[Any]])
-        // val currentPool = infix_asInstanceOf(pool.asInstanceOf[Rep[Int]] + i)(pool.tp)
-        // pointer_assign(currentPool.asInstanceOf[Expression[Pointer[Any]]], allocatedSpace)
         pointer_assign(pool.asInstanceOf[Expression[Pointer[Any]]], i, allocatedSpace)
         unit(())
       })
       mallocBuffers += mallocInstance -> BufferInfo(pool.asInstanceOf[Sym[Any]], index)
-      // printf(unit("A buffer for tp " + mallocTp + " size " + mallocNode.numElems + "\n"))
+      printf(unit("Buffer for type %s initialized!\n"), unit(mallocTp.toString))
     }
   }
 
@@ -91,7 +86,9 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     // Profiling and utils functions mapping
     case GenericEngineRunQueryObject(b) =>
+      printf(unit("Initializing LegoBase buffers (this may take a long time...)\n"))
       createBuffers()
+      printf(unit("DONE. Now running query\n"))
       val diff = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val start = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val end = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))

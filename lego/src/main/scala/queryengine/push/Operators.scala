@@ -43,7 +43,9 @@ class MetaInfo
 @deep class ScanOp[A](table: Array[A]) extends Operator[A] {
   var i = 0
   val expectedSize = table.length
-  def open() {}
+  def open() {
+    //printf("Scan operator commencing...\n")
+  }
   def next() {
     while (!stop && i < table.length) {
       val v = table(i)
@@ -85,9 +87,9 @@ class MetaInfo
 }
 
 @deep class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B])(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
-  val hm = HashMap[B, Array[Double]]()
+  val hm = HashMap[B, AGGRecord[B]]() //Array[Double]]()
 
-  val expectedSize = parent.expectedSize
+  val expectedSize = 1024 //Assume 1024 aggregations
   def open() { parent.child = this; parent.open }
   def next() {
     parent.next
@@ -96,13 +98,14 @@ class MetaInfo
       val key = keySet.head
       keySet.remove(key)
       val elem = hm.remove(key)
-      child.consume(new AGGRecord(key, elem.get))
+      child.consume(elem.get)
     }
   }
   def reset() { parent.reset; hm.clear; open }
   def consume(tuple: Record) {
     val key = grp(tuple.asInstanceOf[A])
-    val aggs = hm.getOrElseUpdate(key, new Array[Double](numAggs))
+    val elem = hm.getOrElseUpdate(key, new AGGRecord(key, new Array[Double](numAggs)))
+    val aggs = elem.aggs
     var i: scala.Int = 0
     aggFuncs.foreach { aggFun =>
       aggs(i) = aggFun(tuple.asInstanceOf[A], aggs(i))
@@ -155,7 +158,6 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
     rightParent.reset; leftParent.reset; hm.clear;
   }
   def open() = {
-    printf("xaxaxaxaxaaxxa %d\n", expectedSize)
     leftParent.child = this
     rightParent.child = this
     leftParent.open

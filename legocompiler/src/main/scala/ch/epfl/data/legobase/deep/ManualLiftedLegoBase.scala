@@ -156,11 +156,11 @@ trait LegoHashMap { this: DeepDSL =>
     override def funArgs = List(extract, size)
   }
 
-  def __newHashMap4[A]()(implicit typeA: TypeRep[A]): Rep[HashMap[A, Array[Double]]] = hashMapNew4[A]()(typeA)
+  /* def __newHashMap4[A]()(implicit typeA: TypeRep[A]): Rep[HashMap[A, Array[Double]]] = hashMapNew4[A]()(typeA)
   def hashMapNew4[A]()(implicit typeA: TypeRep[A]): Rep[HashMap[A, Array[Double]]] = HashMapNew4[A]()(typeA)
 
   case class HashMapNew4[A]()(implicit val typeA: TypeRep[A]) extends ConstructorDef[HashMap[A, Array[Double]]](List(typeA, ArrayType(DoubleType)), "HashMap", List(List())) {
     override def curriedConstructor = (x: Any) => copy[A]()
     override def funArgs = List()
-  }
+  }*/
 }
