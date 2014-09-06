@@ -22,9 +22,18 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
   val enabled = true
 
   def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
+    phase = FindMallocs
+    traverseBlock(node)
+    phase = FindSize
     traverseBlock(node)
     transformProgram(node)
   }
+
+  sealed trait Phase
+  case object FindMallocs extends Phase
+  case object FindSize extends Phase
+
+  var phase: Phase = _
 
   var startCollecting = false
   val mallocNodes = collection.mutable.ArrayBuffer[Malloc[Any]]()
@@ -38,15 +47,15 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
       traverseBlock(b)
       startCollecting = false
     }
-    case Malloc(numElems) if startCollecting => {
+    case Malloc(numElems) if startCollecting && phase == FindMallocs => {
       mallocNodes += node.asInstanceOf[Malloc[Any]]
     }
     case _ => super.traverseDef(node)
   }
 
-  def cForLoop(start: Int, end: Int, f: Rep[Int] => Rep[Unit]) {
+  def cForLoop(start: Int, end: Rep[Int], f: Rep[Int] => Rep[Unit]) {
     val index = __newVar[Int](unit(start))
-    __whileDo(readVar(index) < unit(end), {
+    __whileDo(readVar(index) < end, {
       f(readVar(index))
       __assign(index, readVar(index) + unit(1))
     })
@@ -66,7 +75,15 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
       val elemType = mallocTp
       val poolType = typePointer(elemType)
       //val POOL_SIZE = 12000000 * (poolType.toString.split("_").length + 1)
-      val POOL_SIZE = 100000
+      // val POOL_SIZE = 100000
+      /* this one is a hack */
+      def regenerateSize(s: Rep[Int]): Rep[Int] = s match {
+        case Constant(_)           => s
+        case Def(Int$div4(x, y))   => regenerateSize(x) / regenerateSize(y)
+        case Def(Int$times4(x, y)) => regenerateSize(x) * regenerateSize(y)
+        case Def(_)                => s
+      }
+      val POOL_SIZE = regenerateSize(mallocNode.numElems)
       val pool = malloc(POOL_SIZE)(poolType)
       cForLoop(0, POOL_SIZE, (i: Rep[Int]) => {
         val allocatedSpace = malloc(unit(1))(elemType)
