@@ -74,16 +74,16 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
       val index = __newVar[Int](unit(0))
       val elemType = mallocTp
       val poolType = typePointer(elemType)
-      //val POOL_SIZE = 12000000 * (poolType.toString.split("_").length + 1)
-      // val POOL_SIZE = 100000
+      val POOL_SIZE = 24000000 * (poolType.toString.split("_").length + 1)
+      //val POOL_SIZE = 100000
       /* this one is a hack */
-      def regenerateSize(s: Rep[Int]): Rep[Int] = s match {
-        case Constant(_)           => s
+      /*def regenerateSize(s: Rep[Int]): Rep[Int] = s match {
+        case c @ Constant(_)           =>  s
         case Def(Int$div4(x, y))   => regenerateSize(x) / regenerateSize(y)
         case Def(Int$times4(x, y)) => regenerateSize(x) * regenerateSize(y)
-        case Def(_)                => s
+        case d @ Def(_)            => s
       }
-      val POOL_SIZE = regenerateSize(mallocNode.numElems)
+      val POOL_SIZE = regenerateSize(mallocNode.numElems) * 200*/
       val pool = malloc(POOL_SIZE)(poolType)
       cForLoop(0, POOL_SIZE, (i: Rep[Int]) => {
         val allocatedSpace = malloc(unit(1))(elemType)
@@ -91,7 +91,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
         unit(())
       })
       mallocBuffers += mallocInstance -> BufferInfo(pool.asInstanceOf[Sym[Any]], index)
-      printf(unit("Buffer for type %s initialized!\n"), unit(mallocTp.toString))
+      printf(unit("Buffer for type %s of size %d initialized!\n"), unit(mallocTp.toString), POOL_SIZE)
     }
   }
 

@@ -418,12 +418,15 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case imtf @ PardisStructImmutableField(s, f) =>
       PardisStructImmutableField(s, f)(transformType(imtf.tp))
     case HashCode(t) => t.tp match {
-      case x if x.isPrimitive             => PardisCast(t)(x, IntType)
-      case x if x.name == "Character"     => PardisCast(t)(x, IntType)
-      case x if x.name == "OptimalString" => OptimalStringLength(t.asInstanceOf[Expression[OptimalString]])
-      case x if x.isArray                 => ArrayLength(t.asInstanceOf[Rep[Array[Any]]])
+      case x if x.isPrimitive         => PardisCast(t)(x, IntType)
+      case x if x.name == "Character" => PardisCast(t)(x, IntType)
+      case x if x.name == "OptimalString" =>
+        val len = toAtom(OptimalStringLength(t.asInstanceOf[Expression[OptimalString]]))(IntType)
+        // Generalize!!!!
+        ReadVal(len + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], 0) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], 1) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], 2) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], 3))
+      case x if x.isArray => ArrayLength(t.asInstanceOf[Rep[Array[Any]]])
       // Handle any additional cases here
-      case x                              => super.transformDef(node)
+      case x              => super.transformDef(node)
     }
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]

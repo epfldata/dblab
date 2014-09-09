@@ -90,7 +90,9 @@ class MetaInfo
   val hm = HashMap[B, AGGRecord[B]]() //Array[Double]]()
 
   val expectedSize = 1024 //Assume 1024 aggregations
-  def open() { parent.child = this; parent.open }
+  def open() {
+    parent.child = this; parent.open
+  }
   def next() {
     parent.next
     var keySet = Set(hm.keySet.toSeq: _*)
