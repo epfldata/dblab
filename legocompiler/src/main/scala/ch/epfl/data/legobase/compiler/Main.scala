@@ -23,7 +23,7 @@ object Main extends LegoRunner {
     run(args)
   }
 
-  val hashMapToArray = true
+  val hashMapToArray = false
 
   def executeQuery(query: String): Unit = {
     val context = new LoweringLegoBase {}

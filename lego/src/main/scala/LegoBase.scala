@@ -16,6 +16,7 @@ trait LegoRunner {
   def run(args: Array[String]) {
 
     val sf = if (args(1).contains(".")) args(1).toDouble.toString else args(1).toInt.toString
+    Config.sf = sf.toDouble
     Config.datapath = args(0) + "/sf" + sf + "/"
 
     val queries: scala.collection.immutable.List[String] =
