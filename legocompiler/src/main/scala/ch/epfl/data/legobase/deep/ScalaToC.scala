@@ -6,7 +6,8 @@ import scala.language.existentials
 import pardis.shallow.OptimalString
 import scala.collection.mutable.ArrayBuffer
 import pardis.ir._
-import pardis.ir.pardisTypeImplicits._
+import pardis.types._
+import pardis.types.PardisTypeImplicits._
 import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import legobase.deep._

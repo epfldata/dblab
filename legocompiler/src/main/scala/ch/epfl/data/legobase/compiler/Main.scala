@@ -6,8 +6,8 @@ import deep._
 import prettyprinter._
 import optimization._
 import pardis.optimization._
-import ch.epfl.data.pardis.ir._
-import pardis.ir.pardisTypeImplicits._
+import pardis.ir._
+import pardis.types.PardisTypeImplicits._
 
 object Main extends LegoRunner {
 

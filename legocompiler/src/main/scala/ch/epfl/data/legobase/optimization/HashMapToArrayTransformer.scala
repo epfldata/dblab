@@ -7,7 +7,8 @@ import pardis.ir._
 import reflect.runtime.universe.{ TypeTag, Type }
 import pardis.optimization._
 import deep._
-import ch.epfl.data.pardis.ir.pardisTypeImplicits._
+import pardis.types._
+import pardis.types.PardisTypeImplicits._
 
 class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) {
   import IR._

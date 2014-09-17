@@ -5,7 +5,7 @@ package volcano
 
 import scala.language.implicitConversions
 import pardis.ir._
-import pardis.ir.pardisTypeImplicits._
+import pardis.types.PardisTypeImplicits._
 
 // trait InliningVolcano extends DeepDSL with pardis.ir.InlineFunctions with QueriesImplementations with OperatorImplementations with ScanOpImplementations with SelectOpImplementations with AggOpImplementations with SortOpImplementations with MapOpImplementations with PrintOpImplementations with WindowOpImplementations with HashJoinOpImplementations with LeftHashSemiJoinOpImplementations with NestedLoopsJoinOpImplementations with SubquerySingleResultImplementations with ViewOpImplementations with HashJoinAntiImplementations with LeftOuterJoinOpImplementations { this: InliningLegoBase =>
 //   override def operatorOpen[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = self match {

@@ -4,7 +4,7 @@ package deep
 
 import scala.language.implicitConversions
 import pardis.ir._
-import pardis.ir.pardisTypeImplicits._
+import pardis.types.PardisTypeImplicits._
 
 // trait InliningLegoBase extends volcano.InliningVolcano with DeepDSL with pardis.ir.InlineFunctions with QueriesImplementations with LoopUnrolling with InliningLoader
 trait InliningLegoBase extends push.InliningPush with DeepDSL with pardis.ir.InlineFunctions with QueriesImplementations with LoopUnrolling with InliningLoader

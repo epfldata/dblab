@@ -6,7 +6,7 @@ import scala.reflect.runtime.universe.{ typeTag => tag }
 import legobase.deep._
 import scala.language.implicitConversions
 import pardis.ir._
-import pardis.ir.pardisTypeImplicits._
+import pardis.types.PardisTypeImplicits._
 import pardis.optimization._
 
 class LBLowering(override val from: InliningLegoBase, override val to: LoweringLegoBase, override val generateHashAndEqual: Boolean) extends Lowering[InliningLegoBase, LoweringLegoBase](from, to) {

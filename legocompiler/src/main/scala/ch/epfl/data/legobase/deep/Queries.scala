@@ -4,7 +4,7 @@ package legobase
 package deep
 
 import pardis.ir._
-import pardis.ir.pardisTypeImplicits._
+import pardis.types.PardisTypeImplicits._
 import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 trait QueriesOps extends Base { this: DeepDSL =>

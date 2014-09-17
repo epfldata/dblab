@@ -5,7 +5,7 @@ package deep
 import scala.reflect.runtime.universe.{ typeTag => tag }
 import scala.language.implicitConversions
 import pardis.utils.Utils.{ pardisTypeToString => t2s }
-import pardis.ir.pardisTypeImplicits._
+import pardis.types.PardisTypeImplicits._
 
 trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE with RichIntOps with pardis.deep.scalalib.ByteComponent with LegoHashMap { this: DeepDSL =>
   /* TODO These methods should be lifted from scala.Predef */
