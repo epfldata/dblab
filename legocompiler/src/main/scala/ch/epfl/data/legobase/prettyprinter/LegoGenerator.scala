@@ -2,7 +2,7 @@ package ch.epfl.data
 package legobase
 package prettyprinter
 
-import ocas.utils.Document
+import pardis.utils.Document
 import pardis.ir._
 import pardis.prettyprinter._
 import scala.language.implicitConversions

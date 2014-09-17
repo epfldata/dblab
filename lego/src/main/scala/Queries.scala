@@ -9,6 +9,10 @@ import queryengine._
 // import queryengine.volcano._
 import queryengine.push._
 import ch.epfl.data.autolifter.annotations.{ deep, metadeep, dontLift }
+import storagemanager.Loader._
+import GenericEngine._
+import queryengine.TPCHRelations._
+import storagemanager._
 
 // This is a temporary solution until we introduce dependency management and adopt policies. Not a priority now!
 @metadeep(
@@ -18,20 +22,19 @@ package ch.epfl.data
 package legobase
 package deep
 
-import scalalib._
 import pardis.ir._
-import pardis.ir.pardisTypeImplicits._
+import pardis.types.PardisTypeImplicits._
 import pardis.deep.scalalib._
+import pardis.deep.scalalib.collection._
 """,
-  """QueryComponent""")
+  """QueryComponent""",
+  "DeepDSL")
 class MetaInfo
 
-@deep trait Queries
+@deep
+trait Queries
 
 object Queries {
-
-  import storagemanager.Loader._
-  import GenericEngine._
 
   def Q1(numRuns: Int) {
     val lineitemTable = loadLineitem()

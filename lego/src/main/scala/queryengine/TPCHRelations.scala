@@ -24,8 +24,8 @@ object TPCHRelations {
     val L_EXTENDEDPRICE: Double,
     val L_DISCOUNT: Double,
     val L_TAX: Double,
-    val L_RETURNFLAG: Character,
-    val L_LINESTATUS: Character,
+    val L_RETURNFLAG: Char,
+    val L_LINESTATUS: Char,
     val L_SHIPDATE: Int,
     val L_COMMITDATE: Int,
     val L_RECEIPTDATE: Int,
@@ -54,7 +54,7 @@ object TPCHRelations {
   }
   def newLINEITEMRecord(ORDERKEY: Int, PARTKEY: Int, SUPPKEY: Int, LINENUMBER: Int,
                         QUANTITY: Double, EXTENDEDPRICE: Double, DISCOUNT: Double, TAX: Double,
-                        RETURNFLAG: Character, LINESTATUS: Character, SHIPDATE: Int, COMMITDATE: Int,
+                        RETURNFLAG: Char, LINESTATUS: Char, SHIPDATE: Int, COMMITDATE: Int,
                         RECEIPTDATE: Int, SHIPINSTRUCT: LBString, SHIPMODE: LBString,
                         COMMENT: LBString): LINEITEMRecord = {
     new LINEITEMRecord(ORDERKEY, PARTKEY, SUPPKEY, LINENUMBER, QUANTITY, EXTENDEDPRICE, DISCOUNT, TAX,
@@ -65,7 +65,7 @@ object TPCHRelations {
   case class ORDERSRecord(
     val O_ORDERKEY: Int,
     val O_CUSTKEY: Int,
-    val O_ORDERSTATUS: Character,
+    val O_ORDERSTATUS: Char,
     val O_TOTALPRICE: Double,
     val O_ORDERDATE: Int,
     val O_ORDERPRIORITY: LBString,
@@ -86,7 +86,7 @@ object TPCHRelations {
     }
   }
 
-  def newORDERSRecord(ORDERKEY: Int, CUSTKEY: Int, ORDERSTATUS: Character, TOTALPRICE: Double, ORDERDATE: Int, ORDERPRIORITY: LBString, CLERK: LBString, SHIPPRIORITY: Int, COMMENT: LBString): ORDERSRecord = {
+  def newORDERSRecord(ORDERKEY: Int, CUSTKEY: Int, ORDERSTATUS: Char, TOTALPRICE: Double, ORDERDATE: Int, ORDERPRIORITY: LBString, CLERK: LBString, SHIPPRIORITY: Int, COMMENT: LBString): ORDERSRecord = {
     new ORDERSRecord(ORDERKEY, CUSTKEY, ORDERSTATUS, TOTALPRICE, ORDERDATE, ORDERPRIORITY, CLERK, SHIPPRIORITY, COMMENT)
   }
 

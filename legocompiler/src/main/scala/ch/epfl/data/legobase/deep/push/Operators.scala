@@ -4,12 +4,22 @@ package legobase
 package deep
 package push
 
-import scalalib._
 import pardis.ir._
-import pardis.ir.pardisTypeImplicits._
+import pardis.types.PardisTypeImplicits._
 import pardis.deep.scalalib._
+import pardis.deep.scalalib.collection._
 import pardis.effects._
-trait OperatorOps extends Base { this: OperatorsComponent =>
+trait OperatorOps extends Base { this: DeepDSL =>
+  // Type representation
+  case class OperatorType[A](typeA: TypeRep[A]) extends TypeRep[Operator[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = OperatorType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"Operator[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[Operator[A]]
+  }
+  implicit def typeOperator[A: TypeRep] = OperatorType(implicitly[TypeRep[A]])
   implicit class OperatorRep[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = operatorOpen[A](self)(typeA)
     def next(): Rep[Unit] = operatorNext[A](self)(typeA)
@@ -76,24 +86,25 @@ trait OperatorOps extends Base { this: OperatorsComponent =>
   def operator_Field_Child[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = Operator_Field_Child[A](self)
   def operator_Field_ExpectedSize[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Int] = Operator_Field_ExpectedSize[A](self)
   type Operator[A] = ch.epfl.data.legobase.queryengine.push.Operator[A]
-  case class OperatorType[A](typeA: TypeRep[A]) extends TypeRep[Operator[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = OperatorType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"Operator[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[Operator[A]]
-  }
-  implicit def typeOperator[A: TypeRep] = OperatorType(implicitly[TypeRep[A]])
 }
-trait OperatorImplicits { this: OperatorComponent =>
+trait OperatorImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
-trait OperatorImplementations { self: DeepDSL =>
+trait OperatorImplementations { this: DeepDSL =>
 
 }
-trait OperatorComponent extends OperatorOps with OperatorImplicits { self: OperatorsComponent => }
-trait ScanOpOps extends Base { this: OperatorsComponent =>
+trait OperatorComponent extends OperatorOps with OperatorImplicits { this: DeepDSL => }
+trait ScanOpOps extends Base { this: DeepDSL =>
+  // Type representation
+  case class ScanOpType[A](typeA: TypeRep[A]) extends TypeRep[ScanOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ScanOpType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"ScanOp[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[ScanOp[A]]
+  }
+  implicit def typeScanOp[A: TypeRep] = ScanOpType(implicitly[TypeRep[A]])
   implicit class ScanOpRep[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = scanOpOpen[A](self)(typeA)
     def next(): Rep[Unit] = scanOpNext[A](self)(typeA)
@@ -185,20 +196,11 @@ trait ScanOpOps extends Base { this: OperatorsComponent =>
   def scanOp_Field_Child_$eq[A](self: Rep[ScanOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = ScanOp_Field_Child_$eq[A](self, x$1)
   def scanOp_Field_Child[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = ScanOp_Field_Child[A](self)
   type ScanOp[A] = ch.epfl.data.legobase.queryengine.push.ScanOp[A]
-  case class ScanOpType[A](typeA: TypeRep[A]) extends TypeRep[ScanOp[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ScanOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"ScanOp[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[ScanOp[A]]
-  }
-  implicit def typeScanOp[A: TypeRep] = ScanOpType(implicitly[TypeRep[A]])
 }
-trait ScanOpImplicits { this: ScanOpComponent =>
+trait ScanOpImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
-trait ScanOpImplementations { self: DeepDSL =>
+trait ScanOpImplementations { this: DeepDSL =>
   override def scanOpOpen[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     unit(())
   }
@@ -215,8 +217,18 @@ trait ScanOpImplementations { self: DeepDSL =>
     throw __newException(unit("PUSH ENGINE BUG:: Consume function in ScanOp should never be called!!!!\n"))
   }
 }
-trait ScanOpComponent extends ScanOpOps with ScanOpImplicits { self: OperatorsComponent => }
-trait PrintOpOps extends Base { this: OperatorsComponent =>
+trait ScanOpComponent extends ScanOpOps with ScanOpImplicits { this: DeepDSL => }
+trait PrintOpOps extends Base { this: DeepDSL =>
+  // Type representation
+  case class PrintOpType[A](typeA: TypeRep[A]) extends TypeRep[PrintOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PrintOpType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"PrintOp[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[PrintOp[A]]
+  }
+  implicit def typePrintOp[A: TypeRep] = PrintOpType(implicitly[TypeRep[A]])
   implicit class PrintOpRep[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = printOpOpen[A](self)(typeA)
     def next(): Rep[Unit] = printOpNext[A](self)(typeA)
@@ -328,20 +340,11 @@ trait PrintOpOps extends Base { this: OperatorsComponent =>
   def printOp_Field_Child_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOp_Field_Child_$eq[A](self, x$1)
   def printOp_Field_Child[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = PrintOp_Field_Child[A](self)
   type PrintOp[A] = ch.epfl.data.legobase.queryengine.push.PrintOp[A]
-  case class PrintOpType[A](typeA: TypeRep[A]) extends TypeRep[PrintOp[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PrintOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"PrintOp[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[PrintOp[A]]
-  }
-  implicit def typePrintOp[A: TypeRep] = PrintOpType(implicitly[TypeRep[A]])
 }
-trait PrintOpImplicits { this: PrintOpComponent =>
+trait PrintOpImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
-trait PrintOpImplementations { self: DeepDSL =>
+trait PrintOpImplementations { this: DeepDSL =>
   override def printOpOpen[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     {
       self.parent.child_$eq(self);
@@ -361,8 +364,18 @@ trait PrintOpImplementations { self: DeepDSL =>
     self.parent.reset()
   }
 }
-trait PrintOpComponent extends PrintOpOps with PrintOpImplicits { self: OperatorsComponent => }
-trait SelectOpOps extends Base { this: OperatorsComponent =>
+trait PrintOpComponent extends PrintOpOps with PrintOpImplicits { this: DeepDSL => }
+trait SelectOpOps extends Base { this: DeepDSL =>
+  // Type representation
+  case class SelectOpType[A](typeA: TypeRep[A]) extends TypeRep[SelectOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SelectOpType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"SelectOp[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[SelectOp[A]]
+  }
+  implicit def typeSelectOp[A: TypeRep] = SelectOpType(implicitly[TypeRep[A]])
   implicit class SelectOpRep[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = selectOpOpen[A](self)(typeA)
     def next(): Rep[Unit] = selectOpNext[A](self)(typeA)
@@ -450,20 +463,11 @@ trait SelectOpOps extends Base { this: OperatorsComponent =>
   def selectOp_Field_Child_$eq[A](self: Rep[SelectOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = SelectOp_Field_Child_$eq[A](self, x$1)
   def selectOp_Field_Child[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = SelectOp_Field_Child[A](self)
   type SelectOp[A] = ch.epfl.data.legobase.queryengine.push.SelectOp[A]
-  case class SelectOpType[A](typeA: TypeRep[A]) extends TypeRep[SelectOp[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SelectOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"SelectOp[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[SelectOp[A]]
-  }
-  implicit def typeSelectOp[A: TypeRep] = SelectOpType(implicitly[TypeRep[A]])
 }
-trait SelectOpImplicits { this: SelectOpComponent =>
+trait SelectOpImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
-trait SelectOpImplementations { self: DeepDSL =>
+trait SelectOpImplementations { this: DeepDSL =>
   override def selectOpOpen[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     {
       self.parent.child_$eq(self);
@@ -480,8 +484,19 @@ trait SelectOpImplementations { self: DeepDSL =>
     __ifThenElse(__app(self.selectPred).apply(infix_asInstanceOf[A](tuple)), self.child.consume(tuple), unit(()))
   }
 }
-trait SelectOpComponent extends SelectOpOps with SelectOpImplicits { self: OperatorsComponent => }
-trait AggOpOps extends Base { this: OperatorsComponent =>
+trait SelectOpComponent extends SelectOpOps with SelectOpImplicits { this: DeepDSL => }
+trait AggOpOps extends Base { this: DeepDSL =>
+  // Type representation
+  case class AggOpType[A, B](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[AggOp[A, B]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = AggOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    val name = s"AggOp[${typeA.name}, ${typeB.name}]"
+    val typeArguments = List(typeA, typeB)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[AggOp[A, B]]
+  }
+  implicit def typeAggOp[A: TypeRep, B: TypeRep] = AggOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
   implicit class AggOpRep[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]) {
     def open(): Rep[Unit] = aggOpOpen[A, B](self)(typeA, typeB)
     def next(): Rep[Unit] = aggOpNext[A, B](self)(typeA, typeB)
@@ -596,21 +611,11 @@ trait AggOpOps extends Base { this: OperatorsComponent =>
   def aggOp_Field_Child_$eq[A, B](self: Rep[AggOp[A, B]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = AggOp_Field_Child_$eq[A, B](self, x$1)
   def aggOp_Field_Child[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[Any]] = AggOp_Field_Child[A, B](self)
   type AggOp[A, B] = ch.epfl.data.legobase.queryengine.push.AggOp[A, B]
-  case class AggOpType[A, B](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[AggOp[A, B]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = AggOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    val name = s"AggOp[${typeA.name}, ${typeB.name}]"
-    val typeArguments = List(typeA, typeB)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[AggOp[A, B]]
-  }
-  implicit def typeAggOp[A: TypeRep, B: TypeRep] = AggOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
 }
-trait AggOpImplicits { this: AggOpComponent =>
+trait AggOpImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
-trait AggOpImplementations { self: DeepDSL =>
+trait AggOpImplementations { this: DeepDSL =>
   override def aggOpOpen[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
     {
       self.parent.child_$eq(self);
@@ -649,8 +654,18 @@ trait AggOpImplementations { self: DeepDSL =>
     }
   }
 }
-trait AggOpComponent extends AggOpOps with AggOpImplicits { self: OperatorsComponent => }
-trait MapOpOps extends Base { this: OperatorsComponent =>
+trait AggOpComponent extends AggOpOps with AggOpImplicits { this: DeepDSL => }
+trait MapOpOps extends Base { this: DeepDSL =>
+  // Type representation
+  case class MapOpType[A](typeA: TypeRep[A]) extends TypeRep[MapOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = MapOpType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"MapOp[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[MapOp[A]]
+  }
+  implicit def typeMapOp[A: TypeRep] = MapOpType(implicitly[TypeRep[A]])
   implicit class MapOpRep[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]) {
     def reset(): Rep[Unit] = mapOpReset[A](self)(typeA)
     def open(): Rep[Unit] = mapOpOpen[A](self)(typeA)
@@ -741,20 +756,11 @@ trait MapOpOps extends Base { this: OperatorsComponent =>
   def mapOp_Field_Child_$eq[A](self: Rep[MapOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOp_Field_Child_$eq[A](self, x$1)
   def mapOp_Field_Child[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = MapOp_Field_Child[A](self)
   type MapOp[A] = ch.epfl.data.legobase.queryengine.push.MapOp[A]
-  case class MapOpType[A](typeA: TypeRep[A]) extends TypeRep[MapOp[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = MapOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"MapOp[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[MapOp[A]]
-  }
-  implicit def typeMapOp[A: TypeRep] = MapOpType(implicitly[TypeRep[A]])
 }
-trait MapOpImplicits { this: MapOpComponent =>
+trait MapOpImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
-trait MapOpImplementations { self: DeepDSL =>
+trait MapOpImplementations { this: DeepDSL =>
   override def mapOpReset[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     self.parent.reset()
   }
@@ -774,8 +780,18 @@ trait MapOpImplementations { self: DeepDSL =>
     }
   }
 }
-trait MapOpComponent extends MapOpOps with MapOpImplicits { self: OperatorsComponent => }
-trait SortOpOps extends Base { this: OperatorsComponent =>
+trait MapOpComponent extends MapOpOps with MapOpImplicits { this: DeepDSL => }
+trait SortOpOps extends Base { this: DeepDSL =>
+  // Type representation
+  case class SortOpType[A](typeA: TypeRep[A]) extends TypeRep[SortOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SortOpType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"SortOp[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[SortOp[A]]
+  }
+  implicit def typeSortOp[A: TypeRep] = SortOpType(implicitly[TypeRep[A]])
   implicit class SortOpRep[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]) {
     def next(): Rep[Unit] = sortOpNext[A](self)(typeA)
     def reset(): Rep[Unit] = sortOpReset[A](self)(typeA)
@@ -871,20 +887,11 @@ trait SortOpOps extends Base { this: OperatorsComponent =>
   def sortOp_Field_Child_$eq[A](self: Rep[SortOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = SortOp_Field_Child_$eq[A](self, x$1)
   def sortOp_Field_Child[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = SortOp_Field_Child[A](self)
   type SortOp[A] = ch.epfl.data.legobase.queryengine.push.SortOp[A]
-  case class SortOpType[A](typeA: TypeRep[A]) extends TypeRep[SortOp[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SortOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"SortOp[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[SortOp[A]]
-  }
-  implicit def typeSortOp[A: TypeRep] = SortOpType(implicitly[TypeRep[A]])
 }
-trait SortOpImplicits { this: SortOpComponent =>
+trait SortOpImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
-trait SortOpImplementations { self: DeepDSL =>
+trait SortOpImplementations { this: DeepDSL =>
   override def sortOpNext[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     {
       self.parent.next();
@@ -914,8 +921,20 @@ trait SortOpImplementations { self: DeepDSL =>
     }
   }
 }
-trait SortOpComponent extends SortOpOps with SortOpImplicits { self: OperatorsComponent => }
-trait HashJoinOpOps extends Base { this: OperatorsComponent =>
+trait SortOpComponent extends SortOpOps with SortOpImplicits { this: DeepDSL => }
+trait HashJoinOpOps extends Base { this: DeepDSL =>
+  // Type representation
+  case class HashJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[HashJoinOp[A, B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = HashJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(2).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    private implicit val tagC = typeC.typeTag
+    val name = s"HashJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
+    val typeArguments = List(typeA, typeB, typeC)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[HashJoinOp[A, B, C]]
+  }
+  implicit def typeHashJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep] = HashJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class HashJoinOpRep[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) {
     def reset(): Rep[Unit] = hashJoinOpReset[A, B, C](self)(typeA, typeB, typeC)
     def open(): Rep[Unit] = hashJoinOpOpen[A, B, C](self)(typeA, typeB, typeC)
@@ -1069,22 +1088,11 @@ trait HashJoinOpOps extends Base { this: OperatorsComponent =>
   def hashJoinOp_Field_Child_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOp_Field_Child_$eq[A, B, C](self, x$1)
   def hashJoinOp_Field_Child[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] = HashJoinOp_Field_Child[A, B, C](self)
   type HashJoinOp[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = ch.epfl.data.legobase.queryengine.push.HashJoinOp[A, B, C]
-  case class HashJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[HashJoinOp[A, B, C]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = HashJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(2).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
-    val name = s"HashJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
-    val typeArguments = List(typeA, typeB, typeC)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[HashJoinOp[A, B, C]]
-  }
-  implicit def typeHashJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep] = HashJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
 }
-trait HashJoinOpImplicits { this: HashJoinOpComponent =>
+trait HashJoinOpImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
-trait HashJoinOpImplementations { self: DeepDSL =>
+trait HashJoinOpImplementations { this: DeepDSL =>
   override def hashJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
     {
       self.rightParent.reset();
@@ -1132,8 +1140,20 @@ trait HashJoinOpImplementations { self: DeepDSL =>
     }, unit(())))
   }
 }
-trait HashJoinOpComponent extends HashJoinOpOps with HashJoinOpImplicits { self: OperatorsComponent => }
-trait WindowOpOps extends Base { this: OperatorsComponent =>
+trait HashJoinOpComponent extends HashJoinOpOps with HashJoinOpImplicits { this: DeepDSL => }
+trait WindowOpOps extends Base { this: DeepDSL =>
+  // Type representation
+  case class WindowOpType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[WindowOp[A, B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = WindowOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    private implicit val tagC = typeC.typeTag
+    val name = s"WindowOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
+    val typeArguments = List(typeA, typeB, typeC)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[WindowOp[A, B, C]]
+  }
+  implicit def typeWindowOp[A: TypeRep, B: TypeRep, C: TypeRep] = WindowOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class WindowOpRep[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) {
     def open(): Rep[Unit] = windowOpOpen[A, B, C](self)(typeA, typeB, typeC)
     def reset(): Rep[Unit] = windowOpReset[A, B, C](self)(typeA, typeB, typeC)
@@ -1237,22 +1257,11 @@ trait WindowOpOps extends Base { this: OperatorsComponent =>
   def windowOp_Field_Child_$eq[A, B, C](self: Rep[WindowOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = WindowOp_Field_Child_$eq[A, B, C](self, x$1)
   def windowOp_Field_Child[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] = WindowOp_Field_Child[A, B, C](self)
   type WindowOp[A, B, C] = ch.epfl.data.legobase.queryengine.push.WindowOp[A, B, C]
-  case class WindowOpType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[WindowOp[A, B, C]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = WindowOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
-    val name = s"WindowOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
-    val typeArguments = List(typeA, typeB, typeC)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[WindowOp[A, B, C]]
-  }
-  implicit def typeWindowOp[A: TypeRep, B: TypeRep, C: TypeRep] = WindowOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
 }
-trait WindowOpImplicits { this: WindowOpComponent =>
+trait WindowOpImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
-trait WindowOpImplementations { self: DeepDSL =>
+trait WindowOpImplementations { this: DeepDSL =>
   override def windowOpOpen[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
     {
       self.parent.child_$eq(self);
@@ -1287,8 +1296,20 @@ trait WindowOpImplementations { self: DeepDSL =>
     }
   }
 }
-trait WindowOpComponent extends WindowOpOps with WindowOpImplicits { self: OperatorsComponent => }
-trait LeftHashSemiJoinOpOps extends Base { this: OperatorsComponent =>
+trait WindowOpComponent extends WindowOpOps with WindowOpImplicits { this: DeepDSL => }
+trait LeftHashSemiJoinOpOps extends Base { this: DeepDSL =>
+  // Type representation
+  case class LeftHashSemiJoinOpType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[LeftHashSemiJoinOp[A, B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LeftHashSemiJoinOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    private implicit val tagC = typeC.typeTag
+    val name = s"LeftHashSemiJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
+    val typeArguments = List(typeA, typeB, typeC)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[LeftHashSemiJoinOp[A, B, C]]
+  }
+  implicit def typeLeftHashSemiJoinOp[A: TypeRep, B: TypeRep, C: TypeRep] = LeftHashSemiJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class LeftHashSemiJoinOpRep[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) {
     def open(): Rep[Unit] = leftHashSemiJoinOpOpen[A, B, C](self)(typeA, typeB, typeC)
     def reset(): Rep[Unit] = leftHashSemiJoinOpReset[A, B, C](self)(typeA, typeB, typeC)
@@ -1420,22 +1441,11 @@ trait LeftHashSemiJoinOpOps extends Base { this: OperatorsComponent =>
   def leftHashSemiJoinOp_Field_Child_$eq[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftHashSemiJoinOp_Field_Child_$eq[A, B, C](self, x$1)
   def leftHashSemiJoinOp_Field_Child[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] = LeftHashSemiJoinOp_Field_Child[A, B, C](self)
   type LeftHashSemiJoinOp[A, B, C] = ch.epfl.data.legobase.queryengine.push.LeftHashSemiJoinOp[A, B, C]
-  case class LeftHashSemiJoinOpType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[LeftHashSemiJoinOp[A, B, C]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LeftHashSemiJoinOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
-    val name = s"LeftHashSemiJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
-    val typeArguments = List(typeA, typeB, typeC)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[LeftHashSemiJoinOp[A, B, C]]
-  }
-  implicit def typeLeftHashSemiJoinOp[A: TypeRep, B: TypeRep, C: TypeRep] = LeftHashSemiJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
 }
-trait LeftHashSemiJoinOpImplicits { this: LeftHashSemiJoinOpComponent =>
+trait LeftHashSemiJoinOpImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
-trait LeftHashSemiJoinOpImplementations { self: DeepDSL =>
+trait LeftHashSemiJoinOpImplementations { this: DeepDSL =>
   override def leftHashSemiJoinOpOpen[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
     {
       self.leftParent.child_$eq(self);
@@ -1475,8 +1485,19 @@ trait LeftHashSemiJoinOpImplementations { self: DeepDSL =>
     })
   }
 }
-trait LeftHashSemiJoinOpComponent extends LeftHashSemiJoinOpOps with LeftHashSemiJoinOpImplicits { self: OperatorsComponent => }
-trait NestedLoopsJoinOpOps extends Base { this: OperatorsComponent =>
+trait LeftHashSemiJoinOpComponent extends LeftHashSemiJoinOpOps with LeftHashSemiJoinOpImplicits { this: DeepDSL => }
+trait NestedLoopsJoinOpOps extends Base { this: DeepDSL =>
+  // Type representation
+  case class NestedLoopsJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[NestedLoopsJoinOp[A, B]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = NestedLoopsJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    val name = s"NestedLoopsJoinOp[${typeA.name}, ${typeB.name}]"
+    val typeArguments = List(typeA, typeB)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[NestedLoopsJoinOp[A, B]]
+  }
+  implicit def typeNestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep] = NestedLoopsJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
   implicit class NestedLoopsJoinOpRep[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]) {
     def open(): Rep[Unit] = nestedLoopsJoinOpOpen[A, B](self)(typeA, typeB)
     def reset(): Rep[Unit] = nestedLoopsJoinOpReset[A, B](self)(typeA, typeB)
@@ -1612,21 +1633,11 @@ trait NestedLoopsJoinOpOps extends Base { this: OperatorsComponent =>
   def nestedLoopsJoinOp_Field_Child_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOp_Field_Child_$eq[A, B](self, x$1)
   def nestedLoopsJoinOp_Field_Child[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[Any]] = NestedLoopsJoinOp_Field_Child[A, B](self)
   type NestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = ch.epfl.data.legobase.queryengine.push.NestedLoopsJoinOp[A, B]
-  case class NestedLoopsJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[NestedLoopsJoinOp[A, B]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = NestedLoopsJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    val name = s"NestedLoopsJoinOp[${typeA.name}, ${typeB.name}]"
-    val typeArguments = List(typeA, typeB)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[NestedLoopsJoinOp[A, B]]
-  }
-  implicit def typeNestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep] = NestedLoopsJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
 }
-trait NestedLoopsJoinOpImplicits { this: NestedLoopsJoinOpComponent =>
+trait NestedLoopsJoinOpImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
-trait NestedLoopsJoinOpImplementations { self: DeepDSL =>
+trait NestedLoopsJoinOpImplementations { this: DeepDSL =>
   override def nestedLoopsJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
     {
       self.rightParent.child_$eq(self);
@@ -1655,8 +1666,18 @@ trait NestedLoopsJoinOpImplementations { self: DeepDSL =>
     }, __ifThenElse(__app(self.joinCond).apply(self.leftTuple, infix_asInstanceOf[B](tuple)), self.child.consume(RecordOps[A](self.leftTuple).concatenateDynamic[B](infix_asInstanceOf[B](tuple), self.leftAlias, self.rightAlias)), unit(())))
   }
 }
-trait NestedLoopsJoinOpComponent extends NestedLoopsJoinOpOps with NestedLoopsJoinOpImplicits { self: OperatorsComponent => }
-trait SubquerySingleResultOps extends Base { this: OperatorsComponent =>
+trait NestedLoopsJoinOpComponent extends NestedLoopsJoinOpOps with NestedLoopsJoinOpImplicits { this: DeepDSL => }
+trait SubquerySingleResultOps extends Base { this: DeepDSL =>
+  // Type representation
+  case class SubquerySingleResultType[A](typeA: TypeRep[A]) extends TypeRep[SubquerySingleResult[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SubquerySingleResultType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"SubquerySingleResult[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[SubquerySingleResult[A]]
+  }
+  implicit def typeSubquerySingleResult[A: TypeRep] = SubquerySingleResultType(implicitly[TypeRep[A]])
   implicit class SubquerySingleResultRep[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = subquerySingleResultOpen[A](self)(typeA)
     def next(): Rep[Unit] = subquerySingleResultNext[A](self)(typeA)
@@ -1754,20 +1775,11 @@ trait SubquerySingleResultOps extends Base { this: OperatorsComponent =>
   def subquerySingleResult_Field_Child_$eq[A](self: Rep[SubquerySingleResult[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResult_Field_Child_$eq[A](self, x$1)
   def subquerySingleResult_Field_Child[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = SubquerySingleResult_Field_Child[A](self)
   type SubquerySingleResult[A] = ch.epfl.data.legobase.queryengine.push.SubquerySingleResult[A]
-  case class SubquerySingleResultType[A](typeA: TypeRep[A]) extends TypeRep[SubquerySingleResult[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SubquerySingleResultType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"SubquerySingleResult[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[SubquerySingleResult[A]]
-  }
-  implicit def typeSubquerySingleResult[A: TypeRep] = SubquerySingleResultType(implicitly[TypeRep[A]])
 }
-trait SubquerySingleResultImplicits { this: SubquerySingleResultComponent =>
+trait SubquerySingleResultImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
-trait SubquerySingleResultImplementations { self: DeepDSL =>
+trait SubquerySingleResultImplementations { this: DeepDSL =>
   override def subquerySingleResultOpen[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     throw __newException(unit("PUSH ENGINE BUG:: Open function in SubqueryResult should never be called!!!!\n"))
   }
@@ -1789,8 +1801,20 @@ trait SubquerySingleResultImplementations { self: DeepDSL =>
     }
   }
 }
-trait SubquerySingleResultComponent extends SubquerySingleResultOps with SubquerySingleResultImplicits { self: OperatorsComponent => }
-trait HashJoinAntiOps extends Base { this: OperatorsComponent =>
+trait SubquerySingleResultComponent extends SubquerySingleResultOps with SubquerySingleResultImplicits { this: DeepDSL => }
+trait HashJoinAntiOps extends Base { this: DeepDSL =>
+  // Type representation
+  case class HashJoinAntiType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[HashJoinAnti[A, B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = HashJoinAntiType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    private implicit val tagC = typeC.typeTag
+    val name = s"HashJoinAnti[${typeA.name}, ${typeB.name}, ${typeC.name}]"
+    val typeArguments = List(typeA, typeB, typeC)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[HashJoinAnti[A, B, C]]
+  }
+  implicit def typeHashJoinAnti[A: TypeRep, B: TypeRep, C: TypeRep] = HashJoinAntiType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class HashJoinAntiRep[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) {
     def removeFromList(elemList: Rep[ArrayBuffer[A]], e: Rep[A], idx: Rep[Int]): Rep[Unit] = hashJoinAntiRemoveFromList[A, B, C](self, elemList, e, idx)(typeA, typeB, typeC)
     def open(): Rep[Unit] = hashJoinAntiOpen[A, B, C](self)(typeA, typeB, typeC)
@@ -1940,22 +1964,11 @@ trait HashJoinAntiOps extends Base { this: OperatorsComponent =>
   def hashJoinAnti_Field_Child_$eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAnti_Field_Child_$eq[A, B, C](self, x$1)
   def hashJoinAnti_Field_Child[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] = HashJoinAnti_Field_Child[A, B, C](self)
   type HashJoinAnti[A, B, C] = ch.epfl.data.legobase.queryengine.push.HashJoinAnti[A, B, C]
-  case class HashJoinAntiType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[HashJoinAnti[A, B, C]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = HashJoinAntiType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
-    val name = s"HashJoinAnti[${typeA.name}, ${typeB.name}, ${typeC.name}]"
-    val typeArguments = List(typeA, typeB, typeC)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[HashJoinAnti[A, B, C]]
-  }
-  implicit def typeHashJoinAnti[A: TypeRep, B: TypeRep, C: TypeRep] = HashJoinAntiType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
 }
-trait HashJoinAntiImplicits { this: HashJoinAntiComponent =>
+trait HashJoinAntiImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
-trait HashJoinAntiImplementations { self: DeepDSL =>
+trait HashJoinAntiImplementations { this: DeepDSL =>
   override def hashJoinAntiRemoveFromList[A, B, C](self: Rep[HashJoinAnti[A, B, C]], elemList: Rep[ArrayBuffer[A]], e: Rep[A], idx: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
     {
       elemList.remove(idx);
@@ -2027,8 +2040,18 @@ trait HashJoinAntiImplementations { self: DeepDSL =>
     })
   }
 }
-trait HashJoinAntiComponent extends HashJoinAntiOps with HashJoinAntiImplicits { self: OperatorsComponent => }
-trait ViewOpOps extends Base { this: OperatorsComponent =>
+trait HashJoinAntiComponent extends HashJoinAntiOps with HashJoinAntiImplicits { this: DeepDSL => }
+trait ViewOpOps extends Base { this: DeepDSL =>
+  // Type representation
+  case class ViewOpType[A](typeA: TypeRep[A]) extends TypeRep[ViewOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ViewOpType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"ViewOp[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[ViewOp[A]]
+  }
+  implicit def typeViewOp[A: TypeRep] = ViewOpType(implicitly[TypeRep[A]])
   implicit class ViewOpRep[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = viewOpOpen[A](self)(typeA)
     def reset(): Rep[Unit] = viewOpReset[A](self)(typeA)
@@ -2128,20 +2151,11 @@ trait ViewOpOps extends Base { this: OperatorsComponent =>
   def viewOp_Field_Child_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Child_$eq[A](self, x$1)
   def viewOp_Field_Child[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = ViewOp_Field_Child[A](self)
   type ViewOp[A] = ch.epfl.data.legobase.queryengine.push.ViewOp[A]
-  case class ViewOpType[A](typeA: TypeRep[A]) extends TypeRep[ViewOp[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ViewOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"ViewOp[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[ViewOp[A]]
-  }
-  implicit def typeViewOp[A: TypeRep] = ViewOpType(implicitly[TypeRep[A]])
 }
-trait ViewOpImplicits { this: ViewOpComponent =>
+trait ViewOpImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
-trait ViewOpImplementations { self: DeepDSL =>
+trait ViewOpImplementations { this: DeepDSL =>
   override def viewOpOpen[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     {
       self.parent.child_$eq(self);
@@ -2167,8 +2181,20 @@ trait ViewOpImplementations { self: DeepDSL =>
     self.table.append(infix_asInstanceOf[A](tuple))
   }
 }
-trait ViewOpComponent extends ViewOpOps with ViewOpImplicits { self: OperatorsComponent => }
-trait LeftOuterJoinOpOps extends Base { this: OperatorsComponent =>
+trait ViewOpComponent extends ViewOpOps with ViewOpImplicits { this: DeepDSL => }
+trait LeftOuterJoinOpOps extends Base { this: DeepDSL =>
+  // Type representation
+  case class LeftOuterJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[LeftOuterJoinOp[A, B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LeftOuterJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(2).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    private implicit val tagC = typeC.typeTag
+    val name = s"LeftOuterJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
+    val typeArguments = List(typeA, typeB, typeC)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[LeftOuterJoinOp[A, B, C]]
+  }
+  implicit def typeLeftOuterJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep] = LeftOuterJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class LeftOuterJoinOpRep[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[B]) {
     def open(): Rep[Unit] = leftOuterJoinOpOpen[A, B, C](self)(typeA, typeB, typeC, evidence$1)
     def next(): Rep[Unit] = leftOuterJoinOpNext[A, B, C](self)(typeA, typeB, typeC, evidence$1)
@@ -2316,22 +2342,11 @@ trait LeftOuterJoinOpOps extends Base { this: OperatorsComponent =>
   def leftOuterJoinOp_Field_Child_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftOuterJoinOp_Field_Child_$eq[A, B, C](self, x$1)
   def leftOuterJoinOp_Field_Child[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] = LeftOuterJoinOp_Field_Child[A, B, C](self)
   type LeftOuterJoinOp[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = ch.epfl.data.legobase.queryengine.push.LeftOuterJoinOp[A, B, C]
-  case class LeftOuterJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[LeftOuterJoinOp[A, B, C]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LeftOuterJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(2).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
-    val name = s"LeftOuterJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
-    val typeArguments = List(typeA, typeB, typeC)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[LeftOuterJoinOp[A, B, C]]
-  }
-  implicit def typeLeftOuterJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep] = LeftOuterJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
 }
-trait LeftOuterJoinOpImplicits { this: LeftOuterJoinOpComponent =>
+trait LeftOuterJoinOpImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
-trait LeftOuterJoinOpImplementations { self: DeepDSL =>
+trait LeftOuterJoinOpImplementations { this: DeepDSL =>
   override def leftOuterJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[B]): Rep[Unit] = {
     {
       self.leftParent.child_$eq(self);
@@ -2374,5 +2389,5 @@ trait LeftOuterJoinOpImplementations { self: DeepDSL =>
     })
   }
 }
-trait LeftOuterJoinOpComponent extends LeftOuterJoinOpOps with LeftOuterJoinOpImplicits { self: OperatorsComponent => }
-trait OperatorsComponent extends OperatorComponent with ScanOpComponent with PrintOpComponent with SelectOpComponent with AggOpComponent with MapOpComponent with SortOpComponent with HashJoinOpComponent with WindowOpComponent with LeftHashSemiJoinOpComponent with NestedLoopsJoinOpComponent with SubquerySingleResultComponent with HashJoinAntiComponent with ViewOpComponent with LeftOuterJoinOpComponent with AGGRecordComponent with WindowRecordComponent with CharacterComponent with DoubleComponent with IntComponent with LongComponent with ArrayComponent with LINEITEMRecordComponent with K2DBScannerComponent with IntegerComponent with BooleanComponent with HashMapComponent with SetComponent with TreeSetComponent with DefaultEntryComponent with ArrayBufferComponent with ManualLiftedLegoBase { self: DeepDSL => }
+trait LeftOuterJoinOpComponent extends LeftOuterJoinOpOps with LeftOuterJoinOpImplicits { this: DeepDSL => }
+trait OperatorsComponent extends OperatorComponent with ScanOpComponent with PrintOpComponent with SelectOpComponent with AggOpComponent with MapOpComponent with SortOpComponent with HashJoinOpComponent with WindowOpComponent with LeftHashSemiJoinOpComponent with NestedLoopsJoinOpComponent with SubquerySingleResultComponent with HashJoinAntiComponent with ViewOpComponent with LeftOuterJoinOpComponent { self: DeepDSL => }

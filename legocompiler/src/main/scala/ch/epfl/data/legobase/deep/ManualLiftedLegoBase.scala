@@ -5,9 +5,9 @@ package deep
 import scala.reflect.runtime.universe.{ typeTag => tag }
 import scala.language.implicitConversions
 import pardis.utils.Utils.{ pardisTypeToString => t2s }
-import pardis.ir.pardisTypeImplicits._
+import pardis.types.PardisTypeImplicits._
 
-trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE with RichIntOps with scalalib.ByteComponent with LegoHashMap { this: DeepDSL =>
+trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE with RichIntOps with pardis.deep.scalalib.ByteComponent with LegoHashMap { this: DeepDSL =>
   /* TODO These methods should be lifted from scala.Predef */
   case class Println(x: Rep[Any]) extends FunctionDef[Unit](None, "println", List(List(x))) {
     override def curriedConstructor = (copy _)
@@ -26,23 +26,6 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
 
   def __newException(msg: Rep[String]) = new Exception(msg.toString)
 
-  // TODO scala.Char class should be lifted instead of the java one
-  case class Character$minus1(self: Rep[Character], x: Rep[Character]) extends FunctionDef[Int](Some(self), "-", List(List(x))) {
-    override def curriedConstructor = (copy _).curried
-  }
-
-  implicit class CharacterRep2(self: Rep[Character]) {
-    def -(o: Rep[Character]): Rep[Int] = Character$minus1(self, o)
-  }
-
-  type Char = Character
-
-  /* TODO should be automatically generated from GenericEngine */
-  // object GenericEngine {
-  //   def newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)
-  //   def newWindowRecord[B, C](key: Rep[B], wnd: Rep[C])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowRecord[B, C]] = __newWindowRecord(key, wnd)
-  // }
-
   // TODO this thing should be removed, ideally every literal should be lifted using YY
   implicit def liftInt(i: scala.Int): Rep[Int] = unit(i)
 
@@ -56,24 +39,11 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   // this one is needed to rewrire `ArrayBuffer.apply()` to `new ArrayBuffer()`
   override def arrayBufferApplyObject[T]()(implicit typeT: TypeRep[T]): Rep[ArrayBuffer[T]] = __newArrayBuffer[T]()
 
-  /* TODO should be automatically generated with HashMap */
-  case class ContentsType[T, S](typeT: TypeRep[T], typeS: TypeRep[S]) extends TypeRep[Contents[T, S]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ContentsType(newArguments(0), newArguments(1))
-    private implicit val tagT = typeT.typeTag
-    private implicit val tagS = typeS.typeTag
-    val name = s"Contents[${typeT.name}, ${typeS.name}]"
-    val typeArguments = List(typeT, typeS)
-    val typeTag = tag[Contents[T, S]]
-  }
-  implicit def typeContents[T: TypeRep, S: TypeRep] = ContentsType[T, S](implicitly[TypeRep[T]], implicitly[TypeRep[S]])
-
   /* TODO there's a bug with the design of records which if it's solved there's no need for this manual node */
   override def aGGRecordNew[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = AGGRecordNew2[B](key, aggs)
   case class AGGRecordNew2[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit val typeB: TypeRep[B]) extends ConstructorDef[AGGRecord[B]](List(), "AGGRecord", List(List(key, aggs))) {
     override def curriedConstructor = (copy[B] _).curried
   }
-
-  def Character2char(c: Rep[Character]): Rep[Character] = c
 }
 
 // TODO should be generated automatically
@@ -87,7 +57,7 @@ trait OptionOps { this: DeepDSL =>
   }
 }
 
-trait SetOps extends scalalib.SetOps { this: DeepDSL =>
+trait SetOps extends pardis.deep.scalalib.collection.SetOps { this: DeepDSL =>
   case class SetNew[T: TypeRep](seq: Rep[Seq[T]]) extends FunctionDef[Set[T]](None, "Set", List(List(__varArg(seq)))) {
     override def curriedConstructor = copy[T] _
   }
@@ -135,7 +105,7 @@ trait IntPE extends pardis.deep.scalalib.IntOps { this: DeepDSL =>
   override def int$plus5(self: Rep[Int], x: Rep[Int]): Rep[Int] = Int$plus5PE(self, x)
 }
 
-trait RichIntOps extends scalalib.RangeComponent { this: DeepDSL =>
+trait RichIntOps extends pardis.deep.scalalib.collection.RangeComponent { this: DeepDSL =>
   def intWrapper(i: Rep[Int]): Rep[RichInt] = i
 
   implicit class RichIntOps(self: Rep[RichInt]) {

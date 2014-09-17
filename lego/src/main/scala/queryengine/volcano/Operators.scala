@@ -23,7 +23,7 @@ import ch.epfl.data.pardis.shallow.{ Record, DynamicCompositeRecord }
 
 // import scalalib._
 // import pardis.ir._
-// import pardis.ir.pardisTypeImplicits._
+// import pardis.types.PardisTypeImplicits._
 // import pardis.deep.scalalib._
 // import pardis.effects._
 // """,
