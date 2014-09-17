@@ -26,9 +26,9 @@ object TPCHRelations {
     val L_TAX: Double,
     val L_RETURNFLAG: Char,
     val L_LINESTATUS: Char,
-    val L_SHIPDATE: Long,
-    val L_COMMITDATE: Long,
-    val L_RECEIPTDATE: Long,
+    val L_SHIPDATE: Int,
+    val L_COMMITDATE: Int,
+    val L_RECEIPTDATE: Int,
     val L_SHIPINSTRUCT: LBString,
     val L_SHIPMODE: LBString,
     val L_COMMENT: LBString) extends CaseClassRecord {
@@ -54,8 +54,8 @@ object TPCHRelations {
   }
   def newLINEITEMRecord(ORDERKEY: Int, PARTKEY: Int, SUPPKEY: Int, LINENUMBER: Int,
                         QUANTITY: Double, EXTENDEDPRICE: Double, DISCOUNT: Double, TAX: Double,
-                        RETURNFLAG: Char, LINESTATUS: Char, SHIPDATE: Long, COMMITDATE: Long,
-                        RECEIPTDATE: Long, SHIPINSTRUCT: LBString, SHIPMODE: LBString,
+                        RETURNFLAG: Char, LINESTATUS: Char, SHIPDATE: Int, COMMITDATE: Int,
+                        RECEIPTDATE: Int, SHIPINSTRUCT: LBString, SHIPMODE: LBString,
                         COMMENT: LBString): LINEITEMRecord = {
     new LINEITEMRecord(ORDERKEY, PARTKEY, SUPPKEY, LINENUMBER, QUANTITY, EXTENDEDPRICE, DISCOUNT, TAX,
       RETURNFLAG, LINESTATUS, SHIPDATE, COMMITDATE, RECEIPTDATE, SHIPINSTRUCT, SHIPMODE,
@@ -67,7 +67,7 @@ object TPCHRelations {
     val O_CUSTKEY: Int,
     val O_ORDERSTATUS: Char,
     val O_TOTALPRICE: Double,
-    val O_ORDERDATE: Long,
+    val O_ORDERDATE: Int,
     val O_ORDERPRIORITY: LBString,
     val O_CLERK: LBString,
     val O_SHIPPRIORITY: Int,
@@ -86,7 +86,7 @@ object TPCHRelations {
     }
   }
 
-  def newORDERSRecord(ORDERKEY: Int, CUSTKEY: Int, ORDERSTATUS: Char, TOTALPRICE: Double, ORDERDATE: Long, ORDERPRIORITY: LBString, CLERK: LBString, SHIPPRIORITY: Int, COMMENT: LBString): ORDERSRecord = {
+  def newORDERSRecord(ORDERKEY: Int, CUSTKEY: Int, ORDERSTATUS: Char, TOTALPRICE: Double, ORDERDATE: Int, ORDERPRIORITY: LBString, CLERK: LBString, SHIPPRIORITY: Int, COMMENT: LBString): ORDERSRecord = {
     new ORDERSRecord(ORDERKEY, CUSTKEY, ORDERSTATUS, TOTALPRICE, ORDERDATE, ORDERPRIORITY, CLERK, SHIPPRIORITY, COMMENT)
   }
 

@@ -25,8 +25,9 @@ trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base 
     else if (m.name.startsWith("Pointer")) structName(m.typeArguments.last)
     else if (m.name == "Byte") "char"
     else if (m.name == "Double") "double"
+    else if (m.name.contains("Record")) m.name.replaceAll("struct ", "")
     else {
-      //      System.out.println("WARNING: Default structName given: " + m.name);
+      System.out.println("WARNING: Default structName given: " + m.name);
       super.structName(m)
     }
   }
@@ -39,14 +40,8 @@ object CTransformersPipeline {
     val b3 = new ScalaConstructsToCTranformer(context).transformBlock(b2)
     val b4 = new ScalaCollectionsToGLibTransfomer(context).optimize(b3)
     val b5 = new OptimalStringToCTransformer(context).transformBlock(b4)
-    // val b6 = new optimization.MemoryManagementTransfomer(context).optimize(b5)
-    val finalBlock = b5
-    System.out.println(finalBlock)
-    // Also write to file to facilitate debugging
-    val pw = new java.io.PrintWriter(new java.io.File("tree_debug_dump.txt"))
-    pw.println(finalBlock.toString)
-    pw.flush()
-    finalBlock
+    val b6 = new optimization.MemoryManagementTransfomer(context).optimize(b5)
+    b6
   }
 }
 
@@ -119,7 +114,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       else typePointer(transformType(tp.typeArguments(0)))
     } else if (tp.name.contains("TreeSet")) typePointer(typeGTree(transformType(tp.typeArguments(0))))
     else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
-    else if (tp.name.contains("HashMap")) typePointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
+    else if (tp.name.startsWith("HashMap")) typePointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
     else if (tp.name.contains("Option")) typePointer(transformType(tp.typeArguments(0)))
     else {
       //      System.out.println("WARNING: Default transformType called: " + tp)
@@ -127,15 +122,22 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
     }
   }).asInstanceOf[PardisType[Any]]
 
+  override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
+    case Stm(s, RangeNew(start, end, step)) => Nil
+    case _                                  => super.transformStmToMultiple(stm)
+  }
+
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
-    case pc @ PardisCast(x) => {
-      PardisCast(apply(x))(apply(pc.castFrom), apply(pc.castTp))
-    }
+    case RangeForeach(Def(RangeNew(start, end, step)), Def(Lambda(f, i1, o))) =>
+      PardisFor(start, end, step, i1.asInstanceOf[Expression[Int]], reifyBlock({ o }).asInstanceOf[PardisBlock[Unit]])
+
+    case pc @ PardisCast(x) => PardisCast(apply(x))(apply(pc.castFrom), apply(pc.castTp))
+
     case a @ ArrayNew(x) =>
       // Get type of elements stored in array
       val elemType = a.tp.typeArguments(0)
       // Allocate original array
-      val array = malloc(x)(transformType(elemType))
+      val array = malloc(x)(elemType)
       // Create wrapper with length
       val am = transformType(a.tp)
       val s = __new(("array", false, array), ("length", false, x))(am)
@@ -147,10 +149,15 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       // Get type of elements stored in array
       val elemType = a.tp.typeArguments(0)
       // Get type of internal array
-      val newTp = if (elemType.isPrimitive) elemType else typePointer(elemType)
+      val newTp = elemType //if (elemType.isPrimitive) elemType else typePointer(elemType)
       // Read array and perform update
       val arr = field(s, "array")(typeArray(typePointer(newTp)))
-      ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, v)
+      if (elemType.isPrimitive) ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, v)
+      else
+        PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(v.asInstanceOf[Expression[Pointer[Any]]])(v.tp.name.contains("Pointer") match {
+          case true  => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+          case false => v.tp
+        }))
     }
     case ArrayFilter(a, op) => field(a, "array")(transformType(a.tp)).correspondingNode
     case ArrayApply(a, i) =>
@@ -158,9 +165,10 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       // Get type of elements stored in array
       val elemType = a.tp.typeArguments(0)
       // Get type of internal array
-      val newTp = if (elemType.isPrimitive) elemType else typePointer(elemType)
+      val newTp = elemType // if (elemType.isPrimitive) elemType else typePointer(elemType)
       val arr = field(s, "array")(typeArray(typePointer(newTp)))
-      ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], i)(newTp.asInstanceOf[PardisType[Any]])
+      if (elemType.isPrimitive) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], i)(newTp.asInstanceOf[PardisType[Any]])
+      else PTRADDRESS(arr.asInstanceOf[Expression[Pointer[Any]]], i)(typePointer(newTp).asInstanceOf[PardisType[Pointer[Any]]])
     case ArrayLength(a) =>
       val s = transformExp[Any, T](a)
       val arr = field(s, "length")(IntType)
@@ -170,9 +178,6 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       val x = malloc(unit(1))(s.tp)
       structCopy(x, PardisStruct(tag, elems, methods.map(m => m.copy(body = transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef]))))
       ReadVal(x)(typePointer(s.tp))
-
-    case pc @ PardisCast(Constant(null)) =>
-      PardisCast(Constant(0.asInstanceOf[Any]))(transformType(pc.castFrom), transformType(pc.castTp))
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
 }
@@ -249,7 +254,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       else eq
     }
     // Profiling and utils functions mapping
-    case GenericEngineRunQueryObject(b) =>
+    /*case GenericEngineRunQueryObject(b) =>
       val diff = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val start = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val end = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
@@ -257,7 +262,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       toAtom(transformBlock(b))
       gettimeofday(&(end))
       val tm = timeval_subtract(&(diff), &(end), &(start))
-      Printf(unit("Generated code run in %ld milliseconds."), tm)
+      Printf(unit("Generated code run in %ld milliseconds."), tm)*/
     case OptionGet(x) => ReadVal(x.asInstanceOf[Expression[Any]])(transformType(x.tp))
     case GenericEngineParseDateObject(Constant(d)) =>
       val data = d.split("-").map(x => x.toInt)
@@ -324,7 +329,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     /* HashMap Operations */
-    case nm @ HashMapNew3(_) => transformDef(HashMapNew()(nm.typeA, ArrayBufferType(nm.typeB)))
+    case nm @ HashMapNew3(_, _) => transformDef(HashMapNew()(nm.typeA, ArrayBufferType(nm.typeB)))
     case nm @ HashMapNew() =>
       val nA = typePointer(transformType(nm.typeA)).asInstanceOf[TypeRep[Any]]
       val nB = typePointer(transformType(nm.typeB))
@@ -428,12 +433,20 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case imtf @ PardisStructImmutableField(s, f) =>
       PardisStructImmutableField(s, f)(transformType(imtf.tp))
     case HashCode(t) => t.tp match {
-      case x if x.isPrimitive             => PardisCast(t)(x, IntType)
-      case x if x.name == "Character"     => PardisCast(t)(x, IntType)
-      case x if x.name == "OptimalString" => OptimalStringLength(t.asInstanceOf[Expression[OptimalString]])
-      case x if x.isArray                 => ArrayLength(t.asInstanceOf[Rep[Array[Any]]])
+      case x if x.isPrimitive         => PardisCast(t)(x, IntType)
+      case x if x.name == "Character" => PardisCast(t)(x, IntType)
+      case x if x.name == "OptimalString" =>
+        val len = toAtom(OptimalStringLength(t.asInstanceOf[Expression[OptimalString]]))(IntType)
+        val idx = __newVar[Int](0)
+        val h = __newVar[Int](0)
+        __whileDo(readVar(idx) < len, {
+          __assign(h, readVar(h) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], 0) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], readVar(idx)))
+          __assign(idx, readVar(idx) + unit(1));
+        })
+        ReadVar(h)
+      case x if x.isArray => ArrayLength(t.asInstanceOf[Rep[Array[Any]]])
       // Handle any additional cases here
-      case x                              => super.transformDef(node)
+      case x              => super.transformDef(node)
     }
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]

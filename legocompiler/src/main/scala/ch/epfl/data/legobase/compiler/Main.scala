@@ -77,6 +77,12 @@ object Main extends LegoRunner {
   }
 
   def compileQuery(context: LoweringLegoBase, block: pardis.ir.PardisBlock[Unit], number: Int, shallow: Boolean, generateCCode: Boolean) {
+    def writeASTToDumpFile(b0: pardis.ir.PardisBlock[Unit]) {
+      val pw = new java.io.PrintWriter(new java.io.File("tree_debug_dump.txt"))
+      pw.println(b0.toString)
+      pw.flush()
+    }
+
     // Lowering (e.g. case classes to records)
     val loweredBlock = {
       if (shallow) block
@@ -91,11 +97,16 @@ object Main extends LegoRunner {
     val afterHashMapToArray = {
       if (hashMapToArray) {
         val hm2Arr = new HashMapToArrayTransformer(context)
-        hm2Arr.optimize(new PartialyEvaluate(context).optimize(new DCE(context).optimize(loweredBlock)))
+        val afterPE = new PartialyEvaluate(context).optimize(new DCE(context).optimize(loweredBlock))
+        writeASTToDumpFile(afterPE)
+        val hmBlock = hm2Arr.optimize(afterPE)
+        hmBlock
       } else {
         loweredBlock
       }
     }
+
+    writeASTToDumpFile(afterHashMapToArray)
 
     // DCE
     val dce = new DCE(context)
@@ -115,6 +126,7 @@ object Main extends LegoRunner {
       } else partiallyEvaluatedBlock
     }
 
+    // System.out.println(finalBlock)
     // Generate final program 
     val ir2Program = new { val IR = context } with IRToProgram {}
     val finalProgram = ir2Program.createProgram(finalBlock)

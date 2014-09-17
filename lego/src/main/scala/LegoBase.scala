@@ -16,6 +16,7 @@ trait LegoRunner {
   def run(args: Array[String]) {
 
     val sf = if (args(1).contains(".")) args(1).toDouble.toString else args(1).toInt.toString
+    Config.sf = sf.toDouble
     Config.datapath = args(0) + "/sf" + sf + "/"
 
     val queries: scala.collection.immutable.List[String] =
@@ -29,11 +30,11 @@ trait LegoRunner {
         if (Config.checkResults) {
           val getResultFileName = "results/" + currQuery + ".result_sf" + sf
           if (new java.io.File(getResultFileName).exists) {
-            val resq = scala.io.Source.fromFile(getOutputName).mkString
             val resc = {
               val str = scala.io.Source.fromFile(getResultFileName).mkString
               str * numRuns
             }
+            val resq = scala.io.Source.fromFile(getOutputName).mkString
             if (resq != resc) {
               System.out.println("-----------------------------------------")
               System.out.println("QUERY" + q + " DID NOT RETURN CORRECT RESULT!!!")

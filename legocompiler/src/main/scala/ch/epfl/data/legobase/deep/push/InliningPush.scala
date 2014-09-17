@@ -22,6 +22,11 @@ trait InliningPush extends DeepDSL with pardis.ir.InlineFunctions with QueriesIm
     res
   }
 
+  override def arrayLength[T](self: Rep[Array[T]])(implicit typeT: TypeRep[T]): Rep[Int] = self match {
+    case Def(ArrayNew(length)) => length
+    case _                     => super.arrayLength(self)
+  }
+
   override def __ifThenElse[T: TypeRep](cond: Rep[Boolean], thenp: => Rep[T], elsep: => Rep[T]): Rep[T] = cond match {
     case Constant(true)  => thenp
     case Constant(false) => elsep

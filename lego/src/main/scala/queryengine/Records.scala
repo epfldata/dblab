@@ -34,7 +34,7 @@ case class GroupByClass(val L_RETURNFLAG: Char, val L_LINESTATUS: Char) extends 
 
 case class Q3GRPRecord(
   val L_ORDERKEY: Int,
-  val O_ORDERDATE: Long,
+  val O_ORDERDATE: Int,
   val O_SHIPPRIORITY: Int) extends CaseClassRecord {
   def getField(key: String): Option[Any] = key match {
     case "L_ORDERKEY"     => Some(L_ORDERKEY)
@@ -47,7 +47,7 @@ case class Q3GRPRecord(
 case class Q7GRPRecord(
   val SUPP_NATION: LBString,
   val CUST_NATION: LBString,
-  val L_YEAR: Long) extends CaseClassRecord {
+  val L_YEAR: Int) extends CaseClassRecord {
   def getField(key: String): Option[Any] = key match {
     case "SUPP_NATION" => Some(SUPP_NATION)
     case "CUST_NATION" => Some(CUST_NATION)
@@ -58,7 +58,7 @@ case class Q7GRPRecord(
 
 case class Q9GRPRecord(
   val NATION: LBString,
-  val O_YEAR: Long) extends CaseClassRecord {
+  val O_YEAR: Int) extends CaseClassRecord {
   def getField(key: String): Option[Any] = key match {
     case "NATION" => Some(NATION)
     case "O_YEAR" => Some(O_YEAR)
@@ -115,7 +115,7 @@ case class Q18GRPRecord(
   val C_NAME: LBString,
   val C_CUSTKEY: Int,
   val O_ORDERKEY: Int,
-  val O_ORDERDATE: Long,
+  val O_ORDERDATE: Int,
   val O_TOTALPRICE: Double) extends CaseClassRecord {
   def getField(key: String): Option[Any] = key match {
     case "C_NAME"       => Some(C_NAME)
@@ -138,3 +138,13 @@ case class Q20GRPRecord(
     case _             => None
   }
 }
+
+/*case class Q20GRPRecord2(
+  val L_SUPPKEY: Int,
+  val L_PARTKEY: Int) extends CaseClassRecord {
+  def getField(key: String): Option[Any] = key match {
+    case "L_SUPPKEY" => Some(L_SUPPKEY)
+    case "L_PARTKEY" => Some(L_PARTKEY)
+    case _           => None
+  }
+}*/
