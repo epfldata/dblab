@@ -47,7 +47,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
       traverseBlock(b)
       startCollecting = false
     }
-    case Malloc(numElems) if startCollecting && phase == FindMallocs => {
+    case m @ Malloc(numElems) if startCollecting && phase == FindMallocs => {
       mallocNodes += node.asInstanceOf[Malloc[Any]]
     }
     case _ => super.traverseDef(node)
@@ -66,6 +66,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
   def createBuffers() {
     System.out.println("Creating buffers for mallocNodes: " + mallocNodes.mkString("\n"))
     System.out.println("")
+    System.out.println(mallocNodes.map(e => e.tp).mkString("\n"))
     val mallocInstances = mallocNodes.map(m => mallocToInstance(m)).distinct.filter(t => !t.tp.name.contains("CArray") /* && !t.tp.name.contains("Pointer")*/ )
     for (mallocInstance <- mallocInstances) {
       val mallocTp = mallocInstance.tp
@@ -91,7 +92,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
         unit(())
       })
       mallocBuffers += mallocInstance -> BufferInfo(pool.asInstanceOf[Sym[Any]], index)
-      printf(unit("Buffer for type %s of size %d initialized!\n"), unit(mallocTp.toString), POOL_SIZE)
+      //printf(unit("Buffer for type %s of size %d initialized!\n"), unit(mallocTp.toString), POOL_SIZE)
     }
   }
 
@@ -119,10 +120,12 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
     case m @ Malloc(numElems) if startCollecting && !m.tp.name.contains("CArray") /* && !m.tp.name.contains("Pointer") */ => {
       val mallocInstance = mallocToInstance(m)
       val bufferInfo = mallocBuffers(mallocInstance)
+      System.out.println(m.tp)
+      System.out.println(m.tp.typeArguments(0))
       val p = pointer_content(bufferInfo.pool.asInstanceOf[Rep[Pointer[Any]]], readVar(bufferInfo.index))(m.tp.asInstanceOf[PardisType[Any]])
       __assign(bufferInfo.index, readVar(bufferInfo.index) + unit(1))
       // printf(unit("should be substituted by " + bufferInfo.pool + ", " + bufferInfo.index))
-      ReadVal(p)
+      ReadVal(p)(p.tp.asInstanceOf[PardisType[Any]])
     }
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]

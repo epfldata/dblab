@@ -23,7 +23,7 @@ object Main extends LegoRunner {
     run(args)
   }
 
-  val hashMapToArray = false
+  val hashMapToArray = true
 
   def executeQuery(query: String): Unit = {
     val context = new LoweringLegoBase {}
@@ -94,8 +94,6 @@ object Main extends LegoRunner {
       }
     }
 
-    // writeASTToDumpFile(loweredBlock)
-
     val afterHashMapToArray = {
       if (hashMapToArray) {
         val hm2Arr = new HashMapToArrayTransformer(context)
@@ -107,6 +105,8 @@ object Main extends LegoRunner {
         loweredBlock
       }
     }
+
+    writeASTToDumpFile(afterHashMapToArray)
 
     // DCE
     val dce = new DCE(context)

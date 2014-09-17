@@ -48,9 +48,12 @@ class MetaInfo
   }
   def next() {
     while (!stop && i < table.length) {
-      val v = table(i)
+      /*  for (j <- 0 until 16) {
+        child.consume(table(i + j).asInstanceOf[Record])
+      }
+      i += 16*/
+      child.consume(table(i).asInstanceOf[Record])
       i += 1
-      child.consume(v.asInstanceOf[Record])
     }
   }
   def reset() { i = 0 }
@@ -325,7 +328,7 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
   var keySet = Set(hm.keySet.toSeq: _*)
   val expectedSize = leftParent.expectedSize
 
-  def removeFromList(elemList: ArrayBuffer[A], e: A, idx: Int) = {
+  def removeFromList(elemList: ArrayBuffer[A], e: A, idx: Int) {
     elemList.remove(idx)
     if (elemList.size == 0) {
       val lh = leftHash(e)
@@ -333,7 +336,6 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
       hm.remove(lh)
       ()
     }
-    e
   }
 
   def open() {
@@ -350,9 +352,17 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
     // Step 3: Return everything that left in the hash table
     keySet = Set(hm.keySet.toSeq: _*)
     while (!stop && hm.size != 0) {
-      val k = keySet.head
-      val elemList = hm(k)
-      child.consume(removeFromList(elemList, elemList(0), 0).asInstanceOf[Record])
+      val key = keySet.head
+      keySet.remove(key)
+      val elems = hm.remove(key)
+      var i = 0
+      val len = elems.get.size
+      val l = elems.get
+      while (i < len) {
+        val e = l(i)
+        child.consume(e.asInstanceOf[Record])
+        i += 1
+      }
     }
   }
   def consume(tuple: Record) {
@@ -378,7 +388,7 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
           var idx = i - removed
           val e = elems(idx)
           if (joinCond(e, t)) {
-            removeFromList(elems, e, idx);
+            //removeFromList(elems, e, idx);
             removed += 1
           }
           i += 1

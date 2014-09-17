@@ -204,9 +204,8 @@ trait ScanOpImplementations { self: DeepDSL =>
   }
   override def scanOpNext[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     __whileDo(self.stop.unary_$bang.$amp$amp(self.i.$less(self.table.length)), {
-      val v: this.Rep[A] = self.table.apply(self.i);
-      self.i_$eq(self.i.$plus(unit(1)));
-      self.child.consume(infix_asInstanceOf[ch.epfl.data.pardis.shallow.Record](v))
+      self.child.consume(infix_asInstanceOf[ch.epfl.data.pardis.shallow.Record](self.table.apply(self.i)));
+      self.i_$eq(self.i.$plus(unit(1)))
     })
   }
   override def scanOpReset[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
@@ -1793,7 +1792,7 @@ trait SubquerySingleResultImplementations { self: DeepDSL =>
 trait SubquerySingleResultComponent extends SubquerySingleResultOps with SubquerySingleResultImplicits { self: OperatorsComponent => }
 trait HashJoinAntiOps extends Base { this: OperatorsComponent =>
   implicit class HashJoinAntiRep[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) {
-    def removeFromList(elemList: Rep[ArrayBuffer[A]], e: Rep[A], idx: Rep[Int]): Rep[A] = hashJoinAntiRemoveFromList[A, B, C](self, elemList, e, idx)(typeA, typeB, typeC)
+    def removeFromList(elemList: Rep[ArrayBuffer[A]], e: Rep[A], idx: Rep[Int]): Rep[Unit] = hashJoinAntiRemoveFromList[A, B, C](self, elemList, e, idx)(typeA, typeB, typeC)
     def open(): Rep[Unit] = hashJoinAntiOpen[A, B, C](self)(typeA, typeB, typeC)
     def reset(): Rep[Unit] = hashJoinAntiReset[A, B, C](self)(typeA, typeB, typeC)
     def next(): Rep[Unit] = hashJoinAntiNext[A, B, C](self)(typeA, typeB, typeC)
@@ -1824,7 +1823,7 @@ trait HashJoinAntiOps extends Base { this: OperatorsComponent =>
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
-  case class HashJoinAntiRemoveFromList[A, B, C](self: Rep[HashJoinAnti[A, B, C]], elemList: Rep[ArrayBuffer[A]], e: Rep[A], idx: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FunctionDef[A](Some(self), "removeFromList", List(List(elemList, e, idx))) {
+  case class HashJoinAntiRemoveFromList[A, B, C](self: Rep[HashJoinAnti[A, B, C]], elemList: Rep[ArrayBuffer[A]], e: Rep[A], idx: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FunctionDef[Unit](Some(self), "removeFromList", List(List(elemList, e, idx))) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -1920,7 +1919,7 @@ trait HashJoinAntiOps extends Base { this: OperatorsComponent =>
 
   // method definitions
   def hashJoinAntiNew[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinAnti[A, B, C]] = HashJoinAntiNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)
-  def hashJoinAntiRemoveFromList[A, B, C](self: Rep[HashJoinAnti[A, B, C]], elemList: Rep[ArrayBuffer[A]], e: Rep[A], idx: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[A] = HashJoinAntiRemoveFromList[A, B, C](self, elemList, e, idx)
+  def hashJoinAntiRemoveFromList[A, B, C](self: Rep[HashJoinAnti[A, B, C]], elemList: Rep[ArrayBuffer[A]], e: Rep[A], idx: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAntiRemoveFromList[A, B, C](self, elemList, e, idx)
   def hashJoinAntiOpen[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAntiOpen[A, B, C](self)
   def hashJoinAntiReset[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAntiReset[A, B, C](self)
   def hashJoinAntiNext[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAntiNext[A, B, C](self)
@@ -1957,7 +1956,7 @@ trait HashJoinAntiImplicits { this: HashJoinAntiComponent =>
   // Add implicit conversions here!
 }
 trait HashJoinAntiImplementations { self: DeepDSL =>
-  override def hashJoinAntiRemoveFromList[A, B, C](self: Rep[HashJoinAnti[A, B, C]], elemList: Rep[ArrayBuffer[A]], e: Rep[A], idx: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[A] = {
+  override def hashJoinAntiRemoveFromList[A, B, C](self: Rep[HashJoinAnti[A, B, C]], elemList: Rep[ArrayBuffer[A]], e: Rep[A], idx: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
     {
       elemList.remove(idx);
       __ifThenElse(infix_$eq$eq(elemList.size, unit(0)), {
@@ -1965,8 +1964,7 @@ trait HashJoinAntiImplementations { self: DeepDSL =>
         self.keySet.remove(lh);
         self.hm.remove(lh);
         unit(())
-      }, unit(()));
-      e
+      }, unit(()))
     }
   }
   override def hashJoinAntiOpen[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
@@ -1991,9 +1989,17 @@ trait HashJoinAntiImplementations { self: DeepDSL =>
       self.rightParent.next();
       self.keySet_$eq(Set.apply[C](self.hm.keySet.toSeq));
       __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
-        val k: this.Rep[C] = self.keySet.head;
-        val elemList: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.apply(k);
-        self.child.consume(infix_asInstanceOf[ch.epfl.data.pardis.shallow.Record](self.removeFromList(elemList, elemList.apply(unit(0)), unit(0))))
+        val key: this.Rep[C] = self.keySet.head;
+        self.keySet.remove(key);
+        val elems: this.Rep[Option[scala.collection.mutable.ArrayBuffer[A]]] = self.hm.remove(key);
+        var i: this.Var[Int] = __newVar(unit(0));
+        val len: this.Rep[Int] = elems.get.size;
+        val l: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = elems.get;
+        __whileDo(readVar(i).$less(len), {
+          val e: this.Rep[A] = l.apply(readVar(i));
+          self.child.consume(infix_asInstanceOf[ch.epfl.data.pardis.shallow.Record](e));
+          __assign(i, readVar(i).$plus(unit(1)))
+        })
       })
     }
   }
@@ -2014,10 +2020,7 @@ trait HashJoinAntiImplementations { self: DeepDSL =>
         __whileDo(readVar(i).$less(len), {
           var idx: this.Var[Int] = __newVar(readVar(i).$minus(readVar(removed)));
           val e: this.Rep[A] = elems.apply(readVar(idx));
-          __ifThenElse(__app(self.joinCond).apply(e, t), {
-            self.removeFromList(elems, e, readVar(idx));
-            __assign(removed, readVar(removed).$plus(unit(1)))
-          }, unit(()));
+          __ifThenElse(__app(self.joinCond).apply(e, t), __assign(removed, readVar(removed).$plus(unit(1))), unit(()));
           __assign(i, readVar(i).$plus(unit(1)))
         })
       }, unit(()))

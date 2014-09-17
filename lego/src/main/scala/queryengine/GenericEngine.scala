@@ -16,27 +16,18 @@ object GenericEngine {
     // }
   }
 
-  def dateToString(long: Long): String = {
-    val dt = new java.util.Date(long)
-    (dt.getYear + 1900) + "" +
-      {
-        val m = dt.getMonth + 1
-        if (m < 10) "0" + m else m
-      } + "" +
-      {
-        val d = dt.getDate
-        if (d < 10) "0" + d else d
-      }
-  }
+  def dateToString(long: Int): String = long.toString
 
-  def dateToYear(long: Long): Int = {
-    new java.util.Date(long).getYear + 1900
+  def dateToYear(long: Int): Int = {
+    long / 10000
+    //new java.util.Date(long).getYear + 1900
   }
 
   private val simpleDateFormatter = new java.text.SimpleDateFormat("yyyy-MM-dd")
 
-  def parseDate(x: String): Long = {
-    simpleDateFormatter.parse(x).getTime
+  def parseDate(x: String): Int = {
+    val d = simpleDateFormatter.parse(x)
+    ((d.getYear + 1900) * 10000) + ((d.getMonth + 1) * 100) + d.getDate
   }
   def parseString(x: String): LBString = LBString(x.getBytes)
 }

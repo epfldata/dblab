@@ -68,16 +68,16 @@ trait Q3GRPRecordOps extends Base { this: DeepDSL =>
   implicit class Q3GRPRecordRep(self: Rep[Q3GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q3GRPRecordGetField(self, key)
     def O_SHIPPRIORITY: Rep[Int] = q3GRPRecord_Field_O_SHIPPRIORITY(self)
-    def O_ORDERDATE: Rep[Long] = q3GRPRecord_Field_O_ORDERDATE(self)
+    def O_ORDERDATE: Rep[Int] = q3GRPRecord_Field_O_ORDERDATE(self)
     def L_ORDERKEY: Rep[Int] = q3GRPRecord_Field_L_ORDERKEY(self)
   }
   object Q3GRPRecord {
 
   }
   // constructors
-  def __newQ3GRPRecord(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Long], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = q3GRPRecordNew(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
+  def __newQ3GRPRecord(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = q3GRPRecordNew(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
   // case classes
-  case class Q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Long], O_SHIPPRIORITY: Rep[Int]) extends ConstructorDef[Q3GRPRecord](List(), "Q3GRPRecord", List(List(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY))) {
+  case class Q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]) extends ConstructorDef[Q3GRPRecord](List(), "Q3GRPRecord", List(List(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -91,7 +91,7 @@ trait Q3GRPRecordOps extends Base { this: DeepDSL =>
 
   }
 
-  case class Q3GRPRecord_Field_O_ORDERDATE(self: Rep[Q3GRPRecord]) extends FieldDef[Long](self, "O_ORDERDATE") {
+  case class Q3GRPRecord_Field_O_ORDERDATE(self: Rep[Q3GRPRecord]) extends FieldDef[Int](self, "O_ORDERDATE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
@@ -104,10 +104,10 @@ trait Q3GRPRecordOps extends Base { this: DeepDSL =>
   }
 
   // method definitions
-  def q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Long], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = Q3GRPRecordNew(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
+  def q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = Q3GRPRecordNew(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
   def q3GRPRecordGetField(self: Rep[Q3GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q3GRPRecordGetField(self, key)
   def q3GRPRecord_Field_O_SHIPPRIORITY(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_O_SHIPPRIORITY(self)
-  def q3GRPRecord_Field_O_ORDERDATE(self: Rep[Q3GRPRecord]): Rep[Long] = Q3GRPRecord_Field_O_ORDERDATE(self)
+  def q3GRPRecord_Field_O_ORDERDATE(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_O_ORDERDATE(self)
   def q3GRPRecord_Field_L_ORDERKEY(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_L_ORDERKEY(self)
   type Q3GRPRecord = ch.epfl.data.legobase.queryengine.Q3GRPRecord
   case object Q3GRPRecordType extends TypeRep[Q3GRPRecord] {
@@ -130,7 +130,7 @@ trait Q3GRPRecordComponent extends Q3GRPRecordOps with Q3GRPRecordImplicits { se
 trait Q7GRPRecordOps extends Base { this: DeepDSL =>
   implicit class Q7GRPRecordRep(self: Rep[Q7GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q7GRPRecordGetField(self, key)
-    def L_YEAR: Rep[Long] = q7GRPRecord_Field_L_YEAR(self)
+    def L_YEAR: Rep[Int] = q7GRPRecord_Field_L_YEAR(self)
     def CUST_NATION: Rep[OptimalString] = q7GRPRecord_Field_CUST_NATION(self)
     def SUPP_NATION: Rep[OptimalString] = q7GRPRecord_Field_SUPP_NATION(self)
   }
@@ -138,9 +138,9 @@ trait Q7GRPRecordOps extends Base { this: DeepDSL =>
 
   }
   // constructors
-  def __newQ7GRPRecord(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Long]): Rep[Q7GRPRecord] = q7GRPRecordNew(SUPP_NATION, CUST_NATION, L_YEAR)
+  def __newQ7GRPRecord(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]): Rep[Q7GRPRecord] = q7GRPRecordNew(SUPP_NATION, CUST_NATION, L_YEAR)
   // case classes
-  case class Q7GRPRecordNew(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Long]) extends ConstructorDef[Q7GRPRecord](List(), "Q7GRPRecord", List(List(SUPP_NATION, CUST_NATION, L_YEAR))) {
+  case class Q7GRPRecordNew(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]) extends ConstructorDef[Q7GRPRecord](List(), "Q7GRPRecord", List(List(SUPP_NATION, CUST_NATION, L_YEAR))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -148,7 +148,7 @@ trait Q7GRPRecordOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy _).curried
   }
 
-  case class Q7GRPRecord_Field_L_YEAR(self: Rep[Q7GRPRecord]) extends FieldDef[Long](self, "L_YEAR") {
+  case class Q7GRPRecord_Field_L_YEAR(self: Rep[Q7GRPRecord]) extends FieldDef[Int](self, "L_YEAR") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
@@ -167,9 +167,9 @@ trait Q7GRPRecordOps extends Base { this: DeepDSL =>
   }
 
   // method definitions
-  def q7GRPRecordNew(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Long]): Rep[Q7GRPRecord] = Q7GRPRecordNew(SUPP_NATION, CUST_NATION, L_YEAR)
+  def q7GRPRecordNew(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]): Rep[Q7GRPRecord] = Q7GRPRecordNew(SUPP_NATION, CUST_NATION, L_YEAR)
   def q7GRPRecordGetField(self: Rep[Q7GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q7GRPRecordGetField(self, key)
-  def q7GRPRecord_Field_L_YEAR(self: Rep[Q7GRPRecord]): Rep[Long] = Q7GRPRecord_Field_L_YEAR(self)
+  def q7GRPRecord_Field_L_YEAR(self: Rep[Q7GRPRecord]): Rep[Int] = Q7GRPRecord_Field_L_YEAR(self)
   def q7GRPRecord_Field_CUST_NATION(self: Rep[Q7GRPRecord]): Rep[OptimalString] = Q7GRPRecord_Field_CUST_NATION(self)
   def q7GRPRecord_Field_SUPP_NATION(self: Rep[Q7GRPRecord]): Rep[OptimalString] = Q7GRPRecord_Field_SUPP_NATION(self)
   type Q7GRPRecord = ch.epfl.data.legobase.queryengine.Q7GRPRecord
@@ -193,16 +193,16 @@ trait Q7GRPRecordComponent extends Q7GRPRecordOps with Q7GRPRecordImplicits { se
 trait Q9GRPRecordOps extends Base { this: DeepDSL =>
   implicit class Q9GRPRecordRep(self: Rep[Q9GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q9GRPRecordGetField(self, key)
-    def O_YEAR: Rep[Long] = q9GRPRecord_Field_O_YEAR(self)
+    def O_YEAR: Rep[Int] = q9GRPRecord_Field_O_YEAR(self)
     def NATION: Rep[OptimalString] = q9GRPRecord_Field_NATION(self)
   }
   object Q9GRPRecord {
 
   }
   // constructors
-  def __newQ9GRPRecord(NATION: Rep[OptimalString], O_YEAR: Rep[Long]): Rep[Q9GRPRecord] = q9GRPRecordNew(NATION, O_YEAR)
+  def __newQ9GRPRecord(NATION: Rep[OptimalString], O_YEAR: Rep[Int]): Rep[Q9GRPRecord] = q9GRPRecordNew(NATION, O_YEAR)
   // case classes
-  case class Q9GRPRecordNew(NATION: Rep[OptimalString], O_YEAR: Rep[Long]) extends ConstructorDef[Q9GRPRecord](List(), "Q9GRPRecord", List(List(NATION, O_YEAR))) {
+  case class Q9GRPRecordNew(NATION: Rep[OptimalString], O_YEAR: Rep[Int]) extends ConstructorDef[Q9GRPRecord](List(), "Q9GRPRecord", List(List(NATION, O_YEAR))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -210,7 +210,7 @@ trait Q9GRPRecordOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy _).curried
   }
 
-  case class Q9GRPRecord_Field_O_YEAR(self: Rep[Q9GRPRecord]) extends FieldDef[Long](self, "O_YEAR") {
+  case class Q9GRPRecord_Field_O_YEAR(self: Rep[Q9GRPRecord]) extends FieldDef[Int](self, "O_YEAR") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
@@ -223,9 +223,9 @@ trait Q9GRPRecordOps extends Base { this: DeepDSL =>
   }
 
   // method definitions
-  def q9GRPRecordNew(NATION: Rep[OptimalString], O_YEAR: Rep[Long]): Rep[Q9GRPRecord] = Q9GRPRecordNew(NATION, O_YEAR)
+  def q9GRPRecordNew(NATION: Rep[OptimalString], O_YEAR: Rep[Int]): Rep[Q9GRPRecord] = Q9GRPRecordNew(NATION, O_YEAR)
   def q9GRPRecordGetField(self: Rep[Q9GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q9GRPRecordGetField(self, key)
-  def q9GRPRecord_Field_O_YEAR(self: Rep[Q9GRPRecord]): Rep[Long] = Q9GRPRecord_Field_O_YEAR(self)
+  def q9GRPRecord_Field_O_YEAR(self: Rep[Q9GRPRecord]): Rep[Int] = Q9GRPRecord_Field_O_YEAR(self)
   def q9GRPRecord_Field_NATION(self: Rep[Q9GRPRecord]): Rep[OptimalString] = Q9GRPRecord_Field_NATION(self)
   type Q9GRPRecord = ch.epfl.data.legobase.queryengine.Q9GRPRecord
   case object Q9GRPRecordType extends TypeRep[Q9GRPRecord] {
@@ -478,7 +478,7 @@ trait Q18GRPRecordOps extends Base { this: DeepDSL =>
   implicit class Q18GRPRecordRep(self: Rep[Q18GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q18GRPRecordGetField(self, key)
     def O_TOTALPRICE: Rep[Double] = q18GRPRecord_Field_O_TOTALPRICE(self)
-    def O_ORDERDATE: Rep[Long] = q18GRPRecord_Field_O_ORDERDATE(self)
+    def O_ORDERDATE: Rep[Int] = q18GRPRecord_Field_O_ORDERDATE(self)
     def O_ORDERKEY: Rep[Int] = q18GRPRecord_Field_O_ORDERKEY(self)
     def C_CUSTKEY: Rep[Int] = q18GRPRecord_Field_C_CUSTKEY(self)
     def C_NAME: Rep[OptimalString] = q18GRPRecord_Field_C_NAME(self)
@@ -487,9 +487,9 @@ trait Q18GRPRecordOps extends Base { this: DeepDSL =>
 
   }
   // constructors
-  def __newQ18GRPRecord(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Long], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = q18GRPRecordNew(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
+  def __newQ18GRPRecord(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = q18GRPRecordNew(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
   // case classes
-  case class Q18GRPRecordNew(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Long], O_TOTALPRICE: Rep[Double]) extends ConstructorDef[Q18GRPRecord](List(), "Q18GRPRecord", List(List(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE))) {
+  case class Q18GRPRecordNew(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]) extends ConstructorDef[Q18GRPRecord](List(), "Q18GRPRecord", List(List(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -503,7 +503,7 @@ trait Q18GRPRecordOps extends Base { this: DeepDSL =>
 
   }
 
-  case class Q18GRPRecord_Field_O_ORDERDATE(self: Rep[Q18GRPRecord]) extends FieldDef[Long](self, "O_ORDERDATE") {
+  case class Q18GRPRecord_Field_O_ORDERDATE(self: Rep[Q18GRPRecord]) extends FieldDef[Int](self, "O_ORDERDATE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
@@ -528,10 +528,10 @@ trait Q18GRPRecordOps extends Base { this: DeepDSL =>
   }
 
   // method definitions
-  def q18GRPRecordNew(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Long], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = Q18GRPRecordNew(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
+  def q18GRPRecordNew(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = Q18GRPRecordNew(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
   def q18GRPRecordGetField(self: Rep[Q18GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q18GRPRecordGetField(self, key)
   def q18GRPRecord_Field_O_TOTALPRICE(self: Rep[Q18GRPRecord]): Rep[Double] = Q18GRPRecord_Field_O_TOTALPRICE(self)
-  def q18GRPRecord_Field_O_ORDERDATE(self: Rep[Q18GRPRecord]): Rep[Long] = Q18GRPRecord_Field_O_ORDERDATE(self)
+  def q18GRPRecord_Field_O_ORDERDATE(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_O_ORDERDATE(self)
   def q18GRPRecord_Field_O_ORDERKEY(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_O_ORDERKEY(self)
   def q18GRPRecord_Field_C_CUSTKEY(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_C_CUSTKEY(self)
   def q18GRPRecord_Field_C_NAME(self: Rep[Q18GRPRecord]): Rep[OptimalString] = Q18GRPRecord_Field_C_NAME(self)
@@ -678,9 +678,9 @@ trait GenericEngineOps extends Base { this: DeepDSL =>
   }
   object GenericEngine {
     def runQuery[T](query: => Rep[T])(implicit typeT: TypeRep[T]): Rep[T] = genericEngineRunQueryObject[T](query)(typeT)
-    def dateToString(long: Rep[Long]): Rep[String] = genericEngineDateToStringObject(long)
-    def dateToYear(long: Rep[Long]): Rep[Int] = genericEngineDateToYearObject(long)
-    def parseDate(x: Rep[String]): Rep[Long] = genericEngineParseDateObject(x)
+    def dateToString(long: Rep[Int]): Rep[String] = genericEngineDateToStringObject(long)
+    def dateToYear(long: Rep[Int]): Rep[Int] = genericEngineDateToYearObject(long)
+    def parseDate(x: Rep[String]): Rep[Int] = genericEngineParseDateObject(x)
     def parseString(x: Rep[String]): Rep[OptimalString] = genericEngineParseStringObject(x)
   }
   // constructors
@@ -690,15 +690,15 @@ trait GenericEngineOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[T] _)
   }
 
-  case class GenericEngineDateToStringObject(long: Rep[Long]) extends FunctionDef[String](None, "GenericEngine.dateToString", List(List(long))) {
+  case class GenericEngineDateToStringObject(long: Rep[Int]) extends FunctionDef[String](None, "GenericEngine.dateToString", List(List(long))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class GenericEngineDateToYearObject(long: Rep[Long]) extends FunctionDef[Int](None, "GenericEngine.dateToYear", List(List(long))) {
+  case class GenericEngineDateToYearObject(long: Rep[Int]) extends FunctionDef[Int](None, "GenericEngine.dateToYear", List(List(long))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class GenericEngineParseDateObject(x: Rep[String]) extends FunctionDef[Long](None, "GenericEngine.parseDate", List(List(x))) {
+  case class GenericEngineParseDateObject(x: Rep[String]) extends FunctionDef[Int](None, "GenericEngine.parseDate", List(List(x))) {
     override def curriedConstructor = (copy _)
   }
 
@@ -711,9 +711,9 @@ trait GenericEngineOps extends Base { this: DeepDSL =>
     val queryOutput = reifyBlock(query)
     GenericEngineRunQueryObject[T](queryOutput)
   }
-  def genericEngineDateToStringObject(long: Rep[Long]): Rep[String] = GenericEngineDateToStringObject(long)
-  def genericEngineDateToYearObject(long: Rep[Long]): Rep[Int] = GenericEngineDateToYearObject(long)
-  def genericEngineParseDateObject(x: Rep[String]): Rep[Long] = GenericEngineParseDateObject(x)
+  def genericEngineDateToStringObject(long: Rep[Int]): Rep[String] = GenericEngineDateToStringObject(long)
+  def genericEngineDateToYearObject(long: Rep[Int]): Rep[Int] = GenericEngineDateToYearObject(long)
+  def genericEngineParseDateObject(x: Rep[String]): Rep[Int] = GenericEngineParseDateObject(x)
   def genericEngineParseStringObject(x: Rep[String]): Rep[OptimalString] = GenericEngineParseStringObject(x)
   type GenericEngine = ch.epfl.data.legobase.queryengine.GenericEngine
   case object GenericEngineType extends TypeRep[GenericEngine] {
@@ -739,9 +739,9 @@ trait LINEITEMRecordOps extends Base { this: DeepDSL =>
     def L_COMMENT: Rep[OptimalString] = lINEITEMRecord_Field_L_COMMENT(self)
     def L_SHIPMODE: Rep[OptimalString] = lINEITEMRecord_Field_L_SHIPMODE(self)
     def L_SHIPINSTRUCT: Rep[OptimalString] = lINEITEMRecord_Field_L_SHIPINSTRUCT(self)
-    def L_RECEIPTDATE: Rep[Long] = lINEITEMRecord_Field_L_RECEIPTDATE(self)
-    def L_COMMITDATE: Rep[Long] = lINEITEMRecord_Field_L_COMMITDATE(self)
-    def L_SHIPDATE: Rep[Long] = lINEITEMRecord_Field_L_SHIPDATE(self)
+    def L_RECEIPTDATE: Rep[Int] = lINEITEMRecord_Field_L_RECEIPTDATE(self)
+    def L_COMMITDATE: Rep[Int] = lINEITEMRecord_Field_L_COMMITDATE(self)
+    def L_SHIPDATE: Rep[Int] = lINEITEMRecord_Field_L_SHIPDATE(self)
     def L_LINESTATUS: Rep[Character] = lINEITEMRecord_Field_L_LINESTATUS(self)
     def L_RETURNFLAG: Rep[Character] = lINEITEMRecord_Field_L_RETURNFLAG(self)
     def L_TAX: Rep[Double] = lINEITEMRecord_Field_L_TAX(self)
@@ -757,9 +757,9 @@ trait LINEITEMRecordOps extends Base { this: DeepDSL =>
 
   }
   // constructors
-  def __newLINEITEMRecord(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character], L_SHIPDATE: Rep[Long], L_COMMITDATE: Rep[Long], L_RECEIPTDATE: Rep[Long], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = lINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
+  def __newLINEITEMRecord(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = lINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
   // case classes
-  case class LINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character], L_SHIPDATE: Rep[Long], L_COMMITDATE: Rep[Long], L_RECEIPTDATE: Rep[Long], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]) extends ConstructorDef[LINEITEMRecord](List(), "LINEITEMRecord", List(List(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT))) {
+  case class LINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]) extends ConstructorDef[LINEITEMRecord](List(), "LINEITEMRecord", List(List(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -785,19 +785,19 @@ trait LINEITEMRecordOps extends Base { this: DeepDSL =>
 
   }
 
-  case class LINEITEMRecord_Field_L_RECEIPTDATE(self: Rep[LINEITEMRecord]) extends FieldDef[Long](self, "L_RECEIPTDATE") {
+  case class LINEITEMRecord_Field_L_RECEIPTDATE(self: Rep[LINEITEMRecord]) extends FieldDef[Int](self, "L_RECEIPTDATE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
   }
 
-  case class LINEITEMRecord_Field_L_COMMITDATE(self: Rep[LINEITEMRecord]) extends FieldDef[Long](self, "L_COMMITDATE") {
+  case class LINEITEMRecord_Field_L_COMMITDATE(self: Rep[LINEITEMRecord]) extends FieldDef[Int](self, "L_COMMITDATE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
   }
 
-  case class LINEITEMRecord_Field_L_SHIPDATE(self: Rep[LINEITEMRecord]) extends FieldDef[Long](self, "L_SHIPDATE") {
+  case class LINEITEMRecord_Field_L_SHIPDATE(self: Rep[LINEITEMRecord]) extends FieldDef[Int](self, "L_SHIPDATE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
@@ -864,14 +864,14 @@ trait LINEITEMRecordOps extends Base { this: DeepDSL =>
   }
 
   // method definitions
-  def lINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character], L_SHIPDATE: Rep[Long], L_COMMITDATE: Rep[Long], L_RECEIPTDATE: Rep[Long], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = LINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
+  def lINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Character], L_LINESTATUS: Rep[Character], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = LINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
   def lINEITEMRecordGetField(self: Rep[LINEITEMRecord], key: Rep[String]): Rep[Option[Any]] = LINEITEMRecordGetField(self, key)
   def lINEITEMRecord_Field_L_COMMENT(self: Rep[LINEITEMRecord]): Rep[OptimalString] = LINEITEMRecord_Field_L_COMMENT(self)
   def lINEITEMRecord_Field_L_SHIPMODE(self: Rep[LINEITEMRecord]): Rep[OptimalString] = LINEITEMRecord_Field_L_SHIPMODE(self)
   def lINEITEMRecord_Field_L_SHIPINSTRUCT(self: Rep[LINEITEMRecord]): Rep[OptimalString] = LINEITEMRecord_Field_L_SHIPINSTRUCT(self)
-  def lINEITEMRecord_Field_L_RECEIPTDATE(self: Rep[LINEITEMRecord]): Rep[Long] = LINEITEMRecord_Field_L_RECEIPTDATE(self)
-  def lINEITEMRecord_Field_L_COMMITDATE(self: Rep[LINEITEMRecord]): Rep[Long] = LINEITEMRecord_Field_L_COMMITDATE(self)
-  def lINEITEMRecord_Field_L_SHIPDATE(self: Rep[LINEITEMRecord]): Rep[Long] = LINEITEMRecord_Field_L_SHIPDATE(self)
+  def lINEITEMRecord_Field_L_RECEIPTDATE(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_RECEIPTDATE(self)
+  def lINEITEMRecord_Field_L_COMMITDATE(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_COMMITDATE(self)
+  def lINEITEMRecord_Field_L_SHIPDATE(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_SHIPDATE(self)
   def lINEITEMRecord_Field_L_LINESTATUS(self: Rep[LINEITEMRecord]): Rep[Character] = LINEITEMRecord_Field_L_LINESTATUS(self)
   def lINEITEMRecord_Field_L_RETURNFLAG(self: Rep[LINEITEMRecord]): Rep[Character] = LINEITEMRecord_Field_L_RETURNFLAG(self)
   def lINEITEMRecord_Field_L_TAX(self: Rep[LINEITEMRecord]): Rep[Double] = LINEITEMRecord_Field_L_TAX(self)
@@ -1429,7 +1429,7 @@ trait ORDERSRecordOps extends Base { this: DeepDSL =>
     def O_SHIPPRIORITY: Rep[Int] = oRDERSRecord_Field_O_SHIPPRIORITY(self)
     def O_CLERK: Rep[OptimalString] = oRDERSRecord_Field_O_CLERK(self)
     def O_ORDERPRIORITY: Rep[OptimalString] = oRDERSRecord_Field_O_ORDERPRIORITY(self)
-    def O_ORDERDATE: Rep[Long] = oRDERSRecord_Field_O_ORDERDATE(self)
+    def O_ORDERDATE: Rep[Int] = oRDERSRecord_Field_O_ORDERDATE(self)
     def O_TOTALPRICE: Rep[Double] = oRDERSRecord_Field_O_TOTALPRICE(self)
     def O_ORDERSTATUS: Rep[Character] = oRDERSRecord_Field_O_ORDERSTATUS(self)
     def O_CUSTKEY: Rep[Int] = oRDERSRecord_Field_O_CUSTKEY(self)
@@ -1439,9 +1439,9 @@ trait ORDERSRecordOps extends Base { this: DeepDSL =>
 
   }
   // constructors
-  def __newORDERSRecord(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Character], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Long], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = oRDERSRecordNew(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
+  def __newORDERSRecord(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Character], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = oRDERSRecordNew(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
   // case classes
-  case class ORDERSRecordNew(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Character], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Long], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]) extends ConstructorDef[ORDERSRecord](List(), "ORDERSRecord", List(List(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT))) {
+  case class ORDERSRecordNew(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Character], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]) extends ConstructorDef[ORDERSRecord](List(), "ORDERSRecord", List(List(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -1473,7 +1473,7 @@ trait ORDERSRecordOps extends Base { this: DeepDSL =>
 
   }
 
-  case class ORDERSRecord_Field_O_ORDERDATE(self: Rep[ORDERSRecord]) extends FieldDef[Long](self, "O_ORDERDATE") {
+  case class ORDERSRecord_Field_O_ORDERDATE(self: Rep[ORDERSRecord]) extends FieldDef[Int](self, "O_ORDERDATE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
@@ -1504,13 +1504,13 @@ trait ORDERSRecordOps extends Base { this: DeepDSL =>
   }
 
   // method definitions
-  def oRDERSRecordNew(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Character], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Long], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = ORDERSRecordNew(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
+  def oRDERSRecordNew(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Character], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = ORDERSRecordNew(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
   def oRDERSRecordGetField(self: Rep[ORDERSRecord], key: Rep[String]): Rep[Option[Any]] = ORDERSRecordGetField(self, key)
   def oRDERSRecord_Field_O_COMMENT(self: Rep[ORDERSRecord]): Rep[OptimalString] = ORDERSRecord_Field_O_COMMENT(self)
   def oRDERSRecord_Field_O_SHIPPRIORITY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_SHIPPRIORITY(self)
   def oRDERSRecord_Field_O_CLERK(self: Rep[ORDERSRecord]): Rep[OptimalString] = ORDERSRecord_Field_O_CLERK(self)
   def oRDERSRecord_Field_O_ORDERPRIORITY(self: Rep[ORDERSRecord]): Rep[OptimalString] = ORDERSRecord_Field_O_ORDERPRIORITY(self)
-  def oRDERSRecord_Field_O_ORDERDATE(self: Rep[ORDERSRecord]): Rep[Long] = ORDERSRecord_Field_O_ORDERDATE(self)
+  def oRDERSRecord_Field_O_ORDERDATE(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_ORDERDATE(self)
   def oRDERSRecord_Field_O_TOTALPRICE(self: Rep[ORDERSRecord]): Rep[Double] = ORDERSRecord_Field_O_TOTALPRICE(self)
   def oRDERSRecord_Field_O_ORDERSTATUS(self: Rep[ORDERSRecord]): Rep[Character] = ORDERSRecord_Field_O_ORDERSTATUS(self)
   def oRDERSRecord_Field_O_CUSTKEY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_CUSTKEY(self)
@@ -1776,7 +1776,7 @@ trait K2DBScannerOps extends Base { this: DeepDSL =>
     def next_char(): Rep[Char] = k2DBScannerNext_char(self)
     def next(buf: Rep[Array[Byte]])(implicit overload1: Overloaded1): Rep[Int] = k2DBScannerNext1(self, buf)
     def next(buf: Rep[Array[Byte]], offset: Rep[Int])(implicit overload2: Overloaded2): Rep[Int] = k2DBScannerNext2(self, buf, offset)
-    def next_date: Rep[Long] = k2DBScannerNext_date(self)
+    def next_date: Rep[Int] = k2DBScannerNext_date(self)
     def hasNext(): Rep[Boolean] = k2DBScannerHasNext(self)
     def delimiter_=(x$1: Rep[Char]): Rep[Unit] = k2DBScanner_Field_Delimiter_$eq(self, x$1)
     def delimiter: Rep[Char] = k2DBScanner_Field_Delimiter(self)
@@ -1816,7 +1816,7 @@ trait K2DBScannerOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy _).curried
   }
 
-  case class K2DBScannerNext_date(self: Rep[K2DBScanner]) extends FunctionDef[Long](Some(self), "next_date", List()) {
+  case class K2DBScannerNext_date(self: Rep[K2DBScanner]) extends FunctionDef[Int](Some(self), "next_date", List()) {
     override def curriedConstructor = (copy _)
   }
 
@@ -1861,7 +1861,7 @@ trait K2DBScannerOps extends Base { this: DeepDSL =>
   def k2DBScannerNext_char(self: Rep[K2DBScanner]): Rep[Char] = K2DBScannerNext_char(self)
   def k2DBScannerNext1(self: Rep[K2DBScanner], buf: Rep[Array[Byte]]): Rep[Int] = K2DBScannerNext1(self, buf)
   def k2DBScannerNext2(self: Rep[K2DBScanner], buf: Rep[Array[Byte]], offset: Rep[Int]): Rep[Int] = K2DBScannerNext2(self, buf, offset)
-  def k2DBScannerNext_date(self: Rep[K2DBScanner]): Rep[Long] = K2DBScannerNext_date(self)
+  def k2DBScannerNext_date(self: Rep[K2DBScanner]): Rep[Int] = K2DBScannerNext_date(self)
   def k2DBScannerHasNext(self: Rep[K2DBScanner]): Rep[Boolean] = K2DBScannerHasNext(self)
   def k2DBScanner_Field_Delimiter_$eq(self: Rep[K2DBScanner], x$1: Rep[Char]): Rep[Unit] = K2DBScanner_Field_Delimiter_$eq(self, x$1)
   def k2DBScanner_Field_Delimiter(self: Rep[K2DBScanner]): Rep[Char] = K2DBScanner_Field_Delimiter(self)

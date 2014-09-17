@@ -120,15 +120,22 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
     }
   }).asInstanceOf[PardisType[Any]]
 
+  override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
+    case Stm(s, RangeNew(start, end, step)) => Nil
+    case _                                  => super.transformStmToMultiple(stm)
+  }
+
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
-    case pc @ PardisCast(x) => {
-      PardisCast(apply(x))(apply(pc.castFrom), apply(pc.castTp))
-    }
+    case RangeForeach(Def(RangeNew(start, end, step)), Def(Lambda(f, i1, o))) =>
+      PardisFor(start, end, step, i1.asInstanceOf[Expression[Int]], reifyBlock({ o }).asInstanceOf[PardisBlock[Unit]])
+
+    case pc @ PardisCast(x) => PardisCast(apply(x))(apply(pc.castFrom), apply(pc.castTp))
+
     case a @ ArrayNew(x) =>
       // Get type of elements stored in array
       val elemType = a.tp.typeArguments(0)
       // Allocate original array
-      val array = malloc(x)(transformType(elemType))
+      val array = malloc(x)(elemType)
       // Create wrapper with length
       val am = transformType(a.tp)
       val s = __new(("array", false, array), ("length", false, x))(am)
@@ -140,10 +147,15 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       // Get type of elements stored in array
       val elemType = a.tp.typeArguments(0)
       // Get type of internal array
-      val newTp = if (elemType.isPrimitive) elemType else typePointer(elemType)
+      val newTp = elemType //if (elemType.isPrimitive) elemType else typePointer(elemType)
       // Read array and perform update
       val arr = field(s, "array")(typeArray(typePointer(newTp)))
-      ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, v)
+      if (elemType.isPrimitive) ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, v)
+      else
+        PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(v.asInstanceOf[Expression[Pointer[Any]]])(v.tp.name.contains("Pointer") match {
+          case true  => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+          case false => v.tp
+        }))
     }
     case ArrayFilter(a, op) => field(a, "array")(transformType(a.tp)).correspondingNode
     case ArrayApply(a, i) =>
@@ -151,9 +163,10 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       // Get type of elements stored in array
       val elemType = a.tp.typeArguments(0)
       // Get type of internal array
-      val newTp = if (elemType.isPrimitive) elemType else typePointer(elemType)
+      val newTp = elemType // if (elemType.isPrimitive) elemType else typePointer(elemType)
       val arr = field(s, "array")(typeArray(typePointer(newTp)))
-      ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], i)(newTp.asInstanceOf[PardisType[Any]])
+      if (elemType.isPrimitive) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], i)(newTp.asInstanceOf[PardisType[Any]])
+      else PTRADDRESS(arr.asInstanceOf[Expression[Pointer[Any]]], i)(typePointer(newTp).asInstanceOf[PardisType[Pointer[Any]]])
     case ArrayLength(a) =>
       val s = transformExp[Any, T](a)
       val arr = field(s, "length")(IntType)
@@ -422,8 +435,13 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       case x if x.name == "Character" => PardisCast(t)(x, IntType)
       case x if x.name == "OptimalString" =>
         val len = toAtom(OptimalStringLength(t.asInstanceOf[Expression[OptimalString]]))(IntType)
-        // Generalize!!!!
-        ReadVal(len + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], 0) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], 1) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], 2) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], 3))
+        val idx = __newVar[Int](0)
+        val h = __newVar[Int](0)
+        __whileDo(readVar(idx) < len, {
+          __assign(h, readVar(h) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], 0) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], readVar(idx)))
+          __assign(idx, readVar(idx) + unit(1));
+        })
+        ReadVar(h)
       case x if x.isArray => ArrayLength(t.asInstanceOf[Rep[Array[Any]]])
       // Handle any additional cases here
       case x              => super.transformDef(node)
