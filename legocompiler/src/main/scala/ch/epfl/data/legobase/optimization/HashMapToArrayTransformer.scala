@@ -267,14 +267,11 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       val numElems = getSizeCounterMap(hm)
       val removeIndex = getRemoveIndexCounterMap(hm)
       val bucket = __newVar(ArrayApply(lhm, ReadVar(removeIndex))(manValue))(manValue)
-      printf(unit("CHECKPOINT HASHMAP REMOVE START WHILE\n"))
       __whileDo(infix_==(PardisStructFieldGetter(bucket, "next")(manValue), Constant(null)), {
         __assign(removeIndex, readVar(removeIndex) + unit(1))
         __assign(bucket, ArrayApply(lhm, ReadVar(removeIndex))(manValue))(manValue)
       })
       __assign(numElems, readVar(numElems) - unit(1))
-      printf(unit("CHECKPOINT HASHMAP REMOVE END WHILE -- SIZE NOW IS %d\n"),
-        readVar(numElems)(IntType))
       __assign(removeIndex, readVar(removeIndex) + unit(1))
       ReadVar(bucket)
     }
@@ -284,7 +281,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       val size = arrayLength(transformExp(hm)(hm.tp, typeArray(hmz.typeB)))
       val lhm = transformExp(hm)(hm.tp, typeArray(manValue))
       val counter = getSizeCounterMap(hm)
-      //printf(unit("size of map of " + manValue + " is now %d\n"), readVar(counter)(IntType))
       ReadVar(counter)
     }
 
@@ -303,7 +299,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
           implicit val manValue = ab.tp.typeArguments(0).asInstanceOf[TypeRep[Value]]
           val aVarNext = toAtom(PardisStructFieldGetter(ab, "next")(manValue))
           __assign(f.asInstanceOf[PardisVar[Any]], aVarNext)
-          ReadVal(ab)
+          ReadVar(f)
         case _ => throw new Exception("Internal BUG in HashMapToArrayTransformer. ArrayBuffer should be a Var");
       }
 
@@ -315,7 +311,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
         PardisStructFieldSetter(aVarPrev, "next", aVarNext)
       case _ => throw new Exception("Internal BUG in HashMapToArrayTransformer. ArrayBuffer should be a Var");
     }
-    //case ArrayBufferApply(Def(OptionGet(x)), idx) => throw new Exception()
     case OptionGet(x) => x.correspondingNode
 
     case _            => super.transformDef(node)

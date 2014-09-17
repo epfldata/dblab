@@ -388,6 +388,7 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
           var idx = i - removed
           val e = elems(idx)
           if (joinCond(e, t)) {
+            //      elems.remove(idx)
             //removeFromList(elems, e, idx);
             removed += 1
           }

@@ -141,9 +141,9 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val magg = typeRep[AGGRecord[Any]].rebuild(mb).asInstanceOf[TypeRep[Any]]
       //      val hm = to.__newHashMap()(to.overloaded2, apply(mb), apply(marrDouble))
       //val hm = to.__newHashMap4()(apply(mb))
-      val hm = to.__newHashMap3[Any, Any](ag.grp.asInstanceOf[Rep[Any => Any]], unit(1048576))(apply(mb), apply(magg.asInstanceOf[TypeRep[Any]]))
+      val hm = to.__newHashMap3[Any, Any](ag.grp.asInstanceOf[Rep[Any => Any]], unit(33554432))(apply(mb), apply(magg.asInstanceOf[TypeRep[Any]]))
       to.__newDef[AggOp[Any, Any]](("hm", false, hm),
-        ("expectedSize", false, unit(1048576)),
+        ("expectedSize", false, unit(33554432)),
         ("keySet", true, to.Set()(apply(mb), to.overloaded2)),
         stop).asInstanceOf[to.Def[T]]
     }
@@ -172,7 +172,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val ma = so.typeA
       val maa = ma.asInstanceOf[TypeRep[Any]]
       to.__newDef[SelectOp[Any]](
-        ("expectedSize", false, toAtom(PardisStructImmutableField(so.parent, "expectedSize")(IntType))(IntType) / 2),
+        ("expectedSize", false, toAtom(PardisStructImmutableField(so.parent, "expectedSize")(IntType))(IntType) / 5),
         stop).asInstanceOf[to.Def[T]]
     }
     case so: SortOpNew[_] => {
@@ -256,7 +256,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       to.__newDef[HashJoinAnti[Any, Any, Any]]( //("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffA))),
         ("hm", false, to.__newHashMap3[Any, Any](ho.leftHash.asInstanceOf[Rep[Any => Any]], newSize)(apply(mc), apply(ma))),
         stop,
-        ("expectedSize", false, newSize * 100),
+        ("expectedSize", false, newSize * 300),
         ("keySet", true, to.Set()(apply(mc), to.overloaded2))).asInstanceOf[to.Def[T]]
     }
     case loj: LeftOuterJoinOpNew[_, _, _] => {

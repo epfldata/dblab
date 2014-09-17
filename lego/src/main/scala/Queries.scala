@@ -620,7 +620,7 @@ object Queries {
           res
         }
       })*/
-      val po = new PrintOp(aggOp2)(x => printf("%s|%s|%d|%.0f\n", x.key.P_BRAND.string, x.key.P_TYPE.string, x.key.P_SIZE, x.aggs(0)), () => true)
+      val po = new PrintOp(aggOp2)(x => { x.key.P_BRAND; x.key.P_TYPE; x.key.P_SIZE } /*printf("%s|%s|%d|%.0f\n", x.key.P_BRAND.string, x.key.P_TYPE.string, x.key.P_SIZE, x.aggs(0))*/ , () => true)
       po.open
       po.next
       printf("(%d rows)\n", po.numRows)

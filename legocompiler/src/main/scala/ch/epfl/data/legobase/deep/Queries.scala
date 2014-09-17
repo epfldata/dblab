@@ -606,7 +606,14 @@ trait QueriesImplementations { self: DeepDSL =>
           x.key.PS_SUPPKEY;
           __newQ16GRPRecord2(x.key.P_BRAND, x.key.P_TYPE, x.key.P_SIZE)
         })))(__lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q16GRPRecord1]], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
-        val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q16GRPRecord2]]] = __newPrintOp(aggOp2)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q16GRPRecord2]]) => printf(unit("%s|%s|%d|%.0f\n"), x.key.P_BRAND.string, x.key.P_TYPE.string, x.key.P_SIZE, x.aggs.apply(unit(0))))), __lambda((() => unit(true))));
+        val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q16GRPRecord2]]] = __newPrintOp(aggOp2)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q16GRPRecord2]]) => {
+          x.key.P_BRAND;
+          x.key.P_TYPE;
+          {
+            x.key.P_SIZE;
+            unit(())
+          }
+        })), __lambda((() => unit(true))));
         po.open();
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);

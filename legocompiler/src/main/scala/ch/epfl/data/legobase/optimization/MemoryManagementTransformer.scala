@@ -75,7 +75,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
       val index = __newVar[Int](unit(0))
       val elemType = mallocTp
       val poolType = typePointer(elemType)
-      val POOL_SIZE = 24000000 * (poolType.toString.split("_").length + 1)
+      val POOL_SIZE = 64000000 * (poolType.toString.split("_").length + 1)
       //val POOL_SIZE = 100000
       /* this one is a hack */
       /*def regenerateSize(s: Rep[Int]): Rep[Int] = s match {
