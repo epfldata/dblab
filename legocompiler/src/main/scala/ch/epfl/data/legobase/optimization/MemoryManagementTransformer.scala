@@ -20,7 +20,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
   import CTypes._
 
   /* If you want to disable this optimization, set this flag to `false` */
-  val enabled = true
+  val enabled = false
 
   def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     phase = FindMallocs
@@ -75,8 +75,8 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
       //	 val elemTp = mallocTp.typeArguments(0)
       val index = __newVar[Int](unit(0))
       val elemType = mallocTp
-      val poolType = typePointer(elemType)
-      val POOL_SIZE = 64000000 * (poolType.toString.split("_").length + 1)
+      val poolType = if (mallocTp.isPrimitive) elemType else typePointer(elemType)
+      val POOL_SIZE = 24000000 * (poolType.toString.split("_").length + 1)
       //val POOL_SIZE = 100000
       /* this one is a hack */
       /*def regenerateSize(s: Rep[Int]): Rep[Int] = s match {
@@ -87,11 +87,13 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
       }
       val POOL_SIZE = regenerateSize(mallocNode.numElems) * 200*/
       val pool = malloc(POOL_SIZE)(poolType)
-      cForLoop(0, POOL_SIZE, (i: Rep[Int]) => {
-        val allocatedSpace = malloc(unit(1))(elemType)
-        pointer_assign(pool.asInstanceOf[Expression[Pointer[Any]]], i, allocatedSpace)
-        unit(())
-      })
+      if (!mallocTp.isPrimitive) {
+        cForLoop(0, POOL_SIZE, (i: Rep[Int]) => {
+          val allocatedSpace = malloc(unit(1))(elemType)
+          pointer_assign(pool.asInstanceOf[Expression[Pointer[Any]]], i, allocatedSpace)
+          unit(())
+        })
+      }
       mallocBuffers += mallocInstance -> BufferInfo(pool.asInstanceOf[Sym[Any]], index)
       //printf(unit("Buffer for type %s of size %d initialized!\n"), unit(mallocTp.toString), POOL_SIZE)
     }
@@ -123,8 +125,13 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
       val bufferInfo = mallocBuffers(mallocInstance)
       System.out.println(m.tp)
       System.out.println(m.tp.typeArguments(0))
-      val p = pointer_content(bufferInfo.pool.asInstanceOf[Rep[Pointer[Any]]], readVar(bufferInfo.index))(m.tp.asInstanceOf[PardisType[Any]])
-      __assign(bufferInfo.index, readVar(bufferInfo.index) + unit(1))
+      val p = {
+        if (m.tp.typeArguments(0).isPrimitive) {
+          &(bufferInfo.pool, readVar(bufferInfo.index))(m.tp.typeArguments(0).asInstanceOf[PardisType[Any]])
+        } else pointer_content(
+          bufferInfo.pool.asInstanceOf[Rep[Pointer[Any]]], readVar(bufferInfo.index))(m.tp.asInstanceOf[PardisType[Any]])
+      }
+      __assign(bufferInfo.index, readVar(bufferInfo.index) + (numElems + 1))
       // printf(unit("should be substituted by " + bufferInfo.pool + ", " + bufferInfo.index))
       ReadVal(p)(p.tp.asInstanceOf[PardisType[Any]])
     }

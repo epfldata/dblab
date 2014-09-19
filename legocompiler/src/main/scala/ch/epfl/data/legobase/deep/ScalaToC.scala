@@ -305,7 +305,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
 
   // Set of hash and record functions
-  def string_hash = doLambda((s: Rep[String]) => { unit(5) }) //TODO Proper hashing
+  def string_hash = doLambda((s: Rep[String]) => infix_hashCode(s)) //TODO Proper hashing
   def string_eq = doLambda2((s1: Rep[String], s2: Rep[String]) => infix_==(strcmp(s1, s2), 0))
   def int_hash = doLambda((s: Rep[Int]) => s)
   def int_eq = doLambda2((s1: Rep[Int], s2: Rep[Int]) => infix_==(s1, s2))
@@ -439,11 +439,31 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         val len = toAtom(OptimalStringLength(t.asInstanceOf[Expression[OptimalString]]))(IntType)
         val idx = __newVar[Int](0)
         val h = __newVar[Int](0)
+        __assign(h, readVar(h) + (unit(128) * len))
         __whileDo(readVar(idx) < len, {
-          __assign(h, readVar(h) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], 0) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], readVar(idx)))
+          //   __assign(h, readVar(h) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], readVar(idx)))
+          //    __assign(h, readVar(h) + (readVar(h) << 10))
+          //   __assign(h, readVar(h) ^ (readVar(h) >> 6))
+          __assign(h, readVar(h) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], readVar(idx)))
           __assign(idx, readVar(idx) + unit(1));
         })
+        //        __assign(h, readVar(h) + (readVar(h) << 3))
+        //      __assign(h, readVar(h) ^ (readVar(h) >> 11))
+        //    __assign(h, readVar(h) + (readVar(h) << 15))
+        //  __assign(h, readVar(h) % len)
         ReadVar(h)
+
+      /* hash, i;
+    for(hash = i = 0; i < len; ++i)
+    {
+        hash += key[i];
+        hash += (hash << 10);
+        hash ^= (hash >> 6);
+    }
+    hash += (hash << 3);
+    hash ^= (hash >> 11);
+    hash += (hash << 15);
+    return hash;*/
       case x if x.isArray => ArrayLength(t.asInstanceOf[Rep[Array[Any]]])
       // Handle any additional cases here
       case x              => super.transformDef(node)

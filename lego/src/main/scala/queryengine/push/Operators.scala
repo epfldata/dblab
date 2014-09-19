@@ -194,7 +194,6 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
           }
           if (tmpCount + 1 >= tmpBuffer.size) break = true
           tmpCount += 1
-
         }
       }
     }
@@ -330,16 +329,6 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
   var keySet = Set(hm.keySet.toSeq: _*)
   val expectedSize = leftParent.expectedSize
 
-  def removeFromList(elemList: ArrayBuffer[A], e: A, idx: Int) {
-    elemList.remove(idx)
-    if (elemList.size == 0) {
-      val lh = leftHash(e)
-      keySet.remove(lh)
-      hm.remove(lh)
-      ()
-    }
-  }
-
   def open() {
     leftParent.child = this
     leftParent.open
@@ -390,8 +379,7 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
           var idx = i - removed
           val e = elems(idx)
           if (joinCond(e, t)) {
-            //      elems.remove(idx)
-            removeFromList(elems, e, idx);
+            elems.remove(idx)
             removed += 1
           }
           i += 1

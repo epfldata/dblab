@@ -117,6 +117,8 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = node match {
     case CaseClassNew(ccn) if lowerStructs =>
       transformDef(super.transformDef(node))
+    case sd @ StructDefault() if lowerStructs =>
+      transformDef(super.transformDef(node))
     case ps @ PardisStruct(tag, elems, methods) =>
       val registeredFields = fieldsAccessed.get(tag)
       registeredFields match {
@@ -290,6 +292,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       type LeftOuterJoinOpTp = LeftOuterJoinOp[pardis.shallow.Record, pardis.shallow.Record, Any]
       val tp = loj.tp.asInstanceOf[TypeRep[LeftOuterJoinOpTp]]
       val marrBuffB = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(mb).asInstanceOf[TypeRep[Any]]
+      System.out.println("mba " + mba)
       val mCompRec = implicitly[TypeRep[DynamicCompositeRecord[pardis.shallow.Record, pardis.shallow.Record]]].rebuild(ma, mb).asInstanceOf[TypeRep[Any]]
       to.__newDef[LeftOuterJoinOpTp]( //("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffB))),
         ("hm", false, to.__newHashMap3[Any, Any](loj.rightHash.asInstanceOf[Rep[Any => Any]], unit(1024))(apply(mc), apply(mb))),

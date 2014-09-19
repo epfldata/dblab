@@ -89,7 +89,7 @@ object Queries {
       val jo3 = new HashJoinOp(partScan, jo2)((x, y) => x.P_PARTKEY == y.PS_PARTKEY[Int])(x => x.P_PARTKEY)(x => x.PS_PARTKEY[Int])
       val regionScan = new SelectOp(new ScanOp(regionTable))(x => x.R_NAME === africa) // for comparing equality of LBString we should use === instead of ==
       val jo4 = new HashJoinOp(regionScan, jo3)((x, y) => x.R_REGIONKEY == y.N_REGIONKEY[Int])(x => x.R_REGIONKEY)(x => x.N_REGIONKEY[Int])
-      /*val wo = new WindowOp(jo4)(x => x.P_PARTKEY[Int])(x => x.minBy(y => y.PS_SUPPLYCOST[Double]))
+      val wo = new WindowOp(jo4)(x => x.P_PARTKEY[Int])(x => x.minBy(y => y.PS_SUPPLYCOST[Double]))
       val so = new SortOp(wo)((x, y) => {
         if (x.wnd.S_ACCTBAL[Double] < y.wnd.S_ACCTBAL[Double]) 1
         else if (x.wnd.S_ACCTBAL[Double] > y.wnd.S_ACCTBAL[Double]) -1
@@ -101,11 +101,11 @@ object Queries {
           }
           res
         }
-      })*/
+      })
       var j = 0
-      val po = new PrintOp(jo4)(e => {
-        //       val kv = e.wnd
-        //        printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL[Double], (kv.S_NAME[LBString]).string, (kv.N_NAME[LBString]).string, kv.P_PARTKEY[Int], (kv.P_MFGR[LBString]).string, (kv.S_ADDRESS[LBString]).string, (kv.S_PHONE[LBString]).string, (kv.S_COMMENT[LBString]).string)
+      val po = new PrintOp(so)(e => {
+        val kv = e.wnd
+        printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL[Double], (kv.S_NAME[LBString]).string, (kv.N_NAME[LBString]).string, kv.P_PARTKEY[Int], (kv.P_MFGR[LBString]).string, (kv.S_ADDRESS[LBString]).string, (kv.S_PHONE[LBString]).string, (kv.S_COMMENT[LBString]).string)
         j += 1
       }, () => j < 100)
       po.open
@@ -611,7 +611,7 @@ object Queries {
       val aggOp = new AggOp(jo2, 1)(x => { x.PS_SUPPKEY[Int]; new Q16GRPRecord1(x.P_BRAND[LBString], x.P_TYPE[LBString], x.P_SIZE[Int], x.PS_SUPPKEY[Int]) })((t, currAgg) => currAgg)
       val aggOp2 = new AggOp(aggOp, 1)(x => { x.key.PS_SUPPKEY; new Q16GRPRecord2(x.key.P_BRAND, x.key.P_TYPE, x.key.P_SIZE) })(
         (t, currAgg) => currAgg + 1)
-      /*val sortOp = new SortOp(aggOp2)((x, y) => {
+      val sortOp = new SortOp(aggOp2)((x, y) => {
         if (x.aggs(0) < y.aggs(0)) 1
         else if (x.aggs(0) > y.aggs(0)) -1
         else {
@@ -622,8 +622,8 @@ object Queries {
           }
           res
         }
-      })*/
-      val po = new PrintOp(aggOp2)(x => { x.key.P_BRAND; x.key.P_TYPE; x.key.P_SIZE } /*printf("%s|%s|%d|%.0f\n", x.key.P_BRAND.string, x.key.P_TYPE.string, x.key.P_SIZE, x.aggs(0))*/ , () => true)
+      })
+      val po = new PrintOp(sortOp)(x => printf("%s|%s|%d|%.0f\n", x.key.P_BRAND.string, x.key.P_TYPE.string, x.key.P_SIZE, x.aggs(0)), () => true)
       po.open
       po.next
       printf("(%d rows)\n", po.numRows)
@@ -676,11 +676,10 @@ object Queries {
       val aggOp1 = new SelectOp(new AggOp(scanLineitem1, 1)(x => x.L_ORDERKEY)(
         (t, currAgg) => { currAgg + t.L_QUANTITY }))(x => x.aggs(0) > 300)
       // Hash Join with orders
-      val jo1 = new HashJoinOp(aggOp1, scanOrders)((x, y) => y.O_ORDERKEY == x.key)(x => x.key)(x => x.O_ORDERKEY)
-      val jo2 = new HashJoinOp(jo1, scanCustomer)((x, y) => x.O_CUSTKEY[Int] == y.C_CUSTKEY)(x => x.O_CUSTKEY[Int])(x => x.C_CUSTKEY)
-      val aggOp2 = new AggOp(jo2, 1)(x => new Q18GRPRecord(x.C_NAME[LBString], x.C_CUSTKEY[Int],
-        x.O_ORDERKEY[Int], x.O_ORDERDATE[Int], x.O_TOTALPRICE[Double]))(
-        (t, currAgg) => { currAgg + (t.aggs[Array[Double]]).apply(0) } // aggs(0) => L_QUANTITY"
+      val jo1 = new HashJoinOp(aggOp1, scanOrders)((x, y) => { x.aggs; y.O_ORDERKEY == x.key })(x => x.key)(x => x.O_ORDERKEY)
+      val jo2 = new HashJoinOp(jo1, scanCustomer)((x, y) => { x.aggs; x.O_CUSTKEY[Int] == y.C_CUSTKEY })(x => x.O_CUSTKEY[Int])(x => x.C_CUSTKEY)
+      val aggOp2 = new AggOp(jo2, 1)(x => { x.aggs; new Q18GRPRecord(x.C_NAME[LBString], x.C_CUSTKEY[Int], x.O_ORDERKEY[Int], x.O_ORDERDATE[Int], x.O_TOTALPRICE[Double]) })(
+        (t, currAgg) => { t.aggs; currAgg + (t.aggs[Array[Double]]).apply(0) } // aggs(0) => L_QUANTITY"
         )
       val sortOp = new SortOp(aggOp2)((kv1, kv2) => {
         val k1 = kv1.key.O_TOTALPRICE; val k2 = kv2.key.O_TOTALPRICE
@@ -695,6 +694,7 @@ object Queries {
       })
       var j = 0
       val po = new PrintOp(sortOp)(kv => {
+        kv.aggs;
         printf("%s|%d|%d|%s|%.2f|%.2f\n", kv.key.C_NAME.string, kv.key.C_CUSTKEY, kv.key.O_ORDERKEY, dateToString(kv.key.O_ORDERDATE), kv.key.O_TOTALPRICE, kv.aggs(0))
         j += 1
       }, () => j < 100)
