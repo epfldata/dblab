@@ -192,8 +192,9 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
             val res = bufElem.concatenateDynamic(tuple.asInstanceOf[B], leftAlias, rightAlias)
             child.consume(res)
           }
+          if (tmpCount + 1 >= tmpBuffer.size) break = true
           tmpCount += 1
-          if (tmpCount >= tmpBuffer.size) break = true
+
         }
       }
     }
@@ -390,7 +391,7 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
           val e = elems(idx)
           if (joinCond(e, t)) {
             //      elems.remove(idx)
-            //removeFromList(elems, e, idx);
+            removeFromList(elems, e, idx);
             removed += 1
           }
           i += 1

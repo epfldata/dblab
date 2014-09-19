@@ -28,3 +28,8 @@ Then for generating query X with scaling factor N you have to run the following 
 Then for testing the correctness you have copy the generated file into `test` folder of `legocompiler` project.
 Then you have to run the following command:
 `test:run DATA_FOLDER N QX`
+
+
+TODO
+====
+Query 2 and 16 are excluded from test suite. Don't forget to include them.

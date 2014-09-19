@@ -19,8 +19,10 @@ trait LegoRunner {
     Config.sf = sf.toDouble
     Config.datapath = args(0) + "/sf" + sf + "/"
 
+    val excludedQueries = List(2, 16)
+
     val queries: scala.collection.immutable.List[String] =
-      if (args.length == 3 && args(2) == "testsuite") (for (i <- 1 to 22) yield "Q" + i).toList
+      if (args.length == 3 && args(2) == "testsuite") (for (i <- 1 to 22 if !excludedQueries.contains(i)) yield "Q" + i).toList
       else args.tail.tail.toList
     for (q <- queries) {
       currQuery = q

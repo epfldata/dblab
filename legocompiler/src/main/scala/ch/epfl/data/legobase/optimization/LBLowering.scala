@@ -65,25 +65,25 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
     }
   }
 
-  override def traverseDef(node: Def[_]): Unit = node match {
-    case ImmutableField(self, f) => {
-      // TODO: Handle aliases better through structTags
-      handle(self.tp, f.replace("REC1_", "").replace("REC2_", ""))
-      super.traverseDef(node)
-    }
-    case ConcatDynamic(self, record2, leftAlias, rightAlias) => {
-      val Constant(la: String) = leftAlias
-      val Constant(ra: String) = rightAlias
-      val leftTag = getTag(getType(self.tp))
-      val rightTag = getTag(getType(record2.tp))
-      val concatTag = StructTags.CompositeTag[Any, Any](la, ra, leftTag, rightTag)
-      val regFields = getRegisteredFieldsOfType(self.tp) ++ getRegisteredFieldsOfType(record2.tp)
-      val newElems = getStructElems(leftTag).filter(e => regFields.contains(e.name)).map(x => StructElemInformation(la + x.name, x.tpe, x.mutable)) ++ getStructElems(rightTag).filter(e => regFields.contains(e.name)).map(x => StructElemInformation(ra + x.name, x.tpe, x.mutable))
-      structs += concatTag -> newElems
-      manifestTags += getType(node.tp) -> concatTag
-    }
-    case _ => super.traverseDef(node)
-  }
+  // override def traverseDef(node: Def[_]): Unit = node match {
+  //   case ImmutableField(self, f) => {
+  //     // TODO: Handle aliases better through structTags
+  //     handle(self.tp, f.replace("REC1_", "").replace("REC2_", ""))
+  //     super.traverseDef(node)
+  //   }
+  //   case ConcatDynamic(self, record2, leftAlias, rightAlias) => {
+  //     val Constant(la: String) = leftAlias
+  //     val Constant(ra: String) = rightAlias
+  //     val leftTag = getTag(getType(self.tp))
+  //     val rightTag = getTag(getType(record2.tp))
+  //     val concatTag = StructTags.CompositeTag[Any, Any](la, ra, leftTag, rightTag)
+  //     val regFields = getRegisteredFieldsOfType(self.tp) ++ getRegisteredFieldsOfType(record2.tp)
+  //     val newElems = getStructElems(leftTag).filter(e => regFields.contains(e.name)).map(x => StructElemInformation(la + x.name, x.tpe, x.mutable)) ++ getStructElems(rightTag).filter(e => regFields.contains(e.name)).map(x => StructElemInformation(ra + x.name, x.tpe, x.mutable))
+  //     structs += concatTag -> newElems
+  //     manifestTags += getType(node.tp) -> concatTag
+  //   }
+  //   case _ => super.traverseDef(node)
+  // }
 
   override def lower[T: TypeRep](node: Block[T]): to.Block[T] = {
     phase = FieldExtractionPhase
@@ -96,6 +96,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
   }
 
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = node match {
+    /*
     case CaseClassNew(ccn) if lowerStructs =>
       transformDef(super.transformDef(node))
     case ps @ PardisStruct(tag, elems, methods) =>
@@ -133,6 +134,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       } else Nil
       PardisStruct(concatTag, structFields, methods)(newTpe).asInstanceOf[to.Def[T]]
     }
+    */
 
     case ag: AggOpNew[_, _] => {
       val ma = ag.typeA
@@ -141,8 +143,10 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val marrDouble = implicitly[to.TypeRep[to.Array[to.Double]]]
       val magg = typeRep[AGGRecord[Any]].rebuild(mb).asInstanceOf[TypeRep[Any]]
       //      val hm = to.__newHashMap()(to.overloaded2, apply(mb), apply(marrDouble))
-      //val hm = to.__newHashMap4()(apply(mb))
-      val hm = to.__newHashMap3[Any, Any](ag.grp.asInstanceOf[Rep[Any => Any]], unit(33554432))(apply(mb), apply(magg.asInstanceOf[TypeRep[Any]]))
+      // val hm = to.__newHashMap4()(apply(mb))
+      // val hm = to.__newHashMap3[Any, Any](ag.grp.asInstanceOf[Rep[Any => Any]], unit(33554432))(apply(mb), apply(magg.asInstanceOf[TypeRep[Any]]))
+      // val hm = to.__newHashMap4(unit(33554432))(apply(mb))
+      val hm = to.__newHashMap4[Any, Any](ag.grp.asInstanceOf[Rep[Any => Any]], unit(33554432))(apply(mb), apply(magg.asInstanceOf[TypeRep[Any]]))
       to.__newDef[AggOp[Any, Any]](("hm", false, hm),
         ("expectedSize", false, unit(33554432)),
         ("keySet", true, to.Set()(apply(mb), to.overloaded2)),

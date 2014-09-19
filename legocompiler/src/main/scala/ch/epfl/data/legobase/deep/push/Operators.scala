@@ -1133,8 +1133,8 @@ trait HashJoinOpImplementations { this: DeepDSL =>
             val res: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]] = RecordOps[A](bufElem).concatenateDynamic[B](infix_asInstanceOf[B](tuple), self.leftAlias, self.rightAlias);
             self.child.consume(res)
           }, unit(()));
-          __assign(tmpCount, readVar(tmpCount).$plus(unit(1)));
-          __ifThenElse(readVar(tmpCount).$greater$eq(tmpBuffer.size), __assign(break, unit(true)), unit(()))
+          __ifThenElse(readVar(tmpCount).$plus(unit(1)).$greater$eq(tmpBuffer.size), __assign(break, unit(true)), unit(()));
+          __assign(tmpCount, readVar(tmpCount).$plus(unit(1)))
         })
       }, unit(()))
     }, unit(())))
@@ -2033,7 +2033,10 @@ trait HashJoinAntiImplementations { this: DeepDSL =>
         __whileDo(readVar(i).$less(len), {
           var idx: this.Var[Int] = __newVar(readVar(i).$minus(readVar(removed)));
           val e: this.Rep[A] = elems.apply(readVar(idx));
-          __ifThenElse(__app(self.joinCond).apply(e, t), __assign(removed, readVar(removed).$plus(unit(1))), unit(()));
+          __ifThenElse(__app(self.joinCond).apply(e, t), {
+            self.removeFromList(elems, e, readVar(idx));
+            __assign(removed, readVar(removed).$plus(unit(1)))
+          }, unit(()));
           __assign(i, readVar(i).$plus(unit(1)))
         })
       }, unit(()))

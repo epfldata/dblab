@@ -156,6 +156,15 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
     case _               => throw new Exception("RemoveCounter not found for lowered HashMap " + hm)
   }
 
+  object HashMapNews {
+    def unapply[T](node: Def[T]): Option[(Rep[Int], PardisType[Any])] = node match {
+      case hmn @ HashMapNew3(_, size) => Some(size -> hmn.typeB)
+      // case hmn @ HashMapNew4(size)    => Some(size -> ArrayBufferType(AGGRecordType(hmn.typeA)).asInstanceOf[PardisType[Any]]) // FIXME seems a bit buggy!
+      case hmn @ HashMapNew4(_, size) => Some(size -> /*ArrayBufferType*/ (hmn.typeB).asInstanceOf[PardisType[Any]])
+      case _                          => None
+    }
+  }
+
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     case ps @ PardisStruct(tag, elems, methods) =>
       val init = infix_asInstanceOf(Constant(null))(ps.tp)
@@ -163,15 +172,17 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       // AntiJoin
       PardisStruct(tag, elems ++ List(PardisStructArg("next", true, init)) ++ List(PardisStructArg("prev", true, init)), methods)
 
-    case hmn @ HashMapNew3(_, size) =>
-      printf(unit("Initializing map for type %s of size %d\n"), unit(hmn.typeB.toString), size)
-      val arr = arrayNew(size)(hmn.typeB)
+    // case hmn @ HashMapNew3(_, size) =>
+    // val typeB = hmn.typeB
+    case hmn @ HashMapNews(size, typeB) =>
+      printf(unit("Initializing map for type %s of size %d\n"), unit(typeB.toString), size)
+      val arr = arrayNew(size)(typeB)
       val index = __newVar[Int](0)
       __whileDo(readVar(index) < size, {
-        System.out.println(hmn.typeB)
-        val init = toAtom(Malloc(unit(1))(hmn.typeB))(hmn.typeB.asInstanceOf[PardisType[Pointer[Any]]])
+        System.out.println(typeB)
+        val init = toAtom(Malloc(unit(1))(typeB))(typeB.asInstanceOf[PardisType[Pointer[Any]]])
         arrayUpdate(arr, readVar(index), init)
-        val e = arrayApply(arr, readVar(index))(hmn.typeB)
+        val e = arrayApply(arr, readVar(index))(typeB)
         toAtom(PardisStructFieldSetter(e, "next", Constant(null)))
         __assign(index, readVar(index) + unit(1))
         unit()
@@ -245,7 +256,8 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       ReadVar(bucket)
     }
     case hmr @ HashMapRemove(hm, k) if isAggOp(hm) => {
-      implicit val manValue = hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
+      // implicit val manValue = hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
+      implicit val manValue = hm.tp.typeArguments(1).asInstanceOf[TypeRep[Value]]
       val size = arrayLength(transformExp(hm)(hm.tp, typeArray(hmr.typeB)))
       val lhm = transformExp(hm)(hm.tp, typeArray(manValue))
       val numElems = getSizeCounterMap(hm)
@@ -278,7 +290,10 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
     }
 
     case hmz @ HashMapSize(hm) => {
-      implicit val manValue = hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
+      implicit val manValue = if (isAggOp(hm))
+        hm.tp.typeArguments(1).asInstanceOf[TypeRep[Value]]
+      else
+        hm.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Value]]
       val size = arrayLength(transformExp(hm)(hm.tp, typeArray(hmz.typeB)))
       val lhm = transformExp(hm)(hm.tp, typeArray(manValue))
       val counter = getSizeCounterMap(hm)

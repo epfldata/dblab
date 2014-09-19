@@ -23,6 +23,7 @@ object Main extends LegoRunner {
     run(args)
   }
 
+  /* For the moment this transformation is only valid for C code generation */
   val hashMapToArray = true
 
   def executeQuery(query: String): Unit = {
@@ -95,7 +96,7 @@ object Main extends LegoRunner {
     }
 
     val afterHashMapToArray = {
-      if (hashMapToArray) {
+      if (hashMapToArray && generateCCode) {
         val hm2Arr = new HashMapToArrayTransformer(context)
         val afterPE = new PartialyEvaluate(context).optimize(loweredBlock /*new DCE(context).optimize(loweredBlock)*/ )
         writeASTToDumpFile(afterPE)
@@ -115,6 +116,7 @@ object Main extends LegoRunner {
     // Partial evaluation
     val partiallyEvaluator = new PartialyEvaluate(context)
     val partiallyEvaluatedBlock = partiallyEvaluator.optimize(dceBlock)
+    // val partiallyEvaluatedBlock = dceBlock
 
     // Convert Scala constructs to C
     val finalBlock = {
