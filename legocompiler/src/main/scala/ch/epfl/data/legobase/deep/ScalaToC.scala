@@ -175,6 +175,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       ReadVal(arr)(IntType)
     case s @ PardisStruct(tag, elems, methods) =>
       // TODO if needed method generation should be added
+      System.out.println("AMIR CRASHED MY DREAMS " + s.tp)
       val x = malloc(unit(1))(s.tp)
       structCopy(x, PardisStruct(tag, elems, methods.map(m => m.copy(body = transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef]))))
       ReadVal(x)(typePointer(s.tp))
@@ -330,6 +331,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     /* HashMap Operations */
     case nm @ HashMapNew3(_, _) => transformDef(HashMapNew()(nm.typeA, ArrayBufferType(nm.typeB)))
+    case nm @ HashMapNew4(_, _) => transformDef(HashMapNew()(nm.typeA, nm.typeB))
     case nm @ HashMapNew() =>
       val nA = typePointer(transformType(nm.typeA)).asInstanceOf[TypeRep[Any]]
       val nB = typePointer(transformType(nm.typeB))

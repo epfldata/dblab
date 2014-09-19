@@ -124,7 +124,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       registeredFields match {
         case Some(x) =>
           val newElems = elems.filter(e => x.contains(e.name))
-          PardisStruct(tag, newElems, methods)
+          PardisStruct(tag, newElems, methods)(ps.tp)
         case None =>
           node
       }
@@ -150,9 +150,6 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
         List(PardisStructMethod("equals", eqMethod), PardisStructMethod("hash", hashMethod))
       } else Nil
       PardisStruct(concatTag, structFields, methods)(newTpe).asInstanceOf[to.Def[T]]
-    }
-    case StructDefault() if lowerStructs => {
-      transformDef(super.transformDef(node))
     }
 
     case ag: AggOpNew[_, _] => {
