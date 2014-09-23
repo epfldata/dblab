@@ -10,7 +10,7 @@ import pardis.types._
 import pardis.types.PardisTypeImplicits._
 import pardis.optimization._
 
-class LBLowering(override val from: InliningLegoBase, override val to: LoweringLegoBase, override val generateHashAndEqual: Boolean) extends Lowering[InliningLegoBase, LoweringLegoBase](from, to) {
+class LBLowering(override val from: LoweringLegoBase, override val to: LoweringLegoBase, override val generateHashAndEqual: Boolean) extends Lowering[LoweringLegoBase, LoweringLegoBase](from, to) {
   import from._
 
   // override val lowerStructs: Boolean = false
@@ -114,26 +114,33 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
     res
   }
 
-  def getPrint(tpe: TypeRep[Any], structFields: Seq[PardisStructArg]): PardisLambdaDef = {
-    doLambdaDef((x: Rep[Any]) => {
-      def getDescriptor(field: PardisStructArg): String = field.init.tp.asInstanceOf[PardisType[_]] match {
-        case IntType | ShortType            => "%d"
-        case DoubleType | FloatType         => "%f"
-        case LongType                       => "%lf"
-        case StringType | OptimalStringType => "%s"
-        case ArrayType(elemTpe)             => s"Array[$elemTpe]"
-        case tp                             => tp.toString
-      }
-      val fieldsWithDescriptor = structFields.map(f => f -> getDescriptor(f))
-      val descriptor = tpe.name + "(" + fieldsWithDescriptor.map(f => f._2).mkString(", ") + ")"
-      val fields = fieldsWithDescriptor.collect {
-        case f if !f._2.startsWith("%") => {
-          val tp = f._1.init.tp
-          field(x, f._1.name)(tp)
+  def getPrint(tpe: TypeRep[Any], structFields: Seq[PardisStructArg]): Option[PardisStructMethod] = {
+    if (generateHashAndEqual) {
+      val printFunctionNode = doLambdaDef((x: Rep[Any]) => {
+        def getDescriptor(field: PardisStructArg): String = field.init.tp.asInstanceOf[PardisType[_]] match {
+          case IntType | ShortType            => "%d"
+          case DoubleType | FloatType         => "%f"
+          case LongType                       => "%lf"
+          case StringType | OptimalStringType => "%s"
+          case ArrayType(elemTpe)             => s"Array[$elemTpe]"
+          case tp                             => tp.toString
         }
-      }
-      printf(unit(descriptor), fields: _*)
-    })(tpe, UnitType).asInstanceOf[PardisLambdaDef]
+        val fieldsWithDescriptor = structFields.map(f => f -> getDescriptor(f))
+        val descriptor = tpe.name + "(" + fieldsWithDescriptor.map(f => f._2).mkString(", ") + ")"
+        val fields = fieldsWithDescriptor.collect {
+          case f if f._2.startsWith("%") => {
+            val tp = f._1.init.tp
+            field(x, f._1.name)(tp)
+          }
+        }
+        val str = malloc(100)(CharType)
+        sprintf(str.asInstanceOf[Rep[String]], unit(descriptor), fields: _*)
+        str.asInstanceOf[Rep[String]]
+      })(tpe, StringType).asInstanceOf[PardisLambdaDef]
+      Some(PardisStructMethod("to_string", printFunctionNode))
+    } else {
+      None
+    }
   }
 
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = node match {
@@ -147,7 +154,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
         case Some(x) => elems.filter(e => x.contains(e.name))
         case None    => elems
       }
-      val newMethods = methods :+ PardisStructMethod("print", getPrint(ps.tp.asInstanceOf[TypeRep[Any]], newFields))
+      val newMethods = methods ++ getPrint(ps.tp.asInstanceOf[TypeRep[Any]], newFields)
       // registeredFields match {
       //   case Some(x) =>
       //     val newElems = elems.filter(e => x.contains(e.name))
@@ -176,7 +183,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
         val eqMethod = getEquals(newTpe.asInstanceOf[TypeRep[Any]], structFields)
         val hashMethod = getHash(newTpe.asInstanceOf[TypeRep[Any]], structFields)
         val printMethod = getPrint(newTpe.asInstanceOf[TypeRep[Any]], structFields)
-        List(PardisStructMethod("equals", eqMethod), PardisStructMethod("hash", hashMethod), PardisStructMethod("print", printMethod))
+        List(PardisStructMethod("equals", eqMethod), PardisStructMethod("hash", hashMethod)) ++ printMethod
       } else Nil
       PardisStruct(concatTag, structFields, methods)(newTpe).asInstanceOf[to.Def[T]]
     }
