@@ -11,6 +11,7 @@ import scala.collection.mutable.TreeSet
 import GenericEngine._
 import ch.epfl.data.autolifter.annotations.{ deep, metadeep }
 import ch.epfl.data.pardis.shallow.{ Record, DynamicCompositeRecord }
+import scala.reflect.ClassTag
 
 // This is a temporary solution until we introduce dependency management and adopt policies. Not a priority now!
 @metadeep(
@@ -79,7 +80,7 @@ class MetaInfo
 }
 
 @deep class SelectOp[A](parent: Operator[A])(selectPred: A => Boolean) extends Operator[A] {
-  val expectedSize = parent.expectedSize / 2 // Assume 50% selectivity
+  val expectedSize = parent.expectedSize // Assume 100% selectivity
   def open() {
     parent.child = this; parent.open
   }
@@ -93,7 +94,7 @@ class MetaInfo
 @deep class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B])(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
   val hm = HashMap[B, AGGRecord[B]]() //Array[Double]]()
 
-  val expectedSize = 1024 //Assume 1024 aggregations
+  val expectedSize = 33554432 // Assume a huge aggregation number just to be sure
   def open() {
     parent.child = this; parent.open
   }
@@ -157,7 +158,7 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
   def this(leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) = this(leftParent, rightParent, "", "")(joinCond)(leftHash)(rightHash)
   var mode: scala.Int = 0
 
-  val expectedSize = leftParent.expectedSize * 10 // Assume 1 tuple from the left side joins with 10 from the right
+  val expectedSize = leftParent.expectedSize * 100 // Assume 1 tuple from the left side joins with 100 from the right
   val hm = HashMap[C, ArrayBuffer[A]]()
 
   def reset() {
@@ -186,13 +187,14 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
         val tmpBuffer = hm(k)
         var tmpCount = 0
         var break = false
+        val size = tmpBuffer.size
         while ( /*!stop && */ !break) {
           val bufElem = tmpBuffer(tmpCount) // We know there is at least one element
           if (joinCond(bufElem, tuple.asInstanceOf[B])) {
             val res = bufElem.concatenateDynamic(tuple.asInstanceOf[B], leftAlias, rightAlias)
             child.consume(res)
           }
-          if (tmpCount + 1 >= tmpBuffer.size) break = true
+          if (tmpCount + 1 >= size) break = true
           tmpCount += 1
         }
       }
@@ -217,14 +219,15 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
       val k = keySet.head
       keySet.remove(k)
       val elem = hm.remove(k)
-      child.consume(new WindowRecord[B, C](k, wndf(elem.get)))
+      val wnd = wndf(elem.get)
+      val key = grp(elem.get(0))
+      child.consume(new WindowRecord[B, C](key, wnd))
     }
   }
   def consume(tuple: Record) {
-    val t = tuple.asInstanceOf[A]
-    val key = grp(t)
+    val key = grp(tuple.asInstanceOf[A])
     val v = hm.getOrElseUpdate(key, ArrayBuffer[A]())
-    v.append(t)
+    v.append(tuple.asInstanceOf[A])
   }
 }
 
@@ -258,9 +261,14 @@ class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator
         //        val idx = tmpBuffer.indexWhere(e => joinCond(tuple.asInstanceOf[A], e))
         var i = 0
         var found = false
-        while (!found && i < tmpBuffer.size) {
+        val size = tmpBuffer.size
+        var break = false
+        while (!found && !break) {
           if (joinCond(tuple.asInstanceOf[A], tmpBuffer(i))) found = true
-          else i += 1
+          else {
+            if (i + 1 >= size) break = true
+            i += 1
+          }
         }
 
         if (found == true)
@@ -327,7 +335,7 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
   var mode: scala.Int = 0
   val hm = HashMap[C, ArrayBuffer[A]]()
   var keySet = Set(hm.keySet.toSeq: _*)
-  val expectedSize = leftParent.expectedSize
+  val expectedSize = leftParent.expectedSize * 100
 
   def open() {
     leftParent.child = this
@@ -402,6 +410,7 @@ class ViewOp[A](parent: Operator[A]) extends Operator[A] {
   def reset() {}
   def next() {
     parent.next
+    idx = 0
     val size = table.size
     while (!stop && idx < size) {
       val e = table(idx)
@@ -444,7 +453,9 @@ class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Ope
       if (hm.contains(k)) {
         val tmpBuffer = hm(k)
         var tmpCount = 0
-        while (!stop && tmpCount < tmpBuffer.size) {
+        val size = tmpBuffer.size
+        var break = false
+        while ( /*!stop && */ !break) {
           val bufElem = tmpBuffer(tmpCount)
           val elem = {
             if (joinCond(tuple.asInstanceOf[A], bufElem))
@@ -452,6 +463,7 @@ class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Ope
             else tuple.asInstanceOf[A].concatenateDynamic(defaultB, "", "")
           }
           child.consume(elem)
+          if (tmpCount + 1 >= size) break = true
           tmpCount += 1
         }
       } else child.consume(tuple.asInstanceOf[A].concatenateDynamic(defaultB, "", ""))

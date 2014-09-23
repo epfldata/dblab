@@ -230,7 +230,7 @@ object Queries {
       val lineitemScan = new SelectOp(new ScanOp(lineitemTable))(x => x.L_DISCOUNT <= 0.1 && (
         x.L_SHIPDATE < constantDate2 && (x.L_QUANTITY < 24 && (x.L_SHIPDATE >= constantDate1 && (x.L_DISCOUNT >= 0.08)))))
       val aggOp = new AggOp(lineitemScan, 1)(x => "Total")((t, currAgg) => { (t.L_EXTENDEDPRICE * t.L_DISCOUNT) + currAgg })
-      val po = new PrintOp(aggOp)(kv => printf("%.4f\n", kv.aggs(0)), () => true)
+      val po = new PrintOp(aggOp)(kv => { kv.key; printf("%.4f\n", kv.aggs(0)) }, () => true)
       po.open
       po.next
       printf("(%d rows)\n", po.numRows)
@@ -442,10 +442,10 @@ object Queries {
       val vo = new ViewOp(wo)
       // Calculate total sum
       val aggOp = new AggOp(vo, 1)(x => "Total")((t, currAgg) => currAgg + t.wnd)
-      val total = new SubquerySingleResult(aggOp).getResult.aggs(0) * 0.0001
+      val total = new SubquerySingleResult(aggOp).getResult
       // Calculate final result
       vo.reset
-      val so = new SelectOp(vo)(x => x.wnd > total)
+      val so = new SelectOp(vo)(x => { total.key; x.wnd > (total.aggs(0) * 0.0001) })
       val sortOp = new SortOp(so)((x, y) => {
         if (x.wnd > y.wnd) -1
         else if (x.wnd < y.wnd) 1
@@ -489,9 +489,6 @@ object Queries {
     // }
   }
 
-  // Amir: Lifting needs:
-  //  1) LeftOuterJoinOp
-  // @dontLift
   def Q13(numRuns: Int) {
     val customerTable = loadCustomer()
     val ordersTable = loadOrders()
@@ -508,7 +505,7 @@ object Queries {
       val jo = new LeftOuterJoinOp(scanCustomer, scanOrders)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY)
       val aggOp1 = new AggOp(jo, 1)(x => x.C_CUSTKEY[Int])(
         (t, currAgg) => { if (t.O_ORDERKEY[Int] != 0.0) currAgg + 1 else currAgg })
-      val aggOp2 = new AggOp(aggOp1, 1)(x => x.aggs(0))(
+      val aggOp2 = new AggOp(aggOp1, 1)(x => { x.key; x.aggs(0) })(
         (t, currAgg) => { currAgg + 1 })
       val sortOp = new SortOp(aggOp2)((x, y) => {
         if (x.aggs(0) < y.aggs(0)) 1
@@ -546,7 +543,7 @@ object Queries {
           else currAgg
         },
         (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
-      val mapOp = new MapOp(aggOp)(kv => kv.aggs(2) = (kv.aggs(0) * 100) / kv.aggs(1))
+      val mapOp = new MapOp(aggOp)(kv => { kv.key; kv.aggs(2) = (kv.aggs(0) * 100) / kv.aggs(1) })
       val po = new PrintOp(mapOp)(kv => printf("%.4f\n", kv.aggs(2)), () => true)
       po.open
       po.next
@@ -571,13 +568,13 @@ object Queries {
       val vo = new ViewOp(aggOp1)
       // Get max
       val aggOp2 = new AggOp(vo, 1)(x => "MAXREVENUE")(
-        (t, currAgg) => { if (currAgg < t.aggs(0)) t.aggs(0) else currAgg })
+        (t, currAgg) => { t.key; if (currAgg < t.aggs(0)) t.aggs(0) else currAgg })
       aggOp2.open
-      val maxRevenue = new SubquerySingleResult(aggOp2).getResult.aggs(0)
+      val maxRevenue = new SubquerySingleResult(aggOp2).getResult
       vo.reset
       // Calcuate result
       val scanSupplier = new ScanOp(supplierTable)
-      val jo = new HashJoinOp(scanSupplier, vo)((x, y) => x.S_SUPPKEY == y.key && y.aggs(0) == maxRevenue)(x => x.S_SUPPKEY)(x => x.key)
+      val jo = new HashJoinOp(scanSupplier, vo)((x, y) => { maxRevenue.key; x.S_SUPPKEY == y.key && y.aggs(0) == maxRevenue.aggs(0) })(x => x.S_SUPPKEY)(x => x.key)
       val po = new PrintOp(jo)(kv => printf("%d|%s|%s|%s|%.4f\n", kv.S_SUPPKEY[Int], kv.S_NAME[LBString].string, kv.S_ADDRESS[LBString].string, kv.S_PHONE[LBString].string, kv.aggs[Array[Double]].apply(0)), () => true)
       po.open
       po.next
@@ -652,7 +649,7 @@ object Queries {
         }) / 7.0
       })
       val aggOp = new AggOp(wo, 1)(x => "Total")((t, currAgg) => currAgg + t.wnd)
-      val po = new PrintOp(aggOp)(kv => printf("%.6f\n", kv.aggs(0)), () => true)
+      val po = new PrintOp(aggOp)(kv => { kv.key; printf("%.6f\n", kv.aggs(0)) }, () => true)
       po.open
       po.next
       printf("(%d rows)\n", po.numRows)
@@ -750,7 +747,7 @@ object Queries {
           x.L_QUANTITY[Double] >= 26 && x.L_QUANTITY[Double] <= 36 && x.P_SIZE[Int] <= 15)
       val aggOp = new AggOp(jo, 1)(x => "Total")(
         (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
-      val po = new PrintOp(aggOp)(kv => printf("%.4f\n", kv.aggs(0)), () => true)
+      val po = new PrintOp(aggOp)(kv => { kv.key; printf("%.4f\n", kv.aggs(0)) }, () => true)
       po.open
       po.next
       printf("(%d rows)\n", po.numRows)
@@ -767,7 +764,7 @@ object Queries {
     val partsuppTable = loadPartsupp()
     val lineitemTable = loadLineitem()
     // for (i <- 0 until numRuns) {
-    runQuery({
+    runQuery {
       val constantDate1 = parseDate("1996-01-01")
       val constantDate2 = parseDate("1997-01-01")
       val jordan = parseString("JORDAN")
@@ -800,7 +797,7 @@ object Queries {
       po.next
       printf("(%d rows)\n", po.numRows)
       ()
-    })
+    }
     // }
   }
 
@@ -865,7 +862,7 @@ object Queries {
       val aggOp1 = new AggOp(customerScan1, 3)(x => "AVG_C_ACCTBAL")(
         (t, currAgg) => { t.C_ACCTBAL + currAgg },
         (t, currAgg) => { currAgg + 1 })
-      val mapOp = new MapOp(aggOp1)(kv => kv.aggs(2) = kv.aggs(0) / kv.aggs(1))
+      val mapOp = new MapOp(aggOp1)(kv => { kv.key; kv.aggs(2) = kv.aggs(0) / kv.aggs(1) })
       mapOp.open
       val nestedAVG = new SubquerySingleResult(mapOp).getResult.aggs(2)
       // External Query

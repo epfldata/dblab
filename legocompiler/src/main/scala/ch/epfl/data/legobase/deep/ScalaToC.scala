@@ -175,9 +175,8 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       ReadVal(arr)(IntType)
     case s @ PardisStruct(tag, elems, methods) =>
       // TODO if needed method generation should be added
-      System.out.println("AMIR CRASHED MY DREAMS " + s.tp)
-      val x = malloc(unit(1))(s.tp)
-      structCopy(x, PardisStruct(tag, elems, methods.map(m => m.copy(body = transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef]))))
+      val x = toAtom(Malloc(unit(1))(s.tp))(typePointer(s.tp))
+      structCopy(x, PardisStruct(tag, elems, methods.map(m => m.copy(body = transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef])))(s.tp))
       ReadVal(x)(typePointer(s.tp))
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
@@ -397,6 +396,9 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case abn @ ArrayBufferNew2() =>
       val x = sizeof()(abn.tp.typeArguments(0))
       NameAlias(None, "g_array_new", List(List(Constant(null), Constant(true), x)))(typeGArray(abn.tp.typeArguments(0)))
+    case abn @ ArrayBufferNew3() =>
+      val x = sizeof()(abn.tp.typeArguments(0))
+      NameAlias(None, "g_array_new", List(List(Constant(null), Constant(true), x)))(typeGArray(abn.tp.typeArguments(0)))
     case aba @ ArrayBufferApply(a, i) =>
       if ((aba.tp.isPrimitive) || (aba.name.contains("DynamicCompositeRecord"))) NameAlias(None, "g_array_index", List(List(a, typeOf()(aba.tp), i)))(transformType(aba.tp))
       else NameAlias(None, "g_array_index", List(List(a, typeOf()(typePointer(aba.tp)), i)))(transformType(aba.tp))
@@ -441,7 +443,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         val len = toAtom(OptimalStringLength(t.asInstanceOf[Expression[OptimalString]]))(IntType)
         val idx = __newVar[Int](0)
         val h = __newVar[Int](0)
-        __assign(h, readVar(h) + (unit(128) * len))
+        // __assign(h, readVar(h) + (unit(128) * len))
         __whileDo(readVar(idx) < len, {
           //   __assign(h, readVar(h) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], readVar(idx)))
           //    __assign(h, readVar(h) + (readVar(h) << 10))

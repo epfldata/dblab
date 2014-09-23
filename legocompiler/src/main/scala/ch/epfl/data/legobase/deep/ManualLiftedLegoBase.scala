@@ -7,7 +7,7 @@ import scala.language.implicitConversions
 import pardis.utils.Utils.{ pardisTypeToString => t2s }
 import pardis.types.PardisTypeImplicits._
 
-trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE with RichIntOps with pardis.deep.scalalib.ByteComponent with LegoHashMap { this: DeepDSL =>
+trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE with RichIntOps with pardis.deep.scalalib.ByteComponent with LegoHashMap with LegoArrayBuffer { this: DeepDSL =>
   /* TODO These methods should be lifted from scala.Predef */
   case class Println(x: Rep[Any]) extends FunctionDef[Unit](None, "println", List(List(x))) {
     override def curriedConstructor = (copy _)
@@ -141,4 +141,12 @@ trait LegoHashMap { this: DeepDSL =>
   //   override def curriedConstructor = copy[A] _
   //   override def funArgs = List(size)
   // }
+}
+
+trait LegoArrayBuffer { this: DeepDSL =>
+  case class ArrayBufferNew3[A]()(implicit val typeA: TypeRep[A]) extends ConstructorDef[ArrayBuffer[A]](List(typeA), "ArrayBuffer", List(List())) {
+    override def rebuild(children: FunctionArg*) = ArrayBufferNew3[A]()
+    override def funArgs = List()
+  }
+  def arrayBufferNew3[A, B]()(implicit typeA: TypeRep[A]): Rep[ArrayBuffer[A]] = ArrayBufferNew3[A]()(typeA)
 }

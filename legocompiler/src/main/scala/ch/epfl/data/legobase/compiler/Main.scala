@@ -94,20 +94,19 @@ object Main extends LegoRunner {
         parameterPromotion.optimize(loweredBlock0)
       }
     }
+    //    writeASTToDumpFile(loweredBlock)
 
     val afterHashMapToArray = {
       if (hashMapToArray && generateCCode) {
         val hm2Arr = new HashMapToArrayTransformer(context)
         val afterPE = new PartialyEvaluate(context).optimize(new DCE(context).optimize(loweredBlock))
-        writeASTToDumpFile(afterPE)
+        //writeASTToDumpFile(afterPE)
         val hmBlock = hm2Arr.optimize(afterPE)
         hmBlock
       } else {
         loweredBlock
       }
     }
-
-    writeASTToDumpFile(afterHashMapToArray)
 
     // DCE
     val dce = new DCE(context)
@@ -124,9 +123,10 @@ object Main extends LegoRunner {
         val cBlock = CTransformersPipeline(context, dceBlock)
         val dceC = new DCECLang(context)
         dceC.optimize(cBlock)
-        //cBlock
       } else partiallyEvaluatedBlock
     }
+
+    writeASTToDumpFile(finalBlock)
 
     // System.out.println(finalBlock)
     // Generate final program 

@@ -1127,13 +1127,14 @@ trait HashJoinOpImplementations { this: DeepDSL =>
         val tmpBuffer: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.apply(k);
         var tmpCount: this.Var[Int] = __newVar(unit(0));
         var break: this.Var[Boolean] = __newVar(unit(false));
+        val size: this.Rep[Int] = tmpBuffer.size;
         __whileDo(readVar(break).unary_$bang, {
           val bufElem: this.Rep[A] = tmpBuffer.apply(readVar(tmpCount));
           __ifThenElse(__app(self.joinCond).apply(bufElem, infix_asInstanceOf[B](tuple)), {
             val res: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]] = RecordOps[A](bufElem).concatenateDynamic[B](infix_asInstanceOf[B](tuple), self.leftAlias, self.rightAlias);
             self.child.consume(res)
           }, unit(()));
-          __ifThenElse(readVar(tmpCount).$plus(unit(1)).$greater$eq(tmpBuffer.size), __assign(break, unit(true)), unit(()));
+          __ifThenElse(readVar(tmpCount).$plus(unit(1)).$greater$eq(size), __assign(break, unit(true)), unit(()));
           __assign(tmpCount, readVar(tmpCount).$plus(unit(1)))
         })
       }, unit(()))
@@ -1283,16 +1284,17 @@ trait WindowOpImplementations { this: DeepDSL =>
         val k: this.Rep[B] = readVar(keySet).head;
         readVar(keySet).remove(k);
         val elem: this.Rep[Option[scala.collection.mutable.ArrayBuffer[A]]] = self.hm.remove(k);
-        self.child.consume(__newWindowRecord[B, C](k, __app(self.wndf).apply(elem.get)))
+        val wnd: this.Rep[C] = __app(self.wndf).apply(elem.get);
+        val key: this.Rep[B] = __app(self.grp).apply(elem.get.apply(unit(0)));
+        self.child.consume(__newWindowRecord[B, C](key, wnd))
       })
     }
   }
   override def windowOpConsume[A, B, C](self: Rep[WindowOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
     {
-      val t: this.Rep[A] = infix_asInstanceOf[A](tuple);
-      val key: this.Rep[B] = __app(self.grp).apply(t);
+      val key: this.Rep[B] = __app(self.grp).apply(infix_asInstanceOf[A](tuple));
       val v: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = self.hm.getOrElseUpdate(key, ArrayBuffer.apply[A]());
-      v.append(t)
+      v.append(infix_asInstanceOf[A](tuple))
     }
   }
 }
@@ -1479,7 +1481,12 @@ trait LeftHashSemiJoinOpImplementations { this: DeepDSL =>
         val tmpBuffer: this.Rep[scala.collection.mutable.ArrayBuffer[B]] = self.hm.apply(k);
         var i: this.Var[Int] = __newVar(unit(0));
         var found: this.Var[Boolean] = __newVar(unit(false));
-        __whileDo(readVar(found).unary_$bang.$amp$amp(readVar(i).$less(tmpBuffer.size)), __ifThenElse(__app(self.joinCond).apply(infix_asInstanceOf[A](tuple), tmpBuffer.apply(readVar(i))), __assign(found, unit(true)), __assign(i, readVar(i).$plus(unit(1)))));
+        val size: this.Rep[Int] = tmpBuffer.size;
+        var break: this.Var[Boolean] = __newVar(unit(false));
+        __whileDo(readVar(found).unary_$bang.$amp$amp(readVar(break).unary_$bang), __ifThenElse(__app(self.joinCond).apply(infix_asInstanceOf[A](tuple), tmpBuffer.apply(readVar(i))), __assign(found, unit(true)), {
+          __ifThenElse(readVar(i).$plus(unit(1)).$greater$eq(size), __assign(break, unit(true)), unit(()));
+          __assign(i, readVar(i).$plus(unit(1)))
+        }));
         __ifThenElse(infix_$eq$eq(readVar(found), unit(true)), self.child.consume(infix_asInstanceOf[ch.epfl.data.pardis.shallow.Record](tuple)), unit(()))
       }, unit(()))
     })
@@ -2154,6 +2161,7 @@ trait ViewOpImplementations { this: DeepDSL =>
   override def viewOpNext[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     {
       self.parent.next();
+      self.idx_$eq(unit(0));
       val size: this.Rep[Int] = self.table.size;
       __whileDo(self.stop.unary_$bang.$amp$amp(self.idx.$less(size)), {
         val e: this.Rep[A] = self.table.apply(self.idx);
@@ -2365,10 +2373,13 @@ trait LeftOuterJoinOpImplementations { this: DeepDSL =>
       __ifThenElse(self.hm.contains(k), {
         val tmpBuffer: this.Rep[scala.collection.mutable.ArrayBuffer[B]] = self.hm.apply(k);
         var tmpCount: this.Var[Int] = __newVar(unit(0));
-        __whileDo(self.stop.unary_$bang.$amp$amp(readVar(tmpCount).$less(tmpBuffer.size)), {
+        val size: this.Rep[Int] = tmpBuffer.size;
+        var break: this.Var[Boolean] = __newVar(unit(false));
+        __whileDo(readVar(break).unary_$bang, {
           val bufElem: this.Rep[B] = tmpBuffer.apply(readVar(tmpCount));
           val elem: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]] = __ifThenElse(__app(self.joinCond).apply(infix_asInstanceOf[A](tuple), bufElem), RecordOps[A](infix_asInstanceOf[A](tuple)).concatenateDynamic[B](bufElem, unit(""), unit("")), RecordOps[A](infix_asInstanceOf[A](tuple)).concatenateDynamic[B](self.defaultB, unit(""), unit("")));
           self.child.consume(elem);
+          __ifThenElse(readVar(tmpCount).$plus(unit(1)).$greater$eq(size), __assign(break, unit(true)), unit(()));
           __assign(tmpCount, readVar(tmpCount).$plus(unit(1)))
         })
       }, self.child.consume(RecordOps[A](infix_asInstanceOf[A](tuple)).concatenateDynamic[B](self.defaultB, unit(""), unit(""))))

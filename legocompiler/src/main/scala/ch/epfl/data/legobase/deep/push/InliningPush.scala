@@ -6,6 +6,7 @@ package push
 import scala.language.implicitConversions
 import pardis.ir._
 import pardis.types.PardisTypeImplicits._
+import scala.reflect._
 
 trait InliningPush extends DeepDSL with pardis.ir.InlineFunctions with QueriesImplementations with OperatorImplementations with ScanOpImplementations with SelectOpImplementations with AggOpImplementations with SortOpImplementations with MapOpImplementations with PrintOpImplementations with WindowOpImplementations with HashJoinOpImplementations with LeftHashSemiJoinOpImplementations with NestedLoopsJoinOpImplementations with SubquerySingleResultImplementations with ViewOpImplementations with HashJoinAntiImplementations with LeftOuterJoinOpImplementations { this: InliningLegoBase =>
   override def findSymbol[T: TypeRep](d: Def[T]): Option[Sym[T]] =
