@@ -94,7 +94,6 @@ object Main extends LegoRunner {
         parameterPromotion.optimize(loweredBlock0)
       }
     }
-    //    writeASTToDumpFile(loweredBlock)
 
     val afterHashMapToArray = {
       if (hashMapToArray && generateCCode) {
@@ -107,6 +106,8 @@ object Main extends LegoRunner {
         loweredBlock
       }
     }
+
+    writeASTToDumpFile(afterHashMapToArray)
 
     // DCE
     val dce = new DCE(context)
@@ -125,8 +126,6 @@ object Main extends LegoRunner {
         dceC.optimize(cBlock)
       } else partiallyEvaluatedBlock
     }
-
-    writeASTToDumpFile(finalBlock)
 
     // System.out.println(finalBlock)
     // Generate final program 

@@ -430,7 +430,6 @@ class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Ope
   val hm = HashMap[C, ArrayBuffer[B]]()
   val defaultB = Record.getDefaultRecord[B]()
   val expectedSize = leftParent.expectedSize
-
   def open() = {
     leftParent.child = this
     leftParent.open
@@ -458,15 +457,19 @@ class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Ope
         while ( /*!stop && */ !break) {
           val bufElem = tmpBuffer(tmpCount)
           val elem = {
-            if (joinCond(tuple.asInstanceOf[A], bufElem))
+            if (joinCond(tuple.asInstanceOf[A], bufElem)) {
               tuple.asInstanceOf[A].concatenateDynamic(bufElem, "", "")
-            else tuple.asInstanceOf[A].concatenateDynamic(defaultB, "", "")
+            } else
+              tuple.asInstanceOf[A].concatenateDynamic(defaultB, "", "")
           }
+          //printf("%s\n", elem.toString)
           child.consume(elem)
           if (tmpCount + 1 >= size) break = true
           tmpCount += 1
         }
-      } else child.consume(tuple.asInstanceOf[A].concatenateDynamic(defaultB, "", ""))
+      } else {
+        child.consume(tuple.asInstanceOf[A].concatenateDynamic(defaultB, "", ""))
+      }
     }
   }
 }

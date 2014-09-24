@@ -234,7 +234,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       val ptrValue = typePointer(manValue)
       val bucket = __newVar(ArrayApply(lhm, hashKey)(manValue))(manValue)
       val e = __newVar(toAtom(PardisStructFieldGetter(ReadVar(bucket)(manValue), "next")(manValue))(manValue))(manValue)
-      val ek = __newVar(toAtom(PardisStructFieldGetter(e, "key")(key.tp))(key.tp).asInstanceOf[Expression[Value]])
+      val ek = __newVar(toAtom(PardisStructFieldGetter(e, "key")(key.tp))(key.tp).asInstanceOf[Expression[Value]])(key.tp.asInstanceOf[TypeRep[Value]])
       val eq: Rep[(Any, Any) => Boolean] = getEqualsMethod(k.tp)
       __whileDo(boolean$amp$amp(infix_!=(e, Constant(null)), !__app(eq).apply(readVar(ek)(key.tp.asInstanceOf[TypeRep[Value]]), k)), {
         __assign(e, toAtom(PardisStructFieldGetter(readVar(e), "next")(manValue))(manValue))

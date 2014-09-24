@@ -321,6 +321,11 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     val hashMethod = transformDef(structDef.methods.find(_.name == "hash").get.body.asInstanceOf[PardisLambda[A, Int]])
     toAtom(hashMethod)(hashMethod.tp)
   }
+  def record_toString[A: PardisType]: Rep[A => String] = {
+    val structDef = getStructDef[A].get
+    val toStringMethod = transformDef(structDef.methods.find(_.name == "to_string").get.body.asInstanceOf[PardisLambda[A, String]])
+    toAtom(toStringMethod)(toStringMethod.tp)
+  }
   // ------------------------------
   def treeHead[A: PardisType, B: PardisType] = doLambda3((s1: Rep[A], s2: Rep[A], s3: Rep[Pointer[B]]) => {
     pointer_assign(s3.asInstanceOf[Expression[Pointer[Any]]], s2)
@@ -456,7 +461,6 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         //    __assign(h, readVar(h) + (readVar(h) << 15))
         //  __assign(h, readVar(h) % len)
         ReadVar(h)
-
       /* hash, i;
     for(hash = i = 0; i < len; ++i)
     {
@@ -471,6 +475,13 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       case x if x.isArray => ArrayLength(t.asInstanceOf[Rep[Array[Any]]])
       // Handle any additional cases here
       case x              => super.transformDef(node)
+    }
+    case ToString(obj) => obj.tp.asInstanceOf[PardisType[_]] match {
+      case PointerType(tp) if tp.isRecord => {
+        // ReadVal(__app(record_toString(tp)).apply(obj))
+        Apply(record_toString(tp), obj)
+      }
+      case tp => throw new Exception(s"toString conversion for non-record type $tp is not handled for the moment")
     }
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]

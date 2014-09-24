@@ -659,7 +659,7 @@ object Queries {
   }
 
   // Danger, Will Robinson!: Query takes a long time to complete in Scala (but we 
-  // knew that already
+  // knew that already)
   def Q18(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()

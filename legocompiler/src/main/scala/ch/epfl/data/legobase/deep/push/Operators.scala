@@ -2024,6 +2024,7 @@ trait HashJoinAntiImplementations { this: DeepDSL =>
           var idx: this.Var[Int] = __newVar(readVar(i).$minus(readVar(removed)));
           val e: this.Rep[A] = elems.apply(readVar(idx));
           __ifThenElse(__app(self.joinCond).apply(e, t), {
+            printf(unit("%s\n"), infix_toString(e));
             elems.remove(readVar(idx));
             __assign(removed, readVar(removed).$plus(unit(1)))
           }, unit(()));

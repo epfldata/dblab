@@ -10,7 +10,7 @@ import pardis.types._
 import pardis.types.PardisTypeImplicits._
 import pardis.optimization._
 
-class LBLowering(override val from: InliningLegoBase, override val to: LoweringLegoBase, override val generateHashAndEqual: Boolean) extends Lowering[InliningLegoBase, LoweringLegoBase](from, to) {
+class LBLowering(override val from: LoweringLegoBase, override val to: LoweringLegoBase, override val generateHashAndEqual: Boolean) extends Lowering[LoweringLegoBase, LoweringLegoBase](from, to) {
   import from._
 
   // override val lowerStructs: Boolean = false
@@ -114,24 +114,55 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
     res
   }
 
+  def getPrint(tpe: TypeRep[Any], structFields: Seq[PardisStructArg]): Option[PardisStructMethod] = {
+    if (generateHashAndEqual) {
+      val printFunctionNode = doLambdaDef((x: Rep[Any]) => {
+        def getDescriptor(field: PardisStructArg): String = field.init.tp.asInstanceOf[PardisType[_]] match {
+          case IntType | ShortType            => "%d"
+          case DoubleType | FloatType         => "%f"
+          case LongType                       => "%lf"
+          case StringType | OptimalStringType => "%s"
+          case ArrayType(elemTpe)             => s"Array[$elemTpe]"
+          case tp                             => tp.toString
+        }
+        val fieldsWithDescriptor = structFields.map(f => f -> getDescriptor(f))
+        val descriptor = tpe.name + "(" + fieldsWithDescriptor.map(f => f._2).mkString(", ") + ")"
+        val fields = fieldsWithDescriptor.collect {
+          case f if f._2.startsWith("%") => {
+            val tp = f._1.init.tp
+            field(x, f._1.name)(tp)
+          }
+        }
+        val str = malloc(4096)(CharType)
+        sprintf(str.asInstanceOf[Rep[String]], unit(descriptor), fields: _*)
+        str.asInstanceOf[Rep[String]]
+      })(tpe, StringType).asInstanceOf[PardisLambdaDef]
+      Some(PardisStructMethod("to_string", printFunctionNode))
+    } else {
+      None
+    }
+  }
+
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = node match {
     case CaseClassNew(ccn) if lowerStructs =>
       transformDef(super.transformDef(node))
     case sd @ StructDefault() if lowerStructs =>
-      val td = super.transformDef(node)
-      System.out.println("deeeeeee => " + td.tp)
-      val ttd = transformDef(td)
-      System.out.println("deeeeeee => " + ttd.tp)
-      ttd
+      transformDef(super.transformDef(node))
     case ps @ PardisStruct(tag, elems, methods) =>
       val registeredFields = fieldsAccessed.get(tag)
-      registeredFields match {
-        case Some(x) =>
-          val newElems = elems.filter(e => x.contains(e.name))
-          PardisStruct(tag, newElems, methods)(ps.tp)
-        case None =>
-          ReadVal(infix_asInstanceOf(node)(ps.tp))(ps.tp)
+      val newFields = registeredFields match {
+        case Some(x) => elems.filter(e => x.contains(e.name))
+        case None    => elems
       }
+      val newMethods = methods ++ getPrint(ps.tp.asInstanceOf[TypeRep[Any]], newFields)
+      // registeredFields match {
+      //   case Some(x) =>
+      //     val newElems = elems.filter(e => x.contains(e.name))
+      //     PardisStruct(tag, newElems, methods)(ps.tp)
+      //   case None =>
+      //     node
+      // }
+      PardisStruct(tag, newFields, newMethods)(ps.tp)
     case ConcatDynamic(record1, record2, leftAlias, rightAlias) if lowerStructs => {
       val tp = node.tp.asInstanceOf[TypeRep[(Any, Any)]]
       val leftTag = getTag(getType(record1.tp))
@@ -151,7 +182,8 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val methods = if (generateHashAndEqual) {
         val eqMethod = getEquals(newTpe.asInstanceOf[TypeRep[Any]], structFields)
         val hashMethod = getHash(newTpe.asInstanceOf[TypeRep[Any]], structFields)
-        List(PardisStructMethod("equals", eqMethod), PardisStructMethod("hash", hashMethod))
+        val printMethod = getPrint(newTpe.asInstanceOf[TypeRep[Any]], structFields)
+        List(PardisStructMethod("equals", eqMethod), PardisStructMethod("hash", hashMethod)) ++ printMethod
       } else Nil
       PardisStruct(concatTag, structFields, methods)(newTpe).asInstanceOf[to.Def[T]]
     }
@@ -197,7 +229,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val ma = so.typeA
       val maa = ma.asInstanceOf[TypeRep[Any]]
       to.__newDef[SelectOp[Any]](
-        ("expectedSize", false, toAtom(PardisStructImmutableField(so.parent, "expectedSize")(IntType))(IntType)),
+        ("expectedSize", false, toAtom(PardisStructImmutableField(so.parent, "expectedSize")(IntType))(IntType) / 20),
         stop).asInstanceOf[to.Def[T]]
     }
     case so: SortOpNew[_] => {
@@ -220,7 +252,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       to.__newDef[HashJoinOpTp](
         ("hm", true, to.__newHashMap3[Any, Any](ho.leftHash.asInstanceOf[Rep[Any => Any]],
           newSize)(apply(mc), apply(ma.asInstanceOf[TypeRep[Any]]))),
-        ("expectedSize", false, newSize * 300),
+        ("expectedSize", false, newSize * 100),
         stop)(tp).asInstanceOf[to.Def[T]]
 
     }
@@ -234,7 +266,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val newSize = toAtom(PardisStructImmutableField(wo.parent, "expectedSize")(IntType))(IntType)
       to.__newDef[WindowOp[Any, Any, Any]]( //("hm", false, to.__newHashMap()(to.overloaded2, apply(mb), apply(marrBuffA))),
         ("hm", false, to.__newHashMap3[Any, Any](wo.grp.asInstanceOf[Rep[Any => Any]], newSize * 30)(apply(mb), apply(ma))),
-        ("expectedSize", false, newSize * 300),
+        ("expectedSize", false, newSize * 100),
         stop).asInstanceOf[to.Def[T]]
     }
     case lho: LeftHashSemiJoinOpNew[_, _, _] => {
@@ -246,7 +278,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       val newSize = toAtom(PardisStructImmutableField(lho.leftParent, "expectedSize")(IntType))(IntType)
       to.__newDef[LeftHashSemiJoinOp[Any, Any, Any]]( //("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffB))),
         ("hm", false, to.__newHashMap3[Any, Any](lho.rightHash.asInstanceOf[Rep[Any => Any]], newSize * 100)(apply(mc), apply(mb))),
-        ("expectedSize", false, newSize * 300),
+        ("expectedSize", false, newSize * 100),
         stop).asInstanceOf[to.Def[T]]
     }
     case nlo: NestedLoopsJoinOpNew[_, _] => {
@@ -283,7 +315,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       to.__newDef[HashJoinAnti[Any, Any, Any]]( //("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffA))),
         ("hm", false, to.__newHashMap3[Any, Any](ho.leftHash.asInstanceOf[Rep[Any => Any]], newSize)(apply(mc), apply(ma))),
         stop,
-        ("expectedSize", false, newSize * 300),
+        ("expectedSize", false, newSize * 100),
         ("keySet", true, to.Set()(apply(mc), to.overloaded2))).asInstanceOf[to.Def[T]]
     }
     case loj: LeftOuterJoinOpNew[_, _, _] => {
@@ -301,7 +333,7 @@ class LBLowering(override val from: InliningLegoBase, override val to: LoweringL
       to.__newDef[LeftOuterJoinOpTp]( //("hm", false, to.__newHashMap()(to.overloaded2, apply(mc), apply(marrBuffB))),
         ("hm", false, to.__newHashMap3[Any, Any](loj.rightHash.asInstanceOf[Rep[Any => Any]], newSize * 100)(apply(mc), apply(mb))),
         stop,
-        ("expectedSize", false, newSize * 300),
+        ("expectedSize", false, newSize * 100),
         ("defaultB", false, dflt))(tp).asInstanceOf[to.Def[T]]
     }
     case pc @ PardisCast(exp) => {
