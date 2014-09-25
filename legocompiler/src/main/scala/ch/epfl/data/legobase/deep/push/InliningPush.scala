@@ -78,7 +78,7 @@ trait InliningPush extends DeepDSL with pardis.ir.InlineFunctions with QueriesIm
     }
     case Def(x: ViewOpNew[_]) => {
       type X = Any
-      viewOpOpen(self.asInstanceOf[Rep[ViewOp[X]]])(x.typeA.asInstanceOf[TypeRep[X]])
+      viewOpOpen(self.asInstanceOf[Rep[ViewOp[X]]])(x.typeA.asInstanceOf[TypeRep[X]], x.evidence$1.asInstanceOf[Manifest[X]])
     }
     case Def(x: HashJoinAntiNew[_, _, _]) => {
       type X = Any
@@ -90,7 +90,7 @@ trait InliningPush extends DeepDSL with pardis.ir.InlineFunctions with QueriesIm
       type X = pardis.shallow.Record
       type Y = pardis.shallow.Record
       type Z = Any
-      leftOuterJoinOpOpen(self.asInstanceOf[Rep[LeftOuterJoinOp[X, Y, Z]]])(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], x.typeC.asInstanceOf[TypeRep[Z]], x.evidence$1.asInstanceOf[Manifest[Y]])
+      leftOuterJoinOpOpen(self.asInstanceOf[Rep[LeftOuterJoinOp[X, Y, Z]]])(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], x.typeC.asInstanceOf[TypeRep[Z]], x.evidence$2.asInstanceOf[Manifest[Y]])
     }
     case _ => super.operatorOpen(self)
   }
@@ -172,7 +172,7 @@ trait InliningPush extends DeepDSL with pardis.ir.InlineFunctions with QueriesIm
     }
     case Def(x: ViewOpNew[_]) => {
       type X = Any
-      viewOpNext(self.asInstanceOf[Rep[ViewOp[X]]])(x.typeA.asInstanceOf[TypeRep[X]])
+      viewOpNext(self.asInstanceOf[Rep[ViewOp[X]]])(x.typeA.asInstanceOf[TypeRep[X]], x.evidence$1.asInstanceOf[Manifest[X]])
     }
     case Def(x: HashJoinAntiNew[_, _, _]) => {
       type X = Any
@@ -184,7 +184,7 @@ trait InliningPush extends DeepDSL with pardis.ir.InlineFunctions with QueriesIm
       type X = pardis.shallow.Record
       type Y = pardis.shallow.Record
       type Z = Any
-      leftOuterJoinOpNext(self.asInstanceOf[Rep[LeftOuterJoinOp[X, Y, Z]]])(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], x.typeC.asInstanceOf[TypeRep[Z]], x.evidence$1.asInstanceOf[Manifest[Y]])
+      leftOuterJoinOpNext(self.asInstanceOf[Rep[LeftOuterJoinOp[X, Y, Z]]])(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], x.typeC.asInstanceOf[TypeRep[Z]], x.evidence$2.asInstanceOf[Manifest[Y]])
     }
     case _ => super.operatorNext(self)
   }
@@ -240,7 +240,7 @@ trait InliningPush extends DeepDSL with pardis.ir.InlineFunctions with QueriesIm
     }
     case Def(x: ViewOpNew[_]) => {
       type X = Any
-      viewOpConsume(self.asInstanceOf[Rep[ViewOp[X]]], tuple)(x.typeA.asInstanceOf[TypeRep[X]])
+      viewOpConsume(self.asInstanceOf[Rep[ViewOp[X]]], tuple)(x.typeA.asInstanceOf[TypeRep[X]], x.evidence$1.asInstanceOf[Manifest[X]])
     }
     case Def(x: SubquerySingleResultNew[_]) => {
       type X = Any
@@ -256,7 +256,7 @@ trait InliningPush extends DeepDSL with pardis.ir.InlineFunctions with QueriesIm
       type X = pardis.shallow.Record
       type Y = pardis.shallow.Record
       type Z = Any
-      leftOuterJoinOpConsume(self.asInstanceOf[Rep[LeftOuterJoinOp[X, Y, Z]]], tuple)(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], x.typeC.asInstanceOf[TypeRep[Z]], x.evidence$1.asInstanceOf[Manifest[Y]])
+      leftOuterJoinOpConsume(self.asInstanceOf[Rep[LeftOuterJoinOp[X, Y, Z]]], tuple)(x.typeA.asInstanceOf[TypeRep[X]], x.typeB.asInstanceOf[TypeRep[Y]], x.typeC.asInstanceOf[TypeRep[Z]], x.evidence$2.asInstanceOf[Manifest[Y]])
     }
     case _ => super.operatorConsume(self, tuple)
   }

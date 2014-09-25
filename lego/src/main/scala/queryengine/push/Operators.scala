@@ -398,9 +398,9 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
 }
 
 @deep
-class ViewOp[A](parent: Operator[A]) extends Operator[A] {
-  var idx = 0
-  val table = ArrayBuffer[A]()
+class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
+  var size = 0
+  val table = new Array[A](parent.expectedSize)
   val expectedSize = parent.expectedSize
 
   def open() {
@@ -410,17 +410,16 @@ class ViewOp[A](parent: Operator[A]) extends Operator[A] {
   def reset() {}
   def next() {
     parent.next
-    idx = 0
-    val size = table.size
-    while (!stop && idx < size) {
+    var idx = 0
+    while ( /*!stop && */ idx < size) {
       val e = table(idx)
       idx += 1
       child.consume(e.asInstanceOf[Record])
     }
-    idx = 0
   }
   def consume(tuple: Record) {
-    table.append(tuple.asInstanceOf[A])
+    table(size) = tuple.asInstanceOf[A]
+    size += 1
   }
 }
 

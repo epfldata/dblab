@@ -46,7 +46,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
   }
 
   override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
-    //    case Stm(sym, ArrayBufferNew3())            => super.transformStmToMultiple(stm)
     case Stm(sym, SetHead(s))                   => Nil
     case Stm(sym, SetRemove(s, k))              => Nil
     case Stm(sym, HashMapKeySet(m))             => Nil
@@ -63,16 +62,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
   }
 
   override def transformStm(stm: Stm[_]): to.Stm[_] = {
-    /*def __transformStm[A: PardisType](a: Def[A], sym: Sym[Any]) = a match {
-      case rv @ PardisReadVar(f @ PardisVar(ab)) =>
-        implicit val manValue = a.tp.asInstanceOf[TypeRep[Value]]
-        val newSym = fresh[Boolean]
-        val z = ReadVal(infix_==(PardisStructFieldGetter(ab, "next")(manValue), unit(null)))(BooleanType)
-        val s = Stm(newSym, z)
-        subst += sym -> newSym
-        reflectStm(s)
-        s
-    }*/
     stm match {
       // This is a hack but i have no other idea how to properly handle views
       case Stm(sym, abn @ ArrayBufferNew3()) => {
@@ -85,19 +74,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
         }
         stmt
       }
-      /*case Stm(sym, Int$greater$eq4(e1, Def(ab @ ArrayBufferSize(a)))) => __transformStm(a.correspondingNode, sym)
-      case Stm(sym, Equal(Def(ab @ ArrayBufferSize(a)), e1))           => __transformStm(a.correspondingNode, sym)
-      case Stm(sym, Int$less4(e1, Def(ab @ ArrayBufferSize(a)))) => a.correspondingNode match {
-        case rv @ PardisReadVar(f @ PardisVar(ab)) =>
-          implicit val manValue = a.tp.asInstanceOf[TypeRep[Value]]
-          val newSym = fresh[Boolean]
-          val z = ReadVal(infix_!=(PardisStructFieldGetter(ab, "next")(manValue), unit(null)))(BooleanType)
-          val s = Stm(newSym, z)
-          subst += sym -> newSym
-          reflectStm(s)
-          s
-        case _ => super.transformStm(stm)
-      }*/
       case _ => super.transformStm(stm)
     }
   }
@@ -174,7 +150,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
   object HashMapNews {
     def unapply[T](node: Def[T]): Option[(Rep[Int], PardisType[Any])] = node match {
       case hmn @ HashMapNew3(_, size) => Some(size -> hmn.typeB)
-      // case hmn @ HashMapNew4(size)    => Some(size -> ArrayBufferType(AGGRecordType(hmn.typeA)).asInstanceOf[PardisType[Any]]) // FIXME seems a bit buggy!
       case hmn @ HashMapNew4(_, size) => Some(size -> /*ArrayBufferType*/ (hmn.typeB).asInstanceOf[PardisType[Any]])
       case _                          => None
     }
@@ -187,8 +162,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       // AntiJoin
       PardisStruct(tag, elems ++ List(PardisStructArg("next", true, init)) ++ List(PardisStructArg("prev", true, init)), methods)(ps.tp)
 
-    // case hmn @ HashMapNew3(_, size) =>
-    // val typeB = hmn.typeB
     case hmn @ HashMapNews(size, typeB) =>
       printf(unit("Initializing map for type %s of size %d\n"), unit(typeB.toString), size)
       val arr = arrayNew(size)(typeB)
@@ -329,21 +302,12 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
         toAtom(PardisStructFieldSetter(headNext, "prev", e))
       }, unit())
       ReadVal(Constant(true))
-    //      case ArrayBufferNew2() => super.transformDef(node) // Typical arraybuffer
-    //    case _                 => throw new Exception("Internal BUG in HashMapToArrayTransformer. ArrayBuffer should be a Var (type " + a.correspondingNode + " found)");
-    //}
 
     case ArrayBufferApply(a @ Def(rv @ PardisReadVar(f @ PardisVar(ab))), idx) =>
-      //a, idx) =>
-      //   a.correspondingNode match {
       implicit val manValue = ab.tp.typeArguments(0).asInstanceOf[TypeRep[Value]]
       val aVarNext = toAtom(PardisStructFieldGetter(ab, "next")(manValue))(manValue)
       __assign(f.asInstanceOf[PardisVar[Any]], aVarNext)
       ReadVar(f)
-    //        case ArrayBufferNew2() => super.transformDef(node) // Typical arraybuffer
-    //      case _                 => throw new Exception("Internal BUG in HashMapToArrayTransformer. ArrayBuffer should be a Var (type " + a.correspondingNode + " found)");
-    // }
-
     case ArrayBufferRemove(a @ Def(rv @ PardisReadVar(f @ PardisVar(ab))), y) =>
       implicit val manValue = ab.tp.typeArguments(0).asInstanceOf[TypeRep[Value]]
       //printf(unit("Removing from list\n"))
@@ -358,8 +322,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
         __assign(numElems, readVar(numElems) - unit(1))
       }, unit())
       ReadVal(Constant(true))
-    //      case _ => throw new Exception("Internal BUG in HashMapToArrayTransformer. ArrayBuffer should be a Var");
-    //  }
     case ArrayBufferFoldLeft(a, cnt, Def(Lambda2(fun, input1, input2, o))) => a.correspondingNode match {
       case rv @ PardisReadVar(f @ PardisVar(ab)) =>
         var agg = __newVar(cnt)
@@ -411,9 +373,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       })
       __assign(f.asInstanceOf[PardisVar[Any]], init)
       ReadVar(count)
-    //	  case ArrayBufferNew2() => super.transformDef(node)
-    //    case _ => throw new Exception("Internal BUG in HashMapToArrayTransformer. ArrayBuffer should be a Var");
-    // }
 
     case OptionGet(x) => x.correspondingNode
 

@@ -205,10 +205,10 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     case PardisReadVal(s) =>
       val ss = transformExp[Any, T](s)
       PardisReadVal(ss)(ss.tp.asInstanceOf[PardisType[T]])
-    case IfThenElse(cond, ifStmt, elseStmt) =>
+    /*case IfThenElse(cond, ifStmt, elseStmt) =>
       val ifStmtT = transformBlock(ifStmt)
       val elseStmtT = transformBlock(elseStmt)
-      IfThenElse(cond, ifStmtT, elseStmtT)(elseStmtT.res.tp)
+      IfThenElse(cond, ifStmtT, elseStmtT)(elseStmtT.res.tp)*/
     case PardisNewVar(v) =>
       val tv = transformExp[Any, T](v)
       PardisNewVar(tv)(tv.tp)
@@ -253,6 +253,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       if (e1.tp == OptimalStringType) transformDef(BooleanUnary_$bang(strcmp(e1, e2)))
       else eq
     }
+
     // Profiling and utils functions mapping
     /*case GenericEngineRunQueryObject(b) =>
       val diff = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
@@ -442,6 +443,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case imtf @ PardisStructImmutableField(s, f) =>
       PardisStructImmutableField(s, f)(transformType(imtf.tp))
     case HashCode(t) => t.tp match {
+      case x if x.name == "String"    => ReadVal(unit(0)) // KEY is constant. No need to hash anything
       case x if x.isPrimitive         => PardisCast(t)(x, IntType)
       case x if x.name == "Character" => PardisCast(t)(x, IntType)
       case x if x.name == "OptimalString" =>
@@ -515,8 +517,7 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Top
     case OptimalStringContainsSlice(x, y) => NotEqual(StrStr(x, y), Constant(null))
     case OptimalStringIndexOfSlice(x, y, idx) =>
       val substr = strstr(x + idx, y)
-      val res = __ifThenElse(Equal(substr, Constant(null)), Constant(-1), StrSubtract(substr, x))(IntType)
-      ReadVal(res)
+      transformDef(PardisIfThenElse(Equal(substr, Constant(null)), PardisBlock(Nil, Constant(-1)), PardisBlock(Nil, StrSubtract(substr, x))(IntType)))
     case OptimalStringApply(x, idx) =>
       val z = infix_asInstanceOf(x)(typeArray(typePointer(CharType)))
       ArrayApply(z, idx)
@@ -525,6 +526,20 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Top
       val newbuf = malloc(len)(CharType)
       strncpy(newbuf, x + start, len - unit(1))
       ReadVal(newbuf)
+    // This should be in a transformer happening in the end
+    case PardisIfThenElse(cond, thenp, elsep) =>
+      val thenBlock = transformBlock(thenp)
+      val elseBlock = transformBlock(elsep)
+      if (thenp.tp != UnitType) {
+        val res = __newVar(unit(0))(thenp.tp.asInstanceOf[TypeRep[Int]])
+        __ifThenElse(infix_==(cond, Constant(true)), {
+          __assign(res, toAtom(ReadVal(thenBlock)(thenBlock.tp))(thenBlock.tp))
+        }, {
+          __assign(res, toAtom(ReadVal(elseBlock)(elseBlock.tp))(elseBlock.tp))
+        })
+        ReadVar(res)(res.tp)
+      } else PardisIfThenElse(cond, thenBlock, elseBlock)
+
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
 }

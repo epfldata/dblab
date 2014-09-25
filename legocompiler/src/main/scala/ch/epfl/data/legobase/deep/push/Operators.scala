@@ -2045,15 +2045,16 @@ trait ViewOpOps extends Base { this: DeepDSL =>
     val typeTag = scala.reflect.runtime.universe.typeTag[ViewOp[A]]
   }
   implicit def typeViewOp[A: TypeRep] = ViewOpType(implicitly[TypeRep[A]])
-  implicit class ViewOpRep[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]) {
-    def open(): Rep[Unit] = viewOpOpen[A](self)(typeA)
-    def reset(): Rep[Unit] = viewOpReset[A](self)(typeA)
-    def next(): Rep[Unit] = viewOpNext[A](self)(typeA)
-    def consume(tuple: Rep[Record]): Rep[Unit] = viewOpConsume[A](self, tuple)(typeA)
+  implicit class ViewOpRep[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]) {
+    def open(): Rep[Unit] = viewOpOpen[A](self)(typeA, evidence$1)
+    def reset(): Rep[Unit] = viewOpReset[A](self)(typeA, evidence$1)
+    def next(): Rep[Unit] = viewOpNext[A](self)(typeA, evidence$1)
+    def consume(tuple: Rep[Record]): Rep[Unit] = viewOpConsume[A](self, tuple)(typeA, evidence$1)
     def expectedSize: Rep[Int] = viewOp_Field_ExpectedSize[A](self)(typeA)
-    def table: Rep[ArrayBuffer[A]] = viewOp_Field_Table[A](self)(typeA)
-    def idx_=(x$1: Rep[Int]): Rep[Unit] = viewOp_Field_Idx_$eq[A](self, x$1)(typeA)
-    def idx: Rep[Int] = viewOp_Field_Idx[A](self)(typeA)
+    def table: Rep[Array[A]] = viewOp_Field_Table[A](self)(typeA)
+    def size_=(x$1: Rep[Int]): Rep[Unit] = viewOp_Field_Size_$eq[A](self, x$1)(typeA)
+    def size: Rep[Int] = viewOp_Field_Size[A](self)(typeA)
+    def evidence$1: Rep[Manifest[A]] = viewOp_Field_Evidence$1[A](self)(typeA)
     def parent: Rep[Operator[A]] = viewOp_Field_Parent[A](self)(typeA)
     def stop_=(x$1: Rep[Boolean]): Rep[Unit] = viewOp_Field_Stop_$eq[A](self, x$1)(typeA)
     def stop: Rep[Boolean] = viewOp_Field_Stop[A](self)(typeA)
@@ -2064,25 +2065,25 @@ trait ViewOpOps extends Base { this: DeepDSL =>
 
   }
   // constructors
-  def __newViewOp[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[ViewOp[A]] = viewOpNew[A](parent)(typeA)
+  def __newViewOp[A](parent: Rep[Operator[A]])(implicit evidence$1: Manifest[A], typeA: TypeRep[A]): Rep[ViewOp[A]] = viewOpNew[A](parent)(typeA, evidence$1)
   // case classes
-  case class ViewOpNew[A](parent: Rep[Operator[A]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[ViewOp[A]](List(typeA), "ViewOp", List(List(parent))) {
+  case class ViewOpNew[A](parent: Rep[Operator[A]])(implicit val typeA: TypeRep[A], val evidence$1: Manifest[A]) extends ConstructorDef[ViewOp[A]](List(typeA), "ViewOp", List(List(parent))) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class ViewOpOpen[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
+  case class ViewOpOpen[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A], val evidence$1: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class ViewOpReset[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
+  case class ViewOpReset[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A], val evidence$1: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class ViewOpNext[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "next", List(List())) {
+  case class ViewOpNext[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A], val evidence$1: Manifest[A]) extends FunctionDef[Unit](Some(self), "next", List(List())) {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class ViewOpConsume[A](self: Rep[ViewOp[A]], tuple: Rep[Record])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "consume", List(List(tuple))) {
+  case class ViewOpConsume[A](self: Rep[ViewOp[A]], tuple: Rep[Record])(implicit val typeA: TypeRep[A], val evidence$1: Manifest[A]) extends FunctionDef[Unit](Some(self), "consume", List(List(tuple))) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -2092,18 +2093,24 @@ trait ViewOpOps extends Base { this: DeepDSL =>
 
   }
 
-  case class ViewOp_Field_Table[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[ArrayBuffer[A]](self, "table") {
+  case class ViewOp_Field_Table[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Array[A]](self, "table") {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
 
   }
 
-  case class ViewOp_Field_Idx_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit val typeA: TypeRep[A]) extends FieldSetter[Int](self, "idx", x$1) {
+  case class ViewOp_Field_Size_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit val typeA: TypeRep[A]) extends FieldSetter[Int](self, "size", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
-  case class ViewOp_Field_Idx[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldGetter[Int](self, "idx") {
+  case class ViewOp_Field_Size[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldGetter[Int](self, "size") {
     override def curriedConstructor = (copy[A] _)
+  }
+
+  case class ViewOp_Field_Evidence$1[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Manifest[A]](self, "evidence$1") {
+    override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
   }
 
   case class ViewOp_Field_Parent[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Operator[A]](self, "parent") {
@@ -2129,15 +2136,16 @@ trait ViewOpOps extends Base { this: DeepDSL =>
   }
 
   // method definitions
-  def viewOpNew[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[ViewOp[A]] = ViewOpNew[A](parent)
-  def viewOpOpen[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOpOpen[A](self)
-  def viewOpReset[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOpReset[A](self)
-  def viewOpNext[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOpNext[A](self)
-  def viewOpConsume[A](self: Rep[ViewOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOpConsume[A](self, tuple)
+  def viewOpNew[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[ViewOp[A]] = ViewOpNew[A](parent)
+  def viewOpOpen[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = ViewOpOpen[A](self)
+  def viewOpReset[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = ViewOpReset[A](self)
+  def viewOpNext[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = ViewOpNext[A](self)
+  def viewOpConsume[A](self: Rep[ViewOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = ViewOpConsume[A](self, tuple)
   def viewOp_Field_ExpectedSize[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ViewOp_Field_ExpectedSize[A](self)
-  def viewOp_Field_Table[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[ArrayBuffer[A]] = ViewOp_Field_Table[A](self)
-  def viewOp_Field_Idx_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Idx_$eq[A](self, x$1)
-  def viewOp_Field_Idx[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ViewOp_Field_Idx[A](self)
+  def viewOp_Field_Table[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Array[A]] = ViewOp_Field_Table[A](self)
+  def viewOp_Field_Size_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Size_$eq[A](self, x$1)
+  def viewOp_Field_Size[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ViewOp_Field_Size[A](self)
+  def viewOp_Field_Evidence$1[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Manifest[A]] = ViewOp_Field_Evidence$1[A](self)
   def viewOp_Field_Parent[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = ViewOp_Field_Parent[A](self)
   def viewOp_Field_Stop_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Stop_$eq[A](self, x$1)
   def viewOp_Field_Stop[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = ViewOp_Field_Stop[A](self)
@@ -2149,30 +2157,31 @@ trait ViewOpImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
 trait ViewOpImplementations { this: DeepDSL =>
-  override def viewOpOpen[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+  override def viewOpOpen[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = {
     {
       self.parent.child_$eq(self);
       self.parent.open()
     }
   }
-  override def viewOpReset[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+  override def viewOpReset[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = {
     unit(())
   }
-  override def viewOpNext[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+  override def viewOpNext[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = {
     {
       self.parent.next();
-      self.idx_$eq(unit(0));
-      val size: this.Rep[Int] = self.table.size;
-      __whileDo(self.stop.unary_$bang.$amp$amp(self.idx.$less(size)), {
-        val e: this.Rep[A] = self.table.apply(self.idx);
-        self.idx_$eq(self.idx.$plus(unit(1)));
+      var idx: this.Var[Int] = __newVar(unit(0));
+      __whileDo(readVar(idx).$less(self.size), {
+        val e: this.Rep[A] = self.table.apply(readVar(idx));
+        __assign(idx, readVar(idx).$plus(unit(1)));
         self.child.consume(infix_asInstanceOf[ch.epfl.data.pardis.shallow.Record](e))
-      });
-      self.idx_$eq(unit(0))
+      })
     }
   }
-  override def viewOpConsume[A](self: Rep[ViewOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = {
-    self.table.append(infix_asInstanceOf[A](tuple))
+  override def viewOpConsume[A](self: Rep[ViewOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A], evidence$1: Manifest[A]): Rep[Unit] = {
+    {
+      self.table.update(self.size, infix_asInstanceOf[A](tuple));
+      self.size_$eq(self.size.$plus(unit(1)))
+    }
   }
 }
 trait ViewOpComponent extends ViewOpOps with ViewOpImplicits { this: DeepDSL => }
@@ -2189,17 +2198,17 @@ trait LeftOuterJoinOpOps extends Base { this: DeepDSL =>
     val typeTag = scala.reflect.runtime.universe.typeTag[LeftOuterJoinOp[A, B, C]]
   }
   implicit def typeLeftOuterJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep] = LeftOuterJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
-  implicit class LeftOuterJoinOpRep[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[B]) {
-    def open(): Rep[Unit] = leftOuterJoinOpOpen[A, B, C](self)(typeA, typeB, typeC, evidence$1)
-    def next(): Rep[Unit] = leftOuterJoinOpNext[A, B, C](self)(typeA, typeB, typeC, evidence$1)
-    def reset(): Rep[Unit] = leftOuterJoinOpReset[A, B, C](self)(typeA, typeB, typeC, evidence$1)
-    def consume(tuple: Rep[Record]): Rep[Unit] = leftOuterJoinOpConsume[A, B, C](self, tuple)(typeA, typeB, typeC, evidence$1)
+  implicit class LeftOuterJoinOpRep[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$2: Manifest[B]) {
+    def open(): Rep[Unit] = leftOuterJoinOpOpen[A, B, C](self)(typeA, typeB, typeC, evidence$2)
+    def next(): Rep[Unit] = leftOuterJoinOpNext[A, B, C](self)(typeA, typeB, typeC, evidence$2)
+    def reset(): Rep[Unit] = leftOuterJoinOpReset[A, B, C](self)(typeA, typeB, typeC, evidence$2)
+    def consume(tuple: Rep[Record]): Rep[Unit] = leftOuterJoinOpConsume[A, B, C](self, tuple)(typeA, typeB, typeC, evidence$2)
     def expectedSize: Rep[Int] = leftOuterJoinOp_Field_ExpectedSize[A, B, C](self)(typeA, typeB, typeC)
     def defaultB: Rep[B] = leftOuterJoinOp_Field_DefaultB[A, B, C](self)(typeA, typeB, typeC)
     def hm: Rep[HashMap[C, ArrayBuffer[B]]] = leftOuterJoinOp_Field_Hm[A, B, C](self)(typeA, typeB, typeC)
     def mode_=(x$1: Rep[Int]): Rep[Unit] = leftOuterJoinOp_Field_Mode_$eq[A, B, C](self, x$1)(typeA, typeB, typeC)
     def mode: Rep[Int] = leftOuterJoinOp_Field_Mode[A, B, C](self)(typeA, typeB, typeC)
-    def evidence$1: Rep[Manifest[B]] = leftOuterJoinOp_Field_Evidence$1[A, B, C](self)(typeA, typeB, typeC)
+    def evidence$2: Rep[Manifest[B]] = leftOuterJoinOp_Field_Evidence$2[A, B, C](self)(typeA, typeB, typeC)
     def rightHash: Rep[(B => C)] = leftOuterJoinOp_Field_RightHash[A, B, C](self)(typeA, typeB, typeC)
     def leftHash: Rep[(A => C)] = leftOuterJoinOp_Field_LeftHash[A, B, C](self)(typeA, typeB, typeC)
     def joinCond: Rep[((A, B) => Boolean)] = leftOuterJoinOp_Field_JoinCond[A, B, C](self)(typeA, typeB, typeC)
@@ -2214,25 +2223,25 @@ trait LeftOuterJoinOpOps extends Base { this: DeepDSL =>
 
   }
   // constructors
-  def __newLeftOuterJoinOp[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]])(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit evidence$1: Manifest[B], typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[LeftOuterJoinOp[A, B, C]] = leftOuterJoinOpNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)(typeA, typeB, typeC, evidence$1)
+  def __newLeftOuterJoinOp[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]])(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit evidence$2: Manifest[B], typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[LeftOuterJoinOp[A, B, C]] = leftOuterJoinOpNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)(typeA, typeB, typeC, evidence$2)
   // case classes
-  case class LeftOuterJoinOpNew[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$1: Manifest[B]) extends ConstructorDef[LeftOuterJoinOp[A, B, C]](List(typeA, typeB, typeC), "LeftOuterJoinOp", List(List(leftParent, rightParent), List(joinCond), List(leftHash), List(rightHash))) {
+  case class LeftOuterJoinOpNew[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$2: Manifest[B]) extends ConstructorDef[LeftOuterJoinOp[A, B, C]](List(typeA, typeB, typeC), "LeftOuterJoinOp", List(List(leftParent, rightParent), List(joinCond), List(leftHash), List(rightHash))) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
-  case class LeftOuterJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$1: Manifest[B]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
+  case class LeftOuterJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$2: Manifest[B]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  case class LeftOuterJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$1: Manifest[B]) extends FunctionDef[Unit](Some(self), "next", List(List())) {
+  case class LeftOuterJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$2: Manifest[B]) extends FunctionDef[Unit](Some(self), "next", List(List())) {
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  case class LeftOuterJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$1: Manifest[B]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
+  case class LeftOuterJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$2: Manifest[B]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  case class LeftOuterJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], tuple: Rep[Record])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$1: Manifest[B]) extends FunctionDef[Unit](Some(self), "consume", List(List(tuple))) {
+  case class LeftOuterJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], tuple: Rep[Record])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$2: Manifest[B]) extends FunctionDef[Unit](Some(self), "consume", List(List(tuple))) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -2262,7 +2271,7 @@ trait LeftOuterJoinOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  case class LeftOuterJoinOp_Field_Evidence$1[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[Manifest[B]](self, "evidence$1") {
+  case class LeftOuterJoinOp_Field_Evidence$2[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[Manifest[B]](self, "evidence$2") {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
@@ -2315,17 +2324,17 @@ trait LeftOuterJoinOpOps extends Base { this: DeepDSL =>
   }
 
   // method definitions
-  def leftOuterJoinOpNew[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[B]): Rep[LeftOuterJoinOp[A, B, C]] = LeftOuterJoinOpNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)
-  def leftOuterJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[B]): Rep[Unit] = LeftOuterJoinOpOpen[A, B, C](self)
-  def leftOuterJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[B]): Rep[Unit] = LeftOuterJoinOpNext[A, B, C](self)
-  def leftOuterJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[B]): Rep[Unit] = LeftOuterJoinOpReset[A, B, C](self)
-  def leftOuterJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[B]): Rep[Unit] = LeftOuterJoinOpConsume[A, B, C](self, tuple)
+  def leftOuterJoinOpNew[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$2: Manifest[B]): Rep[LeftOuterJoinOp[A, B, C]] = LeftOuterJoinOpNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)
+  def leftOuterJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$2: Manifest[B]): Rep[Unit] = LeftOuterJoinOpOpen[A, B, C](self)
+  def leftOuterJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$2: Manifest[B]): Rep[Unit] = LeftOuterJoinOpNext[A, B, C](self)
+  def leftOuterJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$2: Manifest[B]): Rep[Unit] = LeftOuterJoinOpReset[A, B, C](self)
+  def leftOuterJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$2: Manifest[B]): Rep[Unit] = LeftOuterJoinOpConsume[A, B, C](self, tuple)
   def leftOuterJoinOp_Field_ExpectedSize[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = LeftOuterJoinOp_Field_ExpectedSize[A, B, C](self)
   def leftOuterJoinOp_Field_DefaultB[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[B] = LeftOuterJoinOp_Field_DefaultB[A, B, C](self)
   def leftOuterJoinOp_Field_Hm[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashMap[C, ArrayBuffer[B]]] = LeftOuterJoinOp_Field_Hm[A, B, C](self)
   def leftOuterJoinOp_Field_Mode_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftOuterJoinOp_Field_Mode_$eq[A, B, C](self, x$1)
   def leftOuterJoinOp_Field_Mode[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = LeftOuterJoinOp_Field_Mode[A, B, C](self)
-  def leftOuterJoinOp_Field_Evidence$1[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Manifest[B]] = LeftOuterJoinOp_Field_Evidence$1[A, B, C](self)
+  def leftOuterJoinOp_Field_Evidence$2[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Manifest[B]] = LeftOuterJoinOp_Field_Evidence$2[A, B, C](self)
   def leftOuterJoinOp_Field_RightHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = LeftOuterJoinOp_Field_RightHash[A, B, C](self)
   def leftOuterJoinOp_Field_LeftHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = LeftOuterJoinOp_Field_LeftHash[A, B, C](self)
   def leftOuterJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = LeftOuterJoinOp_Field_JoinCond[A, B, C](self)
@@ -2341,7 +2350,7 @@ trait LeftOuterJoinOpImplicits { this: DeepDSL =>
   // Add implicit conversions here!
 }
 trait LeftOuterJoinOpImplementations { this: DeepDSL =>
-  override def leftOuterJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[B]): Rep[Unit] = {
+  override def leftOuterJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$2: Manifest[B]): Rep[Unit] = {
     {
       self.leftParent.child_$eq(self);
       self.leftParent.open();
@@ -2349,21 +2358,21 @@ trait LeftOuterJoinOpImplementations { this: DeepDSL =>
       self.rightParent.open()
     }
   }
-  override def leftOuterJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[B]): Rep[Unit] = {
+  override def leftOuterJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$2: Manifest[B]): Rep[Unit] = {
     {
       self.rightParent.next();
       self.mode_$eq(unit(1));
       self.leftParent.next()
     }
   }
-  override def leftOuterJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[B]): Rep[Unit] = {
+  override def leftOuterJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$2: Manifest[B]): Rep[Unit] = {
     {
       self.rightParent.reset();
       self.leftParent.reset();
       self.hm.clear()
     }
   }
-  override def leftOuterJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[B]): Rep[Unit] = {
+  override def leftOuterJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$2: Manifest[B]): Rep[Unit] = {
     __ifThenElse(infix_$eq$eq(self.mode, unit(0)), {
       val k: this.Rep[C] = __app(self.rightHash).apply(infix_asInstanceOf[B](tuple));
       val v: this.Rep[scala.collection.mutable.ArrayBuffer[B]] = self.hm.getOrElseUpdate(k, ArrayBuffer.apply[B]());

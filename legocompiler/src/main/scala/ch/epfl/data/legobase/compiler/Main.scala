@@ -107,8 +107,6 @@ object Main extends LegoRunner {
       }
     }
 
-    writeASTToDumpFile(afterHashMapToArray)
-
     // DCE
     val dce = new DCE(context)
     val dceBlock = dce.optimize(afterHashMapToArray)
@@ -127,11 +125,12 @@ object Main extends LegoRunner {
       } else partiallyEvaluatedBlock
     }
 
+    writeASTToDumpFile(finalBlock)
     // System.out.println(finalBlock)
     // Generate final program 
     val ir2Program = new { val IR = context } with IRToProgram {}
     val finalProgram = ir2Program.createProgram(finalBlock)
-    if (generateCCode) (new LegoCGenerator(shallow, "Q" + number)).apply(finalProgram)
+    if (generateCCode) (new LegoCGenerator(shallow, "Q" + number, false)).apply(finalProgram)
     else (new LegoScalaGenerator(shallow, "Q" + number)).apply(finalProgram)
   }
 }
