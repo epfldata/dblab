@@ -97,10 +97,11 @@ object Main extends LegoRunner {
 
     val afterHashMapToArray = {
       if (hashMapToArray && generateCCode) {
+        val hmHoist = new HashMapHoist(context)
         val hm2Arr = new HashMapToArrayTransformer(context)
         val afterPE = new PartialyEvaluate(context).optimize(new DCE(context).optimize(loweredBlock))
         //writeASTToDumpFile(afterPE)
-        val hmBlock = hm2Arr.optimize(afterPE)
+        val hmBlock = hm2Arr.optimize(hmHoist.optimize(afterPE))
         hmBlock
       } else {
         loweredBlock

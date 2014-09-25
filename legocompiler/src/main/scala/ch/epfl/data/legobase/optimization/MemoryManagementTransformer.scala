@@ -68,7 +68,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
     System.out.println("Creating buffers for mallocNodes: " + mallocNodes.mkString("\n"))
     System.out.println("")
     System.out.println(mallocNodes.map(e => e.tp).mkString("\n"))
-    val mallocInstances = mallocNodes.map(m => mallocToInstance(m)).distinct /*.filter(t => !t.tp.name.contains("CArray")*/ /* && !t.tp.name.contains("Pointer")*/ //)
+    val mallocInstances = mallocNodes.map(m => mallocToInstance(m)).distinct //.filter(t => !t.tp.name.contains("CArray") /* && !t.tp.name.contains("Pointer")*/ )
     for (mallocInstance <- mallocInstances) {
       val mallocTp = mallocInstance.tp
       val mallocNode = mallocInstance.node
@@ -120,7 +120,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
       gettimeofday(&(end))
       val tm = timeval_subtract(&(diff), &(end), &(start))
       Printf(unit("Generated code run in %ld milliseconds."), tm)
-    case m @ Malloc(numElems) if startCollecting /*&& !m.tp.name.contains("CArray") */ /* && !m.tp.name.contains("Pointer") */ => {
+    case m @ Malloc(numElems) if startCollecting /* && !m.tp.name.contains("CArray")  && !m.tp.name.contains("Pointer") */ => {
       val mallocInstance = mallocToInstance(m)
       val bufferInfo = mallocBuffers(mallocInstance)
       System.out.println(m.tp)
