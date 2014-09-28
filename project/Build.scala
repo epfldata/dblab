@@ -30,12 +30,12 @@ object LegoBuild extends Build {
   }
 
   def generatorSettings: Seq[Setting[_]] = Seq(
-    libraryDependencies += "ch.epfl.data" % "autolifter_2.11" % "0.1-SNAPSHOT",
+    libraryDependencies += "ch.epfl.data" % "purgatory_2.11" % "0.1-SNAPSHOT",
     generatorMode := false,
     scalacOptions ++= {
       if(generatorMode.value) {
         val cpath = update.value.matching(configurationFilter()).classpath
-        val plugin = cpath.files.find(_.getName contains "autolifter").get.absString
+        val plugin = cpath.files.find(_.getName contains "purgatory").get.absString
         val yy_core = cpath.files.find(_.getName contains "yy-core").get.absString
         val yy = cpath.files.find(_.getName contains "yin-yang").get.absString
         Seq(
@@ -97,7 +97,7 @@ object LegoBuild extends Build {
     .dependsOn(lego_core)
   lazy val legocompiler = Project(id = "legocompiler", base = file("legocompiler"), settings = defaults ++ Seq(name := "legocompiler",
       libraryDependencies ++= Seq("ch.epfl.lamp" % "yin-yang_2.11" % "0.1-SNAPSHOT",
-        "ch.epfl.data" % "pardis-core_2.11" % "0.1-SNAPSHOT"
+        "ch.epfl.data" % "pardis-compiler_2.11" % "0.1-SNAPSHOT"
         ),
       generate_test <<= inputTask { (argTask: TaskKey[Seq[String]]) =>
         (argTask, sourceDirectory in Test, fullClasspath in Compile, runner in Compile, streams) map { (args, srcDir, cp, r, s) =>

@@ -3,7 +3,7 @@ package legobase
 package storagemanager
 
 import utils.Utilities._
-import ch.epfl.data.autolifter.annotations.needs
+import pardis.annotations.needs
 import queryengine.TPCHRelations._
 
 // FIXME just to cheat on auto-lifter
