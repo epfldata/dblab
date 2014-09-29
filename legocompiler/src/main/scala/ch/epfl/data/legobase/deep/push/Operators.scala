@@ -627,8 +627,8 @@ trait AggOpImplementations { this: DeepDSL =>
       self.parent.next();
       var keySet: this.Var[scala.collection.mutable.Set[B]] = __newVar(Set.apply[B](self.hm.keySet.toSeq));
       __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
-        val key: this.Rep[B] = readVar(keySet).head;
-        readVar(keySet).remove(key);
+        val key: this.Rep[B] = __readVar(keySet).head;
+        __readVar(keySet).remove(key);
         val elem: this.Rep[Option[ch.epfl.data.legobase.queryengine.AGGRecord[B]]] = self.hm.remove(key);
         self.child.consume(elem.get)
       })
@@ -648,8 +648,8 @@ trait AggOpImplementations { this: DeepDSL =>
       val aggs: this.Rep[Array[Double]] = elem.aggs;
       var i: this.Var[Int] = __newVar(unit(0));
       self.aggFuncs.foreach[Unit](__lambda(((aggFun: this.Rep[(A, Double) => Double]) => {
-        aggs.update(readVar(i), __app(aggFun).apply(infix_asInstanceOf[A](tuple), aggs.apply(readVar(i))));
-        __assign(i, readVar(i).$plus(unit(1)))
+        aggs.update(__readVar(i), __app(aggFun).apply(infix_asInstanceOf[A](tuple), aggs.apply(__readVar(i))));
+        __assign(i, __readVar(i).$plus(unit(1)))
       })))
     }
   }
@@ -1128,14 +1128,14 @@ trait HashJoinOpImplementations { this: DeepDSL =>
         var tmpCount: this.Var[Int] = __newVar(unit(0));
         var break: this.Var[Boolean] = __newVar(unit(false));
         val size: this.Rep[Int] = tmpBuffer.size;
-        __whileDo(readVar(break).unary_$bang, {
-          val bufElem: this.Rep[A] = tmpBuffer.apply(readVar(tmpCount));
+        __whileDo(__readVar(break).unary_$bang, {
+          val bufElem: this.Rep[A] = tmpBuffer.apply(__readVar(tmpCount));
           __ifThenElse(__app(self.joinCond).apply(bufElem, infix_asInstanceOf[B](tuple)), {
             val res: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]] = RecordOps[A](bufElem).concatenateDynamic[B](infix_asInstanceOf[B](tuple), self.leftAlias, self.rightAlias);
             self.child.consume(res)
           }, unit(()));
-          __ifThenElse(readVar(tmpCount).$plus(unit(1)).$greater$eq(size), __assign(break, unit(true)), unit(()));
-          __assign(tmpCount, readVar(tmpCount).$plus(unit(1)))
+          __ifThenElse(__readVar(tmpCount).$plus(unit(1)).$greater$eq(size), __assign(break, unit(true)), unit(()));
+          __assign(tmpCount, __readVar(tmpCount).$plus(unit(1)))
         })
       }, unit(()))
     }, unit(())))
@@ -1281,8 +1281,8 @@ trait WindowOpImplementations { this: DeepDSL =>
       self.parent.next();
       var keySet: this.Var[scala.collection.mutable.Set[B]] = __newVar(Set.apply[B](self.hm.keySet.toSeq));
       __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
-        val k: this.Rep[B] = readVar(keySet).head;
-        readVar(keySet).remove(k);
+        val k: this.Rep[B] = __readVar(keySet).head;
+        __readVar(keySet).remove(k);
         val elem: this.Rep[Option[scala.collection.mutable.ArrayBuffer[A]]] = self.hm.remove(k);
         val wnd: this.Rep[C] = __app(self.wndf).apply(elem.get);
         val key: this.Rep[B] = __app(self.grp).apply(elem.get.apply(unit(0)));
@@ -1483,11 +1483,11 @@ trait LeftHashSemiJoinOpImplementations { this: DeepDSL =>
         var found: this.Var[Boolean] = __newVar(unit(false));
         val size: this.Rep[Int] = tmpBuffer.size;
         var break: this.Var[Boolean] = __newVar(unit(false));
-        __whileDo(readVar(found).unary_$bang.$amp$amp(readVar(break).unary_$bang), __ifThenElse(__app(self.joinCond).apply(infix_asInstanceOf[A](tuple), tmpBuffer.apply(readVar(i))), __assign(found, unit(true)), {
-          __ifThenElse(readVar(i).$plus(unit(1)).$greater$eq(size), __assign(break, unit(true)), unit(()));
-          __assign(i, readVar(i).$plus(unit(1)))
+        __whileDo(__readVar(found).unary_$bang.$amp$amp(__readVar(break).unary_$bang), __ifThenElse(__app(self.joinCond).apply(infix_asInstanceOf[A](tuple), tmpBuffer.apply(__readVar(i))), __assign(found, unit(true)), {
+          __ifThenElse(__readVar(i).$plus(unit(1)).$greater$eq(size), __assign(break, unit(true)), unit(()));
+          __assign(i, __readVar(i).$plus(unit(1)))
         }));
-        __ifThenElse(infix_$eq$eq(readVar(found), unit(true)), self.child.consume(infix_asInstanceOf[ch.epfl.data.pardis.shallow.Record](tuple)), unit(()))
+        __ifThenElse(infix_$eq$eq(__readVar(found), unit(true)), self.child.consume(infix_asInstanceOf[ch.epfl.data.pardis.shallow.Record](tuple)), unit(()))
       }, unit(()))
     })
   }
@@ -1998,10 +1998,10 @@ trait HashJoinAntiImplementations { this: DeepDSL =>
         var i: this.Var[Int] = __newVar(unit(0));
         val len: this.Rep[Int] = elems.get.size;
         val l: this.Rep[scala.collection.mutable.ArrayBuffer[A]] = elems.get;
-        __whileDo(readVar(i).$less(len), {
-          val e: this.Rep[A] = l.apply(readVar(i));
+        __whileDo(__readVar(i).$less(len), {
+          val e: this.Rep[A] = l.apply(__readVar(i));
           self.child.consume(infix_asInstanceOf[ch.epfl.data.pardis.shallow.Record](e));
-          __assign(i, readVar(i).$plus(unit(1)))
+          __assign(i, __readVar(i).$plus(unit(1)))
         })
       })
     }
@@ -2020,14 +2020,14 @@ trait HashJoinAntiImplementations { this: DeepDSL =>
         var removed: this.Var[Int] = __newVar(unit(0));
         var i: this.Var[Int] = __newVar(unit(0));
         val len: this.Rep[Int] = elems.size;
-        __whileDo(readVar(i).$less(len), {
-          var idx: this.Var[Int] = __newVar(readVar(i).$minus(readVar(removed)));
-          val e: this.Rep[A] = elems.apply(readVar(idx));
+        __whileDo(__readVar(i).$less(len), {
+          var idx: this.Var[Int] = __newVar(__readVar(i).$minus(__readVar(removed)));
+          val e: this.Rep[A] = elems.apply(__readVar(idx));
           __ifThenElse(__app(self.joinCond).apply(e, t), {
-            elems.remove(readVar(idx));
-            __assign(removed, readVar(removed).$plus(unit(1)))
+            elems.remove(__readVar(idx));
+            __assign(removed, __readVar(removed).$plus(unit(1)))
           }, unit(()));
-          __assign(i, readVar(i).$plus(unit(1)))
+          __assign(i, __readVar(i).$plus(unit(1)))
         })
       }, unit(()))
     })
@@ -2170,9 +2170,9 @@ trait ViewOpImplementations { this: DeepDSL =>
     {
       self.parent.next();
       var idx: this.Var[Int] = __newVar(unit(0));
-      __whileDo(readVar(idx).$less(self.size), {
-        val e: this.Rep[A] = self.table.apply(readVar(idx));
-        __assign(idx, readVar(idx).$plus(unit(1)));
+      __whileDo(__readVar(idx).$less(self.size), {
+        val e: this.Rep[A] = self.table.apply(__readVar(idx));
+        __assign(idx, __readVar(idx).$plus(unit(1)));
         self.child.consume(infix_asInstanceOf[ch.epfl.data.pardis.shallow.Record](e))
       })
     }
@@ -2384,12 +2384,12 @@ trait LeftOuterJoinOpImplementations { this: DeepDSL =>
         var tmpCount: this.Var[Int] = __newVar(unit(0));
         val size: this.Rep[Int] = tmpBuffer.size;
         var break: this.Var[Boolean] = __newVar(unit(false));
-        __whileDo(readVar(break).unary_$bang, {
-          val bufElem: this.Rep[B] = tmpBuffer.apply(readVar(tmpCount));
+        __whileDo(__readVar(break).unary_$bang, {
+          val bufElem: this.Rep[B] = tmpBuffer.apply(__readVar(tmpCount));
           val elem: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]] = __ifThenElse(__app(self.joinCond).apply(infix_asInstanceOf[A](tuple), bufElem), RecordOps[A](infix_asInstanceOf[A](tuple)).concatenateDynamic[B](bufElem, unit(""), unit("")), RecordOps[A](infix_asInstanceOf[A](tuple)).concatenateDynamic[B](self.defaultB, unit(""), unit("")));
           self.child.consume(elem);
-          __ifThenElse(readVar(tmpCount).$plus(unit(1)).$greater$eq(size), __assign(break, unit(true)), unit(()));
-          __assign(tmpCount, readVar(tmpCount).$plus(unit(1)))
+          __ifThenElse(__readVar(tmpCount).$plus(unit(1)).$greater$eq(size), __assign(break, unit(true)), unit(()));
+          __assign(tmpCount, __readVar(tmpCount).$plus(unit(1)))
         })
       }, self.child.consume(RecordOps[A](infix_asInstanceOf[A](tuple)).concatenateDynamic[B](self.defaultB, unit(""), unit(""))))
     })
