@@ -36,8 +36,8 @@ object LegoBuild extends Build {
       if(generatorMode.value) {
         val cpath = update.value.matching(configurationFilter()).classpath
         val plugin = cpath.files.find(_.getName contains "autolifter").get.absString
-        val yy_core = cpath.files.find(_.getName contains "yy-core").get.absString
-        val yy = cpath.files.find(_.getName contains "yin-yang").get.absString
+        val yy_core = cpath.files.find(_.getName contains "yinyang-core").get.absString
+        val yy = cpath.files.find(_.getName contains "scala-yinyang").get.absString
         Seq(
           s"-Xplugin:$plugin:$yy_core:$yy",
           "-Ystop-after:backend-generator"
@@ -96,7 +96,7 @@ object LegoBuild extends Build {
     settings = defaults ++ generatorSettings ++ Seq(name := "legolifter"))
     .dependsOn(lego_core)
   lazy val legocompiler = Project(id = "legocompiler", base = file("legocompiler"), settings = defaults ++ Seq(name := "legocompiler",
-      libraryDependencies ++= Seq("ch.epfl.lamp" % "yin-yang_2.11" % "0.1-SNAPSHOT",
+      libraryDependencies ++= Seq("ch.epfl.lamp" % "scala-yinyang_2.11" % "0.2.0-SNAPSHOT",
         "ch.epfl.data" % "pardis-core_2.11" % "0.1-SNAPSHOT"
         ),
       generate_test <<= inputTask { (argTask: TaskKey[Seq[String]]) =>
