@@ -20,6 +20,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
   case object AggOpCase extends Kind
 
   val hashMapKinds = collection.mutable.Map[Sym[Any], Kind]()
+  val hashMapRemoveMap = collection.mutable.Map[Sym[Any], Sym[Any]]()
 
   def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     traverseBlock(node)
@@ -37,8 +38,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
     }
     case _ => super.traverseDef(node)
   }
-
-  val hashMapRemoveMap = collection.mutable.Map[Sym[Any], Sym[Any]]()
 
   override def traverseStm(stm: Stm[_]): Unit = stm match {
     case Stm(sym, HashMapApply(hm, e)) => hashMapRemoveMap += sym -> hm.asInstanceOf[Sym[Any]]
@@ -59,23 +58,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       if (z.tp.name.contains("Set")) Nil
       else super.transformStmToMultiple(stm)
     case _ => super.transformStmToMultiple(stm)
-  }
-
-  override def transformStm(stm: Stm[_]): to.Stm[_] = {
-    stm match {
-      // This is a hack but i have no other idea how to properly handle views
-      case Stm(sym, abn @ ArrayBufferNew3()) => {
-        val transformedSym = to.fresh(sym.tp).copyFrom(sym.asInstanceOf[Sym[Any]])
-        subst += sym -> transformedSym
-        val newdef = transformDef(abn) //(sym.tp)
-        val stmt = to.Stm(transformedSym, newdef)(transformedSym.tp)
-        newdef match {
-          case _ => to.reflectStm(stmt)
-        }
-        stmt
-      }
-      case _ => super.transformStm(stm)
-    }
   }
 
   def getKind[T](hm: Rep[T]): Kind = hashMapKinds(hm.asInstanceOf[Sym[Any]])

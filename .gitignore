@@ -24,3 +24,4 @@ project/plugins/project/
 legocompiler/src/test/scala/generated/
 
 *Output.txt
+tree_debug_dump.txt
