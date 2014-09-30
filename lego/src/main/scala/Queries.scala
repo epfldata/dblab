@@ -8,7 +8,7 @@ import queryengine._
  */
 // import queryengine.volcano._
 import queryengine.push._
-import ch.epfl.data.autolifter.annotations.{ deep, metadeep, dontLift }
+import pardis.annotations.{ deep, metadeep, dontLift }
 import storagemanager.Loader._
 import GenericEngine._
 import queryengine.TPCHRelations._

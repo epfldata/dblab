@@ -9,8 +9,8 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.Set
 import scala.collection.mutable.TreeSet
 import GenericEngine._
-import ch.epfl.data.autolifter.annotations.{ deep, metadeep }
-import ch.epfl.data.pardis.shallow.{ Record, DynamicCompositeRecord }
+import pardis.annotations.{ deep, metadeep }
+import pardis.shallow.{ Record, DynamicCompositeRecord }
 
 // This is a temporary solution until we introduce dependency management and adopt policies. Not a priority now!
 // @metadeep(
