@@ -1,1 +1,4 @@
 *.scala
+*.c
+*.txt
+*.out
