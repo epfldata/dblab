@@ -101,7 +101,7 @@ class MetaInfo
   def next() {
     parent.next
     var keySet = Set(hm.keySet.toSeq: _*)
-    while (!stop && hm.size != 0) {
+    while ( /*!stop && */ hm.size != 0) {
       val key = keySet.head
       keySet.remove(key)
       val elem = hm.remove(key)

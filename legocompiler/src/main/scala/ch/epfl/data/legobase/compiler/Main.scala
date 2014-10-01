@@ -90,6 +90,8 @@ object Main extends LegoRunner {
       else {
         val lowering = new LBLowering(context, context, generateCCode)
         val loweredBlock0 = lowering.lower(block)
+        writeASTToDumpFile(loweredBlock0)
+
         val parameterPromotion = new LBParameterPromotion(context)
         parameterPromotion.optimize(loweredBlock0)
       }
@@ -120,13 +122,12 @@ object Main extends LegoRunner {
     // Convert Scala constructs to C
     val finalBlock = {
       if (generateCCode) {
-        val cBlock = CTransformersPipeline(context, dceBlock)
+        val cBlock = CTransformersPipeline(context, partiallyEvaluatedBlock)
         val dceC = new DCECLang(context)
         dceC.optimize(cBlock)
       } else partiallyEvaluatedBlock
     }
 
-    writeASTToDumpFile(finalBlock)
     // System.out.println(finalBlock)
     // Generate final program 
     val ir2Program = new { val IR = context } with IRToProgram {}

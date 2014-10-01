@@ -36,7 +36,7 @@ trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base 
 object CTransformersPipeline {
   def apply[A: PardisType](context: LoweringLegoBase, b0: PardisBlock[A]) = {
     val b1 = new ScalaScannerToCFileTransformer(context).transformBlock(b0)
-    val b2 = new ScalaArrayToCStructTransformer(context).transformBlock(b1)
+    val b2 = new ScalaArrayToCStructTransformer(context).optimize(b1)
     val b3 = new ScalaConstructsToCTranformer(context).transformBlock(b2)
     val b4 = new ScalaCollectionsToGLibTransfomer(context).optimize(b3)
     val b5 = new OptimalStringToCTransformer(context).transformBlock(b4)
@@ -100,10 +100,11 @@ class ScalaScannerToCFileTransformer(override val IR: LoweringLegoBase) extends 
   }).asInstanceOf[to.Def[T]]
 }
 
-class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
+class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) {
   import IR._
   import CNodes._
   import CTypes._
+
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
     if (tp.isPrimitive) super.transformType[T]
@@ -122,9 +123,72 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
     }
   }).asInstanceOf[PardisType[Any]]
 
+  def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
+    traverseBlock(node)
+    transformProgram(node)
+  }
+
   override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
     case Stm(s, RangeNew(start, end, step)) => Nil
     case _                                  => super.transformStmToMultiple(stm)
+  }
+
+  // Needs to be refactored / modularized in Pardis
+  def defaultValue(valueType: TypeRep[Any]): Rep[Any] = {
+    val value = valueType.tpe.dealias.toString match {
+      case "Boolean"             => false
+      case "Byte"                => (0: Byte)
+      case "Short"               => (0: Short)
+      case "Char"                => '\0'
+      case "java.lang.Character" => '\0'
+      case "Int"                 => 0
+      case "Long"                => 0L
+      case "Float"               => 0.0F
+      case "Double"              => 0.0
+      case dflt @ _              => null
+    }
+    infix_asInstanceOf(unit[Any](value)(valueType))(valueType).asInstanceOf[Rep[Any]]
+  }
+
+  //val singletonArrays = scala.collection.mutable.Map[Sym[Any], TypeRep[Any]]()
+  val singletonArrays = scala.collection.mutable.Map[TypeRep[Any], TypeRep[Any]]()
+  def isSingletonArray[T](a: Expression[T]): Boolean = singletonArrays.contains(a.tp.asInstanceOf[TypeRep[Any]])
+
+  override def transformStm(stm: Stm[_]): Stm[_] = stm match {
+    /*case Stm(sym, PardisStructImmutableField(Def(PardisReadVar(PardisVar(v))), f)) =>
+      System.out.println(f + "//" + sym + "//" + sym.tp)
+      if (sym.tp.isArray && singletonArrays.contains(v.tp.asInstanceOf[TypeRep[Any]]))
+        System.out.println("AM I EVER HERE!?" + f)
+      /* if (sym.tp.isArray)
+        Def.unapply(s) match {
+          case Some(TreeSetHead(ss)) =>
+            if (sym.tp.isArray && singletonArrays.contains(ss.asInstanceOf[Sym[Any]]))
+              singletonArrays(sym.asInstanceOf[Sym[Any]]) = sym.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+          case None =>
+        }*/
+      super.transformStm(stm)*/
+    case Stm(sym, PardisStructImmutableField(s, f)) => {
+      if (sym.tp.isArray && singletonArrays.contains(s.tp.asInstanceOf[TypeRep[Any]])) {
+        singletonArrays(sym.tp.asInstanceOf[TypeRep[Any]]) = sym.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+      }
+      super.transformStm(stm)
+    }
+    case Stm(sym, ps @ PardisStruct(tag, elems, methods)) => {
+      val newElems = elems.map(e =>
+        if (e.init.tp.isArray && singletonArrays.contains(e.init.tp.asInstanceOf[TypeRep[Any]])) {
+          singletonArrays(sym.tp.asInstanceOf[TypeRep[Any]]) = typePointer(sym.tp).asInstanceOf[PardisType[Any]]
+          PardisStructArg(e.name, true, e.init)
+        } else e)
+      super.transformStm(Stm(sym, PardisStruct(tag, newElems, methods)(ps.tp))(sym.tp))
+    }
+    case Stm(sym, an @ ArrayNew(Constant(1))) =>
+      singletonArrays(sym.tp.asInstanceOf[TypeRep[Any]]) = sym.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+      super.transformStm(Stm(sym, ReadVal(defaultValue(an.typeT))))
+    case _ => super.transformStm(stm)
+  }
+  override def newSym[T: TypeRep](sym: Rep[T]): to.Sym[_] = {
+    if (singletonArrays.contains(sym.tp.asInstanceOf[TypeRep[Any]])) to.fresh(singletonArrays(sym.tp.asInstanceOf[TypeRep[Any]])).copyFrom(sym.asInstanceOf[Sym[T]])
+    else super.newSym[T](sym)
   }
 
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
@@ -144,31 +208,41 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       val m = malloc(unit(1))(am.typeArguments(0))
       structCopy(m.asInstanceOf[Expression[Pointer[Any]]], s)
       ReadVal(m.asInstanceOf[Expression[Any]])(m.tp.asInstanceOf[PardisType[Any]])
+
     case au @ ArrayUpdate(a, i, v) => {
-      val s = transformExp[Any, T](a)
-      // Get type of elements stored in array
-      val elemType = a.tp.typeArguments(0)
-      // Get type of internal array
-      val newTp = elemType //if (elemType.isPrimitive) elemType else typePointer(elemType)
-      // Read array and perform update
-      val arr = field(s, "array")(typeArray(typePointer(newTp)))
-      if (elemType.isPrimitive) ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, v)
-      else
-        PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(v.asInstanceOf[Expression[Pointer[Any]]])(v.tp.name.contains("Pointer") match {
-          case true  => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
-          case false => v.tp
-        }))
+      if (singletonArrays.contains(a.tp.asInstanceOf[PardisType[Any]])) {
+        a match {
+          case Def(moo @ PardisStructImmutableField(s, f)) => PardisStructFieldSetter(s, f, v)
+        }
+      } else {
+        val s = transformExp[Any, T](a)
+        // Get type of elements stored in array
+        val elemType = a.tp.typeArguments(0)
+        // Get type of internal array
+        val newTp = elemType //if (elemType.isPrimitive) elemType else typePointer(elemType)
+        // Read array and perform update
+        val arr = field(s, "array")(typeArray(typePointer(newTp)))
+        if (elemType.isPrimitive) ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, v)
+        else
+          PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(v.asInstanceOf[Expression[Pointer[Any]]])(v.tp.name.contains("Pointer") match {
+            case true  => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+            case false => v.tp
+          }))
+      }
     }
     case ArrayFilter(a, op) => field(a, "array")(transformType(a.tp)).correspondingNode
     case ArrayApply(a, i) =>
-      val s = transformExp[Any, T](a)
-      // Get type of elements stored in array
-      val elemType = a.tp.typeArguments(0)
-      // Get type of internal array
-      val newTp = elemType // if (elemType.isPrimitive) elemType else typePointer(elemType)
-      val arr = field(s, "array")(typeArray(typePointer(newTp)))
-      if (elemType.isPrimitive) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], i)(newTp.asInstanceOf[PardisType[Any]])
-      else PTRADDRESS(arr.asInstanceOf[Expression[Pointer[Any]]], i)(typePointer(newTp).asInstanceOf[PardisType[Pointer[Any]]])
+      if (singletonArrays.contains(a.tp.asInstanceOf[PardisType[Any]])) ReadVal(a)
+      else {
+        val s = transformExp[Any, T](a)
+        // Get type of elements stored in array
+        val elemType = a.tp.typeArguments(0)
+        // Get type of internal array
+        val newTp = elemType // if (elemType.isPrimitive) elemType else typePointer(elemType)
+        val arr = field(s, "array")(typeArray(typePointer(newTp)))
+        if (elemType.isPrimitive) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], i)(newTp.asInstanceOf[PardisType[Any]])
+        else PTRADDRESS(arr.asInstanceOf[Expression[Pointer[Any]]], i)(typePointer(newTp).asInstanceOf[PardisType[Pointer[Any]]])
+      }
     case ArrayLength(a) =>
       val s = transformExp[Any, T](a)
       val arr = field(s, "length")(IntType)
@@ -306,7 +380,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
 
   // Set of hash and record functions
-  def string_hash = doLambda((s: Rep[String]) => infix_hashCode(s)) //TODO Proper hashing
+  def string_hash = doLambda((s: Rep[String]) => infix_hashCode(s))
   def string_eq = doLambda2((s1: Rep[String], s2: Rep[String]) => infix_==(strcmp(s1, s2), 0))
   def int_hash = doLambda((s: Rep[Int]) => s)
   def int_eq = doLambda2((s1: Rep[Int], s2: Rep[Int]) => infix_==(s1, s2))
@@ -388,7 +462,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
     /* TreeSet Operations */
     case ts @ TreeSetNew2(Def(OrderingNew(Def(Lambda2(f, i1, i2, o))))) =>
-      NameAlias(None, "g_tree_new", List(List(Lambda2(f, i2, i1, o))))(transformType(ts.tp))
+      NameAlias(None, "g_tree_new", List(List(Lambda2(f, i2, i1, transformBlock(o)))))(transformType(ts.tp))
     case tsa @ TreeSet$plus$eq(t, s)    => NameAlias[Unit](None, "g_tree_insert", List(List(t, s, s)))
     case op @ TreeSet$minus$eq(self, t) => NameAlias[Boolean](None, "g_tree_remove", List(List(self, t)))
     case op @ TreeSetSize(t)            => NameAlias[Int](None, "g_tree_nnodes", List(List(t)))
@@ -532,10 +606,14 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Top
       val elseBlock = transformBlock(elsep)
       if (thenp.tp != UnitType) {
         val res = __newVar(unit(0))(thenp.tp.asInstanceOf[TypeRep[Int]])
-        __ifThenElse(infix_==(cond, Constant(true)), {
-          __assign(res, toAtom(ReadVal(thenBlock)(thenBlock.tp))(thenBlock.tp))
+        __ifThenElse(cond, { //infix_==(cond, Constant(true)), {
+          // __assign(res, toAtom(ReadVal(thenBlock)(thenBlock.tp))(thenBlock.tp))
+          thenBlock.stmts.foreach(transformStmToMultiple)
+          __assign(res, thenBlock.res)
         }, {
-          __assign(res, toAtom(ReadVal(elseBlock)(elseBlock.tp))(elseBlock.tp))
+          // __assign(res, toAtom(ReadVal(elseBlock)(elseBlock.tp))(elseBlock.tp))
+          elseBlock.stmts.foreach(transformStmToMultiple)
+          __assign(res, elseBlock.res)
         })
         ReadVar(res)(res.tp)
       } else PardisIfThenElse(cond, thenBlock, elseBlock)

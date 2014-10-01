@@ -626,7 +626,7 @@ trait AggOpImplementations { this: DeepDSL =>
     {
       self.parent.next();
       var keySet: this.Var[scala.collection.mutable.Set[B]] = __newVar(Set.apply[B](self.hm.keySet.toSeq));
-      __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
+      __whileDo(infix_$bang$eq(self.hm.size, unit(0)), {
         val key: this.Rep[B] = readVar(keySet).head;
         readVar(keySet).remove(key);
         val elem: this.Rep[Option[ch.epfl.data.legobase.queryengine.AGGRecord[B]]] = self.hm.remove(key);

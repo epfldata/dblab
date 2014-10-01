@@ -15,25 +15,41 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
   import CNodes._
   import CTypes._
 
+  // Abstract over different keys and values
+  trait Key
+  trait Value
+
   sealed trait Kind
+  case object ConstantKeyMap extends Kind
   case object HashJoinOpCase extends Kind
   case object AggOpCase extends Kind
-
-  val hashMapKinds = collection.mutable.Map[Sym[Any], Kind]()
-  val hashMapRemoveMap = collection.mutable.Map[Sym[Any], Sym[Any]]()
 
   def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     traverseBlock(node)
     transformProgram(node)
   }
 
-  /* Here we identify which kind of hash map it is */
+  /* Traversals -- accumulate information about the maps used */
+  val hashMapKinds = collection.mutable.Map[Sym[Any], Kind]()
+  def getKind[T](hm: Rep[T]): Kind = hashMapKinds(hm.asInstanceOf[Sym[Any]])
+  def isAggOp[T](hm: Rep[T]) = checkForHashSym(hm, x => getKind(x) == AggOpCase)
+  def mapHasConstantKey[T](hm: Rep[T]): Boolean = hashMapKinds(hm.asInstanceOf[Sym[Any]]) == ConstantKeyMap
+
+  val hashMapRemoveMap = collection.mutable.Map[Sym[Any], Sym[Any]]()
+  val constantKeyMap = collection.mutable.Map[Sym[Any], Block[Any]]()
+  val counterMap = new scala.collection.mutable.HashMap[Expression[_], (Var[Int], Var[Int])]()
+
   override def traverseDef(node: Def[_]): Unit = node match {
-    case hmgeu @ HashMapGetOrElseUpdate(hm, _, _) => {
-      hmgeu.typeB match {
-        case c if c.name.contains("ArrayBuffer") => hashMapKinds(hm.asInstanceOf[Sym[Any]]) = HashJoinOpCase
-        case c if c.name.contains("AGGRecord")   => hashMapKinds(hm.asInstanceOf[Sym[Any]]) = AggOpCase
-        case _                                   => throw new Exception("Incorrect type " + hmgeu.typeB + " encountered in operators HashMap")
+    case hmgeu @ HashMapGetOrElseUpdate(hm, key, value) => {
+      key match {
+        case Constant(c) =>
+          hashMapKinds(hm.asInstanceOf[Sym[Any]]) = ConstantKeyMap
+          constantKeyMap(hm.asInstanceOf[Sym[Any]]) = value.asInstanceOf[PardisBlock[Any]]
+        case _ => hmgeu.typeB match {
+          case c if c.name.contains("ArrayBuffer") => hashMapKinds(hm.asInstanceOf[Sym[Any]]) = HashJoinOpCase
+          case c if c.name.contains("AGGRecord")   => hashMapKinds(hm.asInstanceOf[Sym[Any]]) = AggOpCase
+          case _                                   => throw new Exception("Incorrect type " + hmgeu.typeB + " encountered in operators HashMap")
+        }
       }
     }
     case _ => super.traverseDef(node)
@@ -42,6 +58,22 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
   override def traverseStm(stm: Stm[_]): Unit = stm match {
     case Stm(sym, HashMapApply(hm, e)) => hashMapRemoveMap += sym -> hm.asInstanceOf[Sym[Any]]
     case _                             => super.traverseStm(stm)
+  }
+
+  /* Transformation functions */
+  // Takes care of proper lowering when key is constant. All other cases are handled in transformDef.
+  override def transformStm(stm: Stm[_]): to.Stm[_] = stm match {
+    case Stm(sym, hmgeu @ HashMapGetOrElseUpdate(hm, k, v)) if (mapHasConstantKey(hm)) =>
+      val valType = hmgeu.typeB.asInstanceOf[PardisType[Any]]
+      super.transformStm(Stm(sym.asInstanceOf[Sym[Any]], ReadVal(hm.asInstanceOf[Expression[Any]]))(valType))
+    case s @ Stm(sym, hmr @ HashMapRemove(hm, key)) if (mapHasConstantKey(hm)) =>
+      val valType = hmr.typeB.asInstanceOf[PardisType[Any]]
+      super.transformStm(Stm(sym.asInstanceOf[Sym[Any]], ReadVal(hm)))
+    case _ => super.transformStm(stm)
+  }
+  override def newSym[T: TypeRep](sym: Rep[T]): to.Sym[_] = {
+    if (hashMapKinds.contains(sym.asInstanceOf[Sym[Any]]) && mapHasConstantKey(sym)) to.fresh(sym.tp.typeArguments(1)).copyFrom(sym.asInstanceOf[Sym[T]])
+    else super.newSym[T](sym)
   }
 
   override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
@@ -57,13 +89,16 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
     case Stm(sym, PardisReadVar(PardisVar(z))) =>
       if (z.tp.name.contains("Set")) Nil
       else super.transformStmToMultiple(stm)
+    case Stm(sym, hmn @ HashMapNew4(_, _)) if (mapHasConstantKey(sym)) =>
+      val valType = sym.tp.typeArguments(1).asInstanceOf[PardisType[Any]]
+      counterMap(sym) = (__newVar[Int](unit(1)), __newVar[Int](unit(0)))
+      val valueBlock = constantKeyMap(sym)
+      valueBlock.stmts.foreach(transformStmToMultiple)
+      val valueRes = transformExp(valueBlock.res)(valueBlock.res.tp, valueBlock.res.tp)
+      subst += sym -> valueRes
+      Nil
     case _ => super.transformStmToMultiple(stm)
   }
-
-  def getKind[T](hm: Rep[T]): Kind = hashMapKinds(hm.asInstanceOf[Sym[Any]])
-
-  trait Key
-  trait Value
 
   // Duplication of code with Scala2C -- refactoring needed
   def getStructHashMethod[A: PardisType] = {
@@ -107,8 +142,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
 
   def checkForHashSym[T](hm: Rep[T], p: Sym[Any] => Boolean): Boolean = p(hm.asInstanceOf[Sym[Any]])
 
-  def isAggOp[T](hm: Rep[T]) = checkForHashSym(hm, x => getKind(x) == AggOpCase)
-
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
     if (tp.name.startsWith("HashMap")) {
@@ -117,8 +150,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
     } else if (tp.name.contains("ArrayBuffer")) { System.out.println(tp); typePardisVariable(tp.typeArguments(0)) }
     else super.transformType[T]
   }).asInstanceOf[PardisType[Any]]
-
-  val counterMap = new scala.collection.mutable.HashMap[Expression[_], (Var[Int], Var[Int])]()
 
   def getSizeCounterMap[A, B](hm: Expression[HashMap[A, B]]) = hm match {
     case Def(ReadVal(x)) => counterMap(x)._1
@@ -132,7 +163,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
   object HashMapNews {
     def unapply[T](node: Def[T]): Option[(Rep[Int], PardisType[Any])] = node match {
       case hmn @ HashMapNew3(_, size) => Some(size -> hmn.typeB)
-      case hmn @ HashMapNew4(_, size) => Some(size -> /*ArrayBufferType*/ (hmn.typeB).asInstanceOf[PardisType[Any]])
+      case hmn @ HashMapNew4(_, size) => Some(size -> (hmn.typeB).asInstanceOf[PardisType[Any]])
       case _                          => None
     }
   }
@@ -140,8 +171,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     case ps @ PardisStruct(tag, elems, methods) =>
       val init = infix_asInstanceOf(Constant(null))(ps.tp)
-      // TODO: Prev does not need to be everywhere, only for queries using
-      // AntiJoin
       PardisStruct(tag, elems ++ List(PardisStructArg("next", true, init)) ++ List(PardisStructArg("prev", true, init)), methods)(ps.tp)
 
     case hmn @ HashMapNews(size, typeB) =>
@@ -149,7 +178,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       val arr = arrayNew(size)(typeB)
       val index = __newVar[Int](0)
       __whileDo(readVar(index) < size, {
-        System.out.println(typeB)
         val init = toAtom(Malloc(unit(1))(typeB))(typeB.asInstanceOf[PardisType[Pointer[Any]]])
         arrayUpdate(arr, readVar(index), init)
         val e = arrayApply(arr, readVar(index))(typeB)
@@ -158,12 +186,11 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
         unit()
       })
       counterMap(arr) = (__newVar[Int](unit(0)), __newVar[Int](unit(0)))
-      System.out.println(counterMap.mkString("\n"))
       printf(unit("DONE!\n"))
       ReadVal(arr)(arr.tp)
 
     case hmgeu @ HashMapGetOrElseUpdate(hm, k, v) if !isAggOp(hm) => {
-      implicit val manValue = transformType(hm.tp) //.asInstanceOf[TypeRep[Value]]
+      implicit val manValue = transformType(hm.tp)
       val key = k.asInstanceOf[Rep[Key]]
       val size = arrayLength(transformExp(hm)(hm.tp, typeArray(hmgeu.typeB)))
       val hashKey = key2Hash(key, size)
@@ -258,7 +285,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       ReadVar(bucket)
     }
 
-    case hmz @ HashMapSize(hm) => {
+    case hmz @ HashMapSize(hm) if (!mapHasConstantKey(hm)) => {
       implicit val manValue = if (isAggOp(hm))
         hm.tp.typeArguments(1).asInstanceOf[TypeRep[Value]]
       else
@@ -268,6 +295,12 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       val counter = getSizeCounterMap(hm)
       ReadVar(counter)
     }
+
+    case HashMapSize(hm) if (mapHasConstantKey(hm)) =>
+      val sizeCounter = counterMap(hm)._1
+      val v = readVar(sizeCounter)
+      __assign(sizeCounter, readVar(sizeCounter) - unit(1))
+      ReadVal(v)
 
     case aba @ ArrayBufferAppend(a @ Def(rv @ PardisReadVar(f @ PardisVar(ab))), e) =>
       implicit val manValue = a.tp.typeArguments(0).asInstanceOf[TypeRep[Value]]
