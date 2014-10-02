@@ -90,8 +90,6 @@ object Main extends LegoRunner {
       else {
         val lowering = new LBLowering(context, context, generateCCode)
         val loweredBlock0 = lowering.lower(block)
-        writeASTToDumpFile(loweredBlock0)
-
         val parameterPromotion = new LBParameterPromotion(context)
         parameterPromotion.optimize(loweredBlock0)
       }
@@ -110,19 +108,22 @@ object Main extends LegoRunner {
       }
     }
 
+    writeASTToDumpFile(afterHashMapToArray)
+
     // DCE
     val dce = new DCE(context)
     val dceBlock = dce.optimize(afterHashMapToArray)
 
     // Partial evaluation
-    val partiallyEvaluator = new PartialyEvaluate(context)
-    val partiallyEvaluatedBlock = partiallyEvaluator.optimize(dceBlock)
-    // val partiallyEvaluatedBlock = dceBlock
+    //val partiallyEvaluator = new PartialyEvaluate(context)
+    //val partiallyEvaluatedBlock = partiallyEvaluator.optimize(dceBlock)
+    val partiallyEvaluatedBlock = dceBlock
 
     // Convert Scala constructs to C
     val finalBlock = {
       if (generateCCode) {
-        val cBlock = CTransformersPipeline(context, partiallyEvaluatedBlock)
+        // Note this is DCE block because some optimziations break with partially evaluated
+        val cBlock = CTransformersPipeline(context, dceBlock)
         val dceC = new DCECLang(context)
         dceC.optimize(cBlock)
       } else partiallyEvaluatedBlock

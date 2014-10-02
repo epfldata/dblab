@@ -297,6 +297,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
     }
 
     case HashMapSize(hm) if (mapHasConstantKey(hm)) =>
+      // This breaks with partual evaluation
       val sizeCounter = counterMap(hm)._1
       val v = readVar(sizeCounter)
       __assign(sizeCounter, readVar(sizeCounter) - unit(1))
