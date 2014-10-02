@@ -20,7 +20,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
   import CTypes._
 
   /* If you want to disable this optimization, set this flag to `false` */
-  val enabled = false
+  val enabled = true
 
   def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     phase = FindMallocs

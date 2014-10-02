@@ -5,9 +5,11 @@ package lifter
 import scala.reflect.runtime.universe
 
 import queryengine.volcano._
-import ch.epfl.data.autolifter._
-import ch.epfl.data.autolifter.annotations._
-import ch.epfl.data.autolifter.annotations.Custom._
+import pardis.annotations._
+import purgatory._
+import purgatory.config._
+import purgatory.generator._
+import purgatory.lifter._
 import java.util.{ Calendar, GregorianCalendar }
 
 object LiftLego extends PardisLifter {
