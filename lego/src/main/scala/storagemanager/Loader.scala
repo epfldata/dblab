@@ -3,8 +3,11 @@ package legobase
 package storagemanager
 
 import utils.Utilities._
+import pardis.annotations.needs
+import queryengine.TPCHRelations._
 
 // FIXME just to cheat on auto-lifter
+@needs[(Int, K2DBScanner, LINEITEMRecord, ORDERSRecord, CUSTOMERRecord, SUPPLIERRecord, PARTSUPPRecord, REGIONRecord, NATIONRecord, PARTRecord)]
 trait Loader {
 
 }
@@ -30,7 +33,7 @@ object Loader {
     val hm = new Array[REGIONRecord](size)
     var i = 0
     while (s.hasNext()) {
-      val newEntry = newREGIONRecord(s.next_int, loadString(25, s), loadString(152, s))
+      val newEntry = new REGIONRecord(s.next_int, loadString(25, s), loadString(152, s))
       hm(i) = newEntry
       i += 1
     }
@@ -45,7 +48,7 @@ object Loader {
     val hm = new Array[PARTSUPPRecord](size)
     var i = 0
     while (s.hasNext()) {
-      val newEntry = newPARTSUPPRecord(s.next_int, s.next_int, s.next_int, s.next_double, loadString(199, s))
+      val newEntry = new PARTSUPPRecord(s.next_int, s.next_int, s.next_int, s.next_double, loadString(199, s))
       hm(i) = newEntry
       i += 1
     }
@@ -60,7 +63,7 @@ object Loader {
     val hm = new Array[PARTRecord](size)
     var i = 0
     while (s.hasNext()) {
-      val newEntry = newPARTRecord(s.next_int, loadString(55, s), loadString(25, s), loadString(10, s), loadString(25, s),
+      val newEntry = new PARTRecord(s.next_int, loadString(55, s), loadString(25, s), loadString(10, s), loadString(25, s),
         s.next_int, loadString(10, s), s.next_double, loadString(23, s))
       hm(i) = newEntry
       i += 1
@@ -76,7 +79,7 @@ object Loader {
     val hm = new Array[NATIONRecord](size)
     var i = 0
     while (s.hasNext()) {
-      val newEntry = newNATIONRecord(s.next_int, loadString(25, s), s.next_int, loadString(152, s))
+      val newEntry = new NATIONRecord(s.next_int, loadString(25, s), s.next_int, loadString(152, s))
       hm(i) = newEntry
       i += 1
     }
@@ -91,7 +94,7 @@ object Loader {
     val hm = new Array[SUPPLIERRecord](size)
     var i = 0
     while (s.hasNext()) {
-      val newEntry = newSUPPLIERRecord(s.next_int, loadString(25, s), loadString(40, s), s.next_int, loadString(15, s), s.next_double, loadString(101, s))
+      val newEntry = new SUPPLIERRecord(s.next_int, loadString(25, s), loadString(40, s), s.next_int, loadString(15, s), s.next_double, loadString(101, s))
       hm(i) = newEntry
       i += 1
     }
@@ -106,7 +109,7 @@ object Loader {
     val hm = new Array[LINEITEMRecord](size)
     var i = 0
     while (s.hasNext()) {
-      val newEntry = newLINEITEMRecord(s.next_int, s.next_int, s.next_int, s.next_int,
+      val newEntry = new LINEITEMRecord(s.next_int, s.next_int, s.next_int, s.next_int,
         s.next_double, s.next_double, s.next_double, s.next_double,
         s.next_char, s.next_char, s.next_date, s.next_date, s.next_date,
         loadString(25, s), loadString(10, s), loadString(44, s))
@@ -124,7 +127,7 @@ object Loader {
     val hm = new Array[ORDERSRecord](size)
     var i = 0
     while (s.hasNext()) {
-      val newEntry = newORDERSRecord(s.next_int, s.next_int, s.next_char, s.next_double, s.next_date,
+      val newEntry = new ORDERSRecord(s.next_int, s.next_int, s.next_char, s.next_double, s.next_date,
         loadString(15, s), loadString(15, s), s.next_int, loadString(79, s))
       hm(i) = newEntry
       i += 1
@@ -140,7 +143,7 @@ object Loader {
     val hm = new Array[CUSTOMERRecord](size)
     var i = 0
     while (s.hasNext()) {
-      val newEntry = newCUSTOMERRecord(s.next_int, loadString(25, s), loadString(40, s), s.next_int, loadString(15, s), s.next_double, loadString(10, s), loadString(117, s))
+      val newEntry = new CUSTOMERRecord(s.next_int, loadString(25, s), loadString(40, s), s.next_int, loadString(15, s), s.next_double, loadString(10, s), loadString(117, s))
       hm(i) = newEntry
       i += 1
     }

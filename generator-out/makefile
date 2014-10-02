@@ -1,7 +1,7 @@
 CC=clang
 OPTFLAG=-O3
 PKG_CONFIG=$(shell locate pkg-config | head -n 1)
-LIBS=$(shell $(PKG_CONFIG) --cflags glib-2.0 --libs glib-2.0)
+LIBS=`pkg-config --cflags glib-2.0 --libs glib-2.0`
 CFLAGS=-g
 FILES=$(wildcard *.c)
 UNAME := $(shell uname)

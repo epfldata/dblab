@@ -2,7 +2,7 @@ package ch.epfl.data
 package legobase
 package prettyprinter
 
-import ocas.utils.Document
+import pardis.utils.Document
 import pardis.ir._
 import pardis.prettyprinter._
 import scala.language.implicitConversions
@@ -11,7 +11,7 @@ class LegoScalaGenerator(val shallow: Boolean = false, val outputFileName: Strin
 
   def getShallowHeader: String = if (shallow) """
 import queryengine._
-import queryengine.volcano._
+import queryengine.push._
 import queryengine.TPCHRelations._
 import pardis.shallow._
   """
@@ -38,7 +38,7 @@ object OrderingFactory {
 }
 """
 
-  override def getTraitSignature(): Document = s"""object LEGO_QUERY extends LegoRunner {
+  override def getTraitSignature(): Document = s"""object $outputFileName extends LegoRunner {
   def executeQuery(query: String): Unit = main()
   def main(args: Array[String]) {
     run(args)
@@ -52,7 +52,7 @@ object OrderingFactory {
   }
 }
 
-class LegoCGenerator(val shallow: Boolean = false, val outputFileName: String = "generatedProgram") extends CCodeGenerator {
+class LegoCGenerator(val shallow: Boolean = false, val outputFileName: String = "generatedProgram", val verb: Boolean = false) extends CCodeGenerator(verb) {
   def apply(program: PardisProgram) {
     generate(program, outputFileName)
   }

@@ -6,8 +6,8 @@ import deep._
 import prettyprinter._
 import optimization._
 import pardis.optimization._
-import ch.epfl.data.pardis.ir._
-import pardis.ir.pardisTypeImplicits._
+import pardis.ir._
+import pardis.types.PardisTypeImplicits._
 
 object Main extends LegoRunner {
 
@@ -22,6 +22,9 @@ object Main extends LegoRunner {
 
     run(args)
   }
+
+  /* For the moment this transformation is only valid for C code generation */
+  val hashMapToArray = true
 
   def executeQuery(query: String): Unit = {
     val context = new LoweringLegoBase {}
@@ -75,39 +78,62 @@ object Main extends LegoRunner {
   }
 
   def compileQuery(context: LoweringLegoBase, block: pardis.ir.PardisBlock[Unit], number: Int, shallow: Boolean, generateCCode: Boolean) {
+    def writeASTToDumpFile(b0: pardis.ir.PardisBlock[Unit]) {
+      val pw = new java.io.PrintWriter(new java.io.File("tree_debug_dump.txt"))
+      pw.println(b0.toString)
+      pw.flush()
+    }
+
     // Lowering (e.g. case classes to records)
     val loweredBlock = {
       if (shallow) block
       else {
-        val lowering = new LBLowering(context, context)
+        val lowering = new LBLowering(context, context, generateCCode)
         val loweredBlock0 = lowering.lower(block)
         val parameterPromotion = new LBParameterPromotion(context)
         parameterPromotion.optimize(loweredBlock0)
       }
     }
 
+    val afterHashMapToArray = {
+      if (hashMapToArray && generateCCode) {
+        val hmHoist = new HashMapHoist(context)
+        val hm2Arr = new HashMapToArrayTransformer(context)
+        val afterPE = new PartialyEvaluate(context).optimize(new DCE(context).optimize(loweredBlock))
+        //writeASTToDumpFile(afterPE)
+        val hmBlock = hm2Arr.optimize(hmHoist.optimize(afterPE))
+        hmBlock
+      } else {
+        loweredBlock
+      }
+    }
+
+    writeASTToDumpFile(afterHashMapToArray)
+
     // DCE
     val dce = new DCE(context)
-    val dceBlock = dce.optimize(loweredBlock)
+    val dceBlock = dce.optimize(afterHashMapToArray)
 
     // Partial evaluation
-    val partiallyEvaluator = new PartialyEvaluate(context)
-    val partiallyEvaluatedBlock = partiallyEvaluator.optimize(dceBlock)
+    //val partiallyEvaluator = new PartialyEvaluate(context)
+    //val partiallyEvaluatedBlock = partiallyEvaluator.optimize(dceBlock)
+    val partiallyEvaluatedBlock = dceBlock
 
     // Convert Scala constructs to C
     val finalBlock = {
       if (generateCCode) {
+        // Note this is DCE block because some optimziations break with partially evaluated
         val cBlock = CTransformersPipeline(context, dceBlock)
         val dceC = new DCECLang(context)
         dceC.optimize(cBlock)
-        // cBlock
       } else partiallyEvaluatedBlock
     }
 
+    // System.out.println(finalBlock)
     // Generate final program 
     val ir2Program = new { val IR = context } with IRToProgram {}
     val finalProgram = ir2Program.createProgram(finalBlock)
-    if (generateCCode) (new LegoCGenerator(shallow, "Q" + number)).apply(finalProgram)
+    if (generateCCode) (new LegoCGenerator(shallow, "Q" + number, false)).apply(finalProgram)
     else (new LegoScalaGenerator(shallow, "Q" + number)).apply(finalProgram)
   }
 }
