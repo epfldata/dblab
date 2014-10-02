@@ -493,12 +493,9 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
   }
 
   object LoweredNew extends RepExtractor {
-    def unapply[T](exp: Rep[T]): Option[Def[T]] = exp match {
-      case Def(d) => d.tp match {
-        case x if x.isRecord => Some(d)
-        case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | NestedLoopsJoinOpType(_, _) | SubquerySingleResultType(_) | ViewOpType(_) | HashJoinAntiType(_, _, _) | LeftOuterJoinOpType(_, _, _) => Some(d)
-        case _ => None
-      }
+    def unapply[T](exp: Rep[T]): Option[Rep[T]] = exp.tp match {
+      case x if x.isRecord => Some(exp)
+      case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | NestedLoopsJoinOpType(_, _) | SubquerySingleResultType(_) | ViewOpType(_) | HashJoinAntiType(_, _, _) | LeftOuterJoinOpType(_, _, _) => Some(exp)
       case _ => None
     }
   }
