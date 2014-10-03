@@ -174,7 +174,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       PardisStruct(tag, elems ++ List(PardisStructArg("next", true, init)) ++ List(PardisStructArg("prev", true, init)), methods)(ps.tp)
 
     case hmn @ HashMapNews(size, typeB) =>
-      printf(unit("Initializing map for type %s of size %d\n"), unit(typeB.toString), size)
+      debugMsg(stderr, unit("Initializing map for type %s of size %d\n"), unit(typeB.toString), size)
       val arr = arrayNew(size)(typeB)
       val index = __newVar[Int](0)
       __whileDo(readVar(index) < size, {
@@ -186,7 +186,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
         unit()
       })
       counterMap(arr) = (__newVar[Int](unit(0)), __newVar[Int](unit(0)))
-      printf(unit("DONE!\n"))
+      debugMsg(stderr, unit("DONE!\n"))
       ReadVal(arr)(arr.tp)
 
     case hmgeu @ HashMapGetOrElseUpdate(hm, k, v) if !isAggOp(hm) => {
