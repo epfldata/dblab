@@ -45,6 +45,8 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   case class AGGRecordNew2[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit val typeB: TypeRep[B]) extends ConstructorDef[AGGRecord[B]](List(), "AGGRecord", List(List(key, aggs))) {
     override def curriedConstructor = (copy[B] _).curried
   }
+
+  def byteArrayOps(arr: Rep[Array[Byte]]): Rep[Array[Byte]] = arr
 }
 
 // TODO should be generated automatically

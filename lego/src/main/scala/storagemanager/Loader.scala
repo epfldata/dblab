@@ -3,30 +3,51 @@ package legobase
 package storagemanager
 
 import utils.Utilities._
-import pardis.annotations.needs
+import pardis.annotations.{ deep, metadeep, dontLift, dontInline /* ,  needs */ }
 import queryengine.TPCHRelations._
+import pardis.shallow.OptimalString
+
+// This is a temporary solution until we introduce dependency management and adopt policies. Not a priority now!
+@metadeep(
+  "legocompiler/src/main/scala/ch/epfl/data/legobase/deep",
+  """
+package ch.epfl.data
+package legobase
+package deep
+
+import pardis.ir._
+import pardis.types.PardisTypeImplicits._
+import pardis.deep.scalalib._
+import pardis.deep.scalalib.collection._
+""",
+  """LoadersComponent""",
+  "DeepDSL")
+class MetaInfo
 
 // FIXME just to cheat on auto-lifter
-@needs[(Int, K2DBScanner, LINEITEMRecord, ORDERSRecord, CUSTOMERRecord, SUPPLIERRecord, PARTSUPPRecord, REGIONRecord, NATIONRecord, PARTRecord)]
+// @needs[(Int, K2DBScanner, LINEITEMRecord, ORDERSRecord, CUSTOMERRecord, SUPPLIERRecord, PARTSUPPRecord, REGIONRecord, NATIONRecord, PARTRecord)]
+@deep
 trait Loader {
 
 }
 
 object Loader {
-  import queryengine.TPCHRelations._
+  @dontInline
+  def getFullPath(fileName: String): String = Config.datapath + fileName
   def loadString(size: Int, s: K2DBScanner) = {
     val NAME = new Array[Byte](size)
     s.next(NAME)
-    LBString(NAME.filter(y => y != 0))
+    new OptimalString(NAME.filter(y => y != 0))
   }
 
+  @dontInline
   def fileLineCount(file: String) = {
     import scala.sys.process._;
     Integer.parseInt(((("wc -l " + file) #| "awk {print($1)}").!!).replaceAll("\\s+$", ""))
   }
 
   def loadRegion() = {
-    val file = REGIONTABLE
+    val file = getFullPath("region.tbl")
     val size = fileLineCount(file)
     /* Load Relation */
     val s = new K2DBScanner(file)
@@ -41,7 +62,7 @@ object Loader {
   }
 
   def loadPartsupp() = {
-    val file = PARTSUPPTABLE
+    val file = getFullPath("partsupp.tbl")
     val size = fileLineCount(file)
     /* Load Relation */
     val s = new K2DBScanner(file)
@@ -56,7 +77,7 @@ object Loader {
   }
 
   def loadPart() = {
-    val file = PARTTABLE
+    val file = getFullPath("part.tbl")
     val size = fileLineCount(file)
     /* Load Relation */
     val s = new K2DBScanner(file)
@@ -72,7 +93,7 @@ object Loader {
   }
 
   def loadNation() = {
-    val file = NATIONTABLE
+    val file = getFullPath("nation.tbl")
     val size = fileLineCount(file)
     /* Load Relation */
     val s = new K2DBScanner(file)
@@ -87,7 +108,7 @@ object Loader {
   }
 
   def loadSupplier() = {
-    val file = SUPPLIERTABLE
+    val file = getFullPath("supplier.tbl")
     val size = fileLineCount(file)
     /* Load Relation */
     val s = new K2DBScanner(file)
@@ -102,7 +123,7 @@ object Loader {
   }
 
   def loadLineitem() = {
-    val file = LINEITEMTABLE
+    val file = getFullPath("lineitem.tbl")
     val size = fileLineCount(file)
     // Load Relation 
     val s = new K2DBScanner(file)
@@ -120,7 +141,7 @@ object Loader {
   }
 
   def loadOrders() = {
-    val file = ORDERSTABLE
+    val file = getFullPath("orders.tbl")
     val size = fileLineCount(file)
     // Load Relation 
     val s = new K2DBScanner(file)
@@ -136,7 +157,7 @@ object Loader {
   }
 
   def loadCustomer() = {
-    val file = CUSTOMERTABLE
+    val file = getFullPath("customer.tbl")
     val size = fileLineCount(file)
     // Load Relation 
     val s = new K2DBScanner(file)
