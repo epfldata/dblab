@@ -6,15 +6,6 @@ import utils.Utilities._
 import ch.epfl.data.pardis.shallow.{ CaseClassRecord }
 
 object TPCHRelations {
-  lazy val PARTTABLE = Config.datapath + "part.tbl"
-  lazy val PARTSUPPTABLE = Config.datapath + "partsupp.tbl"
-  lazy val NATIONTABLE = Config.datapath + "nation.tbl"
-  lazy val REGIONTABLE = Config.datapath + "region.tbl"
-  lazy val SUPPLIERTABLE = Config.datapath + "supplier.tbl"
-  lazy val LINEITEMTABLE = Config.datapath + "lineitem.tbl"
-  lazy val CUSTOMERTABLE = Config.datapath + "customer.tbl"
-  lazy val ORDERSTABLE = Config.datapath + "orders.tbl"
-
   case class LINEITEMRecord(
     val L_ORDERKEY: Int,
     val L_PARTKEY: Int,
