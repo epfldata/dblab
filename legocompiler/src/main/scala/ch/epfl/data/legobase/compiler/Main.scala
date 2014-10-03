@@ -122,7 +122,6 @@ object Main extends LegoRunner {
     // Convert Scala constructs to C
     val finalBlock = {
       if (generateCCode) {
-        // Note this is DCE block because some optimziations break with partially evaluated
         val cBlock = CTransformersPipeline(context, partiallyEvaluatedBlock)
         val dceC = new DCECLang(context)
         dceC.optimize(cBlock)

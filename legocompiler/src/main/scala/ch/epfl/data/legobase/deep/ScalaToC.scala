@@ -27,7 +27,7 @@ trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base 
     else if (m.name == "Double") "double"
     else if (m.name.contains("Record")) m.name.replaceAll("struct ", "")
     else {
-      System.out.println("WARNING: Default structName given: " + m.name);
+      //System.out.println("WARNING: Default structName given: " + m.name);
       super.structName(m)
     }
   }

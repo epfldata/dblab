@@ -65,9 +65,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
   def mallocToInstance(node: Malloc[Any]): MallocInstance = MallocInstance(node.typeT, node)
 
   def createBuffers() {
-    System.out.println("Creating buffers for mallocNodes: " + mallocNodes.mkString("\n"))
-    System.out.println("")
-    System.out.println(mallocNodes.map(e => e.tp).mkString("\n"))
+    //System.out.println("Creating buffers for mallocNodes: " + mallocNodes.mkString("\n"))
     val mallocInstances = mallocNodes.map(m => mallocToInstance(m)).distinct //.filter(t => !t.tp.name.contains("CArray") /* && !t.tp.name.contains("Pointer")*/ )
     for (mallocInstance <- mallocInstances) {
       val mallocTp = mallocInstance.tp
@@ -123,8 +121,6 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
     case m @ Malloc(numElems) if startCollecting /* && !m.tp.name.contains("CArray")  && !m.tp.name.contains("Pointer") */ => {
       val mallocInstance = mallocToInstance(m)
       val bufferInfo = mallocBuffers(mallocInstance)
-      System.out.println(m.tp)
-      System.out.println(m.tp.typeArguments(0))
       val p = {
         if (m.tp.typeArguments(0).isPrimitive) {
           &(bufferInfo.pool, readVar(bufferInfo.index))(m.tp.typeArguments(0).asInstanceOf[PardisType[Any]])
