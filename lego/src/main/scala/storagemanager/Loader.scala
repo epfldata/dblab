@@ -37,7 +37,7 @@ object Loader {
   def loadString(size: Int, s: K2DBScanner) = {
     val NAME = new Array[Byte](size)
     s.next(NAME)
-    OptimalString(NAME.filter(y => y != 0))
+    new OptimalString(NAME.filter(y => y != 0))
   }
 
   @dontInline

@@ -102,7 +102,7 @@ trait LoaderImplementations { this: DeepDSL =>
     {
       val NAME: this.Rep[Array[Byte]] = __newArray[Byte](size);
       s.next(NAME);
-      OptimalString.apply(byteArrayOps(NAME).filter(__lambda(((y: this.Rep[Byte]) => infix_$bang$eq(y, unit(0))))))
+      __newOptimalString(byteArrayOps(NAME).filter(__lambda(((y: this.Rep[Byte]) => infix_$bang$eq(y, unit(0))))))
     }
   }
   override def loaderLoadRegionObject(): Rep[Array[REGIONRecord]] = {
