@@ -167,7 +167,7 @@ trait QueriesImplementations { this: DeepDSL =>
   override def queriesQ1Object(numRuns: Rep[Int]): Rep[Unit] = {
     {
       val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val constantDate: this.Rep[Int] = GenericEngine.parseDate(unit("1998-08-11"));
         val lineitemScan: this.Rep[ch.epfl.data.legobase.queryengine.push.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = __newSelectOp(__newScanOp(lineitemTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]) => x.L_SHIPDATE.$less$eq(constantDate))));
         val aggOp: this.Rep[ch.epfl.data.legobase.queryengine.push.AggOp[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord, ch.epfl.data.legobase.queryengine.GroupByClass]] = __newAggOp(lineitemScan, unit(9))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]) => __newGroupByClass(x.L_RETURNFLAG, x.L_LINESTATUS))))(__lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord], currAgg: this.Rep[Double]) => t.L_DISCOUNT.$plus(currAgg))), __lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord], currAgg: this.Rep[Double]) => t.L_QUANTITY.$plus(currAgg))), __lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord], currAgg: this.Rep[Double]) => t.L_EXTENDEDPRICE.$plus(currAgg))), __lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord], currAgg: this.Rep[Double]) => t.L_EXTENDEDPRICE.$times(unit(1.0).$minus(t.L_DISCOUNT)).$plus(currAgg))), __lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord], currAgg: this.Rep[Double]) => t.L_EXTENDEDPRICE.$times(unit(1.0).$minus(t.L_DISCOUNT)).$times(unit(1.0).$plus(t.L_TAX)).$plus(currAgg))), __lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
@@ -182,7 +182,7 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ2Object(numRuns: Rep[Int]): Rep[Unit] = {
@@ -192,7 +192,7 @@ trait QueriesImplementations { this: DeepDSL =>
       val nationTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord]] = Loader.loadNation();
       val regionTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.REGIONRecord]] = Loader.loadRegion();
       val supplierTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]] = Loader.loadSupplier();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val africa: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("AFRICA"));
         val tin: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("TIN"));
         val partsuppScan: this.Rep[ch.epfl.data.legobase.queryengine.push.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord]] = __newScanOp(partsuppTable);
@@ -223,7 +223,7 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ3Object(numRuns: Rep[Int]): Rep[Unit] = {
@@ -231,7 +231,7 @@ trait QueriesImplementations { this: DeepDSL =>
       val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
       val ordersTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = Loader.loadOrders();
       val customerTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = Loader.loadCustomer();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val constantDate: this.Rep[Int] = GenericEngine.parseDate(unit("1995-03-04"));
         val scanCustomer: this.Rep[ch.epfl.data.legobase.queryengine.push.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = __newSelectOp(__newScanOp(customerTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]) => x.C_MKTSEGMENT.$eq$eq$eq(GenericEngine.parseString(unit("HOUSEHOLD"))))));
         val scanOrders: this.Rep[ch.epfl.data.legobase.queryengine.push.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = __newSelectOp(__newScanOp(ordersTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]) => x.O_ORDERDATE.$less(constantDate))));
@@ -257,14 +257,14 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ4Object(numRuns: Rep[Int]): Rep[Unit] = {
     {
       val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
       val ordersTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = Loader.loadOrders();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val constantDate1: this.Rep[Int] = GenericEngine.parseDate(unit("1993-11-01"));
         val constantDate2: this.Rep[Int] = GenericEngine.parseDate(unit("1993-08-01"));
         val scanOrders: this.Rep[ch.epfl.data.legobase.queryengine.push.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = __newSelectOp(__newScanOp(ordersTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]) => x.O_ORDERDATE.$less(constantDate1).$amp$amp(x.O_ORDERDATE.$greater$eq(constantDate2)))));
@@ -281,7 +281,7 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ5Object(numRuns: Rep[Int]): Rep[Unit] = {
@@ -292,7 +292,7 @@ trait QueriesImplementations { this: DeepDSL =>
       val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
       val ordersTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = Loader.loadOrders();
       val customerTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = Loader.loadCustomer();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val constantDate1: this.Rep[Int] = GenericEngine.parseDate(unit("1996-01-01"));
         val constantDate2: this.Rep[Int] = GenericEngine.parseDate(unit("1997-01-01"));
         val scanRegion: this.Rep[ch.epfl.data.legobase.queryengine.push.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.REGIONRecord]] = __newSelectOp(__newScanOp(regionTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.REGIONRecord]) => x.R_NAME.$eq$eq$eq(GenericEngine.parseString(unit("ASIA"))))));
@@ -313,13 +313,13 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ6Object(numRuns: Rep[Int]): Rep[Unit] = {
     {
       val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val constantDate1: this.Rep[Int] = GenericEngine.parseDate(unit("1996-01-01"));
         val constantDate2: this.Rep[Int] = GenericEngine.parseDate(unit("1997-01-01"));
         val lineitemScan: this.Rep[ch.epfl.data.legobase.queryengine.push.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = __newSelectOp(__newScanOp(lineitemTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]) => x.L_DISCOUNT.$less$eq(unit(0.1)).$amp$amp(x.L_SHIPDATE.$less(constantDate2).$amp$amp(x.L_QUANTITY.$less(unit(24)).$amp$amp(x.L_SHIPDATE.$greater$eq(constantDate1).$amp$amp(x.L_DISCOUNT.$greater$eq(unit(0.08)))))))));
@@ -332,7 +332,7 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ7Object(numRuns: Rep[Int]): Rep[Unit] = {
@@ -342,7 +342,7 @@ trait QueriesImplementations { this: DeepDSL =>
       val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
       val customerTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = Loader.loadCustomer();
       val supplierTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]] = Loader.loadSupplier();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val usa: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("UNITED STATES"));
         val indonesia: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("INDONESIA"));
         val scanNation1: this.Rep[ch.epfl.data.legobase.queryengine.push.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord]] = __newScanOp(nationTable);
@@ -371,7 +371,7 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ8Object(numRuns: Rep[Int]): Rep[Unit] = {
@@ -383,7 +383,7 @@ trait QueriesImplementations { this: DeepDSL =>
       val nationTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord]] = Loader.loadNation();
       val regionTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.REGIONRecord]] = Loader.loadRegion();
       val supplierTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]] = Loader.loadSupplier();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val constantDate1: this.Rep[Int] = GenericEngine.parseDate(unit("1995-01-01"));
         val constantDate2: this.Rep[Int] = GenericEngine.parseDate(unit("1996-12-31"));
         val asia: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("ASIA"));
@@ -412,7 +412,7 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ9Object(numRuns: Rep[Int]): Rep[Unit] = {
@@ -423,7 +423,7 @@ trait QueriesImplementations { this: DeepDSL =>
       val partsuppTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord]] = Loader.loadPartsupp();
       val supplierTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]] = Loader.loadSupplier();
       val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val ghost: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("ghost"));
         val soNation: this.Rep[ch.epfl.data.legobase.queryengine.push.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord]] = __newScanOp(nationTable);
         val soSupplier: this.Rep[ch.epfl.data.legobase.queryengine.push.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]] = __newScanOp(supplierTable);
@@ -448,7 +448,7 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ10Object(numRuns: Rep[Int]): Rep[Unit] = {
@@ -457,7 +457,7 @@ trait QueriesImplementations { this: DeepDSL =>
       val nationTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord]] = Loader.loadNation();
       val customerTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = Loader.loadCustomer();
       val ordersTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = Loader.loadOrders();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val constantDate1: this.Rep[Int] = GenericEngine.parseDate(unit("1994-11-01"));
         val constantDate2: this.Rep[Int] = GenericEngine.parseDate(unit("1995-02-01"));
         val so1: this.Rep[ch.epfl.data.legobase.queryengine.push.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = __newSelectOp(__newScanOp(ordersTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]) => x.O_ORDERDATE.$greater$eq(constantDate1).$amp$amp(x.O_ORDERDATE.$less(constantDate2)))));
@@ -482,7 +482,7 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ11Object(numRuns: Rep[Int]): Rep[Unit] = {
@@ -490,7 +490,7 @@ trait QueriesImplementations { this: DeepDSL =>
       val partsuppTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord]] = Loader.loadPartsupp();
       val supplierTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]] = Loader.loadSupplier();
       val nationTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord]] = Loader.loadNation();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val uk: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("UNITED KINGDOM"));
         val scanSupplier: this.Rep[ch.epfl.data.legobase.queryengine.push.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]] = __newScanOp(supplierTable);
         val scanNation: this.Rep[ch.epfl.data.legobase.queryengine.push.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord]] = __newSelectOp(__newScanOp(nationTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord]) => x.N_NAME.$eq$eq$eq(uk))));
@@ -513,14 +513,14 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ12Object(numRuns: Rep[Int]): Rep[Unit] = {
     {
       val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
       val ordersTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = Loader.loadOrders();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val mail: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("MAIL"));
         val ship: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("SHIP"));
         val constantDate: this.Rep[Int] = GenericEngine.parseDate(unit("1995-01-01"));
@@ -537,14 +537,14 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ13Object(numRuns: Rep[Int]): Rep[Unit] = {
     {
       val customerTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = Loader.loadCustomer();
       val ordersTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = Loader.loadOrders();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val unusual: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("unusual"));
         val packages: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("packages"));
         val scanCustomer: this.Rep[ch.epfl.data.legobase.queryengine.push.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = __newScanOp(customerTable);
@@ -565,14 +565,14 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ14Object(numRuns: Rep[Int]): Rep[Unit] = {
     {
       val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
       val partTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord]] = Loader.loadPart();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val promo: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("PROMO"));
         val constantDate: this.Rep[Int] = GenericEngine.parseDate(unit("1994-04-01"));
         val constantDate2: this.Rep[Int] = GenericEngine.parseDate(unit("1994-03-01"));
@@ -589,14 +589,14 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ15Object(numRuns: Rep[Int]): Rep[Unit] = {
     {
       val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
       val supplierTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]] = Loader.loadSupplier();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val constantDate: this.Rep[Int] = GenericEngine.parseDate(unit("1993-09-01"));
         val constantDate2: this.Rep[Int] = GenericEngine.parseDate(unit("1993-12-01"));
         val scanLineitem: this.Rep[ch.epfl.data.legobase.queryengine.push.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = __newSelectOp(__newScanOp(lineitemTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]) => x.L_SHIPDATE.$greater$eq(constantDate).$amp$amp(x.L_SHIPDATE.$less(constantDate2)))));
@@ -620,7 +620,7 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ16Object(numRuns: Rep[Int]): Rep[Unit] = {
@@ -628,7 +628,7 @@ trait QueriesImplementations { this: DeepDSL =>
       val supplierTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]] = Loader.loadSupplier();
       val partTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord]] = Loader.loadPart();
       val partsuppTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord]] = Loader.loadPartsupp();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val str1: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("Customer"));
         val str2: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("Complaints"));
         val brand21: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("Brand#21"));
@@ -663,14 +663,14 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ17Object(numRuns: Rep[Int]): Rep[Unit] = {
     {
       val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
       val partTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord]] = Loader.loadPart();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val medbag: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("MED BAG"));
         val brand15: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("Brand#15"));
         val scanLineitem: this.Rep[ch.epfl.data.legobase.queryengine.push.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = __newScanOp(lineitemTable);
@@ -691,7 +691,7 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ18Object(numRuns: Rep[Int]): Rep[Unit] = {
@@ -699,7 +699,7 @@ trait QueriesImplementations { this: DeepDSL =>
       val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
       val ordersTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = Loader.loadOrders();
       val customerTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = Loader.loadCustomer();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val scanOrders: this.Rep[ch.epfl.data.legobase.queryengine.push.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = __newScanOp(ordersTable);
         val scanCustomer: this.Rep[ch.epfl.data.legobase.queryengine.push.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = __newScanOp(customerTable);
         val scanLineitem1: this.Rep[ch.epfl.data.legobase.queryengine.push.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = __newScanOp(lineitemTable);
@@ -738,14 +738,14 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ19Object(numRuns: Rep[Int]): Rep[Unit] = {
     {
       val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
       val partTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord]] = Loader.loadPart();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val Brand31: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("Brand#31"));
         val Brand43: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("Brand#43"));
         val SMBOX: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("SM BOX"));
@@ -775,7 +775,7 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ20Object(numRuns: Rep[Int]): Rep[Unit] = {
@@ -785,7 +785,7 @@ trait QueriesImplementations { this: DeepDSL =>
       val partTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord]] = Loader.loadPart();
       val partsuppTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord]] = Loader.loadPartsupp();
       val lineitemTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = Loader.loadLineitem();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val constantDate1: this.Rep[Int] = GenericEngine.parseDate(unit("1996-01-01"));
         val constantDate2: this.Rep[Int] = GenericEngine.parseDate(unit("1997-01-01"));
         val jordan: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("JORDAN"));
@@ -811,7 +811,7 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ21Object(numRuns: Rep[Int]): Rep[Unit] = {
@@ -820,7 +820,7 @@ trait QueriesImplementations { this: DeepDSL =>
       val supplierTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]] = Loader.loadSupplier();
       val ordersTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = Loader.loadOrders();
       val nationTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord]] = Loader.loadNation();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val morocco: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("MOROCCO"));
         val lineitemScan1: this.Rep[ch.epfl.data.legobase.queryengine.push.SelectOp[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = __newSelectOp(__newScanOp(lineitemTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]) => x.L_RECEIPTDATE.$greater(x.L_COMMITDATE))));
         val lineitemScan2: this.Rep[ch.epfl.data.legobase.queryengine.push.ScanOp[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = __newScanOp(lineitemTable);
@@ -848,14 +848,14 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
   override def queriesQ22Object(numRuns: Rep[Int]): Rep[Unit] = {
     {
       val customerTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord]] = Loader.loadCustomer();
       val ordersTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord]] = Loader.loadOrders();
-      GenericEngine.runQuery[Unit]({
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val v23: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("23"));
         val v29: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("29"));
         val v22: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("22"));
@@ -885,7 +885,7 @@ trait QueriesImplementations { this: DeepDSL =>
         po.next();
         printf(unit("(%d rows)\n"), po.numRows);
         unit(())
-      })
+      }))))
     }
   }
 }

@@ -107,9 +107,9 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     // Profiling and utils functions mapping
     case GenericEngineRunQueryObject(b) =>
-      printf(unit("Initializing LegoBase buffers (this may take a long time...)\n"))
+      debugMsg(stderr, unit("Initializing LegoBase buffers (this may take a long time...)\n"))
       createBuffers()
-      printf(unit("DONE. Now running query\n"))
+      debugMsg(stderr, unit("DONE. Now running query\n"))
       val diff = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val start = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val end = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
@@ -119,7 +119,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
       startCollecting = false
       gettimeofday(&(end))
       val tm = timeval_subtract(&(diff), &(end), &(start))
-      Printf(unit("Generated code run in %ld milliseconds."), tm)
+      Printf(unit("Generated code run in %ld milliseconds.\n"), tm)
     case m @ Malloc(numElems) if startCollecting /* && !m.tp.name.contains("CArray")  && !m.tp.name.contains("Pointer") */ => {
       val mallocInstance = mallocToInstance(m)
       val bufferInfo = mallocBuffers(mallocInstance)
