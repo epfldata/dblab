@@ -115,15 +115,15 @@ object Main extends LegoRunner {
     val dceBlock = dce.optimize(afterHashMapToArray)
 
     // Partial evaluation
-    //val partiallyEvaluator = new PartialyEvaluate(context)
-    //val partiallyEvaluatedBlock = partiallyEvaluator.optimize(dceBlock)
-    val partiallyEvaluatedBlock = dceBlock
+    val partiallyEvaluator = new PartialyEvaluate(context)
+    val partiallyEvaluatedBlock = partiallyEvaluator.optimize(dceBlock)
+    // val partiallyEvaluatedBlock = dceBlock
 
     // Convert Scala constructs to C
     val finalBlock = {
       if (generateCCode) {
         // Note this is DCE block because some optimziations break with partially evaluated
-        val cBlock = CTransformersPipeline(context, dceBlock)
+        val cBlock = CTransformersPipeline(context, partiallyEvaluatedBlock)
         val dceC = new DCECLang(context)
         dceC.optimize(cBlock)
       } else partiallyEvaluatedBlock
