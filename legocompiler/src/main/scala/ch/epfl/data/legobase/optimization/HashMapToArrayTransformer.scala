@@ -147,7 +147,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
     if (tp.name.startsWith("HashMap")) {
       if (tp.typeArguments(1).typeArguments.size != 0) typeArray(tp.typeArguments(1).typeArguments(0))
       else typeArray(tp.typeArguments(1))
-    } else if (tp.name.contains("ArrayBuffer")) { System.out.println(tp); typePardisVariable(tp.typeArguments(0)) }
+    } else if (tp.name.contains("ArrayBuffer")) typePardisVariable(tp.typeArguments(0))
     else super.transformType[T]
   }).asInstanceOf[PardisType[Any]]
 

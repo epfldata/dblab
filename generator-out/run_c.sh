@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SF=0.1
-NUMRUNS=2
+NUMRUNS=1
 VERBOSE=true
 
 TMPFILE="tmpfile.txt"
