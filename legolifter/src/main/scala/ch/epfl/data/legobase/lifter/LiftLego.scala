@@ -43,7 +43,7 @@ object LiftLego extends PardisLifter {
       al.autoLift[queryengine.TPCHRelations.PARTRecord](custom),
       al.autoLift[queryengine.TPCHRelations.CUSTOMERRecord](custom),
       al.autoLift[queryengine.TPCHRelations.ORDERSRecord](custom),
-      al.autoLift[storagemanager.Loader](custom),
+      // al.autoLift[storagemanager.Loader](custom),
       al.autoLift[NextContainer[_]](custom),
       al.autoLift[NextKeyContainer[_, _]](custom),
       al.autoLift[storagemanager.K2DBScanner](custom.copy(excludedFields = List(CMethod("br"), CMethod("sdf")))),
