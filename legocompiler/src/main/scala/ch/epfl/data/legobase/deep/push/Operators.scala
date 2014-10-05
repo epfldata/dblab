@@ -2396,4 +2396,314 @@ trait LeftOuterJoinOpImplementations { this: DeepDSL =>
   }
 }
 trait LeftOuterJoinOpComponent extends LeftOuterJoinOpOps with LeftOuterJoinOpImplicits { this: DeepDSL => }
+trait OperatorDynamicDispatch extends OperatorComponent { this: DeepDSL =>
+  override def operatorOpen[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = self match {
+    case Def(node: ScanOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ScanOpNew[T1]]
+      scanOpOpen[T1](self.asInstanceOf[Rep[ScanOp[T1]]])(newNode.typeA)
+    case Def(node: PrintOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[PrintOpNew[T1]]
+      printOpOpen[T1](self.asInstanceOf[Rep[PrintOp[T1]]])(newNode.typeA)
+    case Def(node: SelectOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SelectOpNew[T1]]
+      selectOpOpen[T1](self.asInstanceOf[Rep[SelectOp[T1]]])(newNode.typeA)
+    case Def(node: AggOpNew[_, _]) =>
+      type T1 = Any
+      type T2 = Any
+      val newNode = node.asInstanceOf[AggOpNew[T1, T2]]
+      aggOpOpen[T1, T2](self.asInstanceOf[Rep[AggOp[T1, T2]]])(newNode.typeA, newNode.typeB)
+    case Def(node: MapOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[MapOpNew[T1]]
+      mapOpOpen[T1](self.asInstanceOf[Rep[MapOp[T1]]])(newNode.typeA)
+    case Def(node: SortOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SortOpNew[T1]]
+      sortOpOpen[T1](self.asInstanceOf[Rep[SortOp[T1]]])(newNode.typeA)
+    case Def(node: HashJoinOpNew1[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew1[T1, T2, T3]]
+      hashJoinOpOpen[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: HashJoinOpNew2[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew2[T1, T2, T3]]
+      hashJoinOpOpen[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: WindowOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[WindowOpNew[T1, T2, T3]]
+      windowOpOpen[T1, T2, T3](self.asInstanceOf[Rep[WindowOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: LeftHashSemiJoinOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftHashSemiJoinOpNew[T1, T2, T3]]
+      leftHashSemiJoinOpOpen[T1, T2, T3](self.asInstanceOf[Rep[LeftHashSemiJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: NestedLoopsJoinOpNew[_, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      val newNode = node.asInstanceOf[NestedLoopsJoinOpNew[T1, T2]]
+      nestedLoopsJoinOpOpen[T1, T2](self.asInstanceOf[Rep[NestedLoopsJoinOp[T1, T2]]])(newNode.typeA, newNode.typeB)
+    case Def(node: SubquerySingleResultNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SubquerySingleResultNew[T1]]
+      subquerySingleResultOpen[T1](self.asInstanceOf[Rep[SubquerySingleResult[T1]]])(newNode.typeA)
+    case Def(node: HashJoinAntiNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinAntiNew[T1, T2, T3]]
+      hashJoinAntiOpen[T1, T2, T3](self.asInstanceOf[Rep[HashJoinAnti[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: ViewOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ViewOpNew[T1]]
+      viewOpOpen[T1](self.asInstanceOf[Rep[ViewOp[T1]]])(newNode.typeA, newNode.evidence$1)
+    case Def(node: LeftOuterJoinOpNew[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftOuterJoinOpNew[T1, T2, T3]]
+      leftOuterJoinOpOpen[T1, T2, T3](self.asInstanceOf[Rep[LeftOuterJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC, newNode.evidence$2)
+    case _ => super.operatorOpen[A](self)(typeA)
+  }
+  override def operatorNext[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = self match {
+    case Def(node: ScanOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ScanOpNew[T1]]
+      scanOpNext[T1](self.asInstanceOf[Rep[ScanOp[T1]]])(newNode.typeA)
+    case Def(node: PrintOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[PrintOpNew[T1]]
+      printOpNext[T1](self.asInstanceOf[Rep[PrintOp[T1]]])(newNode.typeA)
+    case Def(node: SelectOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SelectOpNew[T1]]
+      selectOpNext[T1](self.asInstanceOf[Rep[SelectOp[T1]]])(newNode.typeA)
+    case Def(node: AggOpNew[_, _]) =>
+      type T1 = Any
+      type T2 = Any
+      val newNode = node.asInstanceOf[AggOpNew[T1, T2]]
+      aggOpNext[T1, T2](self.asInstanceOf[Rep[AggOp[T1, T2]]])(newNode.typeA, newNode.typeB)
+    case Def(node: MapOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[MapOpNew[T1]]
+      mapOpNext[T1](self.asInstanceOf[Rep[MapOp[T1]]])(newNode.typeA)
+    case Def(node: SortOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SortOpNew[T1]]
+      sortOpNext[T1](self.asInstanceOf[Rep[SortOp[T1]]])(newNode.typeA)
+    case Def(node: HashJoinOpNew1[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew1[T1, T2, T3]]
+      hashJoinOpNext[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: HashJoinOpNew2[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew2[T1, T2, T3]]
+      hashJoinOpNext[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: WindowOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[WindowOpNew[T1, T2, T3]]
+      windowOpNext[T1, T2, T3](self.asInstanceOf[Rep[WindowOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: LeftHashSemiJoinOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftHashSemiJoinOpNew[T1, T2, T3]]
+      leftHashSemiJoinOpNext[T1, T2, T3](self.asInstanceOf[Rep[LeftHashSemiJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: NestedLoopsJoinOpNew[_, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      val newNode = node.asInstanceOf[NestedLoopsJoinOpNew[T1, T2]]
+      nestedLoopsJoinOpNext[T1, T2](self.asInstanceOf[Rep[NestedLoopsJoinOp[T1, T2]]])(newNode.typeA, newNode.typeB)
+    case Def(node: SubquerySingleResultNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SubquerySingleResultNew[T1]]
+      subquerySingleResultNext[T1](self.asInstanceOf[Rep[SubquerySingleResult[T1]]])(newNode.typeA)
+    case Def(node: HashJoinAntiNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinAntiNew[T1, T2, T3]]
+      hashJoinAntiNext[T1, T2, T3](self.asInstanceOf[Rep[HashJoinAnti[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: ViewOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ViewOpNew[T1]]
+      viewOpNext[T1](self.asInstanceOf[Rep[ViewOp[T1]]])(newNode.typeA, newNode.evidence$1)
+    case Def(node: LeftOuterJoinOpNew[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftOuterJoinOpNew[T1, T2, T3]]
+      leftOuterJoinOpNext[T1, T2, T3](self.asInstanceOf[Rep[LeftOuterJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC, newNode.evidence$2)
+    case _ => super.operatorNext[A](self)(typeA)
+  }
+  override def operatorReset[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = self match {
+    case Def(node: ScanOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ScanOpNew[T1]]
+      scanOpReset[T1](self.asInstanceOf[Rep[ScanOp[T1]]])(newNode.typeA)
+    case Def(node: PrintOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[PrintOpNew[T1]]
+      printOpReset[T1](self.asInstanceOf[Rep[PrintOp[T1]]])(newNode.typeA)
+    case Def(node: SelectOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SelectOpNew[T1]]
+      selectOpReset[T1](self.asInstanceOf[Rep[SelectOp[T1]]])(newNode.typeA)
+    case Def(node: AggOpNew[_, _]) =>
+      type T1 = Any
+      type T2 = Any
+      val newNode = node.asInstanceOf[AggOpNew[T1, T2]]
+      aggOpReset[T1, T2](self.asInstanceOf[Rep[AggOp[T1, T2]]])(newNode.typeA, newNode.typeB)
+    case Def(node: MapOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[MapOpNew[T1]]
+      mapOpReset[T1](self.asInstanceOf[Rep[MapOp[T1]]])(newNode.typeA)
+    case Def(node: SortOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SortOpNew[T1]]
+      sortOpReset[T1](self.asInstanceOf[Rep[SortOp[T1]]])(newNode.typeA)
+    case Def(node: HashJoinOpNew1[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew1[T1, T2, T3]]
+      hashJoinOpReset[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: HashJoinOpNew2[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew2[T1, T2, T3]]
+      hashJoinOpReset[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: WindowOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[WindowOpNew[T1, T2, T3]]
+      windowOpReset[T1, T2, T3](self.asInstanceOf[Rep[WindowOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: LeftHashSemiJoinOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftHashSemiJoinOpNew[T1, T2, T3]]
+      leftHashSemiJoinOpReset[T1, T2, T3](self.asInstanceOf[Rep[LeftHashSemiJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: NestedLoopsJoinOpNew[_, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      val newNode = node.asInstanceOf[NestedLoopsJoinOpNew[T1, T2]]
+      nestedLoopsJoinOpReset[T1, T2](self.asInstanceOf[Rep[NestedLoopsJoinOp[T1, T2]]])(newNode.typeA, newNode.typeB)
+    case Def(node: SubquerySingleResultNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SubquerySingleResultNew[T1]]
+      subquerySingleResultReset[T1](self.asInstanceOf[Rep[SubquerySingleResult[T1]]])(newNode.typeA)
+    case Def(node: HashJoinAntiNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinAntiNew[T1, T2, T3]]
+      hashJoinAntiReset[T1, T2, T3](self.asInstanceOf[Rep[HashJoinAnti[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: ViewOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ViewOpNew[T1]]
+      viewOpReset[T1](self.asInstanceOf[Rep[ViewOp[T1]]])(newNode.typeA, newNode.evidence$1)
+    case Def(node: LeftOuterJoinOpNew[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftOuterJoinOpNew[T1, T2, T3]]
+      leftOuterJoinOpReset[T1, T2, T3](self.asInstanceOf[Rep[LeftOuterJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC, newNode.evidence$2)
+    case _ => super.operatorReset[A](self)(typeA)
+  }
+  override def operatorConsume[A](self: Rep[Operator[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = self match {
+    case Def(node: ScanOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ScanOpNew[T1]]
+      scanOpConsume[T1](self.asInstanceOf[Rep[ScanOp[T1]]], tuple)(newNode.typeA)
+    case Def(node: PrintOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[PrintOpNew[T1]]
+      printOpConsume[T1](self.asInstanceOf[Rep[PrintOp[T1]]], tuple)(newNode.typeA)
+    case Def(node: SelectOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SelectOpNew[T1]]
+      selectOpConsume[T1](self.asInstanceOf[Rep[SelectOp[T1]]], tuple)(newNode.typeA)
+    case Def(node: AggOpNew[_, _]) =>
+      type T1 = Any
+      type T2 = Any
+      val newNode = node.asInstanceOf[AggOpNew[T1, T2]]
+      aggOpConsume[T1, T2](self.asInstanceOf[Rep[AggOp[T1, T2]]], tuple)(newNode.typeA, newNode.typeB)
+    case Def(node: MapOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[MapOpNew[T1]]
+      mapOpConsume[T1](self.asInstanceOf[Rep[MapOp[T1]]], tuple)(newNode.typeA)
+    case Def(node: SortOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SortOpNew[T1]]
+      sortOpConsume[T1](self.asInstanceOf[Rep[SortOp[T1]]], tuple)(newNode.typeA)
+    case Def(node: HashJoinOpNew1[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew1[T1, T2, T3]]
+      hashJoinOpConsume[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]], tuple)(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: HashJoinOpNew2[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew2[T1, T2, T3]]
+      hashJoinOpConsume[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]], tuple)(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: WindowOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[WindowOpNew[T1, T2, T3]]
+      windowOpConsume[T1, T2, T3](self.asInstanceOf[Rep[WindowOp[T1, T2, T3]]], tuple)(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: LeftHashSemiJoinOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftHashSemiJoinOpNew[T1, T2, T3]]
+      leftHashSemiJoinOpConsume[T1, T2, T3](self.asInstanceOf[Rep[LeftHashSemiJoinOp[T1, T2, T3]]], tuple)(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: NestedLoopsJoinOpNew[_, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      val newNode = node.asInstanceOf[NestedLoopsJoinOpNew[T1, T2]]
+      nestedLoopsJoinOpConsume[T1, T2](self.asInstanceOf[Rep[NestedLoopsJoinOp[T1, T2]]], tuple)(newNode.typeA, newNode.typeB)
+    case Def(node: SubquerySingleResultNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SubquerySingleResultNew[T1]]
+      subquerySingleResultConsume[T1](self.asInstanceOf[Rep[SubquerySingleResult[T1]]], tuple)(newNode.typeA)
+    case Def(node: HashJoinAntiNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinAntiNew[T1, T2, T3]]
+      hashJoinAntiConsume[T1, T2, T3](self.asInstanceOf[Rep[HashJoinAnti[T1, T2, T3]]], tuple)(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: ViewOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ViewOpNew[T1]]
+      viewOpConsume[T1](self.asInstanceOf[Rep[ViewOp[T1]]], tuple)(newNode.typeA, newNode.evidence$1)
+    case Def(node: LeftOuterJoinOpNew[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftOuterJoinOpNew[T1, T2, T3]]
+      leftOuterJoinOpConsume[T1, T2, T3](self.asInstanceOf[Rep[LeftOuterJoinOp[T1, T2, T3]]], tuple)(newNode.typeA, newNode.typeB, newNode.typeC, newNode.evidence$2)
+    case _ => super.operatorConsume[A](self, tuple)(typeA)
+  }
+}
 trait OperatorsComponent extends OperatorComponent with ScanOpComponent with PrintOpComponent with SelectOpComponent with AggOpComponent with MapOpComponent with SortOpComponent with HashJoinOpComponent with WindowOpComponent with LeftHashSemiJoinOpComponent with NestedLoopsJoinOpComponent with SubquerySingleResultComponent with HashJoinAntiComponent with ViewOpComponent with LeftOuterJoinOpComponent { self: DeepDSL => }
