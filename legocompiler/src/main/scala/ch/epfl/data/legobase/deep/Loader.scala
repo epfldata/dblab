@@ -226,9 +226,10 @@ trait LoaderImplementations { this: DeepDSL =>
     }
   }
 }
-trait LoaderPartialEvaluation extends LoaderComponent { this: DeepDSL =>
+trait LoaderPartialEvaluation extends LoaderComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
 
+  // Mutable field inlining 
   // Pure function partial evaluation
 }
 trait LoaderComponent extends LoaderOps with LoaderImplicits { this: DeepDSL => }
