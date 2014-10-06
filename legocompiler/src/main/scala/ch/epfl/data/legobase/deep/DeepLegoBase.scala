@@ -63,6 +63,19 @@ trait GroupByClassImplicits {
 trait GroupByClassImplementations {
 
 }
+trait GroupByClassPartialEvaluation extends GroupByClassComponent {
+  // Immutable field inlining 
+  override def groupByClass_Field_L_LINESTATUS(self: Rep[GroupByClass]): Rep[Char] = self match {
+    case Def(node: GroupByClassNew) => node.L_LINESTATUS
+    case _                          => super.groupByClass_Field_L_LINESTATUS(self)
+  }
+  override def groupByClass_Field_L_RETURNFLAG(self: Rep[GroupByClass]): Rep[Char] = self match {
+    case Def(node: GroupByClassNew) => node.L_RETURNFLAG
+    case _                          => super.groupByClass_Field_L_RETURNFLAG(self)
+  }
+
+  // Pure function partial evaluation
+}
 trait GroupByClassComponent extends GroupByClassOps with GroupByClassImplicits {}
 
 trait Q3GRPRecordOps extends Base with OptimalStringOps {
@@ -126,6 +139,23 @@ trait Q3GRPRecordImplicits {
 }
 trait Q3GRPRecordImplementations {
 
+}
+trait Q3GRPRecordPartialEvaluation extends Q3GRPRecordComponent {
+  // Immutable field inlining 
+  override def q3GRPRecord_Field_O_SHIPPRIORITY(self: Rep[Q3GRPRecord]): Rep[Int] = self match {
+    case Def(node: Q3GRPRecordNew) => node.O_SHIPPRIORITY
+    case _                         => super.q3GRPRecord_Field_O_SHIPPRIORITY(self)
+  }
+  override def q3GRPRecord_Field_O_ORDERDATE(self: Rep[Q3GRPRecord]): Rep[Int] = self match {
+    case Def(node: Q3GRPRecordNew) => node.O_ORDERDATE
+    case _                         => super.q3GRPRecord_Field_O_ORDERDATE(self)
+  }
+  override def q3GRPRecord_Field_L_ORDERKEY(self: Rep[Q3GRPRecord]): Rep[Int] = self match {
+    case Def(node: Q3GRPRecordNew) => node.L_ORDERKEY
+    case _                         => super.q3GRPRecord_Field_L_ORDERKEY(self)
+  }
+
+  // Pure function partial evaluation
 }
 trait Q3GRPRecordComponent extends Q3GRPRecordOps with Q3GRPRecordImplicits {}
 
@@ -191,6 +221,23 @@ trait Q7GRPRecordImplicits {
 trait Q7GRPRecordImplementations {
 
 }
+trait Q7GRPRecordPartialEvaluation extends Q7GRPRecordComponent {
+  // Immutable field inlining 
+  override def q7GRPRecord_Field_L_YEAR(self: Rep[Q7GRPRecord]): Rep[Int] = self match {
+    case Def(node: Q7GRPRecordNew) => node.L_YEAR
+    case _                         => super.q7GRPRecord_Field_L_YEAR(self)
+  }
+  override def q7GRPRecord_Field_CUST_NATION(self: Rep[Q7GRPRecord]): Rep[OptimalString] = self match {
+    case Def(node: Q7GRPRecordNew) => node.CUST_NATION
+    case _                         => super.q7GRPRecord_Field_CUST_NATION(self)
+  }
+  override def q7GRPRecord_Field_SUPP_NATION(self: Rep[Q7GRPRecord]): Rep[OptimalString] = self match {
+    case Def(node: Q7GRPRecordNew) => node.SUPP_NATION
+    case _                         => super.q7GRPRecord_Field_SUPP_NATION(self)
+  }
+
+  // Pure function partial evaluation
+}
 trait Q7GRPRecordComponent extends Q7GRPRecordOps with Q7GRPRecordImplicits {}
 
 trait Q9GRPRecordOps extends Base with OptimalStringOps {
@@ -246,6 +293,19 @@ trait Q9GRPRecordImplicits {
 }
 trait Q9GRPRecordImplementations {
 
+}
+trait Q9GRPRecordPartialEvaluation extends Q9GRPRecordComponent {
+  // Immutable field inlining 
+  override def q9GRPRecord_Field_O_YEAR(self: Rep[Q9GRPRecord]): Rep[Int] = self match {
+    case Def(node: Q9GRPRecordNew) => node.O_YEAR
+    case _                         => super.q9GRPRecord_Field_O_YEAR(self)
+  }
+  override def q9GRPRecord_Field_NATION(self: Rep[Q9GRPRecord]): Rep[OptimalString] = self match {
+    case Def(node: Q9GRPRecordNew) => node.NATION
+    case _                         => super.q9GRPRecord_Field_NATION(self)
+  }
+
+  // Pure function partial evaluation
 }
 trait Q9GRPRecordComponent extends Q9GRPRecordOps with Q9GRPRecordImplicits {}
 
@@ -343,6 +403,39 @@ trait Q10GRPRecordImplicits {
 trait Q10GRPRecordImplementations {
 
 }
+trait Q10GRPRecordPartialEvaluation extends Q10GRPRecordComponent {
+  // Immutable field inlining 
+  override def q10GRPRecord_Field_C_COMMENT(self: Rep[Q10GRPRecord]): Rep[OptimalString] = self match {
+    case Def(node: Q10GRPRecordNew) => node.C_COMMENT
+    case _                          => super.q10GRPRecord_Field_C_COMMENT(self)
+  }
+  override def q10GRPRecord_Field_C_ADDRESS(self: Rep[Q10GRPRecord]): Rep[OptimalString] = self match {
+    case Def(node: Q10GRPRecordNew) => node.C_ADDRESS
+    case _                          => super.q10GRPRecord_Field_C_ADDRESS(self)
+  }
+  override def q10GRPRecord_Field_N_NAME(self: Rep[Q10GRPRecord]): Rep[OptimalString] = self match {
+    case Def(node: Q10GRPRecordNew) => node.N_NAME
+    case _                          => super.q10GRPRecord_Field_N_NAME(self)
+  }
+  override def q10GRPRecord_Field_C_PHONE(self: Rep[Q10GRPRecord]): Rep[OptimalString] = self match {
+    case Def(node: Q10GRPRecordNew) => node.C_PHONE
+    case _                          => super.q10GRPRecord_Field_C_PHONE(self)
+  }
+  override def q10GRPRecord_Field_C_ACCTBAL(self: Rep[Q10GRPRecord]): Rep[Double] = self match {
+    case Def(node: Q10GRPRecordNew) => node.C_ACCTBAL
+    case _                          => super.q10GRPRecord_Field_C_ACCTBAL(self)
+  }
+  override def q10GRPRecord_Field_C_NAME(self: Rep[Q10GRPRecord]): Rep[OptimalString] = self match {
+    case Def(node: Q10GRPRecordNew) => node.C_NAME
+    case _                          => super.q10GRPRecord_Field_C_NAME(self)
+  }
+  override def q10GRPRecord_Field_C_CUSTKEY(self: Rep[Q10GRPRecord]): Rep[Int] = self match {
+    case Def(node: Q10GRPRecordNew) => node.C_CUSTKEY
+    case _                          => super.q10GRPRecord_Field_C_CUSTKEY(self)
+  }
+
+  // Pure function partial evaluation
+}
 trait Q10GRPRecordComponent extends Q10GRPRecordOps with Q10GRPRecordImplicits {}
 
 trait Q16GRPRecord1Ops extends Base with OptimalStringOps {
@@ -415,6 +508,27 @@ trait Q16GRPRecord1Implicits {
 trait Q16GRPRecord1Implementations {
 
 }
+trait Q16GRPRecord1PartialEvaluation extends Q16GRPRecord1Component {
+  // Immutable field inlining 
+  override def q16GRPRecord1_Field_PS_SUPPKEY(self: Rep[Q16GRPRecord1]): Rep[Int] = self match {
+    case Def(node: Q16GRPRecord1New) => node.PS_SUPPKEY
+    case _                           => super.q16GRPRecord1_Field_PS_SUPPKEY(self)
+  }
+  override def q16GRPRecord1_Field_P_SIZE(self: Rep[Q16GRPRecord1]): Rep[Int] = self match {
+    case Def(node: Q16GRPRecord1New) => node.P_SIZE
+    case _                           => super.q16GRPRecord1_Field_P_SIZE(self)
+  }
+  override def q16GRPRecord1_Field_P_TYPE(self: Rep[Q16GRPRecord1]): Rep[OptimalString] = self match {
+    case Def(node: Q16GRPRecord1New) => node.P_TYPE
+    case _                           => super.q16GRPRecord1_Field_P_TYPE(self)
+  }
+  override def q16GRPRecord1_Field_P_BRAND(self: Rep[Q16GRPRecord1]): Rep[OptimalString] = self match {
+    case Def(node: Q16GRPRecord1New) => node.P_BRAND
+    case _                           => super.q16GRPRecord1_Field_P_BRAND(self)
+  }
+
+  // Pure function partial evaluation
+}
 trait Q16GRPRecord1Component extends Q16GRPRecord1Ops with Q16GRPRecord1Implicits {}
 
 trait Q16GRPRecord2Ops extends Base with OptimalStringOps {
@@ -478,6 +592,23 @@ trait Q16GRPRecord2Implicits {
 }
 trait Q16GRPRecord2Implementations {
 
+}
+trait Q16GRPRecord2PartialEvaluation extends Q16GRPRecord2Component {
+  // Immutable field inlining 
+  override def q16GRPRecord2_Field_P_SIZE(self: Rep[Q16GRPRecord2]): Rep[Int] = self match {
+    case Def(node: Q16GRPRecord2New) => node.P_SIZE
+    case _                           => super.q16GRPRecord2_Field_P_SIZE(self)
+  }
+  override def q16GRPRecord2_Field_P_TYPE(self: Rep[Q16GRPRecord2]): Rep[OptimalString] = self match {
+    case Def(node: Q16GRPRecord2New) => node.P_TYPE
+    case _                           => super.q16GRPRecord2_Field_P_TYPE(self)
+  }
+  override def q16GRPRecord2_Field_P_BRAND(self: Rep[Q16GRPRecord2]): Rep[OptimalString] = self match {
+    case Def(node: Q16GRPRecord2New) => node.P_BRAND
+    case _                           => super.q16GRPRecord2_Field_P_BRAND(self)
+  }
+
+  // Pure function partial evaluation
 }
 trait Q16GRPRecord2Component extends Q16GRPRecord2Ops with Q16GRPRecord2Implicits {}
 
@@ -559,6 +690,31 @@ trait Q18GRPRecordImplicits {
 trait Q18GRPRecordImplementations {
 
 }
+trait Q18GRPRecordPartialEvaluation extends Q18GRPRecordComponent {
+  // Immutable field inlining 
+  override def q18GRPRecord_Field_O_TOTALPRICE(self: Rep[Q18GRPRecord]): Rep[Double] = self match {
+    case Def(node: Q18GRPRecordNew) => node.O_TOTALPRICE
+    case _                          => super.q18GRPRecord_Field_O_TOTALPRICE(self)
+  }
+  override def q18GRPRecord_Field_O_ORDERDATE(self: Rep[Q18GRPRecord]): Rep[Int] = self match {
+    case Def(node: Q18GRPRecordNew) => node.O_ORDERDATE
+    case _                          => super.q18GRPRecord_Field_O_ORDERDATE(self)
+  }
+  override def q18GRPRecord_Field_O_ORDERKEY(self: Rep[Q18GRPRecord]): Rep[Int] = self match {
+    case Def(node: Q18GRPRecordNew) => node.O_ORDERKEY
+    case _                          => super.q18GRPRecord_Field_O_ORDERKEY(self)
+  }
+  override def q18GRPRecord_Field_C_CUSTKEY(self: Rep[Q18GRPRecord]): Rep[Int] = self match {
+    case Def(node: Q18GRPRecordNew) => node.C_CUSTKEY
+    case _                          => super.q18GRPRecord_Field_C_CUSTKEY(self)
+  }
+  override def q18GRPRecord_Field_C_NAME(self: Rep[Q18GRPRecord]): Rep[OptimalString] = self match {
+    case Def(node: Q18GRPRecordNew) => node.C_NAME
+    case _                          => super.q18GRPRecord_Field_C_NAME(self)
+  }
+
+  // Pure function partial evaluation
+}
 trait Q18GRPRecordComponent extends Q18GRPRecordOps with Q18GRPRecordImplicits {}
 
 trait Q20GRPRecordOps extends Base with OptimalStringOps {
@@ -623,6 +779,23 @@ trait Q20GRPRecordImplicits {
 trait Q20GRPRecordImplementations {
 
 }
+trait Q20GRPRecordPartialEvaluation extends Q20GRPRecordComponent {
+  // Immutable field inlining 
+  override def q20GRPRecord_Field_PS_AVAILQTY(self: Rep[Q20GRPRecord]): Rep[Int] = self match {
+    case Def(node: Q20GRPRecordNew) => node.PS_AVAILQTY
+    case _                          => super.q20GRPRecord_Field_PS_AVAILQTY(self)
+  }
+  override def q20GRPRecord_Field_PS_SUPPKEY(self: Rep[Q20GRPRecord]): Rep[Int] = self match {
+    case Def(node: Q20GRPRecordNew) => node.PS_SUPPKEY
+    case _                          => super.q20GRPRecord_Field_PS_SUPPKEY(self)
+  }
+  override def q20GRPRecord_Field_PS_PARTKEY(self: Rep[Q20GRPRecord]): Rep[Int] = self match {
+    case Def(node: Q20GRPRecordNew) => node.PS_PARTKEY
+    case _                          => super.q20GRPRecord_Field_PS_PARTKEY(self)
+  }
+
+  // Pure function partial evaluation
+}
 trait Q20GRPRecordComponent extends Q20GRPRecordOps with Q20GRPRecordImplicits {}
 
 trait AGGRecordOps extends Base with OptimalStringOps {
@@ -679,6 +852,19 @@ trait AGGRecordImplicits {
 }
 trait AGGRecordImplementations {
 
+}
+trait AGGRecordPartialEvaluation extends AGGRecordComponent {
+  // Immutable field inlining 
+  override def aGGRecord_Field_Aggs[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]): Rep[Array[Double]] = self match {
+    case Def(node: AGGRecordNew[_]) => node.aggs
+    case _                          => super.aGGRecord_Field_Aggs[B](self)(typeB)
+  }
+  override def aGGRecord_Field_Key[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]): Rep[B] = self match {
+    case Def(node: AGGRecordNew[_]) => node.key
+    case _                          => super.aGGRecord_Field_Key[B](self)(typeB)
+  }
+
+  // Pure function partial evaluation
 }
 trait AGGRecordComponent extends AGGRecordOps with AGGRecordImplicits {}
 
@@ -741,6 +927,11 @@ trait GenericEngineImplicits {
 }
 trait GenericEngineImplementations {
 
+}
+trait GenericEnginePartialEvaluation extends GenericEngineComponent {
+  // Immutable field inlining 
+
+  // Pure function partial evaluation
 }
 trait GenericEngineComponent extends GenericEngineOps with GenericEngineImplicits {}
 
@@ -910,6 +1101,75 @@ trait LINEITEMRecordImplicits {
 trait LINEITEMRecordImplementations {
 
 }
+trait LINEITEMRecordPartialEvaluation extends LINEITEMRecordComponent {
+  // Immutable field inlining 
+  override def lINEITEMRecord_Field_L_COMMENT(self: Rep[LINEITEMRecord]): Rep[OptimalString] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_COMMENT
+    case _                            => super.lINEITEMRecord_Field_L_COMMENT(self)
+  }
+  override def lINEITEMRecord_Field_L_SHIPMODE(self: Rep[LINEITEMRecord]): Rep[OptimalString] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_SHIPMODE
+    case _                            => super.lINEITEMRecord_Field_L_SHIPMODE(self)
+  }
+  override def lINEITEMRecord_Field_L_SHIPINSTRUCT(self: Rep[LINEITEMRecord]): Rep[OptimalString] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_SHIPINSTRUCT
+    case _                            => super.lINEITEMRecord_Field_L_SHIPINSTRUCT(self)
+  }
+  override def lINEITEMRecord_Field_L_RECEIPTDATE(self: Rep[LINEITEMRecord]): Rep[Int] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_RECEIPTDATE
+    case _                            => super.lINEITEMRecord_Field_L_RECEIPTDATE(self)
+  }
+  override def lINEITEMRecord_Field_L_COMMITDATE(self: Rep[LINEITEMRecord]): Rep[Int] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_COMMITDATE
+    case _                            => super.lINEITEMRecord_Field_L_COMMITDATE(self)
+  }
+  override def lINEITEMRecord_Field_L_SHIPDATE(self: Rep[LINEITEMRecord]): Rep[Int] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_SHIPDATE
+    case _                            => super.lINEITEMRecord_Field_L_SHIPDATE(self)
+  }
+  override def lINEITEMRecord_Field_L_LINESTATUS(self: Rep[LINEITEMRecord]): Rep[Char] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_LINESTATUS
+    case _                            => super.lINEITEMRecord_Field_L_LINESTATUS(self)
+  }
+  override def lINEITEMRecord_Field_L_RETURNFLAG(self: Rep[LINEITEMRecord]): Rep[Char] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_RETURNFLAG
+    case _                            => super.lINEITEMRecord_Field_L_RETURNFLAG(self)
+  }
+  override def lINEITEMRecord_Field_L_TAX(self: Rep[LINEITEMRecord]): Rep[Double] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_TAX
+    case _                            => super.lINEITEMRecord_Field_L_TAX(self)
+  }
+  override def lINEITEMRecord_Field_L_DISCOUNT(self: Rep[LINEITEMRecord]): Rep[Double] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_DISCOUNT
+    case _                            => super.lINEITEMRecord_Field_L_DISCOUNT(self)
+  }
+  override def lINEITEMRecord_Field_L_EXTENDEDPRICE(self: Rep[LINEITEMRecord]): Rep[Double] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_EXTENDEDPRICE
+    case _                            => super.lINEITEMRecord_Field_L_EXTENDEDPRICE(self)
+  }
+  override def lINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]): Rep[Double] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_QUANTITY
+    case _                            => super.lINEITEMRecord_Field_L_QUANTITY(self)
+  }
+  override def lINEITEMRecord_Field_L_LINENUMBER(self: Rep[LINEITEMRecord]): Rep[Int] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_LINENUMBER
+    case _                            => super.lINEITEMRecord_Field_L_LINENUMBER(self)
+  }
+  override def lINEITEMRecord_Field_L_SUPPKEY(self: Rep[LINEITEMRecord]): Rep[Int] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_SUPPKEY
+    case _                            => super.lINEITEMRecord_Field_L_SUPPKEY(self)
+  }
+  override def lINEITEMRecord_Field_L_PARTKEY(self: Rep[LINEITEMRecord]): Rep[Int] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_PARTKEY
+    case _                            => super.lINEITEMRecord_Field_L_PARTKEY(self)
+  }
+  override def lINEITEMRecord_Field_L_ORDERKEY(self: Rep[LINEITEMRecord]): Rep[Int] = self match {
+    case Def(node: LINEITEMRecordNew) => node.L_ORDERKEY
+    case _                            => super.lINEITEMRecord_Field_L_ORDERKEY(self)
+  }
+
+  // Pure function partial evaluation
+}
 trait LINEITEMRecordComponent extends LINEITEMRecordOps with LINEITEMRecordImplicits {}
 
 trait SUPPLIERRecordOps extends Base with OptimalStringOps {
@@ -1006,6 +1266,39 @@ trait SUPPLIERRecordImplicits {
 trait SUPPLIERRecordImplementations {
 
 }
+trait SUPPLIERRecordPartialEvaluation extends SUPPLIERRecordComponent {
+  // Immutable field inlining 
+  override def sUPPLIERRecord_Field_S_COMMENT(self: Rep[SUPPLIERRecord]): Rep[OptimalString] = self match {
+    case Def(node: SUPPLIERRecordNew) => node.S_COMMENT
+    case _                            => super.sUPPLIERRecord_Field_S_COMMENT(self)
+  }
+  override def sUPPLIERRecord_Field_S_ACCTBAL(self: Rep[SUPPLIERRecord]): Rep[Double] = self match {
+    case Def(node: SUPPLIERRecordNew) => node.S_ACCTBAL
+    case _                            => super.sUPPLIERRecord_Field_S_ACCTBAL(self)
+  }
+  override def sUPPLIERRecord_Field_S_PHONE(self: Rep[SUPPLIERRecord]): Rep[OptimalString] = self match {
+    case Def(node: SUPPLIERRecordNew) => node.S_PHONE
+    case _                            => super.sUPPLIERRecord_Field_S_PHONE(self)
+  }
+  override def sUPPLIERRecord_Field_S_NATIONKEY(self: Rep[SUPPLIERRecord]): Rep[Int] = self match {
+    case Def(node: SUPPLIERRecordNew) => node.S_NATIONKEY
+    case _                            => super.sUPPLIERRecord_Field_S_NATIONKEY(self)
+  }
+  override def sUPPLIERRecord_Field_S_ADDRESS(self: Rep[SUPPLIERRecord]): Rep[OptimalString] = self match {
+    case Def(node: SUPPLIERRecordNew) => node.S_ADDRESS
+    case _                            => super.sUPPLIERRecord_Field_S_ADDRESS(self)
+  }
+  override def sUPPLIERRecord_Field_S_NAME(self: Rep[SUPPLIERRecord]): Rep[OptimalString] = self match {
+    case Def(node: SUPPLIERRecordNew) => node.S_NAME
+    case _                            => super.sUPPLIERRecord_Field_S_NAME(self)
+  }
+  override def sUPPLIERRecord_Field_S_SUPPKEY(self: Rep[SUPPLIERRecord]): Rep[Int] = self match {
+    case Def(node: SUPPLIERRecordNew) => node.S_SUPPKEY
+    case _                            => super.sUPPLIERRecord_Field_S_SUPPKEY(self)
+  }
+
+  // Pure function partial evaluation
+}
 trait SUPPLIERRecordComponent extends SUPPLIERRecordOps with SUPPLIERRecordImplicits {}
 
 trait PARTSUPPRecordOps extends Base with OptimalStringOps {
@@ -1086,6 +1379,31 @@ trait PARTSUPPRecordImplicits {
 trait PARTSUPPRecordImplementations {
 
 }
+trait PARTSUPPRecordPartialEvaluation extends PARTSUPPRecordComponent {
+  // Immutable field inlining 
+  override def pARTSUPPRecord_Field_PS_COMMENT(self: Rep[PARTSUPPRecord]): Rep[OptimalString] = self match {
+    case Def(node: PARTSUPPRecordNew) => node.PS_COMMENT
+    case _                            => super.pARTSUPPRecord_Field_PS_COMMENT(self)
+  }
+  override def pARTSUPPRecord_Field_PS_SUPPLYCOST(self: Rep[PARTSUPPRecord]): Rep[Double] = self match {
+    case Def(node: PARTSUPPRecordNew) => node.PS_SUPPLYCOST
+    case _                            => super.pARTSUPPRecord_Field_PS_SUPPLYCOST(self)
+  }
+  override def pARTSUPPRecord_Field_PS_AVAILQTY(self: Rep[PARTSUPPRecord]): Rep[Int] = self match {
+    case Def(node: PARTSUPPRecordNew) => node.PS_AVAILQTY
+    case _                            => super.pARTSUPPRecord_Field_PS_AVAILQTY(self)
+  }
+  override def pARTSUPPRecord_Field_PS_SUPPKEY(self: Rep[PARTSUPPRecord]): Rep[Int] = self match {
+    case Def(node: PARTSUPPRecordNew) => node.PS_SUPPKEY
+    case _                            => super.pARTSUPPRecord_Field_PS_SUPPKEY(self)
+  }
+  override def pARTSUPPRecord_Field_PS_PARTKEY(self: Rep[PARTSUPPRecord]): Rep[Int] = self match {
+    case Def(node: PARTSUPPRecordNew) => node.PS_PARTKEY
+    case _                            => super.pARTSUPPRecord_Field_PS_PARTKEY(self)
+  }
+
+  // Pure function partial evaluation
+}
 trait PARTSUPPRecordComponent extends PARTSUPPRecordOps with PARTSUPPRecordImplicits {}
 
 trait REGIONRecordOps extends Base with OptimalStringOps {
@@ -1149,6 +1467,23 @@ trait REGIONRecordImplicits {
 }
 trait REGIONRecordImplementations {
 
+}
+trait REGIONRecordPartialEvaluation extends REGIONRecordComponent {
+  // Immutable field inlining 
+  override def rEGIONRecord_Field_R_COMMENT(self: Rep[REGIONRecord]): Rep[OptimalString] = self match {
+    case Def(node: REGIONRecordNew) => node.R_COMMENT
+    case _                          => super.rEGIONRecord_Field_R_COMMENT(self)
+  }
+  override def rEGIONRecord_Field_R_NAME(self: Rep[REGIONRecord]): Rep[OptimalString] = self match {
+    case Def(node: REGIONRecordNew) => node.R_NAME
+    case _                          => super.rEGIONRecord_Field_R_NAME(self)
+  }
+  override def rEGIONRecord_Field_R_REGIONKEY(self: Rep[REGIONRecord]): Rep[Int] = self match {
+    case Def(node: REGIONRecordNew) => node.R_REGIONKEY
+    case _                          => super.rEGIONRecord_Field_R_REGIONKEY(self)
+  }
+
+  // Pure function partial evaluation
 }
 trait REGIONRecordComponent extends REGIONRecordOps with REGIONRecordImplicits {}
 
@@ -1221,6 +1556,27 @@ trait NATIONRecordImplicits {
 }
 trait NATIONRecordImplementations {
 
+}
+trait NATIONRecordPartialEvaluation extends NATIONRecordComponent {
+  // Immutable field inlining 
+  override def nATIONRecord_Field_N_COMMENT(self: Rep[NATIONRecord]): Rep[OptimalString] = self match {
+    case Def(node: NATIONRecordNew) => node.N_COMMENT
+    case _                          => super.nATIONRecord_Field_N_COMMENT(self)
+  }
+  override def nATIONRecord_Field_N_REGIONKEY(self: Rep[NATIONRecord]): Rep[Int] = self match {
+    case Def(node: NATIONRecordNew) => node.N_REGIONKEY
+    case _                          => super.nATIONRecord_Field_N_REGIONKEY(self)
+  }
+  override def nATIONRecord_Field_N_NAME(self: Rep[NATIONRecord]): Rep[OptimalString] = self match {
+    case Def(node: NATIONRecordNew) => node.N_NAME
+    case _                          => super.nATIONRecord_Field_N_NAME(self)
+  }
+  override def nATIONRecord_Field_N_NATIONKEY(self: Rep[NATIONRecord]): Rep[Int] = self match {
+    case Def(node: NATIONRecordNew) => node.N_NATIONKEY
+    case _                          => super.nATIONRecord_Field_N_NATIONKEY(self)
+  }
+
+  // Pure function partial evaluation
 }
 trait NATIONRecordComponent extends NATIONRecordOps with NATIONRecordImplicits {}
 
@@ -1334,6 +1690,47 @@ trait PARTRecordImplicits {
 trait PARTRecordImplementations {
 
 }
+trait PARTRecordPartialEvaluation extends PARTRecordComponent {
+  // Immutable field inlining 
+  override def pARTRecord_Field_P_COMMENT(self: Rep[PARTRecord]): Rep[OptimalString] = self match {
+    case Def(node: PARTRecordNew) => node.P_COMMENT
+    case _                        => super.pARTRecord_Field_P_COMMENT(self)
+  }
+  override def pARTRecord_Field_P_RETAILPRICE(self: Rep[PARTRecord]): Rep[Double] = self match {
+    case Def(node: PARTRecordNew) => node.P_RETAILPRICE
+    case _                        => super.pARTRecord_Field_P_RETAILPRICE(self)
+  }
+  override def pARTRecord_Field_P_CONTAINER(self: Rep[PARTRecord]): Rep[OptimalString] = self match {
+    case Def(node: PARTRecordNew) => node.P_CONTAINER
+    case _                        => super.pARTRecord_Field_P_CONTAINER(self)
+  }
+  override def pARTRecord_Field_P_SIZE(self: Rep[PARTRecord]): Rep[Int] = self match {
+    case Def(node: PARTRecordNew) => node.P_SIZE
+    case _                        => super.pARTRecord_Field_P_SIZE(self)
+  }
+  override def pARTRecord_Field_P_TYPE(self: Rep[PARTRecord]): Rep[OptimalString] = self match {
+    case Def(node: PARTRecordNew) => node.P_TYPE
+    case _                        => super.pARTRecord_Field_P_TYPE(self)
+  }
+  override def pARTRecord_Field_P_BRAND(self: Rep[PARTRecord]): Rep[OptimalString] = self match {
+    case Def(node: PARTRecordNew) => node.P_BRAND
+    case _                        => super.pARTRecord_Field_P_BRAND(self)
+  }
+  override def pARTRecord_Field_P_MFGR(self: Rep[PARTRecord]): Rep[OptimalString] = self match {
+    case Def(node: PARTRecordNew) => node.P_MFGR
+    case _                        => super.pARTRecord_Field_P_MFGR(self)
+  }
+  override def pARTRecord_Field_P_NAME(self: Rep[PARTRecord]): Rep[OptimalString] = self match {
+    case Def(node: PARTRecordNew) => node.P_NAME
+    case _                        => super.pARTRecord_Field_P_NAME(self)
+  }
+  override def pARTRecord_Field_P_PARTKEY(self: Rep[PARTRecord]): Rep[Int] = self match {
+    case Def(node: PARTRecordNew) => node.P_PARTKEY
+    case _                        => super.pARTRecord_Field_P_PARTKEY(self)
+  }
+
+  // Pure function partial evaluation
+}
 trait PARTRecordComponent extends PARTRecordOps with PARTRecordImplicits {}
 
 trait CUSTOMERRecordOps extends Base with OptimalStringOps {
@@ -1437,6 +1834,43 @@ trait CUSTOMERRecordImplicits {
 }
 trait CUSTOMERRecordImplementations {
 
+}
+trait CUSTOMERRecordPartialEvaluation extends CUSTOMERRecordComponent {
+  // Immutable field inlining 
+  override def cUSTOMERRecord_Field_C_COMMENT(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = self match {
+    case Def(node: CUSTOMERRecordNew) => node.C_COMMENT
+    case _                            => super.cUSTOMERRecord_Field_C_COMMENT(self)
+  }
+  override def cUSTOMERRecord_Field_C_MKTSEGMENT(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = self match {
+    case Def(node: CUSTOMERRecordNew) => node.C_MKTSEGMENT
+    case _                            => super.cUSTOMERRecord_Field_C_MKTSEGMENT(self)
+  }
+  override def cUSTOMERRecord_Field_C_ACCTBAL(self: Rep[CUSTOMERRecord]): Rep[Double] = self match {
+    case Def(node: CUSTOMERRecordNew) => node.C_ACCTBAL
+    case _                            => super.cUSTOMERRecord_Field_C_ACCTBAL(self)
+  }
+  override def cUSTOMERRecord_Field_C_PHONE(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = self match {
+    case Def(node: CUSTOMERRecordNew) => node.C_PHONE
+    case _                            => super.cUSTOMERRecord_Field_C_PHONE(self)
+  }
+  override def cUSTOMERRecord_Field_C_NATIONKEY(self: Rep[CUSTOMERRecord]): Rep[Int] = self match {
+    case Def(node: CUSTOMERRecordNew) => node.C_NATIONKEY
+    case _                            => super.cUSTOMERRecord_Field_C_NATIONKEY(self)
+  }
+  override def cUSTOMERRecord_Field_C_ADDRESS(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = self match {
+    case Def(node: CUSTOMERRecordNew) => node.C_ADDRESS
+    case _                            => super.cUSTOMERRecord_Field_C_ADDRESS(self)
+  }
+  override def cUSTOMERRecord_Field_C_NAME(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = self match {
+    case Def(node: CUSTOMERRecordNew) => node.C_NAME
+    case _                            => super.cUSTOMERRecord_Field_C_NAME(self)
+  }
+  override def cUSTOMERRecord_Field_C_CUSTKEY(self: Rep[CUSTOMERRecord]): Rep[Int] = self match {
+    case Def(node: CUSTOMERRecordNew) => node.C_CUSTKEY
+    case _                            => super.cUSTOMERRecord_Field_C_CUSTKEY(self)
+  }
+
+  // Pure function partial evaluation
 }
 trait CUSTOMERRecordComponent extends CUSTOMERRecordOps with CUSTOMERRecordImplicits {}
 
@@ -1550,6 +1984,47 @@ trait ORDERSRecordImplicits {
 trait ORDERSRecordImplementations {
 
 }
+trait ORDERSRecordPartialEvaluation extends ORDERSRecordComponent {
+  // Immutable field inlining 
+  override def oRDERSRecord_Field_O_COMMENT(self: Rep[ORDERSRecord]): Rep[OptimalString] = self match {
+    case Def(node: ORDERSRecordNew) => node.O_COMMENT
+    case _                          => super.oRDERSRecord_Field_O_COMMENT(self)
+  }
+  override def oRDERSRecord_Field_O_SHIPPRIORITY(self: Rep[ORDERSRecord]): Rep[Int] = self match {
+    case Def(node: ORDERSRecordNew) => node.O_SHIPPRIORITY
+    case _                          => super.oRDERSRecord_Field_O_SHIPPRIORITY(self)
+  }
+  override def oRDERSRecord_Field_O_CLERK(self: Rep[ORDERSRecord]): Rep[OptimalString] = self match {
+    case Def(node: ORDERSRecordNew) => node.O_CLERK
+    case _                          => super.oRDERSRecord_Field_O_CLERK(self)
+  }
+  override def oRDERSRecord_Field_O_ORDERPRIORITY(self: Rep[ORDERSRecord]): Rep[OptimalString] = self match {
+    case Def(node: ORDERSRecordNew) => node.O_ORDERPRIORITY
+    case _                          => super.oRDERSRecord_Field_O_ORDERPRIORITY(self)
+  }
+  override def oRDERSRecord_Field_O_ORDERDATE(self: Rep[ORDERSRecord]): Rep[Int] = self match {
+    case Def(node: ORDERSRecordNew) => node.O_ORDERDATE
+    case _                          => super.oRDERSRecord_Field_O_ORDERDATE(self)
+  }
+  override def oRDERSRecord_Field_O_TOTALPRICE(self: Rep[ORDERSRecord]): Rep[Double] = self match {
+    case Def(node: ORDERSRecordNew) => node.O_TOTALPRICE
+    case _                          => super.oRDERSRecord_Field_O_TOTALPRICE(self)
+  }
+  override def oRDERSRecord_Field_O_ORDERSTATUS(self: Rep[ORDERSRecord]): Rep[Char] = self match {
+    case Def(node: ORDERSRecordNew) => node.O_ORDERSTATUS
+    case _                          => super.oRDERSRecord_Field_O_ORDERSTATUS(self)
+  }
+  override def oRDERSRecord_Field_O_CUSTKEY(self: Rep[ORDERSRecord]): Rep[Int] = self match {
+    case Def(node: ORDERSRecordNew) => node.O_CUSTKEY
+    case _                          => super.oRDERSRecord_Field_O_CUSTKEY(self)
+  }
+  override def oRDERSRecord_Field_O_ORDERKEY(self: Rep[ORDERSRecord]): Rep[Int] = self match {
+    case Def(node: ORDERSRecordNew) => node.O_ORDERKEY
+    case _                          => super.oRDERSRecord_Field_O_ORDERKEY(self)
+  }
+
+  // Pure function partial evaluation
+}
 trait ORDERSRecordComponent extends ORDERSRecordOps with ORDERSRecordImplicits {}
 
 trait NextContainerOps extends Base with OptimalStringOps {
@@ -1604,6 +2079,15 @@ trait NextContainerImplicits {
 }
 trait NextContainerImplementations {
 
+}
+trait NextContainerPartialEvaluation extends NextContainerComponent {
+  // Immutable field inlining 
+  override def nextContainer_Field_Current[T](self: Rep[NextContainer[T]])(implicit typeT: TypeRep[T]): Rep[T] = self match {
+    case Def(node: NextContainerNew[_]) => node.current
+    case _                              => super.nextContainer_Field_Current[T](self)(typeT)
+  }
+
+  // Pure function partial evaluation
 }
 trait NextContainerComponent extends NextContainerOps with NextContainerImplicits {}
 
@@ -1672,6 +2156,15 @@ trait NextKeyContainerImplicits {
 }
 trait NextKeyContainerImplementations {
 
+}
+trait NextKeyContainerPartialEvaluation extends NextKeyContainerComponent {
+  // Immutable field inlining 
+  override def nextKeyContainer_Field_Current[K, T](self: Rep[NextKeyContainer[K, T]])(implicit typeK: TypeRep[K], typeT: TypeRep[T]): Rep[T] = self match {
+    case Def(node: NextKeyContainerNew[_, _]) => node.current
+    case _                                    => super.nextKeyContainer_Field_Current[K, T](self)(typeK, typeT)
+  }
+
+  // Pure function partial evaluation
 }
 trait NextKeyContainerComponent extends NextKeyContainerOps with NextKeyContainerImplicits {}
 
@@ -1793,6 +2286,15 @@ trait K2DBScannerImplicits {
 trait K2DBScannerImplementations {
 
 }
+trait K2DBScannerPartialEvaluation extends K2DBScannerComponent {
+  // Immutable field inlining 
+  override def k2DBScanner_Field_Filename(self: Rep[K2DBScanner]): Rep[String] = self match {
+    case Def(node: K2DBScannerNew) => node.filename
+    case _                         => super.k2DBScanner_Field_Filename(self)
+  }
+
+  // Pure function partial evaluation
+}
 trait K2DBScannerComponent extends K2DBScannerOps with K2DBScannerImplicits {}
 
 trait WindowRecordOps extends Base with OptimalStringOps {
@@ -1850,6 +2352,19 @@ trait WindowRecordImplicits {
 }
 trait WindowRecordImplementations {
 
+}
+trait WindowRecordPartialEvaluation extends WindowRecordComponent {
+  // Immutable field inlining 
+  override def windowRecord_Field_Wnd[B, C](self: Rep[WindowRecord[B, C]])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[C] = self match {
+    case Def(node: WindowRecordNew[_, _]) => node.wnd
+    case _                                => super.windowRecord_Field_Wnd[B, C](self)(typeB, typeC)
+  }
+  override def windowRecord_Field_Key[B, C](self: Rep[WindowRecord[B, C]])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[B] = self match {
+    case Def(node: WindowRecordNew[_, _]) => node.key
+    case _                                => super.windowRecord_Field_Key[B, C](self)(typeB, typeC)
+  }
+
+  // Pure function partial evaluation
 }
 trait WindowRecordComponent extends WindowRecordOps with WindowRecordImplicits {}
 

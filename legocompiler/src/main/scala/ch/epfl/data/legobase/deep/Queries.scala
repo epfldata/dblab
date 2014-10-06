@@ -889,5 +889,10 @@ trait QueriesImplementations { this: DeepDSL =>
     }
   }
 }
+trait QueriesPartialEvaluation extends QueriesComponent { this: DeepDSL =>
+  // Immutable field inlining 
+
+  // Pure function partial evaluation
+}
 trait QueriesComponent extends QueriesOps with QueriesImplicits { this: DeepDSL => }
 trait QueryComponent extends QueriesComponent { self: DeepDSL => }
