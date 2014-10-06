@@ -37,7 +37,7 @@ class MetaInfo
   def next()
   def reset()
   def consume(tuple: Record)
-  var child: Operator[Any] = null
+  @inline var child: Operator[Any] = null
   var stop = false
   val expectedSize: Int
 }
@@ -62,7 +62,7 @@ class MetaInfo
   def consume(tuple: Record) { throw new Exception("PUSH ENGINE BUG:: Consume function in ScanOp should never be called!!!!\n") }
 }
 
-@deep class PrintOp[A](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean) extends Operator[A] { self =>
+@deep class PrintOp[A](parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean) extends Operator[A] { self =>
   var numRows = (0)
   val expectedSize = parent.expectedSize
   def open() {
@@ -156,7 +156,7 @@ class MetaInfo
 @deep
 class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String, rightAlias: String)(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   def this(leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) = this(leftParent, rightParent, "", "")(joinCond)(leftHash)(rightHash)
-  var mode: scala.Int = 0
+  @inline var mode: scala.Int = 0
 
   val expectedSize = leftParent.expectedSize * 100 // Assume 1 tuple from the left side joins with 100 from the right
   val hm = HashMap[C, ArrayBuffer[A]]()
@@ -233,7 +233,7 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
 
 @deep
 class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
-  var mode: scala.Int = 0
+  @inline var mode: scala.Int = 0
   val hm = HashMap[C, ArrayBuffer[B]]()
   val expectedSize = leftParent.expectedSize
 
@@ -280,7 +280,7 @@ class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator
 
 @deep
 class NestedLoopsJoinOp[A <: Record, B <: Record](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
-  var mode: scala.Int = 0
+  @inline var mode: scala.Int = 0
   var leftTuple = null.asInstanceOf[A]
   val expectedSize = leftParent.expectedSize
 
@@ -332,7 +332,7 @@ class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
 
 @deep
 class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
-  var mode: scala.Int = 0
+  @inline var mode: scala.Int = 0
   val hm = HashMap[C, ArrayBuffer[A]]()
   var keySet = Set(hm.keySet.toSeq: _*)
   val expectedSize = leftParent.expectedSize * 100
@@ -425,7 +425,7 @@ class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
 
 @deep
 class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
-  var mode: scala.Int = 0
+  @inline var mode: scala.Int = 0
   val hm = HashMap[C, ArrayBuffer[B]]()
   val defaultB = Record.getDefaultRecord[B]()
   val expectedSize = leftParent.expectedSize

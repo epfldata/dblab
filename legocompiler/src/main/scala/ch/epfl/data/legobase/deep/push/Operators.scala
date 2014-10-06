@@ -93,6 +93,19 @@ trait OperatorImplicits { this: DeepDSL =>
 trait OperatorImplementations { this: DeepDSL =>
 
 }
+trait OperatorPartialEvaluation extends OperatorComponent with BasePartialEvaluation { this: DeepDSL =>
+  // Immutable field inlining 
+
+  // Mutable field inlining 
+  override def operator_Field_Child_$eq[A](self: Rep[Operator[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    mutableFieldValues(self -> "child") = x$1
+    unit(())
+  }
+
+  override def operator_Field_Child[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
+    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+  // Pure function partial evaluation
+}
 trait OperatorComponent extends OperatorOps with OperatorImplicits { this: DeepDSL => }
 trait ScanOpOps extends Base { this: DeepDSL =>
   // Type representation
@@ -217,6 +230,23 @@ trait ScanOpImplementations { this: DeepDSL =>
     throw __newException(unit("PUSH ENGINE BUG:: Consume function in ScanOp should never be called!!!!\n"))
   }
 }
+trait ScanOpPartialEvaluation extends ScanOpComponent with BasePartialEvaluation { this: DeepDSL =>
+  // Immutable field inlining 
+  override def scanOp_Field_Table[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Array[A]] = self match {
+    case Def(node: ScanOpNew[_]) => node.table
+    case _                       => super.scanOp_Field_Table[A](self)(typeA)
+  }
+
+  // Mutable field inlining 
+  override def scanOp_Field_Child_$eq[A](self: Rep[ScanOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    mutableFieldValues(self -> "child") = x$1
+    unit(())
+  }
+
+  override def scanOp_Field_Child[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
+    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+  // Pure function partial evaluation
+}
 trait ScanOpComponent extends ScanOpOps with ScanOpImplicits { this: DeepDSL => }
 trait PrintOpOps extends Base { this: DeepDSL =>
   // Type representation
@@ -239,7 +269,6 @@ trait PrintOpOps extends Base { this: DeepDSL =>
     def numRows: Rep[Int] = printOp_Field_NumRows[A](self)(typeA)
     def limit: Rep[(() => Boolean)] = printOp_Field_Limit[A](self)(typeA)
     def printFunc: Rep[(A => Unit)] = printOp_Field_PrintFunc[A](self)(typeA)
-    def parent_=(x$1: Rep[Operator[A]]): Rep[Unit] = printOp_Field_Parent_$eq[A](self, x$1)(typeA)
     def parent: Rep[Operator[A]] = printOp_Field_Parent[A](self)(typeA)
     def stop_=(x$1: Rep[Boolean]): Rep[Unit] = printOp_Field_Stop_$eq[A](self, x$1)(typeA)
     def stop: Rep[Boolean] = printOp_Field_Stop[A](self)(typeA)
@@ -298,12 +327,10 @@ trait PrintOpOps extends Base { this: DeepDSL =>
 
   }
 
-  case class PrintOp_Field_Parent_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Operator[A]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[A]](self, "parent", x$1) {
-    override def curriedConstructor = (copy[A] _).curried
-  }
-
-  case class PrintOp_Field_Parent[A](self: Rep[PrintOp[A]])(implicit val typeA: TypeRep[A]) extends FieldGetter[Operator[A]](self, "parent") {
+  case class PrintOp_Field_Parent[A](self: Rep[PrintOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Operator[A]](self, "parent") {
     override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
   }
 
   case class PrintOp_Field_Stop_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
@@ -333,7 +360,6 @@ trait PrintOpOps extends Base { this: DeepDSL =>
   def printOp_Field_NumRows[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = PrintOp_Field_NumRows[A](self)
   def printOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[(() => Boolean)] = PrintOp_Field_Limit[A](self)
   def printOp_Field_PrintFunc[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[(A => Unit)] = PrintOp_Field_PrintFunc[A](self)
-  def printOp_Field_Parent_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOp_Field_Parent_$eq[A](self, x$1)
   def printOp_Field_Parent[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = PrintOp_Field_Parent[A](self)
   def printOp_Field_Stop_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOp_Field_Stop_$eq[A](self, x$1)
   def printOp_Field_Stop[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = PrintOp_Field_Stop[A](self)
@@ -363,6 +389,31 @@ trait PrintOpImplementations { this: DeepDSL =>
   override def printOpReset[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     self.parent.reset()
   }
+}
+trait PrintOpPartialEvaluation extends PrintOpComponent with BasePartialEvaluation { this: DeepDSL =>
+  // Immutable field inlining 
+  override def printOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[(() => Boolean)] = self match {
+    case Def(node: PrintOpNew[_]) => node.limit
+    case _                        => super.printOp_Field_Limit[A](self)(typeA)
+  }
+  override def printOp_Field_PrintFunc[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[(A => Unit)] = self match {
+    case Def(node: PrintOpNew[_]) => node.printFunc
+    case _                        => super.printOp_Field_PrintFunc[A](self)(typeA)
+  }
+  override def printOp_Field_Parent[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = self match {
+    case Def(node: PrintOpNew[_]) => node.parent
+    case _                        => super.printOp_Field_Parent[A](self)(typeA)
+  }
+
+  // Mutable field inlining 
+  override def printOp_Field_Child_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    mutableFieldValues(self -> "child") = x$1
+    unit(())
+  }
+
+  override def printOp_Field_Child[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
+    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+  // Pure function partial evaluation
 }
 trait PrintOpComponent extends PrintOpOps with PrintOpImplicits { this: DeepDSL => }
 trait SelectOpOps extends Base { this: DeepDSL =>
@@ -483,6 +534,27 @@ trait SelectOpImplementations { this: DeepDSL =>
   override def selectOpConsume[A](self: Rep[SelectOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     __ifThenElse(__app(self.selectPred).apply(infix_asInstanceOf[A](tuple)), self.child.consume(tuple), unit(()))
   }
+}
+trait SelectOpPartialEvaluation extends SelectOpComponent with BasePartialEvaluation { this: DeepDSL =>
+  // Immutable field inlining 
+  override def selectOp_Field_SelectPred[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[(A => Boolean)] = self match {
+    case Def(node: SelectOpNew[_]) => node.selectPred
+    case _                         => super.selectOp_Field_SelectPred[A](self)(typeA)
+  }
+  override def selectOp_Field_Parent[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = self match {
+    case Def(node: SelectOpNew[_]) => node.parent
+    case _                         => super.selectOp_Field_Parent[A](self)(typeA)
+  }
+
+  // Mutable field inlining 
+  override def selectOp_Field_Child_$eq[A](self: Rep[SelectOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    mutableFieldValues(self -> "child") = x$1
+    unit(())
+  }
+
+  override def selectOp_Field_Child[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
+    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+  // Pure function partial evaluation
 }
 trait SelectOpComponent extends SelectOpOps with SelectOpImplicits { this: DeepDSL => }
 trait AggOpOps extends Base { this: DeepDSL =>
@@ -654,6 +726,35 @@ trait AggOpImplementations { this: DeepDSL =>
     }
   }
 }
+trait AggOpPartialEvaluation extends AggOpComponent with BasePartialEvaluation { this: DeepDSL =>
+  // Immutable field inlining 
+  override def aggOp_Field_AggFuncs[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Seq[((A, Double) => Double)]] = self match {
+    case Def(node: AggOpNew[_, _]) => node.aggFuncsOutput
+    case _                         => super.aggOp_Field_AggFuncs[A, B](self)(typeA, typeB)
+  }
+  override def aggOp_Field_Grp[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[(A => B)] = self match {
+    case Def(node: AggOpNew[_, _]) => node.grp
+    case _                         => super.aggOp_Field_Grp[A, B](self)(typeA, typeB)
+  }
+  override def aggOp_Field_NumAggs[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = self match {
+    case Def(node: AggOpNew[_, _]) => node.numAggs
+    case _                         => super.aggOp_Field_NumAggs[A, B](self)(typeA, typeB)
+  }
+  override def aggOp_Field_Parent[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[A]] = self match {
+    case Def(node: AggOpNew[_, _]) => node.parent
+    case _                         => super.aggOp_Field_Parent[A, B](self)(typeA, typeB)
+  }
+
+  // Mutable field inlining 
+  override def aggOp_Field_Child_$eq[A, B](self: Rep[AggOp[A, B]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
+    mutableFieldValues(self -> "child") = x$1
+    unit(())
+  }
+
+  override def aggOp_Field_Child[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[Any]] =
+    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+  // Pure function partial evaluation
+}
 trait AggOpComponent extends AggOpOps with AggOpImplicits { this: DeepDSL => }
 trait MapOpOps extends Base { this: DeepDSL =>
   // Type representation
@@ -779,6 +880,27 @@ trait MapOpImplementations { this: DeepDSL =>
       self.child.consume(tuple)
     }
   }
+}
+trait MapOpPartialEvaluation extends MapOpComponent with BasePartialEvaluation { this: DeepDSL =>
+  // Immutable field inlining 
+  override def mapOp_Field_AggFuncs[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Seq[(A => Unit)]] = self match {
+    case Def(node: MapOpNew[_]) => node.aggFuncsOutput
+    case _                      => super.mapOp_Field_AggFuncs[A](self)(typeA)
+  }
+  override def mapOp_Field_Parent[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = self match {
+    case Def(node: MapOpNew[_]) => node.parent
+    case _                      => super.mapOp_Field_Parent[A](self)(typeA)
+  }
+
+  // Mutable field inlining 
+  override def mapOp_Field_Child_$eq[A](self: Rep[MapOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    mutableFieldValues(self -> "child") = x$1
+    unit(())
+  }
+
+  override def mapOp_Field_Child[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
+    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+  // Pure function partial evaluation
 }
 trait MapOpComponent extends MapOpOps with MapOpImplicits { this: DeepDSL => }
 trait SortOpOps extends Base { this: DeepDSL =>
@@ -920,6 +1042,27 @@ trait SortOpImplementations { this: DeepDSL =>
       unit(())
     }
   }
+}
+trait SortOpPartialEvaluation extends SortOpComponent with BasePartialEvaluation { this: DeepDSL =>
+  // Immutable field inlining 
+  override def sortOp_Field_OrderingFunc[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[((A, A) => Int)] = self match {
+    case Def(node: SortOpNew[_]) => node.orderingFunc
+    case _                       => super.sortOp_Field_OrderingFunc[A](self)(typeA)
+  }
+  override def sortOp_Field_Parent[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = self match {
+    case Def(node: SortOpNew[_]) => node.parent
+    case _                       => super.sortOp_Field_Parent[A](self)(typeA)
+  }
+
+  // Mutable field inlining 
+  override def sortOp_Field_Child_$eq[A](self: Rep[SortOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    mutableFieldValues(self -> "child") = x$1
+    unit(())
+  }
+
+  override def sortOp_Field_Child[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
+    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+  // Pure function partial evaluation
 }
 trait SortOpComponent extends SortOpOps with SortOpImplicits { this: DeepDSL => }
 trait HashJoinOpOps extends Base { this: DeepDSL =>
@@ -1141,6 +1284,59 @@ trait HashJoinOpImplementations { this: DeepDSL =>
     }, unit(())))
   }
 }
+trait HashJoinOpPartialEvaluation extends HashJoinOpComponent with BasePartialEvaluation { this: DeepDSL =>
+  // Immutable field inlining 
+  override def hashJoinOp_Field_RightHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = self match {
+    case Def(node: HashJoinOpNew1[_, _, _]) => node.rightHash
+    case Def(node: HashJoinOpNew2[_, _, _]) => node.rightHash
+    case _                                  => super.hashJoinOp_Field_RightHash[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def hashJoinOp_Field_LeftHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = self match {
+    case Def(node: HashJoinOpNew1[_, _, _]) => node.leftHash
+    case Def(node: HashJoinOpNew2[_, _, _]) => node.leftHash
+    case _                                  => super.hashJoinOp_Field_LeftHash[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def hashJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = self match {
+    case Def(node: HashJoinOpNew1[_, _, _]) => node.joinCond
+    case Def(node: HashJoinOpNew2[_, _, _]) => node.joinCond
+    case _                                  => super.hashJoinOp_Field_JoinCond[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def hashJoinOp_Field_RightAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[String] = self match {
+    case Def(node: HashJoinOpNew1[_, _, _]) => node.rightAlias
+    case _                                  => super.hashJoinOp_Field_RightAlias[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def hashJoinOp_Field_LeftAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[String] = self match {
+    case Def(node: HashJoinOpNew1[_, _, _]) => node.leftAlias
+    case _                                  => super.hashJoinOp_Field_LeftAlias[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def hashJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = self match {
+    case Def(node: HashJoinOpNew1[_, _, _]) => node.rightParent
+    case Def(node: HashJoinOpNew2[_, _, _]) => node.rightParent
+    case _                                  => super.hashJoinOp_Field_RightParent[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def hashJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = self match {
+    case Def(node: HashJoinOpNew1[_, _, _]) => node.leftParent
+    case Def(node: HashJoinOpNew2[_, _, _]) => node.leftParent
+    case _                                  => super.hashJoinOp_Field_LeftParent[A, B, C](self)(typeA, typeB, typeC)
+  }
+
+  // Mutable field inlining 
+  override def hashJoinOp_Field_Mode_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
+    mutableFieldValues(self -> "mode") = x$1
+    unit(())
+  }
+
+  override def hashJoinOp_Field_Mode[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] =
+    mutableFieldValues.get(self -> "mode").getOrElse(unit(0)).asInstanceOf[Rep[Int]]
+  override def hashJoinOp_Field_Child_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
+    mutableFieldValues(self -> "child") = x$1
+    unit(())
+  }
+
+  override def hashJoinOp_Field_Child[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] =
+    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+  // Pure function partial evaluation
+}
 trait HashJoinOpComponent extends HashJoinOpOps with HashJoinOpImplicits { this: DeepDSL => }
 trait WindowOpOps extends Base { this: DeepDSL =>
   // Type representation
@@ -1297,6 +1493,31 @@ trait WindowOpImplementations { this: DeepDSL =>
       v.append(infix_asInstanceOf[A](tuple))
     }
   }
+}
+trait WindowOpPartialEvaluation extends WindowOpComponent with BasePartialEvaluation { this: DeepDSL =>
+  // Immutable field inlining 
+  override def windowOp_Field_Wndf[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(ArrayBuffer[A] => C)] = self match {
+    case Def(node: WindowOpNew[_, _, _]) => node.wndf
+    case _                               => super.windowOp_Field_Wndf[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def windowOp_Field_Grp[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => B)] = self match {
+    case Def(node: WindowOpNew[_, _, _]) => node.grp
+    case _                               => super.windowOp_Field_Grp[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def windowOp_Field_Parent[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = self match {
+    case Def(node: WindowOpNew[_, _, _]) => node.parent
+    case _                               => super.windowOp_Field_Parent[A, B, C](self)(typeA, typeB, typeC)
+  }
+
+  // Mutable field inlining 
+  override def windowOp_Field_Child_$eq[A, B, C](self: Rep[WindowOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
+    mutableFieldValues(self -> "child") = x$1
+    unit(())
+  }
+
+  override def windowOp_Field_Child[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] =
+    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+  // Pure function partial evaluation
 }
 trait WindowOpComponent extends WindowOpOps with WindowOpImplicits { this: DeepDSL => }
 trait LeftHashSemiJoinOpOps extends Base { this: DeepDSL =>
@@ -1492,6 +1713,46 @@ trait LeftHashSemiJoinOpImplementations { this: DeepDSL =>
     })
   }
 }
+trait LeftHashSemiJoinOpPartialEvaluation extends LeftHashSemiJoinOpComponent with BasePartialEvaluation { this: DeepDSL =>
+  // Immutable field inlining 
+  override def leftHashSemiJoinOp_Field_RightHash[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = self match {
+    case Def(node: LeftHashSemiJoinOpNew[_, _, _]) => node.rightHash
+    case _                                         => super.leftHashSemiJoinOp_Field_RightHash[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def leftHashSemiJoinOp_Field_LeftHash[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = self match {
+    case Def(node: LeftHashSemiJoinOpNew[_, _, _]) => node.leftHash
+    case _                                         => super.leftHashSemiJoinOp_Field_LeftHash[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def leftHashSemiJoinOp_Field_JoinCond[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = self match {
+    case Def(node: LeftHashSemiJoinOpNew[_, _, _]) => node.joinCond
+    case _                                         => super.leftHashSemiJoinOp_Field_JoinCond[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def leftHashSemiJoinOp_Field_RightParent[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = self match {
+    case Def(node: LeftHashSemiJoinOpNew[_, _, _]) => node.rightParent
+    case _                                         => super.leftHashSemiJoinOp_Field_RightParent[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def leftHashSemiJoinOp_Field_LeftParent[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = self match {
+    case Def(node: LeftHashSemiJoinOpNew[_, _, _]) => node.leftParent
+    case _                                         => super.leftHashSemiJoinOp_Field_LeftParent[A, B, C](self)(typeA, typeB, typeC)
+  }
+
+  // Mutable field inlining 
+  override def leftHashSemiJoinOp_Field_Mode_$eq[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
+    mutableFieldValues(self -> "mode") = x$1
+    unit(())
+  }
+
+  override def leftHashSemiJoinOp_Field_Mode[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] =
+    mutableFieldValues.get(self -> "mode").getOrElse(unit(0)).asInstanceOf[Rep[Int]]
+  override def leftHashSemiJoinOp_Field_Child_$eq[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
+    mutableFieldValues(self -> "child") = x$1
+    unit(())
+  }
+
+  override def leftHashSemiJoinOp_Field_Child[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] =
+    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+  // Pure function partial evaluation
+}
 trait LeftHashSemiJoinOpComponent extends LeftHashSemiJoinOpOps with LeftHashSemiJoinOpImplicits { this: DeepDSL => }
 trait NestedLoopsJoinOpOps extends Base { this: DeepDSL =>
   // Type representation
@@ -1673,6 +1934,46 @@ trait NestedLoopsJoinOpImplementations { this: DeepDSL =>
     }, __ifThenElse(__app(self.joinCond).apply(self.leftTuple, infix_asInstanceOf[B](tuple)), self.child.consume(RecordOps[A](self.leftTuple).concatenateDynamic[B](infix_asInstanceOf[B](tuple), self.leftAlias, self.rightAlias)), unit(())))
   }
 }
+trait NestedLoopsJoinOpPartialEvaluation extends NestedLoopsJoinOpComponent with BasePartialEvaluation { this: DeepDSL =>
+  // Immutable field inlining 
+  override def nestedLoopsJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[((A, B) => Boolean)] = self match {
+    case Def(node: NestedLoopsJoinOpNew[_, _]) => node.joinCond
+    case _                                     => super.nestedLoopsJoinOp_Field_JoinCond[A, B](self)(typeA, typeB)
+  }
+  override def nestedLoopsJoinOp_Field_RightAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[String] = self match {
+    case Def(node: NestedLoopsJoinOpNew[_, _]) => node.rightAlias
+    case _                                     => super.nestedLoopsJoinOp_Field_RightAlias[A, B](self)(typeA, typeB)
+  }
+  override def nestedLoopsJoinOp_Field_LeftAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[String] = self match {
+    case Def(node: NestedLoopsJoinOpNew[_, _]) => node.leftAlias
+    case _                                     => super.nestedLoopsJoinOp_Field_LeftAlias[A, B](self)(typeA, typeB)
+  }
+  override def nestedLoopsJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[B]] = self match {
+    case Def(node: NestedLoopsJoinOpNew[_, _]) => node.rightParent
+    case _                                     => super.nestedLoopsJoinOp_Field_RightParent[A, B](self)(typeA, typeB)
+  }
+  override def nestedLoopsJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[A]] = self match {
+    case Def(node: NestedLoopsJoinOpNew[_, _]) => node.leftParent
+    case _                                     => super.nestedLoopsJoinOp_Field_LeftParent[A, B](self)(typeA, typeB)
+  }
+
+  // Mutable field inlining 
+  override def nestedLoopsJoinOp_Field_Mode_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
+    mutableFieldValues(self -> "mode") = x$1
+    unit(())
+  }
+
+  override def nestedLoopsJoinOp_Field_Mode[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] =
+    mutableFieldValues.get(self -> "mode").getOrElse(unit(0)).asInstanceOf[Rep[Int]]
+  override def nestedLoopsJoinOp_Field_Child_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
+    mutableFieldValues(self -> "child") = x$1
+    unit(())
+  }
+
+  override def nestedLoopsJoinOp_Field_Child[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[Any]] =
+    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+  // Pure function partial evaluation
+}
 trait NestedLoopsJoinOpComponent extends NestedLoopsJoinOpOps with NestedLoopsJoinOpImplicits { this: DeepDSL => }
 trait SubquerySingleResultOps extends Base { this: DeepDSL =>
   // Type representation
@@ -1807,6 +2108,23 @@ trait SubquerySingleResultImplementations { this: DeepDSL =>
       self.result
     }
   }
+}
+trait SubquerySingleResultPartialEvaluation extends SubquerySingleResultComponent with BasePartialEvaluation { this: DeepDSL =>
+  // Immutable field inlining 
+  override def subquerySingleResult_Field_Parent[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = self match {
+    case Def(node: SubquerySingleResultNew[_]) => node.parent
+    case _                                     => super.subquerySingleResult_Field_Parent[A](self)(typeA)
+  }
+
+  // Mutable field inlining 
+  override def subquerySingleResult_Field_Child_$eq[A](self: Rep[SubquerySingleResult[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    mutableFieldValues(self -> "child") = x$1
+    unit(())
+  }
+
+  override def subquerySingleResult_Field_Child[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
+    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+  // Pure function partial evaluation
 }
 trait SubquerySingleResultComponent extends SubquerySingleResultOps with SubquerySingleResultImplicits { this: DeepDSL => }
 trait HashJoinAntiOps extends Base { this: DeepDSL =>
@@ -2033,6 +2351,46 @@ trait HashJoinAntiImplementations { this: DeepDSL =>
     })
   }
 }
+trait HashJoinAntiPartialEvaluation extends HashJoinAntiComponent with BasePartialEvaluation { this: DeepDSL =>
+  // Immutable field inlining 
+  override def hashJoinAnti_Field_RightHash[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = self match {
+    case Def(node: HashJoinAntiNew[_, _, _]) => node.rightHash
+    case _                                   => super.hashJoinAnti_Field_RightHash[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def hashJoinAnti_Field_LeftHash[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = self match {
+    case Def(node: HashJoinAntiNew[_, _, _]) => node.leftHash
+    case _                                   => super.hashJoinAnti_Field_LeftHash[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def hashJoinAnti_Field_JoinCond[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = self match {
+    case Def(node: HashJoinAntiNew[_, _, _]) => node.joinCond
+    case _                                   => super.hashJoinAnti_Field_JoinCond[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def hashJoinAnti_Field_RightParent[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = self match {
+    case Def(node: HashJoinAntiNew[_, _, _]) => node.rightParent
+    case _                                   => super.hashJoinAnti_Field_RightParent[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def hashJoinAnti_Field_LeftParent[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = self match {
+    case Def(node: HashJoinAntiNew[_, _, _]) => node.leftParent
+    case _                                   => super.hashJoinAnti_Field_LeftParent[A, B, C](self)(typeA, typeB, typeC)
+  }
+
+  // Mutable field inlining 
+  override def hashJoinAnti_Field_Mode_$eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
+    mutableFieldValues(self -> "mode") = x$1
+    unit(())
+  }
+
+  override def hashJoinAnti_Field_Mode[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] =
+    mutableFieldValues.get(self -> "mode").getOrElse(unit(0)).asInstanceOf[Rep[Int]]
+  override def hashJoinAnti_Field_Child_$eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
+    mutableFieldValues(self -> "child") = x$1
+    unit(())
+  }
+
+  override def hashJoinAnti_Field_Child[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] =
+    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+  // Pure function partial evaluation
+}
 trait HashJoinAntiComponent extends HashJoinAntiOps with HashJoinAntiImplicits { this: DeepDSL => }
 trait ViewOpOps extends Base { this: DeepDSL =>
   // Type representation
@@ -2183,6 +2541,23 @@ trait ViewOpImplementations { this: DeepDSL =>
       self.size_$eq(self.size.$plus(unit(1)))
     }
   }
+}
+trait ViewOpPartialEvaluation extends ViewOpComponent with BasePartialEvaluation { this: DeepDSL =>
+  // Immutable field inlining 
+  override def viewOp_Field_Parent[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = self match {
+    case Def(node: ViewOpNew[_]) => node.parent
+    case _                       => super.viewOp_Field_Parent[A](self)(typeA)
+  }
+
+  // Mutable field inlining 
+  override def viewOp_Field_Child_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    mutableFieldValues(self -> "child") = x$1
+    unit(())
+  }
+
+  override def viewOp_Field_Child[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
+    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+  // Pure function partial evaluation
 }
 trait ViewOpComponent extends ViewOpOps with ViewOpImplicits { this: DeepDSL => }
 trait LeftOuterJoinOpOps extends Base { this: DeepDSL =>
@@ -2395,5 +2770,355 @@ trait LeftOuterJoinOpImplementations { this: DeepDSL =>
     })
   }
 }
+trait LeftOuterJoinOpPartialEvaluation extends LeftOuterJoinOpComponent with BasePartialEvaluation { this: DeepDSL =>
+  // Immutable field inlining 
+  override def leftOuterJoinOp_Field_RightHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = self match {
+    case Def(node: LeftOuterJoinOpNew[_, _, _]) => node.rightHash
+    case _                                      => super.leftOuterJoinOp_Field_RightHash[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def leftOuterJoinOp_Field_LeftHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = self match {
+    case Def(node: LeftOuterJoinOpNew[_, _, _]) => node.leftHash
+    case _                                      => super.leftOuterJoinOp_Field_LeftHash[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def leftOuterJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = self match {
+    case Def(node: LeftOuterJoinOpNew[_, _, _]) => node.joinCond
+    case _                                      => super.leftOuterJoinOp_Field_JoinCond[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def leftOuterJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = self match {
+    case Def(node: LeftOuterJoinOpNew[_, _, _]) => node.rightParent
+    case _                                      => super.leftOuterJoinOp_Field_RightParent[A, B, C](self)(typeA, typeB, typeC)
+  }
+  override def leftOuterJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = self match {
+    case Def(node: LeftOuterJoinOpNew[_, _, _]) => node.leftParent
+    case _                                      => super.leftOuterJoinOp_Field_LeftParent[A, B, C](self)(typeA, typeB, typeC)
+  }
+
+  // Mutable field inlining 
+  override def leftOuterJoinOp_Field_Mode_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
+    mutableFieldValues(self -> "mode") = x$1
+    unit(())
+  }
+
+  override def leftOuterJoinOp_Field_Mode[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] =
+    mutableFieldValues.get(self -> "mode").getOrElse(unit(0)).asInstanceOf[Rep[Int]]
+  override def leftOuterJoinOp_Field_Child_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
+    mutableFieldValues(self -> "child") = x$1
+    unit(())
+  }
+
+  override def leftOuterJoinOp_Field_Child[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] =
+    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+  // Pure function partial evaluation
+}
 trait LeftOuterJoinOpComponent extends LeftOuterJoinOpOps with LeftOuterJoinOpImplicits { this: DeepDSL => }
+trait OperatorDynamicDispatch extends OperatorComponent { this: DeepDSL =>
+  override def operatorOpen[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = self match {
+    case Def(node: ScanOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ScanOpNew[T1]]
+      scanOpOpen[T1](self.asInstanceOf[Rep[ScanOp[T1]]])(newNode.typeA)
+    case Def(node: PrintOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[PrintOpNew[T1]]
+      printOpOpen[T1](self.asInstanceOf[Rep[PrintOp[T1]]])(newNode.typeA)
+    case Def(node: SelectOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SelectOpNew[T1]]
+      selectOpOpen[T1](self.asInstanceOf[Rep[SelectOp[T1]]])(newNode.typeA)
+    case Def(node: AggOpNew[_, _]) =>
+      type T1 = Any
+      type T2 = Any
+      val newNode = node.asInstanceOf[AggOpNew[T1, T2]]
+      aggOpOpen[T1, T2](self.asInstanceOf[Rep[AggOp[T1, T2]]])(newNode.typeA, newNode.typeB)
+    case Def(node: MapOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[MapOpNew[T1]]
+      mapOpOpen[T1](self.asInstanceOf[Rep[MapOp[T1]]])(newNode.typeA)
+    case Def(node: SortOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SortOpNew[T1]]
+      sortOpOpen[T1](self.asInstanceOf[Rep[SortOp[T1]]])(newNode.typeA)
+    case Def(node: HashJoinOpNew1[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew1[T1, T2, T3]]
+      hashJoinOpOpen[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: HashJoinOpNew2[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew2[T1, T2, T3]]
+      hashJoinOpOpen[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: WindowOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[WindowOpNew[T1, T2, T3]]
+      windowOpOpen[T1, T2, T3](self.asInstanceOf[Rep[WindowOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: LeftHashSemiJoinOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftHashSemiJoinOpNew[T1, T2, T3]]
+      leftHashSemiJoinOpOpen[T1, T2, T3](self.asInstanceOf[Rep[LeftHashSemiJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: NestedLoopsJoinOpNew[_, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      val newNode = node.asInstanceOf[NestedLoopsJoinOpNew[T1, T2]]
+      nestedLoopsJoinOpOpen[T1, T2](self.asInstanceOf[Rep[NestedLoopsJoinOp[T1, T2]]])(newNode.typeA, newNode.typeB)
+    case Def(node: SubquerySingleResultNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SubquerySingleResultNew[T1]]
+      subquerySingleResultOpen[T1](self.asInstanceOf[Rep[SubquerySingleResult[T1]]])(newNode.typeA)
+    case Def(node: HashJoinAntiNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinAntiNew[T1, T2, T3]]
+      hashJoinAntiOpen[T1, T2, T3](self.asInstanceOf[Rep[HashJoinAnti[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: ViewOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ViewOpNew[T1]]
+      viewOpOpen[T1](self.asInstanceOf[Rep[ViewOp[T1]]])(newNode.typeA, newNode.evidence$1)
+    case Def(node: LeftOuterJoinOpNew[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftOuterJoinOpNew[T1, T2, T3]]
+      leftOuterJoinOpOpen[T1, T2, T3](self.asInstanceOf[Rep[LeftOuterJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC, newNode.evidence$2)
+    case _ => super.operatorOpen[A](self)(typeA)
+  }
+  override def operatorNext[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = self match {
+    case Def(node: ScanOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ScanOpNew[T1]]
+      scanOpNext[T1](self.asInstanceOf[Rep[ScanOp[T1]]])(newNode.typeA)
+    case Def(node: PrintOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[PrintOpNew[T1]]
+      printOpNext[T1](self.asInstanceOf[Rep[PrintOp[T1]]])(newNode.typeA)
+    case Def(node: SelectOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SelectOpNew[T1]]
+      selectOpNext[T1](self.asInstanceOf[Rep[SelectOp[T1]]])(newNode.typeA)
+    case Def(node: AggOpNew[_, _]) =>
+      type T1 = Any
+      type T2 = Any
+      val newNode = node.asInstanceOf[AggOpNew[T1, T2]]
+      aggOpNext[T1, T2](self.asInstanceOf[Rep[AggOp[T1, T2]]])(newNode.typeA, newNode.typeB)
+    case Def(node: MapOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[MapOpNew[T1]]
+      mapOpNext[T1](self.asInstanceOf[Rep[MapOp[T1]]])(newNode.typeA)
+    case Def(node: SortOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SortOpNew[T1]]
+      sortOpNext[T1](self.asInstanceOf[Rep[SortOp[T1]]])(newNode.typeA)
+    case Def(node: HashJoinOpNew1[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew1[T1, T2, T3]]
+      hashJoinOpNext[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: HashJoinOpNew2[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew2[T1, T2, T3]]
+      hashJoinOpNext[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: WindowOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[WindowOpNew[T1, T2, T3]]
+      windowOpNext[T1, T2, T3](self.asInstanceOf[Rep[WindowOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: LeftHashSemiJoinOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftHashSemiJoinOpNew[T1, T2, T3]]
+      leftHashSemiJoinOpNext[T1, T2, T3](self.asInstanceOf[Rep[LeftHashSemiJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: NestedLoopsJoinOpNew[_, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      val newNode = node.asInstanceOf[NestedLoopsJoinOpNew[T1, T2]]
+      nestedLoopsJoinOpNext[T1, T2](self.asInstanceOf[Rep[NestedLoopsJoinOp[T1, T2]]])(newNode.typeA, newNode.typeB)
+    case Def(node: SubquerySingleResultNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SubquerySingleResultNew[T1]]
+      subquerySingleResultNext[T1](self.asInstanceOf[Rep[SubquerySingleResult[T1]]])(newNode.typeA)
+    case Def(node: HashJoinAntiNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinAntiNew[T1, T2, T3]]
+      hashJoinAntiNext[T1, T2, T3](self.asInstanceOf[Rep[HashJoinAnti[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: ViewOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ViewOpNew[T1]]
+      viewOpNext[T1](self.asInstanceOf[Rep[ViewOp[T1]]])(newNode.typeA, newNode.evidence$1)
+    case Def(node: LeftOuterJoinOpNew[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftOuterJoinOpNew[T1, T2, T3]]
+      leftOuterJoinOpNext[T1, T2, T3](self.asInstanceOf[Rep[LeftOuterJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC, newNode.evidence$2)
+    case _ => super.operatorNext[A](self)(typeA)
+  }
+  override def operatorReset[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = self match {
+    case Def(node: ScanOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ScanOpNew[T1]]
+      scanOpReset[T1](self.asInstanceOf[Rep[ScanOp[T1]]])(newNode.typeA)
+    case Def(node: PrintOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[PrintOpNew[T1]]
+      printOpReset[T1](self.asInstanceOf[Rep[PrintOp[T1]]])(newNode.typeA)
+    case Def(node: SelectOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SelectOpNew[T1]]
+      selectOpReset[T1](self.asInstanceOf[Rep[SelectOp[T1]]])(newNode.typeA)
+    case Def(node: AggOpNew[_, _]) =>
+      type T1 = Any
+      type T2 = Any
+      val newNode = node.asInstanceOf[AggOpNew[T1, T2]]
+      aggOpReset[T1, T2](self.asInstanceOf[Rep[AggOp[T1, T2]]])(newNode.typeA, newNode.typeB)
+    case Def(node: MapOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[MapOpNew[T1]]
+      mapOpReset[T1](self.asInstanceOf[Rep[MapOp[T1]]])(newNode.typeA)
+    case Def(node: SortOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SortOpNew[T1]]
+      sortOpReset[T1](self.asInstanceOf[Rep[SortOp[T1]]])(newNode.typeA)
+    case Def(node: HashJoinOpNew1[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew1[T1, T2, T3]]
+      hashJoinOpReset[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: HashJoinOpNew2[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew2[T1, T2, T3]]
+      hashJoinOpReset[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: WindowOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[WindowOpNew[T1, T2, T3]]
+      windowOpReset[T1, T2, T3](self.asInstanceOf[Rep[WindowOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: LeftHashSemiJoinOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftHashSemiJoinOpNew[T1, T2, T3]]
+      leftHashSemiJoinOpReset[T1, T2, T3](self.asInstanceOf[Rep[LeftHashSemiJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: NestedLoopsJoinOpNew[_, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      val newNode = node.asInstanceOf[NestedLoopsJoinOpNew[T1, T2]]
+      nestedLoopsJoinOpReset[T1, T2](self.asInstanceOf[Rep[NestedLoopsJoinOp[T1, T2]]])(newNode.typeA, newNode.typeB)
+    case Def(node: SubquerySingleResultNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SubquerySingleResultNew[T1]]
+      subquerySingleResultReset[T1](self.asInstanceOf[Rep[SubquerySingleResult[T1]]])(newNode.typeA)
+    case Def(node: HashJoinAntiNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinAntiNew[T1, T2, T3]]
+      hashJoinAntiReset[T1, T2, T3](self.asInstanceOf[Rep[HashJoinAnti[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: ViewOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ViewOpNew[T1]]
+      viewOpReset[T1](self.asInstanceOf[Rep[ViewOp[T1]]])(newNode.typeA, newNode.evidence$1)
+    case Def(node: LeftOuterJoinOpNew[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftOuterJoinOpNew[T1, T2, T3]]
+      leftOuterJoinOpReset[T1, T2, T3](self.asInstanceOf[Rep[LeftOuterJoinOp[T1, T2, T3]]])(newNode.typeA, newNode.typeB, newNode.typeC, newNode.evidence$2)
+    case _ => super.operatorReset[A](self)(typeA)
+  }
+  override def operatorConsume[A](self: Rep[Operator[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = self match {
+    case Def(node: ScanOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ScanOpNew[T1]]
+      scanOpConsume[T1](self.asInstanceOf[Rep[ScanOp[T1]]], tuple)(newNode.typeA)
+    case Def(node: PrintOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[PrintOpNew[T1]]
+      printOpConsume[T1](self.asInstanceOf[Rep[PrintOp[T1]]], tuple)(newNode.typeA)
+    case Def(node: SelectOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SelectOpNew[T1]]
+      selectOpConsume[T1](self.asInstanceOf[Rep[SelectOp[T1]]], tuple)(newNode.typeA)
+    case Def(node: AggOpNew[_, _]) =>
+      type T1 = Any
+      type T2 = Any
+      val newNode = node.asInstanceOf[AggOpNew[T1, T2]]
+      aggOpConsume[T1, T2](self.asInstanceOf[Rep[AggOp[T1, T2]]], tuple)(newNode.typeA, newNode.typeB)
+    case Def(node: MapOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[MapOpNew[T1]]
+      mapOpConsume[T1](self.asInstanceOf[Rep[MapOp[T1]]], tuple)(newNode.typeA)
+    case Def(node: SortOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SortOpNew[T1]]
+      sortOpConsume[T1](self.asInstanceOf[Rep[SortOp[T1]]], tuple)(newNode.typeA)
+    case Def(node: HashJoinOpNew1[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew1[T1, T2, T3]]
+      hashJoinOpConsume[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]], tuple)(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: HashJoinOpNew2[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinOpNew2[T1, T2, T3]]
+      hashJoinOpConsume[T1, T2, T3](self.asInstanceOf[Rep[HashJoinOp[T1, T2, T3]]], tuple)(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: WindowOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[WindowOpNew[T1, T2, T3]]
+      windowOpConsume[T1, T2, T3](self.asInstanceOf[Rep[WindowOp[T1, T2, T3]]], tuple)(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: LeftHashSemiJoinOpNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftHashSemiJoinOpNew[T1, T2, T3]]
+      leftHashSemiJoinOpConsume[T1, T2, T3](self.asInstanceOf[Rep[LeftHashSemiJoinOp[T1, T2, T3]]], tuple)(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: NestedLoopsJoinOpNew[_, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      val newNode = node.asInstanceOf[NestedLoopsJoinOpNew[T1, T2]]
+      nestedLoopsJoinOpConsume[T1, T2](self.asInstanceOf[Rep[NestedLoopsJoinOp[T1, T2]]], tuple)(newNode.typeA, newNode.typeB)
+    case Def(node: SubquerySingleResultNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[SubquerySingleResultNew[T1]]
+      subquerySingleResultConsume[T1](self.asInstanceOf[Rep[SubquerySingleResult[T1]]], tuple)(newNode.typeA)
+    case Def(node: HashJoinAntiNew[_, _, _]) =>
+      type T1 = Any
+      type T2 = Any
+      type T3 = Any
+      val newNode = node.asInstanceOf[HashJoinAntiNew[T1, T2, T3]]
+      hashJoinAntiConsume[T1, T2, T3](self.asInstanceOf[Rep[HashJoinAnti[T1, T2, T3]]], tuple)(newNode.typeA, newNode.typeB, newNode.typeC)
+    case Def(node: ViewOpNew[_]) =>
+      type T1 = Any
+      val newNode = node.asInstanceOf[ViewOpNew[T1]]
+      viewOpConsume[T1](self.asInstanceOf[Rep[ViewOp[T1]]], tuple)(newNode.typeA, newNode.evidence$1)
+    case Def(node: LeftOuterJoinOpNew[_, _, _]) =>
+      type T1 = ch.epfl.data.pardis.shallow.Record
+      type T2 = ch.epfl.data.pardis.shallow.Record
+      type T3 = Any
+      val newNode = node.asInstanceOf[LeftOuterJoinOpNew[T1, T2, T3]]
+      leftOuterJoinOpConsume[T1, T2, T3](self.asInstanceOf[Rep[LeftOuterJoinOp[T1, T2, T3]]], tuple)(newNode.typeA, newNode.typeB, newNode.typeC, newNode.evidence$2)
+    case _ => super.operatorConsume[A](self, tuple)(typeA)
+  }
+}
 trait OperatorsComponent extends OperatorComponent with ScanOpComponent with PrintOpComponent with SelectOpComponent with AggOpComponent with MapOpComponent with SortOpComponent with HashJoinOpComponent with WindowOpComponent with LeftHashSemiJoinOpComponent with NestedLoopsJoinOpComponent with SubquerySingleResultComponent with HashJoinAntiComponent with ViewOpComponent with LeftOuterJoinOpComponent { self: DeepDSL => }
