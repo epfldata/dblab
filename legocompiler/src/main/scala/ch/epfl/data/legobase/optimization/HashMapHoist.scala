@@ -27,6 +27,8 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
       foundFlag = false
       traverseBlock(node)
     } while (foundFlag)
+    scheduleHoistedStatements()
+    System.out.println(s">>>final:${hoistedStatements.mkString("\n")}")
     transformProgram(node)
   }
 
@@ -36,12 +38,41 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
   val currentHoistedStatements = collection.mutable.ArrayBuffer[Stm[Any]]()
   val workList = collection.mutable.Set[Sym[Any]]()
 
+  /* Adopted from https://gist.github.com/ThiporKong/4399695 */
+  private def tsort[A](edges: Traversable[(A, A)]): Iterable[A] = {
+    import scala.collection.immutable.Set
+    @scala.annotation.tailrec
+    def tsort(toPreds: Map[A, Set[A]], done: Iterable[A]): Iterable[A] = {
+      val (noPreds, hasPreds) = toPreds.partition { _._2.isEmpty }
+      if (noPreds.isEmpty) {
+        if (hasPreds.isEmpty) done else sys.error(hasPreds.toString)
+      } else {
+        val found = noPreds.map { _._1 }
+        tsort(hasPreds.mapValues { _ -- found }, done ++ found)
+      }
+    }
+
+    val toPred = edges.foldLeft(Map[A, Set[A]]()) { (acc, e) =>
+      acc + (e._1 -> acc.getOrElse(e._1, Set())) + (e._2 -> (acc.getOrElse(e._2, Set()) + e._1))
+    }
+    tsort(toPred, Seq())
+  }
+
+  def scheduleHoistedStatements() {
+    val dependenceGraphEdges = for (stm1 <- hoistedStatements; stm2 <- hoistedStatements if (stm1 != stm2 && getDependencies(stm1.rhs).contains(stm2.sym))) yield (stm2 -> stm1)
+    hoistedStatements.clear()
+    hoistedStatements ++= tsort(dependenceGraphEdges)
+  }
+
+  def getDependencies(node: Def[_]): List[Sym[Any]] = node.funArgs.filter(_.isInstanceOf[Sym[Any]]).map(_.asInstanceOf[Sym[Any]])
+
   override def traverseDef(node: Def[_]): Unit = node match {
     case GenericEngineRunQueryObject(b) => {
       startCollecting = enabled
       currentHoistedStatements.clear()
       traverseBlock(b)
       hoistedStatements.prependAll(currentHoistedStatements)
+      System.out.println(s">>>added:${currentHoistedStatements.mkString("\n")}")
       startCollecting = false
     }
     case _ => super.traverseDef(node)
@@ -51,7 +82,8 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
     case Stm(sym, rhs) => {
       def hoistStatement() {
         currentHoistedStatements += stm.asInstanceOf[Stm[Any]]
-        workList ++= rhs.funArgs.filter(_.isInstanceOf[Sym[Any]]).map(_.asInstanceOf[Sym[Any]])
+        // workList ++= rhs.funArgs.filter(_.isInstanceOf[Sym[Any]]).map(_.asInstanceOf[Sym[Any]])
+        workList ++= getDependencies(rhs)
         foundFlag = true
       }
       rhs match {
