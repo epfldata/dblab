@@ -5,7 +5,6 @@ import utils.Utilities._
 import java.io.PrintStream
 
 trait LegoRunner {
-  val numRuns: scala.Int = 1
   var currQuery: java.lang.String = ""
   Config.checkResults = true
 
@@ -16,10 +15,14 @@ trait LegoRunner {
   def run(args: Array[String]) {
 
     val sf = if (args(1).contains(".")) args(1).toDouble.toString else args(1).toInt.toString
+    Config.sf = sf.toDouble
     Config.datapath = args(0) + "/sf" + sf + "/"
 
+    val excludedQueries = Nil
+
     val queries: scala.collection.immutable.List[String] =
-      if (args.length == 3 && args(2) == "testsuite") (for (i <- 1 to 22) yield "Q" + i).toList
+      if (args.length == 3 && args(2) == "testsuite-scala") (for (i <- 1 to 22 if !excludedQueries.contains(i)) yield "Q" + i).toList
+      else if (args.length == 3 && args(2) == "testsuite-c") (for (i <- 1 to 22 if !excludedQueries.contains(i)) yield "Q" + i + "_C").toList
       else args.tail.tail.toList
     for (q <- queries) {
       currQuery = q
@@ -29,11 +32,11 @@ trait LegoRunner {
         if (Config.checkResults) {
           val getResultFileName = "results/" + currQuery + ".result_sf" + sf
           if (new java.io.File(getResultFileName).exists) {
-            val resq = scala.io.Source.fromFile(getOutputName).mkString
             val resc = {
               val str = scala.io.Source.fromFile(getResultFileName).mkString
-              str * numRuns
+              str * Config.numRuns
             }
+            val resq = scala.io.Source.fromFile(getOutputName).mkString
             if (resq != resc) {
               System.out.println("-----------------------------------------")
               System.out.println("QUERY" + q + " DID NOT RETURN CORRECT RESULT!!!")
@@ -55,28 +58,28 @@ object MiniDB extends LegoRunner {
   import Queries._
 
   def executeQuery(query: String): Unit = query match {
-    case "Q1"     => Q1(numRuns)
-    case "Q2"     => Q2(numRuns)
-    case "Q3"     => Q3(numRuns)
-    case "Q4"     => Q4(numRuns)
-    case "Q5"     => Q5(numRuns)
-    case "Q6"     => Q6(numRuns)
-    case "Q7"     => Q7(numRuns)
-    case "Q8"     => Q8(numRuns)
-    case "Q9"     => Q9(numRuns)
-    case "Q10"    => Q10(numRuns)
-    case "Q11"    => Q11(numRuns)
-    case "Q12"    => Q12(numRuns)
-    case "Q13"    => Q13(numRuns)
-    case "Q14"    => Q14(numRuns)
-    case "Q15"    => Q15(numRuns)
-    case "Q16"    => Q16(numRuns)
-    case "Q17"    => Q17(numRuns)
-    case "Q18"    => Q18(numRuns)
-    case "Q19"    => Q19(numRuns)
-    case "Q20"    => Q20(numRuns)
-    case "Q21"    => Q21(numRuns)
-    case "Q22"    => Q22(numRuns)
+    case "Q1"     => Q1(Config.numRuns)
+    case "Q2"     => Q2(Config.numRuns)
+    case "Q3"     => Q3(Config.numRuns)
+    case "Q4"     => Q4(Config.numRuns)
+    case "Q5"     => Q5(Config.numRuns)
+    case "Q6"     => Q6(Config.numRuns)
+    case "Q7"     => Q7(Config.numRuns)
+    case "Q8"     => Q8(Config.numRuns)
+    case "Q9"     => Q9(Config.numRuns)
+    case "Q10"    => Q10(Config.numRuns)
+    case "Q11"    => Q11(Config.numRuns)
+    case "Q12"    => Q12(Config.numRuns)
+    case "Q13"    => Q13(Config.numRuns)
+    case "Q14"    => Q14(Config.numRuns)
+    case "Q15"    => Q15(Config.numRuns)
+    case "Q16"    => Q16(Config.numRuns)
+    case "Q17"    => Q17(Config.numRuns)
+    case "Q18"    => Q18(Config.numRuns)
+    case "Q19"    => Q19(Config.numRuns)
+    case "Q20"    => Q20(Config.numRuns)
+    case "Q21"    => Q21(Config.numRuns)
+    case "Q22"    => Q22(Config.numRuns)
     case dflt @ _ => throw new Exception("Query " + dflt + " not supported!")
   }
 

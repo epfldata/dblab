@@ -72,15 +72,14 @@ class K2DBScanner(filename: String) {
     cnt
   }
 
-  def next_date = {
+  def next_date: Int = {
     delimiter = '-'
     val year = next_int
     val month = next_int
     delimiter = '|'
     val day = next_int
-    val date_str = year + "-" + month + "-" + day
-    //year * 10000 + month * 100 + day
-    sdf.parse(date_str).getTime()
+    //val date_str = year + "-" + month + "-" + day
+    year * 10000 + month * 100 + day
   }
 
   def hasNext() = {

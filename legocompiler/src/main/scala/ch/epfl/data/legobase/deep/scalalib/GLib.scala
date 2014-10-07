@@ -3,10 +3,9 @@
 package ch.epfl.data
 package legobase
 package deep
-package scalalib
 
 import pardis.ir._
-import pardis.ir.pardisTypeImplicits._
+import pardis.types.PardisTypeImplicits._
 import pardis.shallow.c.CLangTypes._
 import pardis.shallow.c.GLibTypes._
 
@@ -23,6 +22,16 @@ trait CLibs extends PointerComponent
   with GHashTableTraitComponent
 
 trait PointerOps extends Base { this: CLibs =>
+  // Type representation
+  case class PointerType[T](typeT: TypeRep[T]) extends TypeRep[Pointer[T]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PointerType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagT = typeT.typeTag
+    val name = s"Pointer[${typeT.name}]"
+    val typeArguments = List(typeT)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[Pointer[T]]
+  }
+  implicit def typePointer[T: TypeRep] = PointerType(implicitly[TypeRep[T]])
   implicit class PointerRep[T](self: Rep[Pointer[T]])(implicit typeT: TypeRep[T]) {
 
   }
@@ -36,25 +45,31 @@ trait PointerOps extends Base { this: CLibs =>
   // method definitions
 
   type Pointer[T] = ch.epfl.data.pardis.shallow.c.CLangTypes.Pointer[T]
-  case class PointerType[T](typeT: TypeRep[T]) extends TypeRep[Pointer[T]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PointerType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagT = typeT.typeTag
-    val name = s"Pointer[${typeT.name}]"
-    val typeArguments = List(typeT)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[Pointer[T]]
-  }
-  implicit def typePointer[T: TypeRep] = PointerType(implicitly[TypeRep[T]])
 }
-trait PointerImplicits { this: PointerComponent =>
+trait PointerImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait PointerImplementations { self: DeepDSL =>
+trait PointerImplementations { this: CLibs =>
 
 }
-trait PointerComponent extends PointerOps with PointerImplicits { self: CLibs => }
+trait PointerPartialEvaluation extends PointerComponent with BasePartialEvaluation { this: CLibs =>
+  // Immutable field inlining 
+
+  // Mutable field inlining 
+  // Pure function partial evaluation
+}
+trait PointerComponent extends PointerOps with PointerImplicits { this: CLibs => }
 
 trait CLangTraitOps extends Base { this: CLibs =>
+  // Type representation
+  case object CLangTraitType extends TypeRep[CLangTrait] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = CLangTraitType
+    val name = "CLangTrait"
+    val typeArguments = Nil
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[CLangTrait]
+  }
+  implicit val typeCLangTrait = CLangTraitType
   implicit class CLangTraitRep(self: Rep[CLangTrait]) {
     def deref_long(v: Rep[Pointer[Long]]): Rep[Long] = cLangTraitDeref_long(self, v)
     def deref_int(v: Rep[Pointer[Int]]): Rep[Int] = cLangTraitDeref_int(self, v)
@@ -215,24 +230,31 @@ trait CLangTraitOps extends Base { this: CLibs =>
   def cLangTraitSizeof[T](self: Rep[CLangTrait])(implicit typeT: TypeRep[T], evidence$14: CType[T]): Rep[Int] = CLangTraitSizeof[T](self)
   def cLangTrait$minus$greater[T <: ch.epfl.data.pardis.shallow.c.CLangTypes.CStruct, U](self: Rep[CLangTrait], struct: Rep[Pointer[T]], field: Rep[Symbol])(implicit typeT: TypeRep[T], typeU: TypeRep[U], evidence$15: CStructInfo[T], evidence$16: CType[U]): Rep[U] = CLangTrait$minus$greater[T, U](self, struct, field)
   type CLangTrait = ch.epfl.data.pardis.shallow.c.CLangTrait
-  case object CLangTraitType extends TypeRep[CLangTrait] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = CLangTraitType
-    val name = "CLangTrait"
-    val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[CLangTrait]
-  }
-  implicit val typeCLangTrait = CLangTraitType
 }
-trait CLangTraitImplicits { this: CLangTraitComponent =>
+trait CLangTraitImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait CLangTraitImplementations { self: DeepDSL =>
+trait CLangTraitImplementations { this: CLibs =>
 
 }
-trait CLangTraitComponent extends CLangTraitOps with CLangTraitImplicits { self: CLibs => }
+trait CLangTraitPartialEvaluation extends CLangTraitComponent with BasePartialEvaluation { this: CLibs =>
+  // Immutable field inlining 
+
+  // Mutable field inlining 
+  // Pure function partial evaluation
+}
+trait CLangTraitComponent extends CLangTraitOps with CLangTraitImplicits { this: CLibs => }
 
 trait CStdLibTraitOps extends Base { this: CLibs =>
+  // Type representation
+  case object CStdLibTraitType extends TypeRep[CStdLibTrait] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = CStdLibTraitType
+    val name = "CStdLibTrait"
+    val typeArguments = Nil
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[CStdLibTrait]
+  }
+  implicit val typeCStdLibTrait = CStdLibTraitType
   implicit class CStdLibTraitRep(self: Rep[CStdLibTrait]) {
     def malloc[T](count: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Pointer[T]] = cStdLibTraitMalloc[T](self, count)(typeT)
     def free[T](ptr: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Unit] = cStdLibTraitFree[T](self, ptr)(typeT)
@@ -255,24 +277,31 @@ trait CStdLibTraitOps extends Base { this: CLibs =>
   def cStdLibTraitMalloc[T](self: Rep[CStdLibTrait], count: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Pointer[T]] = CStdLibTraitMalloc[T](self, count)
   def cStdLibTraitFree[T](self: Rep[CStdLibTrait], ptr: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Unit] = CStdLibTraitFree[T](self, ptr)
   type CStdLibTrait = ch.epfl.data.pardis.shallow.c.CStdLibTrait
-  case object CStdLibTraitType extends TypeRep[CStdLibTrait] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = CStdLibTraitType
-    val name = "CStdLibTrait"
-    val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[CStdLibTrait]
-  }
-  implicit val typeCStdLibTrait = CStdLibTraitType
 }
-trait CStdLibTraitImplicits { this: CStdLibTraitComponent =>
+trait CStdLibTraitImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait CStdLibTraitImplementations { self: DeepDSL =>
+trait CStdLibTraitImplementations { this: CLibs =>
 
 }
-trait CStdLibTraitComponent extends CStdLibTraitOps with CStdLibTraitImplicits { self: CLibs => }
+trait CStdLibTraitPartialEvaluation extends CStdLibTraitComponent with BasePartialEvaluation { this: CLibs =>
+  // Immutable field inlining 
+
+  // Mutable field inlining 
+  // Pure function partial evaluation
+}
+trait CStdLibTraitComponent extends CStdLibTraitOps with CStdLibTraitImplicits { this: CLibs => }
 
 trait CFileOps extends Base { this: CLibs =>
+  // Type representation
+  case object CFileType extends TypeRep[CFile] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = CFileType
+    val name = "CFile"
+    val typeArguments = Nil
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[CFile]
+  }
+  implicit val typeCFile = CFileType
   implicit class CFileRep(self: Rep[CFile]) {
     def fopen(filename: Rep[Pointer[Char]], mode: Rep[Pointer[Char]])(implicit overload1: Overloaded1): Rep[Pointer[CFile]] = cFileFopen1(self, filename, mode)
     def fopen(filename: Rep[String], mode: Rep[Pointer[Char]])(implicit overload2: Overloaded2): Rep[Pointer[CFile]] = cFileFopen2(self, filename, mode)
@@ -400,24 +429,31 @@ trait CFileOps extends Base { this: CLibs =>
   def cFileFgetpos(self: Rep[CFile], f: Rep[Pointer[CFile]], pos: Rep[Pointer[Long]]): Rep[Int] = CFileFgetpos(self, f, pos)
   def cFileFsetpos(self: Rep[CFile], f: Rep[Pointer[CFile]], pos: Rep[Pointer[Long]]): Rep[Int] = CFileFsetpos(self, f, pos)
   type CFile = ch.epfl.data.pardis.shallow.c.CLangTypes.CFile
-  case object CFileType extends TypeRep[CFile] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = CFileType
-    val name = "CFile"
-    val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[CFile]
-  }
-  implicit val typeCFile = CFileType
 }
-trait CFileImplicits { this: CFileComponent =>
+trait CFileImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait CFileImplementations { self: DeepDSL =>
+trait CFileImplementations { this: CLibs =>
 
 }
-trait CFileComponent extends CFileOps with CFileImplicits { self: CLibs => }
+trait CFilePartialEvaluation extends CFileComponent with BasePartialEvaluation { this: CLibs =>
+  // Immutable field inlining 
+
+  // Mutable field inlining 
+  // Pure function partial evaluation
+}
+trait CFileComponent extends CFileOps with CFileImplicits { this: CLibs => }
 
 trait CStringTraitOps extends Base { this: CLibs =>
+  // Type representation
+  case object CStringTraitType extends TypeRep[CStringTrait] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = CStringTraitType
+    val name = "CStringTrait"
+    val typeArguments = Nil
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[CStringTrait]
+  }
+  implicit val typeCStringTrait = CStringTraitType
   implicit class CStringTraitRep(self: Rep[CStringTrait]) {
     def memchr(s: Rep[Pointer[Byte]], c: Rep[Int], n: Rep[Int]): Rep[Pointer[Byte]] = cStringTraitMemchr(self, s, c, n)
     def memcmp(s1: Rep[Pointer[Byte]], s2: Rep[Pointer[Byte]], n: Rep[Int]): Rep[Int] = cStringTraitMemcmp(self, s1, s2, n)
@@ -740,24 +776,31 @@ trait CStringTraitOps extends Base { this: CLibs =>
   def cStringTraitStrxfrm1(self: Rep[CStringTrait], s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]], n: Rep[Int]): Rep[Int] = CStringTraitStrxfrm1(self, s1, s2, n)
   def cStringTraitStrxfrm2(self: Rep[CStringTrait], s1: Rep[Pointer[Char]], s2: Rep[String], n: Rep[Int]): Rep[Int] = CStringTraitStrxfrm2(self, s1, s2, n)
   type CStringTrait = ch.epfl.data.pardis.shallow.c.CStringTrait
-  case object CStringTraitType extends TypeRep[CStringTrait] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = CStringTraitType
-    val name = "CStringTrait"
-    val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[CStringTrait]
-  }
-  implicit val typeCStringTrait = CStringTraitType
 }
-trait CStringTraitImplicits { this: CStringTraitComponent =>
+trait CStringTraitImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait CStringTraitImplementations { self: DeepDSL =>
+trait CStringTraitImplementations { this: CLibs =>
 
 }
-trait CStringTraitComponent extends CStringTraitOps with CStringTraitImplicits { self: CLibs => }
+trait CStringTraitPartialEvaluation extends CStringTraitComponent with BasePartialEvaluation { this: CLibs =>
+  // Immutable field inlining 
+
+  // Mutable field inlining 
+  // Pure function partial evaluation
+}
+trait CStringTraitComponent extends CStringTraitOps with CStringTraitImplicits { this: CLibs => }
 
 trait GArrayOps extends Base { this: CLibs =>
+  // Type representation
+  case object GArrayType extends TypeRep[GArray] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GArrayType
+    val name = "GArray"
+    val typeArguments = Nil
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[GArray]
+  }
+  implicit val typeGArray = GArrayType
   implicit class GArrayRep(self: Rep[GArray]) {
     def g_array_new(zero_terminated: Rep[Int], clear: Rep[Int], element_size: Rep[Int]): Rep[Pointer[GArray]] = gArrayG_array_new(self, zero_terminated, clear, element_size)
     def g_array_sized_new(zero_terminated: Rep[Int], clear: Rep[Int], element_size: Rep[Int], reserved_size: Rep[Int]): Rep[Pointer[GArray]] = gArrayG_array_sized_new(self, zero_terminated, clear, element_size, reserved_size)
@@ -864,24 +907,32 @@ trait GArrayOps extends Base { this: CLibs =>
   def gArrayG_array_sort_with_data(self: Rep[GArray], array: Rep[Pointer[GArray]], compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], user_data: Rep[Pointer[Any]]): Rep[Unit] = GArrayG_array_sort_with_data(self, array, compare_func, user_data)
   def gArrayG_array_set_clear_func(self: Rep[GArray], array: Rep[Pointer[GArray]], clear_func: Rep[Pointer[((Pointer[Any]) => Unit)]]): Rep[Unit] = GArrayG_array_set_clear_func(self, array, clear_func)
   type GArray = ch.epfl.data.pardis.shallow.c.GLibTypes.GArray
-  case object GArrayType extends TypeRep[GArray] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GArrayType
-    val name = "GArray"
-    val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[GArray]
-  }
-  implicit val typeGArray = GArrayType
 }
-trait GArrayImplicits { this: GArrayComponent =>
+trait GArrayImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait GArrayImplementations { self: DeepDSL =>
+trait GArrayImplementations { this: CLibs =>
 
 }
-trait GArrayComponent extends GArrayOps with GArrayImplicits { self: CLibs => }
+trait GArrayPartialEvaluation extends GArrayComponent with BasePartialEvaluation { this: CLibs =>
+  // Immutable field inlining 
+
+  // Mutable field inlining 
+  // Pure function partial evaluation
+}
+trait GArrayComponent extends GArrayOps with GArrayImplicits { this: CLibs => }
 
 trait GListOps extends Base { this: CLibs =>
+  // Type representation
+  case class GListType[T](typeT: TypeRep[T]) extends TypeRep[GList[T]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GListType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagT = typeT.typeTag
+    val name = s"GList[${typeT.name}]"
+    val typeArguments = List(typeT)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[GList[T]]
+  }
+  implicit def typeGList[T: TypeRep] = GListType(implicitly[TypeRep[T]])
   implicit class GListRep[T](self: Rep[GList[T]])(implicit typeT: TypeRep[T]) {
 
   }
@@ -895,25 +946,31 @@ trait GListOps extends Base { this: CLibs =>
   // method definitions
 
   type GList[T] = ch.epfl.data.pardis.shallow.c.GLibTypes.GList[T]
-  case class GListType[T](typeT: TypeRep[T]) extends TypeRep[GList[T]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GListType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagT = typeT.typeTag
-    val name = s"GList[${typeT.name}]"
-    val typeArguments = List(typeT)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[GList[T]]
-  }
-  implicit def typeGList[T: TypeRep] = GListType(implicitly[TypeRep[T]])
 }
-trait GListImplicits { this: GListComponent =>
+trait GListImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait GListImplementations { self: DeepDSL =>
+trait GListImplementations { this: CLibs =>
 
 }
-trait GListComponent extends GListOps with GListImplicits { self: CLibs => }
+trait GListPartialEvaluation extends GListComponent with BasePartialEvaluation { this: CLibs =>
+  // Immutable field inlining 
+
+  // Mutable field inlining 
+  // Pure function partial evaluation
+}
+trait GListComponent extends GListOps with GListImplicits { this: CLibs => }
 
 trait GListTraitOps extends Base { this: CLibs =>
+  // Type representation
+  case object GListTraitType extends TypeRep[GListTrait] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GListTraitType
+    val name = "GListTrait"
+    val typeArguments = Nil
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[GListTrait]
+  }
+  implicit val typeGListTrait = GListTraitType
   implicit class GListTraitRep(self: Rep[GListTrait]) {
     def g_list_append[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListTraitG_list_append[T](self, list, data)(typeT)
     def g_list_prepend[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListTraitG_list_prepend[T](self, list, data)(typeT)
@@ -1062,24 +1119,31 @@ trait GListTraitOps extends Base { this: CLibs =>
   def gListTraitG_list_position[T](self: Rep[GListTrait], list: Rep[Pointer[GList[T]]], llink: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Int] = GListTraitG_list_position[T](self, list, llink)
   def gListTraitG_list_index[T](self: Rep[GListTrait], list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Int] = GListTraitG_list_index[T](self, list, data)
   type GListTrait = ch.epfl.data.pardis.shallow.c.GListTrait
-  case object GListTraitType extends TypeRep[GListTrait] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GListTraitType
-    val name = "GListTrait"
-    val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[GListTrait]
-  }
-  implicit val typeGListTrait = GListTraitType
 }
-trait GListTraitImplicits { this: GListTraitComponent =>
+trait GListTraitImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait GListTraitImplementations { self: DeepDSL =>
+trait GListTraitImplementations { this: CLibs =>
 
 }
-trait GListTraitComponent extends GListTraitOps with GListTraitImplicits { self: CLibs => }
+trait GListTraitPartialEvaluation extends GListTraitComponent with BasePartialEvaluation { this: CLibs =>
+  // Immutable field inlining 
+
+  // Mutable field inlining 
+  // Pure function partial evaluation
+}
+trait GListTraitComponent extends GListTraitOps with GListTraitImplicits { this: CLibs => }
 
 trait GTreeOps extends Base { this: CLibs =>
+  // Type representation
+  case object GTreeType extends TypeRep[GTree] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GTreeType
+    val name = "GTree"
+    val typeArguments = Nil
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[GTree]
+  }
+  implicit val typeGTree = GTreeType
   implicit class GTreeRep(self: Rep[GTree]) {
     def g_tree_new(key_compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any]) => Int)]]): Rep[Pointer[GTree]] = gTreeG_tree_new(self, key_compare_func)
     def g_tree_new_with_data(key_compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], key_compare_data: Rep[Pointer[Any]]): Rep[Pointer[GTree]] = gTreeG_tree_new_with_data(self, key_compare_func, key_compare_data)
@@ -1192,24 +1256,33 @@ trait GTreeOps extends Base { this: CLibs =>
   def gTreeG_tree_height(self: Rep[GTree], tree: Rep[Pointer[GTree]]): Rep[Int] = GTreeG_tree_height(self, tree)
   def gTreeG_tree_nnodes(self: Rep[GTree], tree: Rep[Pointer[GTree]]): Rep[Int] = GTreeG_tree_nnodes(self, tree)
   type GTree = ch.epfl.data.pardis.shallow.c.GLibTypes.GTree
-  case object GTreeType extends TypeRep[GTree] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GTreeType
-    val name = "GTree"
-    val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[GTree]
-  }
-  implicit val typeGTree = GTreeType
 }
-trait GTreeImplicits { this: GTreeComponent =>
+trait GTreeImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait GTreeImplementations { self: DeepDSL =>
+trait GTreeImplementations { this: CLibs =>
 
 }
-trait GTreeComponent extends GTreeOps with GTreeImplicits { self: CLibs => }
+trait GTreePartialEvaluation extends GTreeComponent with BasePartialEvaluation { this: CLibs =>
+  // Immutable field inlining 
+
+  // Mutable field inlining 
+  // Pure function partial evaluation
+}
+trait GTreeComponent extends GTreeOps with GTreeImplicits { this: CLibs => }
 
 trait GHashTableOps extends Base { this: CLibs =>
+  // Type representation
+  case class GHashTableType[K, V](typeK: TypeRep[K], typeV: TypeRep[V]) extends TypeRep[GHashTable[K, V]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GHashTableType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
+    private implicit val tagK = typeK.typeTag
+    private implicit val tagV = typeV.typeTag
+    val name = s"GHashTable[${typeK.name}, ${typeV.name}]"
+    val typeArguments = List(typeK, typeV)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[GHashTable[K, V]]
+  }
+  implicit def typeGHashTable[K: TypeRep, V: TypeRep] = GHashTableType(implicitly[TypeRep[K]], implicitly[TypeRep[V]])
   implicit class GHashTableRep[K, V](self: Rep[GHashTable[K, V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]) {
 
   }
@@ -1223,26 +1296,31 @@ trait GHashTableOps extends Base { this: CLibs =>
   // method definitions
 
   type GHashTable[K, V] = ch.epfl.data.pardis.shallow.c.GLibTypes.GHashTable[K, V]
-  case class GHashTableType[K, V](typeK: TypeRep[K], typeV: TypeRep[V]) extends TypeRep[GHashTable[K, V]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GHashTableType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
-    private implicit val tagK = typeK.typeTag
-    private implicit val tagV = typeV.typeTag
-    val name = s"GHashTable[${typeK.name}, ${typeV.name}]"
-    val typeArguments = List(typeK, typeV)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[GHashTable[K, V]]
-  }
-  implicit def typeGHashTable[K: TypeRep, V: TypeRep] = GHashTableType(implicitly[TypeRep[K]], implicitly[TypeRep[V]])
 }
-trait GHashTableImplicits { this: GHashTableComponent =>
+trait GHashTableImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait GHashTableImplementations { self: DeepDSL =>
+trait GHashTableImplementations { this: CLibs =>
 
 }
-trait GHashTableComponent extends GHashTableOps with GHashTableImplicits { self: CLibs => }
+trait GHashTablePartialEvaluation extends GHashTableComponent with BasePartialEvaluation { this: CLibs =>
+  // Immutable field inlining 
+
+  // Mutable field inlining 
+  // Pure function partial evaluation
+}
+trait GHashTableComponent extends GHashTableOps with GHashTableImplicits { this: CLibs => }
 
 trait GHashTableTraitOps extends Base { this: CLibs =>
+  // Type representation
+  case object GHashTableTraitType extends TypeRep[GHashTableTrait] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GHashTableTraitType
+    val name = "GHashTableTrait"
+    val typeArguments = Nil
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[GHashTableTrait]
+  }
+  implicit val typeGHashTableTrait = GHashTableTraitType
   implicit class GHashTableTraitRep(self: Rep[GHashTableTrait]) {
     def g_hash_table_new[K, V](hash: Rep[Pointer[(Pointer[K] => Int)]], equals: Rep[Pointer[((Pointer[K], Pointer[K]) => Int)]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Pointer[GHashTable[K, V]]] = gHashTableTraitG_hash_table_new[K, V](self, hash, equals)(typeK, typeV)
     def g_hash_table_insert[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]], value: Rep[Pointer[V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Unit] = gHashTableTraitG_hash_table_insert[K, V](self, ht, key, value)(typeK, typeV)
@@ -1319,20 +1397,18 @@ trait GHashTableTraitOps extends Base { this: CLibs =>
   def gHashTableTraitG_hash_table_get_keys[K, V](self: Rep[GHashTableTrait], ht: Rep[Pointer[GHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Pointer[GList[K]]] = GHashTableTraitG_hash_table_get_keys[K, V](self, ht)
   def gHashTableTraitG_hash_table_get_values[K, V](self: Rep[GHashTableTrait], ht: Rep[Pointer[GHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Pointer[GList[V]]] = GHashTableTraitG_hash_table_get_values[K, V](self, ht)
   type GHashTableTrait = ch.epfl.data.pardis.shallow.c.GHashTableTrait
-  case object GHashTableTraitType extends TypeRep[GHashTableTrait] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GHashTableTraitType
-    val name = "GHashTableTrait"
-    val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[GHashTableTrait]
-  }
-  implicit val typeGHashTableTrait = GHashTableTraitType
 }
-trait GHashTableTraitImplicits { this: GHashTableTraitComponent =>
+trait GHashTableTraitImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait GHashTableTraitImplementations { self: DeepDSL =>
+trait GHashTableTraitImplementations { this: CLibs =>
 
 }
-trait GHashTableTraitComponent extends GHashTableTraitOps with GHashTableTraitImplicits { self: CLibs => }
+trait GHashTableTraitPartialEvaluation extends GHashTableTraitComponent with BasePartialEvaluation { this: CLibs =>
+  // Immutable field inlining 
+
+  // Mutable field inlining 
+  // Pure function partial evaluation
+}
+trait GHashTableTraitComponent extends GHashTableTraitOps with GHashTableTraitImplicits { this: CLibs => }
 
