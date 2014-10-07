@@ -1271,7 +1271,7 @@ trait HashJoinOpImplementations { this: DeepDSL =>
         var tmpCount: this.Var[Int] = __newVar(unit(0));
         var break: this.Var[Boolean] = __newVar(unit(false));
         val size: this.Rep[Int] = tmpBuffer.size;
-        __whileDo(__readVar(break).unary_$bang, {
+        __whileDo(self.stop.unary_$bang.$amp$amp(__readVar(break).unary_$bang), {
           val bufElem: this.Rep[A] = tmpBuffer.apply(__readVar(tmpCount));
           __ifThenElse(__app(self.joinCond).apply(bufElem, infix_asInstanceOf[B](tuple)), {
             val res: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]] = RecordOps[A](bufElem).concatenateDynamic[B](infix_asInstanceOf[B](tuple), self.leftAlias, self.rightAlias);

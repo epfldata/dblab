@@ -188,7 +188,7 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
         var tmpCount = 0
         var break = false
         val size = tmpBuffer.size
-        while ( /*!stop && */ !break) {
+        while (!stop && !break) {
           val bufElem = tmpBuffer(tmpCount) // We know there is at least one element
           if (joinCond(bufElem, tuple.asInstanceOf[B])) {
             val res = bufElem.concatenateDynamic(tuple.asInstanceOf[B], leftAlias, rightAlias)
