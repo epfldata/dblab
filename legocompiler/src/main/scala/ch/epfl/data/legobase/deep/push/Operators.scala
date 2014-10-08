@@ -698,7 +698,7 @@ trait AggOpImplementations { this: DeepDSL =>
     {
       self.parent.next();
       var keySet: this.Var[scala.collection.mutable.Set[B]] = __newVar(Set.apply[B](self.hm.keySet.toSeq));
-      __whileDo(infix_$bang$eq(self.hm.size, unit(0)), {
+      __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
         val key: this.Rep[B] = __readVar(keySet).head;
         __readVar(keySet).remove(key);
         val elem: this.Rep[Option[ch.epfl.data.legobase.queryengine.AGGRecord[B]]] = self.hm.remove(key);
@@ -2528,7 +2528,7 @@ trait ViewOpImplementations { this: DeepDSL =>
     {
       self.parent.next();
       var idx: this.Var[Int] = __newVar(unit(0));
-      __whileDo(__readVar(idx).$less(self.size), {
+      __whileDo(self.stop.unary_$bang.$amp$amp(__readVar(idx).$less(self.size)), {
         val e: this.Rep[A] = self.table.apply(__readVar(idx));
         __assign(idx, __readVar(idx).$plus(unit(1)));
         self.child.consume(infix_asInstanceOf[ch.epfl.data.pardis.shallow.Record](e))
@@ -2759,7 +2759,7 @@ trait LeftOuterJoinOpImplementations { this: DeepDSL =>
         var tmpCount: this.Var[Int] = __newVar(unit(0));
         val size: this.Rep[Int] = tmpBuffer.size;
         var break: this.Var[Boolean] = __newVar(unit(false));
-        __whileDo(__readVar(break).unary_$bang, {
+        __whileDo(self.stop.unary_$bang.$amp$amp(__readVar(break).unary_$bang), {
           val bufElem: this.Rep[B] = tmpBuffer.apply(__readVar(tmpCount));
           val elem: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]] = __ifThenElse(__app(self.joinCond).apply(infix_asInstanceOf[A](tuple), bufElem), RecordOps[A](infix_asInstanceOf[A](tuple)).concatenateDynamic[B](bufElem, unit(""), unit("")), RecordOps[A](infix_asInstanceOf[A](tuple)).concatenateDynamic[B](self.defaultB, unit(""), unit("")));
           self.child.consume(elem);
