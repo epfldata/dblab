@@ -6,4 +6,5 @@ object Config {
   var datapath: java.lang.String = null
   var sf: Double = _
   val numRuns: scala.Int = 1
+  val printQueryOutput: scala.Boolean = true
 }

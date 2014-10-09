@@ -180,7 +180,6 @@ trait QueriesImplementations { this: DeepDSL =>
         val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.GroupByClass]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.GroupByClass]]) => printf(unit("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n"), kv.key.L_RETURNFLAG, kv.key.L_LINESTATUS, kv.aggs.apply(unit(1)), kv.aggs.apply(unit(2)), kv.aggs.apply(unit(3)), kv.aggs.apply(unit(4)), kv.aggs.apply(unit(6)), kv.aggs.apply(unit(7)), kv.aggs.apply(unit(8)), kv.aggs.apply(unit(5))))), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -221,7 +220,6 @@ trait QueriesImplementations { this: DeepDSL =>
         })), __lambda((() => __readVar(j).$less(unit(100)))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -255,7 +253,6 @@ trait QueriesImplementations { this: DeepDSL =>
         })), __lambda((() => __readVar(i).$less(unit(10)))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -279,7 +276,6 @@ trait QueriesImplementations { this: DeepDSL =>
         val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.LBString]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.LBString]]) => printf(unit("%s|%.0f\n"), kv.key.string, kv.aggs.apply(unit(0))))), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -311,7 +307,6 @@ trait QueriesImplementations { this: DeepDSL =>
         val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.LBString]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.LBString]]) => printf(unit("%s|%.4f\n"), kv.key.string, kv.aggs.apply(unit(0))))), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -330,7 +325,6 @@ trait QueriesImplementations { this: DeepDSL =>
         })), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -369,7 +363,6 @@ trait QueriesImplementations { this: DeepDSL =>
         val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q7GRPRecord]]] = __newPrintOp(so)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q7GRPRecord]]) => printf(unit("%s|%s|%d|%.4f\n"), kv.key.SUPP_NATION.string, kv.key.CUST_NATION.string, kv.key.L_YEAR, kv.aggs.apply(unit(0))))), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -410,7 +403,6 @@ trait QueriesImplementations { this: DeepDSL =>
         val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[Int]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[Int]]) => printf(unit("%d|%.5f\n"), kv.key, kv.aggs.apply(unit(2))))), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -446,7 +438,6 @@ trait QueriesImplementations { this: DeepDSL =>
         val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q9GRPRecord]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q9GRPRecord]]) => printf(unit("%s|%d|%.4f\n"), kv.key.NATION.string, kv.key.O_YEAR, kv.aggs.apply(unit(0))))), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -480,7 +471,6 @@ trait QueriesImplementations { this: DeepDSL =>
         })), __lambda((() => __readVar(j).$less(unit(20)))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -511,7 +501,6 @@ trait QueriesImplementations { this: DeepDSL =>
         val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.legobase.queryengine.WindowRecord[Int, Double]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.WindowRecord[Int, Double]]) => printf(unit("%d|%.2f\n"), kv.key, kv.wnd))), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -535,7 +524,6 @@ trait QueriesImplementations { this: DeepDSL =>
         val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.LBString]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.LBString]]) => printf(unit("%s|%.0f|%.0f\n"), kv.key.string, kv.aggs.apply(unit(0)), kv.aggs.apply(unit(1))))), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -563,7 +551,6 @@ trait QueriesImplementations { this: DeepDSL =>
         val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[Double]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[Double]]) => printf(unit("%.0f|%.0f\n"), kv.key, kv.aggs.apply(unit(0))))), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -587,7 +574,6 @@ trait QueriesImplementations { this: DeepDSL =>
         val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[String]]] = __newPrintOp(mapOp)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[String]]) => printf(unit("%.4f\n"), kv.aggs.apply(unit(2))))), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -618,7 +604,6 @@ trait QueriesImplementations { this: DeepDSL =>
         val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord, ch.epfl.data.legobase.queryengine.AGGRecord[Int]]]] = __newPrintOp(jo)(__lambda(((kv: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord, ch.epfl.data.legobase.queryengine.AGGRecord[Int]]]) => printf(unit("%d|%s|%s|%s|%.4f\n"), kv.selectDynamic[Int](unit("S_SUPPKEY")), kv.selectDynamic[ch.epfl.data.legobase.LBString](unit("S_NAME")).string, kv.selectDynamic[ch.epfl.data.legobase.LBString](unit("S_ADDRESS")).string, kv.selectDynamic[ch.epfl.data.legobase.LBString](unit("S_PHONE")).string, kv.selectDynamic[Array[Double]](unit("aggs")).apply(unit(0))))), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -661,7 +646,6 @@ trait QueriesImplementations { this: DeepDSL =>
         val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q16GRPRecord2]]] = __newPrintOp(sortOp)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q16GRPRecord2]]) => printf(unit("%s|%s|%d|%.0f\n"), x.key.P_BRAND.string, x.key.P_TYPE.string, x.key.P_SIZE, x.aggs.apply(unit(0))))), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -689,7 +673,6 @@ trait QueriesImplementations { this: DeepDSL =>
         })), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -736,7 +719,6 @@ trait QueriesImplementations { this: DeepDSL =>
         })), __lambda((() => __readVar(j).$less(unit(100)))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -773,7 +755,6 @@ trait QueriesImplementations { this: DeepDSL =>
         })), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -809,7 +790,6 @@ trait QueriesImplementations { this: DeepDSL =>
         val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q20GRPRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord, ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.legobase.queryengine.Q20GRPRecord], ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord]]]) => printf(unit("%s|%s\n"), kv.selectDynamic[ch.epfl.data.legobase.LBString](unit("S_NAME")).string, kv.selectDynamic[ch.epfl.data.legobase.LBString](unit("S_ADDRESS")).string))), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -846,7 +826,6 @@ trait QueriesImplementations { this: DeepDSL =>
         })), __lambda((() => __readVar(i).$less(unit(100)))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }
@@ -883,7 +862,6 @@ trait QueriesImplementations { this: DeepDSL =>
         val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.pardis.shallow.OptimalString]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[ch.epfl.data.pardis.shallow.OptimalString]]) => printf(unit("%s|%.0f|%.2f\n"), kv.key.string, kv.aggs.apply(unit(1)), kv.aggs.apply(unit(0))))), __lambda((() => unit(true))));
         po.open();
         po.next();
-        printf(unit("(%d rows)\n"), po.numRows);
         unit(())
       }))))
     }

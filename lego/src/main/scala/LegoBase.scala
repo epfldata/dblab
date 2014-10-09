@@ -30,24 +30,33 @@ trait LegoRunner {
         executeQuery(currQuery)
         // Check results
         if (Config.checkResults) {
-          val getResultFileName = "results/" + currQuery + ".result_sf" + sf
-          if (new java.io.File(getResultFileName).exists) {
-            val resc = {
-              val str = scala.io.Source.fromFile(getResultFileName).mkString
-              str * Config.numRuns
-            }
+          if (Config.printQueryOutput == false) {
+            System.out.println("LegoBase misconfiguration detected: checkResults = true but " +
+              "printQueryResults = false (Thus no output to check!). Skipping check...")
+          } else {
+            val getResultFileName = "results/" + currQuery + ".result_sf" + sf
             val resq = scala.io.Source.fromFile(getOutputName).mkString
-            if (resq != resc) {
-              System.out.println("-----------------------------------------")
-              System.out.println("QUERY" + q + " DID NOT RETURN CORRECT RESULT!!!")
-              System.out.println("Correct result:")
-              System.out.println(resc)
-              System.out.println("Result obtained from execution:")
+            if (new java.io.File(getResultFileName).exists) {
+              val resc = {
+                val str = scala.io.Source.fromFile(getResultFileName).mkString
+                str * Config.numRuns
+              }
+              if (resq != resc) {
+                System.out.println("-----------------------------------------")
+                System.out.println("QUERY" + q + " DID NOT RETURN CORRECT RESULT!!!")
+                System.out.println("Correct result:")
+                System.out.println(resc)
+                System.out.println("Result obtained from execution:")
+                System.out.println(resq)
+                System.out.println("-----------------------------------------")
+                System.exit(0)
+              } else System.out.println("CHECK RESULT FOR QUERY " + q + ": [OK]")
+            } else {
+              System.out.println("Reference result file not found. Skipping checking of result")
+              System.out.println("Execution results:")
               System.out.println(resq)
-              System.out.println("-----------------------------------------")
-              System.exit(0)
-            } else System.out.println("CHECK RESULT FOR QUERY " + q + ": [OK]")
-          } else System.out.println("Reference result file not found. Skipping checking of result")
+            }
+          }
         }
       }
     }

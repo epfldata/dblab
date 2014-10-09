@@ -162,7 +162,7 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
       //   case None =>
       //     node
       // }
-      PardisStruct(tag, newFields, newMethods)(ps.tp)
+      super.transformDef(PardisStruct(tag, newFields, newMethods)(ps.tp))(ps.tp)
     case ConcatDynamic(record1, record2, leftAlias, rightAlias) if lowerStructs => {
       val tp = node.tp.asInstanceOf[TypeRep[(Any, Any)]]
       val leftTag = getTag(getType(record1.tp))
@@ -185,7 +185,7 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
         val printMethod = getPrint(newTpe.asInstanceOf[TypeRep[Any]], structFields)
         List(PardisStructMethod("equals", eqMethod), PardisStructMethod("hash", hashMethod)) ++ printMethod
       } else Nil
-      PardisStruct(concatTag, structFields, methods)(newTpe).asInstanceOf[to.Def[T]]
+      super.transformDef(PardisStruct(concatTag, structFields, methods)(newTpe).asInstanceOf[to.Def[T]])
     }
 
     case ag: AggOpNew[_, _] => {

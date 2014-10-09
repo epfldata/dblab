@@ -264,6 +264,7 @@ trait PrintOpOps extends Base { this: DeepDSL =>
     def next(): Rep[Unit] = printOpNext[A](self)(typeA)
     def consume(tuple: Rep[Record]): Rep[Unit] = printOpConsume[A](self, tuple)(typeA)
     def reset(): Rep[Unit] = printOpReset[A](self)(typeA)
+    def printQueryOutput: Rep[Boolean] = printOp_Field_PrintQueryOutput[A](self)(typeA)
     def expectedSize: Rep[Int] = printOp_Field_ExpectedSize[A](self)(typeA)
     def numRows_=(x$1: Rep[Int]): Rep[Unit] = printOp_Field_NumRows_$eq[A](self, x$1)(typeA)
     def numRows: Rep[Int] = printOp_Field_NumRows[A](self)(typeA)
@@ -299,6 +300,12 @@ trait PrintOpOps extends Base { this: DeepDSL =>
 
   case class PrintOpReset[A](self: Rep[PrintOp[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
     override def curriedConstructor = (copy[A] _)
+  }
+
+  case class PrintOp_Field_PrintQueryOutput[A](self: Rep[PrintOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Boolean](self, "printQueryOutput") {
+    override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
   }
 
   case class PrintOp_Field_ExpectedSize[A](self: Rep[PrintOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Int](self, "expectedSize") {
@@ -355,6 +362,7 @@ trait PrintOpOps extends Base { this: DeepDSL =>
   def printOpNext[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpNext[A](self)
   def printOpConsume[A](self: Rep[PrintOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpConsume[A](self, tuple)
   def printOpReset[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpReset[A](self)
+  def printOp_Field_PrintQueryOutput[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = PrintOp_Field_PrintQueryOutput[A](self)
   def printOp_Field_ExpectedSize[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = PrintOp_Field_ExpectedSize[A](self)
   def printOp_Field_NumRows_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOp_Field_NumRows_$eq[A](self, x$1)
   def printOp_Field_NumRows[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = PrintOp_Field_NumRows[A](self)
@@ -378,11 +386,14 @@ trait PrintOpImplementations { this: DeepDSL =>
     }
   }
   override def printOpNext[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
-    self.parent.next()
+    {
+      self.parent.next();
+      __ifThenElse(self.printQueryOutput, printf(unit("(%d rows)\n"), self.numRows), unit(()))
+    }
   }
   override def printOpConsume[A](self: Rep[PrintOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     __ifThenElse(infix_$eq$eq(__app(self.limit).apply(), unit(false)), self.parent.stop_$eq(unit(true)), {
-      __app(self.printFunc).apply(infix_asInstanceOf[A](tuple));
+      __ifThenElse(self.printQueryOutput, __app(self.printFunc).apply(infix_asInstanceOf[A](tuple)), unit(()));
       self.numRows_$eq(self.numRows.$plus(unit(1)))
     })
   }
@@ -698,7 +709,7 @@ trait AggOpImplementations { this: DeepDSL =>
     {
       self.parent.next();
       var keySet: this.Var[scala.collection.mutable.Set[B]] = __newVar(Set.apply[B](self.hm.keySet.toSeq));
-      __whileDo(infix_$bang$eq(self.hm.size, unit(0)), {
+      __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
         val key: this.Rep[B] = __readVar(keySet).head;
         __readVar(keySet).remove(key);
         val elem: this.Rep[Option[ch.epfl.data.legobase.queryengine.AGGRecord[B]]] = self.hm.remove(key);
@@ -1476,7 +1487,7 @@ trait WindowOpImplementations { this: DeepDSL =>
     {
       self.parent.next();
       var keySet: this.Var[scala.collection.mutable.Set[B]] = __newVar(Set.apply[B](self.hm.keySet.toSeq));
-      __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
+      __whileDo(infix_$bang$eq(self.hm.size, unit(0)), {
         val k: this.Rep[B] = __readVar(keySet).head;
         __readVar(keySet).remove(k);
         val elem: this.Rep[Option[scala.collection.mutable.ArrayBuffer[A]]] = self.hm.remove(k);
@@ -2309,7 +2320,7 @@ trait HashJoinAntiImplementations { this: DeepDSL =>
       self.mode_$eq(unit(1));
       self.rightParent.next();
       self.keySet_$eq(Set.apply[C](self.hm.keySet.toSeq));
-      __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
+      __whileDo(infix_$bang$eq(self.hm.size, unit(0)), {
         val key: this.Rep[C] = self.keySet.head;
         self.keySet.remove(key);
         val elems: this.Rep[Option[scala.collection.mutable.ArrayBuffer[A]]] = self.hm.remove(key);

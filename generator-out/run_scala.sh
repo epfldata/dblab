@@ -1,9 +1,10 @@
 #!/bin/bash
-NUM=22
+NUM=5
+START=5
 rm -rf bin
 mkdir bin
 CPATH=$HOME/.ivy2/local/lego-core/lego-core_2.11/0.1-SNAPSHOT/jars/lego-core_2.11.jar:$HOME/.ivy2/local/ch.epfl.data/pardis-library_2.11/0.1-SNAPSHOT/jars/pardis-library_2.11.jar:$HOME/.ivy2/local/ch.epfl.data/pardis-core_2.11/0.1-SNAPSHOT/jars/pardis-core_2.11.jar
-for (( i = 1; i <= $NUM; i+=1 )); do
+for (( i = $START; i <= $NUM; i+=1 )); do
 	mkdir bin/Q$i
 	echo "Compiling Q"$i
 	$SCALA_PATH/scalac "Q"${i}".scala" -classpath $CPATH -d bin/Q$i

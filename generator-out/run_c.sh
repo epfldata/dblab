@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SF=1
+SF=0.1
 NUMRUNS=1
 VERBOSE=true
 

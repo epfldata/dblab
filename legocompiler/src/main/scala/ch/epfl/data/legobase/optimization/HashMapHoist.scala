@@ -28,7 +28,7 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
       traverseBlock(node)
     } while (foundFlag)
     scheduleHoistedStatements()
-    System.out.println(s">>>final:${hoistedStatements.mkString("\n")}")
+    //System.out.println(s">>>final:${hoistedStatements.mkString("\n")}")
     transformProgram(node)
   }
 
@@ -72,7 +72,7 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
       currentHoistedStatements.clear()
       traverseBlock(b)
       hoistedStatements.prependAll(currentHoistedStatements)
-      System.out.println(s">>>added:${currentHoistedStatements.mkString("\n")}")
+      //System.out.println(s">>>added:${currentHoistedStatements.mkString("\n")}")
       startCollecting = false
     }
     case _ => super.traverseDef(node)

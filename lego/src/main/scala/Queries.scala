@@ -63,7 +63,6 @@ object Queries {
           kv.aggs(6), kv.aggs(7), kv.aggs(8), kv.aggs(5)), () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       }
     }
@@ -110,7 +109,6 @@ object Queries {
         }, () => j < 100)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       }
     }
@@ -148,7 +146,6 @@ object Queries {
         }, () => i < 10)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       }
     }
@@ -173,7 +170,6 @@ object Queries {
         val po = new PrintOp(sortOp)(kv => printf("%s|%.0f\n", kv.key.string, kv.aggs(0)), () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -213,7 +209,6 @@ object Queries {
         val po = new PrintOp(sortOp)(kv => { printf("%s|%.4f\n", kv.key.string, kv.aggs(0)) }, () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -231,7 +226,6 @@ object Queries {
         val po = new PrintOp(aggOp)(kv => { kv.key; printf("%.4f\n", kv.aggs(0)) }, () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -279,7 +273,6 @@ object Queries {
         val po = new PrintOp(so)(kv => printf("%s|%s|%d|%.4f\n", kv.key.SUPP_NATION.string, kv.key.CUST_NATION.string, kv.key.L_YEAR, kv.aggs(0)), () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -331,7 +324,6 @@ object Queries {
         val po = new PrintOp(sortOp)(kv => printf("%d|%.5f\n", kv.key, kv.aggs(2)), () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -359,7 +351,7 @@ object Queries {
         val hj4 = new HashJoinOp(soPartsupp, hj3)((x, y) => x.PS_PARTKEY == y.L_PARTKEY[Int] && x.PS_SUPPKEY == y.L_SUPPKEY[Int])(x => x.PS_PARTKEY)(x => x.L_PARTKEY[Int])
         val hj5 = new HashJoinOp(hj4, soOrders)((x, y) => x.L_ORDERKEY[Int] == y.O_ORDERKEY)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)
         val aggOp = new AggOp(hj5, 1)(x => new Q9GRPRecord(x.N_NAME[LBString], dateToYear(x.O_ORDERDATE[Int])))(
-          (t, currAgg) => { currAgg + ((t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))) - ((1.0 * t.PS_SUPPLYCOST[Double]) * t.L_QUANTITY[Double]) })
+          (t, currAgg) => { currAgg + ((t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))) - ((1.0 * t.PS_SUPPLYCOST[Double]) * t.L_QUANTITY[Int]) })
         val sortOp = new SortOp(aggOp)((kv1, kv2) => {
           val k1 = kv1.key; val k2 = kv2.key
           val r = k1.NATION diff k2.NATION
@@ -372,7 +364,6 @@ object Queries {
         val po = new PrintOp(sortOp)(kv => printf("%s|%d|%.4f\n", kv.key.NATION.string, kv.key.O_YEAR, kv.aggs(0)), () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -413,7 +404,6 @@ object Queries {
         }, () => j < 20)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -450,7 +440,6 @@ object Queries {
         val po = new PrintOp(sortOp)(kv => printf("%d|%.2f\n", kv.key, kv.wnd), () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -479,7 +468,6 @@ object Queries {
         val po = new PrintOp(sortOp)(kv => printf("%s|%.0f|%.0f\n", kv.key.string, kv.aggs(0), kv.aggs(1)), () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -515,7 +503,6 @@ object Queries {
         val po = new PrintOp(sortOp)(kv => printf("%.0f|%.0f\n", kv.key, kv.aggs(0)), () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -543,7 +530,6 @@ object Queries {
         val po = new PrintOp(mapOp)(kv => printf("%.4f\n", kv.aggs(2)), () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -574,7 +560,6 @@ object Queries {
         val po = new PrintOp(jo)(kv => printf("%d|%s|%s|%s|%.4f\n", kv.S_SUPPKEY[Int], kv.S_NAME[LBString].string, kv.S_ADDRESS[LBString].string, kv.S_PHONE[LBString].string, kv.aggs[Array[Double]].apply(0)), () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -619,7 +604,6 @@ object Queries {
         val po = new PrintOp(sortOp)(x => printf("%s|%s|%d|%.0f\n", x.key.P_BRAND.string, x.key.P_TYPE.string, x.key.P_SIZE, x.aggs(0)), () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -636,11 +620,11 @@ object Queries {
         val scanPart = new SelectOp(new ScanOp(partTable))(x => x.P_CONTAINER === medbag && x.P_BRAND === brand15)
         val jo = new HashJoinOp(scanPart, scanLineitem)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY)
         val wo = new WindowOp(jo)(x => x.L_PARTKEY[Int])(x => {
-          val sum = x.foldLeft(0.0)((cnt, e) => cnt + e.L_QUANTITY[Double])
+          val sum = x.foldLeft(0.0)((cnt, e) => cnt + e.L_QUANTITY[Int])
           val count = x.size
           val avg = 0.2 * (sum / count)
           x.foldLeft(0.0)((cnt, e) => {
-            if (e.L_QUANTITY[Double] < avg) cnt + e.L_EXTENDEDPRICE[Double]
+            if (e.L_QUANTITY[Int] < avg) cnt + e.L_EXTENDEDPRICE[Double]
             else cnt
           }) / 7.0
         })
@@ -648,7 +632,6 @@ object Queries {
         val po = new PrintOp(aggOp)(kv => { kv.key; printf("%.6f\n", kv.aggs(0)) }, () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -693,7 +676,6 @@ object Queries {
         }, () => j < 100)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -736,17 +718,16 @@ object Queries {
         val jo = new SelectOp(new HashJoinOp(so1, so2)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY))(
           x => x.P_BRAND[LBString] === Brand31 &&
             (x.P_CONTAINER[LBString] === SMBOX || x.P_CONTAINER[LBString] === SMCASE || x.P_CONTAINER[LBString] === SMPACK || x.P_CONTAINER[LBString] === SMPKG) &&
-            x.L_QUANTITY[Double] >= 4 && x.L_QUANTITY[Double] <= 14 && x.P_SIZE[Int] <= 5 || x.P_BRAND[LBString] === Brand43 &&
+            x.L_QUANTITY[Int] >= 4 && x.L_QUANTITY[Int] <= 14 && x.P_SIZE[Int] <= 5 || x.P_BRAND[LBString] === Brand43 &&
             (x.P_CONTAINER[LBString] === MEDBAG || x.P_CONTAINER[LBString] === MEDBOX || x.P_CONTAINER[LBString] === MEDPACK || x.P_CONTAINER[LBString] === MEDPKG) &&
-            x.L_QUANTITY[Double] >= 15 && x.L_QUANTITY[Double] <= 25 && x.P_SIZE[Int] <= 10 || x.P_BRAND[LBString] === Brand43 &&
+            x.L_QUANTITY[Int] >= 15 && x.L_QUANTITY[Int] <= 25 && x.P_SIZE[Int] <= 10 || x.P_BRAND[LBString] === Brand43 &&
             (x.P_CONTAINER[LBString] === LGBOX || x.P_CONTAINER[LBString] === LGCASE || x.P_CONTAINER[LBString] === LGPACK || x.P_CONTAINER[LBString] === LGPKG) &&
-            x.L_QUANTITY[Double] >= 26 && x.L_QUANTITY[Double] <= 36 && x.P_SIZE[Int] <= 15)
+            x.L_QUANTITY[Int] >= 26 && x.L_QUANTITY[Int] <= 36 && x.P_SIZE[Int] <= 15)
         val aggOp = new AggOp(jo, 1)(x => "Total")(
           (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
         val po = new PrintOp(aggOp)(kv => { kv.key; printf("%.4f\n", kv.aggs(0)) }, () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -772,7 +753,7 @@ object Queries {
         val scanLineitem = new SelectOp(new ScanOp(lineitemTable))(x => x.L_SHIPDATE >= constantDate1 && x.L_SHIPDATE < constantDate2)
         val jo1 = new HashJoinOp(scanPart, scanPartsupp)((x, y) => x.P_PARTKEY == y.PS_PARTKEY)(x => x.P_PARTKEY)(x => x.PS_PARTKEY)
         val jo2 = new HashJoinOp(jo1, scanLineitem)((x, y) => x.PS_PARTKEY[Int] == y.L_PARTKEY && x.PS_SUPPKEY[Int] == y.L_SUPPKEY)(x => x.PS_PARTKEY[Int])(x => x.L_PARTKEY)
-        val aggOp = new AggOp(jo2, 1)(x => new Q20GRPRecord(x.PS_PARTKEY[Int], x.PS_SUPPKEY[Int], x.PS_AVAILQTY[Int]))((t, currAgg) => { currAgg + t.L_QUANTITY[Double] })
+        val aggOp = new AggOp(jo2, 1)(x => new Q20GRPRecord(x.PS_PARTKEY[Int], x.PS_SUPPKEY[Int], x.PS_AVAILQTY[Int]))((t, currAgg) => { currAgg + t.L_QUANTITY[Int] })
         val selOp = new SelectOp(aggOp)(x => { x.key.PS_PARTKEY; x.key.PS_SUPPKEY; x.key.PS_AVAILQTY > 0.5 * x.aggs(0) })
         val jo3 = new HashJoinOp(selOp, scanSupplier)((x, y) => x.key.PS_SUPPKEY == y.S_SUPPKEY)(x => x.key.PS_SUPPKEY)(x => x.S_SUPPKEY)
         val jo4 = new HashJoinOp(scanNation, jo3)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])
@@ -782,7 +763,6 @@ object Queries {
         val po = new PrintOp(sortOp)(kv => printf("%s|%s\n", kv.S_NAME[LBString].string, kv.S_ADDRESS[LBString].string), () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       }
     }
@@ -821,7 +801,6 @@ object Queries {
         }, () => i < 100)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }
@@ -873,7 +852,6 @@ object Queries {
         val po = new PrintOp(sortOp)(kv => printf("%s|%.0f|%.2f\n", kv.key.string, kv.aggs(1), kv.aggs(0)), () => true)
         po.open
         po.next
-        printf("(%d rows)\n", po.numRows)
         ()
       })
     }

@@ -9,11 +9,12 @@ import pardis.optimization._
 import deep._
 import pardis.types._
 import pardis.types.PardisTypeImplicits._
+import pardis.shallow.utils.DefaultValue
 
-class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class HashMapToArrayTransformer(override val IR: LoweringLegoBase, val generateCCode: Boolean) extends Optimizer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
-  import CNodes._
-  import CTypes._
+  //import CNodes._
+  //import CTypes._
 
   // Abstract over different keys and values
   trait Key
@@ -41,6 +42,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
 
   override def traverseDef(node: Def[_]): Unit = node match {
     case hmgeu @ HashMapGetOrElseUpdate(hm, key, value) => {
+      super.traverseDef(node)
       key match {
         case Constant(c) =>
           hashMapKinds(hm.asInstanceOf[Sym[Any]]) = ConstantKeyMap
@@ -100,45 +102,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
     case _ => super.transformStmToMultiple(stm)
   }
 
-  // Duplication of code with Scala2C -- refactoring needed
-  def getStructHashMethod[A: PardisType] = {
-    val structDef = getStructDef[A].get
-    val hashMethod = transformDef(structDef.methods.find(_.name == "hash").get.body.asInstanceOf[PardisLambda[Any, Int]])
-    toAtom(hashMethod)(hashMethod.tp)
-  }
-  def getStructEqualsMethod[A: PardisType] = {
-    val structDef = getStructDef[A].get
-    val equalsMethod = transformDef(structDef.methods.find(_.name == "equals").get.body.asInstanceOf[PardisLambda2[Any, Any, Boolean]])
-    toAtom(equalsMethod)(equalsMethod.tp)
-  }
-
-  def key2Hash(key: Rep[Key], size: Rep[Int]) = {
-    val k = getHashMethod(key.tp)(key.tp)
-    __app(k).apply(key) % size
-  }
-
-  def int_hash = (doLambda((s: Rep[Int]) => s)).asInstanceOf[Rep[Any => Int]]
-  def int_eq = (doLambda2((s1: Rep[Int], s2: Rep[Int]) => infix_==(s1, s2))).asInstanceOf[Rep[(Any, Any) => Boolean]]
-  def double_hash = (doLambda((s: Rep[Double]) => infix_asInstanceOf(s)(IntType))).asInstanceOf[Rep[Any => Int]]
-  def double_eq = (doLambda2((s1: Rep[Double], s2: Rep[Double]) => infix_==(s1, s2))).asInstanceOf[Rep[(Any, Any) => Boolean]]
-  def optimalString_hash = (doLambda((t: Rep[OptimalString]) => { infix_hashCode(t) })).asInstanceOf[Rep[Any => Int]]
-  def optimalString_eq = (doLambda2((s1: Rep[OptimalString], s2: Rep[OptimalString]) => OptimalString$eq$eq$eq(s1, s2))).asInstanceOf[Rep[(Any, Any) => Boolean]]
-
-  def getEqualsMethod[A: PardisType](k: PardisType[A]) = k match {
-    case c if k.name == "Int"           => int_eq
-    case c if k.name == "Double"        => double_eq
-    case c if k.isRecord                => getStructEqualsMethod(k)
-    case c if k.name == "String"        => optimalString_eq
-    case c if k.name == "OptimalString" => optimalString_eq
-  }
-
-  def getHashMethod[A: PardisType](k: PardisType[A]): Rep[Any => Int] = k match {
-    case c if k.name == "Int"           => int_hash
-    case c if k.name == "Double"        => double_hash
-    case c if k.isRecord                => getStructHashMethod(k)
-    case c if k.name == "String"        => optimalString_hash
-    case c if k.name == "OptimalString" => optimalString_hash
-  }
+  def key2Hash(key: Rep[Key], size: Rep[Int]) = infix_hashCode(key)(key.tp) % size
 
   def checkForHashSym[T](hm: Rep[T], p: Sym[Any] => Boolean): Boolean = p(hm.asInstanceOf[Sym[Any]])
 
@@ -175,10 +139,23 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
 
     case hmn @ HashMapNews(size, typeB) =>
       debugMsg(stderr, unit("Initializing map for type %s of size %d\n"), unit(typeB.toString), size)
+      if (!typeB.isRecord)
+        throw new Exception("To ensure Scala/C intercompatibility of HashMapToArrayTransformer, this " +
+          " optimization can now support _only_ maps with values are of record type (see implementation " +
+          " for more info). This is the case for all TPCH queries. If you see this message you should " +
+          " modify the HashMapToArrayTransformer (you provided " + typeB + " type as value).")
       val arr = arrayNew(size)(typeB)
       val index = __newVar[Int](0)
       __whileDo(readVar(index) < size, {
-        val init = toAtom(Malloc(unit(1))(typeB))(typeB.asInstanceOf[PardisType[Pointer[Any]]])
+        // Replacing malloc with structnew for Scala/C intercompatibility
+        //val init = toAtom(Malloc(unit(1))(typeB))(typeB.asInstanceOf[PardisType[Pointer[Any]]])
+        val s = getStructDef(typeB).get
+        val structFields = s.fields.map(fld => PardisStructArg(fld.name, fld.mutable, {
+          val dflt = DefaultValue(fld.tpe.name)
+          infix_asInstanceOf(unit(dflt)(fld.tpe))(fld.tpe)
+        }))
+        val init = toAtom(transformDef(PardisStruct(s.tag, structFields, List())(s.tp).asInstanceOf[to.Def[T]])(typeB.asInstanceOf[PardisType[T]]))(typeB.asInstanceOf[PardisType[T]])
+
         arrayUpdate(arr, readVar(index), init)
         val e = arrayApply(arr, readVar(index))(typeB)
         toAtom(PardisStructFieldSetter(e, "next", Constant(null)))
@@ -213,14 +190,13 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       val hashKey = key2Hash(key, size)
       val lhm = transformExp(hm)(hm.tp, typeArray(manValue))
       val counter = getSizeCounterMap(hm)
-      val ptrValue = typePointer(manValue)
       val bucket = __newVar(ArrayApply(lhm, hashKey)(manValue))(manValue)
       val e = __newVar(toAtom(PardisStructFieldGetter(ReadVar(bucket)(manValue), "next")(manValue))(manValue))(manValue)
-      val ek = __newVar(toAtom(PardisStructFieldGetter(e, "key")(key.tp))(key.tp).asInstanceOf[Expression[Value]])(key.tp.asInstanceOf[TypeRep[Value]])
-      val eq: Rep[(Any, Any) => Boolean] = getEqualsMethod(k.tp)
-      __whileDo(boolean$amp$amp(infix_!=(e, Constant(null)), !__app(eq).apply(readVar(ek)(key.tp.asInstanceOf[TypeRep[Value]]), k)), {
+      __whileDo(boolean$amp$amp(infix_!=(e, Constant(null)), {
+        val z = toAtom(PardisStructFieldGetter(e, "key")(key.tp))(key.tp)
+        infix_!=(z.asInstanceOf[Expression[Any]], k.asInstanceOf[Expression[Any]])
+      }), {
         __assign(e, toAtom(PardisStructFieldGetter(readVar(e), "next")(manValue))(manValue))
-        __assign(ek, toAtom(PardisStructFieldGetter(readVar(e), "key")(key.tp))(key.tp).asInstanceOf[Expression[Value]])
       })
 
       ReadVal(__ifThenElse(infix_==(readVar(e), Constant(null)), {
@@ -305,7 +281,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
 
     case aba @ ArrayBufferAppend(a @ Def(rv @ PardisReadVar(f @ PardisVar(ab))), e) =>
       implicit val manValue = a.tp.typeArguments(0).asInstanceOf[TypeRep[Value]]
-      val head = transformExp(a)(a.tp, manValue).asInstanceOf[Expression[Pointer[Any]]]
+      val head = transformExp(a)(a.tp, manValue) //.asInstanceOf[Expression[Pointer[Any]]]
 
       val headNext = toAtom(PardisStructFieldGetter(head, "next")(manValue))
       // Connect e

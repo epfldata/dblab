@@ -257,7 +257,8 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
     case s @ PardisStruct(tag, elems, methods) =>
       // TODO if needed method generation should be added
       val x = toAtom(Malloc(unit(1))(s.tp))(typePointer(s.tp))
-      structCopy(x, PardisStruct(tag, elems, methods.map(m => m.copy(body = transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef])))(s.tp))
+      structCopy(x, PardisStruct(tag, elems, methods.map(m => m.copy(body =
+        transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef])))(s.tp))
       ReadVal(x)(typePointer(s.tp))
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
@@ -329,11 +330,6 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
         case _ => case2
       }
     }
-    case BooleanUnary_$bang(b) => NameAlias[Boolean](None, "!", List(List(b)))
-    case eq @ Equal(e1, e2) => {
-      if (e1.tp == OptimalStringType) transformDef(BooleanUnary_$bang(strcmp(e1, e2)))
-      else eq
-    }
 
     // Profiling and utils functions mapping
     /*case GenericEngineRunQueryObject(b) =>
@@ -393,12 +389,12 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   def int_eq = doLambda2((s1: Rep[Int], s2: Rep[Int]) => infix_==(s1, s2))
   def double_hash = doLambda((s: Rep[Double]) => s / 10)
   def double_eq = doLambda2((s1: Rep[Double], s2: Rep[Double]) => infix_==(s1, s2))
-  def record_eq[A: PardisType] = {
+  def record_eq[A: PardisType]() = {
     val structDef = getStructDef[A].get
     val eqMethod = transformDef(structDef.methods.find(_.name == "equals").get.body.asInstanceOf[PardisLambda2[A, A, Boolean]])
     toAtom(eqMethod)(eqMethod.tp)
   }
-  def record_hash[A: PardisType] = {
+  def record_hash[A: PardisType]() = {
     val structDef = getStructDef[A].get
     val hashMethod = transformDef(structDef.methods.find(_.name == "hash").get.body.asInstanceOf[PardisLambda[A, Int]])
     toAtom(hashMethod)(hashMethod.tp)
@@ -414,6 +410,15 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     unit(0)
   })
 
+  object Equals {
+    def unapply(node: Def[Boolean]): Option[(Rep[Any], Rep[Any], Boolean)] = node match {
+      case Equal(a, b)    => Some((a, b, true))
+      case NotEqual(a, b) => Some((a, b, false))
+      case _              => None
+    }
+  }
+
+  def __isRecord(e: Expression[Any]) = e.tp.isRecord || (e.tp.name.startsWith("Pointer") && e.tp.typeArguments(0).isRecord)
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     /* HashMap Operations */
     case nm @ HashMapNew3(_, _) => transformDef(HashMapNew()(nm.typeA, ArrayBufferType(nm.typeB)))
@@ -425,7 +430,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       if ((nm.typeA == StringType) || (nm.typeA == OptimalStringType)) GHashTableNew(string_hash, string_eq)(StringType, nB, IntType)
       else if (nm.typeA == IntType) GHashTableNew(int_hash, int_eq)(IntType, nB, IntType)
       else if (nm.typeA == DoubleType) GHashTableNew(double_hash, double_eq)(DoubleType, nB, DoubleType)
-      else GHashTableNew(record_hash(nm.typeA), record_eq(nm.typeA))(nA, nB, IntType)
+      else GHashTableNew(record_hash()(nm.typeA), record_eq()(nm.typeA))(nA, nB, IntType)
     case HashMapSize(map)   => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
     case HashMapKeySet(map) => NameAlias[Pointer[GList[FILE]]](None, "g_hash_table_get_keys", List(List(map)))
     case HashMapContains(map, key) =>
@@ -522,43 +527,64 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
     /* Other operations */
     case imtf @ PardisStructImmutableField(s, f) =>
-      PardisStructImmutableField(s, f)(transformType(imtf.tp))
-    case HashCode(t) => t.tp match {
-      case x if x.name == "String"    => ReadVal(unit(0)) // KEY is constant. No need to hash anything
-      case x if x.isPrimitive         => PardisCast(t)(x, IntType)
-      case x if x.name == "Character" => PardisCast(t)(x, IntType)
-      case x if x.name == "OptimalString" =>
-        val len = toAtom(OptimalStringLength(t.asInstanceOf[Expression[OptimalString]]))(IntType)
-        val idx = __newVar[Int](0)
-        val h = __newVar[Int](0)
-        // __assign(h, readVar(h) + (unit(128) * len))
-        __whileDo(readVar(idx) < len, {
-          //   __assign(h, readVar(h) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], readVar(idx)))
-          //    __assign(h, readVar(h) + (readVar(h) << 10))
-          //   __assign(h, readVar(h) ^ (readVar(h) >> 6))
-          __assign(h, readVar(h) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], readVar(idx)))
-          __assign(idx, readVar(idx) + unit(1));
-        })
-        //        __assign(h, readVar(h) + (readVar(h) << 3))
-        //      __assign(h, readVar(h) ^ (readVar(h) >> 11))
-        //    __assign(h, readVar(h) + (readVar(h) << 15))
-        //  __assign(h, readVar(h) % len)
-        ReadVar(h)
-      /* hash, i;
-    for(hash = i = 0; i < len; ++i)
-    {
-        hash += key[i];
-        hash += (hash << 10);
-        hash ^= (hash >> 6);
+      PardisStructImmutableField(apply(s), f)(transformType(imtf.tp))
+
+    // Handling proper hascode and equals
+    case Equals(e1, e2, isEqual) => e1.tp match {
+      case x if x == OptimalStringType =>
+        if (isEqual) transformDef(BooleanUnary_$bang(strcmp(e1, e2)))
+        else ReadVal(strcmp(e1, e2))
+      case x if __isRecord(e1) && __isRecord(e2) =>
+        val ttp = if (x.isRecord) x else x.typeArguments(0)
+        val eq = record_eq()(ttp)
+        // TODO should be moved to pardis as it has a lot of use cases
+        val z = eq match {
+          case Def(PardisLambda2(_, i1, i2, o)) => {
+            subst += i1 -> e1
+            subst += i2 -> e2
+            for (stm <- o.stmts) {
+              transformStmToMultiple(stm)
+            }
+            apply(o.res)
+          }
+        }
+        ReadVal(if (isEqual) z else transformDef(BooleanUnary_$bang(z)))
+      case _ => node
     }
-    hash += (hash << 3);
-    hash ^= (hash >> 11);
-    hash += (hash << 15);
-    return hash;*/
-      case x if x.isArray => ArrayLength(t.asInstanceOf[Rep[Array[Any]]])
-      // Handle any additional cases here
-      case x              => super.transformDef(node)
-    }
+    case HashCode(t) =>
+      t.tp match {
+        case x if x == StringType => ReadVal(unit(0)) // KEY is constant. No need to hash anything
+        case x if __isRecord(t) =>
+          val ttp = if (x.isRecord) x else x.typeArguments(0)
+          val h = record_hash()(ttp)
+          // TODO should be moved to pardis as it has a lot of use cases
+          val z = h match {
+            case Def(PardisLambda(_, i, o)) => {
+              subst += i -> t
+              for (stm <- o.stmts) {
+                transformStmToMultiple(stm)
+              }
+              apply(o.res)
+            }
+          }
+          ReadVal(z)
+
+        case x if x.isPrimitive      => PardisCast(t)(x, IntType)
+        case x if x == CharacterType => PardisCast(t)(x, IntType)
+        case x if x == OptimalStringType =>
+          val len = toAtom(OptimalStringLength(t.asInstanceOf[Expression[OptimalString]]))(IntType)
+          val idx = __newVar[Int](0)
+          val h = __newVar[Int](0)
+          __whileDo(readVar(idx) < len, {
+            __assign(h, readVar(h) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], readVar(idx)))
+            __assign(idx, readVar(idx) + unit(1));
+          })
+          ReadVar(h)
+        case x if x.isArray => ArrayLength(t.asInstanceOf[Rep[Array[Any]]])
+        // Handle any additional cases here
+        case x              => super.transformDef(node)
+      }
+    case BooleanUnary_$bang(b) => NameAlias[Boolean](None, "!", List(List(b)))
     case ToString(obj) => obj.tp.asInstanceOf[PardisType[_]] match {
       case PointerType(tp) if tp.isRecord => {
         // ReadVal(__app(record_toString(tp)).apply(obj))

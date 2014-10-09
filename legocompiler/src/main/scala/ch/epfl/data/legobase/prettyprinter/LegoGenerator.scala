@@ -52,7 +52,7 @@ object OrderingFactory {
   }
 }
 
-class LegoCGenerator(val shallow: Boolean = false, val outputFileName: String = "generatedProgram", val verb: Boolean = false) extends CCodeGenerator(verb) {
+class LegoCGenerator(val shallow: Boolean = false, val outputFileName: String = "generatedProgram", val verb: Boolean = true) extends CCodeGenerator(verb) {
   def apply(program: PardisProgram) {
     generate(program, outputFileName)
   }
