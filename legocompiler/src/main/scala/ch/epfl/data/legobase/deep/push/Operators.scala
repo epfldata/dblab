@@ -706,21 +706,11 @@ trait AggOpImplementations { this: DeepDSL =>
     }
   }
   override def aggOpNext[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
-    {
-      self.parent.next();
-      var keySet: this.Var[scala.collection.mutable.Set[B]] = __newVar(Set.apply[B](self.hm.keySet.toSeq));
-      __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
-        val key: this.Rep[B] = __readVar(keySet).head;
-        __readVar(keySet).remove(key);
-        val elem: this.Rep[Option[ch.epfl.data.legobase.queryengine.AGGRecord[B]]] = self.hm.remove(key);
-        self.child.consume(elem.get)
-      })
-    }
+    self.parent.next()
   }
   override def aggOpReset[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
     {
       self.parent.reset();
-      self.hm.clear();
       self.open()
     }
   }
@@ -728,12 +718,7 @@ trait AggOpImplementations { this: DeepDSL =>
     {
       val key: this.Rep[B] = __app(self.grp).apply(infix_asInstanceOf[A](tuple));
       val elem: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[B]] = self.hm.getOrElseUpdate(key, __newAGGRecord(key, __newArray[Double](self.numAggs)));
-      val aggs: this.Rep[Array[Double]] = elem.aggs;
-      var i: this.Var[Int] = __newVar(unit(0));
-      self.aggFuncs.foreach[Unit](__lambda(((aggFun: this.Rep[(A, Double) => Double]) => {
-        aggs.update(__readVar(i), __app(aggFun).apply(infix_asInstanceOf[A](tuple), aggs.apply(__readVar(i))));
-        __assign(i, __readVar(i).$plus(unit(1)))
-      })))
+      printf(unit("%d\n"), elem)
     }
   }
 }
@@ -784,7 +769,7 @@ trait MapOpOps extends Base { this: DeepDSL =>
     def next(): Rep[Unit] = mapOpNext[A](self)(typeA)
     def consume(tuple: Rep[Record]): Rep[Unit] = mapOpConsume[A](self, tuple)(typeA)
     def expectedSize: Rep[Int] = mapOp_Field_ExpectedSize[A](self)(typeA)
-    def aggFuncs: Rep[Seq[(A => Unit)]] = mapOp_Field_AggFuncs[A](self)(typeA)
+    def mapFuncs: Rep[Seq[(A => Unit)]] = mapOp_Field_MapFuncs[A](self)(typeA)
     def parent: Rep[Operator[A]] = mapOp_Field_Parent[A](self)(typeA)
     def stop_=(x$1: Rep[Boolean]): Rep[Unit] = mapOp_Field_Stop_$eq[A](self, x$1)(typeA)
     def stop: Rep[Boolean] = mapOp_Field_Stop[A](self)(typeA)
@@ -795,9 +780,9 @@ trait MapOpOps extends Base { this: DeepDSL =>
 
   }
   // constructors
-  def __newMapOp[A](parent: Rep[Operator[A]])(aggFuncs: Rep[(A => Unit)]*)(implicit typeA: TypeRep[A]): Rep[MapOp[A]] = mapOpNew[A](parent, aggFuncs: _*)(typeA)
+  def __newMapOp[A](parent: Rep[Operator[A]])(mapFuncs: Rep[(A => Unit)]*)(implicit typeA: TypeRep[A]): Rep[MapOp[A]] = mapOpNew[A](parent, mapFuncs: _*)(typeA)
   // case classes
-  case class MapOpNew[A](parent: Rep[Operator[A]], aggFuncsOutput: Rep[Seq[((A) => Unit)]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[MapOp[A]](List(typeA), "MapOp", List(List(parent), List(__varArg(aggFuncsOutput)))) {
+  case class MapOpNew[A](parent: Rep[Operator[A]], mapFuncsOutput: Rep[Seq[((A) => Unit)]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[MapOp[A]](List(typeA), "MapOp", List(List(parent), List(__varArg(mapFuncsOutput)))) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -823,7 +808,7 @@ trait MapOpOps extends Base { this: DeepDSL =>
 
   }
 
-  case class MapOp_Field_AggFuncs[A](self: Rep[MapOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Seq[(A => Unit)]](self, "aggFuncs") {
+  case class MapOp_Field_MapFuncs[A](self: Rep[MapOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Seq[(A => Unit)]](self, "mapFuncs") {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
 
@@ -852,16 +837,16 @@ trait MapOpOps extends Base { this: DeepDSL =>
   }
 
   // method definitions
-  def mapOpNew[A](parent: Rep[Operator[A]], aggFuncs: Rep[((A) => Unit)]*)(implicit typeA: TypeRep[A]): Rep[MapOp[A]] = {
-    val aggFuncsOutput = __liftSeq(aggFuncs.toSeq)
-    MapOpNew[A](parent, aggFuncsOutput)
+  def mapOpNew[A](parent: Rep[Operator[A]], mapFuncs: Rep[((A) => Unit)]*)(implicit typeA: TypeRep[A]): Rep[MapOp[A]] = {
+    val mapFuncsOutput = __liftSeq(mapFuncs.toSeq)
+    MapOpNew[A](parent, mapFuncsOutput)
   }
   def mapOpReset[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpReset[A](self)
   def mapOpOpen[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpOpen[A](self)
   def mapOpNext[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpNext[A](self)
   def mapOpConsume[A](self: Rep[MapOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpConsume[A](self, tuple)
   def mapOp_Field_ExpectedSize[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = MapOp_Field_ExpectedSize[A](self)
-  def mapOp_Field_AggFuncs[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Seq[(A => Unit)]] = MapOp_Field_AggFuncs[A](self)
+  def mapOp_Field_MapFuncs[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Seq[(A => Unit)]] = MapOp_Field_MapFuncs[A](self)
   def mapOp_Field_Parent[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = MapOp_Field_Parent[A](self)
   def mapOp_Field_Stop_$eq[A](self: Rep[MapOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOp_Field_Stop_$eq[A](self, x$1)
   def mapOp_Field_Stop[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = MapOp_Field_Stop[A](self)
@@ -887,16 +872,16 @@ trait MapOpImplementations { this: DeepDSL =>
   }
   override def mapOpConsume[A](self: Rep[MapOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     {
-      self.aggFuncs.foreach[Unit](__lambda(((agg: this.Rep[A => Unit]) => __app(agg).apply(infix_asInstanceOf[A](tuple)))));
+      self.mapFuncs.foreach[Unit](__lambda(((mf: this.Rep[A => Unit]) => __app(mf).apply(infix_asInstanceOf[A](tuple)))));
       self.child.consume(tuple)
     }
   }
 }
 trait MapOpPartialEvaluation extends MapOpComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
-  override def mapOp_Field_AggFuncs[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Seq[(A => Unit)]] = self match {
-    case Def(node: MapOpNew[_]) => node.aggFuncsOutput
-    case _                      => super.mapOp_Field_AggFuncs[A](self)(typeA)
+  override def mapOp_Field_MapFuncs[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Seq[(A => Unit)]] = self match {
+    case Def(node: MapOpNew[_]) => node.mapFuncsOutput
+    case _                      => super.mapOp_Field_MapFuncs[A](self)(typeA)
   }
   override def mapOp_Field_Parent[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = self match {
     case Def(node: MapOpNew[_]) => node.parent

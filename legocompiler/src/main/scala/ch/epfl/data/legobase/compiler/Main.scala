@@ -25,6 +25,7 @@ object Main extends LegoRunner {
 
   /* For the moment this transformation is only valid for C code generation */
   val hashMapToArray = true
+  val columnStore = true
 
   def executeQuery(query: String): Unit = {
     val context = new LoweringLegoBase {}
@@ -107,7 +108,9 @@ object Main extends LegoRunner {
       }
     }
 
-    writeASTToDumpFile(loweredBlock)
+    val columnStoreBlock = if (columnStore) (new ColumnStoreTransformer(context)).optimize(afterHashMapToArray) else afterHashMapToArray
+
+    writeASTToDumpFile(columnStoreBlock)
 
     // DCE
     val dce = new DCE(context)
@@ -126,7 +129,6 @@ object Main extends LegoRunner {
         dceC.optimize(cBlock)
       } else partiallyEvaluatedBlock
     }
-    //writeASTToDumpFile(finalBlock)
 
     // System.out.println(finalBlock)
     // Generate final program 

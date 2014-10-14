@@ -91,6 +91,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase, val generateC
     case Stm(sym, PardisReadVar(PardisVar(z))) =>
       if (z.tp.name.contains("Set")) Nil
       else super.transformStmToMultiple(stm)
+    //TODO: RESTORE
     case Stm(sym, hmn @ HashMapNew4(_, _)) if (mapHasConstantKey(sym)) =>
       val valType = sym.tp.typeArguments(1).asInstanceOf[PardisType[Any]]
       counterMap(sym) = (__newVar[Int](unit(1)), __newVar[Int](unit(0)))
@@ -138,7 +139,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase, val generateC
       PardisStruct(tag, elems ++ List(PardisStructArg("next", true, init)) ++ List(PardisStructArg("prev", true, init)), methods)(ps.tp)
 
     case hmn @ HashMapNews(size, typeB) =>
-      debugMsg(stderr, unit("Initializing map for type %s of size %d\n"), unit(typeB.toString), size)
+      //Console.err.printf(unit("Initializing map for type %s of size %d\n"), unit(typeB.toString), size)
       if (!typeB.isRecord)
         throw new Exception("To ensure Scala/C intercompatibility of HashMapToArrayTransformer, this " +
           " optimization can now support _only_ maps with values are of record type (see implementation " +
@@ -163,7 +164,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase, val generateC
         unit()
       })
       counterMap(arr) = (__newVar[Int](unit(0)), __newVar[Int](unit(0)))
-      debugMsg(stderr, unit("DONE!\n"))
+      //Console.err.printf(unit("DONE!\n"))
       ReadVal(arr)(arr.tp)
 
     case hmgeu @ HashMapGetOrElseUpdate(hm, k, v) if !isAggOp(hm) => {

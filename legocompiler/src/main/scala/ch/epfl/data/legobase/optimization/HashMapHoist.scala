@@ -107,7 +107,7 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     // Profiling and utils functions mapping
     case GenericEngineRunQueryObject(b) =>
-      debugMsg(stderr, unit("New place for hash maps\n"))
+      //Console.err.printf(unit("New place for hash maps\n"))
       for (stm <- hoistedStatements) {
         reflectStm(stm)
       }

@@ -49,7 +49,7 @@ object Queries {
           (t, currAgg) => { (t.L_EXTENDEDPRICE * (1.0 - t.L_DISCOUNT)) + currAgg },
           (t, currAgg) => { (t.L_EXTENDEDPRICE * (1.0 - t.L_DISCOUNT) * (1.0 + t.L_TAX)) + currAgg },
           (t, currAgg) => { currAgg + 1 })
-        val mapOp = new MapOp(aggOp)(kv => kv.aggs(6) = kv.aggs(1) / kv.aggs(5), // AVG(L_QUANTITY)
+        /*val mapOp = new MapOp(aggOp)(kv => kv.aggs(6) = kv.aggs(1) / kv.aggs(5), // AVG(L_QUANTITY)
           kv => kv.aggs(7) = kv.aggs(2) / kv.aggs(5), // AVG(L_EXTENDEDPRICE)
           kv => kv.aggs(8) = kv.aggs(0) / kv.aggs(5)) // AVG(L_DISCOUNT)
         val sortOp = new SortOp(mapOp)((kv1, kv2) => {
@@ -60,7 +60,8 @@ object Queries {
         })
         val po = new PrintOp(sortOp)(kv => printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n",
           kv.key.L_RETURNFLAG, kv.key.L_LINESTATUS, kv.aggs(1), kv.aggs(2), kv.aggs(3), kv.aggs(4),
-          kv.aggs(6), kv.aggs(7), kv.aggs(8), kv.aggs(5)), () => true)
+          kv.aggs(6), kv.aggs(7), kv.aggs(8), kv.aggs(5)), () => true)*/
+        val po = new PrintOp(aggOp)(kv => {}, () => true)
         po.open
         po.next
         ()

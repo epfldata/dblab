@@ -104,34 +104,35 @@ class MetaInfo
   }
   def next() {
     parent.next
-    var keySet = Set(hm.keySet.toSeq: _*)
+    /*var keySet = Set(hm.keySet.toSeq: _*)
     while (!stop && hm.size != 0) {
       val key = keySet.head
       keySet.remove(key)
       val elem = hm.remove(key)
       child.consume(elem.get)
-    }
+    }*/
   }
-  def reset() { parent.reset; hm.clear; open }
+  def reset() { parent.reset; /*hm.clear;*/ open }
   def consume(tuple: Record) {
     val key = grp(tuple.asInstanceOf[A])
     val elem = hm.getOrElseUpdate(key, new AGGRecord(key, new Array[Double](numAggs)))
-    val aggs = elem.aggs
+    printf("%d\n", elem)
+    /*    val aggs = elem.aggs
     var i: scala.Int = 0
     aggFuncs.foreach { aggFun =>
       aggs(i) = aggFun(tuple.asInstanceOf[A], aggs(i))
       i += 1
-    }
+    }*/
   }
 }
 
-@deep class MapOp[A](parent: Operator[A])(aggFuncs: Function1[A, Unit]*) extends Operator[A] {
+@deep class MapOp[A](parent: Operator[A])(mapFuncs: Function1[A, Unit]*) extends Operator[A] {
   val expectedSize = parent.expectedSize
   def reset { parent.reset }
   def open() { parent.child = this; parent.open }
   def next() { parent.next }
   def consume(tuple: Record) {
-    aggFuncs foreach (agg => agg(tuple.asInstanceOf[A]))
+    mapFuncs foreach (mf => mf(tuple.asInstanceOf[A]))
     child.consume(tuple)
   }
 }

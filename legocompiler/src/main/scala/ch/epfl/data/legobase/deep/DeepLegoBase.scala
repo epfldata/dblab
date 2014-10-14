@@ -8,6 +8,7 @@ import pardis.ir._
 import pardis.types.PardisTypeImplicits._
 import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
+import pardis.deep.scalalib.io._
 
 trait GroupByClassOps extends Base with OptimalStringOps {
   // Type representation
@@ -2399,6 +2400,7 @@ trait DeepDSL extends push.OperatorsComponent
   with IntComponent
   with LongComponent
   with ArrayComponent
+  with PrintStreamComponent
   with GroupByClassComponent
   with Q3GRPRecordComponent
   with Q7GRPRecordComponent

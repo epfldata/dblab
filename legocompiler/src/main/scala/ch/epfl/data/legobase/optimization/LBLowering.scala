@@ -144,6 +144,8 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
   }
 
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = node match {
+    case an @ ArrayNew(size) =>
+      ArrayNew(size)(apply(an.tp.typeArguments(0)))
     case CaseClassNew(ccn) if lowerStructs =>
       transformDef(super.transformDef(node))
     case sd @ StructDefault() if lowerStructs =>

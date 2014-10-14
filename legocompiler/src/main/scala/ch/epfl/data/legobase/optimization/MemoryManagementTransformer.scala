@@ -105,9 +105,9 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     // Profiling and utils functions mapping
     case GenericEngineRunQueryObject(b) =>
-      debugMsg(stderr, unit("Initializing LegoBase buffers (this may take a long time...)\n"))
+      //Console.err.printf(unit("Initializing LegoBase buffers (this may take a long time...)\n"))
       createBuffers()
-      debugMsg(stderr, unit("DONE. Now running query\n"))
+      //Console.err.printf(unit("DONE. Now running query\n"))
       val diff = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val start = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val end = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))

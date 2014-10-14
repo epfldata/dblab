@@ -23,11 +23,14 @@ trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base 
     if (m.name.startsWith("CArray")) "ArrayOf" + structName(m.typeArguments.last)
     else if (m.isArray) structName(m.typeArguments.last)
     else if (m.name.startsWith("Pointer")) structName(m.typeArguments.last)
+    else if (m.name == "Int") "int"
     else if (m.name == "Byte") "char"
+    else if (m.name == "Char") "char"
     else if (m.name == "Double") "double"
+    else if (m.name == "OptimalString") "OptimalString"
     else if (m.name.contains("Record")) m.name.replaceAll("struct ", "")
     else {
-      //System.out.println("WARNING: Default structName given: " + m.name);
+      System.out.println("WARNING: Default structName given: " + m.name);
       super.structName(m)
     }
   }
@@ -211,7 +214,10 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       val array = malloc(x)(elemType)
       // Create wrapper with length
       val am = transformType(a.tp)
-      val s = __new(("array", false, array), ("length", false, x))(am)
+      val s = toAtom(
+        PardisStruct(StructTags.ClassTag(structName(am)),
+          List(PardisStructArg("array", false, array), PardisStructArg("length", false, x)),
+          List())(am))(am)
       val m = malloc(unit(1))(am.typeArguments(0))
       structCopy(m.asInstanceOf[Expression[Pointer[Any]]], s)
       ReadVal(m.asInstanceOf[Expression[Any]])(m.tp.asInstanceOf[PardisType[Any]])
@@ -230,6 +236,8 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         // Read array and perform update
         val arr = field(s, "array")(typeArray(typePointer(newTp)))
         if (elemType.isPrimitive) ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, v)
+        else if (elemType.name == "OptimalString")
+          PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, v)
         else
           PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(v.asInstanceOf[Expression[Pointer[Any]]])(v.tp.name.contains("Pointer") match {
             case true  => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
@@ -605,6 +613,12 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Top
     case t: typeOf[_] => typeOf()(apply(t.tp)).asInstanceOf[Rep[S]]
     case _            => super.transformExp[T, S](exp)
   }
+
+  override def transformType[T: PardisType]: PardisType[Any] = ({
+    val tp = typeRep[T]
+    if (tp.name.contains("PrintStream")) typePointer(typeFile)
+    else super.transformType[T]
+  }).asInstanceOf[PardisType[Any]]
 
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
     case OptimalStringNew(x)     => x.correspondingNode
