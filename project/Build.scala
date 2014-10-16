@@ -41,8 +41,9 @@ object LegoBuild extends Build {
         val purgatory_core = cpath.files.find(_.getName contains "purgatory-core").get.absString
         val yy_core = cpath.files.find(_.getName contains "yinyang-core").get.absString
         val yy = cpath.files.find(_.getName contains "scala-yinyang").get.absString
+	val ps = java.io.File.pathSeparator
         Seq(
-          s"-Xplugin:$plugin:$yy_core:$yy:$purgatory_core",
+          s"-Xplugin:$plugin$ps$yy_core$ps$yy$ps$purgatory_core",
           "-Ystop-after:backend-generator"
         )
       } else
