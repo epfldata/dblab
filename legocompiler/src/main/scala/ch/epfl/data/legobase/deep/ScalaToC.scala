@@ -28,7 +28,8 @@ trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base 
     else if (m.name == "Char") "char"
     else if (m.name == "Double") "double"
     else if (m.name == "OptimalString") "OptimalString"
-    else if (m.name.contains("Record")) m.name.replaceAll("struct ", "")
+    //else if (m.name.contains("Record")) m.name.replaceAll("struct ", "")
+    else if (m.isRecord) m.name.replaceAll("struct ", "")
     else {
       System.out.println("WARNING: Default structName given: " + m.name);
       super.structName(m)
@@ -43,8 +44,8 @@ object CTransformersPipeline {
     val b3 = new ScalaConstructsToCTranformer(context).transformBlock(b2)
     val b4 = new ScalaCollectionsToGLibTransfomer(context).optimize(b3)
     val b5 = new OptimalStringToCTransformer(context).transformBlock(b4)
-    val b6 = new optimization.MemoryManagementTransfomer(context).optimize(b5)
-    b6
+    //val b6 = new optimization.MemoryManagementTransfomer(context).optimize(b5)
+    b5
   }
 }
 
@@ -205,7 +206,10 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
     case RangeForeach(Def(RangeNew(start, end, step)), Def(Lambda(f, i1, o))) =>
       PardisFor(start, end, step, i1.asInstanceOf[Expression[Int]], reifyBlock({ o }).asInstanceOf[PardisBlock[Unit]])
 
-    case pc @ PardisCast(x) => PardisCast(apply(x))(apply(pc.castFrom), apply(pc.castTp))
+    case pc @ PardisCast(x) => {
+      System.out.println("Casting from " + pc.castFrom + " to " + pc.castTp + " with apply " + apply(pc.castTp))
+      PardisCast(apply(x))(apply(pc.castFrom), apply(pc.castTp))
+    }
 
     case a @ ArrayNew(x) =>
       // Get type of elements stored in array
@@ -265,7 +269,8 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
     case s @ PardisStruct(tag, elems, methods) =>
       // TODO if needed method generation should be added
       val x = toAtom(Malloc(unit(1))(s.tp))(typePointer(s.tp))
-      structCopy(x, PardisStruct(tag, elems, methods.map(m => m.copy(body =
+      val newElems = elems.map(el => PardisStructArg(el.name, el.mutable, transformExp(el.init)(el.init.tp, apply(el.init.tp))))
+      structCopy(x, PardisStruct(tag, newElems, methods.map(m => m.copy(body =
         transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef])))(s.tp))
       ReadVal(x)(typePointer(s.tp))
     case _ => super.transformDef(node)
@@ -340,7 +345,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     }
 
     // Profiling and utils functions mapping
-    /*case GenericEngineRunQueryObject(b) =>
+    case GenericEngineRunQueryObject(b) =>
       val diff = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val start = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
       val end = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
@@ -348,7 +353,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
       toAtom(transformBlock(b))
       gettimeofday(&(end))
       val tm = timeval_subtract(&(diff), &(end), &(start))
-      Printf(unit("Generated code run in %ld milliseconds."), tm)*/
+      Printf(unit("Generated code run in %ld milliseconds."), tm)
     case OptionGet(x) => ReadVal(x.asInstanceOf[Expression[Any]])(transformType(x.tp))
     case GenericEngineParseDateObject(Constant(d)) =>
       val data = d.split("-").map(x => x.toInt)

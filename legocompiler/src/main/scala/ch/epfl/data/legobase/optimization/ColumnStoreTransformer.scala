@@ -12,12 +12,13 @@ import pardis.types.PardisTypeImplicits._
 
 class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
-  import CNodes._
-  import CTypes._
+  val enabled = false
 
   def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
-    traverseBlock(node)
-    transformProgram(node)
+    if (enabled) {
+      traverseBlock(node)
+      transformProgram(node)
+    } else node
   }
 
   override def traverseDef(node: Def[_]): Unit = node match {
@@ -52,12 +53,13 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimize
       // Convert to column store only if this an array of record 
       if (elemType.isRecord) {
         val structDef = getStructDef(elemType).get
-        val newElems = structDef.fields.map(el => { System.out.println(el.tpe); PardisStructArg("arrayOf" + el.name, true, arrayNew(size)(el.tpe)) })
+        val newElems = structDef.fields.map(el => PardisStructArg("arrayOf" + el.name, true, arrayNew(size)(el.tpe)))
         val newTag = tableColumnStoreTag(structDef.tag)
         val newType = tableColumnStoreType(newTag)
         PardisStruct(newTag, newElems, structDef.methods)(newType)
       } else super.transformDef(node)
     }
+
     case au @ ArrayUpdate(arr, idx, value) =>
       // Get type of elements stored in array
       val elemType = arr.tp.typeArguments(0)
@@ -72,18 +74,31 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimize
         ReadVal(unit(()))
       } else super.transformDef(node)
 
-    case psif @ PardisStructImmutableField(clm @ Def(ArrayApply(arr, idx)), f) => {
-      if (clm.tp.isRecord) {
-        val structDef = getStructDef(clm.tp).get
-        val columnElemType = structDef.fields.find(el => el.name == f).get.tpe
-        val column = field(arr, "arrayOf" + f)(typeArray(columnElemType))
-        ArrayApply(column.asInstanceOf[Expression[Array[Any]]], idx)
+    /* Nodes returning struct nodes -- convert them to a reference to column store */
+    case aa @ ArrayApply(arr, idx) =>
+      if (aa.tp.isRecord) {
+        PardisStruct(StructTags.ClassTag(structName(aa.tp)),
+          List(PardisStructArg("columnStorePointer", false, arr), PardisStructArg("index", false, idx)),
+          List())(aa.tp)
       } else super.transformDef(node)
-    }
+
+    /* case ps @ PardisStruct(tag, elems, methods) =>
+      PardisStruct(StructTags.ClassTag(structName(ps.tp)),
+        List(PardisStructArg("columnStorePointer", false, arr), PardisStructArg("index", false, idx)),
+        List())(ps.tp)*/
+    /* ----------------------------------------------------------------------------*/
 
     case psif @ PardisStructImmutableField(s, f) => {
-      System.out.println("zzzz->" + s + "/" + f)
-      super.transformDef(node)
+      if (s.tp.isRecord) {
+        val structDef = getStructDef(s.tp).get
+        val columnElemType = structDef.fields.find(el => el.name == f).get.tpe
+        val newTag = tableColumnStoreTag(structDef.tag)
+        val newType = tableColumnStoreType(newTag)
+        val columnStorePointer = field(s, "columnStorePointer")(newType)
+        val column = field(columnStorePointer, "arrayOf" + f)(typeArray(columnElemType))
+        val idx = field(s, "index")(typeInt)
+        ArrayApply(column.asInstanceOf[Expression[Array[Any]]], idx)
+      } else super.transformDef(node)
     }
 
     case _ => super.transformDef(node)

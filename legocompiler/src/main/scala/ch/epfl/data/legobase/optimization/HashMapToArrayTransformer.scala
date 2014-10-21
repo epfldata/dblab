@@ -91,7 +91,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase, val generateC
     case Stm(sym, PardisReadVar(PardisVar(z))) =>
       if (z.tp.name.contains("Set")) Nil
       else super.transformStmToMultiple(stm)
-    //TODO: RESTORE
     case Stm(sym, hmn @ HashMapNew4(_, _)) if (mapHasConstantKey(sym)) =>
       val valType = sym.tp.typeArguments(1).asInstanceOf[PardisType[Any]]
       counterMap(sym) = (__newVar[Int](unit(1)), __newVar[Int](unit(0)))

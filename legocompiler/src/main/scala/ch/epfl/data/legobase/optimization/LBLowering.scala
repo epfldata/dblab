@@ -26,19 +26,6 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
 
   val fieldsAccessed = collection.mutable.Map[StructTags.StructTag[_], ArrayBuffer[String]]()
 
-  //hashJoinOpGetExpectedSize(toAtom(ho)(ho.tp))(ma, mb, mc)
-  // def mode = ("mode", true, unit(0))
-
-  //   override def getTag(tp: reflect.runtime.universe.Type): StructTags.StructTag[Any] =
-  //     manifestTags.get(tp) match {
-  //       case Some(v) => v
-  //       case None => {
-  //         System.out.println(manifestTags.keySet.mkString("\n\t"))
-  //         sys.error(s"""There is not struct tag available for type: $tp. 
-  // The main reason is because no object of this type is initialized before the line which is being used.""")
-  //       }
-  //     }
-
   def getRegisteredFieldsOfType[A](t: PardisType[A]): List[String] = {
     val registeredFields = t match {
       case DynamicCompositeRecordType(l, r) =>
@@ -157,13 +144,6 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
         case None    => elems
       }
       val newMethods = methods ++ getPrint(ps.tp.asInstanceOf[TypeRep[Any]], newFields)
-      // registeredFields match {
-      //   case Some(x) =>
-      //     val newElems = elems.filter(e => x.contains(e.name))
-      //     PardisStruct(tag, newElems, methods)(ps.tp)
-      //   case None =>
-      //     node
-      // }
       super.transformDef(PardisStruct(tag, newFields, newMethods)(ps.tp))(ps.tp)
     case ConcatDynamic(record1, record2, leftAlias, rightAlias) if lowerStructs => {
       val tp = node.tp.asInstanceOf[TypeRep[(Any, Any)]]
@@ -196,10 +176,6 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
       val maa = ma.asInstanceOf[TypeRep[Any]]
       val marrDouble = implicitly[to.TypeRep[to.Array[to.Double]]]
       val magg = typeRep[AGGRecord[Any]].rebuild(mb).asInstanceOf[TypeRep[Any]]
-      //      val hm = to.__newHashMap()(to.overloaded2, apply(mb), apply(marrDouble))
-      // val hm = to.__newHashMap4()(apply(mb))
-      // val hm = to.__newHashMap3[Any, Any](ag.grp.asInstanceOf[Rep[Any => Any]], unit(4096))(apply(mb), apply(magg.asInstanceOf[TypeRep[Any]]))
-      // val hm = to.__newHashMap4(unit(4096))(apply(mb))
       val hm = to.__newHashMap4[Any, Any](ag.grp.asInstanceOf[Rep[Any => Any]], unit(1048576))(apply(mb), apply(magg.asInstanceOf[TypeRep[Any]]))
       to.__newDef[AggOp[Any, Any]](("hm", false, hm),
         ("expectedSize", false, unit(1048576)),

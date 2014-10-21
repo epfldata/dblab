@@ -706,7 +706,16 @@ trait AggOpImplementations { this: DeepDSL =>
     }
   }
   override def aggOpNext[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
-    self.parent.next()
+    {
+      self.parent.next();
+      var keySet: this.Var[scala.collection.mutable.Set[B]] = __newVar(Set.apply[B](self.hm.keySet.toSeq));
+      __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
+        val key: this.Rep[B] = __readVar(keySet).head;
+        __readVar(keySet).remove(key);
+        val elem: this.Rep[Option[ch.epfl.data.legobase.queryengine.AGGRecord[B]]] = self.hm.remove(key);
+        self.child.consume(elem.get)
+      })
+    }
   }
   override def aggOpReset[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
     {
@@ -718,7 +727,12 @@ trait AggOpImplementations { this: DeepDSL =>
     {
       val key: this.Rep[B] = __app(self.grp).apply(infix_asInstanceOf[A](tuple));
       val elem: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[B]] = self.hm.getOrElseUpdate(key, __newAGGRecord(key, __newArray[Double](self.numAggs)));
-      printf(unit("%d\n"), elem)
+      val aggs: this.Rep[Array[Double]] = elem.aggs;
+      var i: this.Var[Int] = __newVar(unit(0));
+      self.aggFuncs.foreach[Unit](__lambda(((aggFun: this.Rep[(A, Double) => Double]) => {
+        aggs.update(__readVar(i), __app(aggFun).apply(infix_asInstanceOf[A](tuple), aggs.apply(__readVar(i))));
+        __assign(i, __readVar(i).$plus(unit(1)))
+      })))
     }
   }
 }

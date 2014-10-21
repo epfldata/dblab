@@ -96,30 +96,35 @@ object Main extends LegoRunner {
       }
     }
 
+    val dceBlock2 = (new DCE(context)).optimize(loweredBlock)
+
+    val b6 = new optimization.MemoryManagementTransfomer(context).optimize(dceBlock2)
+    //val b6 = loweredBlock
+
     val afterHashMapToArray = {
       if (hashMapToArray /*&& generateCCode*/ ) {
         val hmHoist = new HashMapHoist(context)
         val hm2Arr = new HashMapToArrayTransformer(context, generateCCode)
-        val afterPE = new PartialyEvaluate(context).optimize(new DCE(context).optimize(loweredBlock))
+        val afterPE = new PartialyEvaluate(context).optimize(new DCE(context).optimize(b6))
         val hmBlock = hm2Arr.optimize(hmHoist.optimize(afterPE))
         hmBlock
       } else {
-        loweredBlock
+        b6
       }
     }
 
-    val columnStoreBlock = if (columnStore) (new ColumnStoreTransformer(context)).optimize(afterHashMapToArray) else afterHashMapToArray
+    val b5 = afterHashMapToArray
 
-    writeASTToDumpFile(columnStoreBlock)
+    val columnStoreBlock = if (columnStore) (new ColumnStoreTransformer(context)).optimize(b5) else b5
 
     // DCE
     val dce = new DCE(context)
-    val dceBlock = dce.optimize(afterHashMapToArray)
+    val dceBlock = dce.optimize(columnStoreBlock)
 
     // Partial evaluation
-    val partiallyEvaluator = new PartialyEvaluate(context)
-    val partiallyEvaluatedBlock = partiallyEvaluator.optimize(dceBlock)
-    // val partiallyEvaluatedBlock = dceBlock
+    //val partiallyEvaluator = new PartialyEvaluate(context)
+    //val partiallyEvaluatedBlock = partiallyEvaluator.optimize(dceBlock)
+    val partiallyEvaluatedBlock = dceBlock
 
     // Convert Scala constructs to C
     val finalBlock = {
@@ -129,6 +134,7 @@ object Main extends LegoRunner {
         dceC.optimize(cBlock)
       } else partiallyEvaluatedBlock
     }
+    writeASTToDumpFile(finalBlock)
 
     // System.out.println(finalBlock)
     // Generate final program 
