@@ -99,7 +99,7 @@ object Main extends LegoRunner {
     val dceBlock2 = (new DCE(context)).optimize(loweredBlock)
 
     val b6 = new optimization.MemoryManagementTransfomer(context).optimize(dceBlock2)
-    //val b6 = loweredBlock
+    //val b6 = dceBlock2
 
     val afterHashMapToArray = {
       if (hashMapToArray /*&& generateCCode*/ ) {

@@ -101,15 +101,14 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
                   arrayApply(other.asInstanceOf[Expression[Array[Any]]], i)(e.init.tp)
                 } else infix_asInstanceOf(unit(DefaultValue(e.init.tp.name))(e.init.tp))(e.init.tp)
               }
-              PardisStructArg(e.name, e.mutable, in)
+              PardisStructArg(e.name, true, in)
             })
             val allocatedSpace = toAtom(PardisStruct(mallocNode.tag, newElems, mallocNode.methods)(elemType))(elemType)
             arrayUpdate(pool, i, allocatedSpace)
           } else if (poolType.isArray) {
             val mallocNode = mallocInstance.node.asInstanceOf[ArrayNew[Any]]
-            val newType = poolType
-            System.out.println("newtype = " + newType)
-            val allocatedSpace = toAtom(ArrayNew(mallocNode._length)(newType))(typeArray(poolType))
+            val newType = poolType.typeArguments(0)
+            val allocatedSpace = toAtom(ArrayNew(mallocNode._length)(newType.asInstanceOf[PardisType[Any]]))(poolType.asInstanceOf[PardisType[Array[Any]]])
             arrayUpdate(pool, i, allocatedSpace)
           }
           //malloc(unit(1))(elemType)
@@ -165,6 +164,13 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
           bufferInfo.pool.asInstanceOf[Rep[Pointer[Any]]], readVar(bufferInfo.index))(m.tp.asInstanceOf[PardisType[Any]])
       }*/
       val p = arrayApply(bufferInfo.pool.asInstanceOf[Rep[Array[Any]]], readVar(bufferInfo.index)(IntType))(ps.tp.asInstanceOf[PardisType[Any]])
+      System.out.println(p.tp)
+      val s = mallocInstance.node.asInstanceOf[PardisStruct[Any]]
+      s.elems.map(e => e.name).zip(elems.map(e => e.init)).foreach({
+        case (fname, initel) => {
+          toAtom(PardisStructFieldSetter(p, fname, initel))
+        }
+      })
       __assign(bufferInfo.index, readVar(bufferInfo.index)(IntType) + (1))
       // printf(unit("should be substituted by " + bufferInfo.pool + ", " + bufferInfo.index))
       ReadVal(p)(ps.tp.asInstanceOf[PardisType[Any]])

@@ -38,7 +38,8 @@ trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base 
 }
 
 object CTransformersPipeline {
-  def apply[A: PardisType](context: LoweringLegoBase, b0: PardisBlock[A]) = {
+  def apply[A: PardisType](context: LoweringLegoBase, b: PardisBlock[A]) = {
+    val b0 = new ScalaToCInitialTransformer(context).transformBlock(b)
     val b1 = new ScalaScannerToCFileTransformer(context).transformBlock(b0)
     val b2 = new ScalaArrayToCStructTransformer(context).optimize(b1)
     val b3 = new ScalaConstructsToCTranformer(context).transformBlock(b2)
@@ -47,6 +48,25 @@ object CTransformersPipeline {
     //val b6 = new optimization.MemoryManagementTransfomer(context).optimize(b5)
     b5
   }
+}
+
+class ScalaToCInitialTransformer(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
+  import IR._
+  import CNodes._
+  import CTypes._
+
+  override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
+    case GenericEngineRunQueryObject(b) =>
+      val diff = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
+      val start = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
+      val end = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
+      gettimeofday(&(start))
+      toAtom(transformBlock(b))
+      gettimeofday(&(end))
+      val tm = timeval_subtract(&(diff), &(end), &(start))
+      Printf(unit("Generated code run in %ld milliseconds."), tm)
+    case _ => super.transformDef(node)
+  }).asInstanceOf[to.Def[T]]
 }
 
 class ScalaScannerToCFileTransformer(override val IR: LoweringLegoBase) extends TopDownTransformerTraverser[LoweringLegoBase] {
@@ -113,7 +133,11 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
     val tp = typeRep[T]
     if (tp.isPrimitive) super.transformType[T]
     else if (tp.name.startsWith("ArrayBuffer")) typePointer(typeGArray(transformType(tp.typeArguments(0))))
-    else if (tp.isArray) typePointer(typeCArray(tp.typeArguments(0)))
+    else if (tp.isArray) typePointer(typeCArray({
+      val ttp = tp.typeArguments(0)
+      if (ttp.isArray) typeCArray(ttp.typeArguments(0))
+      else ttp
+    }))
     else if (tp.isRecord) {
       if (tp.typeArguments == List()) typePointer(tp)
       else typePointer(transformType(tp.typeArguments(0)))
@@ -212,20 +236,37 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
     }
 
     case a @ ArrayNew(x) =>
-      // Get type of elements stored in array
-      val elemType = a.tp.typeArguments(0)
-      // Allocate original array
-      val array = malloc(x)(elemType)
-      // Create wrapper with length
-      val am = transformType(a.tp)
-      val s = toAtom(
-        PardisStruct(StructTags.ClassTag(structName(am)),
-          List(PardisStructArg("array", false, array), PardisStructArg("length", false, x)),
-          List())(am))(am)
-      val m = malloc(unit(1))(am.typeArguments(0))
-      structCopy(m.asInstanceOf[Expression[Pointer[Any]]], s)
-      ReadVal(m.asInstanceOf[Expression[Any]])(m.tp.asInstanceOf[PardisType[Any]])
-
+      if (a.tp.typeArguments(0).isArray) {
+        System.out.println(a.tp + "/" + a.tp.typeArguments(0) + "/" + a.tp.typeArguments(0).typeArguments(0))
+        // Get type of elements stored in array
+        val elemType = typeCArray(a.tp.typeArguments(0).typeArguments(0))
+        // Allocate original array
+        val array = malloc(x)(elemType)
+        // Create wrapper with length
+        val am = typeCArray(typeCArray(a.tp.typeArguments(0).typeArguments(0))).asInstanceOf[PardisType[CArray[CArray[Any]]]] //transformType(a.tp)
+        System.out.println("XMXMXM" + am + " //// " + am.typeArguments(0))
+        val s = toAtom(
+          PardisStruct(StructTags.ClassTag(structName(am)),
+            List(PardisStructArg("array", false, array), PardisStructArg("length", false, x)),
+            List())(am))(am)
+        val m = malloc(unit(1))(am)
+        structCopy(m.asInstanceOf[Expression[Pointer[Any]]], s)
+        ReadVal(m.asInstanceOf[Expression[Any]])(m.tp.asInstanceOf[PardisType[Any]])
+      } else {
+        // Get type of elements stored in array
+        val elemType = a.tp.typeArguments(0)
+        // Allocate original array
+        val array = malloc(x)(elemType)
+        // Create wrapper with length
+        val am = transformType(a.tp)
+        val s = toAtom(
+          PardisStruct(StructTags.ClassTag(structName(am)),
+            List(PardisStructArg("array", false, array), PardisStructArg("length", false, x)),
+            List())(am))(am)
+        val m = malloc(unit(1))(am.typeArguments(0))
+        structCopy(m.asInstanceOf[Expression[Pointer[Any]]], s)
+        ReadVal(m.asInstanceOf[Expression[Any]])(m.tp.asInstanceOf[PardisType[Any]])
+      }
     case au @ ArrayUpdate(a, i, v) => {
       if (singletonArrays.contains(a.tp.asInstanceOf[PardisType[Any]])) {
         a match {
@@ -236,16 +277,20 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         // Get type of elements stored in array
         val elemType = a.tp.typeArguments(0)
         // Get type of internal array
-        val newTp = elemType //if (elemType.isPrimitive) elemType else typePointer(elemType)
+        val newTp = ({
+          if (elemType.isArray) typePointer(typeCArray(elemType.typeArguments(0)))
+          else typeArray(typePointer(elemType))
+        }).asInstanceOf[PardisType[Any]] //if (elemType.isPrimitive) elemType else typePointer(elemType)
         // Read array and perform update
-        val arr = field(s, "array")(typeArray(typePointer(newTp)))
+        val arr = field(s, "array")(newTp)
         if (elemType.isPrimitive) ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, v)
         else if (elemType.name == "OptimalString")
           PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, v)
         else
-          PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(v.asInstanceOf[Expression[Pointer[Any]]])(v.tp.name.contains("Pointer") match {
-            case true  => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
-            case false => v.tp
+          PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(v.asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
+            case x if v.tp.isArray            => transformType(v.tp).typeArguments(0).asInstanceOf[PardisType[Any]]
+            case x if x.startsWith("Pointer") => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+            case _                            => v.tp
           }))
       }
     }
@@ -257,8 +302,11 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         // Get type of elements stored in array
         val elemType = a.tp.typeArguments(0)
         // Get type of internal array
-        val newTp = elemType // if (elemType.isPrimitive) elemType else typePointer(elemType)
-        val arr = field(s, "array")(typeArray(typePointer(newTp)))
+        val newTp = ({
+          if (elemType.isArray) typePointer(typeCArray(elemType.typeArguments(0)))
+          else typeArray(typePointer(elemType))
+        }).asInstanceOf[PardisType[Any]] // if (elemType.isPrimitive) elemType else typePointer(elemType)
+        val arr = field(s, "array")(newTp)
         if (elemType.isPrimitive) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], i)(newTp.asInstanceOf[PardisType[Any]])
         else PTRADDRESS(arr.asInstanceOf[Expression[Pointer[Any]]], i)(typePointer(newTp).asInstanceOf[PardisType[Pointer[Any]]])
       }
@@ -285,6 +333,11 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
     if (tp.isPrimitive) super.transformType[T]
+    /*else if (tp.isArray) typePointer(typeCArray({
+      val ttp = tp.typeArguments(0)
+      if (ttp.isArray) transformType(ttp)
+      else ttp
+    }))*/
     else if (tp.name.startsWith("ArrayBuffer")) typePointer(typeGArray(transformType(tp.typeArguments(0))))
     else if (tp.name.contains("TreeSet")) typePointer(typeGTree(transformType(tp.typeArguments(0))))
     else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
@@ -297,7 +350,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
   }).asInstanceOf[PardisType[Any]]
 
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
-    case PardisReadVal(s) =>
+    case prv @ PardisReadVal(s) =>
       val ss = transformExp[Any, T](s)
       PardisReadVal(ss)(ss.tp.asInstanceOf[PardisType[T]])
     /*case IfThenElse(cond, ifStmt, elseStmt) =>
@@ -345,15 +398,6 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     }
 
     // Profiling and utils functions mapping
-    case GenericEngineRunQueryObject(b) =>
-      val diff = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
-      val start = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
-      val end = readVar(__newVar[TimeVal](PardisCast[Int, TimeVal](unit(0))))
-      gettimeofday(&(start))
-      toAtom(transformBlock(b))
-      gettimeofday(&(end))
-      val tm = timeval_subtract(&(diff), &(end), &(start))
-      Printf(unit("Generated code run in %ld milliseconds."), tm)
     case OptionGet(x) => ReadVal(x.asInstanceOf[Expression[Any]])(transformType(x.tp))
     case GenericEngineParseDateObject(Constant(d)) =>
       val data = d.split("-").map(x => x.toInt)
