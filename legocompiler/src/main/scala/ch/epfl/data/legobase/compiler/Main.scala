@@ -9,6 +9,10 @@ import pardis.optimization._
 import pardis.ir._
 import pardis.types.PardisTypeImplicits._
 
+object TransformerPipeline {
+
+}
+
 object Main extends LegoRunner {
 
   def main(args: Array[String]) {
@@ -25,7 +29,6 @@ object Main extends LegoRunner {
 
   /* For the moment this transformation is only valid for C code generation */
   val hashMapToArray = true
-  val columnStore = true
 
   def executeQuery(query: String): Unit = {
     val context = new LoweringLegoBase {}
@@ -85,59 +88,28 @@ object Main extends LegoRunner {
       pw.flush()
     }
 
-    // Lowering (e.g. case classes to records)
-    val loweredBlock = {
-      if (shallow) block
-      else {
-        val lowering = new LBLowering(context, context, generateCCode)
-        val loweredBlock0 = lowering.lower(block)
-        val parameterPromotion = new LBParameterPromotion(context)
-        parameterPromotion.optimize(loweredBlock0)
-      }
+    val pipeline = new TransformerPipeline()
+    pipeline += LBLowering(generateCCode)
+    pipeline += LBParameterPromotion
+    pipeline += DCE
+    if (generateCCode) {
+      pipeline += MemoryManagementTransfomer
     }
+    pipeline += PartiallyEvaluate
+    pipeline += HashMapHoist
+    pipeline += HashMapToArrayTransformer
+    if (generateCCode) {
 
-    val dceBlock2 = (new DCE(context)).optimize(loweredBlock)
+      pipeline += ColumnStoreTransformer
 
-    val b6 = new optimization.MemoryManagementTransfomer(context).optimize(dceBlock2)
-    //val b6 = dceBlock2
-
-    val afterHashMapToArray = {
-      if (hashMapToArray /*&& generateCCode*/ ) {
-        val hmHoist = new HashMapHoist(context)
-        val hm2Arr = new HashMapToArrayTransformer(context, generateCCode)
-        val afterPE = new PartialyEvaluate(context).optimize(new DCE(context).optimize(b6))
-        val hmBlock = hm2Arr.optimize(hmHoist.optimize(afterPE))
-        hmBlock
-      } else {
-        b6
-      }
     }
+    pipeline += DCE
+    pipeline += PartiallyEvaluate
+    if (generateCCode) pipeline += CTransformersPipeline
+    pipeline += DCE
+    val finalBlock = pipeline.apply(context)(block)
 
-    val b5 = afterHashMapToArray
-
-    val columnStoreBlock = if (columnStore) (new ColumnStoreTransformer(context)).optimize(b5) else b5
-
-    // DCE
-    val dce = new DCE(context)
-    val dceBlock = dce.optimize(columnStoreBlock)
-
-    // Partial evaluation
-    //val partiallyEvaluator = new PartialyEvaluate(context)
-    //val partiallyEvaluatedBlock = partiallyEvaluator.optimize(dceBlock)
-    val partiallyEvaluatedBlock = dceBlock
-
-    // Convert Scala constructs to C
-    val finalBlock = {
-      if (generateCCode) {
-        val cBlock = CTransformersPipeline(context, partiallyEvaluatedBlock)
-        val dceC = new DCECLang(context)
-        dceC.optimize(cBlock)
-      } else partiallyEvaluatedBlock
-    }
-    writeASTToDumpFile(finalBlock)
-
-    // System.out.println(finalBlock)
-    // Generate final program 
+    // Convert to program
     val ir2Program = new { val IR = context } with IRToProgram {}
     val finalProgram = ir2Program.createProgram(finalBlock)
     if (generateCCode) (new LegoCGenerator(shallow, "Q" + number, false)).apply(finalProgram)

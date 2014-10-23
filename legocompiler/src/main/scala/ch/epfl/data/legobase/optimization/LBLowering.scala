@@ -10,6 +10,15 @@ import pardis.types._
 import pardis.types.PardisTypeImplicits._
 import pardis.optimization._
 
+object LBLowering {
+  def apply(generateHashAndEqual: Boolean) = new TransformerHandler {
+    def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
+      val lbContext = context.asInstanceOf[LoweringLegoBase]
+      new LBLowering(lbContext, lbContext, generateHashAndEqual).lower(block)
+    }
+  }
+}
+
 class LBLowering(override val from: LoweringLegoBase, override val to: LoweringLegoBase, override val generateHashAndEqual: Boolean) extends Lowering[LoweringLegoBase, LoweringLegoBase](from, to) {
   import from._
 

@@ -10,6 +10,12 @@ import deep._
 import pardis.types._
 import pardis.types.PardisTypeImplicits._
 
+object HashMapHoist extends TransformerHandler {
+  def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
+    new HashMapHoist(context.asInstanceOf[LoweringLegoBase]).optimize(block)
+  }
+}
+
 /**
  *  Transforms `new HashMap`s inside the part which runs the query into buffers which are allocated
  *  at the loading time.

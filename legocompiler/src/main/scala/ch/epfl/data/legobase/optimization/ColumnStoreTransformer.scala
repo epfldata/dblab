@@ -10,9 +10,15 @@ import deep._
 import pardis.types._
 import pardis.types.PardisTypeImplicits._
 
+object ColumnStoreTransformer extends TransformerHandler {
+  def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
+    new ColumnStoreTransformer(context.asInstanceOf[LoweringLegoBase]).optimize(block)
+  }
+}
+
 class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
-  val enabled = false
+  val enabled = true
 
   def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     if (enabled) {
@@ -77,9 +83,18 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimize
     /* Nodes returning struct nodes -- convert them to a reference to column store */
     case aa @ ArrayApply(arr, idx) =>
       if (aa.tp.isRecord) {
+        val tpe = aa.tp.asInstanceOf[PardisType[Any]]
+        val hashMethod = doLambdaDef((x: Rep[Any]) => {
+          infix_hashCode(field(x, "index")(IntType))(IntType)
+        })(tpe, IntType).asInstanceOf[PardisLambdaDef]
+
+        val eqMethod = doLambda2Def((x: Rep[Any], y: Rep[Any]) => {
+          infix_==(field(x, "index")(IntType), field(y, "index")(IntType))(IntType, IntType)
+        })(tpe, tpe, BooleanType).asInstanceOf[PardisLambdaDef]
+
         PardisStruct(StructTags.ClassTag(structName(aa.tp)),
           List(PardisStructArg("columnStorePointer", false, arr), PardisStructArg("index", false, idx)),
-          List())(aa.tp)
+          List(PardisStructMethod("equals", eqMethod), PardisStructMethod("hash", hashMethod)))(aa.tp)
       } else super.transformDef(node)
 
     /* case ps @ PardisStruct(tag, elems, methods) =>
@@ -98,6 +113,18 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimize
         val column = field(columnStorePointer, "arrayOf" + f)(typeArray(columnElemType))
         val idx = field(s, "index")(typeInt)
         ArrayApply(column.asInstanceOf[Expression[Array[Any]]], idx)
+      } else super.transformDef(node)
+    }
+    case psif @ PardisStructFieldSetter(s, f, v) => {
+      if (s.tp.isRecord) {
+        val structDef = getStructDef(s.tp).get
+        val columnElemType = structDef.fields.find(el => el.name == f).get.tpe
+        val newTag = tableColumnStoreTag(structDef.tag)
+        val newType = tableColumnStoreType(newTag)
+        val columnStorePointer = field(s, "columnStorePointer")(newType)
+        val column = field(columnStorePointer, "arrayOf" + f)(typeArray(columnElemType))
+        val idx = field(s, "index")(typeInt)
+        ArrayUpdate(column.asInstanceOf[Expression[Array[Any]]], idx, v)
       } else super.transformDef(node)
     }
 

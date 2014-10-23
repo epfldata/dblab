@@ -11,7 +11,13 @@ import pardis.types._
 import pardis.types.PardisTypeImplicits._
 import pardis.shallow.utils.DefaultValue
 
-class HashMapToArrayTransformer(override val IR: LoweringLegoBase, val generateCCode: Boolean) extends Optimizer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+object HashMapToArrayTransformer extends TransformerHandler {
+  def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
+    new HashMapToArrayTransformer(context.asInstanceOf[LoweringLegoBase]).optimize(block)
+  }
+}
+
+class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
   //import CNodes._
   //import CTypes._
@@ -192,15 +198,18 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase, val generateC
       val counter = getSizeCounterMap(hm)
       val bucket = __newVar(ArrayApply(lhm, hashKey)(manValue))(manValue)
       val e = __newVar(toAtom(PardisStructFieldGetter(ReadVar(bucket)(manValue), "next")(manValue))(manValue))(manValue)
-      __whileDo(boolean$amp$amp(infix_!=(e, Constant(null)), {
+      /*__whileDo(boolean$amp$amp(infix_!=(e, Constant(null)), {
         val z = toAtom(PardisStructFieldGetter(e, "key")(key.tp))(key.tp)
         infix_!=(z.asInstanceOf[Expression[Any]], k.asInstanceOf[Expression[Any]])
       }), {
         __assign(e, toAtom(PardisStructFieldGetter(readVar(e), "next")(manValue))(manValue))
-      })
+      })*/
 
       ReadVal(__ifThenElse(infix_==(readVar(e), Constant(null)), {
-        val next = toAtom(transformBlockTyped(v)(v.tp, manValue))(manValue)
+         val next = toAtom(transformBlockTyped(v)(v.tp, manValue))(manValue)
+        //val tBlock = transformBlockTyped(v)(v.tp, manValue)
+        //tBlock.stmts.foreach(transformStmToMultiple)
+        //val next = tBlock.res
         __assign(counter, readVar(counter) + unit(1))
         val headNext = toAtom(PardisStructFieldGetter(ReadVar(bucket)(manValue), "next")(manValue))
         toAtom(PardisStructFieldSetter(next, "next", headNext))

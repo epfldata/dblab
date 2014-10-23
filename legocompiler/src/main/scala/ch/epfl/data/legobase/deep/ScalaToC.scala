@@ -37,7 +37,10 @@ trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base 
   }
 }
 
-object CTransformersPipeline {
+object CTransformersPipeline extends TransformerHandler {
+  def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
+    apply[T](context.asInstanceOf[LoweringLegoBase], block)
+  }
   def apply[A: PardisType](context: LoweringLegoBase, b: PardisBlock[A]) = {
     val b0 = new ScalaToCInitialTransformer(context).transformBlock(b)
     val b1 = new ScalaScannerToCFileTransformer(context).transformBlock(b0)
@@ -230,21 +233,16 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
     case RangeForeach(Def(RangeNew(start, end, step)), Def(Lambda(f, i1, o))) =>
       PardisFor(start, end, step, i1.asInstanceOf[Expression[Int]], reifyBlock({ o }).asInstanceOf[PardisBlock[Unit]])
 
-    case pc @ PardisCast(x) => {
-      System.out.println("Casting from " + pc.castFrom + " to " + pc.castTp + " with apply " + apply(pc.castTp))
-      PardisCast(apply(x))(apply(pc.castFrom), apply(pc.castTp))
-    }
+    case pc @ PardisCast(x) => PardisCast(apply(x))(apply(pc.castFrom), apply(pc.castTp))
 
     case a @ ArrayNew(x) =>
       if (a.tp.typeArguments(0).isArray) {
-        System.out.println(a.tp + "/" + a.tp.typeArguments(0) + "/" + a.tp.typeArguments(0).typeArguments(0))
         // Get type of elements stored in array
         val elemType = typeCArray(a.tp.typeArguments(0).typeArguments(0))
         // Allocate original array
         val array = malloc(x)(elemType)
         // Create wrapper with length
         val am = typeCArray(typeCArray(a.tp.typeArguments(0).typeArguments(0))).asInstanceOf[PardisType[CArray[CArray[Any]]]] //transformType(a.tp)
-        System.out.println("XMXMXM" + am + " //// " + am.typeArguments(0))
         val s = toAtom(
           PardisStruct(StructTags.ClassTag(structName(am)),
             List(PardisStructArg("array", false, array), PardisStructArg("length", false, x)),
@@ -446,21 +444,6 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   def int_eq = doLambda2((s1: Rep[Int], s2: Rep[Int]) => infix_==(s1, s2))
   def double_hash = doLambda((s: Rep[Double]) => s / 10)
   def double_eq = doLambda2((s1: Rep[Double], s2: Rep[Double]) => infix_==(s1, s2))
-  def record_eq[A: PardisType]() = {
-    val structDef = getStructDef[A].get
-    val eqMethod = transformDef(structDef.methods.find(_.name == "equals").get.body.asInstanceOf[PardisLambda2[A, A, Boolean]])
-    toAtom(eqMethod)(eqMethod.tp)
-  }
-  def record_hash[A: PardisType]() = {
-    val structDef = getStructDef[A].get
-    val hashMethod = transformDef(structDef.methods.find(_.name == "hash").get.body.asInstanceOf[PardisLambda[A, Int]])
-    toAtom(hashMethod)(hashMethod.tp)
-  }
-  def record_toString[A: PardisType]: Rep[A => String] = {
-    val structDef = getStructDef[A].get
-    val toStringMethod = transformDef(structDef.methods.find(_.name == "to_string").get.body.asInstanceOf[PardisLambda[A, String]])
-    toAtom(toStringMethod)(toStringMethod.tp)
-  }
   // ------------------------------
   def treeHead[A: PardisType, B: PardisType] = doLambda3((s1: Rep[A], s2: Rep[A], s3: Rep[Pointer[B]]) => {
     pointer_assign(s3.asInstanceOf[Expression[Pointer[Any]]], s2)
@@ -487,7 +470,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       if ((nm.typeA == StringType) || (nm.typeA == OptimalStringType)) GHashTableNew(string_hash, string_eq)(StringType, nB, IntType)
       else if (nm.typeA == IntType) GHashTableNew(int_hash, int_eq)(IntType, nB, IntType)
       else if (nm.typeA == DoubleType) GHashTableNew(double_hash, double_eq)(DoubleType, nB, DoubleType)
-      else GHashTableNew(record_hash()(nm.typeA), record_eq()(nm.typeA))(nA, nB, IntType)
+      else GHashTableNew(getStructHashFunc()(nm.typeA), getStructEqualsFunc()(nm.typeA))(nA, nB, IntType)
     case HashMapSize(map)   => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
     case HashMapKeySet(map) => NameAlias[Pointer[GList[FILE]]](None, "g_hash_table_get_keys", List(List(map)))
     case HashMapContains(map, key) =>
@@ -593,7 +576,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         else ReadVal(strcmp(e1, e2))
       case x if __isRecord(e1) && __isRecord(e2) =>
         val ttp = if (x.isRecord) x else x.typeArguments(0)
-        val eq = record_eq()(ttp)
+        val eq = getStructEqualsFunc()(ttp)
         // TODO should be moved to pardis as it has a lot of use cases
         val z = eq match {
           case Def(PardisLambda2(_, i1, i2, o)) => {
@@ -612,8 +595,10 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       t.tp match {
         case x if x == StringType => ReadVal(unit(0)) // KEY is constant. No need to hash anything
         case x if __isRecord(t) =>
-          val ttp = if (x.isRecord) x else x.typeArguments(0)
-          val h = record_hash()(ttp)
+          val h = {
+            if (x.isRecord) getStructHashFunc()(x)
+            else getStructHashFunc()(x.typeArguments(0))
+          }
           // TODO should be moved to pardis as it has a lot of use cases
           val z = h match {
             case Def(PardisLambda(_, i, o)) => {
@@ -645,7 +630,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case ToString(obj) => obj.tp.asInstanceOf[PardisType[_]] match {
       case PointerType(tp) if tp.isRecord => {
         // ReadVal(__app(record_toString(tp)).apply(obj))
-        Apply(record_toString(tp), obj)
+        Apply(getStructToStringFunc(tp), obj)
       }
       case tp => throw new Exception(s"toString conversion for non-record type $tp is not handled for the moment")
     }

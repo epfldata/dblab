@@ -6,6 +6,13 @@ import deep._
 import scala.language.implicitConversions
 import pardis.ir._
 import pardis.optimization._
+import pardis.types._
+
+object LBParameterPromotion extends TransformerHandler {
+  def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
+    new LBParameterPromotion(context.asInstanceOf[LoweringLegoBase]).optimize(block)
+  }
+}
 
 class LBParameterPromotion(override val IR: LoweringLegoBase) extends ParameterPromotion[LoweringLegoBase](IR) {
   import IR._
