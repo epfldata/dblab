@@ -8,6 +8,7 @@ import optimization._
 import pardis.optimization._
 import pardis.ir._
 import pardis.types.PardisTypeImplicits._
+import pardis.types._
 
 object TransformerPipeline {
 
@@ -82,31 +83,27 @@ object Main extends LegoRunner {
   }
 
   def compileQuery(context: LoweringLegoBase, block: pardis.ir.PardisBlock[Unit], number: Int, shallow: Boolean, generateCCode: Boolean) {
-    def writeASTToDumpFile(b0: pardis.ir.PardisBlock[Unit]) {
-      val pw = new java.io.PrintWriter(new java.io.File("tree_debug_dump.txt"))
-      pw.println(b0.toString)
-      pw.flush()
-    }
-
     val pipeline = new TransformerPipeline()
     pipeline += LBLowering(generateCCode)
-    pipeline += LBParameterPromotion
+    pipeline += ParameterPromotion
     pipeline += DCE
     if (generateCCode) {
       pipeline += MemoryManagementTransfomer
+      pipeline += ColumnStoreTransformer
     }
     pipeline += PartiallyEvaluate
     pipeline += HashMapHoist
     pipeline += HashMapToArrayTransformer
-    if (generateCCode) {
 
-      pipeline += ColumnStoreTransformer
+    pipeline += ParameterPromotion
 
-    }
     pipeline += DCE
+
     pipeline += PartiallyEvaluate
     if (generateCCode) pipeline += CTransformersPipeline
-    pipeline += DCE
+    pipeline += TreeDumper
+    pipeline += DCE //NEVER REMOVE!!!!
+
     val finalBlock = pipeline.apply(context)(block)
 
     // Convert to program
@@ -114,5 +111,14 @@ object Main extends LegoRunner {
     val finalProgram = ir2Program.createProgram(finalBlock)
     if (generateCCode) (new LegoCGenerator(shallow, "Q" + number, false)).apply(finalProgram)
     else (new LegoScalaGenerator(shallow, "Q" + number)).apply(finalProgram)
+  }
+}
+
+object TreeDumper extends TransformerHandler {
+  def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
+    val pw = new java.io.PrintWriter(new java.io.File("tree_debug_dump.txt"))
+    pw.println(block.toString)
+    pw.flush()
+    block
   }
 }

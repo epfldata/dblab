@@ -89,7 +89,11 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimize
         })(tpe, IntType).asInstanceOf[PardisLambdaDef]
 
         val eqMethod = doLambda2Def((x: Rep[Any], y: Rep[Any]) => {
-          infix_==(field(x, "index")(IntType), field(y, "index")(IntType))(IntType, IntType)
+          printf(unit("1111"))
+          val fx = field(x, "index")(IntType)
+          val fy = field(y, "index")(IntType)
+          printf(unit("2222"))
+          infix_==(fx, fy)(IntType, IntType)
         })(tpe, tpe, BooleanType).asInstanceOf[PardisLambdaDef]
 
         PardisStruct(StructTags.ClassTag(structName(aa.tp)),

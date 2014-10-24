@@ -575,11 +575,13 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         if (isEqual) transformDef(BooleanUnary_$bang(strcmp(e1, e2)))
         else ReadVal(strcmp(e1, e2))
       case x if __isRecord(e1) && __isRecord(e2) =>
+        System.out.println("CORRECT CASE " + e1.tp + "/ " + e2.tp)
         val ttp = if (x.isRecord) x else x.typeArguments(0)
         val eq = getStructEqualsFunc()(ttp)
         // TODO should be moved to pardis as it has a lot of use cases
         val z = eq match {
           case Def(PardisLambda2(_, i1, i2, o)) => {
+            System.out.println(s"$o, $e1, ${apply(e1)}")
             subst += i1 -> e1
             subst += i2 -> e2
             for (stm <- o.stmts) {
@@ -589,7 +591,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
           }
         }
         ReadVal(if (isEqual) z else transformDef(BooleanUnary_$bang(z)))
-      case _ => node
+      case _ => { /*System.out.println("EQUAL DEFAULT " + e1.tp + "/" + e2.tp); */ node }
     }
     case HashCode(t) =>
       t.tp match {

@@ -190,7 +190,7 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
         var tmpCount = 0
         var break = false
         val size = tmpBuffer.size
-        while ( /*!stop && */ !break) {
+        while (!stop && !break) {
           val bufElem = tmpBuffer(tmpCount) // We know there is at least one element
           if (joinCond(bufElem, tuple.asInstanceOf[B])) {
             val res = bufElem.concatenateDynamic(tuple.asInstanceOf[B], leftAlias, rightAlias)
@@ -413,7 +413,7 @@ class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
   def next() {
     parent.next
     var idx = 0
-    while ( /*!stop && */ idx < size) {
+    while (!stop && idx < size) {
       val e = table(idx)
       idx += 1
       child.consume(e.asInstanceOf[Record])
@@ -455,7 +455,7 @@ class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Ope
         var tmpCount = 0
         val size = tmpBuffer.size
         var break = false
-        while ( /*!stop && */ !break) {
+        while (!stop && !break) {
           val bufElem = tmpBuffer(tmpCount)
           val elem = {
             if (joinCond(tuple.asInstanceOf[A], bufElem)) {

@@ -141,7 +141,9 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     case ps @ PardisStruct(tag, elems, methods) =>
       val init = infix_asInstanceOf(Constant(null))(ps.tp)
-      PardisStruct(tag, elems ++ List(PardisStructArg("next", true, init)) ++ List(PardisStructArg("prev", true, init)), methods)(ps.tp)
+      val alreadyInitialized = elems.find(f => f.name == "next").isDefined
+      if (alreadyInitialized) node
+      else PardisStruct(tag, elems ++ List(PardisStructArg("next", true, init)) ++ List(PardisStructArg("prev", true, init)), methods)(ps.tp)
 
     case hmn @ HashMapNews(size, typeB) =>
       //Console.err.printf(unit("Initializing map for type %s of size %d\n"), unit(typeB.toString), size)
@@ -190,6 +192,19 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       ReadVar(bucket)(manValue.typeArguments(0).asInstanceOf[PardisType[Any]])
     }
     case hmgeu @ HashMapGetOrElseUpdate(hm, k, v) if isAggOp(hm) => {
+      /*def getFieldName(t: PardisType[_]): Option[StructElemInformation] = {
+        System.out.println("Examining " + t)
+        getStructDef(t).get.fields.find(f => {
+          f.tpe match {
+            // Assumes that it will be found in the first level
+            case r if r == k.tp  => true
+            case r if r.isRecord => getFieldName(r).isDefined
+            case r if r.isArray  => getFieldName(r.typeArguments(0)).isDefined
+            case dflt @ _        => System.out.println(dflt); false
+          }
+        })
+      }*/
+
       implicit val manValue = transformType(hm.tp).typeArguments(0).asInstanceOf[TypeRep[Value]]
       val key = k.asInstanceOf[Rep[Key]]
       val size = arrayLength(transformExp(hm)(hm.tp, typeArray(hmgeu.typeB)))
@@ -198,18 +213,26 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       val counter = getSizeCounterMap(hm)
       val bucket = __newVar(ArrayApply(lhm, hashKey)(manValue))(manValue)
       val e = __newVar(toAtom(PardisStructFieldGetter(ReadVar(bucket)(manValue), "next")(manValue))(manValue))(manValue)
-      /*__whileDo(boolean$amp$amp(infix_!=(e, Constant(null)), {
-        val z = toAtom(PardisStructFieldGetter(e, "key")(key.tp))(key.tp)
-        infix_!=(z.asInstanceOf[Expression[Any]], k.asInstanceOf[Expression[Any]])
-      }), {
-        __assign(e, toAtom(PardisStructFieldGetter(readVar(e), "next")(manValue))(manValue))
-      })*/
+      __whileDo(
+        boolean$amp$amp(infix_!=(e, Constant(null)), {
+          //val z = toAtom(PardisStructFieldGetter(e, "key")(key.tp))(key.tp)
+          val eeee = readVar(e)(e.tp).asInstanceOf[Expression[Any]]
+          //System.out.println(s"$e, $eeee")
+          infix_==(eeee, key.asInstanceOf[Expression[Any]])
+        }),
+        // {
+        //   val eValue = readVar(e)(e.tp).asInstanceOf[Expression[Any]]
+        //   infix_!=(eValue, Constant(null)) && infix_==(eValue, key.asInstanceOf[Expression[Any]])
+        // }, 
+        {
+          __assign(e, toAtom(PardisStructFieldGetter(readVar(e), "next")(manValue))(manValue))
+        })
 
       ReadVal(__ifThenElse(infix_==(readVar(e), Constant(null)), {
-         val next = toAtom(transformBlockTyped(v)(v.tp, manValue))(manValue)
-        //val tBlock = transformBlockTyped(v)(v.tp, manValue)
-        //tBlock.stmts.foreach(transformStmToMultiple)
-        //val next = tBlock.res
+        //val next = toAtom(transformBlockTyped(v)(v.tp, manValue))(manValue)
+        val tBlock = transformBlockTyped(v)(v.tp, manValue)
+        tBlock.stmts.foreach(transformStmToMultiple)
+        val next = tBlock.res
         __assign(counter, readVar(counter) + unit(1))
         val headNext = toAtom(PardisStructFieldGetter(ReadVar(bucket)(manValue), "next")(manValue))
         toAtom(PardisStructFieldSetter(next, "next", headNext))
