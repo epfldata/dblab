@@ -579,19 +579,19 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         val ttp = if (x.isRecord) x else x.typeArguments(0)
         val eq = getStructEqualsFunc()(ttp)
         // TODO should be moved to pardis as it has a lot of use cases
-        val z = eq match {
-          case Def(PardisLambda2(_, i1, i2, o)) => {
-            System.out.println(s"$o, $e1, ${apply(e1)}")
-            subst += i1 -> e1
-            subst += i2 -> e2
-            for (stm <- o.stmts) {
-              transformStmToMultiple(stm)
-            }
-            apply(o.res)
-          }
-        }
+        // val z = eq match {
+        //   case Def(PardisLambda2(_, i1, i2, o)) => {
+        //     System.out.println(s"$o, $e1, ${apply(e1)}")
+        //     substitutationContext(i1 -> e1, i2 -> e2) {
+        //       inlineBlock(o)
+        //     }
+        //   }
+        // }
+        // Predef.println(s"subst map ${subst.mkString("\n")}")
+        val z = inlineFunction(eq.asInstanceOf[Rep[(Any, Any) => Boolean]], e1, e2)
         ReadVal(if (isEqual) z else transformDef(BooleanUnary_$bang(z)))
-      case _ => { /*System.out.println("EQUAL DEFAULT " + e1.tp + "/" + e2.tp); */ node }
+      // case _ => { /*System.out.println("EQUAL DEFAULT " + e1.tp + "/" + e2.tp); */ node }
+      case _ => super.transformDef(node)
     }
     case HashCode(t) =>
       t.tp match {
