@@ -16,7 +16,7 @@ trait QueriesOps extends Base { this: DeepDSL =>
 
     val typeTag = scala.reflect.runtime.universe.typeTag[Queries]
   }
-  implicit val typeQueries = QueriesType
+  implicit val typeQueries: TypeRep[Queries] = QueriesType
   implicit class QueriesRep(self: Rep[Queries]) {
 
   }

@@ -18,7 +18,7 @@ trait GroupByClassOps extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[GroupByClass]
   }
-  implicit val typeGroupByClass = GroupByClassType
+  implicit val typeGroupByClass: TypeRep[GroupByClass] = GroupByClassType
   implicit class GroupByClassRep(self: Rep[GroupByClass]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = groupByClassGetField(self, key)
     def L_LINESTATUS: Rep[Char] = groupByClass_Field_L_LINESTATUS(self)
@@ -88,7 +88,7 @@ trait Q3GRPRecordOps extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q3GRPRecord]
   }
-  implicit val typeQ3GRPRecord = Q3GRPRecordType
+  implicit val typeQ3GRPRecord: TypeRep[Q3GRPRecord] = Q3GRPRecordType
   implicit class Q3GRPRecordRep(self: Rep[Q3GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q3GRPRecordGetField(self, key)
     def O_SHIPPRIORITY: Rep[Int] = q3GRPRecord_Field_O_SHIPPRIORITY(self)
@@ -170,7 +170,7 @@ trait Q7GRPRecordOps extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q7GRPRecord]
   }
-  implicit val typeQ7GRPRecord = Q7GRPRecordType
+  implicit val typeQ7GRPRecord: TypeRep[Q7GRPRecord] = Q7GRPRecordType
   implicit class Q7GRPRecordRep(self: Rep[Q7GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q7GRPRecordGetField(self, key)
     def L_YEAR: Rep[Int] = q7GRPRecord_Field_L_YEAR(self)
@@ -252,7 +252,7 @@ trait Q9GRPRecordOps extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q9GRPRecord]
   }
-  implicit val typeQ9GRPRecord = Q9GRPRecordType
+  implicit val typeQ9GRPRecord: TypeRep[Q9GRPRecord] = Q9GRPRecordType
   implicit class Q9GRPRecordRep(self: Rep[Q9GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q9GRPRecordGetField(self, key)
     def O_YEAR: Rep[Int] = q9GRPRecord_Field_O_YEAR(self)
@@ -322,7 +322,7 @@ trait Q10GRPRecordOps extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q10GRPRecord]
   }
-  implicit val typeQ10GRPRecord = Q10GRPRecordType
+  implicit val typeQ10GRPRecord: TypeRep[Q10GRPRecord] = Q10GRPRecordType
   implicit class Q10GRPRecordRep(self: Rep[Q10GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q10GRPRecordGetField(self, key)
     def C_COMMENT: Rep[OptimalString] = q10GRPRecord_Field_C_COMMENT(self)
@@ -452,7 +452,7 @@ trait Q16GRPRecord1Ops extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q16GRPRecord1]
   }
-  implicit val typeQ16GRPRecord1 = Q16GRPRecord1Type
+  implicit val typeQ16GRPRecord1: TypeRep[Q16GRPRecord1] = Q16GRPRecord1Type
   implicit class Q16GRPRecord1Rep(self: Rep[Q16GRPRecord1]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q16GRPRecord1GetField(self, key)
     def PS_SUPPKEY: Rep[Int] = q16GRPRecord1_Field_PS_SUPPKEY(self)
@@ -546,7 +546,7 @@ trait Q16GRPRecord2Ops extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q16GRPRecord2]
   }
-  implicit val typeQ16GRPRecord2 = Q16GRPRecord2Type
+  implicit val typeQ16GRPRecord2: TypeRep[Q16GRPRecord2] = Q16GRPRecord2Type
   implicit class Q16GRPRecord2Rep(self: Rep[Q16GRPRecord2]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q16GRPRecord2GetField(self, key)
     def P_SIZE: Rep[Int] = q16GRPRecord2_Field_P_SIZE(self)
@@ -628,7 +628,7 @@ trait Q18GRPRecordOps extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q18GRPRecord]
   }
-  implicit val typeQ18GRPRecord = Q18GRPRecordType
+  implicit val typeQ18GRPRecord: TypeRep[Q18GRPRecord] = Q18GRPRecordType
   implicit class Q18GRPRecordRep(self: Rep[Q18GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q18GRPRecordGetField(self, key)
     def O_TOTALPRICE: Rep[Double] = q18GRPRecord_Field_O_TOTALPRICE(self)
@@ -734,7 +734,7 @@ trait Q20GRPRecordOps extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q20GRPRecord]
   }
-  implicit val typeQ20GRPRecord = Q20GRPRecordType
+  implicit val typeQ20GRPRecord: TypeRep[Q20GRPRecord] = Q20GRPRecordType
   implicit class Q20GRPRecordRep(self: Rep[Q20GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q20GRPRecordGetField(self, key)
     def PS_AVAILQTY: Rep[Int] = q20GRPRecord_Field_PS_AVAILQTY(self)
@@ -887,7 +887,7 @@ trait GenericEngineOps extends Base with OptimalStringOps {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[GenericEngine]
   }
-  implicit val typeGenericEngine = GenericEngineType
+  implicit val typeGenericEngine: TypeRep[GenericEngine] = GenericEngineType
   implicit class GenericEngineRep(self: Rep[GenericEngine]) {
 
   }
@@ -955,7 +955,7 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[LINEITEMRecord]
   }
-  implicit val typeLINEITEMRecord = LINEITEMRecordType
+  implicit val typeLINEITEMRecord: TypeRep[LINEITEMRecord] = LINEITEMRecordType
   implicit class LINEITEMRecordRep(self: Rep[LINEITEMRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = lINEITEMRecordGetField(self, key)
     def L_COMMENT: Rep[OptimalString] = lINEITEMRecord_Field_L_COMMENT(self)
@@ -1193,7 +1193,7 @@ trait SUPPLIERRecordOps extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[SUPPLIERRecord]
   }
-  implicit val typeSUPPLIERRecord = SUPPLIERRecordType
+  implicit val typeSUPPLIERRecord: TypeRep[SUPPLIERRecord] = SUPPLIERRecordType
   implicit class SUPPLIERRecordRep(self: Rep[SUPPLIERRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = sUPPLIERRecordGetField(self, key)
     def S_COMMENT: Rep[OptimalString] = sUPPLIERRecord_Field_S_COMMENT(self)
@@ -1323,7 +1323,7 @@ trait PARTSUPPRecordOps extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[PARTSUPPRecord]
   }
-  implicit val typePARTSUPPRecord = PARTSUPPRecordType
+  implicit val typePARTSUPPRecord: TypeRep[PARTSUPPRecord] = PARTSUPPRecordType
   implicit class PARTSUPPRecordRep(self: Rep[PARTSUPPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = pARTSUPPRecordGetField(self, key)
     def PS_COMMENT: Rep[OptimalString] = pARTSUPPRecord_Field_PS_COMMENT(self)
@@ -1429,7 +1429,7 @@ trait REGIONRecordOps extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[REGIONRecord]
   }
-  implicit val typeREGIONRecord = REGIONRecordType
+  implicit val typeREGIONRecord: TypeRep[REGIONRecord] = REGIONRecordType
   implicit class REGIONRecordRep(self: Rep[REGIONRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = rEGIONRecordGetField(self, key)
     def R_COMMENT: Rep[OptimalString] = rEGIONRecord_Field_R_COMMENT(self)
@@ -1511,7 +1511,7 @@ trait NATIONRecordOps extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[NATIONRecord]
   }
-  implicit val typeNATIONRecord = NATIONRecordType
+  implicit val typeNATIONRecord: TypeRep[NATIONRecord] = NATIONRecordType
   implicit class NATIONRecordRep(self: Rep[NATIONRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = nATIONRecordGetField(self, key)
     def N_COMMENT: Rep[OptimalString] = nATIONRecord_Field_N_COMMENT(self)
@@ -1605,7 +1605,7 @@ trait PARTRecordOps extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[PARTRecord]
   }
-  implicit val typePARTRecord = PARTRecordType
+  implicit val typePARTRecord: TypeRep[PARTRecord] = PARTRecordType
   implicit class PARTRecordRep(self: Rep[PARTRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = pARTRecordGetField(self, key)
     def P_COMMENT: Rep[OptimalString] = pARTRecord_Field_P_COMMENT(self)
@@ -1759,7 +1759,7 @@ trait CUSTOMERRecordOps extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[CUSTOMERRecord]
   }
-  implicit val typeCUSTOMERRecord = CUSTOMERRecordType
+  implicit val typeCUSTOMERRecord: TypeRep[CUSTOMERRecord] = CUSTOMERRecordType
   implicit class CUSTOMERRecordRep(self: Rep[CUSTOMERRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = cUSTOMERRecordGetField(self, key)
     def C_COMMENT: Rep[OptimalString] = cUSTOMERRecord_Field_C_COMMENT(self)
@@ -1901,7 +1901,7 @@ trait ORDERSRecordOps extends Base with OptimalStringOps {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[ORDERSRecord]
   }
-  implicit val typeORDERSRecord = ORDERSRecordType
+  implicit val typeORDERSRecord: TypeRep[ORDERSRecord] = ORDERSRecordType
   implicit class ORDERSRecordRep(self: Rep[ORDERSRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = oRDERSRecordGetField(self, key)
     def O_COMMENT: Rep[OptimalString] = oRDERSRecord_Field_O_COMMENT(self)
@@ -2198,7 +2198,7 @@ trait K2DBScannerOps extends Base with OptimalStringOps {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[K2DBScanner]
   }
-  implicit val typeK2DBScanner = K2DBScannerType
+  implicit val typeK2DBScanner: TypeRep[K2DBScanner] = K2DBScannerType
   implicit class K2DBScannerRep(self: Rep[K2DBScanner]) {
     def next_int(): Rep[Int] = k2DBScannerNext_int(self)
     def next_double(): Rep[Double] = k2DBScannerNext_double(self)

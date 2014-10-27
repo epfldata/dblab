@@ -16,7 +16,7 @@ trait LoaderOps extends Base { this: DeepDSL =>
 
     val typeTag = scala.reflect.runtime.universe.typeTag[Loader]
   }
-  implicit val typeLoader = LoaderType
+  implicit val typeLoader: TypeRep[Loader] = LoaderType
   implicit class LoaderRep(self: Rep[Loader]) {
 
   }
