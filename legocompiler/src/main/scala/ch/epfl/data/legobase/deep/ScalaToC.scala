@@ -640,36 +640,55 @@ class OptimalStringToCTransformerNew(override val IR: LoweringLegoBase) extends 
     case _            => super.transformExp[T, S](exp)
   }
 
-  rules += rule { case OptimalStringNew(x) => x }
-  rules += rule { case OptimalStringString(x) => x }
-  rules += rule { case OptimalStringDiff(x, y) => StrCmp(x, y) }
-  rules += rule {
+  // sealed trait RewriteRule
+  // object RewriteRule {
+  //   implicit def c1[S](r: PartialFunction[Def[Any], Def[S]]) = Def2Def(r)
+  //   implicit def c2[S](r: PartialFunction[Rep[Any], Def[S]]) = Rep2Def(r)
+  // }
+  // case class Def2Def[S](f: PartialFunction[Def[Any], Def[S]]) extends RewriteRule
+  // case class Rep2Def[S](f: PartialFunction[Rep[Any], Def[S]]) extends RewriteRule
+
+  // object rewrite {
+  //   def apply[S](r: PartialFunction[Def[Any], Def[S]]) = rules += rule(r)
+  //   def apply[S](r: PartialFunction[Rep[Any], Def[S]])(implicit d: DummyImplicit) = rules += rule(r.asInstanceOf[Def[Any], Def[S]])
+  // }
+
+  // object rewrite {
+  //   def apply[S](r: Def2Def[S]) = rules += rule(r.f)
+  //   def apply[S](r: Rep2Def[S]) = rules += rule(r.f.asInstanceOf[PartialFunction[Def[Any], Def[S]]])
+  // }
+
+  rewrite += rule { case OptimalStringNew(x) => x }
+  rewrite += rule { case OptimalStringString(x) => x }
+  rewrite += rule { case OptimalStringDiff(x, y) => StrCmp(x, y) }
+  // rewrite { case OptimalStringDiff(x, y) => StrCmp(x, y) }
+  rewrite += rule {
     case OptimalStringEndsWith(x, y) =>
       val lenx = strlen(x)
       val leny = strlen(y)
       val len = lenx - leny
       strncmp(x + len, y, len) __== unit(0)
   }
-  rules += rule {
+  rewrite += rule {
     case OptimalStringStartsWith(x, y) =>
       strncmp(x, y, StrLen(y)) __== unit(0)
   }
-  rules += rule { case OptimalStringCompare(x, y) => StrCmp(x, y) }
-  rules += rule { case OptimalStringLength(x) => StrLen(apply(x)) }
-  rules += rule { case OptimalString$eq$eq$eq(x, y) => strcmp(x, y) __== unit(0) }
-  rules += rule { case OptimalString$eq$bang$eq(x, y) => infix_!=(strcmp(x, y), unit(0)) }
-  rules += rule { case OptimalStringContainsSlice(x, y) => infix_!=(strstr(x, y), unit(null)) }
-  rules += rule {
+  rewrite += rule { case OptimalStringCompare(x, y) => StrCmp(x, y) }
+  rewrite += rule { case OptimalStringLength(x) => StrLen(apply(x)) }
+  rewrite += rule { case OptimalString$eq$eq$eq(x, y) => strcmp(x, y) __== unit(0) }
+  rewrite += rule { case OptimalString$eq$bang$eq(x, y) => infix_!=(strcmp(x, y), unit(0)) }
+  rewrite += rule { case OptimalStringContainsSlice(x, y) => infix_!=(strstr(x, y), unit(null)) }
+  rewrite += rule {
     case OptimalStringIndexOfSlice(x, y, idx) =>
       val substr = strstr(x + idx, y)
-      transformDef(PardisIfThenElse(Equal(substr, Constant(null)), PardisBlock(Nil, Constant(-1)), PardisBlock(Nil, StrSubtract(substr, x))(IntType)))
+      apply(PardisIfThenElse(Equal(substr, Constant(null)), PardisBlock(Nil, Constant(-1)), PardisBlock(Nil, StrSubtract(substr, x))(IntType)))
   }
-  rules += rule {
+  rewrite += rule {
     case OptimalStringApply(x, idx) =>
       val z = infix_asInstanceOf(apply(x))(typeArray(typePointer(CharType)))
       arrayApply(z, idx)
   }
-  rules += rule {
+  rewrite += rule {
     case OptimalStringSlice(x, start, end) =>
       val len = end - start + unit(1)
       val newbuf = malloc(len)(CharType)
@@ -677,7 +696,7 @@ class OptimalStringToCTransformerNew(override val IR: LoweringLegoBase) extends 
       newbuf
   }
   // This should be in a transformer happening in the end
-  rules += rule {
+  rewrite += rule {
     case PardisIfThenElse(cond, thenp, elsep) if thenp.tp != UnitType =>
       val thenBlock = transformBlock(thenp)
       val elseBlock = transformBlock(elsep)
