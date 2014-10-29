@@ -11,13 +11,15 @@ import pardis.types._
 import pardis.types.PardisTypeImplicits._
 import pardis.shallow.utils.DefaultValue
 
-object HashMapToArrayTransformer extends TransformerHandler {
-  def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    new HashMapToArrayTransformer(context.asInstanceOf[LoweringLegoBase]).optimize(block)
+object HashMapToArrayTransformer {
+  def apply(generateCCode: Boolean) = new TransformerHandler {
+    def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
+      new HashMapToArrayTransformer(context.asInstanceOf[LoweringLegoBase], generateCCode).optimize(block)
+    }
   }
 }
 
-class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class HashMapToArrayTransformer(override val IR: LoweringLegoBase, val generateCCode: Boolean) extends Optimizer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
   //import CNodes._
   //import CTypes._
@@ -108,8 +110,12 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
     case _ => super.transformStmToMultiple(stm)
   }
 
-  def key2Hash(key: Rep[Key], size: Rep[Int]) = infix_hashCode(key)(key.tp) % size
-
+  def key2Hash(key: Rep[Key], size: Rep[Int]) = {
+    val z = infix_hashCode(key)(key.tp)
+    // For C hashcode should be always positive -- optimize for C?
+    val res = __ifThenElse(z >= unit(0), z % size, (-z % size))
+    ReadVal(res)(res.tp)
+  }
   def checkForHashSym[T](hm: Rep[T], p: Sym[Any] => Boolean): Boolean = p(hm.asInstanceOf[Sym[Any]])
 
   override def transformType[T: PardisType]: PardisType[Any] = ({
@@ -159,7 +165,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
         //val init = toAtom(Malloc(unit(1))(typeB))(typeB.asInstanceOf[PardisType[Pointer[Any]]])
         val s = getStructDef(typeB).get
         val structFields = s.fields.map(fld => PardisStructArg(fld.name, fld.mutable, {
-          val dflt = if (fld.tpe.isArray) 0 else DefaultValue(fld.tpe.name)
+          val dflt = if (generateCCode && fld.tpe.isArray) 0 else DefaultValue(fld.tpe.name)
           infix_asInstanceOf(unit(dflt)(fld.tpe))(fld.tpe)
         }))
         val init = toAtom(transformDef(PardisStruct(s.tag, structFields, List())(s.tp).asInstanceOf[to.Def[T]])(typeB.asInstanceOf[PardisType[T]]))(typeB.asInstanceOf[PardisType[T]])

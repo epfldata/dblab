@@ -708,7 +708,10 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Top
         __assign(res, inlineBlock(elsep))
       })
       ReadVar(res)(res.tp)
-
+    case IntUnary_$minus(self) => {
+      val z = unit(-1) * ReadVal(self)
+      ReadVal(z)(z.tp)
+    }
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
 }

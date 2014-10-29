@@ -94,7 +94,7 @@ object Main extends LegoRunner {
 
     pipeline += PartiallyEvaluate
     pipeline += HashMapHoist
-    pipeline += HashMapToArrayTransformer
+    pipeline += HashMapToArrayTransformer(generateCCode)
 
     pipeline += TreeDumper
 

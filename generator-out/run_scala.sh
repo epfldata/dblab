@@ -1,5 +1,5 @@
 #!/bin/bash
-NUM=5
+NUM=22
 START=1
 rm -rf bin
 mkdir bin
