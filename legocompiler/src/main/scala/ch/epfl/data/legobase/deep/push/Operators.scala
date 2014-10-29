@@ -264,6 +264,7 @@ trait PrintOpOps extends Base { this: DeepDSL =>
     def next(): Rep[Unit] = printOpNext[A](self)(typeA)
     def consume(tuple: Rep[Record]): Rep[Unit] = printOpConsume[A](self, tuple)(typeA)
     def reset(): Rep[Unit] = printOpReset[A](self)(typeA)
+    def printQueryOutput: Rep[Boolean] = printOp_Field_PrintQueryOutput[A](self)(typeA)
     def expectedSize: Rep[Int] = printOp_Field_ExpectedSize[A](self)(typeA)
     def numRows_=(x$1: Rep[Int]): Rep[Unit] = printOp_Field_NumRows_$eq[A](self, x$1)(typeA)
     def numRows: Rep[Int] = printOp_Field_NumRows[A](self)(typeA)
@@ -299,6 +300,12 @@ trait PrintOpOps extends Base { this: DeepDSL =>
 
   case class PrintOpReset[A](self: Rep[PrintOp[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
     override def curriedConstructor = (copy[A] _)
+  }
+
+  case class PrintOp_Field_PrintQueryOutput[A](self: Rep[PrintOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Boolean](self, "printQueryOutput") {
+    override def curriedConstructor = (copy[A] _)
+    override def isPure = true
+
   }
 
   case class PrintOp_Field_ExpectedSize[A](self: Rep[PrintOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Int](self, "expectedSize") {
@@ -355,6 +362,7 @@ trait PrintOpOps extends Base { this: DeepDSL =>
   def printOpNext[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpNext[A](self)
   def printOpConsume[A](self: Rep[PrintOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpConsume[A](self, tuple)
   def printOpReset[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpReset[A](self)
+  def printOp_Field_PrintQueryOutput[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = PrintOp_Field_PrintQueryOutput[A](self)
   def printOp_Field_ExpectedSize[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = PrintOp_Field_ExpectedSize[A](self)
   def printOp_Field_NumRows_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOp_Field_NumRows_$eq[A](self, x$1)
   def printOp_Field_NumRows[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = PrintOp_Field_NumRows[A](self)
@@ -378,11 +386,14 @@ trait PrintOpImplementations { this: DeepDSL =>
     }
   }
   override def printOpNext[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
-    self.parent.next()
+    {
+      self.parent.next();
+      __ifThenElse(self.printQueryOutput, printf(unit("(%d rows)\n"), self.numRows), unit(()))
+    }
   }
   override def printOpConsume[A](self: Rep[PrintOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     __ifThenElse(infix_$eq$eq(__app(self.limit).apply(), unit(false)), self.parent.stop_$eq(unit(true)), {
-      __app(self.printFunc).apply(infix_asInstanceOf[A](tuple));
+      __ifThenElse(self.printQueryOutput, __app(self.printFunc).apply(infix_asInstanceOf[A](tuple)), unit(()));
       self.numRows_$eq(self.numRows.$plus(unit(1)))
     })
   }
@@ -709,7 +720,6 @@ trait AggOpImplementations { this: DeepDSL =>
   override def aggOpReset[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
     {
       self.parent.reset();
-      self.hm.clear();
       self.open()
     }
   }
@@ -773,7 +783,7 @@ trait MapOpOps extends Base { this: DeepDSL =>
     def next(): Rep[Unit] = mapOpNext[A](self)(typeA)
     def consume(tuple: Rep[Record]): Rep[Unit] = mapOpConsume[A](self, tuple)(typeA)
     def expectedSize: Rep[Int] = mapOp_Field_ExpectedSize[A](self)(typeA)
-    def aggFuncs: Rep[Seq[(A => Unit)]] = mapOp_Field_AggFuncs[A](self)(typeA)
+    def mapFuncs: Rep[Seq[(A => Unit)]] = mapOp_Field_MapFuncs[A](self)(typeA)
     def parent: Rep[Operator[A]] = mapOp_Field_Parent[A](self)(typeA)
     def stop_=(x$1: Rep[Boolean]): Rep[Unit] = mapOp_Field_Stop_$eq[A](self, x$1)(typeA)
     def stop: Rep[Boolean] = mapOp_Field_Stop[A](self)(typeA)
@@ -784,9 +794,9 @@ trait MapOpOps extends Base { this: DeepDSL =>
 
   }
   // constructors
-  def __newMapOp[A](parent: Rep[Operator[A]])(aggFuncs: Rep[(A => Unit)]*)(implicit typeA: TypeRep[A]): Rep[MapOp[A]] = mapOpNew[A](parent, aggFuncs: _*)(typeA)
+  def __newMapOp[A](parent: Rep[Operator[A]])(mapFuncs: Rep[(A => Unit)]*)(implicit typeA: TypeRep[A]): Rep[MapOp[A]] = mapOpNew[A](parent, mapFuncs: _*)(typeA)
   // case classes
-  case class MapOpNew[A](parent: Rep[Operator[A]], aggFuncsOutput: Rep[Seq[((A) => Unit)]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[MapOp[A]](List(typeA), "MapOp", List(List(parent), List(__varArg(aggFuncsOutput)))) {
+  case class MapOpNew[A](parent: Rep[Operator[A]], mapFuncsOutput: Rep[Seq[((A) => Unit)]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[MapOp[A]](List(typeA), "MapOp", List(List(parent), List(__varArg(mapFuncsOutput)))) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -812,7 +822,7 @@ trait MapOpOps extends Base { this: DeepDSL =>
 
   }
 
-  case class MapOp_Field_AggFuncs[A](self: Rep[MapOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Seq[(A => Unit)]](self, "aggFuncs") {
+  case class MapOp_Field_MapFuncs[A](self: Rep[MapOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Seq[(A => Unit)]](self, "mapFuncs") {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
 
@@ -841,16 +851,16 @@ trait MapOpOps extends Base { this: DeepDSL =>
   }
 
   // method definitions
-  def mapOpNew[A](parent: Rep[Operator[A]], aggFuncs: Rep[((A) => Unit)]*)(implicit typeA: TypeRep[A]): Rep[MapOp[A]] = {
-    val aggFuncsOutput = __liftSeq(aggFuncs.toSeq)
-    MapOpNew[A](parent, aggFuncsOutput)
+  def mapOpNew[A](parent: Rep[Operator[A]], mapFuncs: Rep[((A) => Unit)]*)(implicit typeA: TypeRep[A]): Rep[MapOp[A]] = {
+    val mapFuncsOutput = __liftSeq(mapFuncs.toSeq)
+    MapOpNew[A](parent, mapFuncsOutput)
   }
   def mapOpReset[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpReset[A](self)
   def mapOpOpen[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpOpen[A](self)
   def mapOpNext[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpNext[A](self)
   def mapOpConsume[A](self: Rep[MapOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpConsume[A](self, tuple)
   def mapOp_Field_ExpectedSize[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = MapOp_Field_ExpectedSize[A](self)
-  def mapOp_Field_AggFuncs[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Seq[(A => Unit)]] = MapOp_Field_AggFuncs[A](self)
+  def mapOp_Field_MapFuncs[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Seq[(A => Unit)]] = MapOp_Field_MapFuncs[A](self)
   def mapOp_Field_Parent[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = MapOp_Field_Parent[A](self)
   def mapOp_Field_Stop_$eq[A](self: Rep[MapOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOp_Field_Stop_$eq[A](self, x$1)
   def mapOp_Field_Stop[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = MapOp_Field_Stop[A](self)
@@ -876,16 +886,16 @@ trait MapOpImplementations { this: DeepDSL =>
   }
   override def mapOpConsume[A](self: Rep[MapOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     {
-      self.aggFuncs.foreach[Unit](__lambda(((agg: this.Rep[A => Unit]) => __app(agg).apply(infix_asInstanceOf[A](tuple)))));
+      self.mapFuncs.foreach[Unit](__lambda(((mf: this.Rep[A => Unit]) => __app(mf).apply(infix_asInstanceOf[A](tuple)))));
       self.child.consume(tuple)
     }
   }
 }
 trait MapOpPartialEvaluation extends MapOpComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
-  override def mapOp_Field_AggFuncs[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Seq[(A => Unit)]] = self match {
-    case Def(node: MapOpNew[_]) => node.aggFuncsOutput
-    case _                      => super.mapOp_Field_AggFuncs[A](self)(typeA)
+  override def mapOp_Field_MapFuncs[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Seq[(A => Unit)]] = self match {
+    case Def(node: MapOpNew[_]) => node.mapFuncsOutput
+    case _                      => super.mapOp_Field_MapFuncs[A](self)(typeA)
   }
   override def mapOp_Field_Parent[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = self match {
     case Def(node: MapOpNew[_]) => node.parent
@@ -1476,7 +1486,7 @@ trait WindowOpImplementations { this: DeepDSL =>
     {
       self.parent.next();
       var keySet: this.Var[scala.collection.mutable.Set[B]] = __newVar(Set.apply[B](self.hm.keySet.toSeq));
-      __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
+      __whileDo(infix_$bang$eq(self.hm.size, unit(0)), {
         val k: this.Rep[B] = __readVar(keySet).head;
         __readVar(keySet).remove(k);
         val elem: this.Rep[Option[scala.collection.mutable.ArrayBuffer[A]]] = self.hm.remove(k);
@@ -2309,7 +2319,7 @@ trait HashJoinAntiImplementations { this: DeepDSL =>
       self.mode_$eq(unit(1));
       self.rightParent.next();
       self.keySet_$eq(Set.apply[C](self.hm.keySet.toSeq));
-      __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
+      __whileDo(infix_$bang$eq(self.hm.size, unit(0)), {
         val key: this.Rep[C] = self.keySet.head;
         self.keySet.remove(key);
         val elems: this.Rep[Option[scala.collection.mutable.ArrayBuffer[A]]] = self.hm.remove(key);

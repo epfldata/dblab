@@ -188,7 +188,7 @@ trait LoaderImplementations { this: DeepDSL =>
       val hm: this.Rep[Array[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord]] = __newArray[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord](size);
       var i: this.Var[Int] = __newVar(unit(0));
       __whileDo(s.hasNext(), {
-        val newEntry: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord] = __newLINEITEMRecord(s.next_int(), s.next_int(), s.next_int(), s.next_int(), s.next_double(), s.next_double(), s.next_double(), s.next_double(), s.next_char(), s.next_char(), s.next_date, s.next_date, s.next_date, Loader.loadString(unit(25), s), Loader.loadString(unit(10), s), Loader.loadString(unit(44), s));
+        val newEntry: this.Rep[ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord] = __newLINEITEMRecord(s.next_int(), s.next_int(), s.next_int(), s.next_int(), s.next_int(), s.next_double(), s.next_double(), s.next_double(), s.next_char(), s.next_char(), s.next_date, s.next_date, s.next_date, Loader.loadString(unit(25), s), Loader.loadString(unit(10), s), Loader.loadString(unit(44), s));
         hm.update(__readVar(i), newEntry);
         __assign(i, __readVar(i).$plus(unit(1)))
       });

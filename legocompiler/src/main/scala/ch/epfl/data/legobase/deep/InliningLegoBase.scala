@@ -14,6 +14,8 @@ trait InliningLoader extends LoaderImplementations { this: InliningLegoBase =>
     case Constant(name: String) => unit(Config.datapath + name)
     case _                      => throw new Exception(s"file name should be constant but here it is $fileName")
   }
+  override def printOp_Field_PrintQueryOutput[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = unit(Config.printQueryOutput)
+
 }
 
 trait LoopUnrolling extends pardis.ir.InlineFunctions { this: InliningLegoBase =>

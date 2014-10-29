@@ -9,7 +9,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.Set
 import scala.collection.mutable.TreeSet
 import GenericEngine._
-import pardis.annotations.{ deep, metadeep }
+import pardis.annotations.{ deep, metadeep, dontInline }
 import pardis.shallow.{ Record, DynamicCompositeRecord }
 import scala.reflect.ClassTag
 
@@ -65,14 +65,18 @@ class MetaInfo
 @deep class PrintOp[A](parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean) extends Operator[A] { self =>
   var numRows = (0)
   val expectedSize = parent.expectedSize
+  val printQueryOutput = Config.printQueryOutput // TODO: This should be moved to the config
   def open() {
     parent.child = self; parent.open;
   }
-  def next() = parent.next
+  def next() = {
+    parent.next;
+    if (printQueryOutput) printf("(%d rows)\n", numRows)
+  }
   def consume(tuple: Record) {
     if (limit() == false) parent.stop = (true)
     else {
-      printFunc(tuple.asInstanceOf[A]);
+      if (printQueryOutput) printFunc(tuple.asInstanceOf[A]);
       numRows += 1
     }
   }
@@ -108,7 +112,7 @@ class MetaInfo
       child.consume(elem.get)
     }
   }
-  def reset() { parent.reset; hm.clear; open }
+  def reset() { parent.reset; /*hm.clear;*/ open }
   def consume(tuple: Record) {
     val key = grp(tuple.asInstanceOf[A])
     val elem = hm.getOrElseUpdate(key, new AGGRecord(key, new Array[Double](numAggs)))
@@ -121,20 +125,18 @@ class MetaInfo
   }
 }
 
-@deep class MapOp[A](parent: Operator[A])(aggFuncs: Function1[A, Unit]*) extends Operator[A] {
-
+@deep class MapOp[A](parent: Operator[A])(mapFuncs: Function1[A, Unit]*) extends Operator[A] {
   val expectedSize = parent.expectedSize
   def reset { parent.reset }
   def open() { parent.child = this; parent.open }
   def next() { parent.next }
   def consume(tuple: Record) {
-    aggFuncs foreach (agg => agg(tuple.asInstanceOf[A]))
+    mapFuncs foreach (mf => mf(tuple.asInstanceOf[A]))
     child.consume(tuple)
   }
 }
 
 @deep class SortOp[A](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends Operator[A] {
-
   val expectedSize = parent.expectedSize
   val sortedTree = new TreeSet()(
     new Ordering[A] {
@@ -215,7 +217,7 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
   def next() {
     parent.next
     var keySet = Set(hm.keySet.toSeq: _*)
-    while (!stop && hm.size != 0) {
+    while ( /*!stop && */ hm.size != 0) {
       val k = keySet.head
       keySet.remove(k)
       val elem = hm.remove(k)
@@ -350,7 +352,7 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
     rightParent.next
     // Step 3: Return everything that left in the hash table
     keySet = Set(hm.keySet.toSeq: _*)
-    while (!stop && hm.size != 0) {
+    while ( /*!stop && */ hm.size != 0) {
       val key = keySet.head
       keySet.remove(key)
       val elems = hm.remove(key)
