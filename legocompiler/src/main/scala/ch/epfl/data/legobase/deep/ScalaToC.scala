@@ -39,7 +39,8 @@ object CTransformersPipeline {
     val b2 = new ScalaArrayToCStructTransformer(context).optimize(b1)
     val b3 = new ScalaConstructsToCTranformer(context).transformBlock(b2)
     val b4 = new ScalaCollectionsToGLibTransfomer(context).optimize(b3)
-    val b5 = new OptimalStringToCTransformer(context).transformBlock(b4)
+    // val b5 = new OptimalStringToCTransformer(context).transformBlock(b4)
+    val b5 = new OptimalStringToCTransformerNew(context).transformBlock(b4)
     val b6 = new optimization.MemoryManagementTransfomer(context).optimize(b5)
     b6
   }
@@ -627,4 +628,70 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Top
 
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
+}
+
+class OptimalStringToCTransformerNew(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+  import IR._
+  import CNodes._
+  import CTypes._
+
+  override def transformExp[T: TypeRep, S: TypeRep](exp: Rep[T]): Rep[S] = exp match {
+    case t: typeOf[_] => typeOf()(apply(t.tp)).asInstanceOf[Rep[S]]
+    case _            => super.transformExp[T, S](exp)
+  }
+
+  rules += rule { case OptimalStringNew(x) => x }
+  rules += rule { case OptimalStringString(x) => x }
+  rules += rule { case OptimalStringDiff(x, y) => StrCmp(x, y) }
+  rules += rule {
+    case OptimalStringEndsWith(x, y) =>
+      val lenx = strlen(x)
+      val leny = strlen(y)
+      val len = lenx - leny
+      strncmp(x + len, y, len) __== unit(0)
+  }
+  rules += rule {
+    case OptimalStringStartsWith(x, y) =>
+      strncmp(x, y, StrLen(y)) __== unit(0)
+  }
+  rules += rule { case OptimalStringCompare(x, y) => StrCmp(x, y) }
+  rules += rule { case OptimalStringLength(x) => StrLen(apply(x)) }
+  rules += rule { case OptimalString$eq$eq$eq(x, y) => strcmp(x, y) __== unit(0) }
+  rules += rule { case OptimalString$eq$bang$eq(x, y) => infix_!=(strcmp(x, y), unit(0)) }
+  rules += rule { case OptimalStringContainsSlice(x, y) => infix_!=(strstr(x, y), unit(null)) }
+  rules += rule {
+    case OptimalStringIndexOfSlice(x, y, idx) =>
+      val substr = strstr(x + idx, y)
+      transformDef(PardisIfThenElse(Equal(substr, Constant(null)), PardisBlock(Nil, Constant(-1)), PardisBlock(Nil, StrSubtract(substr, x))(IntType)))
+  }
+  rules += rule {
+    case OptimalStringApply(x, idx) =>
+      val z = infix_asInstanceOf(apply(x))(typeArray(typePointer(CharType)))
+      arrayApply(z, idx)
+  }
+  rules += rule {
+    case OptimalStringSlice(x, start, end) =>
+      val len = end - start + unit(1)
+      val newbuf = malloc(len)(CharType)
+      strncpy(newbuf, x + start, len - unit(1))
+      newbuf
+  }
+  // This should be in a transformer happening in the end
+  rules += rule {
+    case PardisIfThenElse(cond, thenp, elsep) if thenp.tp != UnitType =>
+      val thenBlock = transformBlock(thenp)
+      val elseBlock = transformBlock(elsep)
+      val res = __newVar(unit(0))(thenp.tp.asInstanceOf[TypeRep[Int]])
+      __ifThenElse(apply(cond), { //infix_==(cond, Constant(true)), {
+        // __assign(res, toAtom(ReadVal(thenBlock)(thenBlock.tp))(thenBlock.tp))
+        thenBlock.stmts.foreach(transformStmToMultiple)
+        __assign(res, thenBlock.res)
+      }, {
+        // __assign(res, toAtom(ReadVal(elseBlock)(elseBlock.tp))(elseBlock.tp))
+        elseBlock.stmts.foreach(transformStmToMultiple)
+        __assign(res, elseBlock.res)
+      })
+      ReadVar(res)(res.tp)
+  }
+
 }
