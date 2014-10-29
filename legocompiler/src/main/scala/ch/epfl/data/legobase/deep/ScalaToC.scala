@@ -580,33 +580,47 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Top
     case _            => super.transformExp[T, S](exp)
   }
 
+  private[OptimalStringToCTransformer] implicit def optimalStringToCharPointer(x: Rep[OptimalString]) = x.asInstanceOf[Rep[LPointer[Char]]]
+
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
-    case OptimalStringNew(x)     => x.correspondingNode
-    case OptimalStringString(x)  => x.correspondingNode
-    case OptimalStringDiff(x, y) => StrCmp(x, y)
+    case OptimalStringNew(x) =>
+      x.correspondingNode
+    case OptimalStringString(x) =>
+      x.correspondingNode
+    case OptimalStringDiff(x, y) =>
+      //CString.strcmp(x, y)
+      CStringStrcmpObject1(x, y)
     case OptimalStringEndsWith(x, y) =>
-      val lenx = strlen(x)
-      val leny = strlen(y)
+      val lenx = CString.strlen(x)
+      val leny = CString.strlen(y)
       val len = lenx - leny
-      Equal(StrNCmp(x + len, y, len), Constant(0))
+      Equal(CString.strncmp(CLang.pointer_add(x, len), y, len), 0)
     case OptimalStringStartsWith(x, y) =>
-      Equal(StrNCmp(x, y, StrLen(y)), Constant(0))
-    case OptimalStringCompare(x, y)       => StrCmp(x, y)
-    case OptimalStringLength(x)           => StrLen(x)
-    case OptimalString$eq$eq$eq(x, y)     => Equal(StrCmp(x, y), Constant(0))
-    case OptimalString$eq$bang$eq(x, y)   => NotEqual(StrCmp(x, y), Constant(0))
-    case OptimalStringContainsSlice(x, y) => NotEqual(StrStr(x, y), Constant(null))
+      Equal(CString.strncmp(x, y, CString.strlen(y)), Constant(0))
+    case OptimalStringCompare(x, y) =>
+      //CString.strcmp(x, y)
+      CStringStrcmpObject1(x, y)
+    case OptimalStringLength(x) =>
+      //CString.strlen(x)
+      CStringStrlenObject1(x)
+    case OptimalString$eq$eq$eq(x, y) =>
+      Equal(CString.strcmp(x, y), Constant(0))
+    case OptimalString$eq$bang$eq(x, y) =>
+      NotEqual(CString.strcmp(x, y), Constant(0))
+    case OptimalStringContainsSlice(x, y) =>
+      NotEqual(CString.strstr(x, y), Constant(null))
     case OptimalStringIndexOfSlice(x, y, idx) =>
-      val substr = strstr(x + idx, y)
-      transformDef(PardisIfThenElse(Equal(substr, Constant(null)), PardisBlock(Nil, Constant(-1)), PardisBlock(Nil, StrSubtract(substr, x))(IntType)))
+      val substr = CString.strstr(x + idx, y)
+      transformDef(PardisIfThenElse(Equal(substr, Constant(null)), PardisBlock(Nil, Constant(-1)), PardisBlock(Nil, CString.str_subtract(substr, x))(IntType)))
     case OptimalStringApply(x, idx) =>
-      val z = infix_asInstanceOf(x)(typeArray(typePointer(CharType)))
+      val z = infix_asInstanceOf[Array[LPointer[Char]]](x)
       ArrayApply(z, idx)
     case OptimalStringSlice(x, start, end) =>
       val len = end - start + unit(1)
-      val newbuf = malloc(len)(CharType)
-      strncpy(newbuf, x + start, len - unit(1))
+      val newbuf = CStdLib.malloc[Char](len)
+      CString.strncpy(newbuf, CLang.pointer_add(x, start), len - unit(1))
       ReadVal(newbuf)
+
     // This should be in a transformer happening in the end
     case PardisIfThenElse(cond, thenp, elsep) =>
       val thenBlock = transformBlock(thenp)
