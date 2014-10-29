@@ -152,7 +152,9 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
         case Some(x) => elems.filter(e => x.contains(e.name))
         case None    => elems
       }
-      val newMethods = methods ++ getPrint(ps.tp.asInstanceOf[TypeRep[Any]], newFields)
+      val newTpe = ps.tp.asInstanceOf[TypeRep[Any]]
+      val newMethods = List(PardisStructMethod("equals", getEquals(newTpe, newFields)),
+        PardisStructMethod("hash", getHash(newTpe, newFields))) ++ getPrint(newTpe, newFields)
       super.transformDef(PardisStruct(tag, newFields, newMethods)(ps.tp))(ps.tp)
     case ConcatDynamic(record1, record2, leftAlias, rightAlias) if lowerStructs => {
       val tp = node.tp.asInstanceOf[TypeRep[(Any, Any)]]
@@ -168,7 +170,6 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
       val elemsRhs = getElems(record1).filter(e => regFields.contains(e.name)).map(x => ElemInfo(x.name, record1, x.tpe)) ++ getElems(record2).filter(e => regFields.contains(e.name)).map(x => ElemInfo(x.name, record2, x.tpe))
       // Amir: FIXME should handle both cases for mutable and immutable fields (immutable and getter)
       val structFields = elems.zip(elemsRhs).map(x => PardisStructArg(x._1.name, x._1.mutable, to.toAtom(StructImmutableField(x._2.rec, x._2.name)(x._2.tp))(x._2.tp)))
-
       val newTpe = new RecordType(concatTag)
       val methods = if (generateHashAndEqual) {
         val eqMethod = getEquals(newTpe.asInstanceOf[TypeRep[Any]], structFields)

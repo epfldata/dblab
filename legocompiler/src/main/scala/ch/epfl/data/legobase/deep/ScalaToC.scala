@@ -176,7 +176,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       case "Long"                => 0L
       case "Float"               => 0.0F
       case "Double"              => 0.0
-      case dflt @ _              => null
+      case dflt @ _              => 0
     }
     infix_asInstanceOf(unit[Any](value)(valueType))(valueType).asInstanceOf[Rep[Any]]
   }
@@ -377,20 +377,20 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     case or @ Boolean$bar$bar(case1, case2) => {
       case2 match {
         case b @ PardisBlock(stmt, res) =>
-          val newB = transformBlockTyped[Boolean, T](b)
+          val newB = transformBlockTyped[Boolean, Boolean](b)
           ReadVal(newB)(newB.tp)
           val v = boolean$bar$bar(case1, newB.res.asInstanceOf[Expression[Boolean]])
           ReadVal(v)(BooleanType)
+
+        //val newCase2 = inlineBlock(case2).asInstanceOf[Expression[Boolean]]
+        //Boolean$bar$bar(case1, Block(Nil, newCase2))
         case _ => or
       }
     }
     case and @ Boolean$amp$amp(case1, case2) => {
       case2 match {
         case b @ PardisBlock(stmt, res) =>
-          ReadVal(__ifThenElse(case1, {
-            val newB = transformBlockTyped[Boolean, T](b)
-            ReadVal(newB)(newB.tp)
-          }, Constant(false)))
+          IfThenElse(case1, transformBlockTyped[Boolean, Boolean](b), Block(Nil, Constant(false)))
         case _ => case2
       }
     }
@@ -575,7 +575,6 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         if (isEqual) transformDef(BooleanUnary_$bang(strcmp(e1, e2)))
         else ReadVal(strcmp(e1, e2))
       case x if __isRecord(e1) && __isRecord(e2) =>
-        System.out.println("CORRECT CASE " + e1.tp + "/ " + e2.tp)
         val ttp = if (x.isRecord) x else x.typeArguments(0)
         val eq = getStructEqualsFunc()(ttp)
         // TODO should be moved to pardis as it has a lot of use cases
@@ -588,7 +587,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         //   }
         // }
         // Predef.println(s"subst map ${subst.mkString("\n")}")
-        val z = inlineFunction(eq.asInstanceOf[Rep[(Any, Any) => Boolean]], e1, e2)
+        val z = inlineFunction(eq.asInstanceOf[Rep[(Any, Any) => Boolean]], apply(e1), apply(e2))
         ReadVal(if (isEqual) z else transformDef(BooleanUnary_$bang(z)))
       // case _ => { /*System.out.println("EQUAL DEFAULT " + e1.tp + "/" + e2.tp); */ node }
       case _ => super.transformDef(node)
@@ -611,6 +610,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
               apply(o.res)
             }
           }
+          //val z = inlineFunction(h.asInstanceOf[Rep[Any => Int]], apply(t))
           ReadVal(z)
 
         case x if x.isPrimitive      => PardisCast(t)(x, IntType)
@@ -659,47 +659,55 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Top
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
     case OptimalStringNew(x)     => x.correspondingNode
     case OptimalStringString(x)  => x.correspondingNode
-    case OptimalStringDiff(x, y) => StrCmp(x, y)
+    case OptimalStringDiff(x, y) => StrCmp(apply(x), apply(y))
     case OptimalStringEndsWith(x, y) =>
-      val lenx = strlen(x)
-      val leny = strlen(y)
+      val lenx = strlen(apply(x))
+      val leny = strlen(apply(y))
       val len = lenx - leny
-      Equal(StrNCmp(x + len, y, len), Constant(0))
+      Equal(StrNCmp(apply(x) + len, apply(y), len), Constant(0))
     case OptimalStringStartsWith(x, y) =>
-      Equal(StrNCmp(x, y, StrLen(y)), Constant(0))
-    case OptimalStringCompare(x, y)       => StrCmp(x, y)
-    case OptimalStringLength(x)           => StrLen(x)
-    case OptimalString$eq$eq$eq(x, y)     => Equal(StrCmp(x, y), Constant(0))
-    case OptimalString$eq$bang$eq(x, y)   => NotEqual(StrCmp(x, y), Constant(0))
-    case OptimalStringContainsSlice(x, y) => NotEqual(StrStr(x, y), Constant(null))
+      Equal(StrNCmp(apply(x), apply(y), StrLen(apply(y))), Constant(0))
+    case OptimalStringCompare(x, y)       => StrCmp(apply(x), apply(y))
+    case OptimalStringLength(x)           => StrLen(apply(x))
+    case OptimalString$eq$eq$eq(x, y)     => Equal(StrCmp(apply(x), apply(y)), Constant(0))
+    case OptimalString$eq$bang$eq(x, y)   => NotEqual(StrCmp(apply(x), apply(y)), Constant(0))
+    case OptimalStringContainsSlice(x, y) => NotEqual(StrStr(apply(x), apply(y)), Constant(null))
     case OptimalStringIndexOfSlice(x, y, idx) =>
-      val substr = strstr(x + idx, y)
+      val substr = strstr(apply(x) + idx, apply(y))
       transformDef(PardisIfThenElse(Equal(substr, Constant(null)), PardisBlock(Nil, Constant(-1)), PardisBlock(Nil, StrSubtract(substr, x))(IntType)))
     case OptimalStringApply(x, idx) =>
-      val z = infix_asInstanceOf(x)(typeArray(typePointer(CharType)))
+      val z = infix_asInstanceOf(apply(x))(typeArray(typePointer(CharType)))
       ArrayApply(z, idx)
     case OptimalStringSlice(x, start, end) =>
-      val len = end - start + unit(1)
+      val len = apply(end) - apply(start) + unit(1)
       val newbuf = malloc(len)(CharType)
-      strncpy(newbuf, x + start, len - unit(1))
+      strncpy(newbuf, apply(x) + apply(start), len - unit(1))
       ReadVal(newbuf)
     // This should be in a transformer happening in the end
-    case PardisIfThenElse(cond, thenp, elsep) =>
-      val thenBlock = transformBlock(thenp)
-      val elseBlock = transformBlock(elsep)
-      if (thenp.tp != UnitType) {
-        val res = __newVar(unit(0))(thenp.tp.asInstanceOf[TypeRep[Int]])
-        __ifThenElse(cond, { //infix_==(cond, Constant(true)), {
-          // __assign(res, toAtom(ReadVal(thenBlock)(thenBlock.tp))(thenBlock.tp))
-          thenBlock.stmts.foreach(transformStmToMultiple)
-          __assign(res, thenBlock.res)
-        }, {
-          // __assign(res, toAtom(ReadVal(elseBlock)(elseBlock.tp))(elseBlock.tp))
-          elseBlock.stmts.foreach(transformStmToMultiple)
-          __assign(res, elseBlock.res)
-        })
-        ReadVar(res)(res.tp)
-      } else PardisIfThenElse(cond, thenBlock, elseBlock)
+    // case PardisIfThenElse(cond, thenp, elsep) =>
+    //   val thenBlock = transformBlock(thenp)
+    //   val elseBlock = transformBlock(elsep)
+    //   if (thenp.tp != UnitType) {
+    //     val res = __newVar(unit(0))(thenp.tp.asInstanceOf[TypeRep[Int]])
+    //     __ifThenElse(cond, { //infix_==(cond, Constant(true)), {
+    //       // __assign(res, toAtom(ReadVal(thenBlock)(thenBlock.tp))(thenBlock.tp))
+    //       thenBlock.stmts.foreach(transformStmToMultiple)
+    //       __assign(res, thenBlock.res)
+    //     }, {
+    //       // __assign(res, toAtom(ReadVal(elseBlock)(elseBlock.tp))(elseBlock.tp))
+    //       elseBlock.stmts.foreach(transformStmToMultiple)
+    //       __assign(res, elseBlock.res)
+    //     })
+    //     ReadVar(res)(res.tp)
+    //   } else PardisIfThenElse(cond, thenBlock, elseBlock)
+    case PardisIfThenElse(cond, thenp, elsep) if thenp.tp != UnitType =>
+      val res = __newVar(unit(0))(thenp.tp.asInstanceOf[TypeRep[Int]])
+      __ifThenElse(apply(cond), { //infix_==(cond, Constant(true)), {
+        __assign(res, inlineBlock(thenp))
+      }, {
+        __assign(res, inlineBlock(elsep))
+      })
+      ReadVar(res)(res.tp)
 
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]

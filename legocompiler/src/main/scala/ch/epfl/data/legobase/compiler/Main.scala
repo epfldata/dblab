@@ -88,20 +88,22 @@ object Main extends LegoRunner {
     pipeline += ParameterPromotion
     pipeline += DCE
     if (generateCCode) {
-      pipeline += MemoryManagementTransfomer
-      pipeline += ColumnStoreTransformer
+      //pipeline += MemoryManagementTransfomer
+      //pipeline += ColumnStoreTransformer
     }
+
     pipeline += PartiallyEvaluate
     pipeline += HashMapHoist
     pipeline += HashMapToArrayTransformer
 
-    pipeline += ParameterPromotion
+    pipeline += TreeDumper
+
+    //pipeline += ParameterPromotion
 
     pipeline += DCE
 
     pipeline += PartiallyEvaluate
     if (generateCCode) pipeline += CTransformersPipeline
-    pipeline += TreeDumper
     pipeline += DCE //NEVER REMOVE!!!!
 
     val finalBlock = pipeline.apply(context)(block)

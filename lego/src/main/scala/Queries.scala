@@ -52,13 +52,13 @@ object Queries {
         val mapOp = new MapOp(aggOp)(kv => kv.aggs(6) = kv.aggs(1) / kv.aggs(5), // AVG(L_QUANTITY)
           kv => kv.aggs(7) = kv.aggs(2) / kv.aggs(5), // AVG(L_EXTENDEDPRICE)
           kv => kv.aggs(8) = kv.aggs(0) / kv.aggs(5)) // AVG(L_DISCOUNT)
-        /*val sortOp = new SortOp(mapOp)((kv1, kv2) => {
+        val sortOp = new SortOp(mapOp)((kv1, kv2) => {
           var res = kv1.key.L_RETURNFLAG - kv2.key.L_RETURNFLAG
           if (res == 0)
             res = kv1.key.L_LINESTATUS - kv2.key.L_LINESTATUS
           res
-        })*/
-        val po = new PrintOp(mapOp)(kv => printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n",
+        })
+        val po = new PrintOp(sortOp)(kv => printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n",
           kv.key.L_RETURNFLAG, kv.key.L_LINESTATUS, kv.aggs(1), kv.aggs(2), kv.aggs(3), kv.aggs(4),
           kv.aggs(6), kv.aggs(7), kv.aggs(8), kv.aggs(5)), () => true)
         //val po = new PrintOp(aggOp)(kv => {}, () => true)
@@ -196,19 +196,19 @@ object Queries {
         val scanCustomer = new ScanOp(customerTable)
         val scanSupplier = new ScanOp(supplierTable)
         val jo1 = new HashJoinOp(scanRegion, scanNation)((x, y) => x.R_REGIONKEY == y.N_REGIONKEY)(x => x.R_REGIONKEY)(x => x.N_REGIONKEY)
-        /*val jo2 = new HashJoinOp(jo1, scanCustomer)((x, y) => x.N_NATIONKEY[Int] == y.C_NATIONKEY)(x => x.N_NATIONKEY[Int])(x => x.C_NATIONKEY)
+        val jo2 = new HashJoinOp(jo1, scanCustomer)((x, y) => x.N_NATIONKEY[Int] == y.C_NATIONKEY)(x => x.N_NATIONKEY[Int])(x => x.C_NATIONKEY)
         val jo3 = new HashJoinOp(jo2, scanOrders)((x, y) => x.C_CUSTKEY[Int] == y.O_CUSTKEY)(x => x.C_CUSTKEY[Int])(x => x.O_CUSTKEY)
         val jo4 = new HashJoinOp(jo3, scanLineitem)((x, y) => x.O_ORDERKEY[Int] == y.L_ORDERKEY)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY)
         val jo5 = new HashJoinOp(scanSupplier, jo4)((x, y) => x.S_SUPPKEY == y.L_SUPPKEY[Int] && y.N_NATIONKEY[Int] == x.S_NATIONKEY)(x => x.S_SUPPKEY)(x => x.L_SUPPKEY[Int])
-        */
-        /*val aggOp = new AggOp(jo5, 1)(x => x.N_NAME[LBString])(
+
+        val aggOp = new AggOp(jo5, 1)(x => x.N_NAME[LBString])(
           (t, currAgg) => { currAgg + t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]) })
         val sortOp = new SortOp(aggOp)((x, y) => {
           if (x.aggs(0) < y.aggs(0)) 1
           else if (x.aggs(0) > y.aggs(0)) -1
           else 0
-        })*/
-        val po = new PrintOp(jo1)(kv => { printf("%d %d %s\n", kv.R_REGIONKEY, kv.N_REGIONKEY, kv.N_NAME); /*printf("%s|%.4f\n", kv.key.string, kv.aggs(0))*/ }, () => true)
+        })
+        val po = new PrintOp(sortOp)(kv => { printf("%s|%.4f\n", kv.key.string, kv.aggs(0)) }, () => true)
         po.open
         po.next
         ()

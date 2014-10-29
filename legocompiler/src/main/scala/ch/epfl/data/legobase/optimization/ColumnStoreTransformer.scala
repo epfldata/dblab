@@ -55,14 +55,37 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimize
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     case an @ ArrayNew(size) => {
       // Get type of elements stored in array
-      val elemType = an.tp.typeArguments(0)
+      val elemType = an.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+
+      /*  val hashMethod = doLambdaDef((x: Rep[Any]) => {
+        //unit(0)
+        infix_hashCode(field(x, "index")(IntType))(IntType)
+      })(elemType, IntType).asInstanceOf[PardisLambdaDef]
+
+      def eqMethod = doLambda3Def((x: Rep[Any], y: Rep[Any], z: Rep[Int]) => {
+        val structDef = getStructDef(elemType).get
+        structDef.fields.foldLeft(unit(true)) { (acc, f) =>
+          val fx = field(x, f.name)(f.tpe)
+          val fy = field(y, f.name)(f.tpe)
+          acc && infix_==(fx, fy)
+        }
+      })(elemType, elemType, IntType, BooleanType).asInstanceOf[PardisLambdaDef]*/
+
       // Convert to column store only if this an array of record 
       if (elemType.isRecord) {
         val structDef = getStructDef(elemType).get
         val newElems = structDef.fields.map(el => PardisStructArg("arrayOf" + el.name, true, arrayNew(size)(el.tpe)))
         val newTag = tableColumnStoreTag(structDef.tag)
         val newType = tableColumnStoreType(newTag)
-        PardisStruct(newTag, newElems, structDef.methods)(newType)
+        //val newMethods = List(PardisStructMethod("equals", eqMethod), PardisStructMethod("hash", hashMethod))
+        val newMethods = structDef.methods.map(m => m.copy(body =
+          transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef])) //)(s.tp)))
+
+        //structsDefMap(newTag) =
+        //  PardisStructDef(newTag.asInstanceOf[StructTags.StructTag[Any]],
+        //  newElems.map(x => StructElemInformation(x.name, x.init.tp, x.mutable)),
+        //  newMethods)(node.tp.asInstanceOf[TypeRep[Any]])
+        PardisStruct(newTag, newElems, newMethods)(newType)
       } else super.transformDef(node)
     }
 
@@ -84,21 +107,48 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimize
     case aa @ ArrayApply(arr, idx) =>
       if (aa.tp.isRecord) {
         val tpe = aa.tp.asInstanceOf[PardisType[Any]]
+
         val hashMethod = doLambdaDef((x: Rep[Any]) => {
-          infix_hashCode(field(x, "index")(IntType))(IntType)
+          unit(0)
+          //infix_hashCode(field(x, "index")(IntType))(IntType)
         })(tpe, IntType).asInstanceOf[PardisLambdaDef]
 
         val eqMethod = doLambda2Def((x: Rep[Any], y: Rep[Any]) => {
-          printf(unit("1111"))
-          val fx = field(x, "index")(IntType)
-          val fy = field(y, "index")(IntType)
-          printf(unit("2222"))
-          infix_==(fx, fy)(IntType, IntType)
+          printf(unit("EQUALS\n"))
+          val structDef = getStructDef(arr.tp.typeArguments(0)).get
+          val newTag = tableColumnStoreTag(structDef.tag)
+          val newType = tableColumnStoreType(newTag)
+
+          val fx = field(x, "columnStorePointer")(newType)
+
+          //val fy = field(y, "columnStorePointer")(newType) //(arr.tp)
+          val ix = field(x, "index")(IntType)
+          System.out.println(new RecordType(structDef.tag))
+          System.out.println(structsDefMap.map(sd => sd._1))
+          System.out.println(getStructDef(new RecordType(structDef.tag)).get.fields.map(f => f.name))
+
+          //val iy = field(y, "index")(IntType)
+          /*System.out.println(x.tp)
+          System.out.println(structsDefMap.map(s => s._1).mkString("\n"))
+          System.out.println(fx.tp)
+          val eq = getStructEqualsFunc()(fx.tp, typeLambda3(fx.tp, fy.tp, typeInt, typeBoolean))
+          //__app(eq).apply(fx, fy, 0)*/
+          printf(unit("EQUALS\n"))
+
+          infix_==(fx, fx)
+          //inlineFunction(eq.asInstanceOf[Rep[(Any, Any, Int) => Boolean]], fx, fy, 0)
+          //__eqMethod(fx, fy, ix, iy)(x.tp)
+          //unit(true)
         })(tpe, tpe, BooleanType).asInstanceOf[PardisLambdaDef]
 
-        PardisStruct(StructTags.ClassTag(structName(aa.tp)),
-          List(PardisStructArg("columnStorePointer", false, arr), PardisStructArg("index", false, idx)),
-          List(PardisStructMethod("equals", eqMethod), PardisStructMethod("hash", hashMethod)))(aa.tp)
+        val newMethods = List(PardisStructMethod("equals", eqMethod), PardisStructMethod("hash", hashMethod))
+        //val newMethods = List()
+        val newElems = List(PardisStructArg("columnStorePointer", false, arr), PardisStructArg("index", false, idx))
+        val newTag = StructTags.ClassTag(structName(aa.tp))
+        // structsDefMap(newTag) = PardisStructDef(newTag.asInstanceOf[StructTags.StructTag[Any]],
+        // newElems.map(x => StructElemInformation(x.name, x.init.tp, x.mutable)),
+        // newMethods)(node.tp.asInstanceOf[TypeRep[Any]])
+        PardisStruct(newTag, newElems, newMethods)(aa.tp)
       } else super.transformDef(node)
 
     /* case ps @ PardisStruct(tag, elems, methods) =>
@@ -110,6 +160,8 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimize
     case psif @ PardisStructImmutableField(s, f) => {
       if (s.tp.isRecord) {
         val structDef = getStructDef(s.tp).get
+        //System.out.println(structDef.fields.mkString("\n"))
+        //System.out.println(f)
         val columnElemType = structDef.fields.find(el => el.name == f).get.tpe
         val newTag = tableColumnStoreTag(structDef.tag)
         val newType = tableColumnStoreType(newTag)
@@ -122,6 +174,8 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimize
     case psif @ PardisStructFieldSetter(s, f, v) => {
       if (s.tp.isRecord) {
         val structDef = getStructDef(s.tp).get
+        //System.out.println(structDef.fields)
+        //System.out.println(f)
         val columnElemType = structDef.fields.find(el => el.name == f).get.tpe
         val newTag = tableColumnStoreTag(structDef.tag)
         val newType = tableColumnStoreType(newTag)
@@ -131,6 +185,8 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimize
         ArrayUpdate(column.asInstanceOf[Expression[Array[Any]]], idx, v)
       } else super.transformDef(node)
     }
+    //  case hmgeu @ HashMapGetOrElseUpdate(hm, k, v) =>
+    //  HashMapGetOrElseUpdate(apply(hm), apply(k), apply(v))
 
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]

@@ -159,7 +159,7 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
         //val init = toAtom(Malloc(unit(1))(typeB))(typeB.asInstanceOf[PardisType[Pointer[Any]]])
         val s = getStructDef(typeB).get
         val structFields = s.fields.map(fld => PardisStructArg(fld.name, fld.mutable, {
-          val dflt = DefaultValue(fld.tpe.name)
+          val dflt = if (fld.tpe.isArray) 0 else DefaultValue(fld.tpe.name)
           infix_asInstanceOf(unit(dflt)(fld.tpe))(fld.tpe)
         }))
         val init = toAtom(transformDef(PardisStruct(s.tag, structFields, List())(s.tp).asInstanceOf[to.Def[T]])(typeB.asInstanceOf[PardisType[T]]))(typeB.asInstanceOf[PardisType[T]])
@@ -192,19 +192,6 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       ReadVar(bucket)(manValue.typeArguments(0).asInstanceOf[PardisType[Any]])
     }
     case hmgeu @ HashMapGetOrElseUpdate(hm, k, v) if isAggOp(hm) => {
-      /*def getFieldName(t: PardisType[_]): Option[StructElemInformation] = {
-        System.out.println("Examining " + t)
-        getStructDef(t).get.fields.find(f => {
-          f.tpe match {
-            // Assumes that it will be found in the first level
-            case r if r == k.tp  => true
-            case r if r.isRecord => getFieldName(r).isDefined
-            case r if r.isArray  => getFieldName(r.typeArguments(0)).isDefined
-            case dflt @ _        => System.out.println(dflt); false
-          }
-        })
-      }*/
-
       implicit val manValue = transformType(hm.tp).typeArguments(0).asInstanceOf[TypeRep[Value]]
       val key = k.asInstanceOf[Rep[Key]]
       val size = arrayLength(transformExp(hm)(hm.tp, typeArray(hmgeu.typeB)))
@@ -213,17 +200,17 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase) extends Optim
       val counter = getSizeCounterMap(hm)
       val bucket = __newVar(ArrayApply(lhm, hashKey)(manValue))(manValue)
       val e = __newVar(toAtom(PardisStructFieldGetter(ReadVar(bucket)(manValue), "next")(manValue))(manValue))(manValue)
-      __whileDo(
-        boolean$amp$amp(infix_!=(e, Constant(null)), {
+      __whileDo({
+        //val eValue = readVar(e)(e.tp)
+        infix_!=(readVar(e)(e.tp), Constant(null)) && {
+          val eValue = readVar(e)(e.tp)
           //val z = toAtom(PardisStructFieldGetter(e, "key")(key.tp))(key.tp)
-          val eeee = readVar(e)(e.tp).asInstanceOf[Expression[Any]]
-          //System.out.println(s"$e, $eeee")
-          infix_==(eeee, key.asInstanceOf[Expression[Any]])
-        }),
-        // {
-        //   val eValue = readVar(e)(e.tp).asInstanceOf[Expression[Any]]
-        //   infix_!=(eValue, Constant(null)) && infix_==(eValue, key.asInstanceOf[Expression[Any]])
-        // }, 
+          val extractor = getStructDef(eValue.tp).get.fields.find(f => f.tpe == key.tp).get
+
+          val eeeef = field(eValue, extractor.name)(key.tp)
+          infix_!=(eeeef.asInstanceOf[Expression[Any]], key.asInstanceOf[Expression[Any]])
+        }
+      },
         {
           __assign(e, toAtom(PardisStructFieldGetter(readVar(e), "next")(manValue))(manValue))
         })
