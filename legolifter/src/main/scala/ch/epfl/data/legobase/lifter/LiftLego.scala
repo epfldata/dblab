@@ -109,7 +109,7 @@ trait DeepDSL extends push.OperatorsComponent
 
   def generateCLibs(implicit al: AutoLifter) {
     val liftedCodes = List(
-      al.autoLift[ch.epfl.data.pardis.shallow.c.CPointerType[_]](Custom(Some("CLibs"))),
+      al.autoLift[ch.epfl.data.pardis.shallow.c.CLPointerType[_]](Custom(Some("CLibs"))),
       al.autoLift[ch.epfl.data.pardis.shallow.c.CLang](Custom(Some("CLibs"))),
       al.autoLift[ch.epfl.data.pardis.shallow.c.CStdLib](Custom(Some("CLibs"))),
       al.autoLift[ch.epfl.data.pardis.shallow.c.CStdIO](Custom(Some("CLibs"))),
@@ -117,14 +117,14 @@ trait DeepDSL extends push.OperatorsComponent
       al.autoLift[ch.epfl.data.pardis.shallow.c.CTimeValType](Custom(Some("CLibs"))),
       al.autoLift[ch.epfl.data.pardis.shallow.c.CSysTime](Custom(Some("CLibs"))),
       al.autoLift[ch.epfl.data.pardis.shallow.c.CString](Custom(Some("CLibs"))),
-      al.autoLift[ch.epfl.data.pardis.shallow.c.GArrayType](Custom(Some("CLibs"))),
-      al.autoLift[ch.epfl.data.pardis.shallow.c.GArrayHeader](Custom(Some("CLibs"))),
-      al.autoLift[ch.epfl.data.pardis.shallow.c.GListType[_]](Custom(Some("CLibs"))),
-      al.autoLift[ch.epfl.data.pardis.shallow.c.GListHeader](Custom(Some("CLibs"))),
-      al.autoLift[ch.epfl.data.pardis.shallow.c.GTreeType](Custom(Some("CLibs"))),
-      al.autoLift[ch.epfl.data.pardis.shallow.c.GTreeHeader](Custom(Some("CLibs"))),
-      al.autoLift[ch.epfl.data.pardis.shallow.c.GHashTableType[_, _]](Custom(Some("CLibs"))),
-      al.autoLift[ch.epfl.data.pardis.shallow.c.GHashTableHeader](Custom(Some("CLibs"))))
+      al.autoLift[ch.epfl.data.pardis.shallow.c.LGArrayType](Custom(Some("CLibs"))),
+      al.autoLift[ch.epfl.data.pardis.shallow.c.LGArrayHeader](Custom(Some("CLibs"))),
+      al.autoLift[ch.epfl.data.pardis.shallow.c.LGListType[_]](Custom(Some("CLibs"))),
+      al.autoLift[ch.epfl.data.pardis.shallow.c.LGListHeader](Custom(Some("CLibs"))),
+      al.autoLift[ch.epfl.data.pardis.shallow.c.LGTreeType](Custom(Some("CLibs"))),
+      al.autoLift[ch.epfl.data.pardis.shallow.c.LGTreeHeader](Custom(Some("CLibs"))),
+      al.autoLift[ch.epfl.data.pardis.shallow.c.LGHashTableType[_, _]](Custom(Some("CLibs"))),
+      al.autoLift[ch.epfl.data.pardis.shallow.c.LGHashTableHeader](Custom(Some("CLibs"))))
     val liftedCode = liftedCodes.mkString("\n")
     val file = "GLib"
     printToFile(new java.io.File(s"$folder/scalalib/$file.scala")) { pw =>
@@ -139,7 +139,7 @@ import pardis.types.PardisTypeImplicits._
 import pardis.shallow.c.CLangTypes._
 import pardis.shallow.c.GLibTypes._
 
-trait CLibs extends PointerComponent
+trait CLibs extends LPointerComponent
   with CLangComponent
   with CStdLibComponent
   with CFileComponent
@@ -147,14 +147,14 @@ trait CLibs extends PointerComponent
   with CStringComponent
   with CTimeValComponent
   with CSysTimeComponent
-  with GTreeComponent
-  with GTreeHeaderComponent
-  with GListComponent
-  with GListHeaderComponent
-  with GArrayComponent
-  with GArrayHeaderComponent
-  with GHashTableComponent
-  with GHashTableHeaderComponent
+  with LGTreeComponent
+  with LGTreeHeaderComponent
+  with LGListComponent
+  with LGListHeaderComponent
+  with LGArrayComponent
+  with LGArrayHeaderComponent
+  with LGHashTableComponent
+  with LGHashTableHeaderComponent
 
 $liftedCode
 """)
