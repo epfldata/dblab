@@ -87,23 +87,27 @@ object Main extends LegoRunner {
     pipeline += LBLowering(generateCCode)
     pipeline += ParameterPromotion
     pipeline += DCE
+    pipeline += PartiallyEvaluate
+
+    pipeline += TreeDumper
+
     if (generateCCode) {
-      //pipeline += MemoryManagementTransfomer
       //pipeline += ColumnStoreTransformer
     }
 
     pipeline += PartiallyEvaluate
     pipeline += HashMapHoist
     pipeline += HashMapToArrayTransformer(generateCCode)
-
-    pipeline += TreeDumper
+    pipeline += MemoryManagementTransfomer //NOTE FIX TOPOLOGICAL SORT :-(
 
     //pipeline += ParameterPromotion
 
-    pipeline += DCE
+    //pipeline += DCE
 
     pipeline += PartiallyEvaluate
+
     if (generateCCode) pipeline += CTransformersPipeline
+
     pipeline += DCE //NEVER REMOVE!!!!
 
     val finalBlock = pipeline.apply(context)(block)

@@ -57,9 +57,21 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
       startCollecting = false
     }
     case m @ PardisStruct(tag, elems, methods) if startCollecting && phase == FindMallocs => {
+      /*System.out.println("---------------------")
+      System.out.println("INSERTING STRUCT: " + node.tp + " TO LIST ")
+      System.out.println(mallocNodes.map(mn => mn.tp).mkString("\n"))
+      System.out.println("CONTAINED? " + mallocNodes.find(mn => mn.tp == node.tp).isEmpty)
+      System.out.println("---------------------\n")
+      if (mallocNodes.find(mn => mn.tp == node.tp).isEmpty)*/
       mallocNodes += node.asInstanceOf[Def[Any]]
     }
     case m @ ArrayNew(size) if startCollecting && phase == FindMallocs => {
+      /*System.out.println("---------------------")
+      System.out.println("INSERTING ARRAy: " + node.tp + " TO LIST ")
+      System.out.println(mallocNodes.map(mn => mn.tp).mkString("\n"))
+      System.out.println("CONTAINED? " + mallocNodes.find(mn => mn.tp == node.tp).isEmpty)
+      System.out.println("---------------------\n")
+      if (mallocNodes.find(mn => mn.tp == node.tp).isEmpty)*/
       mallocNodes += node.asInstanceOf[Def[Any]]
     }
     case _ => super.traverseDef(node)
@@ -77,23 +89,25 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
 
   def createBuffers() {
     //System.out.println("Creating buffers for mallocNodes: " + mallocNodes.mkString("\n"))
-    val mallocInstances = mallocNodes.map(m => mallocToInstance(m)).distinct //.filter(t => !t.tp.name.contains("CArray") /* && !t.tp.name.contains("Pointer")*/ )
+    val mallocInstances = mallocNodes.map(m => mallocToInstance(m)) //.sortBy(ll => ll.tp.name.length) //.distinct //.filter(t => !t.tp.name.contains("CArray") /* && !t.tp.name.contains("Pointer")*/ )
+    System.out.println(mallocInstances.map(mn => mn.tp).mkString("\n"))
+    System.out.println("\n")
     for (mallocInstance <- mallocInstances) {
       val mallocTp = mallocInstance.tp
       //	 val elemTp = mallocTp.typeArguments(0)
       val index = __newVar[Int](unit(0))
       val elemType = mallocTp
       val poolType = elemType //if (mallocTp.isPrimitive) elemType else typePointer(elemType)
-      val POOL_SIZE = 18000000 //* (poolType.toString.split("_").length + 1)
+      val POOL_SIZE = 1800000 //* (poolType.toString.split("_").length + 1)
       //val POOL_SIZE = 100000
       /* this one is a hack */
-      /*def regenerateSize(s: Rep[Int]): Rep[Int] = s match {
-        case c @ Constant(_)           =>  s
+      def regenerateSize(s: Rep[Int]): Rep[Int] = s match {
+        case c @ Constant(_)       => s
         case Def(Int$div4(x, y))   => regenerateSize(x) / regenerateSize(y)
         case Def(Int$times4(x, y)) => regenerateSize(x) * regenerateSize(y)
         case d @ Def(_)            => s
       }
-      val POOL_SIZE = regenerateSize(mallocNode.numElems) * 200*/
+      //val POOL_SIZE = regenerateSize(mallocNode.numElems) * 200*/
       val pool = arrayNew(POOL_SIZE)(poolType) //malloc(POOL_SIZE)(poolType)
       if (!mallocTp.isPrimitive) {
         cForLoop(0, POOL_SIZE, (i: Rep[Int]) => {
@@ -102,6 +116,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
             val newElems = mallocNode.elems.map(e => {
               val in = {
                 if ((e.init.tp.isRecord) || (e.init.tp.isArray)) {
+                  System.out.println("----->" + e.init.tp.name)
                   val other = mallocBuffers.find(mb => mb._1.tp.name == e.init.tp.name).get._2.pool
                   arrayApply(other.asInstanceOf[Expression[Array[Any]]], i)(e.init.tp)
                 } else infix_asInstanceOf(unit(DefaultValue(e.init.tp.name))(e.init.tp))(e.init.tp)
@@ -114,10 +129,15 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
             val allocatedSpace = toAtom(PardisStruct(mallocNode.tag, newElems, newMethods)(elemType))(elemType)
             arrayUpdate(pool, i, allocatedSpace)
           } else if (poolType.isArray) {
-            val mallocNode = mallocInstance.node.asInstanceOf[ArrayNew[Any]]
-            val newType = poolType.typeArguments(0)
-            val allocatedSpace = toAtom(ArrayNew(mallocNode._length)(newType.asInstanceOf[PardisType[Any]]))(poolType.asInstanceOf[PardisType[Array[Any]]])
-            arrayUpdate(pool, i, allocatedSpace)
+            mallocInstance.node match {
+              case an @ ArrayNew(size) => {
+                val newType = poolType.typeArguments(0)
+                val newSize = regenerateSize(size)
+                //printf(unit("%d\n"), newSize)
+                val allocatedSpace = toAtom(ArrayNew(newSize)(newType.asInstanceOf[PardisType[Any]]))(poolType.asInstanceOf[PardisType[Array[Any]]])
+                arrayUpdate(pool, i, allocatedSpace)
+              }
+            }
           }
           //malloc(unit(1))(elemType)
           //pointer_assign(pool.asInstanceOf[Expression[Pointer[Any]]], i, allocatedSpace)
@@ -125,7 +145,7 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
         })
       }
       mallocBuffers += mallocInstance -> BufferInfo(pool.asInstanceOf[Sym[Any]], index)
-      //printf(unit("Buffer for type %s of size %d initialized!\n"), unit(mallocTp.toString), POOL_SIZE)
+      printf(unit("Buffer for type %s of size %d initialized!\n"), unit(mallocTp.toString), POOL_SIZE)
     }
   }
 
@@ -138,14 +158,17 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
       GenericEngineRunQueryObject(tb)
 
     case ps @ ArrayNew(size) if startCollecting => {
+      System.out.println("REPLACING ARRAY ALLOCATION IN MEMORYTRANSFORMER")
       val mallocInstance = mallocToInstance(ps.asInstanceOf[Def[Any]])
       val bufferInfo = mallocBuffers(mallocInstance)
+      val s = toAtom(ReadVal(size))
       val p = arrayApply(bufferInfo.pool.asInstanceOf[Rep[Array[Any]]], readVar(bufferInfo.index)(IntType))(ps.tp.asInstanceOf[PardisType[Any]])
       __assign(bufferInfo.index, readVar(bufferInfo.index)(IntType) + (1))
       ReadVal(p)(ps.tp.asInstanceOf[PardisType[Any]])
     }
 
     case ps @ PardisStruct(tag, elems, methods) if startCollecting => {
+      System.out.println("REPLACING STRUCT ALLOCATION IN MEMORYTRANSFORMER")
       val mallocInstance = mallocToInstance(ps.asInstanceOf[Def[Any]])
       val bufferInfo = mallocBuffers(mallocInstance)
       val p = arrayApply(bufferInfo.pool.asInstanceOf[Rep[Array[Any]]], readVar(bufferInfo.index)(IntType))(ps.tp.asInstanceOf[PardisType[Any]])
