@@ -9,7 +9,7 @@ import pardis.types.PardisTypeImplicits._
 import pardis.shallow.c.CLangTypes._
 import pardis.shallow.c.GLibTypes._
 
-trait CLibs extends PointerComponent
+trait CLibs extends LPointerComponent
   with CLangComponent
   with CStdLibComponent
   with CFileComponent
@@ -17,30 +17,30 @@ trait CLibs extends PointerComponent
   with CStringComponent
   with CTimeValComponent
   with CSysTimeComponent
-  with GTreeComponent
-  with GTreeHeaderComponent
-  with GListComponent
-  with GListHeaderComponent
-  with GArrayComponent
-  with GArrayHeaderComponent
-  with GHashTableComponent
-  with GHashTableHeaderComponent
+  with LGTreeComponent
+  with LGTreeHeaderComponent
+  with LGListComponent
+  with LGListHeaderComponent
+  with LGArrayComponent
+  with LGArrayHeaderComponent
+  with LGHashTableComponent
+  with LGHashTableHeaderComponent
 
-trait PointerOps extends Base { this: CLibs =>
+trait LPointerOps extends Base { this: CLibs =>
   // Type representation
-  case class PointerType[T](typeT: TypeRep[T]) extends TypeRep[Pointer[T]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PointerType(newArguments(0).asInstanceOf[TypeRep[_]])
+  case class LPointerType[T](typeT: TypeRep[T]) extends TypeRep[LPointer[T]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LPointerType(newArguments(0).asInstanceOf[TypeRep[_]])
     private implicit val tagT = typeT.typeTag
-    val name = s"Pointer[${typeT.name}]"
+    val name = s"LPointer[${typeT.name}]"
     val typeArguments = List(typeT)
 
-    val typeTag = scala.reflect.runtime.universe.typeTag[Pointer[T]]
+    val typeTag = scala.reflect.runtime.universe.typeTag[LPointer[T]]
   }
-  implicit def typePointer[T: TypeRep] = PointerType(implicitly[TypeRep[T]])
-  implicit class PointerRep[T](self: Rep[Pointer[T]])(implicit typeT: TypeRep[T]) {
+  implicit def typeLPointer[T: TypeRep] = LPointerType(implicitly[TypeRep[T]])
+  implicit class LPointerRep[T](self: Rep[LPointer[T]])(implicit typeT: TypeRep[T]) {
 
   }
-  object Pointer {
+  object LPointer {
 
   }
   // constructors
@@ -49,21 +49,21 @@ trait PointerOps extends Base { this: CLibs =>
 
   // method definitions
 
-  type Pointer[T] = ch.epfl.data.pardis.shallow.c.CLangTypes.Pointer[T]
+  type LPointer[T] = ch.epfl.data.pardis.shallow.c.CLangTypes.LPointer[T]
 }
-trait PointerImplicits { this: CLibs =>
+trait LPointerImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait PointerImplementations { this: CLibs =>
+trait LPointerImplementations { this: CLibs =>
 
 }
-trait PointerPartialEvaluation extends PointerComponent with BasePartialEvaluation { this: CLibs =>
+trait LPointerPartialEvaluation extends LPointerComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait PointerComponent extends PointerOps with PointerImplicits { this: CLibs => }
+trait LPointerComponent extends LPointerOps with LPointerImplicits { this: CLibs => }
 
 trait CLangOps extends Base { this: CLibs =>
   // Type representation
@@ -79,218 +79,218 @@ trait CLangOps extends Base { this: CLibs =>
 
   }
   object CLang {
-    def deref_long(v: Rep[Pointer[Long]]): Rep[Long] = cLangDeref_longObject(v)
-    def deref_double(v: Rep[Pointer[Double]]): Rep[Double] = cLangDeref_doubleObject(v)
-    def deref_int(v: Rep[Pointer[Int]]): Rep[Int] = cLangDeref_intObject(v)
-    def deref_char(v: Rep[Pointer[Char]]): Rep[Char] = cLangDeref_charObject(v)
-    def deref_bytes(v: Rep[Pointer[Array[Byte]]], n: Rep[Int]): Rep[Array[Byte]] = cLangDeref_bytesObject(v, n)
-    def addr_long(v: Rep[Long]): Rep[Pointer[Long]] = cLangAddr_longObject(v)
-    def addr_double(v: Rep[Double]): Rep[Pointer[Double]] = cLangAddr_doubleObject(v)
-    def addr_int(v: Rep[Int]): Rep[Pointer[Int]] = cLangAddr_intObject(v)
-    def addr_char(v: Rep[Char]): Rep[Pointer[Char]] = cLangAddr_charObject(v)
-    def addr_bytes(v: Rep[Array[Byte]], n: Rep[Int]): Rep[Pointer[Array[Byte]]] = cLangAddr_bytesObject(v, n)
-    def addr_func1[T1, U](v: Rep[CFunc1])(implicit typeT1: TypeRep[T1], typeU: TypeRep[U]): Rep[Pointer[(T1 => U)]] = cLangAddr_func1Object[T1, U](v)(typeT1, typeU)
-    def addr_func2[T1, T2, U](v: Rep[CFunc2])(implicit typeT1: TypeRep[T1], typeT2: TypeRep[T2], typeU: TypeRep[U]): Rep[Pointer[((T1, T2) => U)]] = cLangAddr_func2Object[T1, T2, U](v)(typeT1, typeT2, typeU)
-    def addr_func3[T1, T2, T3, U](v: Rep[CFunc3])(implicit typeT1: TypeRep[T1], typeT2: TypeRep[T2], typeT3: TypeRep[T3], typeU: TypeRep[U]): Rep[Pointer[((T1, T2, T3) => U)]] = cLangAddr_func3Object[T1, T2, T3, U](v)(typeT1, typeT2, typeT3, typeU)
-    def assign_long(p: Rep[Pointer[Long]], v: Rep[Long]): Rep[Unit] = cLangAssign_longObject(p, v)
-    def assign_double(p: Rep[Pointer[Double]], v: Rep[Double]): Rep[Unit] = cLangAssign_doubleObject(p, v)
-    def assign_int(p: Rep[Pointer[Int]], v: Rep[Int]): Rep[Unit] = cLangAssign_intObject(p, v)
-    def assign_char(p: Rep[Pointer[Char]], v: Rep[Char]): Rep[Unit] = cLangAssign_charObject(p, v)
-    def assign_bytes(p: Rep[Pointer[Array[Byte]]], v: Rep[Array[Byte]], n: Rep[Int]): Rep[Unit] = cLangAssign_bytesObject(p, v, n)
+    def deref_long(v: Rep[LPointer[Long]]): Rep[Long] = cLangDeref_longObject(v)
+    def deref_double(v: Rep[LPointer[Double]]): Rep[Double] = cLangDeref_doubleObject(v)
+    def deref_int(v: Rep[LPointer[Int]]): Rep[Int] = cLangDeref_intObject(v)
+    def deref_char(v: Rep[LPointer[Char]]): Rep[Char] = cLangDeref_charObject(v)
+    def deref_bytes(v: Rep[LPointer[Array[Byte]]], n: Rep[Int]): Rep[Array[Byte]] = cLangDeref_bytesObject(v, n)
+    def addr_long(v: Rep[Long]): Rep[LPointer[Long]] = cLangAddr_longObject(v)
+    def addr_double(v: Rep[Double]): Rep[LPointer[Double]] = cLangAddr_doubleObject(v)
+    def addr_int(v: Rep[Int]): Rep[LPointer[Int]] = cLangAddr_intObject(v)
+    def addr_char(v: Rep[Char]): Rep[LPointer[Char]] = cLangAddr_charObject(v)
+    def addr_bytes(v: Rep[Array[Byte]], n: Rep[Int]): Rep[LPointer[Array[Byte]]] = cLangAddr_bytesObject(v, n)
+    def addr_func1[T1, U](v: Rep[CFunc1])(implicit typeT1: TypeRep[T1], typeU: TypeRep[U]): Rep[LPointer[(T1 => U)]] = cLangAddr_func1Object[T1, U](v)(typeT1, typeU)
+    def addr_func2[T1, T2, U](v: Rep[CFunc2])(implicit typeT1: TypeRep[T1], typeT2: TypeRep[T2], typeU: TypeRep[U]): Rep[LPointer[((T1, T2) => U)]] = cLangAddr_func2Object[T1, T2, U](v)(typeT1, typeT2, typeU)
+    def addr_func3[T1, T2, T3, U](v: Rep[CFunc3])(implicit typeT1: TypeRep[T1], typeT2: TypeRep[T2], typeT3: TypeRep[T3], typeU: TypeRep[U]): Rep[LPointer[((T1, T2, T3) => U)]] = cLangAddr_func3Object[T1, T2, T3, U](v)(typeT1, typeT2, typeT3, typeU)
+    def assign_long(p: Rep[LPointer[Long]], v: Rep[Long]): Rep[Unit] = cLangAssign_longObject(p, v)
+    def assign_double(p: Rep[LPointer[Double]], v: Rep[Double]): Rep[Unit] = cLangAssign_doubleObject(p, v)
+    def assign_int(p: Rep[LPointer[Int]], v: Rep[Int]): Rep[Unit] = cLangAssign_intObject(p, v)
+    def assign_char(p: Rep[LPointer[Char]], v: Rep[Char]): Rep[Unit] = cLangAssign_charObject(p, v)
+    def assign_bytes(p: Rep[LPointer[Array[Byte]]], v: Rep[Array[Byte]], n: Rep[Int]): Rep[Unit] = cLangAssign_bytesObject(p, v, n)
     def sizeof_long(): Rep[Int] = cLangSizeof_longObject()
     def sizeof_double(): Rep[Int] = cLangSizeof_doubleObject()
     def sizeof_int(): Rep[Int] = cLangSizeof_intObject()
     def sizeof_char(): Rep[Int] = cLangSizeof_charObject()
-    def pointer_add[T](p: Rep[Pointer[T]], n: Rep[Int])(implicit typeT: TypeRep[T], evidence$11: CType[T]): Rep[Pointer[T]] = cLangPointer_addObject[T](p, n)(typeT, evidence$11)
-    def pointer_sub[T](p: Rep[Pointer[T]], n: Rep[Int])(implicit typeT: TypeRep[T], evidence$12: CType[T]): Rep[Pointer[T]] = cLangPointer_subObject[T](p, n)(typeT, evidence$12)
+    def pointer_add[T](p: Rep[LPointer[T]], n: Rep[Int])(implicit typeT: TypeRep[T], evidence$11: CType[T]): Rep[LPointer[T]] = cLangPointer_addObject[T](p, n)(typeT, evidence$11)
+    def pointer_sub[T](p: Rep[LPointer[T]], n: Rep[Int])(implicit typeT: TypeRep[T], evidence$12: CType[T]): Rep[LPointer[T]] = cLangPointer_subObject[T](p, n)(typeT, evidence$12)
     def __whileDo(cond: Rep[Boolean], body: => Rep[Unit]): Rep[Unit] = cLang__whileDoObject(cond, body)
     def break(): Rep[Unit] = cLangBreakObject()
-    def NULL[T](implicit typeT: TypeRep[T]): Rep[Pointer[T]] = cLangNULLObject[T]()(typeT)
+    def NULL[T](implicit typeT: TypeRep[T]): Rep[LPointer[T]] = cLangNULLObject[T]()(typeT)
     def EOF(): Rep[Int] = cLangEOFObject()
-    def &[T](v: Rep[T])(implicit typeT: TypeRep[T], evidence$13: CAddressable[T]): Rep[Pointer[T]] = cLang$ampObject[T](v)(typeT, evidence$13)
-    def *[T](v: Rep[Pointer[T]])(implicit typeT: TypeRep[T], evidence$14: CDereferenceable[T]): Rep[T] = cLang$timesObject[T](v)(typeT, evidence$14)
-    def pointer_assign[T](p: Rep[Pointer[T]], v: Rep[T])(implicit typeT: TypeRep[T], evidence$15: CAssignable[T]): Rep[Unit] = cLangPointer_assignObject[T](p, v)(typeT, evidence$15)
+    def &[T](v: Rep[T])(implicit typeT: TypeRep[T], evidence$13: CAddressable[T]): Rep[LPointer[T]] = cLang$ampObject[T](v)(typeT, evidence$13)
+    def *[T](v: Rep[LPointer[T]])(implicit typeT: TypeRep[T], evidence$14: CDereferenceable[T]): Rep[T] = cLang$timesObject[T](v)(typeT, evidence$14)
+    def pointer_assign[T](p: Rep[LPointer[T]], v: Rep[T])(implicit typeT: TypeRep[T], evidence$15: CAssignable[T]): Rep[Unit] = cLangPointer_assignObject[T](p, v)(typeT, evidence$15)
     def sizeof[T](implicit typeT: TypeRep[T], evidence$16: CSizeable[T]): Rep[Int] = cLangSizeofObject[T]()(typeT, evidence$16)
-    def ->[T <: ch.epfl.data.pardis.shallow.c.CLangTypes.CStruct, U](struct: Rep[Pointer[T]], field: Rep[Symbol])(implicit typeT: TypeRep[T], typeU: TypeRep[U], evidence$17: CStructInfo[T], evidence$18: CDereferenceable[U]): Rep[U] = cLang$minus$greaterObject[T, U](struct, field)(typeT, typeU, evidence$17, evidence$18)
-    def debugMsg(fd: Rep[Pointer[CFile]], text: Rep[String], xs: Rep[Any]*): Rep[Unit] = cLangDebugMsgObject(fd, text, xs: _*)
+    def ->[T <: ch.epfl.data.pardis.shallow.c.CLangTypes.CStruct, U](struct: Rep[LPointer[T]], field: Rep[Symbol])(implicit typeT: TypeRep[T], typeU: TypeRep[U], evidence$17: CStructInfo[T], evidence$18: CDereferenceable[U]): Rep[U] = cLang$minus$greaterObject[T, U](struct, field)(typeT, typeU, evidence$17, evidence$18)
+    def debugMsg(fd: Rep[LPointer[CFile]], text: Rep[String], xs: Rep[Any]*): Rep[Unit] = cLangDebugMsgObject(fd, text, xs: _*)
   }
   // constructors
 
   // case classes
-  case class CLangDeref_longObject(v: Rep[Pointer[Long]]) extends FunctionDef[Long](None, "CLang.deref_long", List(List(v))) {
+  case class CLangDeref_longObject(v: Rep[LPointer[Long]]) extends FunctionDef[Long](None, "deref_long", List(List(v))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class CLangDeref_doubleObject(v: Rep[Pointer[Double]]) extends FunctionDef[Double](None, "CLang.deref_double", List(List(v))) {
+  case class CLangDeref_doubleObject(v: Rep[LPointer[Double]]) extends FunctionDef[Double](None, "deref_double", List(List(v))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class CLangDeref_intObject(v: Rep[Pointer[Int]]) extends FunctionDef[Int](None, "CLang.deref_int", List(List(v))) {
+  case class CLangDeref_intObject(v: Rep[LPointer[Int]]) extends FunctionDef[Int](None, "deref_int", List(List(v))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class CLangDeref_charObject(v: Rep[Pointer[Char]]) extends FunctionDef[Char](None, "CLang.deref_char", List(List(v))) {
+  case class CLangDeref_charObject(v: Rep[LPointer[Char]]) extends FunctionDef[Char](None, "deref_char", List(List(v))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class CLangDeref_bytesObject(v: Rep[Pointer[Array[Byte]]], n: Rep[Int]) extends FunctionDef[Array[Byte]](None, "CLang.deref_bytes", List(List(v, n))) {
+  case class CLangDeref_bytesObject(v: Rep[LPointer[Array[Byte]]], n: Rep[Int]) extends FunctionDef[Array[Byte]](None, "deref_bytes", List(List(v, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CLangAddr_longObject(v: Rep[Long]) extends FunctionDef[Pointer[Long]](None, "CLang.addr_long", List(List(v))) {
+  case class CLangAddr_longObject(v: Rep[Long]) extends FunctionDef[LPointer[Long]](None, "addr_long", List(List(v))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class CLangAddr_doubleObject(v: Rep[Double]) extends FunctionDef[Pointer[Double]](None, "CLang.addr_double", List(List(v))) {
+  case class CLangAddr_doubleObject(v: Rep[Double]) extends FunctionDef[LPointer[Double]](None, "addr_double", List(List(v))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class CLangAddr_intObject(v: Rep[Int]) extends FunctionDef[Pointer[Int]](None, "CLang.addr_int", List(List(v))) {
+  case class CLangAddr_intObject(v: Rep[Int]) extends FunctionDef[LPointer[Int]](None, "addr_int", List(List(v))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class CLangAddr_charObject(v: Rep[Char]) extends FunctionDef[Pointer[Char]](None, "CLang.addr_char", List(List(v))) {
+  case class CLangAddr_charObject(v: Rep[Char]) extends FunctionDef[LPointer[Char]](None, "addr_char", List(List(v))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class CLangAddr_bytesObject(v: Rep[Array[Byte]], n: Rep[Int]) extends FunctionDef[Pointer[Array[Byte]]](None, "CLang.addr_bytes", List(List(v, n))) {
+  case class CLangAddr_bytesObject(v: Rep[Array[Byte]], n: Rep[Int]) extends FunctionDef[LPointer[Array[Byte]]](None, "addr_bytes", List(List(v, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CLangAddr_func1Object[T1, U](v: Rep[CFunc1])(implicit val typeT1: TypeRep[T1], val typeU: TypeRep[U]) extends FunctionDef[Pointer[(T1 => U)]](None, "CLang.addr_func1", List(List(v))) {
+  case class CLangAddr_func1Object[T1, U](v: Rep[CFunc1])(implicit val typeT1: TypeRep[T1], val typeU: TypeRep[U]) extends FunctionDef[LPointer[(T1 => U)]](None, "addr_func1", List(List(v))) {
     override def curriedConstructor = (copy[T1, U] _)
   }
 
-  case class CLangAddr_func2Object[T1, T2, U](v: Rep[CFunc2])(implicit val typeT1: TypeRep[T1], val typeT2: TypeRep[T2], val typeU: TypeRep[U]) extends FunctionDef[Pointer[((T1, T2) => U)]](None, "CLang.addr_func2", List(List(v))) {
+  case class CLangAddr_func2Object[T1, T2, U](v: Rep[CFunc2])(implicit val typeT1: TypeRep[T1], val typeT2: TypeRep[T2], val typeU: TypeRep[U]) extends FunctionDef[LPointer[((T1, T2) => U)]](None, "addr_func2", List(List(v))) {
     override def curriedConstructor = (copy[T1, T2, U] _)
   }
 
-  case class CLangAddr_func3Object[T1, T2, T3, U](v: Rep[CFunc3])(implicit val typeT1: TypeRep[T1], val typeT2: TypeRep[T2], val typeT3: TypeRep[T3], val typeU: TypeRep[U]) extends FunctionDef[Pointer[((T1, T2, T3) => U)]](None, "CLang.addr_func3", List(List(v))) {
+  case class CLangAddr_func3Object[T1, T2, T3, U](v: Rep[CFunc3])(implicit val typeT1: TypeRep[T1], val typeT2: TypeRep[T2], val typeT3: TypeRep[T3], val typeU: TypeRep[U]) extends FunctionDef[LPointer[((T1, T2, T3) => U)]](None, "addr_func3", List(List(v))) {
     override def curriedConstructor = (copy[T1, T2, T3, U] _)
   }
 
-  case class CLangAssign_longObject(p: Rep[Pointer[Long]], v: Rep[Long]) extends FunctionDef[Unit](None, "CLang.assign_long", List(List(p, v))) {
+  case class CLangAssign_longObject(p: Rep[LPointer[Long]], v: Rep[Long]) extends FunctionDef[Unit](None, "assign_long", List(List(p, v))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CLangAssign_doubleObject(p: Rep[Pointer[Double]], v: Rep[Double]) extends FunctionDef[Unit](None, "CLang.assign_double", List(List(p, v))) {
+  case class CLangAssign_doubleObject(p: Rep[LPointer[Double]], v: Rep[Double]) extends FunctionDef[Unit](None, "assign_double", List(List(p, v))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CLangAssign_intObject(p: Rep[Pointer[Int]], v: Rep[Int]) extends FunctionDef[Unit](None, "CLang.assign_int", List(List(p, v))) {
+  case class CLangAssign_intObject(p: Rep[LPointer[Int]], v: Rep[Int]) extends FunctionDef[Unit](None, "assign_int", List(List(p, v))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CLangAssign_charObject(p: Rep[Pointer[Char]], v: Rep[Char]) extends FunctionDef[Unit](None, "CLang.assign_char", List(List(p, v))) {
+  case class CLangAssign_charObject(p: Rep[LPointer[Char]], v: Rep[Char]) extends FunctionDef[Unit](None, "assign_char", List(List(p, v))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CLangAssign_bytesObject(p: Rep[Pointer[Array[Byte]]], v: Rep[Array[Byte]], n: Rep[Int]) extends FunctionDef[Unit](None, "CLang.assign_bytes", List(List(p, v, n))) {
+  case class CLangAssign_bytesObject(p: Rep[LPointer[Array[Byte]]], v: Rep[Array[Byte]], n: Rep[Int]) extends FunctionDef[Unit](None, "assign_bytes", List(List(p, v, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CLangSizeof_longObject() extends FunctionDef[Int](None, "CLang.sizeof_long", List(List())) {
+  case class CLangSizeof_longObject() extends FunctionDef[Int](None, "sizeof_long", List(List())) {
     override def curriedConstructor = (x: Any) => copy()
   }
 
-  case class CLangSizeof_doubleObject() extends FunctionDef[Int](None, "CLang.sizeof_double", List(List())) {
+  case class CLangSizeof_doubleObject() extends FunctionDef[Int](None, "sizeof_double", List(List())) {
     override def curriedConstructor = (x: Any) => copy()
   }
 
-  case class CLangSizeof_intObject() extends FunctionDef[Int](None, "CLang.sizeof_int", List(List())) {
+  case class CLangSizeof_intObject() extends FunctionDef[Int](None, "sizeof_int", List(List())) {
     override def curriedConstructor = (x: Any) => copy()
   }
 
-  case class CLangSizeof_charObject() extends FunctionDef[Int](None, "CLang.sizeof_char", List(List())) {
+  case class CLangSizeof_charObject() extends FunctionDef[Int](None, "sizeof_char", List(List())) {
     override def curriedConstructor = (x: Any) => copy()
   }
 
-  case class CLangPointer_addObject[T](p: Rep[Pointer[T]], n: Rep[Int])(implicit val typeT: TypeRep[T], val evidence$11: CType[T]) extends FunctionDef[Pointer[T]](None, "CLang.pointer_add", List(List(p, n))) {
+  case class CLangPointer_addObject[T](p: Rep[LPointer[T]], n: Rep[Int])(implicit val typeT: TypeRep[T], val evidence$11: CType[T]) extends FunctionDef[LPointer[T]](None, "pointer_add", List(List(p, n))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class CLangPointer_subObject[T](p: Rep[Pointer[T]], n: Rep[Int])(implicit val typeT: TypeRep[T], val evidence$12: CType[T]) extends FunctionDef[Pointer[T]](None, "CLang.pointer_sub", List(List(p, n))) {
+  case class CLangPointer_subObject[T](p: Rep[LPointer[T]], n: Rep[Int])(implicit val typeT: TypeRep[T], val evidence$12: CType[T]) extends FunctionDef[LPointer[T]](None, "pointer_sub", List(List(p, n))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class CLang__whileDoObject(cond: Rep[Boolean], bodyOutput: Block[Unit]) extends FunctionDef[Unit](None, "CLang.__whileDo", List(List(cond, bodyOutput))) {
+  case class CLang__whileDoObject(cond: Rep[Boolean], bodyOutput: Block[Unit]) extends FunctionDef[Unit](None, "__whileDo", List(List(cond, bodyOutput))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CLangBreakObject() extends FunctionDef[Unit](None, "CLang.break", List(List())) {
+  case class CLangBreakObject() extends FunctionDef[Unit](None, "break", List(List())) {
     override def curriedConstructor = (x: Any) => copy()
   }
 
-  case class CLangNULLObject[T]()(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[T]](None, "CLang.NULL", List()) {
+  case class CLangNULLObject[T]()(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[T]](None, "NULL", List()) {
     override def curriedConstructor = (x: Any) => copy[T]()
   }
 
-  case class CLangEOFObject() extends FunctionDef[Int](None, "CLang.EOF", List(List())) {
+  case class CLangEOFObject() extends FunctionDef[Int](None, "EOF", List(List())) {
     override def curriedConstructor = (x: Any) => copy()
   }
 
-  case class CLang$ampObject[T](v: Rep[T])(implicit val typeT: TypeRep[T], val evidence$13: CAddressable[T]) extends FunctionDef[Pointer[T]](None, "CLang.&", List(List(v))) {
+  case class CLang$ampObject[T](v: Rep[T])(implicit val typeT: TypeRep[T], val evidence$13: CAddressable[T]) extends FunctionDef[LPointer[T]](None, "&", List(List(v))) {
     override def curriedConstructor = (copy[T] _)
   }
 
-  case class CLang$timesObject[T](v: Rep[Pointer[T]])(implicit val typeT: TypeRep[T], val evidence$14: CDereferenceable[T]) extends FunctionDef[T](None, "CLang.*", List(List(v))) {
+  case class CLang$timesObject[T](v: Rep[LPointer[T]])(implicit val typeT: TypeRep[T], val evidence$14: CDereferenceable[T]) extends FunctionDef[T](None, "*", List(List(v))) {
     override def curriedConstructor = (copy[T] _)
   }
 
-  case class CLangPointer_assignObject[T](p: Rep[Pointer[T]], v: Rep[T])(implicit val typeT: TypeRep[T], val evidence$15: CAssignable[T]) extends FunctionDef[Unit](None, "CLang.pointer_assign", List(List(p, v))) {
+  case class CLangPointer_assignObject[T](p: Rep[LPointer[T]], v: Rep[T])(implicit val typeT: TypeRep[T], val evidence$15: CAssignable[T]) extends FunctionDef[Unit](None, "pointer_assign", List(List(p, v))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class CLangSizeofObject[T]()(implicit val typeT: TypeRep[T], val evidence$16: CSizeable[T]) extends FunctionDef[Int](None, "CLang.sizeof", List()) {
+  case class CLangSizeofObject[T]()(implicit val typeT: TypeRep[T], val evidence$16: CSizeable[T]) extends FunctionDef[Int](None, "sizeof", List()) {
     override def curriedConstructor = (x: Any) => copy[T]()
   }
 
-  case class CLang$minus$greaterObject[T <: ch.epfl.data.pardis.shallow.c.CLangTypes.CStruct, U](struct: Rep[Pointer[T]], field: Rep[Symbol])(implicit val typeT: TypeRep[T], val typeU: TypeRep[U], val evidence$17: CStructInfo[T], val evidence$18: CDereferenceable[U]) extends FunctionDef[U](None, "CLang.->", List(List(struct, field))) {
+  case class CLang$minus$greaterObject[T <: ch.epfl.data.pardis.shallow.c.CLangTypes.CStruct, U](struct: Rep[LPointer[T]], field: Rep[Symbol])(implicit val typeT: TypeRep[T], val typeU: TypeRep[U], val evidence$17: CStructInfo[T], val evidence$18: CDereferenceable[U]) extends FunctionDef[U](None, "->", List(List(struct, field))) {
     override def curriedConstructor = (copy[T, U] _).curried
   }
 
-  case class CLangDebugMsgObject(fd: Rep[Pointer[CFile]], text: Rep[String], xsOutput: Rep[Seq[Any]]) extends FunctionDef[Unit](None, "CLang.debugMsg", List(List(fd, text, __varArg(xsOutput)))) {
+  case class CLangDebugMsgObject(fd: Rep[LPointer[CFile]], text: Rep[String], xsOutput: Rep[Seq[Any]]) extends FunctionDef[Unit](None, "debugMsg", List(List(fd, text, __varArg(xsOutput)))) {
     override def curriedConstructor = (copy _).curried
   }
 
   // method definitions
-  def cLangDeref_longObject(v: Rep[Pointer[Long]]): Rep[Long] = CLangDeref_longObject(v)
-  def cLangDeref_doubleObject(v: Rep[Pointer[Double]]): Rep[Double] = CLangDeref_doubleObject(v)
-  def cLangDeref_intObject(v: Rep[Pointer[Int]]): Rep[Int] = CLangDeref_intObject(v)
-  def cLangDeref_charObject(v: Rep[Pointer[Char]]): Rep[Char] = CLangDeref_charObject(v)
-  def cLangDeref_bytesObject(v: Rep[Pointer[Array[Byte]]], n: Rep[Int]): Rep[Array[Byte]] = CLangDeref_bytesObject(v, n)
-  def cLangAddr_longObject(v: Rep[Long]): Rep[Pointer[Long]] = CLangAddr_longObject(v)
-  def cLangAddr_doubleObject(v: Rep[Double]): Rep[Pointer[Double]] = CLangAddr_doubleObject(v)
-  def cLangAddr_intObject(v: Rep[Int]): Rep[Pointer[Int]] = CLangAddr_intObject(v)
-  def cLangAddr_charObject(v: Rep[Char]): Rep[Pointer[Char]] = CLangAddr_charObject(v)
-  def cLangAddr_bytesObject(v: Rep[Array[Byte]], n: Rep[Int]): Rep[Pointer[Array[Byte]]] = CLangAddr_bytesObject(v, n)
-  def cLangAddr_func1Object[T1, U](v: Rep[CFunc1])(implicit typeT1: TypeRep[T1], typeU: TypeRep[U]): Rep[Pointer[(T1 => U)]] = CLangAddr_func1Object[T1, U](v)
-  def cLangAddr_func2Object[T1, T2, U](v: Rep[CFunc2])(implicit typeT1: TypeRep[T1], typeT2: TypeRep[T2], typeU: TypeRep[U]): Rep[Pointer[((T1, T2) => U)]] = CLangAddr_func2Object[T1, T2, U](v)
-  def cLangAddr_func3Object[T1, T2, T3, U](v: Rep[CFunc3])(implicit typeT1: TypeRep[T1], typeT2: TypeRep[T2], typeT3: TypeRep[T3], typeU: TypeRep[U]): Rep[Pointer[((T1, T2, T3) => U)]] = CLangAddr_func3Object[T1, T2, T3, U](v)
-  def cLangAssign_longObject(p: Rep[Pointer[Long]], v: Rep[Long]): Rep[Unit] = CLangAssign_longObject(p, v)
-  def cLangAssign_doubleObject(p: Rep[Pointer[Double]], v: Rep[Double]): Rep[Unit] = CLangAssign_doubleObject(p, v)
-  def cLangAssign_intObject(p: Rep[Pointer[Int]], v: Rep[Int]): Rep[Unit] = CLangAssign_intObject(p, v)
-  def cLangAssign_charObject(p: Rep[Pointer[Char]], v: Rep[Char]): Rep[Unit] = CLangAssign_charObject(p, v)
-  def cLangAssign_bytesObject(p: Rep[Pointer[Array[Byte]]], v: Rep[Array[Byte]], n: Rep[Int]): Rep[Unit] = CLangAssign_bytesObject(p, v, n)
+  def cLangDeref_longObject(v: Rep[LPointer[Long]]): Rep[Long] = CLangDeref_longObject(v)
+  def cLangDeref_doubleObject(v: Rep[LPointer[Double]]): Rep[Double] = CLangDeref_doubleObject(v)
+  def cLangDeref_intObject(v: Rep[LPointer[Int]]): Rep[Int] = CLangDeref_intObject(v)
+  def cLangDeref_charObject(v: Rep[LPointer[Char]]): Rep[Char] = CLangDeref_charObject(v)
+  def cLangDeref_bytesObject(v: Rep[LPointer[Array[Byte]]], n: Rep[Int]): Rep[Array[Byte]] = CLangDeref_bytesObject(v, n)
+  def cLangAddr_longObject(v: Rep[Long]): Rep[LPointer[Long]] = CLangAddr_longObject(v)
+  def cLangAddr_doubleObject(v: Rep[Double]): Rep[LPointer[Double]] = CLangAddr_doubleObject(v)
+  def cLangAddr_intObject(v: Rep[Int]): Rep[LPointer[Int]] = CLangAddr_intObject(v)
+  def cLangAddr_charObject(v: Rep[Char]): Rep[LPointer[Char]] = CLangAddr_charObject(v)
+  def cLangAddr_bytesObject(v: Rep[Array[Byte]], n: Rep[Int]): Rep[LPointer[Array[Byte]]] = CLangAddr_bytesObject(v, n)
+  def cLangAddr_func1Object[T1, U](v: Rep[CFunc1])(implicit typeT1: TypeRep[T1], typeU: TypeRep[U]): Rep[LPointer[(T1 => U)]] = CLangAddr_func1Object[T1, U](v)
+  def cLangAddr_func2Object[T1, T2, U](v: Rep[CFunc2])(implicit typeT1: TypeRep[T1], typeT2: TypeRep[T2], typeU: TypeRep[U]): Rep[LPointer[((T1, T2) => U)]] = CLangAddr_func2Object[T1, T2, U](v)
+  def cLangAddr_func3Object[T1, T2, T3, U](v: Rep[CFunc3])(implicit typeT1: TypeRep[T1], typeT2: TypeRep[T2], typeT3: TypeRep[T3], typeU: TypeRep[U]): Rep[LPointer[((T1, T2, T3) => U)]] = CLangAddr_func3Object[T1, T2, T3, U](v)
+  def cLangAssign_longObject(p: Rep[LPointer[Long]], v: Rep[Long]): Rep[Unit] = CLangAssign_longObject(p, v)
+  def cLangAssign_doubleObject(p: Rep[LPointer[Double]], v: Rep[Double]): Rep[Unit] = CLangAssign_doubleObject(p, v)
+  def cLangAssign_intObject(p: Rep[LPointer[Int]], v: Rep[Int]): Rep[Unit] = CLangAssign_intObject(p, v)
+  def cLangAssign_charObject(p: Rep[LPointer[Char]], v: Rep[Char]): Rep[Unit] = CLangAssign_charObject(p, v)
+  def cLangAssign_bytesObject(p: Rep[LPointer[Array[Byte]]], v: Rep[Array[Byte]], n: Rep[Int]): Rep[Unit] = CLangAssign_bytesObject(p, v, n)
   def cLangSizeof_longObject(): Rep[Int] = CLangSizeof_longObject()
   def cLangSizeof_doubleObject(): Rep[Int] = CLangSizeof_doubleObject()
   def cLangSizeof_intObject(): Rep[Int] = CLangSizeof_intObject()
   def cLangSizeof_charObject(): Rep[Int] = CLangSizeof_charObject()
-  def cLangPointer_addObject[T](p: Rep[Pointer[T]], n: Rep[Int])(implicit typeT: TypeRep[T], evidence$11: CType[T]): Rep[Pointer[T]] = CLangPointer_addObject[T](p, n)
-  def cLangPointer_subObject[T](p: Rep[Pointer[T]], n: Rep[Int])(implicit typeT: TypeRep[T], evidence$12: CType[T]): Rep[Pointer[T]] = CLangPointer_subObject[T](p, n)
+  def cLangPointer_addObject[T](p: Rep[LPointer[T]], n: Rep[Int])(implicit typeT: TypeRep[T], evidence$11: CType[T]): Rep[LPointer[T]] = CLangPointer_addObject[T](p, n)
+  def cLangPointer_subObject[T](p: Rep[LPointer[T]], n: Rep[Int])(implicit typeT: TypeRep[T], evidence$12: CType[T]): Rep[LPointer[T]] = CLangPointer_subObject[T](p, n)
   def cLang__whileDoObject(cond: Rep[Boolean], body: => Rep[Unit]): Rep[Unit] = {
     val bodyOutput = reifyBlock(body)
     CLang__whileDoObject(cond, bodyOutput)
   }
   def cLangBreakObject(): Rep[Unit] = CLangBreakObject()
-  def cLangNULLObject[T]()(implicit typeT: TypeRep[T]): Rep[Pointer[T]] = CLangNULLObject[T]()
+  def cLangNULLObject[T]()(implicit typeT: TypeRep[T]): Rep[LPointer[T]] = CLangNULLObject[T]()
   def cLangEOFObject(): Rep[Int] = CLangEOFObject()
-  def cLang$ampObject[T](v: Rep[T])(implicit typeT: TypeRep[T], evidence$13: CAddressable[T]): Rep[Pointer[T]] = CLang$ampObject[T](v)
-  def cLang$timesObject[T](v: Rep[Pointer[T]])(implicit typeT: TypeRep[T], evidence$14: CDereferenceable[T]): Rep[T] = CLang$timesObject[T](v)
-  def cLangPointer_assignObject[T](p: Rep[Pointer[T]], v: Rep[T])(implicit typeT: TypeRep[T], evidence$15: CAssignable[T]): Rep[Unit] = CLangPointer_assignObject[T](p, v)
+  def cLang$ampObject[T](v: Rep[T])(implicit typeT: TypeRep[T], evidence$13: CAddressable[T]): Rep[LPointer[T]] = CLang$ampObject[T](v)
+  def cLang$timesObject[T](v: Rep[LPointer[T]])(implicit typeT: TypeRep[T], evidence$14: CDereferenceable[T]): Rep[T] = CLang$timesObject[T](v)
+  def cLangPointer_assignObject[T](p: Rep[LPointer[T]], v: Rep[T])(implicit typeT: TypeRep[T], evidence$15: CAssignable[T]): Rep[Unit] = CLangPointer_assignObject[T](p, v)
   def cLangSizeofObject[T]()(implicit typeT: TypeRep[T], evidence$16: CSizeable[T]): Rep[Int] = CLangSizeofObject[T]()
-  def cLang$minus$greaterObject[T <: ch.epfl.data.pardis.shallow.c.CLangTypes.CStruct, U](struct: Rep[Pointer[T]], field: Rep[Symbol])(implicit typeT: TypeRep[T], typeU: TypeRep[U], evidence$17: CStructInfo[T], evidence$18: CDereferenceable[U]): Rep[U] = CLang$minus$greaterObject[T, U](struct, field)
-  def cLangDebugMsgObject(fd: Rep[Pointer[CFile]], text: Rep[String], xs: Rep[Any]*): Rep[Unit] = {
+  def cLang$minus$greaterObject[T <: ch.epfl.data.pardis.shallow.c.CLangTypes.CStruct, U](struct: Rep[LPointer[T]], field: Rep[Symbol])(implicit typeT: TypeRep[T], typeU: TypeRep[U], evidence$17: CStructInfo[T], evidence$18: CDereferenceable[U]): Rep[U] = CLang$minus$greaterObject[T, U](struct, field)
+  def cLangDebugMsgObject(fd: Rep[LPointer[CFile]], text: Rep[String], xs: Rep[Any]*): Rep[Unit] = {
     val xsOutput = __liftSeq(xs.toSeq)
     CLangDebugMsgObject(fd, text, xsOutput)
   }
@@ -324,23 +324,23 @@ trait CStdLibOps extends Base { this: CLibs =>
 
   }
   object CStdLib {
-    def malloc[T](count: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Pointer[T]] = cStdLibMallocObject[T](count)(typeT)
-    def free[T](ptr: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Unit] = cStdLibFreeObject[T](ptr)(typeT)
+    def malloc[T](count: Rep[Int])(implicit typeT: TypeRep[T]): Rep[LPointer[T]] = cStdLibMallocObject[T](count)(typeT)
+    def free[T](ptr: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[Unit] = cStdLibFreeObject[T](ptr)(typeT)
   }
   // constructors
 
   // case classes
-  case class CStdLibMallocObject[T](count: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[T]](None, "CStdLib.malloc", List(List(count))) {
+  case class CStdLibMallocObject[T](count: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[T]](None, "CStdLib.malloc", List(List(count))) {
     override def curriedConstructor = (copy[T] _)
   }
 
-  case class CStdLibFreeObject[T](ptr: Rep[Pointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Unit](None, "CStdLib.free", List(List(ptr))) {
+  case class CStdLibFreeObject[T](ptr: Rep[LPointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Unit](None, "CStdLib.free", List(List(ptr))) {
     override def curriedConstructor = (copy[T] _)
   }
 
   // method definitions
-  def cStdLibMallocObject[T](count: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Pointer[T]] = CStdLibMallocObject[T](count)
-  def cStdLibFreeObject[T](ptr: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Unit] = CStdLibFreeObject[T](ptr)
+  def cStdLibMallocObject[T](count: Rep[Int])(implicit typeT: TypeRep[T]): Rep[LPointer[T]] = CStdLibMallocObject[T](count)
+  def cStdLibFreeObject[T](ptr: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[Unit] = CStdLibFreeObject[T](ptr)
   type CStdLib = ch.epfl.data.pardis.shallow.c.CStdLib
 }
 trait CStdLibImplicits { this: CLibs =>
@@ -371,123 +371,123 @@ trait CStdIOOps extends Base { this: CLibs =>
 
   }
   object CStdIO {
-    def stderr(): Rep[Pointer[CFile]] = cStdIOStderrObject()
-    def fopen(filename: Rep[Pointer[Char]], mode: Rep[Pointer[Char]])(implicit overload1: Overloaded1): Rep[Pointer[CFile]] = cStdIOFopenObject1(filename, mode)
-    def fopen(filename: Rep[String], mode: Rep[Pointer[Char]])(implicit overload2: Overloaded2): Rep[Pointer[CFile]] = cStdIOFopenObject2(filename, mode)
-    def fopen(filename: Rep[Pointer[Char]], mode: Rep[String])(implicit overload3: Overloaded3): Rep[Pointer[CFile]] = cStdIOFopenObject3(filename, mode)
-    def fopen(filename: Rep[String], mode: Rep[String])(implicit overload4: Overloaded4): Rep[Pointer[CFile]] = cStdIOFopenObject4(filename, mode)
-    def popen(f: Rep[Pointer[Char]], mode: Rep[Pointer[Char]])(implicit overload1: Overloaded1): Rep[Pointer[CFile]] = cStdIOPopenObject1(f, mode)
-    def popen(f: Rep[String], mode: Rep[Pointer[Char]])(implicit overload2: Overloaded2): Rep[Pointer[CFile]] = cStdIOPopenObject2(f, mode)
-    def popen(f: Rep[Pointer[Char]], mode: Rep[String])(implicit overload3: Overloaded3): Rep[Pointer[CFile]] = cStdIOPopenObject3(f, mode)
-    def popen(f: Rep[String], mode: Rep[String])(implicit overload4: Overloaded4): Rep[Pointer[CFile]] = cStdIOPopenObject4(f, mode)
-    def fscanf(f: Rep[Pointer[CFile]], s: Rep[String], l: Rep[Pointer[Any]]*): Rep[Int] = cStdIOFscanfObject(f, s, l: _*)
-    def fprintf(f: Rep[Pointer[CFile]], content: Rep[Pointer[Char]])(implicit overload1: Overloaded1): Rep[Int] = cStdIOFprintfObject1(f, content)
-    def fprintf(f: Rep[Pointer[CFile]], content: Rep[String])(implicit overload2: Overloaded2): Rep[Int] = cStdIOFprintfObject2(f, content)
-    def fread[T](ptr: Rep[Pointer[T]], size: Rep[Int], nitems: Rep[Int], stream: Rep[Pointer[CFile]])(implicit typeT: TypeRep[T]): Rep[Int] = cStdIOFreadObject[T](ptr, size, nitems, stream)(typeT)
-    def fwrite[T](ptr: Rep[Pointer[T]], size: Rep[Int], nitems: Rep[Int], stream: Rep[Pointer[CFile]])(implicit typeT: TypeRep[T]): Rep[Int] = cStdIOFwriteObject[T](ptr, size, nitems, stream)(typeT)
-    def feof(f: Rep[Pointer[CFile]]): Rep[Boolean] = cStdIOFeofObject(f)
-    def fclose(f: Rep[Pointer[CFile]]): Rep[Int] = cStdIOFcloseObject(f)
-    def pclose(f: Rep[Pointer[CFile]]): Rep[Int] = cStdIOPcloseObject(f)
-    def fseek(f: Rep[Pointer[CFile]], offset: Rep[Long], whence: Rep[Int]): Rep[Int] = cStdIOFseekObject(f, offset, whence)
-    def fgetpos(f: Rep[Pointer[CFile]], pos: Rep[Pointer[Long]]): Rep[Int] = cStdIOFgetposObject(f, pos)
-    def fsetpos(f: Rep[Pointer[CFile]], pos: Rep[Pointer[Long]]): Rep[Int] = cStdIOFsetposObject(f, pos)
-    def sprintf(str: Rep[Pointer[Char]], format: Rep[Pointer[Char]], xs: Rep[Any]*)(implicit overload1: Overloaded1): Rep[Int] = cStdIOSprintfObject1(str, format, xs: _*)
-    def sprintf(str: Rep[String], format: Rep[Pointer[Char]], xs: Rep[Any]*)(implicit overload2: Overloaded2): Rep[Int] = cStdIOSprintfObject2(str, format, xs: _*)
-    def sprintf(str: Rep[Pointer[Char]], format: Rep[String], xs: Rep[Any]*)(implicit overload3: Overloaded3): Rep[Int] = cStdIOSprintfObject3(str, format, xs: _*)
+    def stderr(): Rep[LPointer[CFile]] = cStdIOStderrObject()
+    def fopen(filename: Rep[LPointer[Char]], mode: Rep[LPointer[Char]])(implicit overload1: Overloaded1): Rep[LPointer[CFile]] = cStdIOFopenObject1(filename, mode)
+    def fopen(filename: Rep[String], mode: Rep[LPointer[Char]])(implicit overload2: Overloaded2): Rep[LPointer[CFile]] = cStdIOFopenObject2(filename, mode)
+    def fopen(filename: Rep[LPointer[Char]], mode: Rep[String])(implicit overload3: Overloaded3): Rep[LPointer[CFile]] = cStdIOFopenObject3(filename, mode)
+    def fopen(filename: Rep[String], mode: Rep[String])(implicit overload4: Overloaded4): Rep[LPointer[CFile]] = cStdIOFopenObject4(filename, mode)
+    def popen(f: Rep[LPointer[Char]], mode: Rep[LPointer[Char]])(implicit overload1: Overloaded1): Rep[LPointer[CFile]] = cStdIOPopenObject1(f, mode)
+    def popen(f: Rep[String], mode: Rep[LPointer[Char]])(implicit overload2: Overloaded2): Rep[LPointer[CFile]] = cStdIOPopenObject2(f, mode)
+    def popen(f: Rep[LPointer[Char]], mode: Rep[String])(implicit overload3: Overloaded3): Rep[LPointer[CFile]] = cStdIOPopenObject3(f, mode)
+    def popen(f: Rep[String], mode: Rep[String])(implicit overload4: Overloaded4): Rep[LPointer[CFile]] = cStdIOPopenObject4(f, mode)
+    def fscanf(f: Rep[LPointer[CFile]], s: Rep[String], l: Rep[LPointer[Any]]*): Rep[Int] = cStdIOFscanfObject(f, s, l: _*)
+    def fprintf(f: Rep[LPointer[CFile]], content: Rep[LPointer[Char]])(implicit overload1: Overloaded1): Rep[Int] = cStdIOFprintfObject1(f, content)
+    def fprintf(f: Rep[LPointer[CFile]], content: Rep[String])(implicit overload2: Overloaded2): Rep[Int] = cStdIOFprintfObject2(f, content)
+    def fread[T](ptr: Rep[LPointer[T]], size: Rep[Int], nitems: Rep[Int], stream: Rep[LPointer[CFile]])(implicit typeT: TypeRep[T]): Rep[Int] = cStdIOFreadObject[T](ptr, size, nitems, stream)(typeT)
+    def fwrite[T](ptr: Rep[LPointer[T]], size: Rep[Int], nitems: Rep[Int], stream: Rep[LPointer[CFile]])(implicit typeT: TypeRep[T]): Rep[Int] = cStdIOFwriteObject[T](ptr, size, nitems, stream)(typeT)
+    def feof(f: Rep[LPointer[CFile]]): Rep[Boolean] = cStdIOFeofObject(f)
+    def fclose(f: Rep[LPointer[CFile]]): Rep[Int] = cStdIOFcloseObject(f)
+    def pclose(f: Rep[LPointer[CFile]]): Rep[Int] = cStdIOPcloseObject(f)
+    def fseek(f: Rep[LPointer[CFile]], offset: Rep[Long], whence: Rep[Int]): Rep[Int] = cStdIOFseekObject(f, offset, whence)
+    def fgetpos(f: Rep[LPointer[CFile]], pos: Rep[LPointer[Long]]): Rep[Int] = cStdIOFgetposObject(f, pos)
+    def fsetpos(f: Rep[LPointer[CFile]], pos: Rep[LPointer[Long]]): Rep[Int] = cStdIOFsetposObject(f, pos)
+    def sprintf(str: Rep[LPointer[Char]], format: Rep[LPointer[Char]], xs: Rep[Any]*)(implicit overload1: Overloaded1): Rep[Int] = cStdIOSprintfObject1(str, format, xs: _*)
+    def sprintf(str: Rep[String], format: Rep[LPointer[Char]], xs: Rep[Any]*)(implicit overload2: Overloaded2): Rep[Int] = cStdIOSprintfObject2(str, format, xs: _*)
+    def sprintf(str: Rep[LPointer[Char]], format: Rep[String], xs: Rep[Any]*)(implicit overload3: Overloaded3): Rep[Int] = cStdIOSprintfObject3(str, format, xs: _*)
     def sprintf(str: Rep[String], format: Rep[String], xs: Rep[Any]*)(implicit overload4: Overloaded4): Rep[Int] = cStdIOSprintfObject4(str, format, xs: _*)
   }
   // constructors
 
   // case classes
-  case class CStdIOStderrObject() extends FunctionDef[Pointer[CFile]](None, "CStdIO.stderr", List(List())) {
+  case class CStdIOStderrObject() extends FunctionDef[LPointer[CFile]](None, "CStdIO.stderr", List(List())) {
     override def curriedConstructor = (x: Any) => copy()
   }
 
-  case class CStdIOFopenObject1(filename: Rep[Pointer[Char]], mode: Rep[Pointer[Char]]) extends FunctionDef[Pointer[CFile]](None, "CStdIO.fopen", List(List(filename, mode))) {
+  case class CStdIOFopenObject1(filename: Rep[LPointer[Char]], mode: Rep[LPointer[Char]]) extends FunctionDef[LPointer[CFile]](None, "CStdIO.fopen", List(List(filename, mode))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOFopenObject2(filename: Rep[String], mode: Rep[Pointer[Char]]) extends FunctionDef[Pointer[CFile]](None, "CStdIO.fopen", List(List(filename, mode))) {
+  case class CStdIOFopenObject2(filename: Rep[String], mode: Rep[LPointer[Char]]) extends FunctionDef[LPointer[CFile]](None, "CStdIO.fopen", List(List(filename, mode))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOFopenObject3(filename: Rep[Pointer[Char]], mode: Rep[String]) extends FunctionDef[Pointer[CFile]](None, "CStdIO.fopen", List(List(filename, mode))) {
+  case class CStdIOFopenObject3(filename: Rep[LPointer[Char]], mode: Rep[String]) extends FunctionDef[LPointer[CFile]](None, "CStdIO.fopen", List(List(filename, mode))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOFopenObject4(filename: Rep[String], mode: Rep[String]) extends FunctionDef[Pointer[CFile]](None, "CStdIO.fopen", List(List(filename, mode))) {
+  case class CStdIOFopenObject4(filename: Rep[String], mode: Rep[String]) extends FunctionDef[LPointer[CFile]](None, "CStdIO.fopen", List(List(filename, mode))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOPopenObject1(f: Rep[Pointer[Char]], mode: Rep[Pointer[Char]]) extends FunctionDef[Pointer[CFile]](None, "CStdIO.popen", List(List(f, mode))) {
+  case class CStdIOPopenObject1(f: Rep[LPointer[Char]], mode: Rep[LPointer[Char]]) extends FunctionDef[LPointer[CFile]](None, "CStdIO.popen", List(List(f, mode))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOPopenObject2(f: Rep[String], mode: Rep[Pointer[Char]]) extends FunctionDef[Pointer[CFile]](None, "CStdIO.popen", List(List(f, mode))) {
+  case class CStdIOPopenObject2(f: Rep[String], mode: Rep[LPointer[Char]]) extends FunctionDef[LPointer[CFile]](None, "CStdIO.popen", List(List(f, mode))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOPopenObject3(f: Rep[Pointer[Char]], mode: Rep[String]) extends FunctionDef[Pointer[CFile]](None, "CStdIO.popen", List(List(f, mode))) {
+  case class CStdIOPopenObject3(f: Rep[LPointer[Char]], mode: Rep[String]) extends FunctionDef[LPointer[CFile]](None, "CStdIO.popen", List(List(f, mode))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOPopenObject4(f: Rep[String], mode: Rep[String]) extends FunctionDef[Pointer[CFile]](None, "CStdIO.popen", List(List(f, mode))) {
+  case class CStdIOPopenObject4(f: Rep[String], mode: Rep[String]) extends FunctionDef[LPointer[CFile]](None, "CStdIO.popen", List(List(f, mode))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOFscanfObject(f: Rep[Pointer[CFile]], s: Rep[String], lOutput: Rep[Seq[Pointer[Any]]]) extends FunctionDef[Int](None, "CStdIO.fscanf", List(List(f, s, __varArg(lOutput)))) {
+  case class CStdIOFscanfObject(f: Rep[LPointer[CFile]], s: Rep[String], lOutput: Rep[Seq[LPointer[Any]]]) extends FunctionDef[Int](None, "CStdIO.fscanf", List(List(f, s, __varArg(lOutput)))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOFprintfObject1(f: Rep[Pointer[CFile]], content: Rep[Pointer[Char]]) extends FunctionDef[Int](None, "CStdIO.fprintf", List(List(f, content))) {
+  case class CStdIOFprintfObject1(f: Rep[LPointer[CFile]], content: Rep[LPointer[Char]]) extends FunctionDef[Int](None, "CStdIO.fprintf", List(List(f, content))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOFprintfObject2(f: Rep[Pointer[CFile]], content: Rep[String]) extends FunctionDef[Int](None, "CStdIO.fprintf", List(List(f, content))) {
+  case class CStdIOFprintfObject2(f: Rep[LPointer[CFile]], content: Rep[String]) extends FunctionDef[Int](None, "CStdIO.fprintf", List(List(f, content))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOFreadObject[T](ptr: Rep[Pointer[T]], size: Rep[Int], nitems: Rep[Int], stream: Rep[Pointer[CFile]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Int](None, "CStdIO.fread", List(List(ptr, size, nitems, stream))) {
+  case class CStdIOFreadObject[T](ptr: Rep[LPointer[T]], size: Rep[Int], nitems: Rep[Int], stream: Rep[LPointer[CFile]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Int](None, "CStdIO.fread", List(List(ptr, size, nitems, stream))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class CStdIOFwriteObject[T](ptr: Rep[Pointer[T]], size: Rep[Int], nitems: Rep[Int], stream: Rep[Pointer[CFile]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Int](None, "CStdIO.fwrite", List(List(ptr, size, nitems, stream))) {
+  case class CStdIOFwriteObject[T](ptr: Rep[LPointer[T]], size: Rep[Int], nitems: Rep[Int], stream: Rep[LPointer[CFile]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Int](None, "CStdIO.fwrite", List(List(ptr, size, nitems, stream))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class CStdIOFeofObject(f: Rep[Pointer[CFile]]) extends FunctionDef[Boolean](None, "CStdIO.feof", List(List(f))) {
+  case class CStdIOFeofObject(f: Rep[LPointer[CFile]]) extends FunctionDef[Boolean](None, "CStdIO.feof", List(List(f))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class CStdIOFcloseObject(f: Rep[Pointer[CFile]]) extends FunctionDef[Int](None, "CStdIO.fclose", List(List(f))) {
+  case class CStdIOFcloseObject(f: Rep[LPointer[CFile]]) extends FunctionDef[Int](None, "CStdIO.fclose", List(List(f))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class CStdIOPcloseObject(f: Rep[Pointer[CFile]]) extends FunctionDef[Int](None, "CStdIO.pclose", List(List(f))) {
+  case class CStdIOPcloseObject(f: Rep[LPointer[CFile]]) extends FunctionDef[Int](None, "CStdIO.pclose", List(List(f))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class CStdIOFseekObject(f: Rep[Pointer[CFile]], offset: Rep[Long], whence: Rep[Int]) extends FunctionDef[Int](None, "CStdIO.fseek", List(List(f, offset, whence))) {
+  case class CStdIOFseekObject(f: Rep[LPointer[CFile]], offset: Rep[Long], whence: Rep[Int]) extends FunctionDef[Int](None, "CStdIO.fseek", List(List(f, offset, whence))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOFgetposObject(f: Rep[Pointer[CFile]], pos: Rep[Pointer[Long]]) extends FunctionDef[Int](None, "CStdIO.fgetpos", List(List(f, pos))) {
+  case class CStdIOFgetposObject(f: Rep[LPointer[CFile]], pos: Rep[LPointer[Long]]) extends FunctionDef[Int](None, "CStdIO.fgetpos", List(List(f, pos))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOFsetposObject(f: Rep[Pointer[CFile]], pos: Rep[Pointer[Long]]) extends FunctionDef[Int](None, "CStdIO.fsetpos", List(List(f, pos))) {
+  case class CStdIOFsetposObject(f: Rep[LPointer[CFile]], pos: Rep[LPointer[Long]]) extends FunctionDef[Int](None, "CStdIO.fsetpos", List(List(f, pos))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOSprintfObject1(str: Rep[Pointer[Char]], format: Rep[Pointer[Char]], xsOutput: Rep[Seq[Any]]) extends FunctionDef[Int](None, "CStdIO.sprintf", List(List(str, format, __varArg(xsOutput)))) {
+  case class CStdIOSprintfObject1(str: Rep[LPointer[Char]], format: Rep[LPointer[Char]], xsOutput: Rep[Seq[Any]]) extends FunctionDef[Int](None, "CStdIO.sprintf", List(List(str, format, __varArg(xsOutput)))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOSprintfObject2(str: Rep[String], format: Rep[Pointer[Char]], xsOutput: Rep[Seq[Any]]) extends FunctionDef[Int](None, "CStdIO.sprintf", List(List(str, format, __varArg(xsOutput)))) {
+  case class CStdIOSprintfObject2(str: Rep[String], format: Rep[LPointer[Char]], xsOutput: Rep[Seq[Any]]) extends FunctionDef[Int](None, "CStdIO.sprintf", List(List(str, format, __varArg(xsOutput)))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStdIOSprintfObject3(str: Rep[Pointer[Char]], format: Rep[String], xsOutput: Rep[Seq[Any]]) extends FunctionDef[Int](None, "CStdIO.sprintf", List(List(str, format, __varArg(xsOutput)))) {
+  case class CStdIOSprintfObject3(str: Rep[LPointer[Char]], format: Rep[String], xsOutput: Rep[Seq[Any]]) extends FunctionDef[Int](None, "CStdIO.sprintf", List(List(str, format, __varArg(xsOutput)))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -496,38 +496,38 @@ trait CStdIOOps extends Base { this: CLibs =>
   }
 
   // method definitions
-  def cStdIOStderrObject(): Rep[Pointer[CFile]] = CStdIOStderrObject()
-  def cStdIOFopenObject1(filename: Rep[Pointer[Char]], mode: Rep[Pointer[Char]]): Rep[Pointer[CFile]] = CStdIOFopenObject1(filename, mode)
-  def cStdIOFopenObject2(filename: Rep[String], mode: Rep[Pointer[Char]]): Rep[Pointer[CFile]] = CStdIOFopenObject2(filename, mode)
-  def cStdIOFopenObject3(filename: Rep[Pointer[Char]], mode: Rep[String]): Rep[Pointer[CFile]] = CStdIOFopenObject3(filename, mode)
-  def cStdIOFopenObject4(filename: Rep[String], mode: Rep[String]): Rep[Pointer[CFile]] = CStdIOFopenObject4(filename, mode)
-  def cStdIOPopenObject1(f: Rep[Pointer[Char]], mode: Rep[Pointer[Char]]): Rep[Pointer[CFile]] = CStdIOPopenObject1(f, mode)
-  def cStdIOPopenObject2(f: Rep[String], mode: Rep[Pointer[Char]]): Rep[Pointer[CFile]] = CStdIOPopenObject2(f, mode)
-  def cStdIOPopenObject3(f: Rep[Pointer[Char]], mode: Rep[String]): Rep[Pointer[CFile]] = CStdIOPopenObject3(f, mode)
-  def cStdIOPopenObject4(f: Rep[String], mode: Rep[String]): Rep[Pointer[CFile]] = CStdIOPopenObject4(f, mode)
-  def cStdIOFscanfObject(f: Rep[Pointer[CFile]], s: Rep[String], l: Rep[Pointer[Any]]*): Rep[Int] = {
+  def cStdIOStderrObject(): Rep[LPointer[CFile]] = CStdIOStderrObject()
+  def cStdIOFopenObject1(filename: Rep[LPointer[Char]], mode: Rep[LPointer[Char]]): Rep[LPointer[CFile]] = CStdIOFopenObject1(filename, mode)
+  def cStdIOFopenObject2(filename: Rep[String], mode: Rep[LPointer[Char]]): Rep[LPointer[CFile]] = CStdIOFopenObject2(filename, mode)
+  def cStdIOFopenObject3(filename: Rep[LPointer[Char]], mode: Rep[String]): Rep[LPointer[CFile]] = CStdIOFopenObject3(filename, mode)
+  def cStdIOFopenObject4(filename: Rep[String], mode: Rep[String]): Rep[LPointer[CFile]] = CStdIOFopenObject4(filename, mode)
+  def cStdIOPopenObject1(f: Rep[LPointer[Char]], mode: Rep[LPointer[Char]]): Rep[LPointer[CFile]] = CStdIOPopenObject1(f, mode)
+  def cStdIOPopenObject2(f: Rep[String], mode: Rep[LPointer[Char]]): Rep[LPointer[CFile]] = CStdIOPopenObject2(f, mode)
+  def cStdIOPopenObject3(f: Rep[LPointer[Char]], mode: Rep[String]): Rep[LPointer[CFile]] = CStdIOPopenObject3(f, mode)
+  def cStdIOPopenObject4(f: Rep[String], mode: Rep[String]): Rep[LPointer[CFile]] = CStdIOPopenObject4(f, mode)
+  def cStdIOFscanfObject(f: Rep[LPointer[CFile]], s: Rep[String], l: Rep[LPointer[Any]]*): Rep[Int] = {
     val lOutput = __liftSeq(l.toSeq)
     CStdIOFscanfObject(f, s, lOutput)
   }
-  def cStdIOFprintfObject1(f: Rep[Pointer[CFile]], content: Rep[Pointer[Char]]): Rep[Int] = CStdIOFprintfObject1(f, content)
-  def cStdIOFprintfObject2(f: Rep[Pointer[CFile]], content: Rep[String]): Rep[Int] = CStdIOFprintfObject2(f, content)
-  def cStdIOFreadObject[T](ptr: Rep[Pointer[T]], size: Rep[Int], nitems: Rep[Int], stream: Rep[Pointer[CFile]])(implicit typeT: TypeRep[T]): Rep[Int] = CStdIOFreadObject[T](ptr, size, nitems, stream)
-  def cStdIOFwriteObject[T](ptr: Rep[Pointer[T]], size: Rep[Int], nitems: Rep[Int], stream: Rep[Pointer[CFile]])(implicit typeT: TypeRep[T]): Rep[Int] = CStdIOFwriteObject[T](ptr, size, nitems, stream)
-  def cStdIOFeofObject(f: Rep[Pointer[CFile]]): Rep[Boolean] = CStdIOFeofObject(f)
-  def cStdIOFcloseObject(f: Rep[Pointer[CFile]]): Rep[Int] = CStdIOFcloseObject(f)
-  def cStdIOPcloseObject(f: Rep[Pointer[CFile]]): Rep[Int] = CStdIOPcloseObject(f)
-  def cStdIOFseekObject(f: Rep[Pointer[CFile]], offset: Rep[Long], whence: Rep[Int]): Rep[Int] = CStdIOFseekObject(f, offset, whence)
-  def cStdIOFgetposObject(f: Rep[Pointer[CFile]], pos: Rep[Pointer[Long]]): Rep[Int] = CStdIOFgetposObject(f, pos)
-  def cStdIOFsetposObject(f: Rep[Pointer[CFile]], pos: Rep[Pointer[Long]]): Rep[Int] = CStdIOFsetposObject(f, pos)
-  def cStdIOSprintfObject1(str: Rep[Pointer[Char]], format: Rep[Pointer[Char]], xs: Rep[Any]*): Rep[Int] = {
+  def cStdIOFprintfObject1(f: Rep[LPointer[CFile]], content: Rep[LPointer[Char]]): Rep[Int] = CStdIOFprintfObject1(f, content)
+  def cStdIOFprintfObject2(f: Rep[LPointer[CFile]], content: Rep[String]): Rep[Int] = CStdIOFprintfObject2(f, content)
+  def cStdIOFreadObject[T](ptr: Rep[LPointer[T]], size: Rep[Int], nitems: Rep[Int], stream: Rep[LPointer[CFile]])(implicit typeT: TypeRep[T]): Rep[Int] = CStdIOFreadObject[T](ptr, size, nitems, stream)
+  def cStdIOFwriteObject[T](ptr: Rep[LPointer[T]], size: Rep[Int], nitems: Rep[Int], stream: Rep[LPointer[CFile]])(implicit typeT: TypeRep[T]): Rep[Int] = CStdIOFwriteObject[T](ptr, size, nitems, stream)
+  def cStdIOFeofObject(f: Rep[LPointer[CFile]]): Rep[Boolean] = CStdIOFeofObject(f)
+  def cStdIOFcloseObject(f: Rep[LPointer[CFile]]): Rep[Int] = CStdIOFcloseObject(f)
+  def cStdIOPcloseObject(f: Rep[LPointer[CFile]]): Rep[Int] = CStdIOPcloseObject(f)
+  def cStdIOFseekObject(f: Rep[LPointer[CFile]], offset: Rep[Long], whence: Rep[Int]): Rep[Int] = CStdIOFseekObject(f, offset, whence)
+  def cStdIOFgetposObject(f: Rep[LPointer[CFile]], pos: Rep[LPointer[Long]]): Rep[Int] = CStdIOFgetposObject(f, pos)
+  def cStdIOFsetposObject(f: Rep[LPointer[CFile]], pos: Rep[LPointer[Long]]): Rep[Int] = CStdIOFsetposObject(f, pos)
+  def cStdIOSprintfObject1(str: Rep[LPointer[Char]], format: Rep[LPointer[Char]], xs: Rep[Any]*): Rep[Int] = {
     val xsOutput = __liftSeq(xs.toSeq)
     CStdIOSprintfObject1(str, format, xsOutput)
   }
-  def cStdIOSprintfObject2(str: Rep[String], format: Rep[Pointer[Char]], xs: Rep[Any]*): Rep[Int] = {
+  def cStdIOSprintfObject2(str: Rep[String], format: Rep[LPointer[Char]], xs: Rep[Any]*): Rep[Int] = {
     val xsOutput = __liftSeq(xs.toSeq)
     CStdIOSprintfObject2(str, format, xsOutput)
   }
-  def cStdIOSprintfObject3(str: Rep[Pointer[Char]], format: Rep[String], xs: Rep[Any]*): Rep[Int] = {
+  def cStdIOSprintfObject3(str: Rep[LPointer[Char]], format: Rep[String], xs: Rep[Any]*): Rep[Int] = {
     val xsOutput = __liftSeq(xs.toSeq)
     CStdIOSprintfObject3(str, format, xsOutput)
   }
@@ -641,23 +641,23 @@ trait CSysTimeOps extends Base { this: CLibs =>
 
   }
   object CSysTime {
-    def gettimeofday(timep: Rep[Pointer[CTimeVal]], tzp: Rep[Pointer[Any]]): Rep[Int] = cSysTimeGettimeofdayObject(timep, tzp)
-    def timeval_subtract(result: Rep[Pointer[CTimeVal]], tv1: Rep[Pointer[CTimeVal]], tv2: Rep[Pointer[CTimeVal]]): Rep[Long] = cSysTimeTimeval_subtractObject(result, tv1, tv2)
+    def gettimeofday(timep: Rep[LPointer[CTimeVal]], tzp: Rep[LPointer[Any]]): Rep[Int] = cSysTimeGettimeofdayObject(timep, tzp)
+    def timeval_subtract(result: Rep[LPointer[CTimeVal]], tv1: Rep[LPointer[CTimeVal]], tv2: Rep[LPointer[CTimeVal]]): Rep[Long] = cSysTimeTimeval_subtractObject(result, tv1, tv2)
   }
   // constructors
 
   // case classes
-  case class CSysTimeGettimeofdayObject(timep: Rep[Pointer[CTimeVal]], tzp: Rep[Pointer[Any]]) extends FunctionDef[Int](None, "CSysTime.gettimeofday", List(List(timep, tzp))) {
+  case class CSysTimeGettimeofdayObject(timep: Rep[LPointer[CTimeVal]], tzp: Rep[LPointer[Any]]) extends FunctionDef[Int](None, "CSysTime.gettimeofday", List(List(timep, tzp))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CSysTimeTimeval_subtractObject(result: Rep[Pointer[CTimeVal]], tv1: Rep[Pointer[CTimeVal]], tv2: Rep[Pointer[CTimeVal]]) extends FunctionDef[Long](None, "CSysTime.timeval_subtract", List(List(result, tv1, tv2))) {
+  case class CSysTimeTimeval_subtractObject(result: Rep[LPointer[CTimeVal]], tv1: Rep[LPointer[CTimeVal]], tv2: Rep[LPointer[CTimeVal]]) extends FunctionDef[Long](None, "CSysTime.timeval_subtract", List(List(result, tv1, tv2))) {
     override def curriedConstructor = (copy _).curried
   }
 
   // method definitions
-  def cSysTimeGettimeofdayObject(timep: Rep[Pointer[CTimeVal]], tzp: Rep[Pointer[Any]]): Rep[Int] = CSysTimeGettimeofdayObject(timep, tzp)
-  def cSysTimeTimeval_subtractObject(result: Rep[Pointer[CTimeVal]], tv1: Rep[Pointer[CTimeVal]], tv2: Rep[Pointer[CTimeVal]]): Rep[Long] = CSysTimeTimeval_subtractObject(result, tv1, tv2)
+  def cSysTimeGettimeofdayObject(timep: Rep[LPointer[CTimeVal]], tzp: Rep[LPointer[Any]]): Rep[Int] = CSysTimeGettimeofdayObject(timep, tzp)
+  def cSysTimeTimeval_subtractObject(result: Rep[LPointer[CTimeVal]], tv1: Rep[LPointer[CTimeVal]], tv2: Rep[LPointer[CTimeVal]]): Rep[Long] = CSysTimeTimeval_subtractObject(result, tv1, tv2)
   type CSysTime = ch.epfl.data.pardis.shallow.c.CSysTime
 }
 trait CSysTimeImplicits { this: CLibs =>
@@ -689,328 +689,328 @@ trait CStringOps extends Base { this: CLibs =>
   }
   object CString {
     def str_subtract(e1: Rep[Any], e2: Rep[Any]): Rep[Int] = cStringStr_subtractObject(e1, e2)
-    def memchr(s: Rep[Pointer[Byte]], c: Rep[Int], n: Rep[Int]): Rep[Pointer[Byte]] = cStringMemchrObject(s, c, n)
-    def memcmp(s1: Rep[Pointer[Byte]], s2: Rep[Pointer[Byte]], n: Rep[Int]): Rep[Int] = cStringMemcmpObject(s1, s2, n)
-    def memcpy(dst: Rep[Pointer[Byte]], src: Rep[Pointer[Byte]], n: Rep[Int]): Rep[Pointer[Byte]] = cStringMemcpyObject(dst, src, n)
-    def memmove(dst: Rep[Pointer[Byte]], src: Rep[Pointer[Byte]], n: Rep[Int]): Rep[Pointer[Byte]] = cStringMemmoveObject(dst, src, n)
-    def memset(s: Rep[Pointer[Byte]], c: Rep[Int], n: Rep[Int]): Rep[Pointer[Byte]] = cStringMemsetObject(s, c, n)
-    def strcat(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]])(implicit overload1: Overloaded1): Rep[Pointer[Char]] = cStringStrcatObject1(s1, s2)
-    def strcat(s1: Rep[Pointer[Char]], s2: Rep[String])(implicit overload2: Overloaded2): Rep[Pointer[Char]] = cStringStrcatObject2(s1, s2)
-    def strchr(s: Rep[Pointer[Char]], c: Rep[Int])(implicit overload1: Overloaded1): Rep[Pointer[Char]] = cStringStrchrObject1(s, c)
-    def strchr(s: Rep[String], c: Rep[Int])(implicit overload2: Overloaded2): Rep[Pointer[Char]] = cStringStrchrObject2(s, c)
-    def strcmp(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]])(implicit overload1: Overloaded1): Rep[Int] = cStringStrcmpObject1(s1, s2)
-    def strcmp(s1: Rep[String], s2: Rep[Pointer[Char]])(implicit overload2: Overloaded2): Rep[Int] = cStringStrcmpObject2(s1, s2)
-    def strcmp(s1: Rep[Pointer[Char]], s2: Rep[String])(implicit overload3: Overloaded3): Rep[Int] = cStringStrcmpObject3(s1, s2)
+    def memchr(s: Rep[LPointer[Byte]], c: Rep[Int], n: Rep[Int]): Rep[LPointer[Byte]] = cStringMemchrObject(s, c, n)
+    def memcmp(s1: Rep[LPointer[Byte]], s2: Rep[LPointer[Byte]], n: Rep[Int]): Rep[Int] = cStringMemcmpObject(s1, s2, n)
+    def memcpy(dst: Rep[LPointer[Byte]], src: Rep[LPointer[Byte]], n: Rep[Int]): Rep[LPointer[Byte]] = cStringMemcpyObject(dst, src, n)
+    def memmove(dst: Rep[LPointer[Byte]], src: Rep[LPointer[Byte]], n: Rep[Int]): Rep[LPointer[Byte]] = cStringMemmoveObject(dst, src, n)
+    def memset(s: Rep[LPointer[Byte]], c: Rep[Int], n: Rep[Int]): Rep[LPointer[Byte]] = cStringMemsetObject(s, c, n)
+    def strcat(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]])(implicit overload1: Overloaded1): Rep[LPointer[Char]] = cStringStrcatObject1(s1, s2)
+    def strcat(s1: Rep[LPointer[Char]], s2: Rep[String])(implicit overload2: Overloaded2): Rep[LPointer[Char]] = cStringStrcatObject2(s1, s2)
+    def strchr(s: Rep[LPointer[Char]], c: Rep[Int])(implicit overload1: Overloaded1): Rep[LPointer[Char]] = cStringStrchrObject1(s, c)
+    def strchr(s: Rep[String], c: Rep[Int])(implicit overload2: Overloaded2): Rep[LPointer[Char]] = cStringStrchrObject2(s, c)
+    def strcmp(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]])(implicit overload1: Overloaded1): Rep[Int] = cStringStrcmpObject1(s1, s2)
+    def strcmp(s1: Rep[String], s2: Rep[LPointer[Char]])(implicit overload2: Overloaded2): Rep[Int] = cStringStrcmpObject2(s1, s2)
+    def strcmp(s1: Rep[LPointer[Char]], s2: Rep[String])(implicit overload3: Overloaded3): Rep[Int] = cStringStrcmpObject3(s1, s2)
     def strcmp(s1: Rep[String], s2: Rep[String])(implicit overload4: Overloaded4): Rep[Int] = cStringStrcmpObject4(s1, s2)
-    def strcoll(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]])(implicit overload1: Overloaded1): Rep[Int] = cStringStrcollObject1(s1, s2)
-    def strcoll(s1: Rep[String], s2: Rep[Pointer[Char]])(implicit overload2: Overloaded2): Rep[Int] = cStringStrcollObject2(s1, s2)
-    def strcoll(s1: Rep[Pointer[Char]], s2: Rep[String])(implicit overload3: Overloaded3): Rep[Int] = cStringStrcollObject3(s1, s2)
+    def strcoll(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]])(implicit overload1: Overloaded1): Rep[Int] = cStringStrcollObject1(s1, s2)
+    def strcoll(s1: Rep[String], s2: Rep[LPointer[Char]])(implicit overload2: Overloaded2): Rep[Int] = cStringStrcollObject2(s1, s2)
+    def strcoll(s1: Rep[LPointer[Char]], s2: Rep[String])(implicit overload3: Overloaded3): Rep[Int] = cStringStrcollObject3(s1, s2)
     def strcoll(s1: Rep[String], s2: Rep[String])(implicit overload4: Overloaded4): Rep[Int] = cStringStrcollObject4(s1, s2)
-    def strcpy(dst: Rep[Pointer[Char]], src: Rep[Pointer[Char]])(implicit overload1: Overloaded1): Rep[Pointer[Char]] = cStringStrcpyObject1(dst, src)
-    def strcpy(dst: Rep[Pointer[Char]], src: Rep[String])(implicit overload2: Overloaded2): Rep[Pointer[Char]] = cStringStrcpyObject2(dst, src)
-    def strcspn(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]])(implicit overload1: Overloaded1): Rep[Int] = cStringStrcspnObject1(s1, s2)
-    def strcspn(s1: Rep[Pointer[Char]], s2: Rep[String])(implicit overload2: Overloaded2): Rep[Int] = cStringStrcspnObject2(s1, s2)
-    def strcspn(s1: Rep[String], s2: Rep[Pointer[Char]])(implicit overload3: Overloaded3): Rep[Int] = cStringStrcspnObject3(s1, s2)
+    def strcpy(dst: Rep[LPointer[Char]], src: Rep[LPointer[Char]])(implicit overload1: Overloaded1): Rep[LPointer[Char]] = cStringStrcpyObject1(dst, src)
+    def strcpy(dst: Rep[LPointer[Char]], src: Rep[String])(implicit overload2: Overloaded2): Rep[LPointer[Char]] = cStringStrcpyObject2(dst, src)
+    def strcspn(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]])(implicit overload1: Overloaded1): Rep[Int] = cStringStrcspnObject1(s1, s2)
+    def strcspn(s1: Rep[LPointer[Char]], s2: Rep[String])(implicit overload2: Overloaded2): Rep[Int] = cStringStrcspnObject2(s1, s2)
+    def strcspn(s1: Rep[String], s2: Rep[LPointer[Char]])(implicit overload3: Overloaded3): Rep[Int] = cStringStrcspnObject3(s1, s2)
     def strcspn(s1: Rep[String], s2: Rep[String])(implicit overload4: Overloaded4): Rep[Int] = cStringStrcspnObject4(s1, s2)
-    def strerror(errnum: Rep[Int]): Rep[Pointer[Char]] = cStringStrerrorObject(errnum)
-    def strlen(s: Rep[Pointer[Char]])(implicit overload1: Overloaded1): Rep[Int] = cStringStrlenObject1(s)
+    def strerror(errnum: Rep[Int]): Rep[LPointer[Char]] = cStringStrerrorObject(errnum)
+    def strlen(s: Rep[LPointer[Char]])(implicit overload1: Overloaded1): Rep[Int] = cStringStrlenObject1(s)
     def strlen(s: Rep[String])(implicit overload2: Overloaded2): Rep[Int] = cStringStrlenObject2(s)
-    def strncat(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]], n: Rep[Int])(implicit overload1: Overloaded1): Rep[Pointer[Char]] = cStringStrncatObject1(s1, s2, n)
-    def strncat(s1: Rep[Pointer[Char]], s2: Rep[String], n: Rep[Int])(implicit overload2: Overloaded2): Rep[Pointer[Char]] = cStringStrncatObject2(s1, s2, n)
-    def strncmp(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]], n: Rep[Int])(implicit overload1: Overloaded1): Rep[Int] = cStringStrncmpObject1(s1, s2, n)
-    def strncmp(s1: Rep[Pointer[Char]], s2: Rep[String], n: Rep[Int])(implicit overload2: Overloaded2): Rep[Int] = cStringStrncmpObject2(s1, s2, n)
-    def strncmp(s1: Rep[String], s2: Rep[Pointer[Char]], n: Rep[Int])(implicit overload3: Overloaded3): Rep[Int] = cStringStrncmpObject3(s1, s2, n)
+    def strncat(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]], n: Rep[Int])(implicit overload1: Overloaded1): Rep[LPointer[Char]] = cStringStrncatObject1(s1, s2, n)
+    def strncat(s1: Rep[LPointer[Char]], s2: Rep[String], n: Rep[Int])(implicit overload2: Overloaded2): Rep[LPointer[Char]] = cStringStrncatObject2(s1, s2, n)
+    def strncmp(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]], n: Rep[Int])(implicit overload1: Overloaded1): Rep[Int] = cStringStrncmpObject1(s1, s2, n)
+    def strncmp(s1: Rep[LPointer[Char]], s2: Rep[String], n: Rep[Int])(implicit overload2: Overloaded2): Rep[Int] = cStringStrncmpObject2(s1, s2, n)
+    def strncmp(s1: Rep[String], s2: Rep[LPointer[Char]], n: Rep[Int])(implicit overload3: Overloaded3): Rep[Int] = cStringStrncmpObject3(s1, s2, n)
     def strncmp(s1: Rep[String], s2: Rep[String], n: Rep[Int])(implicit overload4: Overloaded4): Rep[Int] = cStringStrncmpObject4(s1, s2, n)
-    def strncpy(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]], n: Rep[Int])(implicit overload1: Overloaded1): Rep[Pointer[Char]] = cStringStrncpyObject1(s1, s2, n)
-    def strncpy(s1: Rep[Pointer[Char]], s2: Rep[String], n: Rep[Int])(implicit overload2: Overloaded2): Rep[Pointer[Char]] = cStringStrncpyObject2(s1, s2, n)
-    def strpbrk(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]])(implicit overload1: Overloaded1): Rep[Pointer[Char]] = cStringStrpbrkObject1(s1, s2)
-    def strpbrk(s1: Rep[Pointer[Char]], s2: Rep[String])(implicit overload2: Overloaded2): Rep[Pointer[Char]] = cStringStrpbrkObject2(s1, s2)
-    def strpbrk(s1: Rep[String], s2: Rep[Pointer[Char]])(implicit overload3: Overloaded3): Rep[Pointer[Char]] = cStringStrpbrkObject3(s1, s2)
-    def strpbrk(s1: Rep[String], s2: Rep[String])(implicit overload4: Overloaded4): Rep[Pointer[Char]] = cStringStrpbrkObject4(s1, s2)
-    def strrchr(s: Rep[Pointer[Char]], c: Rep[Int])(implicit overload1: Overloaded1): Rep[Pointer[Char]] = cStringStrrchrObject1(s, c)
-    def strrchr(s: Rep[String], c: Rep[Int])(implicit overload2: Overloaded2): Rep[Pointer[Char]] = cStringStrrchrObject2(s, c)
-    def strspn(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]])(implicit overload1: Overloaded1): Rep[Int] = cStringStrspnObject1(s1, s2)
-    def strspn(s1: Rep[String], s2: Rep[Pointer[Char]])(implicit overload2: Overloaded2): Rep[Int] = cStringStrspnObject2(s1, s2)
-    def strspn(s1: Rep[Pointer[Char]], s2: Rep[String])(implicit overload3: Overloaded3): Rep[Int] = cStringStrspnObject3(s1, s2)
+    def strncpy(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]], n: Rep[Int])(implicit overload1: Overloaded1): Rep[LPointer[Char]] = cStringStrncpyObject1(s1, s2, n)
+    def strncpy(s1: Rep[LPointer[Char]], s2: Rep[String], n: Rep[Int])(implicit overload2: Overloaded2): Rep[LPointer[Char]] = cStringStrncpyObject2(s1, s2, n)
+    def strpbrk(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]])(implicit overload1: Overloaded1): Rep[LPointer[Char]] = cStringStrpbrkObject1(s1, s2)
+    def strpbrk(s1: Rep[LPointer[Char]], s2: Rep[String])(implicit overload2: Overloaded2): Rep[LPointer[Char]] = cStringStrpbrkObject2(s1, s2)
+    def strpbrk(s1: Rep[String], s2: Rep[LPointer[Char]])(implicit overload3: Overloaded3): Rep[LPointer[Char]] = cStringStrpbrkObject3(s1, s2)
+    def strpbrk(s1: Rep[String], s2: Rep[String])(implicit overload4: Overloaded4): Rep[LPointer[Char]] = cStringStrpbrkObject4(s1, s2)
+    def strrchr(s: Rep[LPointer[Char]], c: Rep[Int])(implicit overload1: Overloaded1): Rep[LPointer[Char]] = cStringStrrchrObject1(s, c)
+    def strrchr(s: Rep[String], c: Rep[Int])(implicit overload2: Overloaded2): Rep[LPointer[Char]] = cStringStrrchrObject2(s, c)
+    def strspn(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]])(implicit overload1: Overloaded1): Rep[Int] = cStringStrspnObject1(s1, s2)
+    def strspn(s1: Rep[String], s2: Rep[LPointer[Char]])(implicit overload2: Overloaded2): Rep[Int] = cStringStrspnObject2(s1, s2)
+    def strspn(s1: Rep[LPointer[Char]], s2: Rep[String])(implicit overload3: Overloaded3): Rep[Int] = cStringStrspnObject3(s1, s2)
     def strspn(s1: Rep[String], s2: Rep[String])(implicit overload4: Overloaded4): Rep[Int] = cStringStrspnObject4(s1, s2)
-    def strstr(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]])(implicit overload1: Overloaded1): Rep[Pointer[Char]] = cStringStrstrObject1(s1, s2)
-    def strstr(s1: Rep[Pointer[Char]], s2: Rep[String])(implicit overload2: Overloaded2): Rep[Pointer[Char]] = cStringStrstrObject2(s1, s2)
-    def strstr(s1: Rep[String], s2: Rep[Pointer[Char]])(implicit overload3: Overloaded3): Rep[Pointer[Char]] = cStringStrstrObject3(s1, s2)
-    def strstr(s1: Rep[String], s2: Rep[String])(implicit overload4: Overloaded4): Rep[Pointer[Char]] = cStringStrstrObject4(s1, s2)
-    def strtok(s: Rep[Pointer[Char]], sep: Rep[Pointer[Char]])(implicit overload1: Overloaded1): Rep[Pointer[Char]] = cStringStrtokObject1(s, sep)
-    def strtok(s: Rep[Pointer[Char]], sep: Rep[String])(implicit overload2: Overloaded2): Rep[Pointer[Char]] = cStringStrtokObject2(s, sep)
-    def strxfrm(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]], n: Rep[Int])(implicit overload1: Overloaded1): Rep[Int] = cStringStrxfrmObject1(s1, s2, n)
-    def strxfrm(s1: Rep[Pointer[Char]], s2: Rep[String], n: Rep[Int])(implicit overload2: Overloaded2): Rep[Int] = cStringStrxfrmObject2(s1, s2, n)
+    def strstr(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]])(implicit overload1: Overloaded1): Rep[LPointer[Char]] = cStringStrstrObject1(s1, s2)
+    def strstr(s1: Rep[LPointer[Char]], s2: Rep[String])(implicit overload2: Overloaded2): Rep[LPointer[Char]] = cStringStrstrObject2(s1, s2)
+    def strstr(s1: Rep[String], s2: Rep[LPointer[Char]])(implicit overload3: Overloaded3): Rep[LPointer[Char]] = cStringStrstrObject3(s1, s2)
+    def strstr(s1: Rep[String], s2: Rep[String])(implicit overload4: Overloaded4): Rep[LPointer[Char]] = cStringStrstrObject4(s1, s2)
+    def strtok(s: Rep[LPointer[Char]], sep: Rep[LPointer[Char]])(implicit overload1: Overloaded1): Rep[LPointer[Char]] = cStringStrtokObject1(s, sep)
+    def strtok(s: Rep[LPointer[Char]], sep: Rep[String])(implicit overload2: Overloaded2): Rep[LPointer[Char]] = cStringStrtokObject2(s, sep)
+    def strxfrm(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]], n: Rep[Int])(implicit overload1: Overloaded1): Rep[Int] = cStringStrxfrmObject1(s1, s2, n)
+    def strxfrm(s1: Rep[LPointer[Char]], s2: Rep[String], n: Rep[Int])(implicit overload2: Overloaded2): Rep[Int] = cStringStrxfrmObject2(s1, s2, n)
   }
   // constructors
 
   // case classes
-  case class CStringStr_subtractObject(e1: Rep[Any], e2: Rep[Any]) extends FunctionDef[Int](None, "CString.str_subtract", List(List(e1, e2))) {
+  case class CStringStr_subtractObject(e1: Rep[Any], e2: Rep[Any]) extends FunctionDef[Int](None, "str_subtract", List(List(e1, e2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringMemchrObject(s: Rep[Pointer[Byte]], c: Rep[Int], n: Rep[Int]) extends FunctionDef[Pointer[Byte]](None, "CString.memchr", List(List(s, c, n))) {
+  case class CStringMemchrObject(s: Rep[LPointer[Byte]], c: Rep[Int], n: Rep[Int]) extends FunctionDef[LPointer[Byte]](None, "memchr", List(List(s, c, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringMemcmpObject(s1: Rep[Pointer[Byte]], s2: Rep[Pointer[Byte]], n: Rep[Int]) extends FunctionDef[Int](None, "CString.memcmp", List(List(s1, s2, n))) {
+  case class CStringMemcmpObject(s1: Rep[LPointer[Byte]], s2: Rep[LPointer[Byte]], n: Rep[Int]) extends FunctionDef[Int](None, "memcmp", List(List(s1, s2, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringMemcpyObject(dst: Rep[Pointer[Byte]], src: Rep[Pointer[Byte]], n: Rep[Int]) extends FunctionDef[Pointer[Byte]](None, "CString.memcpy", List(List(dst, src, n))) {
+  case class CStringMemcpyObject(dst: Rep[LPointer[Byte]], src: Rep[LPointer[Byte]], n: Rep[Int]) extends FunctionDef[LPointer[Byte]](None, "memcpy", List(List(dst, src, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringMemmoveObject(dst: Rep[Pointer[Byte]], src: Rep[Pointer[Byte]], n: Rep[Int]) extends FunctionDef[Pointer[Byte]](None, "CString.memmove", List(List(dst, src, n))) {
+  case class CStringMemmoveObject(dst: Rep[LPointer[Byte]], src: Rep[LPointer[Byte]], n: Rep[Int]) extends FunctionDef[LPointer[Byte]](None, "memmove", List(List(dst, src, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringMemsetObject(s: Rep[Pointer[Byte]], c: Rep[Int], n: Rep[Int]) extends FunctionDef[Pointer[Byte]](None, "CString.memset", List(List(s, c, n))) {
+  case class CStringMemsetObject(s: Rep[LPointer[Byte]], c: Rep[Int], n: Rep[Int]) extends FunctionDef[LPointer[Byte]](None, "memset", List(List(s, c, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcatObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]]) extends FunctionDef[Pointer[Char]](None, "CString.strcat", List(List(s1, s2))) {
+  case class CStringStrcatObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]]) extends FunctionDef[LPointer[Char]](None, "strcat", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcatObject2(s1: Rep[Pointer[Char]], s2: Rep[String]) extends FunctionDef[Pointer[Char]](None, "CString.strcat", List(List(s1, s2))) {
+  case class CStringStrcatObject2(s1: Rep[LPointer[Char]], s2: Rep[String]) extends FunctionDef[LPointer[Char]](None, "strcat", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrchrObject1(s: Rep[Pointer[Char]], c: Rep[Int]) extends FunctionDef[Pointer[Char]](None, "CString.strchr", List(List(s, c))) {
+  case class CStringStrchrObject1(s: Rep[LPointer[Char]], c: Rep[Int]) extends FunctionDef[LPointer[Char]](None, "strchr", List(List(s, c))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrchrObject2(s: Rep[String], c: Rep[Int]) extends FunctionDef[Pointer[Char]](None, "CString.strchr", List(List(s, c))) {
+  case class CStringStrchrObject2(s: Rep[String], c: Rep[Int]) extends FunctionDef[LPointer[Char]](None, "strchr", List(List(s, c))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcmpObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]]) extends FunctionDef[Int](None, "CString.strcmp", List(List(s1, s2))) {
+  case class CStringStrcmpObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]]) extends FunctionDef[Int](None, "strcmp", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcmpObject2(s1: Rep[String], s2: Rep[Pointer[Char]]) extends FunctionDef[Int](None, "CString.strcmp", List(List(s1, s2))) {
+  case class CStringStrcmpObject2(s1: Rep[String], s2: Rep[LPointer[Char]]) extends FunctionDef[Int](None, "strcmp", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcmpObject3(s1: Rep[Pointer[Char]], s2: Rep[String]) extends FunctionDef[Int](None, "CString.strcmp", List(List(s1, s2))) {
+  case class CStringStrcmpObject3(s1: Rep[LPointer[Char]], s2: Rep[String]) extends FunctionDef[Int](None, "strcmp", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcmpObject4(s1: Rep[String], s2: Rep[String]) extends FunctionDef[Int](None, "CString.strcmp", List(List(s1, s2))) {
+  case class CStringStrcmpObject4(s1: Rep[String], s2: Rep[String]) extends FunctionDef[Int](None, "strcmp", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcollObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]]) extends FunctionDef[Int](None, "CString.strcoll", List(List(s1, s2))) {
+  case class CStringStrcollObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]]) extends FunctionDef[Int](None, "strcoll", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcollObject2(s1: Rep[String], s2: Rep[Pointer[Char]]) extends FunctionDef[Int](None, "CString.strcoll", List(List(s1, s2))) {
+  case class CStringStrcollObject2(s1: Rep[String], s2: Rep[LPointer[Char]]) extends FunctionDef[Int](None, "strcoll", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcollObject3(s1: Rep[Pointer[Char]], s2: Rep[String]) extends FunctionDef[Int](None, "CString.strcoll", List(List(s1, s2))) {
+  case class CStringStrcollObject3(s1: Rep[LPointer[Char]], s2: Rep[String]) extends FunctionDef[Int](None, "strcoll", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcollObject4(s1: Rep[String], s2: Rep[String]) extends FunctionDef[Int](None, "CString.strcoll", List(List(s1, s2))) {
+  case class CStringStrcollObject4(s1: Rep[String], s2: Rep[String]) extends FunctionDef[Int](None, "strcoll", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcpyObject1(dst: Rep[Pointer[Char]], src: Rep[Pointer[Char]]) extends FunctionDef[Pointer[Char]](None, "CString.strcpy", List(List(dst, src))) {
+  case class CStringStrcpyObject1(dst: Rep[LPointer[Char]], src: Rep[LPointer[Char]]) extends FunctionDef[LPointer[Char]](None, "strcpy", List(List(dst, src))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcpyObject2(dst: Rep[Pointer[Char]], src: Rep[String]) extends FunctionDef[Pointer[Char]](None, "CString.strcpy", List(List(dst, src))) {
+  case class CStringStrcpyObject2(dst: Rep[LPointer[Char]], src: Rep[String]) extends FunctionDef[LPointer[Char]](None, "strcpy", List(List(dst, src))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcspnObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]]) extends FunctionDef[Int](None, "CString.strcspn", List(List(s1, s2))) {
+  case class CStringStrcspnObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]]) extends FunctionDef[Int](None, "strcspn", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcspnObject2(s1: Rep[Pointer[Char]], s2: Rep[String]) extends FunctionDef[Int](None, "CString.strcspn", List(List(s1, s2))) {
+  case class CStringStrcspnObject2(s1: Rep[LPointer[Char]], s2: Rep[String]) extends FunctionDef[Int](None, "strcspn", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcspnObject3(s1: Rep[String], s2: Rep[Pointer[Char]]) extends FunctionDef[Int](None, "CString.strcspn", List(List(s1, s2))) {
+  case class CStringStrcspnObject3(s1: Rep[String], s2: Rep[LPointer[Char]]) extends FunctionDef[Int](None, "strcspn", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrcspnObject4(s1: Rep[String], s2: Rep[String]) extends FunctionDef[Int](None, "CString.strcspn", List(List(s1, s2))) {
+  case class CStringStrcspnObject4(s1: Rep[String], s2: Rep[String]) extends FunctionDef[Int](None, "strcspn", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrerrorObject(errnum: Rep[Int]) extends FunctionDef[Pointer[Char]](None, "CString.strerror", List(List(errnum))) {
+  case class CStringStrerrorObject(errnum: Rep[Int]) extends FunctionDef[LPointer[Char]](None, "strerror", List(List(errnum))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class CStringStrlenObject1(s: Rep[Pointer[Char]]) extends FunctionDef[Int](None, "CString.strlen", List(List(s))) {
+  case class CStringStrlenObject1(s: Rep[LPointer[Char]]) extends FunctionDef[Int](None, "strlen", List(List(s))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class CStringStrlenObject2(s: Rep[String]) extends FunctionDef[Int](None, "CString.strlen", List(List(s))) {
+  case class CStringStrlenObject2(s: Rep[String]) extends FunctionDef[Int](None, "strlen", List(List(s))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class CStringStrncatObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]], n: Rep[Int]) extends FunctionDef[Pointer[Char]](None, "CString.strncat", List(List(s1, s2, n))) {
+  case class CStringStrncatObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]], n: Rep[Int]) extends FunctionDef[LPointer[Char]](None, "strncat", List(List(s1, s2, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrncatObject2(s1: Rep[Pointer[Char]], s2: Rep[String], n: Rep[Int]) extends FunctionDef[Pointer[Char]](None, "CString.strncat", List(List(s1, s2, n))) {
+  case class CStringStrncatObject2(s1: Rep[LPointer[Char]], s2: Rep[String], n: Rep[Int]) extends FunctionDef[LPointer[Char]](None, "strncat", List(List(s1, s2, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrncmpObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]], n: Rep[Int]) extends FunctionDef[Int](None, "CString.strncmp", List(List(s1, s2, n))) {
+  case class CStringStrncmpObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]], n: Rep[Int]) extends FunctionDef[Int](None, "strncmp", List(List(s1, s2, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrncmpObject2(s1: Rep[Pointer[Char]], s2: Rep[String], n: Rep[Int]) extends FunctionDef[Int](None, "CString.strncmp", List(List(s1, s2, n))) {
+  case class CStringStrncmpObject2(s1: Rep[LPointer[Char]], s2: Rep[String], n: Rep[Int]) extends FunctionDef[Int](None, "strncmp", List(List(s1, s2, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrncmpObject3(s1: Rep[String], s2: Rep[Pointer[Char]], n: Rep[Int]) extends FunctionDef[Int](None, "CString.strncmp", List(List(s1, s2, n))) {
+  case class CStringStrncmpObject3(s1: Rep[String], s2: Rep[LPointer[Char]], n: Rep[Int]) extends FunctionDef[Int](None, "strncmp", List(List(s1, s2, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrncmpObject4(s1: Rep[String], s2: Rep[String], n: Rep[Int]) extends FunctionDef[Int](None, "CString.strncmp", List(List(s1, s2, n))) {
+  case class CStringStrncmpObject4(s1: Rep[String], s2: Rep[String], n: Rep[Int]) extends FunctionDef[Int](None, "strncmp", List(List(s1, s2, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrncpyObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]], n: Rep[Int]) extends FunctionDef[Pointer[Char]](None, "CString.strncpy", List(List(s1, s2, n))) {
+  case class CStringStrncpyObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]], n: Rep[Int]) extends FunctionDef[LPointer[Char]](None, "strncpy", List(List(s1, s2, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrncpyObject2(s1: Rep[Pointer[Char]], s2: Rep[String], n: Rep[Int]) extends FunctionDef[Pointer[Char]](None, "CString.strncpy", List(List(s1, s2, n))) {
+  case class CStringStrncpyObject2(s1: Rep[LPointer[Char]], s2: Rep[String], n: Rep[Int]) extends FunctionDef[LPointer[Char]](None, "strncpy", List(List(s1, s2, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrpbrkObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]]) extends FunctionDef[Pointer[Char]](None, "CString.strpbrk", List(List(s1, s2))) {
+  case class CStringStrpbrkObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]]) extends FunctionDef[LPointer[Char]](None, "strpbrk", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrpbrkObject2(s1: Rep[Pointer[Char]], s2: Rep[String]) extends FunctionDef[Pointer[Char]](None, "CString.strpbrk", List(List(s1, s2))) {
+  case class CStringStrpbrkObject2(s1: Rep[LPointer[Char]], s2: Rep[String]) extends FunctionDef[LPointer[Char]](None, "strpbrk", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrpbrkObject3(s1: Rep[String], s2: Rep[Pointer[Char]]) extends FunctionDef[Pointer[Char]](None, "CString.strpbrk", List(List(s1, s2))) {
+  case class CStringStrpbrkObject3(s1: Rep[String], s2: Rep[LPointer[Char]]) extends FunctionDef[LPointer[Char]](None, "strpbrk", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrpbrkObject4(s1: Rep[String], s2: Rep[String]) extends FunctionDef[Pointer[Char]](None, "CString.strpbrk", List(List(s1, s2))) {
+  case class CStringStrpbrkObject4(s1: Rep[String], s2: Rep[String]) extends FunctionDef[LPointer[Char]](None, "strpbrk", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrrchrObject1(s: Rep[Pointer[Char]], c: Rep[Int]) extends FunctionDef[Pointer[Char]](None, "CString.strrchr", List(List(s, c))) {
+  case class CStringStrrchrObject1(s: Rep[LPointer[Char]], c: Rep[Int]) extends FunctionDef[LPointer[Char]](None, "strrchr", List(List(s, c))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrrchrObject2(s: Rep[String], c: Rep[Int]) extends FunctionDef[Pointer[Char]](None, "CString.strrchr", List(List(s, c))) {
+  case class CStringStrrchrObject2(s: Rep[String], c: Rep[Int]) extends FunctionDef[LPointer[Char]](None, "strrchr", List(List(s, c))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrspnObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]]) extends FunctionDef[Int](None, "CString.strspn", List(List(s1, s2))) {
+  case class CStringStrspnObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]]) extends FunctionDef[Int](None, "strspn", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrspnObject2(s1: Rep[String], s2: Rep[Pointer[Char]]) extends FunctionDef[Int](None, "CString.strspn", List(List(s1, s2))) {
+  case class CStringStrspnObject2(s1: Rep[String], s2: Rep[LPointer[Char]]) extends FunctionDef[Int](None, "strspn", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrspnObject3(s1: Rep[Pointer[Char]], s2: Rep[String]) extends FunctionDef[Int](None, "CString.strspn", List(List(s1, s2))) {
+  case class CStringStrspnObject3(s1: Rep[LPointer[Char]], s2: Rep[String]) extends FunctionDef[Int](None, "strspn", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrspnObject4(s1: Rep[String], s2: Rep[String]) extends FunctionDef[Int](None, "CString.strspn", List(List(s1, s2))) {
+  case class CStringStrspnObject4(s1: Rep[String], s2: Rep[String]) extends FunctionDef[Int](None, "strspn", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrstrObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]]) extends FunctionDef[Pointer[Char]](None, "CString.strstr", List(List(s1, s2))) {
+  case class CStringStrstrObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]]) extends FunctionDef[LPointer[Char]](None, "strstr", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrstrObject2(s1: Rep[Pointer[Char]], s2: Rep[String]) extends FunctionDef[Pointer[Char]](None, "CString.strstr", List(List(s1, s2))) {
+  case class CStringStrstrObject2(s1: Rep[LPointer[Char]], s2: Rep[String]) extends FunctionDef[LPointer[Char]](None, "strstr", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrstrObject3(s1: Rep[String], s2: Rep[Pointer[Char]]) extends FunctionDef[Pointer[Char]](None, "CString.strstr", List(List(s1, s2))) {
+  case class CStringStrstrObject3(s1: Rep[String], s2: Rep[LPointer[Char]]) extends FunctionDef[LPointer[Char]](None, "strstr", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrstrObject4(s1: Rep[String], s2: Rep[String]) extends FunctionDef[Pointer[Char]](None, "CString.strstr", List(List(s1, s2))) {
+  case class CStringStrstrObject4(s1: Rep[String], s2: Rep[String]) extends FunctionDef[LPointer[Char]](None, "strstr", List(List(s1, s2))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrtokObject1(s: Rep[Pointer[Char]], sep: Rep[Pointer[Char]]) extends FunctionDef[Pointer[Char]](None, "CString.strtok", List(List(s, sep))) {
+  case class CStringStrtokObject1(s: Rep[LPointer[Char]], sep: Rep[LPointer[Char]]) extends FunctionDef[LPointer[Char]](None, "strtok", List(List(s, sep))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrtokObject2(s: Rep[Pointer[Char]], sep: Rep[String]) extends FunctionDef[Pointer[Char]](None, "CString.strtok", List(List(s, sep))) {
+  case class CStringStrtokObject2(s: Rep[LPointer[Char]], sep: Rep[String]) extends FunctionDef[LPointer[Char]](None, "strtok", List(List(s, sep))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrxfrmObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]], n: Rep[Int]) extends FunctionDef[Int](None, "CString.strxfrm", List(List(s1, s2, n))) {
+  case class CStringStrxfrmObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]], n: Rep[Int]) extends FunctionDef[Int](None, "strxfrm", List(List(s1, s2, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class CStringStrxfrmObject2(s1: Rep[Pointer[Char]], s2: Rep[String], n: Rep[Int]) extends FunctionDef[Int](None, "CString.strxfrm", List(List(s1, s2, n))) {
+  case class CStringStrxfrmObject2(s1: Rep[LPointer[Char]], s2: Rep[String], n: Rep[Int]) extends FunctionDef[Int](None, "strxfrm", List(List(s1, s2, n))) {
     override def curriedConstructor = (copy _).curried
   }
 
   // method definitions
   def cStringStr_subtractObject(e1: Rep[Any], e2: Rep[Any]): Rep[Int] = CStringStr_subtractObject(e1, e2)
-  def cStringMemchrObject(s: Rep[Pointer[Byte]], c: Rep[Int], n: Rep[Int]): Rep[Pointer[Byte]] = CStringMemchrObject(s, c, n)
-  def cStringMemcmpObject(s1: Rep[Pointer[Byte]], s2: Rep[Pointer[Byte]], n: Rep[Int]): Rep[Int] = CStringMemcmpObject(s1, s2, n)
-  def cStringMemcpyObject(dst: Rep[Pointer[Byte]], src: Rep[Pointer[Byte]], n: Rep[Int]): Rep[Pointer[Byte]] = CStringMemcpyObject(dst, src, n)
-  def cStringMemmoveObject(dst: Rep[Pointer[Byte]], src: Rep[Pointer[Byte]], n: Rep[Int]): Rep[Pointer[Byte]] = CStringMemmoveObject(dst, src, n)
-  def cStringMemsetObject(s: Rep[Pointer[Byte]], c: Rep[Int], n: Rep[Int]): Rep[Pointer[Byte]] = CStringMemsetObject(s, c, n)
-  def cStringStrcatObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]]): Rep[Pointer[Char]] = CStringStrcatObject1(s1, s2)
-  def cStringStrcatObject2(s1: Rep[Pointer[Char]], s2: Rep[String]): Rep[Pointer[Char]] = CStringStrcatObject2(s1, s2)
-  def cStringStrchrObject1(s: Rep[Pointer[Char]], c: Rep[Int]): Rep[Pointer[Char]] = CStringStrchrObject1(s, c)
-  def cStringStrchrObject2(s: Rep[String], c: Rep[Int]): Rep[Pointer[Char]] = CStringStrchrObject2(s, c)
-  def cStringStrcmpObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]]): Rep[Int] = CStringStrcmpObject1(s1, s2)
-  def cStringStrcmpObject2(s1: Rep[String], s2: Rep[Pointer[Char]]): Rep[Int] = CStringStrcmpObject2(s1, s2)
-  def cStringStrcmpObject3(s1: Rep[Pointer[Char]], s2: Rep[String]): Rep[Int] = CStringStrcmpObject3(s1, s2)
+  def cStringMemchrObject(s: Rep[LPointer[Byte]], c: Rep[Int], n: Rep[Int]): Rep[LPointer[Byte]] = CStringMemchrObject(s, c, n)
+  def cStringMemcmpObject(s1: Rep[LPointer[Byte]], s2: Rep[LPointer[Byte]], n: Rep[Int]): Rep[Int] = CStringMemcmpObject(s1, s2, n)
+  def cStringMemcpyObject(dst: Rep[LPointer[Byte]], src: Rep[LPointer[Byte]], n: Rep[Int]): Rep[LPointer[Byte]] = CStringMemcpyObject(dst, src, n)
+  def cStringMemmoveObject(dst: Rep[LPointer[Byte]], src: Rep[LPointer[Byte]], n: Rep[Int]): Rep[LPointer[Byte]] = CStringMemmoveObject(dst, src, n)
+  def cStringMemsetObject(s: Rep[LPointer[Byte]], c: Rep[Int], n: Rep[Int]): Rep[LPointer[Byte]] = CStringMemsetObject(s, c, n)
+  def cStringStrcatObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]]): Rep[LPointer[Char]] = CStringStrcatObject1(s1, s2)
+  def cStringStrcatObject2(s1: Rep[LPointer[Char]], s2: Rep[String]): Rep[LPointer[Char]] = CStringStrcatObject2(s1, s2)
+  def cStringStrchrObject1(s: Rep[LPointer[Char]], c: Rep[Int]): Rep[LPointer[Char]] = CStringStrchrObject1(s, c)
+  def cStringStrchrObject2(s: Rep[String], c: Rep[Int]): Rep[LPointer[Char]] = CStringStrchrObject2(s, c)
+  def cStringStrcmpObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]]): Rep[Int] = CStringStrcmpObject1(s1, s2)
+  def cStringStrcmpObject2(s1: Rep[String], s2: Rep[LPointer[Char]]): Rep[Int] = CStringStrcmpObject2(s1, s2)
+  def cStringStrcmpObject3(s1: Rep[LPointer[Char]], s2: Rep[String]): Rep[Int] = CStringStrcmpObject3(s1, s2)
   def cStringStrcmpObject4(s1: Rep[String], s2: Rep[String]): Rep[Int] = CStringStrcmpObject4(s1, s2)
-  def cStringStrcollObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]]): Rep[Int] = CStringStrcollObject1(s1, s2)
-  def cStringStrcollObject2(s1: Rep[String], s2: Rep[Pointer[Char]]): Rep[Int] = CStringStrcollObject2(s1, s2)
-  def cStringStrcollObject3(s1: Rep[Pointer[Char]], s2: Rep[String]): Rep[Int] = CStringStrcollObject3(s1, s2)
+  def cStringStrcollObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]]): Rep[Int] = CStringStrcollObject1(s1, s2)
+  def cStringStrcollObject2(s1: Rep[String], s2: Rep[LPointer[Char]]): Rep[Int] = CStringStrcollObject2(s1, s2)
+  def cStringStrcollObject3(s1: Rep[LPointer[Char]], s2: Rep[String]): Rep[Int] = CStringStrcollObject3(s1, s2)
   def cStringStrcollObject4(s1: Rep[String], s2: Rep[String]): Rep[Int] = CStringStrcollObject4(s1, s2)
-  def cStringStrcpyObject1(dst: Rep[Pointer[Char]], src: Rep[Pointer[Char]]): Rep[Pointer[Char]] = CStringStrcpyObject1(dst, src)
-  def cStringStrcpyObject2(dst: Rep[Pointer[Char]], src: Rep[String]): Rep[Pointer[Char]] = CStringStrcpyObject2(dst, src)
-  def cStringStrcspnObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]]): Rep[Int] = CStringStrcspnObject1(s1, s2)
-  def cStringStrcspnObject2(s1: Rep[Pointer[Char]], s2: Rep[String]): Rep[Int] = CStringStrcspnObject2(s1, s2)
-  def cStringStrcspnObject3(s1: Rep[String], s2: Rep[Pointer[Char]]): Rep[Int] = CStringStrcspnObject3(s1, s2)
+  def cStringStrcpyObject1(dst: Rep[LPointer[Char]], src: Rep[LPointer[Char]]): Rep[LPointer[Char]] = CStringStrcpyObject1(dst, src)
+  def cStringStrcpyObject2(dst: Rep[LPointer[Char]], src: Rep[String]): Rep[LPointer[Char]] = CStringStrcpyObject2(dst, src)
+  def cStringStrcspnObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]]): Rep[Int] = CStringStrcspnObject1(s1, s2)
+  def cStringStrcspnObject2(s1: Rep[LPointer[Char]], s2: Rep[String]): Rep[Int] = CStringStrcspnObject2(s1, s2)
+  def cStringStrcspnObject3(s1: Rep[String], s2: Rep[LPointer[Char]]): Rep[Int] = CStringStrcspnObject3(s1, s2)
   def cStringStrcspnObject4(s1: Rep[String], s2: Rep[String]): Rep[Int] = CStringStrcspnObject4(s1, s2)
-  def cStringStrerrorObject(errnum: Rep[Int]): Rep[Pointer[Char]] = CStringStrerrorObject(errnum)
-  def cStringStrlenObject1(s: Rep[Pointer[Char]]): Rep[Int] = CStringStrlenObject1(s)
+  def cStringStrerrorObject(errnum: Rep[Int]): Rep[LPointer[Char]] = CStringStrerrorObject(errnum)
+  def cStringStrlenObject1(s: Rep[LPointer[Char]]): Rep[Int] = CStringStrlenObject1(s)
   def cStringStrlenObject2(s: Rep[String]): Rep[Int] = CStringStrlenObject2(s)
-  def cStringStrncatObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]], n: Rep[Int]): Rep[Pointer[Char]] = CStringStrncatObject1(s1, s2, n)
-  def cStringStrncatObject2(s1: Rep[Pointer[Char]], s2: Rep[String], n: Rep[Int]): Rep[Pointer[Char]] = CStringStrncatObject2(s1, s2, n)
-  def cStringStrncmpObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]], n: Rep[Int]): Rep[Int] = CStringStrncmpObject1(s1, s2, n)
-  def cStringStrncmpObject2(s1: Rep[Pointer[Char]], s2: Rep[String], n: Rep[Int]): Rep[Int] = CStringStrncmpObject2(s1, s2, n)
-  def cStringStrncmpObject3(s1: Rep[String], s2: Rep[Pointer[Char]], n: Rep[Int]): Rep[Int] = CStringStrncmpObject3(s1, s2, n)
+  def cStringStrncatObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]], n: Rep[Int]): Rep[LPointer[Char]] = CStringStrncatObject1(s1, s2, n)
+  def cStringStrncatObject2(s1: Rep[LPointer[Char]], s2: Rep[String], n: Rep[Int]): Rep[LPointer[Char]] = CStringStrncatObject2(s1, s2, n)
+  def cStringStrncmpObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]], n: Rep[Int]): Rep[Int] = CStringStrncmpObject1(s1, s2, n)
+  def cStringStrncmpObject2(s1: Rep[LPointer[Char]], s2: Rep[String], n: Rep[Int]): Rep[Int] = CStringStrncmpObject2(s1, s2, n)
+  def cStringStrncmpObject3(s1: Rep[String], s2: Rep[LPointer[Char]], n: Rep[Int]): Rep[Int] = CStringStrncmpObject3(s1, s2, n)
   def cStringStrncmpObject4(s1: Rep[String], s2: Rep[String], n: Rep[Int]): Rep[Int] = CStringStrncmpObject4(s1, s2, n)
-  def cStringStrncpyObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]], n: Rep[Int]): Rep[Pointer[Char]] = CStringStrncpyObject1(s1, s2, n)
-  def cStringStrncpyObject2(s1: Rep[Pointer[Char]], s2: Rep[String], n: Rep[Int]): Rep[Pointer[Char]] = CStringStrncpyObject2(s1, s2, n)
-  def cStringStrpbrkObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]]): Rep[Pointer[Char]] = CStringStrpbrkObject1(s1, s2)
-  def cStringStrpbrkObject2(s1: Rep[Pointer[Char]], s2: Rep[String]): Rep[Pointer[Char]] = CStringStrpbrkObject2(s1, s2)
-  def cStringStrpbrkObject3(s1: Rep[String], s2: Rep[Pointer[Char]]): Rep[Pointer[Char]] = CStringStrpbrkObject3(s1, s2)
-  def cStringStrpbrkObject4(s1: Rep[String], s2: Rep[String]): Rep[Pointer[Char]] = CStringStrpbrkObject4(s1, s2)
-  def cStringStrrchrObject1(s: Rep[Pointer[Char]], c: Rep[Int]): Rep[Pointer[Char]] = CStringStrrchrObject1(s, c)
-  def cStringStrrchrObject2(s: Rep[String], c: Rep[Int]): Rep[Pointer[Char]] = CStringStrrchrObject2(s, c)
-  def cStringStrspnObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]]): Rep[Int] = CStringStrspnObject1(s1, s2)
-  def cStringStrspnObject2(s1: Rep[String], s2: Rep[Pointer[Char]]): Rep[Int] = CStringStrspnObject2(s1, s2)
-  def cStringStrspnObject3(s1: Rep[Pointer[Char]], s2: Rep[String]): Rep[Int] = CStringStrspnObject3(s1, s2)
+  def cStringStrncpyObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]], n: Rep[Int]): Rep[LPointer[Char]] = CStringStrncpyObject1(s1, s2, n)
+  def cStringStrncpyObject2(s1: Rep[LPointer[Char]], s2: Rep[String], n: Rep[Int]): Rep[LPointer[Char]] = CStringStrncpyObject2(s1, s2, n)
+  def cStringStrpbrkObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]]): Rep[LPointer[Char]] = CStringStrpbrkObject1(s1, s2)
+  def cStringStrpbrkObject2(s1: Rep[LPointer[Char]], s2: Rep[String]): Rep[LPointer[Char]] = CStringStrpbrkObject2(s1, s2)
+  def cStringStrpbrkObject3(s1: Rep[String], s2: Rep[LPointer[Char]]): Rep[LPointer[Char]] = CStringStrpbrkObject3(s1, s2)
+  def cStringStrpbrkObject4(s1: Rep[String], s2: Rep[String]): Rep[LPointer[Char]] = CStringStrpbrkObject4(s1, s2)
+  def cStringStrrchrObject1(s: Rep[LPointer[Char]], c: Rep[Int]): Rep[LPointer[Char]] = CStringStrrchrObject1(s, c)
+  def cStringStrrchrObject2(s: Rep[String], c: Rep[Int]): Rep[LPointer[Char]] = CStringStrrchrObject2(s, c)
+  def cStringStrspnObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]]): Rep[Int] = CStringStrspnObject1(s1, s2)
+  def cStringStrspnObject2(s1: Rep[String], s2: Rep[LPointer[Char]]): Rep[Int] = CStringStrspnObject2(s1, s2)
+  def cStringStrspnObject3(s1: Rep[LPointer[Char]], s2: Rep[String]): Rep[Int] = CStringStrspnObject3(s1, s2)
   def cStringStrspnObject4(s1: Rep[String], s2: Rep[String]): Rep[Int] = CStringStrspnObject4(s1, s2)
-  def cStringStrstrObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]]): Rep[Pointer[Char]] = CStringStrstrObject1(s1, s2)
-  def cStringStrstrObject2(s1: Rep[Pointer[Char]], s2: Rep[String]): Rep[Pointer[Char]] = CStringStrstrObject2(s1, s2)
-  def cStringStrstrObject3(s1: Rep[String], s2: Rep[Pointer[Char]]): Rep[Pointer[Char]] = CStringStrstrObject3(s1, s2)
-  def cStringStrstrObject4(s1: Rep[String], s2: Rep[String]): Rep[Pointer[Char]] = CStringStrstrObject4(s1, s2)
-  def cStringStrtokObject1(s: Rep[Pointer[Char]], sep: Rep[Pointer[Char]]): Rep[Pointer[Char]] = CStringStrtokObject1(s, sep)
-  def cStringStrtokObject2(s: Rep[Pointer[Char]], sep: Rep[String]): Rep[Pointer[Char]] = CStringStrtokObject2(s, sep)
-  def cStringStrxfrmObject1(s1: Rep[Pointer[Char]], s2: Rep[Pointer[Char]], n: Rep[Int]): Rep[Int] = CStringStrxfrmObject1(s1, s2, n)
-  def cStringStrxfrmObject2(s1: Rep[Pointer[Char]], s2: Rep[String], n: Rep[Int]): Rep[Int] = CStringStrxfrmObject2(s1, s2, n)
+  def cStringStrstrObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]]): Rep[LPointer[Char]] = CStringStrstrObject1(s1, s2)
+  def cStringStrstrObject2(s1: Rep[LPointer[Char]], s2: Rep[String]): Rep[LPointer[Char]] = CStringStrstrObject2(s1, s2)
+  def cStringStrstrObject3(s1: Rep[String], s2: Rep[LPointer[Char]]): Rep[LPointer[Char]] = CStringStrstrObject3(s1, s2)
+  def cStringStrstrObject4(s1: Rep[String], s2: Rep[String]): Rep[LPointer[Char]] = CStringStrstrObject4(s1, s2)
+  def cStringStrtokObject1(s: Rep[LPointer[Char]], sep: Rep[LPointer[Char]]): Rep[LPointer[Char]] = CStringStrtokObject1(s, sep)
+  def cStringStrtokObject2(s: Rep[LPointer[Char]], sep: Rep[String]): Rep[LPointer[Char]] = CStringStrtokObject2(s, sep)
+  def cStringStrxfrmObject1(s1: Rep[LPointer[Char]], s2: Rep[LPointer[Char]], n: Rep[Int]): Rep[Int] = CStringStrxfrmObject1(s1, s2, n)
+  def cStringStrxfrmObject2(s1: Rep[LPointer[Char]], s2: Rep[String], n: Rep[Int]): Rep[Int] = CStringStrxfrmObject2(s1, s2, n)
   type CString = ch.epfl.data.pardis.shallow.c.CString
 }
 trait CStringImplicits { this: CLibs =>
@@ -1027,20 +1027,20 @@ trait CStringPartialEvaluation extends CStringComponent with BasePartialEvaluati
 }
 trait CStringComponent extends CStringOps with CStringImplicits { this: CLibs => }
 
-trait GArrayOps extends Base { this: CLibs =>
+trait LGArrayOps extends Base { this: CLibs =>
   // Type representation
-  case object GArrayType extends TypeRep[GArray] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GArrayType
-    val name = "GArray"
+  case object LGArrayType extends TypeRep[LGArray] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LGArrayType
+    val name = "LGArray"
     val typeArguments = Nil
 
-    val typeTag = scala.reflect.runtime.universe.typeTag[GArray]
+    val typeTag = scala.reflect.runtime.universe.typeTag[LGArray]
   }
-  implicit val typeGArray: TypeRep[GArray] = GArrayType
-  implicit class GArrayRep(self: Rep[GArray]) {
+  implicit val typeLGArray: TypeRep[LGArray] = LGArrayType
+  implicit class LGArrayRep(self: Rep[LGArray]) {
 
   }
-  object GArray {
+  object LGArray {
 
   }
   // constructors
@@ -1049,174 +1049,174 @@ trait GArrayOps extends Base { this: CLibs =>
 
   // method definitions
 
-  type GArray = ch.epfl.data.pardis.shallow.c.GLibTypes.GArray
+  type LGArray = ch.epfl.data.pardis.shallow.c.GLibTypes.LGArray
 }
-trait GArrayImplicits { this: CLibs =>
+trait LGArrayImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait GArrayImplementations { this: CLibs =>
+trait LGArrayImplementations { this: CLibs =>
 
 }
-trait GArrayPartialEvaluation extends GArrayComponent with BasePartialEvaluation { this: CLibs =>
+trait LGArrayPartialEvaluation extends LGArrayComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait GArrayComponent extends GArrayOps with GArrayImplicits { this: CLibs => }
+trait LGArrayComponent extends LGArrayOps with LGArrayImplicits { this: CLibs => }
 
-trait GArrayHeaderOps extends Base { this: CLibs =>
+trait LGArrayHeaderOps extends Base { this: CLibs =>
   // Type representation
-  case object GArrayHeaderType extends TypeRep[GArrayHeader] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GArrayHeaderType
-    val name = "GArrayHeader"
+  case object LGArrayHeaderType extends TypeRep[LGArrayHeader] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LGArrayHeaderType
+    val name = "LGArrayHeader"
     val typeArguments = Nil
 
-    val typeTag = scala.reflect.runtime.universe.typeTag[GArrayHeader]
+    val typeTag = scala.reflect.runtime.universe.typeTag[LGArrayHeader]
   }
-  implicit val typeGArrayHeader: TypeRep[GArrayHeader] = GArrayHeaderType
-  implicit class GArrayHeaderRep(self: Rep[GArrayHeader]) {
+  implicit val typeLGArrayHeader: TypeRep[LGArrayHeader] = LGArrayHeaderType
+  implicit class LGArrayHeaderRep(self: Rep[LGArrayHeader]) {
 
   }
-  object GArrayHeader {
-    def g_array_new(zero_terminated: Rep[Int], clear: Rep[Int], element_size: Rep[Int]): Rep[Pointer[GArray]] = gArrayHeaderG_array_newObject(zero_terminated, clear, element_size)
-    def g_array_sized_new(zero_terminated: Rep[Int], clear: Rep[Int], element_size: Rep[Int], reserved_size: Rep[Int]): Rep[Pointer[GArray]] = gArrayHeaderG_array_sized_newObject(zero_terminated, clear, element_size, reserved_size)
-    def g_array_free(array: Rep[Pointer[GArray]], free_segment: Rep[Int]): Rep[Pointer[Char]] = gArrayHeaderG_array_freeObject(array, free_segment)
-    def g_array_ref(array: Rep[Pointer[GArray]]): Rep[Pointer[GArray]] = gArrayHeaderG_array_refObject(array)
-    def g_array_unref(array: Rep[Pointer[GArray]]): Rep[Unit] = gArrayHeaderG_array_unrefObject(array)
-    def g_array_get_element_size(array: Rep[Pointer[GArray]]): Rep[Int] = gArrayHeaderG_array_get_element_sizeObject(array)
-    def g_array_append_vals(array: Rep[Pointer[GArray]], data: Rep[Pointer[Any]], len: Rep[Int]): Rep[Pointer[GArray]] = gArrayHeaderG_array_append_valsObject(array, data, len)
-    def g_array_prepend_vals(array: Rep[Pointer[GArray]], data: Rep[Pointer[Any]], len: Rep[Int]): Rep[Pointer[GArray]] = gArrayHeaderG_array_prepend_valsObject(array, data, len)
-    def g_array_insert_vals(array: Rep[Pointer[GArray]], index: Rep[Int], data: Rep[Pointer[Any]], len: Rep[Int]): Rep[Pointer[GArray]] = gArrayHeaderG_array_insert_valsObject(array, index, data, len)
-    def g_array_set_size(array: Rep[Pointer[GArray]], length: Rep[Int]): Rep[Pointer[GArray]] = gArrayHeaderG_array_set_sizeObject(array, length)
-    def g_array_remove_index(array: Rep[Pointer[GArray]], index: Rep[Int]): Rep[Pointer[GArray]] = gArrayHeaderG_array_remove_indexObject(array, index)
-    def g_array_remove_index_fast(array: Rep[Pointer[GArray]], index: Rep[Int]): Rep[Pointer[GArray]] = gArrayHeaderG_array_remove_index_fastObject(array, index)
-    def g_array_remove_range(array: Rep[Pointer[GArray]], index: Rep[Int], length: Rep[Int]): Rep[Pointer[GArray]] = gArrayHeaderG_array_remove_rangeObject(array, index, length)
-    def g_array_sort(array: Rep[Pointer[GArray]], compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any]) => Int)]]): Rep[Unit] = gArrayHeaderG_array_sortObject(array, compare_func)
-    def g_array_sort_with_data(array: Rep[Pointer[GArray]], compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], user_data: Rep[Pointer[Any]]): Rep[Unit] = gArrayHeaderG_array_sort_with_dataObject(array, compare_func, user_data)
-    def g_array_set_clear_func(array: Rep[Pointer[GArray]], clear_func: Rep[Pointer[(Pointer[Any] => Unit)]]): Rep[Unit] = gArrayHeaderG_array_set_clear_funcObject(array, clear_func)
-    def g_array_index[T](array: Rep[Pointer[GArray]], i: Rep[Int])(implicit typeT: TypeRep[T], evidence$1: CType[T]): Rep[T] = gArrayHeaderG_array_indexObject[T](array, i)(typeT, evidence$1)
+  object LGArrayHeader {
+    def g_array_new(zero_terminated: Rep[Int], clear: Rep[Int], element_size: Rep[Int]): Rep[LPointer[LGArray]] = lGArrayHeaderG_array_newObject(zero_terminated, clear, element_size)
+    def g_array_sized_new(zero_terminated: Rep[Int], clear: Rep[Int], element_size: Rep[Int], reserved_size: Rep[Int]): Rep[LPointer[LGArray]] = lGArrayHeaderG_array_sized_newObject(zero_terminated, clear, element_size, reserved_size)
+    def g_array_free(array: Rep[LPointer[LGArray]], free_segment: Rep[Int]): Rep[LPointer[Char]] = lGArrayHeaderG_array_freeObject(array, free_segment)
+    def g_array_ref(array: Rep[LPointer[LGArray]]): Rep[LPointer[LGArray]] = lGArrayHeaderG_array_refObject(array)
+    def g_array_unref(array: Rep[LPointer[LGArray]]): Rep[Unit] = lGArrayHeaderG_array_unrefObject(array)
+    def g_array_get_element_size(array: Rep[LPointer[LGArray]]): Rep[Int] = lGArrayHeaderG_array_get_element_sizeObject(array)
+    def g_array_append_vals(array: Rep[LPointer[LGArray]], data: Rep[LPointer[Any]], len: Rep[Int]): Rep[LPointer[LGArray]] = lGArrayHeaderG_array_append_valsObject(array, data, len)
+    def g_array_prepend_vals(array: Rep[LPointer[LGArray]], data: Rep[LPointer[Any]], len: Rep[Int]): Rep[LPointer[LGArray]] = lGArrayHeaderG_array_prepend_valsObject(array, data, len)
+    def g_array_insert_vals(array: Rep[LPointer[LGArray]], index: Rep[Int], data: Rep[LPointer[Any]], len: Rep[Int]): Rep[LPointer[LGArray]] = lGArrayHeaderG_array_insert_valsObject(array, index, data, len)
+    def g_array_set_size(array: Rep[LPointer[LGArray]], length: Rep[Int]): Rep[LPointer[LGArray]] = lGArrayHeaderG_array_set_sizeObject(array, length)
+    def g_array_remove_index(array: Rep[LPointer[LGArray]], index: Rep[Int]): Rep[LPointer[LGArray]] = lGArrayHeaderG_array_remove_indexObject(array, index)
+    def g_array_remove_index_fast(array: Rep[LPointer[LGArray]], index: Rep[Int]): Rep[LPointer[LGArray]] = lGArrayHeaderG_array_remove_index_fastObject(array, index)
+    def g_array_remove_range(array: Rep[LPointer[LGArray]], index: Rep[Int], length: Rep[Int]): Rep[LPointer[LGArray]] = lGArrayHeaderG_array_remove_rangeObject(array, index, length)
+    def g_array_sort(array: Rep[LPointer[LGArray]], compare_func: Rep[LPointer[((LPointer[Any], LPointer[Any]) => Int)]]): Rep[Unit] = lGArrayHeaderG_array_sortObject(array, compare_func)
+    def g_array_sort_with_data(array: Rep[LPointer[LGArray]], compare_func: Rep[LPointer[((LPointer[Any], LPointer[Any], LPointer[Any]) => Int)]], user_data: Rep[LPointer[Any]]): Rep[Unit] = lGArrayHeaderG_array_sort_with_dataObject(array, compare_func, user_data)
+    def g_array_set_clear_func(array: Rep[LPointer[LGArray]], clear_func: Rep[LPointer[(LPointer[Any] => Unit)]]): Rep[Unit] = lGArrayHeaderG_array_set_clear_funcObject(array, clear_func)
+    def g_array_index[T](array: Rep[LPointer[LGArray]], i: Rep[Int])(implicit typeT: TypeRep[T], evidence$1: CType[T]): Rep[T] = lGArrayHeaderG_array_indexObject[T](array, i)(typeT, evidence$1)
   }
   // constructors
 
   // case classes
-  case class GArrayHeaderG_array_newObject(zero_terminated: Rep[Int], clear: Rep[Int], element_size: Rep[Int]) extends FunctionDef[Pointer[GArray]](None, "GArrayHeader.g_array_new", List(List(zero_terminated, clear, element_size))) {
+  case class LGArrayHeaderG_array_newObject(zero_terminated: Rep[Int], clear: Rep[Int], element_size: Rep[Int]) extends FunctionDef[LPointer[LGArray]](None, "LGArrayHeader.g_array_new", List(List(zero_terminated, clear, element_size))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GArrayHeaderG_array_sized_newObject(zero_terminated: Rep[Int], clear: Rep[Int], element_size: Rep[Int], reserved_size: Rep[Int]) extends FunctionDef[Pointer[GArray]](None, "GArrayHeader.g_array_sized_new", List(List(zero_terminated, clear, element_size, reserved_size))) {
+  case class LGArrayHeaderG_array_sized_newObject(zero_terminated: Rep[Int], clear: Rep[Int], element_size: Rep[Int], reserved_size: Rep[Int]) extends FunctionDef[LPointer[LGArray]](None, "LGArrayHeader.g_array_sized_new", List(List(zero_terminated, clear, element_size, reserved_size))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GArrayHeaderG_array_freeObject(array: Rep[Pointer[GArray]], free_segment: Rep[Int]) extends FunctionDef[Pointer[Char]](None, "GArrayHeader.g_array_free", List(List(array, free_segment))) {
+  case class LGArrayHeaderG_array_freeObject(array: Rep[LPointer[LGArray]], free_segment: Rep[Int]) extends FunctionDef[LPointer[Char]](None, "LGArrayHeader.g_array_free", List(List(array, free_segment))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GArrayHeaderG_array_refObject(array: Rep[Pointer[GArray]]) extends FunctionDef[Pointer[GArray]](None, "GArrayHeader.g_array_ref", List(List(array))) {
+  case class LGArrayHeaderG_array_refObject(array: Rep[LPointer[LGArray]]) extends FunctionDef[LPointer[LGArray]](None, "LGArrayHeader.g_array_ref", List(List(array))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class GArrayHeaderG_array_unrefObject(array: Rep[Pointer[GArray]]) extends FunctionDef[Unit](None, "GArrayHeader.g_array_unref", List(List(array))) {
+  case class LGArrayHeaderG_array_unrefObject(array: Rep[LPointer[LGArray]]) extends FunctionDef[Unit](None, "LGArrayHeader.g_array_unref", List(List(array))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class GArrayHeaderG_array_get_element_sizeObject(array: Rep[Pointer[GArray]]) extends FunctionDef[Int](None, "GArrayHeader.g_array_get_element_size", List(List(array))) {
+  case class LGArrayHeaderG_array_get_element_sizeObject(array: Rep[LPointer[LGArray]]) extends FunctionDef[Int](None, "LGArrayHeader.g_array_get_element_size", List(List(array))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class GArrayHeaderG_array_append_valsObject(array: Rep[Pointer[GArray]], data: Rep[Pointer[Any]], len: Rep[Int]) extends FunctionDef[Pointer[GArray]](None, "GArrayHeader.g_array_append_vals", List(List(array, data, len))) {
+  case class LGArrayHeaderG_array_append_valsObject(array: Rep[LPointer[LGArray]], data: Rep[LPointer[Any]], len: Rep[Int]) extends FunctionDef[LPointer[LGArray]](None, "LGArrayHeader.g_array_append_vals", List(List(array, data, len))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GArrayHeaderG_array_prepend_valsObject(array: Rep[Pointer[GArray]], data: Rep[Pointer[Any]], len: Rep[Int]) extends FunctionDef[Pointer[GArray]](None, "GArrayHeader.g_array_prepend_vals", List(List(array, data, len))) {
+  case class LGArrayHeaderG_array_prepend_valsObject(array: Rep[LPointer[LGArray]], data: Rep[LPointer[Any]], len: Rep[Int]) extends FunctionDef[LPointer[LGArray]](None, "LGArrayHeader.g_array_prepend_vals", List(List(array, data, len))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GArrayHeaderG_array_insert_valsObject(array: Rep[Pointer[GArray]], index: Rep[Int], data: Rep[Pointer[Any]], len: Rep[Int]) extends FunctionDef[Pointer[GArray]](None, "GArrayHeader.g_array_insert_vals", List(List(array, index, data, len))) {
+  case class LGArrayHeaderG_array_insert_valsObject(array: Rep[LPointer[LGArray]], index: Rep[Int], data: Rep[LPointer[Any]], len: Rep[Int]) extends FunctionDef[LPointer[LGArray]](None, "LGArrayHeader.g_array_insert_vals", List(List(array, index, data, len))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GArrayHeaderG_array_set_sizeObject(array: Rep[Pointer[GArray]], length: Rep[Int]) extends FunctionDef[Pointer[GArray]](None, "GArrayHeader.g_array_set_size", List(List(array, length))) {
+  case class LGArrayHeaderG_array_set_sizeObject(array: Rep[LPointer[LGArray]], length: Rep[Int]) extends FunctionDef[LPointer[LGArray]](None, "LGArrayHeader.g_array_set_size", List(List(array, length))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GArrayHeaderG_array_remove_indexObject(array: Rep[Pointer[GArray]], index: Rep[Int]) extends FunctionDef[Pointer[GArray]](None, "GArrayHeader.g_array_remove_index", List(List(array, index))) {
+  case class LGArrayHeaderG_array_remove_indexObject(array: Rep[LPointer[LGArray]], index: Rep[Int]) extends FunctionDef[LPointer[LGArray]](None, "LGArrayHeader.g_array_remove_index", List(List(array, index))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GArrayHeaderG_array_remove_index_fastObject(array: Rep[Pointer[GArray]], index: Rep[Int]) extends FunctionDef[Pointer[GArray]](None, "GArrayHeader.g_array_remove_index_fast", List(List(array, index))) {
+  case class LGArrayHeaderG_array_remove_index_fastObject(array: Rep[LPointer[LGArray]], index: Rep[Int]) extends FunctionDef[LPointer[LGArray]](None, "LGArrayHeader.g_array_remove_index_fast", List(List(array, index))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GArrayHeaderG_array_remove_rangeObject(array: Rep[Pointer[GArray]], index: Rep[Int], length: Rep[Int]) extends FunctionDef[Pointer[GArray]](None, "GArrayHeader.g_array_remove_range", List(List(array, index, length))) {
+  case class LGArrayHeaderG_array_remove_rangeObject(array: Rep[LPointer[LGArray]], index: Rep[Int], length: Rep[Int]) extends FunctionDef[LPointer[LGArray]](None, "LGArrayHeader.g_array_remove_range", List(List(array, index, length))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GArrayHeaderG_array_sortObject(array: Rep[Pointer[GArray]], compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any]) => Int)]]) extends FunctionDef[Unit](None, "GArrayHeader.g_array_sort", List(List(array, compare_func))) {
+  case class LGArrayHeaderG_array_sortObject(array: Rep[LPointer[LGArray]], compare_func: Rep[LPointer[((LPointer[Any], LPointer[Any]) => Int)]]) extends FunctionDef[Unit](None, "LGArrayHeader.g_array_sort", List(List(array, compare_func))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GArrayHeaderG_array_sort_with_dataObject(array: Rep[Pointer[GArray]], compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], user_data: Rep[Pointer[Any]]) extends FunctionDef[Unit](None, "GArrayHeader.g_array_sort_with_data", List(List(array, compare_func, user_data))) {
+  case class LGArrayHeaderG_array_sort_with_dataObject(array: Rep[LPointer[LGArray]], compare_func: Rep[LPointer[((LPointer[Any], LPointer[Any], LPointer[Any]) => Int)]], user_data: Rep[LPointer[Any]]) extends FunctionDef[Unit](None, "LGArrayHeader.g_array_sort_with_data", List(List(array, compare_func, user_data))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GArrayHeaderG_array_set_clear_funcObject(array: Rep[Pointer[GArray]], clear_func: Rep[Pointer[(Pointer[Any] => Unit)]]) extends FunctionDef[Unit](None, "GArrayHeader.g_array_set_clear_func", List(List(array, clear_func))) {
+  case class LGArrayHeaderG_array_set_clear_funcObject(array: Rep[LPointer[LGArray]], clear_func: Rep[LPointer[(LPointer[Any] => Unit)]]) extends FunctionDef[Unit](None, "LGArrayHeader.g_array_set_clear_func", List(List(array, clear_func))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GArrayHeaderG_array_indexObject[T](array: Rep[Pointer[GArray]], i: Rep[Int])(implicit val typeT: TypeRep[T], val evidence$1: CType[T]) extends FunctionDef[T](None, "GArrayHeader.g_array_index", List(List(array, i))) {
+  case class LGArrayHeaderG_array_indexObject[T](array: Rep[LPointer[LGArray]], i: Rep[Int])(implicit val typeT: TypeRep[T], val evidence$1: CType[T]) extends FunctionDef[T](None, "LGArrayHeader.g_array_index", List(List(array, i))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
   // method definitions
-  def gArrayHeaderG_array_newObject(zero_terminated: Rep[Int], clear: Rep[Int], element_size: Rep[Int]): Rep[Pointer[GArray]] = GArrayHeaderG_array_newObject(zero_terminated, clear, element_size)
-  def gArrayHeaderG_array_sized_newObject(zero_terminated: Rep[Int], clear: Rep[Int], element_size: Rep[Int], reserved_size: Rep[Int]): Rep[Pointer[GArray]] = GArrayHeaderG_array_sized_newObject(zero_terminated, clear, element_size, reserved_size)
-  def gArrayHeaderG_array_freeObject(array: Rep[Pointer[GArray]], free_segment: Rep[Int]): Rep[Pointer[Char]] = GArrayHeaderG_array_freeObject(array, free_segment)
-  def gArrayHeaderG_array_refObject(array: Rep[Pointer[GArray]]): Rep[Pointer[GArray]] = GArrayHeaderG_array_refObject(array)
-  def gArrayHeaderG_array_unrefObject(array: Rep[Pointer[GArray]]): Rep[Unit] = GArrayHeaderG_array_unrefObject(array)
-  def gArrayHeaderG_array_get_element_sizeObject(array: Rep[Pointer[GArray]]): Rep[Int] = GArrayHeaderG_array_get_element_sizeObject(array)
-  def gArrayHeaderG_array_append_valsObject(array: Rep[Pointer[GArray]], data: Rep[Pointer[Any]], len: Rep[Int]): Rep[Pointer[GArray]] = GArrayHeaderG_array_append_valsObject(array, data, len)
-  def gArrayHeaderG_array_prepend_valsObject(array: Rep[Pointer[GArray]], data: Rep[Pointer[Any]], len: Rep[Int]): Rep[Pointer[GArray]] = GArrayHeaderG_array_prepend_valsObject(array, data, len)
-  def gArrayHeaderG_array_insert_valsObject(array: Rep[Pointer[GArray]], index: Rep[Int], data: Rep[Pointer[Any]], len: Rep[Int]): Rep[Pointer[GArray]] = GArrayHeaderG_array_insert_valsObject(array, index, data, len)
-  def gArrayHeaderG_array_set_sizeObject(array: Rep[Pointer[GArray]], length: Rep[Int]): Rep[Pointer[GArray]] = GArrayHeaderG_array_set_sizeObject(array, length)
-  def gArrayHeaderG_array_remove_indexObject(array: Rep[Pointer[GArray]], index: Rep[Int]): Rep[Pointer[GArray]] = GArrayHeaderG_array_remove_indexObject(array, index)
-  def gArrayHeaderG_array_remove_index_fastObject(array: Rep[Pointer[GArray]], index: Rep[Int]): Rep[Pointer[GArray]] = GArrayHeaderG_array_remove_index_fastObject(array, index)
-  def gArrayHeaderG_array_remove_rangeObject(array: Rep[Pointer[GArray]], index: Rep[Int], length: Rep[Int]): Rep[Pointer[GArray]] = GArrayHeaderG_array_remove_rangeObject(array, index, length)
-  def gArrayHeaderG_array_sortObject(array: Rep[Pointer[GArray]], compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any]) => Int)]]): Rep[Unit] = GArrayHeaderG_array_sortObject(array, compare_func)
-  def gArrayHeaderG_array_sort_with_dataObject(array: Rep[Pointer[GArray]], compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], user_data: Rep[Pointer[Any]]): Rep[Unit] = GArrayHeaderG_array_sort_with_dataObject(array, compare_func, user_data)
-  def gArrayHeaderG_array_set_clear_funcObject(array: Rep[Pointer[GArray]], clear_func: Rep[Pointer[(Pointer[Any] => Unit)]]): Rep[Unit] = GArrayHeaderG_array_set_clear_funcObject(array, clear_func)
-  def gArrayHeaderG_array_indexObject[T](array: Rep[Pointer[GArray]], i: Rep[Int])(implicit typeT: TypeRep[T], evidence$1: CType[T]): Rep[T] = GArrayHeaderG_array_indexObject[T](array, i)
-  type GArrayHeader = ch.epfl.data.pardis.shallow.c.GArrayHeader
+  def lGArrayHeaderG_array_newObject(zero_terminated: Rep[Int], clear: Rep[Int], element_size: Rep[Int]): Rep[LPointer[LGArray]] = LGArrayHeaderG_array_newObject(zero_terminated, clear, element_size)
+  def lGArrayHeaderG_array_sized_newObject(zero_terminated: Rep[Int], clear: Rep[Int], element_size: Rep[Int], reserved_size: Rep[Int]): Rep[LPointer[LGArray]] = LGArrayHeaderG_array_sized_newObject(zero_terminated, clear, element_size, reserved_size)
+  def lGArrayHeaderG_array_freeObject(array: Rep[LPointer[LGArray]], free_segment: Rep[Int]): Rep[LPointer[Char]] = LGArrayHeaderG_array_freeObject(array, free_segment)
+  def lGArrayHeaderG_array_refObject(array: Rep[LPointer[LGArray]]): Rep[LPointer[LGArray]] = LGArrayHeaderG_array_refObject(array)
+  def lGArrayHeaderG_array_unrefObject(array: Rep[LPointer[LGArray]]): Rep[Unit] = LGArrayHeaderG_array_unrefObject(array)
+  def lGArrayHeaderG_array_get_element_sizeObject(array: Rep[LPointer[LGArray]]): Rep[Int] = LGArrayHeaderG_array_get_element_sizeObject(array)
+  def lGArrayHeaderG_array_append_valsObject(array: Rep[LPointer[LGArray]], data: Rep[LPointer[Any]], len: Rep[Int]): Rep[LPointer[LGArray]] = LGArrayHeaderG_array_append_valsObject(array, data, len)
+  def lGArrayHeaderG_array_prepend_valsObject(array: Rep[LPointer[LGArray]], data: Rep[LPointer[Any]], len: Rep[Int]): Rep[LPointer[LGArray]] = LGArrayHeaderG_array_prepend_valsObject(array, data, len)
+  def lGArrayHeaderG_array_insert_valsObject(array: Rep[LPointer[LGArray]], index: Rep[Int], data: Rep[LPointer[Any]], len: Rep[Int]): Rep[LPointer[LGArray]] = LGArrayHeaderG_array_insert_valsObject(array, index, data, len)
+  def lGArrayHeaderG_array_set_sizeObject(array: Rep[LPointer[LGArray]], length: Rep[Int]): Rep[LPointer[LGArray]] = LGArrayHeaderG_array_set_sizeObject(array, length)
+  def lGArrayHeaderG_array_remove_indexObject(array: Rep[LPointer[LGArray]], index: Rep[Int]): Rep[LPointer[LGArray]] = LGArrayHeaderG_array_remove_indexObject(array, index)
+  def lGArrayHeaderG_array_remove_index_fastObject(array: Rep[LPointer[LGArray]], index: Rep[Int]): Rep[LPointer[LGArray]] = LGArrayHeaderG_array_remove_index_fastObject(array, index)
+  def lGArrayHeaderG_array_remove_rangeObject(array: Rep[LPointer[LGArray]], index: Rep[Int], length: Rep[Int]): Rep[LPointer[LGArray]] = LGArrayHeaderG_array_remove_rangeObject(array, index, length)
+  def lGArrayHeaderG_array_sortObject(array: Rep[LPointer[LGArray]], compare_func: Rep[LPointer[((LPointer[Any], LPointer[Any]) => Int)]]): Rep[Unit] = LGArrayHeaderG_array_sortObject(array, compare_func)
+  def lGArrayHeaderG_array_sort_with_dataObject(array: Rep[LPointer[LGArray]], compare_func: Rep[LPointer[((LPointer[Any], LPointer[Any], LPointer[Any]) => Int)]], user_data: Rep[LPointer[Any]]): Rep[Unit] = LGArrayHeaderG_array_sort_with_dataObject(array, compare_func, user_data)
+  def lGArrayHeaderG_array_set_clear_funcObject(array: Rep[LPointer[LGArray]], clear_func: Rep[LPointer[(LPointer[Any] => Unit)]]): Rep[Unit] = LGArrayHeaderG_array_set_clear_funcObject(array, clear_func)
+  def lGArrayHeaderG_array_indexObject[T](array: Rep[LPointer[LGArray]], i: Rep[Int])(implicit typeT: TypeRep[T], evidence$1: CType[T]): Rep[T] = LGArrayHeaderG_array_indexObject[T](array, i)
+  type LGArrayHeader = ch.epfl.data.pardis.shallow.c.LGArrayHeader
 }
-trait GArrayHeaderImplicits { this: CLibs =>
+trait LGArrayHeaderImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait GArrayHeaderImplementations { this: CLibs =>
+trait LGArrayHeaderImplementations { this: CLibs =>
 
 }
-trait GArrayHeaderPartialEvaluation extends GArrayHeaderComponent with BasePartialEvaluation { this: CLibs =>
+trait LGArrayHeaderPartialEvaluation extends LGArrayHeaderComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait GArrayHeaderComponent extends GArrayHeaderOps with GArrayHeaderImplicits { this: CLibs => }
+trait LGArrayHeaderComponent extends LGArrayHeaderOps with LGArrayHeaderImplicits { this: CLibs => }
 
-trait GListOps extends Base { this: CLibs =>
+trait LGListOps extends Base { this: CLibs =>
   // Type representation
-  case class GListType[T](typeT: TypeRep[T]) extends TypeRep[GList[T]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GListType(newArguments(0).asInstanceOf[TypeRep[_]])
+  case class LGListType[T](typeT: TypeRep[T]) extends TypeRep[LGList[T]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LGListType(newArguments(0).asInstanceOf[TypeRep[_]])
     private implicit val tagT = typeT.typeTag
-    val name = s"GList[${typeT.name}]"
+    val name = s"LGList[${typeT.name}]"
     val typeArguments = List(typeT)
 
-    val typeTag = scala.reflect.runtime.universe.typeTag[GList[T]]
+    val typeTag = scala.reflect.runtime.universe.typeTag[LGList[T]]
   }
-  implicit def typeGList[T: TypeRep] = GListType(implicitly[TypeRep[T]])
-  implicit class GListRep[T](self: Rep[GList[T]])(implicit typeT: TypeRep[T]) {
+  implicit def typeLGList[T: TypeRep] = LGListType(implicitly[TypeRep[T]])
+  implicit class LGListRep[T](self: Rep[LGList[T]])(implicit typeT: TypeRep[T]) {
 
   }
-  object GList {
+  object LGList {
 
   }
   // constructors
@@ -1225,209 +1225,209 @@ trait GListOps extends Base { this: CLibs =>
 
   // method definitions
 
-  type GList[T] = ch.epfl.data.pardis.shallow.c.GLibTypes.GList[T]
+  type LGList[T] = ch.epfl.data.pardis.shallow.c.GLibTypes.LGList[T]
 }
-trait GListImplicits { this: CLibs =>
+trait LGListImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait GListImplementations { this: CLibs =>
+trait LGListImplementations { this: CLibs =>
 
 }
-trait GListPartialEvaluation extends GListComponent with BasePartialEvaluation { this: CLibs =>
+trait LGListPartialEvaluation extends LGListComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait GListComponent extends GListOps with GListImplicits { this: CLibs => }
+trait LGListComponent extends LGListOps with LGListImplicits { this: CLibs => }
 
-trait GListHeaderOps extends Base { this: CLibs =>
+trait LGListHeaderOps extends Base { this: CLibs =>
   // Type representation
-  case object GListHeaderType extends TypeRep[GListHeader] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GListHeaderType
-    val name = "GListHeader"
+  case object LGListHeaderType extends TypeRep[LGListHeader] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LGListHeaderType
+    val name = "LGListHeader"
     val typeArguments = Nil
 
-    val typeTag = scala.reflect.runtime.universe.typeTag[GListHeader]
+    val typeTag = scala.reflect.runtime.universe.typeTag[LGListHeader]
   }
-  implicit val typeGListHeader: TypeRep[GListHeader] = GListHeaderType
-  implicit class GListHeaderRep(self: Rep[GListHeader]) {
+  implicit val typeLGListHeader: TypeRep[LGListHeader] = LGListHeaderType
+  implicit class LGListHeaderRep(self: Rep[LGListHeader]) {
 
   }
-  object GListHeader {
-    def g_list_append[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_appendObject[T](list, data)(typeT)
-    def g_list_prepend[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_prependObject[T](list, data)(typeT)
-    def g_list_insert[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]], position: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_insertObject[T](list, data, position)(typeT)
-    def g_list_insert_before[T](list: Rep[Pointer[GList[T]]], sibling: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_insert_beforeObject[T](list, sibling, data)(typeT)
-    def g_list_remove[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_removeObject[T](list, data)(typeT)
-    def g_list_remove_link[T](list: Rep[Pointer[GList[T]]], llink: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_remove_linkObject[T](list, llink)(typeT)
-    def g_list_delete_link[T](list: Rep[Pointer[GList[T]]], llink: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_delete_linkObject[T](list, llink)(typeT)
-    def g_list_remove_all[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_remove_allObject[T](list, data)(typeT)
-    def g_list_free[T](list: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Unit] = gListHeaderG_list_freeObject[T](list)(typeT)
-    def g_list_free_full[T](list: Rep[Pointer[GList[T]]], freeFunc: Rep[Pointer[(Pointer[T] => Unit)]])(implicit typeT: TypeRep[T]): Rep[Unit] = gListHeaderG_list_free_fullObject[T](list, freeFunc)(typeT)
-    def g_list_alloc[T]()(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_allocObject[T]()(typeT)
-    def g_list_length[T](list: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Int] = gListHeaderG_list_lengthObject[T](list)(typeT)
-    def g_list_concat[T](list1: Rep[Pointer[GList[T]]], list2: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_concatObject[T](list1, list2)(typeT)
-    def g_list_foreach[T](list: Rep[Pointer[GList[T]]], func: Rep[Pointer[((Pointer[T], Any) => Unit)]], userData: Rep[Any])(implicit typeT: TypeRep[T]): Rep[Unit] = gListHeaderG_list_foreachObject[T](list, func, userData)(typeT)
-    def g_list_first[T](list: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_firstObject[T](list)(typeT)
-    def g_list_last[T](list: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_lastObject[T](list)(typeT)
-    def g_list_nth[T](list: Rep[Pointer[GList[T]]], n: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_nthObject[T](list, n)(typeT)
-    def g_list_nth_data[T](list: Rep[Pointer[GList[T]]], n: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Pointer[T]] = gListHeaderG_list_nth_dataObject[T](list, n)(typeT)
-    def g_list_nth_prev[T](list: Rep[Pointer[GList[T]]], n: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_nth_prevObject[T](list, n)(typeT)
-    def g_list_find[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_findObject[T](list, data)(typeT)
-    def g_list_find_custom[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]], func: Rep[Pointer[((Pointer[T], Pointer[T]) => Int)]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = gListHeaderG_list_find_customObject[T](list, data, func)(typeT)
-    def g_list_position[T](list: Rep[Pointer[GList[T]]], llink: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Int] = gListHeaderG_list_positionObject[T](list, llink)(typeT)
-    def g_list_index[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Int] = gListHeaderG_list_indexObject[T](list, data)(typeT)
+  object LGListHeader {
+    def g_list_append[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_appendObject[T](list, data)(typeT)
+    def g_list_prepend[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_prependObject[T](list, data)(typeT)
+    def g_list_insert[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]], position: Rep[Int])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_insertObject[T](list, data, position)(typeT)
+    def g_list_insert_before[T](list: Rep[LPointer[LGList[T]]], sibling: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_insert_beforeObject[T](list, sibling, data)(typeT)
+    def g_list_remove[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_removeObject[T](list, data)(typeT)
+    def g_list_remove_link[T](list: Rep[LPointer[LGList[T]]], llink: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_remove_linkObject[T](list, llink)(typeT)
+    def g_list_delete_link[T](list: Rep[LPointer[LGList[T]]], llink: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_delete_linkObject[T](list, llink)(typeT)
+    def g_list_remove_all[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_remove_allObject[T](list, data)(typeT)
+    def g_list_free[T](list: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[Unit] = lGListHeaderG_list_freeObject[T](list)(typeT)
+    def g_list_free_full[T](list: Rep[LPointer[LGList[T]]], freeFunc: Rep[LPointer[(LPointer[T] => Unit)]])(implicit typeT: TypeRep[T]): Rep[Unit] = lGListHeaderG_list_free_fullObject[T](list, freeFunc)(typeT)
+    def g_list_alloc[T]()(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_allocObject[T]()(typeT)
+    def g_list_length[T](list: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[Int] = lGListHeaderG_list_lengthObject[T](list)(typeT)
+    def g_list_concat[T](list1: Rep[LPointer[LGList[T]]], list2: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_concatObject[T](list1, list2)(typeT)
+    def g_list_foreach[T](list: Rep[LPointer[LGList[T]]], func: Rep[LPointer[((LPointer[T], Any) => Unit)]], userData: Rep[Any])(implicit typeT: TypeRep[T]): Rep[Unit] = lGListHeaderG_list_foreachObject[T](list, func, userData)(typeT)
+    def g_list_first[T](list: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_firstObject[T](list)(typeT)
+    def g_list_last[T](list: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_lastObject[T](list)(typeT)
+    def g_list_nth[T](list: Rep[LPointer[LGList[T]]], n: Rep[Int])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_nthObject[T](list, n)(typeT)
+    def g_list_nth_data[T](list: Rep[LPointer[LGList[T]]], n: Rep[Int])(implicit typeT: TypeRep[T]): Rep[LPointer[T]] = lGListHeaderG_list_nth_dataObject[T](list, n)(typeT)
+    def g_list_nth_prev[T](list: Rep[LPointer[LGList[T]]], n: Rep[Int])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_nth_prevObject[T](list, n)(typeT)
+    def g_list_find[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_findObject[T](list, data)(typeT)
+    def g_list_find_custom[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]], func: Rep[LPointer[((LPointer[T], LPointer[T]) => Int)]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = lGListHeaderG_list_find_customObject[T](list, data, func)(typeT)
+    def g_list_position[T](list: Rep[LPointer[LGList[T]]], llink: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[Int] = lGListHeaderG_list_positionObject[T](list, llink)(typeT)
+    def g_list_index[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[Int] = lGListHeaderG_list_indexObject[T](list, data)(typeT)
   }
   // constructors
 
   // case classes
-  case class GListHeaderG_list_appendObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_append", List(List(list, data))) {
+  case class LGListHeaderG_list_appendObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_append", List(List(list, data))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_prependObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_prepend", List(List(list, data))) {
+  case class LGListHeaderG_list_prependObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_prepend", List(List(list, data))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_insertObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]], position: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_insert", List(List(list, data, position))) {
+  case class LGListHeaderG_list_insertObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]], position: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_insert", List(List(list, data, position))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_insert_beforeObject[T](list: Rep[Pointer[GList[T]]], sibling: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_insert_before", List(List(list, sibling, data))) {
+  case class LGListHeaderG_list_insert_beforeObject[T](list: Rep[LPointer[LGList[T]]], sibling: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_insert_before", List(List(list, sibling, data))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_removeObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_remove", List(List(list, data))) {
+  case class LGListHeaderG_list_removeObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_remove", List(List(list, data))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_remove_linkObject[T](list: Rep[Pointer[GList[T]]], llink: Rep[Pointer[GList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_remove_link", List(List(list, llink))) {
+  case class LGListHeaderG_list_remove_linkObject[T](list: Rep[LPointer[LGList[T]]], llink: Rep[LPointer[LGList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_remove_link", List(List(list, llink))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_delete_linkObject[T](list: Rep[Pointer[GList[T]]], llink: Rep[Pointer[GList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_delete_link", List(List(list, llink))) {
+  case class LGListHeaderG_list_delete_linkObject[T](list: Rep[LPointer[LGList[T]]], llink: Rep[LPointer[LGList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_delete_link", List(List(list, llink))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_remove_allObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_remove_all", List(List(list, data))) {
+  case class LGListHeaderG_list_remove_allObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_remove_all", List(List(list, data))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_freeObject[T](list: Rep[Pointer[GList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Unit](None, "GListHeader.g_list_free", List(List(list))) {
+  case class LGListHeaderG_list_freeObject[T](list: Rep[LPointer[LGList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Unit](None, "LGListHeader.g_list_free", List(List(list))) {
     override def curriedConstructor = (copy[T] _)
   }
 
-  case class GListHeaderG_list_free_fullObject[T](list: Rep[Pointer[GList[T]]], freeFunc: Rep[Pointer[(Pointer[T] => Unit)]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Unit](None, "GListHeader.g_list_free_full", List(List(list, freeFunc))) {
+  case class LGListHeaderG_list_free_fullObject[T](list: Rep[LPointer[LGList[T]]], freeFunc: Rep[LPointer[(LPointer[T] => Unit)]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Unit](None, "LGListHeader.g_list_free_full", List(List(list, freeFunc))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_allocObject[T]()(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_alloc", List(List())) {
+  case class LGListHeaderG_list_allocObject[T]()(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_alloc", List(List())) {
     override def curriedConstructor = (x: Any) => copy[T]()
   }
 
-  case class GListHeaderG_list_lengthObject[T](list: Rep[Pointer[GList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Int](None, "GListHeader.g_list_length", List(List(list))) {
+  case class LGListHeaderG_list_lengthObject[T](list: Rep[LPointer[LGList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Int](None, "LGListHeader.g_list_length", List(List(list))) {
     override def curriedConstructor = (copy[T] _)
   }
 
-  case class GListHeaderG_list_concatObject[T](list1: Rep[Pointer[GList[T]]], list2: Rep[Pointer[GList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_concat", List(List(list1, list2))) {
+  case class LGListHeaderG_list_concatObject[T](list1: Rep[LPointer[LGList[T]]], list2: Rep[LPointer[LGList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_concat", List(List(list1, list2))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_foreachObject[T](list: Rep[Pointer[GList[T]]], func: Rep[Pointer[((Pointer[T], Any) => Unit)]], userData: Rep[Any])(implicit val typeT: TypeRep[T]) extends FunctionDef[Unit](None, "GListHeader.g_list_foreach", List(List(list, func, userData))) {
+  case class LGListHeaderG_list_foreachObject[T](list: Rep[LPointer[LGList[T]]], func: Rep[LPointer[((LPointer[T], Any) => Unit)]], userData: Rep[Any])(implicit val typeT: TypeRep[T]) extends FunctionDef[Unit](None, "LGListHeader.g_list_foreach", List(List(list, func, userData))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_firstObject[T](list: Rep[Pointer[GList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_first", List(List(list))) {
+  case class LGListHeaderG_list_firstObject[T](list: Rep[LPointer[LGList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_first", List(List(list))) {
     override def curriedConstructor = (copy[T] _)
   }
 
-  case class GListHeaderG_list_lastObject[T](list: Rep[Pointer[GList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_last", List(List(list))) {
+  case class LGListHeaderG_list_lastObject[T](list: Rep[LPointer[LGList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_last", List(List(list))) {
     override def curriedConstructor = (copy[T] _)
   }
 
-  case class GListHeaderG_list_nthObject[T](list: Rep[Pointer[GList[T]]], n: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_nth", List(List(list, n))) {
+  case class LGListHeaderG_list_nthObject[T](list: Rep[LPointer[LGList[T]]], n: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_nth", List(List(list, n))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_nth_dataObject[T](list: Rep[Pointer[GList[T]]], n: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[T]](None, "GListHeader.g_list_nth_data", List(List(list, n))) {
+  case class LGListHeaderG_list_nth_dataObject[T](list: Rep[LPointer[LGList[T]]], n: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[T]](None, "LGListHeader.g_list_nth_data", List(List(list, n))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_nth_prevObject[T](list: Rep[Pointer[GList[T]]], n: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_nth_prev", List(List(list, n))) {
+  case class LGListHeaderG_list_nth_prevObject[T](list: Rep[LPointer[LGList[T]]], n: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_nth_prev", List(List(list, n))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_findObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_find", List(List(list, data))) {
+  case class LGListHeaderG_list_findObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_find", List(List(list, data))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_find_customObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]], func: Rep[Pointer[((Pointer[T], Pointer[T]) => Int)]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Pointer[GList[T]]](None, "GListHeader.g_list_find_custom", List(List(list, data, func))) {
+  case class LGListHeaderG_list_find_customObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]], func: Rep[LPointer[((LPointer[T], LPointer[T]) => Int)]])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[LGList[T]]](None, "LGListHeader.g_list_find_custom", List(List(list, data, func))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_positionObject[T](list: Rep[Pointer[GList[T]]], llink: Rep[Pointer[GList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Int](None, "GListHeader.g_list_position", List(List(list, llink))) {
+  case class LGListHeaderG_list_positionObject[T](list: Rep[LPointer[LGList[T]]], llink: Rep[LPointer[LGList[T]]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Int](None, "LGListHeader.g_list_position", List(List(list, llink))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
-  case class GListHeaderG_list_indexObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Int](None, "GListHeader.g_list_index", List(List(list, data))) {
+  case class LGListHeaderG_list_indexObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Int](None, "LGListHeader.g_list_index", List(List(list, data))) {
     override def curriedConstructor = (copy[T] _).curried
   }
 
   // method definitions
-  def gListHeaderG_list_appendObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_appendObject[T](list, data)
-  def gListHeaderG_list_prependObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_prependObject[T](list, data)
-  def gListHeaderG_list_insertObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]], position: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_insertObject[T](list, data, position)
-  def gListHeaderG_list_insert_beforeObject[T](list: Rep[Pointer[GList[T]]], sibling: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_insert_beforeObject[T](list, sibling, data)
-  def gListHeaderG_list_removeObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_removeObject[T](list, data)
-  def gListHeaderG_list_remove_linkObject[T](list: Rep[Pointer[GList[T]]], llink: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_remove_linkObject[T](list, llink)
-  def gListHeaderG_list_delete_linkObject[T](list: Rep[Pointer[GList[T]]], llink: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_delete_linkObject[T](list, llink)
-  def gListHeaderG_list_remove_allObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_remove_allObject[T](list, data)
-  def gListHeaderG_list_freeObject[T](list: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Unit] = GListHeaderG_list_freeObject[T](list)
-  def gListHeaderG_list_free_fullObject[T](list: Rep[Pointer[GList[T]]], freeFunc: Rep[Pointer[(Pointer[T] => Unit)]])(implicit typeT: TypeRep[T]): Rep[Unit] = GListHeaderG_list_free_fullObject[T](list, freeFunc)
-  def gListHeaderG_list_allocObject[T]()(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_allocObject[T]()
-  def gListHeaderG_list_lengthObject[T](list: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Int] = GListHeaderG_list_lengthObject[T](list)
-  def gListHeaderG_list_concatObject[T](list1: Rep[Pointer[GList[T]]], list2: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_concatObject[T](list1, list2)
-  def gListHeaderG_list_foreachObject[T](list: Rep[Pointer[GList[T]]], func: Rep[Pointer[((Pointer[T], Any) => Unit)]], userData: Rep[Any])(implicit typeT: TypeRep[T]): Rep[Unit] = GListHeaderG_list_foreachObject[T](list, func, userData)
-  def gListHeaderG_list_firstObject[T](list: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_firstObject[T](list)
-  def gListHeaderG_list_lastObject[T](list: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_lastObject[T](list)
-  def gListHeaderG_list_nthObject[T](list: Rep[Pointer[GList[T]]], n: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_nthObject[T](list, n)
-  def gListHeaderG_list_nth_dataObject[T](list: Rep[Pointer[GList[T]]], n: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Pointer[T]] = GListHeaderG_list_nth_dataObject[T](list, n)
-  def gListHeaderG_list_nth_prevObject[T](list: Rep[Pointer[GList[T]]], n: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_nth_prevObject[T](list, n)
-  def gListHeaderG_list_findObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_findObject[T](list, data)
-  def gListHeaderG_list_find_customObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]], func: Rep[Pointer[((Pointer[T], Pointer[T]) => Int)]])(implicit typeT: TypeRep[T]): Rep[Pointer[GList[T]]] = GListHeaderG_list_find_customObject[T](list, data, func)
-  def gListHeaderG_list_positionObject[T](list: Rep[Pointer[GList[T]]], llink: Rep[Pointer[GList[T]]])(implicit typeT: TypeRep[T]): Rep[Int] = GListHeaderG_list_positionObject[T](list, llink)
-  def gListHeaderG_list_indexObject[T](list: Rep[Pointer[GList[T]]], data: Rep[Pointer[T]])(implicit typeT: TypeRep[T]): Rep[Int] = GListHeaderG_list_indexObject[T](list, data)
-  type GListHeader = ch.epfl.data.pardis.shallow.c.GListHeader
+  def lGListHeaderG_list_appendObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_appendObject[T](list, data)
+  def lGListHeaderG_list_prependObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_prependObject[T](list, data)
+  def lGListHeaderG_list_insertObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]], position: Rep[Int])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_insertObject[T](list, data, position)
+  def lGListHeaderG_list_insert_beforeObject[T](list: Rep[LPointer[LGList[T]]], sibling: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_insert_beforeObject[T](list, sibling, data)
+  def lGListHeaderG_list_removeObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_removeObject[T](list, data)
+  def lGListHeaderG_list_remove_linkObject[T](list: Rep[LPointer[LGList[T]]], llink: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_remove_linkObject[T](list, llink)
+  def lGListHeaderG_list_delete_linkObject[T](list: Rep[LPointer[LGList[T]]], llink: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_delete_linkObject[T](list, llink)
+  def lGListHeaderG_list_remove_allObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_remove_allObject[T](list, data)
+  def lGListHeaderG_list_freeObject[T](list: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[Unit] = LGListHeaderG_list_freeObject[T](list)
+  def lGListHeaderG_list_free_fullObject[T](list: Rep[LPointer[LGList[T]]], freeFunc: Rep[LPointer[(LPointer[T] => Unit)]])(implicit typeT: TypeRep[T]): Rep[Unit] = LGListHeaderG_list_free_fullObject[T](list, freeFunc)
+  def lGListHeaderG_list_allocObject[T]()(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_allocObject[T]()
+  def lGListHeaderG_list_lengthObject[T](list: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[Int] = LGListHeaderG_list_lengthObject[T](list)
+  def lGListHeaderG_list_concatObject[T](list1: Rep[LPointer[LGList[T]]], list2: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_concatObject[T](list1, list2)
+  def lGListHeaderG_list_foreachObject[T](list: Rep[LPointer[LGList[T]]], func: Rep[LPointer[((LPointer[T], Any) => Unit)]], userData: Rep[Any])(implicit typeT: TypeRep[T]): Rep[Unit] = LGListHeaderG_list_foreachObject[T](list, func, userData)
+  def lGListHeaderG_list_firstObject[T](list: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_firstObject[T](list)
+  def lGListHeaderG_list_lastObject[T](list: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_lastObject[T](list)
+  def lGListHeaderG_list_nthObject[T](list: Rep[LPointer[LGList[T]]], n: Rep[Int])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_nthObject[T](list, n)
+  def lGListHeaderG_list_nth_dataObject[T](list: Rep[LPointer[LGList[T]]], n: Rep[Int])(implicit typeT: TypeRep[T]): Rep[LPointer[T]] = LGListHeaderG_list_nth_dataObject[T](list, n)
+  def lGListHeaderG_list_nth_prevObject[T](list: Rep[LPointer[LGList[T]]], n: Rep[Int])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_nth_prevObject[T](list, n)
+  def lGListHeaderG_list_findObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_findObject[T](list, data)
+  def lGListHeaderG_list_find_customObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]], func: Rep[LPointer[((LPointer[T], LPointer[T]) => Int)]])(implicit typeT: TypeRep[T]): Rep[LPointer[LGList[T]]] = LGListHeaderG_list_find_customObject[T](list, data, func)
+  def lGListHeaderG_list_positionObject[T](list: Rep[LPointer[LGList[T]]], llink: Rep[LPointer[LGList[T]]])(implicit typeT: TypeRep[T]): Rep[Int] = LGListHeaderG_list_positionObject[T](list, llink)
+  def lGListHeaderG_list_indexObject[T](list: Rep[LPointer[LGList[T]]], data: Rep[LPointer[T]])(implicit typeT: TypeRep[T]): Rep[Int] = LGListHeaderG_list_indexObject[T](list, data)
+  type LGListHeader = ch.epfl.data.pardis.shallow.c.LGListHeader
 }
-trait GListHeaderImplicits { this: CLibs =>
+trait LGListHeaderImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait GListHeaderImplementations { this: CLibs =>
+trait LGListHeaderImplementations { this: CLibs =>
 
 }
-trait GListHeaderPartialEvaluation extends GListHeaderComponent with BasePartialEvaluation { this: CLibs =>
+trait LGListHeaderPartialEvaluation extends LGListHeaderComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait GListHeaderComponent extends GListHeaderOps with GListHeaderImplicits { this: CLibs => }
+trait LGListHeaderComponent extends LGListHeaderOps with LGListHeaderImplicits { this: CLibs => }
 
-trait GTreeOps extends Base { this: CLibs =>
+trait LGTreeOps extends Base { this: CLibs =>
   // Type representation
-  case object GTreeType extends TypeRep[GTree] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GTreeType
-    val name = "GTree"
+  case object LGTreeType extends TypeRep[LGTree] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LGTreeType
+    val name = "LGTree"
     val typeArguments = Nil
 
-    val typeTag = scala.reflect.runtime.universe.typeTag[GTree]
+    val typeTag = scala.reflect.runtime.universe.typeTag[LGTree]
   }
-  implicit val typeGTree: TypeRep[GTree] = GTreeType
-  implicit class GTreeRep(self: Rep[GTree]) {
+  implicit val typeLGTree: TypeRep[LGTree] = LGTreeType
+  implicit class LGTreeRep(self: Rep[LGTree]) {
 
   }
-  object GTree {
+  object LGTree {
 
   }
   // constructors
@@ -1436,175 +1436,175 @@ trait GTreeOps extends Base { this: CLibs =>
 
   // method definitions
 
-  type GTree = ch.epfl.data.pardis.shallow.c.GLibTypes.GTree
+  type LGTree = ch.epfl.data.pardis.shallow.c.GLibTypes.LGTree
 }
-trait GTreeImplicits { this: CLibs =>
+trait LGTreeImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait GTreeImplementations { this: CLibs =>
+trait LGTreeImplementations { this: CLibs =>
 
 }
-trait GTreePartialEvaluation extends GTreeComponent with BasePartialEvaluation { this: CLibs =>
+trait LGTreePartialEvaluation extends LGTreeComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait GTreeComponent extends GTreeOps with GTreeImplicits { this: CLibs => }
+trait LGTreeComponent extends LGTreeOps with LGTreeImplicits { this: CLibs => }
 
-trait GTreeHeaderOps extends Base { this: CLibs =>
+trait LGTreeHeaderOps extends Base { this: CLibs =>
   // Type representation
-  case object GTreeHeaderType extends TypeRep[GTreeHeader] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GTreeHeaderType
-    val name = "GTreeHeader"
+  case object LGTreeHeaderType extends TypeRep[LGTreeHeader] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LGTreeHeaderType
+    val name = "LGTreeHeader"
     val typeArguments = Nil
 
-    val typeTag = scala.reflect.runtime.universe.typeTag[GTreeHeader]
+    val typeTag = scala.reflect.runtime.universe.typeTag[LGTreeHeader]
   }
-  implicit val typeGTreeHeader: TypeRep[GTreeHeader] = GTreeHeaderType
-  implicit class GTreeHeaderRep(self: Rep[GTreeHeader]) {
+  implicit val typeLGTreeHeader: TypeRep[LGTreeHeader] = LGTreeHeaderType
+  implicit class LGTreeHeaderRep(self: Rep[LGTreeHeader]) {
 
   }
-  object GTreeHeader {
-    def g_tree_new(key_compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any]) => Int)]]): Rep[Pointer[GTree]] = gTreeHeaderG_tree_newObject(key_compare_func)
-    def g_tree_new_with_data(key_compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], key_compare_data: Rep[Pointer[Any]]): Rep[Pointer[GTree]] = gTreeHeaderG_tree_new_with_dataObject(key_compare_func, key_compare_data)
-    def g_tree_new_full(key_compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], key_compare_data: Rep[Pointer[Any]], key_destroy_func: Rep[Pointer[(Pointer[Any] => Unit)]], value_destroy_func: Rep[Pointer[(Pointer[Any] => Unit)]]): Rep[Pointer[GTree]] = gTreeHeaderG_tree_new_fullObject(key_compare_func, key_compare_data, key_destroy_func, value_destroy_func)
-    def g_tree_ref(tree: Rep[Pointer[GTree]]): Rep[Pointer[GTree]] = gTreeHeaderG_tree_refObject(tree)
-    def g_tree_unref(tree: Rep[Pointer[GTree]]): Rep[Unit] = gTreeHeaderG_tree_unrefObject(tree)
-    def g_tree_destroy(tree: Rep[Pointer[GTree]]): Rep[Unit] = gTreeHeaderG_tree_destroyObject(tree)
-    def g_tree_insert(tree: Rep[Pointer[GTree]], key: Rep[Pointer[Any]], value: Rep[Pointer[Any]]): Rep[Unit] = gTreeHeaderG_tree_insertObject(tree, key, value)
-    def g_tree_replace(tree: Rep[Pointer[GTree]], key: Rep[Pointer[Any]], value: Rep[Pointer[Any]]): Rep[Unit] = gTreeHeaderG_tree_replaceObject(tree, key, value)
-    def g_tree_remove(tree: Rep[Pointer[GTree]], key: Rep[Pointer[Any]]): Rep[Int] = gTreeHeaderG_tree_removeObject(tree, key)
-    def g_tree_steal(tree: Rep[Pointer[GTree]], key: Rep[Pointer[Any]]): Rep[Int] = gTreeHeaderG_tree_stealObject(tree, key)
-    def g_tree_lookup(tree: Rep[Pointer[GTree]], key: Rep[Pointer[Any]]): Rep[Pointer[Any]] = gTreeHeaderG_tree_lookupObject(tree, key)
-    def g_tree_lookup_extended(tree: Rep[Pointer[GTree]], lookup_key: Rep[Pointer[Any]], orig_key: Rep[Pointer[Pointer[Any]]], value: Rep[Pointer[Pointer[Any]]]): Rep[Int] = gTreeHeaderG_tree_lookup_extendedObject(tree, lookup_key, orig_key, value)
-    def g_tree_foreach(tree: Rep[Pointer[GTree]], func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], user_data: Rep[Pointer[Any]]): Rep[Unit] = gTreeHeaderG_tree_foreachObject(tree, func, user_data)
-    def g_tree_traverse(tree: Rep[Pointer[GTree]], traverse_func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], traverse_type: Rep[Int], user_data: Rep[Pointer[Any]]): Rep[Unit] = gTreeHeaderG_tree_traverseObject(tree, traverse_func, traverse_type, user_data)
-    def g_tree_search(tree: Rep[Pointer[GTree]], search_func: Rep[Pointer[((Pointer[Any], Pointer[Any]) => Int)]], user_data: Rep[Pointer[Any]]): Rep[Pointer[Any]] = gTreeHeaderG_tree_searchObject(tree, search_func, user_data)
-    def g_tree_height(tree: Rep[Pointer[GTree]]): Rep[Int] = gTreeHeaderG_tree_heightObject(tree)
-    def g_tree_nnodes(tree: Rep[Pointer[GTree]]): Rep[Int] = gTreeHeaderG_tree_nnodesObject(tree)
+  object LGTreeHeader {
+    def g_tree_new(key_compare_func: Rep[LPointer[((LPointer[Any], LPointer[Any]) => Int)]]): Rep[LPointer[LGTree]] = lGTreeHeaderG_tree_newObject(key_compare_func)
+    def g_tree_new_with_data(key_compare_func: Rep[LPointer[((LPointer[Any], LPointer[Any], LPointer[Any]) => Int)]], key_compare_data: Rep[LPointer[Any]]): Rep[LPointer[LGTree]] = lGTreeHeaderG_tree_new_with_dataObject(key_compare_func, key_compare_data)
+    def g_tree_new_full(key_compare_func: Rep[LPointer[((LPointer[Any], LPointer[Any], LPointer[Any]) => Int)]], key_compare_data: Rep[LPointer[Any]], key_destroy_func: Rep[LPointer[(LPointer[Any] => Unit)]], value_destroy_func: Rep[LPointer[(LPointer[Any] => Unit)]]): Rep[LPointer[LGTree]] = lGTreeHeaderG_tree_new_fullObject(key_compare_func, key_compare_data, key_destroy_func, value_destroy_func)
+    def g_tree_ref(tree: Rep[LPointer[LGTree]]): Rep[LPointer[LGTree]] = lGTreeHeaderG_tree_refObject(tree)
+    def g_tree_unref(tree: Rep[LPointer[LGTree]]): Rep[Unit] = lGTreeHeaderG_tree_unrefObject(tree)
+    def g_tree_destroy(tree: Rep[LPointer[LGTree]]): Rep[Unit] = lGTreeHeaderG_tree_destroyObject(tree)
+    def g_tree_insert(tree: Rep[LPointer[LGTree]], key: Rep[LPointer[Any]], value: Rep[LPointer[Any]]): Rep[Unit] = lGTreeHeaderG_tree_insertObject(tree, key, value)
+    def g_tree_replace(tree: Rep[LPointer[LGTree]], key: Rep[LPointer[Any]], value: Rep[LPointer[Any]]): Rep[Unit] = lGTreeHeaderG_tree_replaceObject(tree, key, value)
+    def g_tree_remove(tree: Rep[LPointer[LGTree]], key: Rep[LPointer[Any]]): Rep[Int] = lGTreeHeaderG_tree_removeObject(tree, key)
+    def g_tree_steal(tree: Rep[LPointer[LGTree]], key: Rep[LPointer[Any]]): Rep[Int] = lGTreeHeaderG_tree_stealObject(tree, key)
+    def g_tree_lookup(tree: Rep[LPointer[LGTree]], key: Rep[LPointer[Any]]): Rep[LPointer[Any]] = lGTreeHeaderG_tree_lookupObject(tree, key)
+    def g_tree_lookup_extended(tree: Rep[LPointer[LGTree]], lookup_key: Rep[LPointer[Any]], orig_key: Rep[LPointer[LPointer[Any]]], value: Rep[LPointer[LPointer[Any]]]): Rep[Int] = lGTreeHeaderG_tree_lookup_extendedObject(tree, lookup_key, orig_key, value)
+    def g_tree_foreach(tree: Rep[LPointer[LGTree]], func: Rep[LPointer[((LPointer[Any], LPointer[Any], LPointer[Any]) => Int)]], user_data: Rep[LPointer[Any]]): Rep[Unit] = lGTreeHeaderG_tree_foreachObject(tree, func, user_data)
+    def g_tree_traverse(tree: Rep[LPointer[LGTree]], traverse_func: Rep[LPointer[((LPointer[Any], LPointer[Any], LPointer[Any]) => Int)]], traverse_type: Rep[Int], user_data: Rep[LPointer[Any]]): Rep[Unit] = lGTreeHeaderG_tree_traverseObject(tree, traverse_func, traverse_type, user_data)
+    def g_tree_search(tree: Rep[LPointer[LGTree]], search_func: Rep[LPointer[((LPointer[Any], LPointer[Any]) => Int)]], user_data: Rep[LPointer[Any]]): Rep[LPointer[Any]] = lGTreeHeaderG_tree_searchObject(tree, search_func, user_data)
+    def g_tree_height(tree: Rep[LPointer[LGTree]]): Rep[Int] = lGTreeHeaderG_tree_heightObject(tree)
+    def g_tree_nnodes(tree: Rep[LPointer[LGTree]]): Rep[Int] = lGTreeHeaderG_tree_nnodesObject(tree)
   }
   // constructors
 
   // case classes
-  case class GTreeHeaderG_tree_newObject(key_compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any]) => Int)]]) extends FunctionDef[Pointer[GTree]](None, "GTreeHeader.g_tree_new", List(List(key_compare_func))) {
+  case class LGTreeHeaderG_tree_newObject(key_compare_func: Rep[LPointer[((LPointer[Any], LPointer[Any]) => Int)]]) extends FunctionDef[LPointer[LGTree]](None, "LGTreeHeader.g_tree_new", List(List(key_compare_func))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class GTreeHeaderG_tree_new_with_dataObject(key_compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], key_compare_data: Rep[Pointer[Any]]) extends FunctionDef[Pointer[GTree]](None, "GTreeHeader.g_tree_new_with_data", List(List(key_compare_func, key_compare_data))) {
+  case class LGTreeHeaderG_tree_new_with_dataObject(key_compare_func: Rep[LPointer[((LPointer[Any], LPointer[Any], LPointer[Any]) => Int)]], key_compare_data: Rep[LPointer[Any]]) extends FunctionDef[LPointer[LGTree]](None, "LGTreeHeader.g_tree_new_with_data", List(List(key_compare_func, key_compare_data))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GTreeHeaderG_tree_new_fullObject(key_compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], key_compare_data: Rep[Pointer[Any]], key_destroy_func: Rep[Pointer[(Pointer[Any] => Unit)]], value_destroy_func: Rep[Pointer[(Pointer[Any] => Unit)]]) extends FunctionDef[Pointer[GTree]](None, "GTreeHeader.g_tree_new_full", List(List(key_compare_func, key_compare_data, key_destroy_func, value_destroy_func))) {
+  case class LGTreeHeaderG_tree_new_fullObject(key_compare_func: Rep[LPointer[((LPointer[Any], LPointer[Any], LPointer[Any]) => Int)]], key_compare_data: Rep[LPointer[Any]], key_destroy_func: Rep[LPointer[(LPointer[Any] => Unit)]], value_destroy_func: Rep[LPointer[(LPointer[Any] => Unit)]]) extends FunctionDef[LPointer[LGTree]](None, "LGTreeHeader.g_tree_new_full", List(List(key_compare_func, key_compare_data, key_destroy_func, value_destroy_func))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GTreeHeaderG_tree_refObject(tree: Rep[Pointer[GTree]]) extends FunctionDef[Pointer[GTree]](None, "GTreeHeader.g_tree_ref", List(List(tree))) {
+  case class LGTreeHeaderG_tree_refObject(tree: Rep[LPointer[LGTree]]) extends FunctionDef[LPointer[LGTree]](None, "LGTreeHeader.g_tree_ref", List(List(tree))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class GTreeHeaderG_tree_unrefObject(tree: Rep[Pointer[GTree]]) extends FunctionDef[Unit](None, "GTreeHeader.g_tree_unref", List(List(tree))) {
+  case class LGTreeHeaderG_tree_unrefObject(tree: Rep[LPointer[LGTree]]) extends FunctionDef[Unit](None, "LGTreeHeader.g_tree_unref", List(List(tree))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class GTreeHeaderG_tree_destroyObject(tree: Rep[Pointer[GTree]]) extends FunctionDef[Unit](None, "GTreeHeader.g_tree_destroy", List(List(tree))) {
+  case class LGTreeHeaderG_tree_destroyObject(tree: Rep[LPointer[LGTree]]) extends FunctionDef[Unit](None, "LGTreeHeader.g_tree_destroy", List(List(tree))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class GTreeHeaderG_tree_insertObject(tree: Rep[Pointer[GTree]], key: Rep[Pointer[Any]], value: Rep[Pointer[Any]]) extends FunctionDef[Unit](None, "GTreeHeader.g_tree_insert", List(List(tree, key, value))) {
+  case class LGTreeHeaderG_tree_insertObject(tree: Rep[LPointer[LGTree]], key: Rep[LPointer[Any]], value: Rep[LPointer[Any]]) extends FunctionDef[Unit](None, "LGTreeHeader.g_tree_insert", List(List(tree, key, value))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GTreeHeaderG_tree_replaceObject(tree: Rep[Pointer[GTree]], key: Rep[Pointer[Any]], value: Rep[Pointer[Any]]) extends FunctionDef[Unit](None, "GTreeHeader.g_tree_replace", List(List(tree, key, value))) {
+  case class LGTreeHeaderG_tree_replaceObject(tree: Rep[LPointer[LGTree]], key: Rep[LPointer[Any]], value: Rep[LPointer[Any]]) extends FunctionDef[Unit](None, "LGTreeHeader.g_tree_replace", List(List(tree, key, value))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GTreeHeaderG_tree_removeObject(tree: Rep[Pointer[GTree]], key: Rep[Pointer[Any]]) extends FunctionDef[Int](None, "GTreeHeader.g_tree_remove", List(List(tree, key))) {
+  case class LGTreeHeaderG_tree_removeObject(tree: Rep[LPointer[LGTree]], key: Rep[LPointer[Any]]) extends FunctionDef[Int](None, "LGTreeHeader.g_tree_remove", List(List(tree, key))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GTreeHeaderG_tree_stealObject(tree: Rep[Pointer[GTree]], key: Rep[Pointer[Any]]) extends FunctionDef[Int](None, "GTreeHeader.g_tree_steal", List(List(tree, key))) {
+  case class LGTreeHeaderG_tree_stealObject(tree: Rep[LPointer[LGTree]], key: Rep[LPointer[Any]]) extends FunctionDef[Int](None, "LGTreeHeader.g_tree_steal", List(List(tree, key))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GTreeHeaderG_tree_lookupObject(tree: Rep[Pointer[GTree]], key: Rep[Pointer[Any]]) extends FunctionDef[Pointer[Any]](None, "GTreeHeader.g_tree_lookup", List(List(tree, key))) {
+  case class LGTreeHeaderG_tree_lookupObject(tree: Rep[LPointer[LGTree]], key: Rep[LPointer[Any]]) extends FunctionDef[LPointer[Any]](None, "LGTreeHeader.g_tree_lookup", List(List(tree, key))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GTreeHeaderG_tree_lookup_extendedObject(tree: Rep[Pointer[GTree]], lookup_key: Rep[Pointer[Any]], orig_key: Rep[Pointer[Pointer[Any]]], value: Rep[Pointer[Pointer[Any]]]) extends FunctionDef[Int](None, "GTreeHeader.g_tree_lookup_extended", List(List(tree, lookup_key, orig_key, value))) {
+  case class LGTreeHeaderG_tree_lookup_extendedObject(tree: Rep[LPointer[LGTree]], lookup_key: Rep[LPointer[Any]], orig_key: Rep[LPointer[LPointer[Any]]], value: Rep[LPointer[LPointer[Any]]]) extends FunctionDef[Int](None, "LGTreeHeader.g_tree_lookup_extended", List(List(tree, lookup_key, orig_key, value))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GTreeHeaderG_tree_foreachObject(tree: Rep[Pointer[GTree]], func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], user_data: Rep[Pointer[Any]]) extends FunctionDef[Unit](None, "GTreeHeader.g_tree_foreach", List(List(tree, func, user_data))) {
+  case class LGTreeHeaderG_tree_foreachObject(tree: Rep[LPointer[LGTree]], func: Rep[LPointer[((LPointer[Any], LPointer[Any], LPointer[Any]) => Int)]], user_data: Rep[LPointer[Any]]) extends FunctionDef[Unit](None, "LGTreeHeader.g_tree_foreach", List(List(tree, func, user_data))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GTreeHeaderG_tree_traverseObject(tree: Rep[Pointer[GTree]], traverse_func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], traverse_type: Rep[Int], user_data: Rep[Pointer[Any]]) extends FunctionDef[Unit](None, "GTreeHeader.g_tree_traverse", List(List(tree, traverse_func, traverse_type, user_data))) {
+  case class LGTreeHeaderG_tree_traverseObject(tree: Rep[LPointer[LGTree]], traverse_func: Rep[LPointer[((LPointer[Any], LPointer[Any], LPointer[Any]) => Int)]], traverse_type: Rep[Int], user_data: Rep[LPointer[Any]]) extends FunctionDef[Unit](None, "LGTreeHeader.g_tree_traverse", List(List(tree, traverse_func, traverse_type, user_data))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GTreeHeaderG_tree_searchObject(tree: Rep[Pointer[GTree]], search_func: Rep[Pointer[((Pointer[Any], Pointer[Any]) => Int)]], user_data: Rep[Pointer[Any]]) extends FunctionDef[Pointer[Any]](None, "GTreeHeader.g_tree_search", List(List(tree, search_func, user_data))) {
+  case class LGTreeHeaderG_tree_searchObject(tree: Rep[LPointer[LGTree]], search_func: Rep[LPointer[((LPointer[Any], LPointer[Any]) => Int)]], user_data: Rep[LPointer[Any]]) extends FunctionDef[LPointer[Any]](None, "LGTreeHeader.g_tree_search", List(List(tree, search_func, user_data))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GTreeHeaderG_tree_heightObject(tree: Rep[Pointer[GTree]]) extends FunctionDef[Int](None, "GTreeHeader.g_tree_height", List(List(tree))) {
+  case class LGTreeHeaderG_tree_heightObject(tree: Rep[LPointer[LGTree]]) extends FunctionDef[Int](None, "LGTreeHeader.g_tree_height", List(List(tree))) {
     override def curriedConstructor = (copy _)
   }
 
-  case class GTreeHeaderG_tree_nnodesObject(tree: Rep[Pointer[GTree]]) extends FunctionDef[Int](None, "GTreeHeader.g_tree_nnodes", List(List(tree))) {
+  case class LGTreeHeaderG_tree_nnodesObject(tree: Rep[LPointer[LGTree]]) extends FunctionDef[Int](None, "LGTreeHeader.g_tree_nnodes", List(List(tree))) {
     override def curriedConstructor = (copy _)
   }
 
   // method definitions
-  def gTreeHeaderG_tree_newObject(key_compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any]) => Int)]]): Rep[Pointer[GTree]] = GTreeHeaderG_tree_newObject(key_compare_func)
-  def gTreeHeaderG_tree_new_with_dataObject(key_compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], key_compare_data: Rep[Pointer[Any]]): Rep[Pointer[GTree]] = GTreeHeaderG_tree_new_with_dataObject(key_compare_func, key_compare_data)
-  def gTreeHeaderG_tree_new_fullObject(key_compare_func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], key_compare_data: Rep[Pointer[Any]], key_destroy_func: Rep[Pointer[(Pointer[Any] => Unit)]], value_destroy_func: Rep[Pointer[(Pointer[Any] => Unit)]]): Rep[Pointer[GTree]] = GTreeHeaderG_tree_new_fullObject(key_compare_func, key_compare_data, key_destroy_func, value_destroy_func)
-  def gTreeHeaderG_tree_refObject(tree: Rep[Pointer[GTree]]): Rep[Pointer[GTree]] = GTreeHeaderG_tree_refObject(tree)
-  def gTreeHeaderG_tree_unrefObject(tree: Rep[Pointer[GTree]]): Rep[Unit] = GTreeHeaderG_tree_unrefObject(tree)
-  def gTreeHeaderG_tree_destroyObject(tree: Rep[Pointer[GTree]]): Rep[Unit] = GTreeHeaderG_tree_destroyObject(tree)
-  def gTreeHeaderG_tree_insertObject(tree: Rep[Pointer[GTree]], key: Rep[Pointer[Any]], value: Rep[Pointer[Any]]): Rep[Unit] = GTreeHeaderG_tree_insertObject(tree, key, value)
-  def gTreeHeaderG_tree_replaceObject(tree: Rep[Pointer[GTree]], key: Rep[Pointer[Any]], value: Rep[Pointer[Any]]): Rep[Unit] = GTreeHeaderG_tree_replaceObject(tree, key, value)
-  def gTreeHeaderG_tree_removeObject(tree: Rep[Pointer[GTree]], key: Rep[Pointer[Any]]): Rep[Int] = GTreeHeaderG_tree_removeObject(tree, key)
-  def gTreeHeaderG_tree_stealObject(tree: Rep[Pointer[GTree]], key: Rep[Pointer[Any]]): Rep[Int] = GTreeHeaderG_tree_stealObject(tree, key)
-  def gTreeHeaderG_tree_lookupObject(tree: Rep[Pointer[GTree]], key: Rep[Pointer[Any]]): Rep[Pointer[Any]] = GTreeHeaderG_tree_lookupObject(tree, key)
-  def gTreeHeaderG_tree_lookup_extendedObject(tree: Rep[Pointer[GTree]], lookup_key: Rep[Pointer[Any]], orig_key: Rep[Pointer[Pointer[Any]]], value: Rep[Pointer[Pointer[Any]]]): Rep[Int] = GTreeHeaderG_tree_lookup_extendedObject(tree, lookup_key, orig_key, value)
-  def gTreeHeaderG_tree_foreachObject(tree: Rep[Pointer[GTree]], func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], user_data: Rep[Pointer[Any]]): Rep[Unit] = GTreeHeaderG_tree_foreachObject(tree, func, user_data)
-  def gTreeHeaderG_tree_traverseObject(tree: Rep[Pointer[GTree]], traverse_func: Rep[Pointer[((Pointer[Any], Pointer[Any], Pointer[Any]) => Int)]], traverse_type: Rep[Int], user_data: Rep[Pointer[Any]]): Rep[Unit] = GTreeHeaderG_tree_traverseObject(tree, traverse_func, traverse_type, user_data)
-  def gTreeHeaderG_tree_searchObject(tree: Rep[Pointer[GTree]], search_func: Rep[Pointer[((Pointer[Any], Pointer[Any]) => Int)]], user_data: Rep[Pointer[Any]]): Rep[Pointer[Any]] = GTreeHeaderG_tree_searchObject(tree, search_func, user_data)
-  def gTreeHeaderG_tree_heightObject(tree: Rep[Pointer[GTree]]): Rep[Int] = GTreeHeaderG_tree_heightObject(tree)
-  def gTreeHeaderG_tree_nnodesObject(tree: Rep[Pointer[GTree]]): Rep[Int] = GTreeHeaderG_tree_nnodesObject(tree)
-  type GTreeHeader = ch.epfl.data.pardis.shallow.c.GTreeHeader
+  def lGTreeHeaderG_tree_newObject(key_compare_func: Rep[LPointer[((LPointer[Any], LPointer[Any]) => Int)]]): Rep[LPointer[LGTree]] = LGTreeHeaderG_tree_newObject(key_compare_func)
+  def lGTreeHeaderG_tree_new_with_dataObject(key_compare_func: Rep[LPointer[((LPointer[Any], LPointer[Any], LPointer[Any]) => Int)]], key_compare_data: Rep[LPointer[Any]]): Rep[LPointer[LGTree]] = LGTreeHeaderG_tree_new_with_dataObject(key_compare_func, key_compare_data)
+  def lGTreeHeaderG_tree_new_fullObject(key_compare_func: Rep[LPointer[((LPointer[Any], LPointer[Any], LPointer[Any]) => Int)]], key_compare_data: Rep[LPointer[Any]], key_destroy_func: Rep[LPointer[(LPointer[Any] => Unit)]], value_destroy_func: Rep[LPointer[(LPointer[Any] => Unit)]]): Rep[LPointer[LGTree]] = LGTreeHeaderG_tree_new_fullObject(key_compare_func, key_compare_data, key_destroy_func, value_destroy_func)
+  def lGTreeHeaderG_tree_refObject(tree: Rep[LPointer[LGTree]]): Rep[LPointer[LGTree]] = LGTreeHeaderG_tree_refObject(tree)
+  def lGTreeHeaderG_tree_unrefObject(tree: Rep[LPointer[LGTree]]): Rep[Unit] = LGTreeHeaderG_tree_unrefObject(tree)
+  def lGTreeHeaderG_tree_destroyObject(tree: Rep[LPointer[LGTree]]): Rep[Unit] = LGTreeHeaderG_tree_destroyObject(tree)
+  def lGTreeHeaderG_tree_insertObject(tree: Rep[LPointer[LGTree]], key: Rep[LPointer[Any]], value: Rep[LPointer[Any]]): Rep[Unit] = LGTreeHeaderG_tree_insertObject(tree, key, value)
+  def lGTreeHeaderG_tree_replaceObject(tree: Rep[LPointer[LGTree]], key: Rep[LPointer[Any]], value: Rep[LPointer[Any]]): Rep[Unit] = LGTreeHeaderG_tree_replaceObject(tree, key, value)
+  def lGTreeHeaderG_tree_removeObject(tree: Rep[LPointer[LGTree]], key: Rep[LPointer[Any]]): Rep[Int] = LGTreeHeaderG_tree_removeObject(tree, key)
+  def lGTreeHeaderG_tree_stealObject(tree: Rep[LPointer[LGTree]], key: Rep[LPointer[Any]]): Rep[Int] = LGTreeHeaderG_tree_stealObject(tree, key)
+  def lGTreeHeaderG_tree_lookupObject(tree: Rep[LPointer[LGTree]], key: Rep[LPointer[Any]]): Rep[LPointer[Any]] = LGTreeHeaderG_tree_lookupObject(tree, key)
+  def lGTreeHeaderG_tree_lookup_extendedObject(tree: Rep[LPointer[LGTree]], lookup_key: Rep[LPointer[Any]], orig_key: Rep[LPointer[LPointer[Any]]], value: Rep[LPointer[LPointer[Any]]]): Rep[Int] = LGTreeHeaderG_tree_lookup_extendedObject(tree, lookup_key, orig_key, value)
+  def lGTreeHeaderG_tree_foreachObject(tree: Rep[LPointer[LGTree]], func: Rep[LPointer[((LPointer[Any], LPointer[Any], LPointer[Any]) => Int)]], user_data: Rep[LPointer[Any]]): Rep[Unit] = LGTreeHeaderG_tree_foreachObject(tree, func, user_data)
+  def lGTreeHeaderG_tree_traverseObject(tree: Rep[LPointer[LGTree]], traverse_func: Rep[LPointer[((LPointer[Any], LPointer[Any], LPointer[Any]) => Int)]], traverse_type: Rep[Int], user_data: Rep[LPointer[Any]]): Rep[Unit] = LGTreeHeaderG_tree_traverseObject(tree, traverse_func, traverse_type, user_data)
+  def lGTreeHeaderG_tree_searchObject(tree: Rep[LPointer[LGTree]], search_func: Rep[LPointer[((LPointer[Any], LPointer[Any]) => Int)]], user_data: Rep[LPointer[Any]]): Rep[LPointer[Any]] = LGTreeHeaderG_tree_searchObject(tree, search_func, user_data)
+  def lGTreeHeaderG_tree_heightObject(tree: Rep[LPointer[LGTree]]): Rep[Int] = LGTreeHeaderG_tree_heightObject(tree)
+  def lGTreeHeaderG_tree_nnodesObject(tree: Rep[LPointer[LGTree]]): Rep[Int] = LGTreeHeaderG_tree_nnodesObject(tree)
+  type LGTreeHeader = ch.epfl.data.pardis.shallow.c.LGTreeHeader
 }
-trait GTreeHeaderImplicits { this: CLibs =>
+trait LGTreeHeaderImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait GTreeHeaderImplementations { this: CLibs =>
+trait LGTreeHeaderImplementations { this: CLibs =>
 
 }
-trait GTreeHeaderPartialEvaluation extends GTreeHeaderComponent with BasePartialEvaluation { this: CLibs =>
+trait LGTreeHeaderPartialEvaluation extends LGTreeHeaderComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait GTreeHeaderComponent extends GTreeHeaderOps with GTreeHeaderImplicits { this: CLibs => }
+trait LGTreeHeaderComponent extends LGTreeHeaderOps with LGTreeHeaderImplicits { this: CLibs => }
 
-trait GHashTableOps extends Base { this: CLibs =>
+trait LGHashTableOps extends Base { this: CLibs =>
   // Type representation
-  case class GHashTableType[K, V](typeK: TypeRep[K], typeV: TypeRep[V]) extends TypeRep[GHashTable[K, V]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GHashTableType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
+  case class LGHashTableType[K, V](typeK: TypeRep[K], typeV: TypeRep[V]) extends TypeRep[LGHashTable[K, V]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LGHashTableType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
     private implicit val tagK = typeK.typeTag
     private implicit val tagV = typeV.typeTag
-    val name = s"GHashTable[${typeK.name}, ${typeV.name}]"
+    val name = s"LGHashTable[${typeK.name}, ${typeV.name}]"
     val typeArguments = List(typeK, typeV)
 
-    val typeTag = scala.reflect.runtime.universe.typeTag[GHashTable[K, V]]
+    val typeTag = scala.reflect.runtime.universe.typeTag[LGHashTable[K, V]]
   }
-  implicit def typeGHashTable[K: TypeRep, V: TypeRep] = GHashTableType(implicitly[TypeRep[K]], implicitly[TypeRep[V]])
-  implicit class GHashTableRep[K, V](self: Rep[GHashTable[K, V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]) {
+  implicit def typeLGHashTable[K: TypeRep, V: TypeRep] = LGHashTableType(implicitly[TypeRep[K]], implicitly[TypeRep[V]])
+  implicit class LGHashTableRep[K, V](self: Rep[LGHashTable[K, V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]) {
 
   }
-  object GHashTable {
+  object LGHashTable {
 
   }
   // constructors
@@ -1613,132 +1613,132 @@ trait GHashTableOps extends Base { this: CLibs =>
 
   // method definitions
 
-  type GHashTable[K, V] = ch.epfl.data.pardis.shallow.c.GLibTypes.GHashTable[K, V]
+  type LGHashTable[K, V] = ch.epfl.data.pardis.shallow.c.GLibTypes.LGHashTable[K, V]
 }
-trait GHashTableImplicits { this: CLibs =>
+trait LGHashTableImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait GHashTableImplementations { this: CLibs =>
+trait LGHashTableImplementations { this: CLibs =>
 
 }
-trait GHashTablePartialEvaluation extends GHashTableComponent with BasePartialEvaluation { this: CLibs =>
+trait LGHashTablePartialEvaluation extends LGHashTableComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait GHashTableComponent extends GHashTableOps with GHashTableImplicits { this: CLibs => }
+trait LGHashTableComponent extends LGHashTableOps with LGHashTableImplicits { this: CLibs => }
 
-trait GHashTableHeaderOps extends Base { this: CLibs =>
+trait LGHashTableHeaderOps extends Base { this: CLibs =>
   // Type representation
-  case object GHashTableHeaderType extends TypeRep[GHashTableHeader] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GHashTableHeaderType
-    val name = "GHashTableHeader"
+  case object LGHashTableHeaderType extends TypeRep[LGHashTableHeader] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LGHashTableHeaderType
+    val name = "LGHashTableHeader"
     val typeArguments = Nil
 
-    val typeTag = scala.reflect.runtime.universe.typeTag[GHashTableHeader]
+    val typeTag = scala.reflect.runtime.universe.typeTag[LGHashTableHeader]
   }
-  implicit val typeGHashTableHeader: TypeRep[GHashTableHeader] = GHashTableHeaderType
-  implicit class GHashTableHeaderRep(self: Rep[GHashTableHeader]) {
+  implicit val typeLGHashTableHeader: TypeRep[LGHashTableHeader] = LGHashTableHeaderType
+  implicit class LGHashTableHeaderRep(self: Rep[LGHashTableHeader]) {
 
   }
-  object GHashTableHeader {
-    def g_hash_table_new[K, V](hash: Rep[Pointer[(Pointer[K] => Int)]], equals: Rep[Pointer[((Pointer[K], Pointer[K]) => Int)]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Pointer[GHashTable[K, V]]] = gHashTableHeaderG_hash_table_newObject[K, V](hash, equals)(typeK, typeV)
-    def g_hash_table_insert[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]], value: Rep[Pointer[V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Boolean] = gHashTableHeaderG_hash_table_insertObject[K, V](ht, key, value)(typeK, typeV)
-    def g_hash_table_replace[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]], value: Rep[Pointer[V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Boolean] = gHashTableHeaderG_hash_table_replaceObject[K, V](ht, key, value)(typeK, typeV)
-    def g_hash_table_size[K, V](ht: Rep[Pointer[GHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = gHashTableHeaderG_hash_table_sizeObject[K, V](ht)(typeK, typeV)
-    def g_hash_table_lookup[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Pointer[V]] = gHashTableHeaderG_hash_table_lookupObject[K, V](ht, key)(typeK, typeV)
-    def g_hash_table_lookup_extended[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]], origKey: Rep[Pointer[K]], value: Rep[Pointer[V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = gHashTableHeaderG_hash_table_lookup_extendedObject[K, V](ht, key, origKey, value)(typeK, typeV)
-    def g_hash_table_foreach[K, V](ht: Rep[Pointer[GHashTable[K, V]]], func: Rep[Pointer[((Pointer[K], Pointer[V], Pointer[Any]) => Unit)]], userData: Rep[Any])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Unit] = gHashTableHeaderG_hash_table_foreachObject[K, V](ht, func, userData)(typeK, typeV)
-    def g_hash_table_find[K, V](ht: Rep[Pointer[GHashTable[K, V]]], pred: Rep[Pointer[((Pointer[K], Pointer[V], Pointer[Any]) => Int)]], userData: Rep[Any])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Pointer[V]] = gHashTableHeaderG_hash_table_findObject[K, V](ht, pred, userData)(typeK, typeV)
-    def g_hash_table_remove[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = gHashTableHeaderG_hash_table_removeObject[K, V](ht, key)(typeK, typeV)
-    def g_hash_table_remove_all[K, V](ht: Rep[Pointer[GHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Unit] = gHashTableHeaderG_hash_table_remove_allObject[K, V](ht)(typeK, typeV)
-    def g_hash_table_foreach_remove[K, V](ht: Rep[Pointer[GHashTable[K, V]]], pred: Rep[Pointer[((Pointer[K], Pointer[V], Pointer[Any]) => Int)]], userData: Rep[Any])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = gHashTableHeaderG_hash_table_foreach_removeObject[K, V](ht, pred, userData)(typeK, typeV)
-    def g_hash_table_get_keys[K, V](ht: Rep[Pointer[GHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Pointer[GList[K]]] = gHashTableHeaderG_hash_table_get_keysObject[K, V](ht)(typeK, typeV)
-    def g_hash_table_get_values[K, V](ht: Rep[Pointer[GHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Pointer[GList[V]]] = gHashTableHeaderG_hash_table_get_valuesObject[K, V](ht)(typeK, typeV)
+  object LGHashTableHeader {
+    def g_hash_table_new[K, V](hash: Rep[LPointer[(LPointer[K] => Int)]], equals: Rep[LPointer[((LPointer[K], LPointer[K]) => Int)]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[LPointer[LGHashTable[K, V]]] = lGHashTableHeaderG_hash_table_newObject[K, V](hash, equals)(typeK, typeV)
+    def g_hash_table_insert[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], key: Rep[LPointer[K]], value: Rep[LPointer[V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Boolean] = lGHashTableHeaderG_hash_table_insertObject[K, V](ht, key, value)(typeK, typeV)
+    def g_hash_table_replace[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], key: Rep[LPointer[K]], value: Rep[LPointer[V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Boolean] = lGHashTableHeaderG_hash_table_replaceObject[K, V](ht, key, value)(typeK, typeV)
+    def g_hash_table_size[K, V](ht: Rep[LPointer[LGHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = lGHashTableHeaderG_hash_table_sizeObject[K, V](ht)(typeK, typeV)
+    def g_hash_table_lookup[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], key: Rep[LPointer[K]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[LPointer[V]] = lGHashTableHeaderG_hash_table_lookupObject[K, V](ht, key)(typeK, typeV)
+    def g_hash_table_lookup_extended[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], key: Rep[LPointer[K]], origKey: Rep[LPointer[K]], value: Rep[LPointer[V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = lGHashTableHeaderG_hash_table_lookup_extendedObject[K, V](ht, key, origKey, value)(typeK, typeV)
+    def g_hash_table_foreach[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], func: Rep[LPointer[((LPointer[K], LPointer[V], LPointer[Any]) => Unit)]], userData: Rep[Any])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Unit] = lGHashTableHeaderG_hash_table_foreachObject[K, V](ht, func, userData)(typeK, typeV)
+    def g_hash_table_find[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], pred: Rep[LPointer[((LPointer[K], LPointer[V], LPointer[Any]) => Int)]], userData: Rep[Any])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[LPointer[V]] = lGHashTableHeaderG_hash_table_findObject[K, V](ht, pred, userData)(typeK, typeV)
+    def g_hash_table_remove[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], key: Rep[LPointer[K]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = lGHashTableHeaderG_hash_table_removeObject[K, V](ht, key)(typeK, typeV)
+    def g_hash_table_remove_all[K, V](ht: Rep[LPointer[LGHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Unit] = lGHashTableHeaderG_hash_table_remove_allObject[K, V](ht)(typeK, typeV)
+    def g_hash_table_foreach_remove[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], pred: Rep[LPointer[((LPointer[K], LPointer[V], LPointer[Any]) => Int)]], userData: Rep[Any])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = lGHashTableHeaderG_hash_table_foreach_removeObject[K, V](ht, pred, userData)(typeK, typeV)
+    def g_hash_table_get_keys[K, V](ht: Rep[LPointer[LGHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[LPointer[LGList[K]]] = lGHashTableHeaderG_hash_table_get_keysObject[K, V](ht)(typeK, typeV)
+    def g_hash_table_get_values[K, V](ht: Rep[LPointer[LGHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[LPointer[LGList[V]]] = lGHashTableHeaderG_hash_table_get_valuesObject[K, V](ht)(typeK, typeV)
   }
   // constructors
 
   // case classes
-  case class GHashTableHeaderG_hash_table_newObject[K, V](hash: Rep[Pointer[(Pointer[K] => Int)]], equals: Rep[Pointer[((Pointer[K], Pointer[K]) => Int)]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Pointer[GHashTable[K, V]]](None, "GHashTableHeader.g_hash_table_new", List(List(hash, equals))) {
+  case class LGHashTableHeaderG_hash_table_newObject[K, V](hash: Rep[LPointer[(LPointer[K] => Int)]], equals: Rep[LPointer[((LPointer[K], LPointer[K]) => Int)]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[LPointer[LGHashTable[K, V]]](None, "g_hash_table_new", List(List(hash, equals))) {
     override def curriedConstructor = (copy[K, V] _).curried
   }
 
-  case class GHashTableHeaderG_hash_table_insertObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]], value: Rep[Pointer[V]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Boolean](None, "GHashTableHeader.g_hash_table_insert", List(List(ht, key, value))) {
+  case class LGHashTableHeaderG_hash_table_insertObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], key: Rep[LPointer[K]], value: Rep[LPointer[V]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Boolean](None, "g_hash_table_insert", List(List(ht, key, value))) {
     override def curriedConstructor = (copy[K, V] _).curried
   }
 
-  case class GHashTableHeaderG_hash_table_replaceObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]], value: Rep[Pointer[V]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Boolean](None, "GHashTableHeader.g_hash_table_replace", List(List(ht, key, value))) {
+  case class LGHashTableHeaderG_hash_table_replaceObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], key: Rep[LPointer[K]], value: Rep[LPointer[V]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Boolean](None, "g_hash_table_replace", List(List(ht, key, value))) {
     override def curriedConstructor = (copy[K, V] _).curried
   }
 
-  case class GHashTableHeaderG_hash_table_sizeObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Int](None, "GHashTableHeader.g_hash_table_size", List(List(ht))) {
+  case class LGHashTableHeaderG_hash_table_sizeObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Int](None, "g_hash_table_size", List(List(ht))) {
     override def curriedConstructor = (copy[K, V] _)
   }
 
-  case class GHashTableHeaderG_hash_table_lookupObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Pointer[V]](None, "GHashTableHeader.g_hash_table_lookup", List(List(ht, key))) {
+  case class LGHashTableHeaderG_hash_table_lookupObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], key: Rep[LPointer[K]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[LPointer[V]](None, "g_hash_table_lookup", List(List(ht, key))) {
     override def curriedConstructor = (copy[K, V] _).curried
   }
 
-  case class GHashTableHeaderG_hash_table_lookup_extendedObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]], origKey: Rep[Pointer[K]], value: Rep[Pointer[V]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Int](None, "GHashTableHeader.g_hash_table_lookup_extended", List(List(ht, key, origKey, value))) {
+  case class LGHashTableHeaderG_hash_table_lookup_extendedObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], key: Rep[LPointer[K]], origKey: Rep[LPointer[K]], value: Rep[LPointer[V]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Int](None, "g_hash_table_lookup_extended", List(List(ht, key, origKey, value))) {
     override def curriedConstructor = (copy[K, V] _).curried
   }
 
-  case class GHashTableHeaderG_hash_table_foreachObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], func: Rep[Pointer[((Pointer[K], Pointer[V], Pointer[Any]) => Unit)]], userData: Rep[Any])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Unit](None, "GHashTableHeader.g_hash_table_foreach", List(List(ht, func, userData))) {
+  case class LGHashTableHeaderG_hash_table_foreachObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], func: Rep[LPointer[((LPointer[K], LPointer[V], LPointer[Any]) => Unit)]], userData: Rep[Any])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Unit](None, "g_hash_table_foreach", List(List(ht, func, userData))) {
     override def curriedConstructor = (copy[K, V] _).curried
   }
 
-  case class GHashTableHeaderG_hash_table_findObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], pred: Rep[Pointer[((Pointer[K], Pointer[V], Pointer[Any]) => Int)]], userData: Rep[Any])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Pointer[V]](None, "GHashTableHeader.g_hash_table_find", List(List(ht, pred, userData))) {
+  case class LGHashTableHeaderG_hash_table_findObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], pred: Rep[LPointer[((LPointer[K], LPointer[V], LPointer[Any]) => Int)]], userData: Rep[Any])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[LPointer[V]](None, "g_hash_table_find", List(List(ht, pred, userData))) {
     override def curriedConstructor = (copy[K, V] _).curried
   }
 
-  case class GHashTableHeaderG_hash_table_removeObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Int](None, "GHashTableHeader.g_hash_table_remove", List(List(ht, key))) {
+  case class LGHashTableHeaderG_hash_table_removeObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], key: Rep[LPointer[K]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Int](None, "g_hash_table_remove", List(List(ht, key))) {
     override def curriedConstructor = (copy[K, V] _).curried
   }
 
-  case class GHashTableHeaderG_hash_table_remove_allObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Unit](None, "GHashTableHeader.g_hash_table_remove_all", List(List(ht))) {
+  case class LGHashTableHeaderG_hash_table_remove_allObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Unit](None, "g_hash_table_remove_all", List(List(ht))) {
     override def curriedConstructor = (copy[K, V] _)
   }
 
-  case class GHashTableHeaderG_hash_table_foreach_removeObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], pred: Rep[Pointer[((Pointer[K], Pointer[V], Pointer[Any]) => Int)]], userData: Rep[Any])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Int](None, "GHashTableHeader.g_hash_table_foreach_remove", List(List(ht, pred, userData))) {
+  case class LGHashTableHeaderG_hash_table_foreach_removeObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], pred: Rep[LPointer[((LPointer[K], LPointer[V], LPointer[Any]) => Int)]], userData: Rep[Any])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Int](None, "g_hash_table_foreach_remove", List(List(ht, pred, userData))) {
     override def curriedConstructor = (copy[K, V] _).curried
   }
 
-  case class GHashTableHeaderG_hash_table_get_keysObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Pointer[GList[K]]](None, "GHashTableHeader.g_hash_table_get_keys", List(List(ht))) {
+  case class LGHashTableHeaderG_hash_table_get_keysObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[LPointer[LGList[K]]](None, "g_hash_table_get_keys", List(List(ht))) {
     override def curriedConstructor = (copy[K, V] _)
   }
 
-  case class GHashTableHeaderG_hash_table_get_valuesObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[Pointer[GList[V]]](None, "GHashTableHeader.g_hash_table_get_values", List(List(ht))) {
+  case class LGHashTableHeaderG_hash_table_get_valuesObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FunctionDef[LPointer[LGList[V]]](None, "g_hash_table_get_values", List(List(ht))) {
     override def curriedConstructor = (copy[K, V] _)
   }
 
   // method definitions
-  def gHashTableHeaderG_hash_table_newObject[K, V](hash: Rep[Pointer[(Pointer[K] => Int)]], equals: Rep[Pointer[((Pointer[K], Pointer[K]) => Int)]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Pointer[GHashTable[K, V]]] = GHashTableHeaderG_hash_table_newObject[K, V](hash, equals)
-  def gHashTableHeaderG_hash_table_insertObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]], value: Rep[Pointer[V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Boolean] = GHashTableHeaderG_hash_table_insertObject[K, V](ht, key, value)
-  def gHashTableHeaderG_hash_table_replaceObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]], value: Rep[Pointer[V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Boolean] = GHashTableHeaderG_hash_table_replaceObject[K, V](ht, key, value)
-  def gHashTableHeaderG_hash_table_sizeObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = GHashTableHeaderG_hash_table_sizeObject[K, V](ht)
-  def gHashTableHeaderG_hash_table_lookupObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Pointer[V]] = GHashTableHeaderG_hash_table_lookupObject[K, V](ht, key)
-  def gHashTableHeaderG_hash_table_lookup_extendedObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]], origKey: Rep[Pointer[K]], value: Rep[Pointer[V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = GHashTableHeaderG_hash_table_lookup_extendedObject[K, V](ht, key, origKey, value)
-  def gHashTableHeaderG_hash_table_foreachObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], func: Rep[Pointer[((Pointer[K], Pointer[V], Pointer[Any]) => Unit)]], userData: Rep[Any])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Unit] = GHashTableHeaderG_hash_table_foreachObject[K, V](ht, func, userData)
-  def gHashTableHeaderG_hash_table_findObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], pred: Rep[Pointer[((Pointer[K], Pointer[V], Pointer[Any]) => Int)]], userData: Rep[Any])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Pointer[V]] = GHashTableHeaderG_hash_table_findObject[K, V](ht, pred, userData)
-  def gHashTableHeaderG_hash_table_removeObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], key: Rep[Pointer[K]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = GHashTableHeaderG_hash_table_removeObject[K, V](ht, key)
-  def gHashTableHeaderG_hash_table_remove_allObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Unit] = GHashTableHeaderG_hash_table_remove_allObject[K, V](ht)
-  def gHashTableHeaderG_hash_table_foreach_removeObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]], pred: Rep[Pointer[((Pointer[K], Pointer[V], Pointer[Any]) => Int)]], userData: Rep[Any])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = GHashTableHeaderG_hash_table_foreach_removeObject[K, V](ht, pred, userData)
-  def gHashTableHeaderG_hash_table_get_keysObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Pointer[GList[K]]] = GHashTableHeaderG_hash_table_get_keysObject[K, V](ht)
-  def gHashTableHeaderG_hash_table_get_valuesObject[K, V](ht: Rep[Pointer[GHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Pointer[GList[V]]] = GHashTableHeaderG_hash_table_get_valuesObject[K, V](ht)
-  type GHashTableHeader = ch.epfl.data.pardis.shallow.c.GHashTableHeader
+  def lGHashTableHeaderG_hash_table_newObject[K, V](hash: Rep[LPointer[(LPointer[K] => Int)]], equals: Rep[LPointer[((LPointer[K], LPointer[K]) => Int)]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[LPointer[LGHashTable[K, V]]] = LGHashTableHeaderG_hash_table_newObject[K, V](hash, equals)
+  def lGHashTableHeaderG_hash_table_insertObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], key: Rep[LPointer[K]], value: Rep[LPointer[V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Boolean] = LGHashTableHeaderG_hash_table_insertObject[K, V](ht, key, value)
+  def lGHashTableHeaderG_hash_table_replaceObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], key: Rep[LPointer[K]], value: Rep[LPointer[V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Boolean] = LGHashTableHeaderG_hash_table_replaceObject[K, V](ht, key, value)
+  def lGHashTableHeaderG_hash_table_sizeObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = LGHashTableHeaderG_hash_table_sizeObject[K, V](ht)
+  def lGHashTableHeaderG_hash_table_lookupObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], key: Rep[LPointer[K]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[LPointer[V]] = LGHashTableHeaderG_hash_table_lookupObject[K, V](ht, key)
+  def lGHashTableHeaderG_hash_table_lookup_extendedObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], key: Rep[LPointer[K]], origKey: Rep[LPointer[K]], value: Rep[LPointer[V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = LGHashTableHeaderG_hash_table_lookup_extendedObject[K, V](ht, key, origKey, value)
+  def lGHashTableHeaderG_hash_table_foreachObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], func: Rep[LPointer[((LPointer[K], LPointer[V], LPointer[Any]) => Unit)]], userData: Rep[Any])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Unit] = LGHashTableHeaderG_hash_table_foreachObject[K, V](ht, func, userData)
+  def lGHashTableHeaderG_hash_table_findObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], pred: Rep[LPointer[((LPointer[K], LPointer[V], LPointer[Any]) => Int)]], userData: Rep[Any])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[LPointer[V]] = LGHashTableHeaderG_hash_table_findObject[K, V](ht, pred, userData)
+  def lGHashTableHeaderG_hash_table_removeObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], key: Rep[LPointer[K]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = LGHashTableHeaderG_hash_table_removeObject[K, V](ht, key)
+  def lGHashTableHeaderG_hash_table_remove_allObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Unit] = LGHashTableHeaderG_hash_table_remove_allObject[K, V](ht)
+  def lGHashTableHeaderG_hash_table_foreach_removeObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]], pred: Rep[LPointer[((LPointer[K], LPointer[V], LPointer[Any]) => Int)]], userData: Rep[Any])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Int] = LGHashTableHeaderG_hash_table_foreach_removeObject[K, V](ht, pred, userData)
+  def lGHashTableHeaderG_hash_table_get_keysObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[LPointer[LGList[K]]] = LGHashTableHeaderG_hash_table_get_keysObject[K, V](ht)
+  def lGHashTableHeaderG_hash_table_get_valuesObject[K, V](ht: Rep[LPointer[LGHashTable[K, V]]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[LPointer[LGList[V]]] = LGHashTableHeaderG_hash_table_get_valuesObject[K, V](ht)
+  type LGHashTableHeader = ch.epfl.data.pardis.shallow.c.LGHashTableHeader
 }
-trait GHashTableHeaderImplicits { this: CLibs =>
+trait LGHashTableHeaderImplicits { this: CLibs =>
   // Add implicit conversions here!
 }
-trait GHashTableHeaderImplementations { this: CLibs =>
+trait LGHashTableHeaderImplementations { this: CLibs =>
 
 }
-trait GHashTableHeaderPartialEvaluation extends GHashTableHeaderComponent with BasePartialEvaluation { this: CLibs =>
+trait LGHashTableHeaderPartialEvaluation extends LGHashTableHeaderComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait GHashTableHeaderComponent extends GHashTableHeaderOps with GHashTableHeaderImplicits { this: CLibs => }
+trait LGHashTableHeaderComponent extends LGHashTableHeaderOps with LGHashTableHeaderImplicits { this: CLibs => }
 
