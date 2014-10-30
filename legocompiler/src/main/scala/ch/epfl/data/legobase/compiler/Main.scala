@@ -89,8 +89,6 @@ object Main extends LegoRunner {
     pipeline += DCE
     pipeline += PartiallyEvaluate
 
-    pipeline += TreeDumper
-
     if (generateCCode) {
       //pipeline += ColumnStoreTransformer
     }
@@ -98,7 +96,7 @@ object Main extends LegoRunner {
     pipeline += PartiallyEvaluate
     pipeline += HashMapHoist
     pipeline += HashMapToArrayTransformer(generateCCode)
-    // pipeline += MemoryManagementTransfomer //NOTE FIX TOPOLOGICAL SORT :-(
+    //pipeline += MemoryManagementTransfomer //NOTE FIX TOPOLOGICAL SORT :-(
 
     //pipeline += ParameterPromotion
 
@@ -107,8 +105,9 @@ object Main extends LegoRunner {
     pipeline += PartiallyEvaluate
 
     if (generateCCode) pipeline += CTransformersPipeline
+    pipeline += TreeDumper
 
-    pipeline += DCE //NEVER REMOVE!!!!
+    pipeline += DCECLang //NEVER REMOVE!!!!
 
     val finalBlock = pipeline.apply(context)(block)
 
