@@ -4,7 +4,6 @@ package deep
 
 import scala.language.existentials
 import pardis.shallow.OptimalString
-import scala.collection.mutable.ArrayBuffer
 import pardis.ir._
 import pardis.types._
 import pardis.types.PardisTypeImplicits._
@@ -274,7 +273,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends To
     else if (tp.name.startsWith("ArrayBuffer")) typePointer(typeGArray(transformType(tp.typeArguments(0))))
     else if (tp.name.contains("TreeSet")) typePointer(typeGTree(transformType(tp.typeArguments(0))))
     else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
-    else if (tp.name.contains("HashMap")) typePointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
+    else if (tp.name.contains("HashMap")) typeLPointer(typeGHashTable(transformType(tp.typeArguments(0)), transformType(tp.typeArguments(1))))
     else if (tp.name.contains("Option")) typePointer(transformType(tp.typeArguments(0)))
     else {
       //      System.out.println("WARNING: Default transformType called: " + tp)
@@ -388,19 +387,35 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
   // Set of hash and record functions
   def string_hash = doLambda((s: Rep[String]) => infix_hashCode(s))
+  def string_hash2 = doLambda((s: Rep[LPointer[String]]) => infix_hashCode(CLang.*(s)))
   def string_eq = doLambda2((s1: Rep[String], s2: Rep[String]) => infix_==(strcmp(s1, s2), 0))
+  def string_eq2 = doLambda2((s1: Rep[LPointer[String]], s2: Rep[LPointer[String]]) => __ifThenElse(infix_==(strcmp(CLang.*(s1), CLang.*(s2)), 0), 1, 0))
   def int_hash = doLambda((s: Rep[Int]) => s)
+  def int_hash2 = doLambda((s: Rep[LPointer[Int]]) => (s.asInstanceOf[Rep[Int]]))
   def int_eq = doLambda2((s1: Rep[Int], s2: Rep[Int]) => infix_==(s1, s2))
+  def int_eq2 = doLambda2((s1: Rep[LPointer[Int]], s2: Rep[LPointer[Int]]) => infix_==(s1, s2).asInstanceOf[Rep[Int]]) // __ifThenElse(infix_==(CLang.*(s1), CLang.*(s2)), 1, 0))
   def double_hash = doLambda((s: Rep[Double]) => s / 10)
+  def double_hash2 = doLambda((s: Rep[LPointer[Double]]) => infix_asInstanceOf[Int](CLang.*(s) / 10))
   def double_eq = doLambda2((s1: Rep[Double], s2: Rep[Double]) => infix_==(s1, s2))
+  def double_eq2 = doLambda2((s1: Rep[LPointer[Double]], s2: Rep[LPointer[Double]]) => __ifThenElse(infix_==(CLang.*(s1), CLang.*(s2)), 1, 0))
   def record_eq[A: PardisType] = {
     val structDef = getStructDef[A].get
     val eqMethod = transformDef(structDef.methods.find(_.name == "equals").get.body.asInstanceOf[PardisLambda2[A, A, Boolean]])
     toAtom(eqMethod)(eqMethod.tp)
   }
+  def record_eq2[A: PardisType] = {
+    val structDef = getStructDef[A].get
+    val eqMethod = transformDef(structDef.methods.find(_.name == "equals").get.body.asInstanceOf[PardisLambda2[LPointer[A], LPointer[A], Int]])
+    toAtom(eqMethod)(eqMethod.tp)
+  }
   def record_hash[A: PardisType] = {
     val structDef = getStructDef[A].get
     val hashMethod = transformDef(structDef.methods.find(_.name == "hash").get.body.asInstanceOf[PardisLambda[A, Int]])
+    toAtom(hashMethod)(hashMethod.tp)
+  }
+  def record_hash2[A: PardisType] = {
+    val structDef = getStructDef[A].get
+    val hashMethod = transformDef(structDef.methods.find(_.name == "hash").get.body.asInstanceOf[PardisLambda[LPointer[A], Int]])
     toAtom(hashMethod)(hashMethod.tp)
   }
   def record_toString[A: PardisType]: Rep[A => String] = {
@@ -414,27 +429,72 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     unit(0)
   })
 
+  class X
+  class Y
+  import LGHashTableHeader._
+
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     /* HashMap Operations */
-    case nm @ HashMapNew3(_, _) => transformDef(HashMapNew()(nm.typeA, ArrayBufferType(nm.typeB)))
-    case nm @ HashMapNew4(_, _) => transformDef(HashMapNew()(nm.typeA, nm.typeB))
-    case nm @ HashMapNew() =>
-      val nA = typePointer(transformType(nm.typeA)).asInstanceOf[TypeRep[Any]]
-      val nB = typePointer(transformType(nm.typeB))
+    case nm: HashMapNew3[X, Y] =>
+      implicit val tx = nm.typeA
+      implicit val ty = nm.typeB
+      transformDef(HashMapNew[X, ArrayBuffer[Y]]())
 
-      if ((nm.typeA == StringType) || (nm.typeA == OptimalStringType)) GHashTableNew(string_hash, string_eq)(StringType, nB, IntType)
-      else if (nm.typeA == IntType) GHashTableNew(int_hash, int_eq)(IntType, nB, IntType)
-      else if (nm.typeA == DoubleType) GHashTableNew(double_hash, double_eq)(DoubleType, nB, DoubleType)
-      else GHashTableNew(record_hash(nm.typeA), record_eq(nm.typeA))(nA, nB, IntType)
-    case HashMapSize(map)   => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
-    case HashMapKeySet(map) => NameAlias[Pointer[GList[FILE]]](None, "g_hash_table_get_keys", List(List(map)))
+    case nm: HashMapNew4[X, Y] =>
+      implicit val tx = nm.typeA
+      implicit val ty = nm.typeB
+      transformDef(HashMapNew[X, Y]())
+
+    case nm: HashMapNew[X, Y] =>
+      implicit val tx = nm.typeA
+      implicit val ty = nm.typeB
+
+      if (tx == StringType || tx == OptimalStringType) {
+        LGHashTableHeaderG_hash_table_newObject[String, Y](CLang.&(string_hash2), CLang.&(string_eq2))
+      } else if (tx == IntType) {
+        LGHashTableHeaderG_hash_table_newObject[Int, Y](CLang.&(int_hash2), CLang.&(int_eq2))
+      } else if (tx == DoubleType) {
+        LGHashTableHeaderG_hash_table_newObject[Double, Y](CLang.&(double_hash2), CLang.&(double_eq2))
+      } else {
+        LGHashTableHeaderG_hash_table_newObject[X, Y](CLang.&(record_hash2[X]), CLang.&(record_eq2[X]))
+      }
+
+    case ms @ HashMapSize(m) =>
+      implicit val tx = ms.typeA.asInstanceOf[TypeRep[X]]
+      implicit val ty = ms.typeB.asInstanceOf[TypeRep[Y]]
+      val map = m.asInstanceOf[Rep[LPointer[LGHashTable[X, Y]]]]
+
+      LGHashTableHeaderG_hash_table_sizeObject(map)
+
+    case mks @ HashMapKeySet(m) =>
+      implicit val tx = mks.typeA.asInstanceOf[TypeRep[X]]
+      implicit val ty = mks.typeB.asInstanceOf[TypeRep[Y]]
+      val map = m.asInstanceOf[Rep[LPointer[LGHashTable[X, Y]]]]
+
+      LGHashTableHeaderG_hash_table_get_keysObject(map)
+
     case HashMapContains(map, key) =>
       val e = toAtom(transformDef(HashMapApply(map, key)))(transformType(key.tp))
       ReadVal(infix_!=(e, Constant(null)))
-    case ma @ HashMapApply(map, key) =>
-      NameAlias(None, "g_hash_table_lookup", List(List(map, key)))(ma.tp)
-    case mu @ HashMapUpdate(map, key, value) => NameAlias[Unit](None, "g_hash_table_insert", List(List(map, key, value)))
-    case hmgu @ HashMapGetOrElseUpdate(map, key, value) =>
+
+    case ma @ HashMapApply(m, k) =>
+      implicit val tx = ma.typeA.asInstanceOf[TypeRep[X]]
+      implicit val ty = ma.typeB.asInstanceOf[TypeRep[Y]]
+      val map = m.asInstanceOf[Rep[LPointer[LGHashTable[X, Y]]]]
+      val key = k.asInstanceOf[Rep[LPointer[X]]]
+
+      LGHashTableHeaderG_hash_table_lookupObject(map, key)
+
+    case mu @ HashMapUpdate(m, k, v) =>
+      implicit val tx = mu.typeA.asInstanceOf[TypeRep[X]]
+      implicit val ty = mu.typeB.asInstanceOf[TypeRep[Y]]
+      val map = m.asInstanceOf[Rep[LPointer[LGHashTable[X, Y]]]]
+      val key = k.asInstanceOf[Rep[LPointer[X]]]
+      val value = v.asInstanceOf[Rep[LPointer[Y]]]
+
+      LGHashTableHeaderG_hash_table_insertObject(map, key, value)
+
+    case mgu @ HashMapGetOrElseUpdate(map, key, value) =>
       val v = transformDef(HashMapApply(map, key))
       val res = __ifThenElse(infix_==(toAtom(v), Constant(null)), {
         val newB = transformBlockTyped(value)(typeRep[T], transformType(value.tp))
@@ -444,10 +504,16 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         res
       }, toAtom(v))(v.tp.asInstanceOf[PardisType[Any]])
       ReadVal(res)(res.tp)
-    case mr @ HashMapRemove(map, key) =>
-      val x = toAtom(transformDef(HashMapApply(map, key)))(transformType(map.tp.typeArguments(0).typeArguments(1)))
-      toAtom(NameAlias[Unit](None, "g_hash_table_remove", List(List(map, key)))(UnitType))
-      ReadVal(x)(transformType(map.tp.typeArguments(0).typeArguments(1)))
+
+    case mr @ HashMapRemove(m, k) =>
+      implicit val tx = mr.typeA.asInstanceOf[TypeRep[X]]
+      implicit val ty = mr.typeB.asInstanceOf[TypeRep[Y]]
+      val map = m.asInstanceOf[Rep[LPointer[LGHashTable[X, Y]]]]
+      val key = k.asInstanceOf[Rep[LPointer[X]]]
+
+      val x = toAtom(transformDef(HashMapApply(m, k)))(transformType(m.tp.typeArguments(0).typeArguments(1)))
+      g_hash_table_remove(map, key)
+      ReadVal(x)(transformType(m.tp.typeArguments(0).typeArguments(1)))
 
     /* Set Operaions */
     case nm @ SetNew(s) => ReadVal(transformExp[Any, T](s))(transformType(s.tp).asInstanceOf[PardisType[T]])
