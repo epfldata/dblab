@@ -103,9 +103,9 @@ object Main extends LegoRunner {
     //pipeline += DCE
 
     pipeline += PartiallyEvaluate
-    pipeline += TreeDumper
 
     if (generateCCode) pipeline += CTransformersPipeline
+    pipeline += TreeDumper
 
     pipeline += DCECLang //NEVER REMOVE!!!!
 

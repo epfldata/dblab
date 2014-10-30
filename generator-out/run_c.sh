@@ -4,6 +4,9 @@ SF=0.1
 NUMRUNS=1
 VERBOSE=true
 
+#rm *.out
+#make
+
 TMPFILE="tmpfile.txt"
 if [ "`uname`" == "Linux" ]; then
     TMPFILE=`mktemp`
