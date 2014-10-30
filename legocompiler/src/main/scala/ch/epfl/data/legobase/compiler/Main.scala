@@ -89,8 +89,6 @@ object Main extends LegoRunner {
     pipeline += DCE
     pipeline += PartiallyEvaluate
 
-    pipeline += TreeDumper
-
     if (generateCCode) {
       //pipeline += ColumnStoreTransformer
     }
@@ -105,10 +103,11 @@ object Main extends LegoRunner {
     //pipeline += DCE
 
     pipeline += PartiallyEvaluate
+    pipeline += TreeDumper
 
     if (generateCCode) pipeline += CTransformersPipeline
 
-    pipeline += DCE //NEVER REMOVE!!!!
+    pipeline += DCECLang //NEVER REMOVE!!!!
 
     val finalBlock = pipeline.apply(context)(block)
 
