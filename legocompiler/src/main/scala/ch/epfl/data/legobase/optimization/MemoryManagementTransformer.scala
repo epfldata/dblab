@@ -103,8 +103,8 @@ class MemoryManagementTransfomer(override val IR: LoweringLegoBase) extends Opti
       /* this one is a hack */
       def regenerateSize(s: Rep[Int]): Rep[Int] = s match {
         case c @ Constant(_)       => s
-        case Def(Int$div4(x, y))   => regenerateSize(x) / regenerateSize(y)
-        case Def(Int$times4(x, y)) => regenerateSize(x) * regenerateSize(y)
+        case Def(Int$div3(x, y))   => regenerateSize(x) / regenerateSize(y)
+        case Def(Int$times3(x, y)) => regenerateSize(x) * regenerateSize(y)
         case d @ Def(_)            => s
       }
       //val POOL_SIZE = regenerateSize(mallocNode.numElems) * 200*/

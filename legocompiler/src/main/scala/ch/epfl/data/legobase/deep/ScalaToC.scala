@@ -651,5 +651,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends Ru
   rewrite += rule { case OptionGet(x) => x }
   rewrite += rule { case IntUnary_$minus(self) => unit(-1) * self }
   rewrite += rule { case IntToLong(x) => x }
+  rewrite += rule { case ByteToInt(x) => x }
+  rewrite += rule { case IntToDouble(x) => x }
   rewrite += rule { case DoubleToInt(x) => infix_asInstanceOf[Double](x) }
 }
