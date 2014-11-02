@@ -52,13 +52,14 @@ object CTransformersPipeline extends TransformerHandler {
     apply[T](context.asInstanceOf[LoweringLegoBase], block)
   }
   def apply[A: PardisType](context: LoweringLegoBase, b: PardisBlock[A]) = {
-    val b0 = new GenericEngineToCTransformer(context).transformBlock(b)
-    val b1 = new ScalaScannerToCFileTransformer(context).transformBlock(b0)
+    val b0 = new GenericEngineToCTransformer(context).optimize(b)
+    val b1 = new ScalaScannerToCFileTransformer(context).optimize(b0)
     val b2 = new ScalaArrayToCStructTransformer(context).optimize(b1)
     val b3 = new ScalaCollectionsToGLibTransfomer(context).optimize(b2)
-    val b4 = new OptimalStringToCTransformer(context).optimize(b3)
-    val b5 = new ScalaConstructsToCTranformer(context).optimize(b4)
-    b5
+    val b4 = new HashEqualsFuncsToCTraansformer(context).optimize(b3)
+    val b5 = new OptimalStringToCTransformer(context).optimize(b4)
+    val b6 = new ScalaConstructsToCTranformer(context).optimize(b5)
+    b6
   }
 }
 
@@ -342,7 +343,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
   }).asInstanceOf[to.Def[T]]
 }
 
-class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
   import CNodes._
   import CTypes._
@@ -528,6 +529,12 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       })
       ReadVar(agg)
   }
+}
+
+class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer with StructCollector[LoweringLegoBase] {
+  import IR._
+  import CNodes._
+  import CTypes._
 
   // Handling proper hascode and equals
   def __isRecord(e: Expression[Any]) = e.tp.isRecord || (e.tp.name.startsWith("Pointer") && e.tp.typeArguments(0).isRecord)
@@ -541,40 +548,36 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
   rewrite += rule {
     case Equals(e1, e2, isEqual) if e1.tp == OptimalStringType =>
-      if (isEqual) transformDef(BooleanUnary_$bang(strcmp(e1, e2)))
-      else ReadVal(strcmp(e1, e2))
+      if (isEqual) !strcmp(e1, e2) else strcmp(e1, e2)
     case Equals(e1, e2, isEqual) if __isRecord(e1) && __isRecord(e2) =>
-      val x = e1.tp
-      val ttp = if (x.isRecord) x else x.typeArguments(0)
-      val __eq = transformDef(getStructEqualsFunc[Any]()(ttp.asInstanceOf[PardisType[Any]]))
-      val eq = toAtom(__eq)(__eq.tp) //(typeRep[(ttp, ttp) => Boolean])
-      val z = inlineFunction(eq.asInstanceOf[Rep[(Any, Any) => Boolean]], apply(e1), apply(e2))
-      ReadVal(if (isEqual) z else transformDef(BooleanUnary_$bang(z)))
+      class T
+      implicit val ttp = (if (e1.tp.isRecord) e1.tp else e1.tp.typeArguments(0)).asInstanceOf[TypeRep[T]]
+      val eq = getStructEqualsFunc[T]()
+      val res = inlineFunction(eq, e1.asInstanceOf[Rep[T]], e2.asInstanceOf[Rep[T]])
+      if (isEqual) res else !res
   }
   rewrite += rule {
-    case HashCode(t) if t.tp == StringType => ReadVal(unit(0)) // KEY is constant. No need to hash anything
+    case HashCode(t) if t.tp == StringType => unit(0) // KEY is constant. No need to hash anything
     case HashCode(t) if __isRecord(t) =>
-      val x = t.tp
-      val __h = transformDef({
-        if (x.isRecord) getStructHashFunc[Any]()(x.asInstanceOf[PardisType[Any]])
-        else getStructHashFunc[Any]()(x.typeArguments(0).asInstanceOf[PardisType[Any]])
-      })
-      val h = toAtom(transformDef(__h))(__h.tp)
-      val z = inlineFunction(h.asInstanceOf[Rep[Any => Int]], apply(t))
-      ReadVal(z)
-
-    case HashCode(t) if t.tp.isPrimitive      => PardisCast(t)(t.tp, IntType)
-    case HashCode(t) if t.tp == CharacterType => PardisCast(t)(t.tp, IntType)
+      val tp = t.tp.asInstanceOf[PardisType[Any]]
+      val hashFunc = {
+        if (t.tp.isRecord) getStructHashFunc[Any]()(tp)
+        else getStructHashFunc[Any]()(tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
+      }
+      val hf = toAtom(hashFunc)(hashFunc.tp)
+      inlineFunction(hf.asInstanceOf[Rep[Any => Int]], apply(t))
+    case HashCode(t) if t.tp.isPrimitive      => infix_asInstanceOf[Int](t)
+    case HashCode(t) if t.tp == CharacterType => infix_asInstanceOf[Int](t)
     case HashCode(t) if t.tp == OptimalStringType =>
-      val len = toAtom(OptimalStringLength(t.asInstanceOf[Expression[OptimalString]]))(IntType)
+      val len = t.asInstanceOf[Expression[OptimalString]].length
       val idx = __newVar[Int](0)
       val h = __newVar[Int](0)
       __whileDo(readVar(idx) < len, {
         __assign(h, readVar(h) + OptimalStringApply(t.asInstanceOf[Expression[OptimalString]], readVar(idx)))
         __assign(idx, readVar(idx) + unit(1));
       })
-      ReadVar(h)
-    case HashCode(t) if t.tp.isArray => ArrayLength(t.asInstanceOf[Rep[Array[Any]]])
+      readVar(h)
+    case HashCode(t) if t.tp.isArray => arrayLength(t.asInstanceOf[Rep[Array[Any]]])
     //case HashCode(t)                 => throw new Exception("Unhandled type " + t.tp.toString + " passed to HashCode")
   }
   rewrite += rule {
