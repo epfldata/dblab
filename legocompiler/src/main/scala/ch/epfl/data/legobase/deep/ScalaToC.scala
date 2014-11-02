@@ -618,8 +618,8 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Rec
   }
   rewrite += rule {
     case OptimalStringApply(x, idx) =>
-      val z = infix_asInstanceOf(x)(typeArray(typePointer(CharType))).asInstanceOf[Rep[Array[Pointer[Char]]]]
-      z(idx)
+      val stringArray = infix_asInstanceOf(x)(typeArray(typePointer(CharType))).asInstanceOf[Rep[Array[Pointer[Char]]]]
+      stringArray(idx)
   }
   rewrite += rule {
     case OptimalStringSlice(x, start, end) =>
@@ -646,12 +646,12 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends Re
       ReadVar(res)(res.tp)
   }
   rewrite += rule {
-    case or @ Boolean$bar$bar(case1, b @ PardisBlock(stmt, res)) => {
+    case or @ Boolean$bar$bar(case1, b) => {
       __ifThenElse(case1, unit(true), b)
     }
   }
   rewrite += rule {
-    case and @ Boolean$amp$amp(case1, b @ PardisBlock(stmt, res)) => {
+    case and @ Boolean$amp$amp(case1, b) => {
       __ifThenElse(case1, b, unit(false))
     }
   }
