@@ -71,6 +71,11 @@ trait DeepDSL extends push.OperatorsComponent
   with DoubleComponent 
   with IntComponent 
   with LongComponent 
+  with BooleanComponent 
+  with DoublePartialEvaluation 
+  with IntPartialEvaluation 
+  with LongPartialEvaluation 
+  with BooleanPartialEvaluation 
   with ArrayComponent
   with PrintStreamComponent 
   with GroupByClassComponent
@@ -97,7 +102,6 @@ trait DeepDSL extends push.OperatorsComponent
   with IntegerComponent 
   with NextContainerComponent
   with NextKeyContainerComponent
-  with BooleanComponent 
   with HashMapComponent 
   with SetComponent 
   with TreeSetComponent 

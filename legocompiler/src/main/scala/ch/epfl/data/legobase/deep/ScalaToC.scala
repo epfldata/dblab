@@ -56,8 +56,8 @@ object CTransformersPipeline extends TransformerHandler {
     val b1 = new ScalaScannerToCFileTransformer(context).transformBlock(b0)
     val b2 = new ScalaArrayToCStructTransformer(context).optimize(b1)
     val b3 = new ScalaCollectionsToGLibTransfomer(context).optimize(b2)
-    val b4 = new OptimalStringToCTransformer(context).transformBlock(b3)
-    val b5 = new ScalaConstructsToCTranformer(context).transformBlock(b4)
+    val b4 = new OptimalStringToCTransformer(context).optimize(b3)
+    val b5 = new ScalaConstructsToCTranformer(context).optimize(b4)
     b5
   }
 }
@@ -587,50 +587,50 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
 }
 
-class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._
 
-  rewrite += rule { case OptimalStringNew(x) => apply(x) }
-  rewrite += rule { case OptimalStringString(x) => apply(x) }
-  rewrite += rule { case OptimalStringDiff(x, y) => strcmp(apply(x), apply(y)) }
+  rewrite += rule { case OptimalStringNew(x) => x }
+  rewrite += rule { case OptimalStringString(x) => x }
+  rewrite += rule { case OptimalStringDiff(x, y) => strcmp(x, y) }
   rewrite += rule {
     case OptimalStringEndsWith(x, y) =>
-      val lenx = strlen(apply(x))
-      val leny = strlen(apply(y))
+      val lenx = strlen(x)
+      val leny = strlen(y)
       val len = lenx - leny
-      strncmp(apply(x) + len, apply(y), len) __== unit(0)
+      strncmp(x + len, y, len) __== unit(0)
   }
   rewrite += rule {
     case OptimalStringStartsWith(x, y) =>
-      strncmp(apply(x), apply(y), strlen(apply(y))) __== unit(0)
+      strncmp(x, y, strlen(y)) __== unit(0)
   }
-  rewrite += rule { case OptimalStringCompare(x, y) => strcmp(apply(x), apply(y)) }
-  rewrite += rule { case OptimalStringLength(x) => strlen(apply(x)) }
-  rewrite += rule { case OptimalString$eq$eq$eq(x, y) => strcmp(apply(x), apply(y)) __== unit(0) }
-  rewrite += rule { case OptimalString$eq$bang$eq(x, y) => infix_!=(strcmp(apply(x), apply(y)), unit(0)) }
-  rewrite += rule { case OptimalStringContainsSlice(x, y) => infix_!=(strstr(apply(x), apply(y)), unit(null)) }
+  rewrite += rule { case OptimalStringCompare(x, y) => strcmp(x, y) }
+  rewrite += rule { case OptimalStringLength(x) => strlen(x) }
+  rewrite += rule { case OptimalString$eq$eq$eq(x, y) => strcmp(x, y) __== unit(0) }
+  rewrite += rule { case OptimalString$eq$bang$eq(x, y) => infix_!=(strcmp(x, y), unit(0)) }
+  rewrite += rule { case OptimalStringContainsSlice(x, y) => infix_!=(strstr(x, y), unit(null)) }
   rewrite += rule {
     case OptimalStringIndexOfSlice(x, y, idx) =>
-      val substr = strstr(apply(x) + apply(idx), apply(y))
-      __ifThenElse(substr __== unit(null), unit(-1), str_subtract(substr, apply(x)))
+      val substr = strstr(x + idx, y)
+      __ifThenElse(substr __== unit(null), unit(-1), str_subtract(substr, x))
   }
   rewrite += rule {
     case OptimalStringApply(x, idx) =>
-      val z = infix_asInstanceOf(apply(x))(typeArray(typePointer(CharType)))
-      arrayApply(z, apply(idx))
+      val z = infix_asInstanceOf(x)(typeArray(typePointer(CharType))).asInstanceOf[Rep[Array[Pointer[Char]]]]
+      z(idx)
   }
   rewrite += rule {
     case OptimalStringSlice(x, start, end) =>
-      val len = apply(end) - apply(start) + unit(1)
+      val len = end - start + unit(1)
       val newbuf = malloc(len)(CharType)
-      strncpy(newbuf, apply(x) + apply(start), len - unit(1))
+      strncpy(newbuf, x + start, len - unit(1))
       newbuf
   }
 }
 
-class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._
@@ -638,28 +638,29 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends Ru
   rewrite += rule {
     case PardisIfThenElse(cond, thenp, elsep) if thenp.tp != UnitType =>
       val res = __newVar(unit(0))(thenp.tp.asInstanceOf[TypeRep[Int]])
-      __ifThenElse(apply(cond), {
-        __assign(res, inlineBlock(apply(thenp)))
+      __ifThenElse(cond, {
+        __assign(res, inlineBlock(thenp))
       }, {
-        __assign(res, inlineBlock(apply(elsep)))
+        __assign(res, inlineBlock(elsep))
       })
       ReadVar(res)(res.tp)
   }
   rewrite += rule {
     case or @ Boolean$bar$bar(case1, b @ PardisBlock(stmt, res)) => {
-      val tb = inlineBlock(apply(b))
-      apply(case1) || tb
+      __ifThenElse(case1, unit(true), b)
     }
   }
   rewrite += rule {
     case and @ Boolean$amp$amp(case1, b @ PardisBlock(stmt, res)) => {
-      apply(IfThenElse(apply(case1), transformBlock(b), Block(Nil, unit(false))))
+      __ifThenElse(case1, b, unit(false))
     }
   }
 
   rewrite += rule { case OptionGet(x) => x }
   rewrite += rule { case IntUnary_$minus(self) => unit(-1) * self }
   rewrite += rule { case IntToLong(x) => x }
+  rewrite += rule { case ByteToInt(x) => x }
+  rewrite += rule { case IntToDouble(x) => x }
   rewrite += rule { case DoubleToInt(x) => infix_asInstanceOf[Double](x) }
   rewrite += rule { case BooleanUnary_$bang(b) => NameAlias[Boolean](None, "!", List(List(b))) }
 }
