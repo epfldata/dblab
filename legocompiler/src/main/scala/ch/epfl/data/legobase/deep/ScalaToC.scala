@@ -30,19 +30,18 @@ trait CTransformer extends TopDownTransformerTraverser[LoweringLegoBase] {
 
 trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base =>
   import CNodes._
+  import CTypes._
   override def structName[T](m: PardisType[T]): String = {
-    if (m.name.startsWith("CArray")) "ArrayOf" + structName(m.typeArguments.last)
-    else if (m.isArray) structName(m.typeArguments.last)
-    else if (m.name.startsWith("Pointer")) structName(m.typeArguments.last)
-    else if (m.name == "Int") "int"
-    else if (m.name == "Byte") "char"
-    else if (m.name == "Char") "char"
-    else if (m.name == "Double") "double"
-    else if (m.name == "OptimalString") "OptimalString"
-    else if (m.isRecord) m.name.replaceAll("struct ", "")
-    else {
-      //System.out.println("WARNING: Default structName given: " + m.name);
-      super.structName(m)
+    m match {
+      case CArrayType(args)    => "ArrayOf" + structName(args)
+      case ArrayType(args)     => structName(args)
+      case PointerType(args)   => structName(args)
+      case IntType             => "int"
+      case ByteType | CharType => "char"
+      case DoubleType          => "double"
+      case OptimalStringType   => "OptimalString"
+      case c if c.isRecord     => m.name.replaceAll("struct ", "")
+      case _                   => super.structName(m)
     }
   }
 }
@@ -54,12 +53,14 @@ object CTransformersPipeline extends TransformerHandler {
   def apply[A: PardisType](context: LoweringLegoBase, b: PardisBlock[A]) = {
     val b0 = new GenericEngineToCTransformer(context).optimize(b)
     val b1 = new ScalaScannerToCFileTransformer(context).optimize(b0)
-    val b2 = new ScalaArrayToCStructTransformer(context).optimize(b1)
-    val b3 = new ScalaCollectionsToGLibTransfomer(context).optimize(b2)
-    val b4 = new HashEqualsFuncsToCTraansformer(context).optimize(b3)
-    val b5 = new OptimalStringToCTransformer(context).optimize(b4)
-    val b6 = new ScalaConstructsToCTranformer(context).optimize(b5)
-    b6
+    val b2 = new SingletonArrayToValueTransformer(context).optimize(b1)
+    //val b2 = b1 
+    val b3 = new ScalaArrayToCStructTransformer(context).optimize(b2)
+    val b4 = new ScalaCollectionsToGLibTransfomer(context).optimize(b3)
+    val b5 = new HashEqualsFuncsToCTraansformer(context).optimize(b4)
+    val b6 = new OptimalStringToCTransformer(context).optimize(b5)
+    val b7 = new ScalaConstructsToCTranformer(context).optimize(b6)
+    b7
   }
 }
 
@@ -161,100 +162,137 @@ class ScalaScannerToCFileTransformer(override val IR: LoweringLegoBase) extends 
   }
 }
 
-class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) {
+class SingletonArrayToValueTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
   import CNodes._
   import CTypes._
 
-  override def transformType[T: PardisType]: PardisType[Any] = ({
-    val tp = typeRep[T]
-    if (tp.isPrimitive) super.transformType[T]
-    else if (tp.name.startsWith("ArrayBuffer")) typePointer(typeGArray(transformType(tp.typeArguments(0))))
-    else if (tp.isArray) typePointer(typeCArray({
-      val ttp = tp.typeArguments(0)
-      if (ttp.isArray) typeCArray(ttp.typeArguments(0))
-      else ttp
-    }))
-    else if (tp.isRecord) {
-      if (tp.typeArguments == List()) typePointer(tp)
-      else typePointer(transformType(tp.typeArguments(0)))
-    } else if (tp.name.contains("TreeSet")) typePointer(typeGTree(transformType(tp.typeArguments(0))))
-    else if (tp.name.contains("Set")) typePointer(typeGList(transformType(tp.typeArguments(0))))
-    else if (tp.name.contains("Option")) typePointer(transformType(tp.typeArguments(0)))
-    else {
-      //      System.out.println("WARNING: Default transformType called: " + tp)
-      super.transformType[T]
-    }
-  }).asInstanceOf[PardisType[Any]]
-
-  def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
-    traverseBlock(node)
-    transformProgram(node)
-  }
-
-  override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
-    case Stm(s, RangeNew(start, end, step)) => Nil
-    case _                                  => super.transformStmToMultiple(stm)
-  }
-
-  //val singletonArrays = scala.collection.mutable.Map[Sym[Any], TypeRep[Any]]()
   val singletonArrays = scala.collection.mutable.Map[TypeRep[Any], TypeRep[Any]]()
   def isSingletonArray[T](a: Expression[T]): Boolean = singletonArrays.contains(a.tp.asInstanceOf[TypeRep[Any]])
 
-  override def traverseStm(stm: Stm[_]): Unit = stm match {
-    // Hack/Patch -- AGGRecord_Field_Aggs should be PardisStructImmutableField after LBLowering,
-    // but it is not. For now this seems to be working
-    case Stm(sym, AGGRecord_Field_Aggs(s)) =>
-      if (sym.tp.isArray && singletonArrays.contains(s.tp.asInstanceOf[TypeRep[Any]])) {
-        singletonArrays(sym.tp.asInstanceOf[TypeRep[Any]]) = sym.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
-      }
-      super.traverseStm(stm)
-
-    case Stm(sym, PardisStructImmutableField(s, f)) => {
-      if (sym.tp.isArray && singletonArrays.contains(s.tp.asInstanceOf[TypeRep[Any]])) {
-        singletonArrays(sym.tp.asInstanceOf[TypeRep[Any]]) = sym.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
-      }
-      super.traverseStm(stm)
-    }
-    case Stm(sym, ps @ PardisStruct(tag, elems, methods)) => {
+  analysis += statement {
+    case sym -> PardisStructImmutableField(s, f) if sym.tp.isArray && singletonArrays.contains(s.tp.asInstanceOf[TypeRep[Any]]) =>
+      singletonArrays(sym.tp.asInstanceOf[TypeRep[Any]]) = sym.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+    case sym -> (ps @ PardisStruct(tag, elems, methods)) if elems.find(e => singletonArrays.contains(e.init.tp.asInstanceOf[TypeRep[Any]])).isDefined => {
       elems.foreach(e =>
         if (e.init.tp.isArray && singletonArrays.contains(e.init.tp.asInstanceOf[TypeRep[Any]])) {
           singletonArrays(sym.tp.asInstanceOf[TypeRep[Any]]) = typePointer(sym.tp).asInstanceOf[PardisType[Any]]
         })
     }
-    case Stm(sym, an @ ArrayNew(Constant(1))) =>
+    case sym -> (an @ ArrayNew(Constant(1))) =>
       singletonArrays(sym.tp.asInstanceOf[TypeRep[Any]]) = sym.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
-    case _ => super.traverseStm(stm)
   }
 
-  override def transformStm(stm: Stm[_]): Stm[_] = stm match {
-    case Stm(sym, an @ ArrayNew(Constant(1))) =>
+  rewrite += statement {
+    case sym -> (an @ ArrayNew(Constant(1))) =>
       val dfltV = pardis.shallow.utils.DefaultValue(an.typeT.name)
-      if (dfltV == null)
-        super.transformStm(Stm(sym, ReadVal(unit(dfltV))))
-      else
-        super.transformStm(Stm(sym, ReadVal(unit(0))))
-    case Stm(sym, ps @ PardisStruct(tag, elems, methods)) => {
+      if (dfltV == null) unit(dfltV)
+      else unit(0)(an.typeT.asInstanceOf[PardisType[Int]])
+
+    case sym -> (ps @ PardisStruct(tag, elems, methods)) if elems.find(e => singletonArrays.contains(e.init.tp.asInstanceOf[TypeRep[Any]])).isDefined => {
       val newElems = elems.map(e =>
         if (e.init.tp.isArray && singletonArrays.contains(e.init.tp.asInstanceOf[TypeRep[Any]])) {
-          PardisStructArg(e.name, true, e.init)
+          PardisStructArg(e.name, true, apply(e.init))
         } else e)
-      super.transformStm(Stm(sym, PardisStruct(tag, newElems, methods)(ps.tp))(sym.tp))
+      toAtom(PardisStruct(tag, newElems, methods)(ps.tp))(ps.tp)
     }
-    case _ => super.transformStm(stm)
+  }
+
+  rewrite += rule {
+    case au @ ArrayUpdate(a, i, v) if (singletonArrays.contains(a.tp.asInstanceOf[PardisType[Any]])) => {
+      a match {
+        case Def(moo @ PardisStructImmutableField(s, f)) => PardisStructFieldSetter(s, f, apply(v))
+      }
+    }
+    case ArrayApply(a, i) if (singletonArrays.contains(a.tp.asInstanceOf[PardisType[Any]])) =>
+      ReadVal(apply(a))
   }
 
   override def newSym[T: TypeRep](sym: Rep[T]): to.Sym[_] = {
     if (singletonArrays.contains(sym.tp.asInstanceOf[TypeRep[Any]])) to.fresh(singletonArrays(sym.tp.asInstanceOf[TypeRep[Any]])).copyFrom(sym.asInstanceOf[Sym[T]])
     else super.newSym[T](sym)
   }
+  //val singletonArrays = scala.collection.mutable.Map[Sym[Any], TypeRep[Any]]()
 
-  override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
+  //override def traverseStm(stm: Stm[_]): Unit = stm match {
+  // Hack/Patch -- AGGRecord_Field_Aggs should be PardisStructImmutableField after LBLowering,
+  // but it is not. For now this seems to be working
+  //   case Stm(sym, AGGRecord_Field_Aggs(s)) =>
+  //     if (sym.tp.isArray && singletonArrays.contains(s.tp.asInstanceOf[TypeRep[Any]])) {
+  //       singletonArrays(sym.tp.asInstanceOf[TypeRep[Any]]) = sym.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+  //     }
+  //     super.traverseStm(stm)
+
+  //   case Stm(sym, PardisStructImmutableField(s, f)) => {
+  //     if (sym.tp.isArray && singletonArrays.contains(s.tp.asInstanceOf[TypeRep[Any]])) {
+  //       singletonArrays(sym.tp.asInstanceOf[TypeRep[Any]]) = sym.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+  //     }
+  //     super.traverseStm(stm)
+  //   }
+  //   case Stm(sym, ps @ PardisStruct(tag, elems, methods)) => {
+  //     elems.foreach(e =>
+  //       if (e.init.tp.isArray && singletonArrays.contains(e.init.tp.asInstanceOf[TypeRep[Any]])) {
+  //         singletonArrays(sym.tp.asInstanceOf[TypeRep[Any]]) = typePointer(sym.tp).asInstanceOf[PardisType[Any]]
+  //       })
+  //   }
+  //   case Stm(sym, an @ ArrayNew(Constant(1))) =>
+  //     singletonArrays(sym.tp.asInstanceOf[TypeRep[Any]]) = sym.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+  //   //case _ => super.traverseStm(stm)
+  // //}
+}
+
+class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+  import IR._
+  import CNodes._
+  import CTypes._
+
+  override def transformType[T: PardisType]: PardisType[Any] = ({
+    val tp = typeRep[T]
+    tp match {
+      case c if c.isPrimitive    => super.transformType[T]
+      case ArrayBufferType(args) => typePointer(typeGArray(transformType(args)))
+      case ArrayType(args) => typePointer(typeCArray({
+        if (args.isArray) typeCArray(args)
+        else args
+      }))
+      case c if c.isRecord =>
+        if (tp.typeArguments == List()) typePointer(tp)
+        else typePointer(transformType(tp.typeArguments(0)))
+      case TreeSetType(args) => typePointer(typeGTree(transformType(args)))
+      case SetType(args)     => typePointer(typeGList(transformType(args)))
+      case OptionType(args)  => typePointer(transformType(args))
+      case _                 => super.transformType[T]
+    }
+  }).asInstanceOf[PardisType[Any]]
+
+  rewrite += remove { case RangeNew(start, end, step) => () }
+
+  // override def transformStm(stm: Stm[_]): Stm[_] = stm match {
+  //   // case Stm(sym, an @ ArrayNew(Constant(1))) =>
+  //   //   val dfltV = pardis.shallow.utils.DefaultValue(an.typeT.name)
+  //   //   if (dfltV == null)
+  //   //     super.transformStm(Stm(sym, ReadVal(unit(dfltV))))
+  //   //   else
+  //   //     super.transformStm(Stm(sym, ReadVal(unit(0))))
+  //   case Stm(sym, ps @ PardisStruct(tag, elems, methods)) => {
+  //     val newElems = elems.map(e =>
+  //       if (e.init.tp.isArray && singletonArrays.contains(e.init.tp.asInstanceOf[TypeRep[Any]])) {
+  //         PardisStructArg(e.name, true, e.init)
+  //       } else e)
+  //     super.transformStm(Stm(sym, PardisStruct(tag, newElems, methods)(ps.tp))(sym.tp))
+  //   }
+  //   case _ => super.transformStm(stm)
+  // }
+
+  // override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = (node match {
+  rewrite += rule {
     case RangeForeach(Def(RangeNew(start, end, step)), Def(Lambda(f, i1, o))) =>
       PardisFor(start, end, step, i1.asInstanceOf[Expression[Int]], reifyBlock({ o }).asInstanceOf[PardisBlock[Unit]])
-
+  }
+  rewrite += rule {
     case pc @ PardisCast(x) => PardisCast(apply(x))(apply(pc.castFrom), apply(pc.castTp))
-
+  }
+  rewrite += rule {
     case a @ ArrayNew(x) =>
       if (a.tp.typeArguments(0).isArray) {
         // Get type of elements stored in array
@@ -285,62 +323,64 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         structCopy(m.asInstanceOf[Expression[Pointer[Any]]], s)
         ReadVal(m.asInstanceOf[Expression[Any]])(m.tp.asInstanceOf[PardisType[Any]])
       }
-    case au @ ArrayUpdate(a, i, v) => {
-      if (singletonArrays.contains(a.tp.asInstanceOf[PardisType[Any]])) {
-        a match {
-          case Def(moo @ PardisStructImmutableField(s, f)) => PardisStructFieldSetter(s, f, v)
-        }
-      } else {
-        val s = transformExp[Any, T](a)
-        // Get type of elements stored in array
-        val elemType = a.tp.typeArguments(0)
-        // Get type of internal array
-        val newTp = ({
-          if (elemType.isArray) typePointer(typeCArray(elemType.typeArguments(0)))
-          else typeArray(typePointer(elemType))
-        }).asInstanceOf[PardisType[Any]] //if (elemType.isPrimitive) elemType else typePointer(elemType)
-        // Read array and perform update
-        val arr = field(s, "array")(newTp)
-        if (elemType.isPrimitive) ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, v)
-        else if (elemType.name == "OptimalString")
-          PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, v)
-        else
-          PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(v.asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
-            case x if v.tp.isArray            => transformType(v.tp).typeArguments(0).asInstanceOf[PardisType[Any]]
-            case x if x.startsWith("Pointer") => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
-            case _                            => v.tp
-          }))
-      }
-    }
+  }
+  rewrite += rule {
+    case au @ ArrayUpdate(a, i, v) =>
+      val s = apply(a)
+      // Get type of elements stored in array
+      val elemType = a.tp.typeArguments(0)
+      // Get type of internal array
+      val newTp = ({
+        if (elemType.isArray) typePointer(typeCArray(elemType.typeArguments(0)))
+        else typeArray(typePointer(elemType))
+      }).asInstanceOf[PardisType[Any]] //if (elemType.isPrimitive) elemType else typePointer(elemType)
+      // Read array and perform update
+      val arr = field(s, "array")(newTp)
+      if (elemType.isPrimitive) ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, apply(v))
+      else if (elemType.name == "OptimalString")
+        PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, apply(v))
+      else
+        PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(apply(v).asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
+          case x if v.tp.isArray            => transformType(v.tp).typeArguments(0).asInstanceOf[PardisType[Any]]
+          case x if x.startsWith("Pointer") => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+          case _                            => v.tp
+        }))
+    //}
+    //}
+  }
+  rewrite += rule {
     case ArrayFilter(a, op) => field(a, "array")(transformType(a.tp)).correspondingNode
+  }
+  rewrite += rule {
     case ArrayApply(a, i) =>
-      if (singletonArrays.contains(a.tp.asInstanceOf[PardisType[Any]])) ReadVal(a)
-      else {
-        val s = transformExp[Any, T](a)
-        // Get type of elements stored in array
-        val elemType = a.tp.typeArguments(0)
-        // Get type of internal array
-        val newTp = ({
-          if (elemType.isArray) typePointer(typeCArray(elemType.typeArguments(0)))
-          else typeArray(typePointer(elemType))
-        }).asInstanceOf[PardisType[Any]] // if (elemType.isPrimitive) elemType else typePointer(elemType)
-        val arr = field(s, "array")(newTp)
-        if (elemType.isPrimitive) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], i)(newTp.asInstanceOf[PardisType[Any]])
-        else PTRADDRESS(arr.asInstanceOf[Expression[Pointer[Any]]], i)(typePointer(newTp).asInstanceOf[PardisType[Pointer[Any]]])
-      }
+      val s = apply(a)
+      // Get type of elements stored in array
+      val elemType = a.tp.typeArguments(0)
+      // Get type of internal array
+      val newTp = ({
+        if (elemType.isArray) typePointer(typeCArray(elemType.typeArguments(0)))
+        else typeArray(typePointer(elemType))
+      }).asInstanceOf[PardisType[Any]] // if (elemType.isPrimitive) elemType else typePointer(elemType)
+      val arr = field(s, "array")(newTp)
+      if (elemType.isPrimitive) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], i)(newTp.asInstanceOf[PardisType[Any]])
+      else PTRADDRESS(arr.asInstanceOf[Expression[Pointer[Any]]], i)(typePointer(newTp).asInstanceOf[PardisType[Pointer[Any]]])
+    //}
+  }
+  rewrite += rule {
     case ArrayLength(a) =>
-      val s = transformExp[Any, T](a)
+      val s = apply(a)
       val arr = field(s, "length")(IntType)
       ReadVal(arr)(IntType)
+  }
+  rewrite += rule {
     case s @ PardisStruct(tag, elems, methods) =>
       // TODO if needed method generation should be added
       val x = toAtom(Malloc(unit(1))(s.tp))(typePointer(s.tp))
       val newElems = elems.map(el => PardisStructArg(el.name, el.mutable, transformExp(el.init)(el.init.tp, apply(el.init.tp))))
       structCopy(x, PardisStruct(tag, newElems, methods.map(m => m.copy(body =
         transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef])))(s.tp))
-      ReadVal(x)(typePointer(s.tp))
-    case _ => super.transformDef(node)
-  }).asInstanceOf[to.Def[T]]
+      x //ReadVal(x)(typePointer(s.tp))
+  }
 }
 
 class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
@@ -400,7 +440,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
   rewrite += rule {
     case mu @ HashMapUpdate(map, key, value) =>
-      NameAlias[Unit](None, "g_hash_table_insert", List(List(map, key, value)))
+      NameAlias[Unit](None, "g_hash_table_insert", List(List(apply(map), apply(key), apply(value))))
   }
   rewrite += rule {
     case hmgu @ HashMapGetOrElseUpdate(map, key, value) =>
@@ -428,7 +468,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   rewrite += rule {
     case SetHead(s) =>
       val x = nameAlias(None, "g_list_first", List(List(s)))(transformType(s.tp))
-      field(x, "data")(s.tp.typeArguments(0).typeArguments(0))
+      field(x, "data")(apply(s).tp.typeArguments(0).typeArguments(0))
   }
   rewrite += rule {
     case SetRemove(s @ Def(PardisReadVar(x)), e) =>
