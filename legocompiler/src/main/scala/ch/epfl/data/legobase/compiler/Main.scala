@@ -95,7 +95,7 @@ object Main extends LegoRunner {
 
     pipeline += PartiallyEvaluate
     pipeline += HashMapHoist
-    //pipeline += HashMapToArrayTransformer(generateCCode)
+    pipeline += HashMapToArrayTransformer(generateCCode)
     //pipeline += MemoryManagementTransfomer //NOTE FIX TOPOLOGICAL SORT :-(
 
     //pipeline += ParameterPromotion
@@ -103,6 +103,7 @@ object Main extends LegoRunner {
     //pipeline += DCE
 
     pipeline += PartiallyEvaluate
+    pipeline += SingletonArrayToValueTransformer
 
     if (generateCCode) pipeline += CTransformersPipeline
     pipeline += TreeDumper
