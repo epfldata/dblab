@@ -8,6 +8,7 @@ import pardis.ir._
 import pardis.types.PardisTypeImplicits._
 import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
+import pardis.deep.scalalib.io._
 
 trait GroupByClassOps extends Base with OptimalStringOps {
   // Type representation
@@ -57,10 +58,10 @@ trait GroupByClassOps extends Base with OptimalStringOps {
   def groupByClass_Field_L_RETURNFLAG(self: Rep[GroupByClass]): Rep[Char] = GroupByClass_Field_L_RETURNFLAG(self)
   type GroupByClass = ch.epfl.data.legobase.queryengine.GroupByClass
 }
-trait GroupByClassImplicits {
+trait GroupByClassImplicits extends GroupByClassOps {
   // Add implicit conversions here!
 }
-trait GroupByClassImplementations {
+trait GroupByClassImplementations extends GroupByClassOps {
 
 }
 trait GroupByClassPartialEvaluation extends GroupByClassComponent with BasePartialEvaluation {
@@ -135,10 +136,10 @@ trait Q3GRPRecordOps extends Base with OptimalStringOps {
   def q3GRPRecord_Field_L_ORDERKEY(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_L_ORDERKEY(self)
   type Q3GRPRecord = ch.epfl.data.legobase.queryengine.Q3GRPRecord
 }
-trait Q3GRPRecordImplicits {
+trait Q3GRPRecordImplicits extends Q3GRPRecordOps {
   // Add implicit conversions here!
 }
-trait Q3GRPRecordImplementations {
+trait Q3GRPRecordImplementations extends Q3GRPRecordOps {
 
 }
 trait Q3GRPRecordPartialEvaluation extends Q3GRPRecordComponent with BasePartialEvaluation {
@@ -217,10 +218,10 @@ trait Q7GRPRecordOps extends Base with OptimalStringOps {
   def q7GRPRecord_Field_SUPP_NATION(self: Rep[Q7GRPRecord]): Rep[OptimalString] = Q7GRPRecord_Field_SUPP_NATION(self)
   type Q7GRPRecord = ch.epfl.data.legobase.queryengine.Q7GRPRecord
 }
-trait Q7GRPRecordImplicits {
+trait Q7GRPRecordImplicits extends Q7GRPRecordOps {
   // Add implicit conversions here!
 }
-trait Q7GRPRecordImplementations {
+trait Q7GRPRecordImplementations extends Q7GRPRecordOps {
 
 }
 trait Q7GRPRecordPartialEvaluation extends Q7GRPRecordComponent with BasePartialEvaluation {
@@ -291,10 +292,10 @@ trait Q9GRPRecordOps extends Base with OptimalStringOps {
   def q9GRPRecord_Field_NATION(self: Rep[Q9GRPRecord]): Rep[OptimalString] = Q9GRPRecord_Field_NATION(self)
   type Q9GRPRecord = ch.epfl.data.legobase.queryengine.Q9GRPRecord
 }
-trait Q9GRPRecordImplicits {
+trait Q9GRPRecordImplicits extends Q9GRPRecordOps {
   // Add implicit conversions here!
 }
-trait Q9GRPRecordImplementations {
+trait Q9GRPRecordImplementations extends Q9GRPRecordOps {
 
 }
 trait Q9GRPRecordPartialEvaluation extends Q9GRPRecordComponent with BasePartialEvaluation {
@@ -401,10 +402,10 @@ trait Q10GRPRecordOps extends Base with OptimalStringOps {
   def q10GRPRecord_Field_C_CUSTKEY(self: Rep[Q10GRPRecord]): Rep[Int] = Q10GRPRecord_Field_C_CUSTKEY(self)
   type Q10GRPRecord = ch.epfl.data.legobase.queryengine.Q10GRPRecord
 }
-trait Q10GRPRecordImplicits {
+trait Q10GRPRecordImplicits extends Q10GRPRecordOps {
   // Add implicit conversions here!
 }
-trait Q10GRPRecordImplementations {
+trait Q10GRPRecordImplementations extends Q10GRPRecordOps {
 
 }
 trait Q10GRPRecordPartialEvaluation extends Q10GRPRecordComponent with BasePartialEvaluation {
@@ -507,10 +508,10 @@ trait Q16GRPRecord1Ops extends Base with OptimalStringOps {
   def q16GRPRecord1_Field_P_BRAND(self: Rep[Q16GRPRecord1]): Rep[OptimalString] = Q16GRPRecord1_Field_P_BRAND(self)
   type Q16GRPRecord1 = ch.epfl.data.legobase.queryengine.Q16GRPRecord1
 }
-trait Q16GRPRecord1Implicits {
+trait Q16GRPRecord1Implicits extends Q16GRPRecord1Ops {
   // Add implicit conversions here!
 }
-trait Q16GRPRecord1Implementations {
+trait Q16GRPRecord1Implementations extends Q16GRPRecord1Ops {
 
 }
 trait Q16GRPRecord1PartialEvaluation extends Q16GRPRecord1Component with BasePartialEvaluation {
@@ -593,10 +594,10 @@ trait Q16GRPRecord2Ops extends Base with OptimalStringOps {
   def q16GRPRecord2_Field_P_BRAND(self: Rep[Q16GRPRecord2]): Rep[OptimalString] = Q16GRPRecord2_Field_P_BRAND(self)
   type Q16GRPRecord2 = ch.epfl.data.legobase.queryengine.Q16GRPRecord2
 }
-trait Q16GRPRecord2Implicits {
+trait Q16GRPRecord2Implicits extends Q16GRPRecord2Ops {
   // Add implicit conversions here!
 }
-trait Q16GRPRecord2Implementations {
+trait Q16GRPRecord2Implementations extends Q16GRPRecord2Ops {
 
 }
 trait Q16GRPRecord2PartialEvaluation extends Q16GRPRecord2Component with BasePartialEvaluation {
@@ -691,10 +692,10 @@ trait Q18GRPRecordOps extends Base with OptimalStringOps {
   def q18GRPRecord_Field_C_NAME(self: Rep[Q18GRPRecord]): Rep[OptimalString] = Q18GRPRecord_Field_C_NAME(self)
   type Q18GRPRecord = ch.epfl.data.legobase.queryengine.Q18GRPRecord
 }
-trait Q18GRPRecordImplicits {
+trait Q18GRPRecordImplicits extends Q18GRPRecordOps {
   // Add implicit conversions here!
 }
-trait Q18GRPRecordImplementations {
+trait Q18GRPRecordImplementations extends Q18GRPRecordOps {
 
 }
 trait Q18GRPRecordPartialEvaluation extends Q18GRPRecordComponent with BasePartialEvaluation {
@@ -781,10 +782,10 @@ trait Q20GRPRecordOps extends Base with OptimalStringOps {
   def q20GRPRecord_Field_PS_PARTKEY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_PARTKEY(self)
   type Q20GRPRecord = ch.epfl.data.legobase.queryengine.Q20GRPRecord
 }
-trait Q20GRPRecordImplicits {
+trait Q20GRPRecordImplicits extends Q20GRPRecordOps {
   // Add implicit conversions here!
 }
-trait Q20GRPRecordImplementations {
+trait Q20GRPRecordImplementations extends Q20GRPRecordOps {
 
 }
 trait Q20GRPRecordPartialEvaluation extends Q20GRPRecordComponent with BasePartialEvaluation {
@@ -856,10 +857,10 @@ trait AGGRecordOps extends Base with OptimalStringOps {
   def aGGRecord_Field_Key[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]): Rep[B] = AGGRecord_Field_Key[B](self)
   type AGGRecord[B] = ch.epfl.data.legobase.queryengine.AGGRecord[B]
 }
-trait AGGRecordImplicits {
+trait AGGRecordImplicits extends AGGRecordOps {
   // Add implicit conversions here!
 }
-trait AGGRecordImplementations {
+trait AGGRecordImplementations extends AGGRecordOps {
 
 }
 trait AGGRecordPartialEvaluation extends AGGRecordComponent with BasePartialEvaluation {
@@ -932,10 +933,10 @@ trait GenericEngineOps extends Base with OptimalStringOps {
   def genericEngineParseStringObject(x: Rep[String]): Rep[OptimalString] = GenericEngineParseStringObject(x)
   type GenericEngine = ch.epfl.data.legobase.queryengine.GenericEngine
 }
-trait GenericEngineImplicits {
+trait GenericEngineImplicits extends GenericEngineOps {
   // Add implicit conversions here!
 }
-trait GenericEngineImplementations {
+trait GenericEngineImplementations extends GenericEngineOps {
 
 }
 trait GenericEnginePartialEvaluation extends GenericEngineComponent with BasePartialEvaluation {
@@ -969,7 +970,7 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
     def L_TAX: Rep[Double] = lINEITEMRecord_Field_L_TAX(self)
     def L_DISCOUNT: Rep[Double] = lINEITEMRecord_Field_L_DISCOUNT(self)
     def L_EXTENDEDPRICE: Rep[Double] = lINEITEMRecord_Field_L_EXTENDEDPRICE(self)
-    def L_QUANTITY: Rep[Double] = lINEITEMRecord_Field_L_QUANTITY(self)
+    def L_QUANTITY: Rep[Int] = lINEITEMRecord_Field_L_QUANTITY(self)
     def L_LINENUMBER: Rep[Int] = lINEITEMRecord_Field_L_LINENUMBER(self)
     def L_SUPPKEY: Rep[Int] = lINEITEMRecord_Field_L_SUPPKEY(self)
     def L_PARTKEY: Rep[Int] = lINEITEMRecord_Field_L_PARTKEY(self)
@@ -979,9 +980,9 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
 
   }
   // constructors
-  def __newLINEITEMRecord(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = lINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
+  def __newLINEITEMRecord(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Int], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = lINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
   // case classes
-  case class LINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]) extends ConstructorDef[LINEITEMRecord](List(), "LINEITEMRecord", List(List(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT))) {
+  case class LINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Int], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]) extends ConstructorDef[LINEITEMRecord](List(), "LINEITEMRecord", List(List(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -1055,7 +1056,7 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
 
   }
 
-  case class LINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]) extends FieldDef[Double](self, "L_QUANTITY") {
+  case class LINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]) extends FieldDef[Int](self, "L_QUANTITY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
@@ -1086,7 +1087,7 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
   }
 
   // method definitions
-  def lINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = LINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
+  def lINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Int], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = LINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
   def lINEITEMRecordGetField(self: Rep[LINEITEMRecord], key: Rep[String]): Rep[Option[Any]] = LINEITEMRecordGetField(self, key)
   def lINEITEMRecord_Field_L_COMMENT(self: Rep[LINEITEMRecord]): Rep[OptimalString] = LINEITEMRecord_Field_L_COMMENT(self)
   def lINEITEMRecord_Field_L_SHIPMODE(self: Rep[LINEITEMRecord]): Rep[OptimalString] = LINEITEMRecord_Field_L_SHIPMODE(self)
@@ -1099,17 +1100,17 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
   def lINEITEMRecord_Field_L_TAX(self: Rep[LINEITEMRecord]): Rep[Double] = LINEITEMRecord_Field_L_TAX(self)
   def lINEITEMRecord_Field_L_DISCOUNT(self: Rep[LINEITEMRecord]): Rep[Double] = LINEITEMRecord_Field_L_DISCOUNT(self)
   def lINEITEMRecord_Field_L_EXTENDEDPRICE(self: Rep[LINEITEMRecord]): Rep[Double] = LINEITEMRecord_Field_L_EXTENDEDPRICE(self)
-  def lINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]): Rep[Double] = LINEITEMRecord_Field_L_QUANTITY(self)
+  def lINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_QUANTITY(self)
   def lINEITEMRecord_Field_L_LINENUMBER(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_LINENUMBER(self)
   def lINEITEMRecord_Field_L_SUPPKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_SUPPKEY(self)
   def lINEITEMRecord_Field_L_PARTKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_PARTKEY(self)
   def lINEITEMRecord_Field_L_ORDERKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_ORDERKEY(self)
   type LINEITEMRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.LINEITEMRecord
 }
-trait LINEITEMRecordImplicits {
+trait LINEITEMRecordImplicits extends LINEITEMRecordOps {
   // Add implicit conversions here!
 }
-trait LINEITEMRecordImplementations {
+trait LINEITEMRecordImplementations extends LINEITEMRecordOps {
 
 }
 trait LINEITEMRecordPartialEvaluation extends LINEITEMRecordComponent with BasePartialEvaluation {
@@ -1158,7 +1159,7 @@ trait LINEITEMRecordPartialEvaluation extends LINEITEMRecordComponent with BaseP
     case Def(node: LINEITEMRecordNew) => node.L_EXTENDEDPRICE
     case _                            => super.lINEITEMRecord_Field_L_EXTENDEDPRICE(self)
   }
-  override def lINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]): Rep[Double] = self match {
+  override def lINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]): Rep[Int] = self match {
     case Def(node: LINEITEMRecordNew) => node.L_QUANTITY
     case _                            => super.lINEITEMRecord_Field_L_QUANTITY(self)
   }
@@ -1272,10 +1273,10 @@ trait SUPPLIERRecordOps extends Base with OptimalStringOps {
   def sUPPLIERRecord_Field_S_SUPPKEY(self: Rep[SUPPLIERRecord]): Rep[Int] = SUPPLIERRecord_Field_S_SUPPKEY(self)
   type SUPPLIERRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.SUPPLIERRecord
 }
-trait SUPPLIERRecordImplicits {
+trait SUPPLIERRecordImplicits extends SUPPLIERRecordOps {
   // Add implicit conversions here!
 }
-trait SUPPLIERRecordImplementations {
+trait SUPPLIERRecordImplementations extends SUPPLIERRecordOps {
 
 }
 trait SUPPLIERRecordPartialEvaluation extends SUPPLIERRecordComponent with BasePartialEvaluation {
@@ -1386,10 +1387,10 @@ trait PARTSUPPRecordOps extends Base with OptimalStringOps {
   def pARTSUPPRecord_Field_PS_PARTKEY(self: Rep[PARTSUPPRecord]): Rep[Int] = PARTSUPPRecord_Field_PS_PARTKEY(self)
   type PARTSUPPRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.PARTSUPPRecord
 }
-trait PARTSUPPRecordImplicits {
+trait PARTSUPPRecordImplicits extends PARTSUPPRecordOps {
   // Add implicit conversions here!
 }
-trait PARTSUPPRecordImplementations {
+trait PARTSUPPRecordImplementations extends PARTSUPPRecordOps {
 
 }
 trait PARTSUPPRecordPartialEvaluation extends PARTSUPPRecordComponent with BasePartialEvaluation {
@@ -1476,10 +1477,10 @@ trait REGIONRecordOps extends Base with OptimalStringOps {
   def rEGIONRecord_Field_R_REGIONKEY(self: Rep[REGIONRecord]): Rep[Int] = REGIONRecord_Field_R_REGIONKEY(self)
   type REGIONRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.REGIONRecord
 }
-trait REGIONRecordImplicits {
+trait REGIONRecordImplicits extends REGIONRecordOps {
   // Add implicit conversions here!
 }
-trait REGIONRecordImplementations {
+trait REGIONRecordImplementations extends REGIONRecordOps {
 
 }
 trait REGIONRecordPartialEvaluation extends REGIONRecordComponent with BasePartialEvaluation {
@@ -1566,10 +1567,10 @@ trait NATIONRecordOps extends Base with OptimalStringOps {
   def nATIONRecord_Field_N_NATIONKEY(self: Rep[NATIONRecord]): Rep[Int] = NATIONRecord_Field_N_NATIONKEY(self)
   type NATIONRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.NATIONRecord
 }
-trait NATIONRecordImplicits {
+trait NATIONRecordImplicits extends NATIONRecordOps {
   // Add implicit conversions here!
 }
-trait NATIONRecordImplementations {
+trait NATIONRecordImplementations extends NATIONRecordOps {
 
 }
 trait NATIONRecordPartialEvaluation extends NATIONRecordComponent with BasePartialEvaluation {
@@ -1700,10 +1701,10 @@ trait PARTRecordOps extends Base with OptimalStringOps {
   def pARTRecord_Field_P_PARTKEY(self: Rep[PARTRecord]): Rep[Int] = PARTRecord_Field_P_PARTKEY(self)
   type PARTRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.PARTRecord
 }
-trait PARTRecordImplicits {
+trait PARTRecordImplicits extends PARTRecordOps {
   // Add implicit conversions here!
 }
-trait PARTRecordImplementations {
+trait PARTRecordImplementations extends PARTRecordOps {
 
 }
 trait PARTRecordPartialEvaluation extends PARTRecordComponent with BasePartialEvaluation {
@@ -1846,10 +1847,10 @@ trait CUSTOMERRecordOps extends Base with OptimalStringOps {
   def cUSTOMERRecord_Field_C_CUSTKEY(self: Rep[CUSTOMERRecord]): Rep[Int] = CUSTOMERRecord_Field_C_CUSTKEY(self)
   type CUSTOMERRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.CUSTOMERRecord
 }
-trait CUSTOMERRecordImplicits {
+trait CUSTOMERRecordImplicits extends CUSTOMERRecordOps {
   // Add implicit conversions here!
 }
-trait CUSTOMERRecordImplementations {
+trait CUSTOMERRecordImplementations extends CUSTOMERRecordOps {
 
 }
 trait CUSTOMERRecordPartialEvaluation extends CUSTOMERRecordComponent with BasePartialEvaluation {
@@ -1996,10 +1997,10 @@ trait ORDERSRecordOps extends Base with OptimalStringOps {
   def oRDERSRecord_Field_O_ORDERKEY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_ORDERKEY(self)
   type ORDERSRecord = ch.epfl.data.legobase.queryengine.TPCHRelations.ORDERSRecord
 }
-trait ORDERSRecordImplicits {
+trait ORDERSRecordImplicits extends ORDERSRecordOps {
   // Add implicit conversions here!
 }
-trait ORDERSRecordImplementations {
+trait ORDERSRecordImplementations extends ORDERSRecordOps {
 
 }
 trait ORDERSRecordPartialEvaluation extends ORDERSRecordComponent with BasePartialEvaluation {
@@ -2093,10 +2094,10 @@ trait NextContainerOps extends Base with OptimalStringOps {
   def nextContainer_Field_Current[T](self: Rep[NextContainer[T]])(implicit typeT: TypeRep[T]): Rep[T] = NextContainer_Field_Current[T](self)
   type NextContainer[T] = ch.epfl.data.legobase.NextContainer[T]
 }
-trait NextContainerImplicits {
+trait NextContainerImplicits extends NextContainerOps {
   // Add implicit conversions here!
 }
-trait NextContainerImplementations {
+trait NextContainerImplementations extends NextContainerOps {
 
 }
 trait NextContainerPartialEvaluation extends NextContainerComponent with BasePartialEvaluation {
@@ -2171,10 +2172,10 @@ trait NextKeyContainerOps extends Base with OptimalStringOps {
   def nextKeyContainer_Field_Current[K, T](self: Rep[NextKeyContainer[K, T]])(implicit typeK: TypeRep[K], typeT: TypeRep[T]): Rep[T] = NextKeyContainer_Field_Current[K, T](self)
   type NextKeyContainer[K, T] = ch.epfl.data.legobase.NextKeyContainer[K, T]
 }
-trait NextKeyContainerImplicits {
+trait NextKeyContainerImplicits extends NextKeyContainerOps {
   // Add implicit conversions here!
 }
-trait NextKeyContainerImplementations {
+trait NextKeyContainerImplementations extends NextKeyContainerOps {
 
 }
 trait NextKeyContainerPartialEvaluation extends NextKeyContainerComponent with BasePartialEvaluation {
@@ -2301,10 +2302,10 @@ trait K2DBScannerOps extends Base with OptimalStringOps {
   def k2DBScanner_Field_Filename(self: Rep[K2DBScanner]): Rep[String] = K2DBScanner_Field_Filename(self)
   type K2DBScanner = ch.epfl.data.legobase.storagemanager.K2DBScanner
 }
-trait K2DBScannerImplicits {
+trait K2DBScannerImplicits extends K2DBScannerOps {
   // Add implicit conversions here!
 }
-trait K2DBScannerImplementations {
+trait K2DBScannerImplementations extends K2DBScannerOps {
 
 }
 trait K2DBScannerPartialEvaluation extends K2DBScannerComponent with BasePartialEvaluation {
@@ -2369,10 +2370,10 @@ trait WindowRecordOps extends Base with OptimalStringOps {
   def windowRecord_Field_Key[B, C](self: Rep[WindowRecord[B, C]])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[B] = WindowRecord_Field_Key[B, C](self)
   type WindowRecord[B, C] = ch.epfl.data.legobase.queryengine.WindowRecord[B, C]
 }
-trait WindowRecordImplicits {
+trait WindowRecordImplicits extends WindowRecordOps {
   // Add implicit conversions here!
 }
-trait WindowRecordImplementations {
+trait WindowRecordImplementations extends WindowRecordOps {
 
 }
 trait WindowRecordPartialEvaluation extends WindowRecordComponent with BasePartialEvaluation {
@@ -2398,7 +2399,13 @@ trait DeepDSL extends push.OperatorsComponent
   with DoubleComponent
   with IntComponent
   with LongComponent
+  with BooleanComponent
+  with DoublePartialEvaluation
+  with IntPartialEvaluation
+  with LongPartialEvaluation
+  with BooleanPartialEvaluation
   with ArrayComponent
+  with PrintStreamComponent
   with GroupByClassComponent
   with Q3GRPRecordComponent
   with Q7GRPRecordComponent
@@ -2423,7 +2430,6 @@ trait DeepDSL extends push.OperatorsComponent
   with IntegerComponent
   with NextContainerComponent
   with NextKeyContainerComponent
-  with BooleanComponent
   with HashMapComponent
   with SetComponent
   with TreeSetComponent

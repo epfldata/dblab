@@ -6,8 +6,13 @@ import scala.reflect.runtime.universe.{ typeTag => tag }
 import scala.language.implicitConversions
 import pardis.utils.Utils.{ pardisTypeToString => t2s }
 import pardis.types.PardisTypeImplicits._
+import java.io.PrintStream
+import ch.epfl.data.pardis
+import pardis.ir._
+import pardis.types.PardisTypeImplicits._
+import pardis.effects._
 
-trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with IntPE with RichIntOps with pardis.deep.scalalib.ByteComponent with LegoHashMap with LegoArrayBuffer { this: DeepDSL =>
+trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with RichIntOps with pardis.deep.scalalib.ByteComponent with LegoHashMap with LegoArrayBuffer { this: DeepDSL =>
   /* TODO These methods should be lifted from scala.Predef */
   case class Println(x: Rep[Any]) extends FunctionDef[Unit](None, "println", List(List(x))) {
     override def curriedConstructor = (copy _)
@@ -19,6 +24,26 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   }
   def printf(text: Rep[String], xs: Rep[Any]*): Rep[Unit] = Printf(text, xs: _*)
 
+  object Console {
+    def err: Rep[PrintStream] = consoleErr()
+    def out: Rep[PrintStream] = consoleOut()
+  }
+
+  def consoleErr(): Rep[PrintStream] = ConsoleErr()
+  def consoleOut(): Rep[PrintStream] = ConsoleOut()
+  case class ConsoleErr() extends FunctionDef[PrintStream](None, "Console.err", List()) {
+    override def rebuild(children: PardisFunArg*) = ConsoleErr()
+  }
+  case class ConsoleOut() extends FunctionDef[PrintStream](None, "Console.out", List()) {
+    override def rebuild(children: PardisFunArg*) = ConsoleOut()
+  }
+
+  case class PrintStreamPrintf2(self: Rep[PrintStream], s: Rep[String], objsOutput: Rep[Any]*) extends FunctionDef[Unit](Some(self), "printf", List(s :: objsOutput.toList)) {
+    override def rebuild(children: FunctionArg*) = PrintStreamPrintf2(children(0).asInstanceOf[Rep[PrintStream]], children(1).asInstanceOf[Rep[String]], children.drop(2).toSeq.asInstanceOf[Seq[Rep[Any]]]: _*)
+  }
+  override def printStreamPrintf(self: Rep[PrintStream], s: Rep[String], objs: Rep[Any]*): Rep[Unit] = {
+    PrintStreamPrintf2(self, s, objs: _*)
+  }
   // printf is not written like this for the reason mentioned above
   // case class Printf(text: Rep[String], xs: Rep[Seq[Any]]) extends FunctionDef[Unit](None, "printf", List(List(text, __varArg(xs)))) {
   //   override def curriedConstructor = (copy _).curried
@@ -95,17 +120,6 @@ trait ManifestOps { this: DeepDSL =>
   case class ManifestNew[T](man: Manifest[T])(implicit typeT: TypeRep[T]) extends FunctionDef[Manifest[T]](None, s"manifest[${t2s(typeT)}]", Nil) {
     override def curriedConstructor = copy[T] _
   }
-}
-
-// TODO needs generation of partial evaluation for every node
-trait IntPE extends pardis.deep.scalalib.IntOps { this: DeepDSL =>
-  case class Int$plus5PE(self: Rep[Int], x: Rep[Int]) extends FunctionDef[Int](Some(self), "+", List(List(x))) {
-    override def isPure = true
-    override def partialEvaluable: Boolean = true
-    override def partialEvaluate(children: Any*): Int = children(0).asInstanceOf[Int] + children(1).asInstanceOf[Int]
-    override def curriedConstructor = (copy _).curried
-  }
-  override def int$plus5(self: Rep[Int], x: Rep[Int]): Rep[Int] = Int$plus5PE(self, x)
 }
 
 trait RichIntOps extends pardis.deep.scalalib.collection.RangeComponent { this: DeepDSL =>

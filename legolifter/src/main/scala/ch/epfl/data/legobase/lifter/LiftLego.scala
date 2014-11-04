@@ -62,6 +62,7 @@ import pardis.ir._
 import pardis.types.PardisTypeImplicits._
 import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
+import pardis.deep.scalalib.io._
 
 $liftedCode
 trait DeepDSL extends push.OperatorsComponent 
@@ -71,7 +72,13 @@ trait DeepDSL extends push.OperatorsComponent
   with DoubleComponent 
   with IntComponent 
   with LongComponent 
-  with ArrayComponent 
+  with BooleanComponent 
+  with DoublePartialEvaluation 
+  with IntPartialEvaluation 
+  with LongPartialEvaluation 
+  with BooleanPartialEvaluation 
+  with ArrayComponent
+  with PrintStreamComponent 
   with GroupByClassComponent
   with Q3GRPRecordComponent
   with Q7GRPRecordComponent
@@ -96,7 +103,6 @@ trait DeepDSL extends push.OperatorsComponent
   with IntegerComponent 
   with NextContainerComponent
   with NextKeyContainerComponent
-  with BooleanComponent 
   with HashMapComponent 
   with SetComponent 
   with TreeSetComponent 

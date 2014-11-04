@@ -131,7 +131,7 @@ object Loader {
     var i = 0
     while (s.hasNext()) {
       val newEntry = new LINEITEMRecord(s.next_int, s.next_int, s.next_int, s.next_int,
-        s.next_double, s.next_double, s.next_double, s.next_double,
+        s.next_int, s.next_double, s.next_double, s.next_double,
         s.next_char, s.next_char, s.next_date, s.next_date, s.next_date,
         loadString(25, s), loadString(10, s), loadString(44, s))
       hm(i) = newEntry
