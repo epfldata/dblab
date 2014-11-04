@@ -530,40 +530,80 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Rec
   import CNodes._
   import CTypes._
 
+  //case OptimalStringNew(x) =>
+  //  x.correspondingNode
+  //case OptimalStringString(x) =>
+  //  x.correspondingNode
+  //case OptimalStringDiff(x, y) =>
+  //  //CString.strcmp(x, y)
+  //  CStringStrcmpObject1(x, y)
+  //case OptimalStringEndsWith(x, y) =>
+  //  val lenx = CString.strlen(x)
+  //  val leny = CString.strlen(y)
+  //  val len = lenx - leny
+  //  Equal(CString.strncmp(CLang.pointer_add(x, len), y, len), 0)
+  //case OptimalStringStartsWith(x, y) =>
+  //  Equal(CString.strncmp(x, y, CString.strlen(y)), Constant(0))
+  //case OptimalStringCompare(x, y) =>
+  //  //CString.strcmp(x, y)
+  //  CStringStrcmpObject1(x, y)
+  //case OptimalStringLength(x) =>
+  //  //CString.strlen(x)
+  //  CStringStrlenObject1(x)
+  //case OptimalString$eq$eq$eq(x, y) =>
+  //  Equal(CString.strcmp(x, y), Constant(0))
+  //case OptimalString$eq$bang$eq(x, y) =>
+  //  NotEqual(CString.strcmp(x, y), Constant(0))
+  //case OptimalStringContainsSlice(x, y) =>
+  //  NotEqual(CString.strstr(x, y), Constant(null))
+  //case OptimalStringIndexOfSlice(x, y, idx) =>
+  //  val substr = CString.strstr(x + idx, y)
+  //  transformDef(PardisIfThenElse(Equal(substr, Constant(null)), PardisBlock(Nil, Constant(-1)), PardisBlock(Nil, CString.str_subtract(substr, x))(IntType)))
+  //case OptimalStringApply(x, idx) =>
+  //  val z = infix_asInstanceOf[Array[LPointer[Char]]](x)
+  //  ArrayApply(z, idx)
+  //case OptimalStringSlice(x, start, end) =>
+  //  val len = end - start + unit(1)
+  //  val newbuf = CStdLib.malloc[Char](len)
+  //  CString.strncpy(newbuf, CLang.pointer_add(x, start), len - unit(1))
+  //  ReadVal(newbuf)
+
+  private[OptimalStringToCTransformer] implicit def optimalStringToCharPointer(x: Rep[OptimalString]) = x.asInstanceOf[Rep[LPointer[Char]]]
+
   rewrite += rule { case OptimalStringNew(x) => x }
   rewrite += rule { case OptimalStringString(x) => x }
-  rewrite += rule { case OptimalStringDiff(x, y) => strcmp(x, y) }
+  rewrite += rule { case OptimalStringDiff(x, y) => CString.strcmp(x, y) }
   rewrite += rule {
     case OptimalStringEndsWith(x, y) =>
-      val lenx = strlen(x)
-      val leny = strlen(y)
+      val lenx = CString.strlen(x)
+      val leny = CString.strlen(y)
       val len = lenx - leny
-      strncmp(x + len, y, len) __== unit(0)
+      CString.strncmp(x + len, y, len) __== unit(0)
   }
   rewrite += rule {
     case OptimalStringStartsWith(x, y) =>
-      strncmp(x, y, strlen(y)) __== unit(0)
+      CString.strncmp(x, y, CString.strlen(y)) __== unit(0)
   }
-  rewrite += rule { case OptimalStringCompare(x, y) => strcmp(x, y) }
-  rewrite += rule { case OptimalStringLength(x) => strlen(x) }
-  rewrite += rule { case OptimalString$eq$eq$eq(x, y) => strcmp(x, y) __== unit(0) }
-  rewrite += rule { case OptimalString$eq$bang$eq(x, y) => infix_!=(strcmp(x, y), unit(0)) }
-  rewrite += rule { case OptimalStringContainsSlice(x, y) => infix_!=(strstr(x, y), unit(null)) }
+  rewrite += rule { case OptimalStringCompare(x, y) => CString.strcmp(x, y) }
+  rewrite += rule { case OptimalStringLength(x) => CString.strlen(x) }
+  rewrite += rule { case OptimalString$eq$eq$eq(x, y) => CString.strcmp(x, y) __== unit(0) }
+  rewrite += rule { case OptimalString$eq$bang$eq(x, y) => infix_!=(CString.strcmp(x, y), unit(0)) }
+  rewrite += rule { case OptimalStringContainsSlice(x, y) => infix_!=(CString.strstr(x, y), unit(null)) }
   rewrite += rule {
     case OptimalStringIndexOfSlice(x, y, idx) =>
-      val substr = strstr(x + idx, y)
-      __ifThenElse(substr __== unit(null), unit(-1), str_subtract(substr, x))
+      val substr = CString.strstr(x + idx, y)
+      __ifThenElse(substr __== unit(null), unit(-1), CString.str_subtract(substr, x))
   }
   rewrite += rule {
     case OptimalStringApply(x, idx) =>
-      val stringArray = infix_asInstanceOf(x)(typeArray(typePointer(CharType))).asInstanceOf[Rep[Array[Pointer[Char]]]]
+      val stringArray = infix_asInstanceOf[Array[LPointer[Char]]](x)
       stringArray(idx)
   }
   rewrite += rule {
     case OptimalStringSlice(x, start, end) =>
       val len = end - start + unit(1)
-      val newbuf = malloc(len)(CharType)
-      strncpy(newbuf, x + start, len - unit(1))
+      val newbuf = CStdLib.malloc[Char](len)
+      CString.strncpy(newbuf, CLang.pointer_add(x, start), len - unit(1))
       newbuf
   }
 }
