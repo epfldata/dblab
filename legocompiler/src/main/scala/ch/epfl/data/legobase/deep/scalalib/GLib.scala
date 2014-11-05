@@ -57,6 +57,7 @@ trait LPointerImplicits extends LPointerOps { this: CLibs =>
 trait LPointerImplementations extends LPointerOps { this: CLibs =>
 
 }
+
 trait LPointerPartialEvaluation extends LPointerComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
@@ -302,6 +303,7 @@ trait CLangImplicits extends CLangOps { this: CLibs =>
 trait CLangImplementations extends CLangOps { this: CLibs =>
 
 }
+
 trait CLangPartialEvaluation extends CLangComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
@@ -330,11 +332,11 @@ trait CStdLibOps extends Base { this: CLibs =>
   // constructors
 
   // case classes
-  case class CStdLibMallocObject[T](count: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[T]](None, "CStdLib.malloc", List(List(count))) {
+  case class CStdLibMallocObject[T](count: Rep[Int])(implicit val typeT: TypeRep[T]) extends FunctionDef[LPointer[T]](None, "malloc", List(List(count))) {
     override def curriedConstructor = (copy[T] _)
   }
 
-  case class CStdLibFreeObject[T](ptr: Rep[LPointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Unit](None, "CStdLib.free", List(List(ptr))) {
+  case class CStdLibFreeObject[T](ptr: Rep[LPointer[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Unit](None, "free", List(List(ptr))) {
     override def curriedConstructor = (copy[T] _)
   }
 
@@ -349,6 +351,7 @@ trait CStdLibImplicits extends CStdLibOps { this: CLibs =>
 trait CStdLibImplementations extends CStdLibOps { this: CLibs =>
 
 }
+
 trait CStdLibPartialEvaluation extends CStdLibComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
@@ -543,6 +546,7 @@ trait CStdIOImplicits extends CStdIOOps { this: CLibs =>
 trait CStdIOImplementations extends CStdIOOps { this: CLibs =>
 
 }
+
 trait CStdIOPartialEvaluation extends CStdIOComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
@@ -581,6 +585,7 @@ trait CFileImplicits extends CFileOps { this: CLibs =>
 trait CFileImplementations extends CFileOps { this: CLibs =>
 
 }
+
 trait CFilePartialEvaluation extends CFileComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
@@ -619,6 +624,7 @@ trait CTimeValImplicits extends CTimeValOps { this: CLibs =>
 trait CTimeValImplementations extends CTimeValOps { this: CLibs =>
 
 }
+
 trait CTimeValPartialEvaluation extends CTimeValComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
@@ -666,6 +672,7 @@ trait CSysTimeImplicits extends CSysTimeOps { this: CLibs =>
 trait CSysTimeImplementations extends CSysTimeOps { this: CLibs =>
 
 }
+
 trait CSysTimePartialEvaluation extends CSysTimeComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
@@ -688,7 +695,7 @@ trait CStringOps extends Base { this: CLibs =>
 
   }
   object CString {
-    def str_subtract(e1: Rep[Any], e2: Rep[Any]): Rep[Int] = cStringStr_subtractObject(e1, e2)
+    def str_subtract(e1: Rep[LPointer[Char]], e2: Rep[LPointer[Char]]): Rep[Int] = cStringStr_subtractObject(e1, e2)
     def memchr(s: Rep[LPointer[Byte]], c: Rep[Int], n: Rep[Int]): Rep[LPointer[Byte]] = cStringMemchrObject(s, c, n)
     def memcmp(s1: Rep[LPointer[Byte]], s2: Rep[LPointer[Byte]], n: Rep[Int]): Rep[Int] = cStringMemcmpObject(s1, s2, n)
     def memcpy(dst: Rep[LPointer[Byte]], src: Rep[LPointer[Byte]], n: Rep[Int]): Rep[LPointer[Byte]] = cStringMemcpyObject(dst, src, n)
@@ -745,7 +752,7 @@ trait CStringOps extends Base { this: CLibs =>
   // constructors
 
   // case classes
-  case class CStringStr_subtractObject(e1: Rep[Any], e2: Rep[Any]) extends FunctionDef[Int](None, "str_subtract", List(List(e1, e2))) {
+  case class CStringStr_subtractObject(e1: Rep[LPointer[Char]], e2: Rep[LPointer[Char]]) extends FunctionDef[Int](None, "str_subtract", List(List(e1, e2))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -958,7 +965,7 @@ trait CStringOps extends Base { this: CLibs =>
   }
 
   // method definitions
-  def cStringStr_subtractObject(e1: Rep[Any], e2: Rep[Any]): Rep[Int] = CStringStr_subtractObject(e1, e2)
+  def cStringStr_subtractObject(e1: Rep[LPointer[Char]], e2: Rep[LPointer[Char]]): Rep[Int] = CStringStr_subtractObject(e1, e2)
   def cStringMemchrObject(s: Rep[LPointer[Byte]], c: Rep[Int], n: Rep[Int]): Rep[LPointer[Byte]] = CStringMemchrObject(s, c, n)
   def cStringMemcmpObject(s1: Rep[LPointer[Byte]], s2: Rep[LPointer[Byte]], n: Rep[Int]): Rep[Int] = CStringMemcmpObject(s1, s2, n)
   def cStringMemcpyObject(dst: Rep[LPointer[Byte]], src: Rep[LPointer[Byte]], n: Rep[Int]): Rep[LPointer[Byte]] = CStringMemcpyObject(dst, src, n)
@@ -1019,6 +1026,7 @@ trait CStringImplicits extends CStringOps { this: CLibs =>
 trait CStringImplementations extends CStringOps { this: CLibs =>
 
 }
+
 trait CStringPartialEvaluation extends CStringComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
@@ -1057,6 +1065,7 @@ trait LGArrayImplicits extends LGArrayOps { this: CLibs =>
 trait LGArrayImplementations extends LGArrayOps { this: CLibs =>
 
 }
+
 trait LGArrayPartialEvaluation extends LGArrayComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
@@ -1194,6 +1203,7 @@ trait LGArrayHeaderImplicits extends LGArrayHeaderOps { this: CLibs =>
 trait LGArrayHeaderImplementations extends LGArrayHeaderOps { this: CLibs =>
 
 }
+
 trait LGArrayHeaderPartialEvaluation extends LGArrayHeaderComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
@@ -1233,6 +1243,7 @@ trait LGListImplicits extends LGListOps { this: CLibs =>
 trait LGListImplementations extends LGListOps { this: CLibs =>
 
 }
+
 trait LGListPartialEvaluation extends LGListComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
@@ -1406,6 +1417,7 @@ trait LGListHeaderImplicits extends LGListHeaderOps { this: CLibs =>
 trait LGListHeaderImplementations extends LGListHeaderOps { this: CLibs =>
 
 }
+
 trait LGListHeaderPartialEvaluation extends LGListHeaderComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
@@ -1444,6 +1456,7 @@ trait LGTreeImplicits extends LGTreeOps { this: CLibs =>
 trait LGTreeImplementations extends LGTreeOps { this: CLibs =>
 
 }
+
 trait LGTreePartialEvaluation extends LGTreeComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
@@ -1581,6 +1594,7 @@ trait LGTreeHeaderImplicits extends LGTreeHeaderOps { this: CLibs =>
 trait LGTreeHeaderImplementations extends LGTreeHeaderOps { this: CLibs =>
 
 }
+
 trait LGTreeHeaderPartialEvaluation extends LGTreeHeaderComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
@@ -1621,6 +1635,7 @@ trait LGHashTableImplicits extends LGHashTableOps { this: CLibs =>
 trait LGHashTableImplementations extends LGHashTableOps { this: CLibs =>
 
 }
+
 trait LGHashTablePartialEvaluation extends LGHashTableComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 
@@ -1734,6 +1749,7 @@ trait LGHashTableHeaderImplicits extends LGHashTableHeaderOps { this: CLibs =>
 trait LGHashTableHeaderImplementations extends LGHashTableHeaderOps { this: CLibs =>
 
 }
+
 trait LGHashTableHeaderPartialEvaluation extends LGHashTableHeaderComponent with BasePartialEvaluation { this: CLibs =>
   // Immutable field inlining 
 

@@ -56,6 +56,7 @@ object CTransformersPipeline extends TransformerHandler {
     val b4 = new ScalaCollectionsToGLibTransfomer(context).optimize(b3)
     val b5 = new HashEqualsFuncsToCTraansformer(context).optimize(b4)
     val b6 = new OptimalStringToCTransformer(context).optimize(b5)
+    //val b6 = new OptimalStringOptimizations(context).optimize(b5)
     val b7 = new ScalaConstructsToCTranformer(context).optimize(b6)
     b7
   }
@@ -525,7 +526,7 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
   }
 }
 
-class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer with YYTransformable {
+class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._
@@ -534,7 +535,7 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Rec
   private[OptimalStringToCTransformer] implicit def optimalStringToCharPointer(x: Rep[OptimalString]) = x.asInstanceOf[Rep[LPointer[Char]]]
 
   implicit class OptimalStringRep(self: Rep[OptimalString]) {
-    def getBaseValue(s: Rep[OptimalString]): Rep[LPointer[Char]] = s.asInstanceOf[Rep[LPointer[Char]]]
+    def getBaseValue(s: Rep[OptimalString]): Rep[LPointer[Char]] = apply(s).asInstanceOf[Rep[LPointer[Char]]]
   }
 
   rewrite += rule { case OptimalStringNew(self) => self }
@@ -588,7 +589,7 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Rec
   }
   rewrite += rule {
     case OptimalStringApply(self, idx) =>
-      CLang.pointer_add[Char](new OptimalStringRep(self).getBaseValue(self), idx)(typeRep[Char], CLangTypes.charType)
+      CLang.*(CLang.pointer_add[Char](new OptimalStringRep(self).getBaseValue(self), idx)(typeRep[Char], CLangTypes.charType))
   }
   rewrite += rule {
     case OptimalStringSlice(self, start, end) =>
