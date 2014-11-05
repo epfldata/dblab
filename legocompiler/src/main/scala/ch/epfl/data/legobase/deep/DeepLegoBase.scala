@@ -64,6 +64,7 @@ trait GroupByClassImplicits extends GroupByClassOps {
 trait GroupByClassImplementations extends GroupByClassOps {
 
 }
+
 trait GroupByClassPartialEvaluation extends GroupByClassComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def groupByClass_Field_L_LINESTATUS(self: Rep[GroupByClass]): Rep[Char] = self match {
@@ -142,6 +143,7 @@ trait Q3GRPRecordImplicits extends Q3GRPRecordOps {
 trait Q3GRPRecordImplementations extends Q3GRPRecordOps {
 
 }
+
 trait Q3GRPRecordPartialEvaluation extends Q3GRPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def q3GRPRecord_Field_O_SHIPPRIORITY(self: Rep[Q3GRPRecord]): Rep[Int] = self match {
@@ -224,6 +226,7 @@ trait Q7GRPRecordImplicits extends Q7GRPRecordOps {
 trait Q7GRPRecordImplementations extends Q7GRPRecordOps {
 
 }
+
 trait Q7GRPRecordPartialEvaluation extends Q7GRPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def q7GRPRecord_Field_L_YEAR(self: Rep[Q7GRPRecord]): Rep[Int] = self match {
@@ -298,6 +301,7 @@ trait Q9GRPRecordImplicits extends Q9GRPRecordOps {
 trait Q9GRPRecordImplementations extends Q9GRPRecordOps {
 
 }
+
 trait Q9GRPRecordPartialEvaluation extends Q9GRPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def q9GRPRecord_Field_O_YEAR(self: Rep[Q9GRPRecord]): Rep[Int] = self match {
@@ -408,6 +412,7 @@ trait Q10GRPRecordImplicits extends Q10GRPRecordOps {
 trait Q10GRPRecordImplementations extends Q10GRPRecordOps {
 
 }
+
 trait Q10GRPRecordPartialEvaluation extends Q10GRPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def q10GRPRecord_Field_C_COMMENT(self: Rep[Q10GRPRecord]): Rep[OptimalString] = self match {
@@ -514,6 +519,7 @@ trait Q16GRPRecord1Implicits extends Q16GRPRecord1Ops {
 trait Q16GRPRecord1Implementations extends Q16GRPRecord1Ops {
 
 }
+
 trait Q16GRPRecord1PartialEvaluation extends Q16GRPRecord1Component with BasePartialEvaluation {
   // Immutable field inlining 
   override def q16GRPRecord1_Field_PS_SUPPKEY(self: Rep[Q16GRPRecord1]): Rep[Int] = self match {
@@ -600,6 +606,7 @@ trait Q16GRPRecord2Implicits extends Q16GRPRecord2Ops {
 trait Q16GRPRecord2Implementations extends Q16GRPRecord2Ops {
 
 }
+
 trait Q16GRPRecord2PartialEvaluation extends Q16GRPRecord2Component with BasePartialEvaluation {
   // Immutable field inlining 
   override def q16GRPRecord2_Field_P_SIZE(self: Rep[Q16GRPRecord2]): Rep[Int] = self match {
@@ -698,6 +705,7 @@ trait Q18GRPRecordImplicits extends Q18GRPRecordOps {
 trait Q18GRPRecordImplementations extends Q18GRPRecordOps {
 
 }
+
 trait Q18GRPRecordPartialEvaluation extends Q18GRPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def q18GRPRecord_Field_O_TOTALPRICE(self: Rep[Q18GRPRecord]): Rep[Double] = self match {
@@ -788,6 +796,7 @@ trait Q20GRPRecordImplicits extends Q20GRPRecordOps {
 trait Q20GRPRecordImplementations extends Q20GRPRecordOps {
 
 }
+
 trait Q20GRPRecordPartialEvaluation extends Q20GRPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def q20GRPRecord_Field_PS_AVAILQTY(self: Rep[Q20GRPRecord]): Rep[Int] = self match {
@@ -863,6 +872,7 @@ trait AGGRecordImplicits extends AGGRecordOps {
 trait AGGRecordImplementations extends AGGRecordOps {
 
 }
+
 trait AGGRecordPartialEvaluation extends AGGRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def aGGRecord_Field_Aggs[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]): Rep[Array[Double]] = self match {
@@ -939,6 +949,7 @@ trait GenericEngineImplicits extends GenericEngineOps {
 trait GenericEngineImplementations extends GenericEngineOps {
 
 }
+
 trait GenericEnginePartialEvaluation extends GenericEngineComponent with BasePartialEvaluation {
   // Immutable field inlining 
 
@@ -1113,6 +1124,7 @@ trait LINEITEMRecordImplicits extends LINEITEMRecordOps {
 trait LINEITEMRecordImplementations extends LINEITEMRecordOps {
 
 }
+
 trait LINEITEMRecordPartialEvaluation extends LINEITEMRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def lINEITEMRecord_Field_L_COMMENT(self: Rep[LINEITEMRecord]): Rep[OptimalString] = self match {
@@ -1279,6 +1291,7 @@ trait SUPPLIERRecordImplicits extends SUPPLIERRecordOps {
 trait SUPPLIERRecordImplementations extends SUPPLIERRecordOps {
 
 }
+
 trait SUPPLIERRecordPartialEvaluation extends SUPPLIERRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def sUPPLIERRecord_Field_S_COMMENT(self: Rep[SUPPLIERRecord]): Rep[OptimalString] = self match {
@@ -1393,6 +1406,7 @@ trait PARTSUPPRecordImplicits extends PARTSUPPRecordOps {
 trait PARTSUPPRecordImplementations extends PARTSUPPRecordOps {
 
 }
+
 trait PARTSUPPRecordPartialEvaluation extends PARTSUPPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def pARTSUPPRecord_Field_PS_COMMENT(self: Rep[PARTSUPPRecord]): Rep[OptimalString] = self match {
@@ -1483,6 +1497,7 @@ trait REGIONRecordImplicits extends REGIONRecordOps {
 trait REGIONRecordImplementations extends REGIONRecordOps {
 
 }
+
 trait REGIONRecordPartialEvaluation extends REGIONRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def rEGIONRecord_Field_R_COMMENT(self: Rep[REGIONRecord]): Rep[OptimalString] = self match {
@@ -1573,6 +1588,7 @@ trait NATIONRecordImplicits extends NATIONRecordOps {
 trait NATIONRecordImplementations extends NATIONRecordOps {
 
 }
+
 trait NATIONRecordPartialEvaluation extends NATIONRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def nATIONRecord_Field_N_COMMENT(self: Rep[NATIONRecord]): Rep[OptimalString] = self match {
@@ -1707,6 +1723,7 @@ trait PARTRecordImplicits extends PARTRecordOps {
 trait PARTRecordImplementations extends PARTRecordOps {
 
 }
+
 trait PARTRecordPartialEvaluation extends PARTRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def pARTRecord_Field_P_COMMENT(self: Rep[PARTRecord]): Rep[OptimalString] = self match {
@@ -1853,6 +1870,7 @@ trait CUSTOMERRecordImplicits extends CUSTOMERRecordOps {
 trait CUSTOMERRecordImplementations extends CUSTOMERRecordOps {
 
 }
+
 trait CUSTOMERRecordPartialEvaluation extends CUSTOMERRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def cUSTOMERRecord_Field_C_COMMENT(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = self match {
@@ -2003,6 +2021,7 @@ trait ORDERSRecordImplicits extends ORDERSRecordOps {
 trait ORDERSRecordImplementations extends ORDERSRecordOps {
 
 }
+
 trait ORDERSRecordPartialEvaluation extends ORDERSRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def oRDERSRecord_Field_O_COMMENT(self: Rep[ORDERSRecord]): Rep[OptimalString] = self match {
@@ -2100,6 +2119,7 @@ trait NextContainerImplicits extends NextContainerOps {
 trait NextContainerImplementations extends NextContainerOps {
 
 }
+
 trait NextContainerPartialEvaluation extends NextContainerComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def nextContainer_Field_Current[T](self: Rep[NextContainer[T]])(implicit typeT: TypeRep[T]): Rep[T] = self match {
@@ -2178,6 +2198,7 @@ trait NextKeyContainerImplicits extends NextKeyContainerOps {
 trait NextKeyContainerImplementations extends NextKeyContainerOps {
 
 }
+
 trait NextKeyContainerPartialEvaluation extends NextKeyContainerComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def nextKeyContainer_Field_Current[K, T](self: Rep[NextKeyContainer[K, T]])(implicit typeK: TypeRep[K], typeT: TypeRep[T]): Rep[T] = self match {
@@ -2308,6 +2329,7 @@ trait K2DBScannerImplicits extends K2DBScannerOps {
 trait K2DBScannerImplementations extends K2DBScannerOps {
 
 }
+
 trait K2DBScannerPartialEvaluation extends K2DBScannerComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def k2DBScanner_Field_Filename(self: Rep[K2DBScanner]): Rep[String] = self match {
@@ -2376,6 +2398,7 @@ trait WindowRecordImplicits extends WindowRecordOps {
 trait WindowRecordImplementations extends WindowRecordOps {
 
 }
+
 trait WindowRecordPartialEvaluation extends WindowRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def windowRecord_Field_Wnd[B, C](self: Rep[WindowRecord[B, C]])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[C] = self match {

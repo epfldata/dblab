@@ -868,6 +868,7 @@ trait QueriesImplementations extends QueriesOps { this: DeepDSL =>
     }
   }
 }
+
 trait QueriesPartialEvaluation extends QueriesComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
 
