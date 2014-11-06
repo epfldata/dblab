@@ -53,12 +53,13 @@ object CTransformersPipeline extends TransformerHandler {
     val b1 = new GenericEngineToCTransformer(context).optimize(b)
     val b2 = new ScalaScannerToCFileTransformer(context).optimize(b1)
     val b3 = new ScalaArrayToCStructTransformer(context).optimize(b2)
-    val b4 = new ScalaCollectionsToGLibTransfomer(context).optimize(b3)
-    val b5 = new HashEqualsFuncsToCTraansformer(context).optimize(b4)
-    val b6 = new OptimalStringToCTransformer(context).optimize(b5)
-    //val b6 = new OptimalStringOptimizations(context).optimize(b5)
-    val b7 = new ScalaConstructsToCTranformer(context).optimize(b6)
-    b7
+    val b4 = new ScalaHashMapToGLibTransformer(context).optimize(b3)
+    val b5 = new ScalaCollectionsToGLibTransfomer(context).optimize(b4)
+    val b6 = new HashEqualsFuncsToCTraansformer(context).optimize(b5)
+    val b7 = new OptimalStringToCTransformer(context).optimize(b6)
+    //val b7 = new OptimalStringOptimizations(context).optimize(b6)
+    val b8 = new ScalaConstructsToCTranformer(context).optimize(b7)
+    b8
   }
 }
 
@@ -279,6 +280,74 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
   }
 }
 
+//TODO: make this a recursive transformer
+class ScalaHashMapToGLibTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) {
+  import IR._
+  import CNodes._
+  import CTypes._
+
+  /* HashMap Operations */
+  def getMapKeyType[A: PardisType, B: PardisType](map: Expression[HashMap[A, B]]): PardisType[Any] =
+    map.tp.typeArguments(0).typeArguments(1).asInstanceOf[PardisType[Any]]
+  def getMapValueType[A: PardisType, B: PardisType](map: Expression[HashMap[A, B]]): PardisType[Any] =
+    map.tp.typeArguments(0).typeArguments(1).asInstanceOf[PardisType[Any]]
+
+  rewrite += rule {
+    case nm @ HashMapNew3(_, _) =>
+      apply(HashMapNew()(nm.typeA, ArrayBufferType(nm.typeB)))
+    case nm @ HashMapNew4(_, _) =>
+      apply(HashMapNew()(nm.typeA, nm.typeB))
+    case nm @ HashMapNew() =>
+      val nA = typePointer(nm.typeA)
+      val nB = typePointer(nm.typeB)
+      def hashFunc[T: TypeRep] = (s: Rep[T]) => infix_hashCode(s)
+      def equalsFunc[T: TypeRep] = doLambda2Def((s1: Rep[T], s2: Rep[T]) => infix_==(s1, s2))
+      if (nm.typeA.isPrimitive || nm.typeA == StringType || nm.typeA == OptimalStringType)
+        GHashTableNew(hashFunc(nm.typeA), equalsFunc(nm.typeA))(nm.typeA, nB, IntType)
+      else GHashTableNew(hashFunc(nA), equalsFunc(nA))(nA, nB, IntType)
+  }
+  rewrite += rule {
+    case HashMapSize(map) => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
+  }
+  rewrite += rule {
+    case HashMapKeySet(map) =>
+      NameAlias[Pointer[GList[FILE]]](None, "g_hash_table_get_keys", List(List(map)))
+  }
+  rewrite += rule {
+    case HashMapContains(map, key) =>
+      val z = toAtom(HashMapApply(map, key))(getMapValueType(map))
+      infix_!=(z, unit(null))
+  }
+  rewrite += rule {
+    case ma @ HashMapApply(map, key) =>
+      NameAlias(None, "g_hash_table_lookup", List(List(map, key)))(getMapValueType(map))
+  }
+  rewrite += rule {
+    case mu @ HashMapUpdate(map, key, value) =>
+      NameAlias[Unit](None, "g_hash_table_insert", List(List(map, key, value)))
+  }
+  rewrite += rule {
+    case hmgu @ HashMapGetOrElseUpdate(map, key, value) =>
+      val ktp = getMapKeyType(map)
+      val vtp = getMapValueType(map)
+      val v = map.apply(key)
+      //val v = toAtom(HashMapApply(map, key)(ktp, vtp))(vtp)
+      __ifThenElse(infix_==(v, unit(null)), {
+        val res = inlineBlock(value)
+        map(key) = res
+        //toAtom(HashMapUpdate(map, key, res))
+        res
+      }, v)(v.tp)
+  }
+  rewrite += rule {
+    case mr @ HashMapRemove(map, key) =>
+      val x = map.apply(key)
+      //val x = toAtom(HashMapApply(map, key))(getMapValueType(map))
+      nameAlias[Unit](None, "g_hash_table_remove", List(List(map, key)))
+      x
+  }
+}
+
 class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
   import CNodes._
@@ -298,65 +367,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     }
   }).asInstanceOf[PardisType[Any]]
 
-  /* HashMap Operations */
-  def getMapKeyType[A: PardisType, B: PardisType](map: Expression[HashMap[A, B]]): PardisType[Any] =
-    map.tp.typeArguments(0).typeArguments(1).asInstanceOf[PardisType[Any]]
-  def getMapValueType[A: PardisType, B: PardisType](map: Expression[HashMap[A, B]]): PardisType[Any] =
-    map.tp.typeArguments(0).typeArguments(1).asInstanceOf[PardisType[Any]]
-
-  rewrite += rule {
-    case nm @ HashMapNew3(_, _) =>
-      apply(HashMapNew()(nm.typeA, ArrayBufferType(nm.typeB)))
-    case nm @ HashMapNew4(_, _) =>
-      apply(HashMapNew()(nm.typeA, nm.typeB))
-    case nm @ HashMapNew() =>
-      val nA = typePointer(transformType(nm.typeA))
-      val nB = typePointer(transformType(nm.typeB))
-      def hashFunc[T: TypeRep] = transformDef(doLambdaDef((s: Rep[T]) => infix_hashCode(s)))
-      def equalsFunc[T: TypeRep] = transformDef(doLambda2Def((s1: Rep[T], s2: Rep[T]) => infix_==(s1, s2)))
-      if (nm.typeA.isPrimitive || nm.typeA == StringType || nm.typeA == OptimalStringType)
-        GHashTableNew(hashFunc(nm.typeA), equalsFunc(nm.typeA))(nm.typeA, nB, IntType)
-      else GHashTableNew(hashFunc(nA), equalsFunc(nA))(nA, nB, IntType)
-  }
-  rewrite += rule {
-    case HashMapSize(map) => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
-  }
-  rewrite += rule {
-    case HashMapKeySet(map) =>
-      NameAlias[Pointer[GList[FILE]]](None, "g_hash_table_get_keys", List(List(map)))
-  }
-  rewrite += rule {
-    case HashMapContains(map, key) =>
-      val z = toAtom(transformDef(HashMapApply(map, key)))(getMapValueType(apply(map)))
-      infix_!=(z, unit(null))
-  }
-  rewrite += rule {
-    case ma @ HashMapApply(map, key) =>
-      NameAlias(None, "g_hash_table_lookup", List(List(map, apply(key))))(getMapValueType(apply(map)))
-  }
-  rewrite += rule {
-    case mu @ HashMapUpdate(map, key, value) =>
-      NameAlias[Unit](None, "g_hash_table_insert", List(List(apply(map), apply(key), apply(value))))
-  }
-  rewrite += rule {
-    case hmgu @ HashMapGetOrElseUpdate(map, key, value) =>
-      val ktp = getMapKeyType(apply(map))
-      val vtp = getMapValueType(apply(map))
-      val v = toAtom(transformDef(HashMapApply(map, key)(ktp, vtp))(vtp))(vtp)
-      __ifThenElse(infix_==(v, unit(null)), {
-        val res = inlineBlock(apply(value))
-        toAtom(apply(HashMapUpdate(map, key, res)))
-        res
-      }, v)(v.tp)
-  }
-  rewrite += rule {
-    case mr @ HashMapRemove(map, key) =>
-      val x = toAtom(transformDef(HashMapApply(map, apply(key))))(getMapValueType(apply(map)))
-      nameAlias[Unit](None, "g_hash_table_remove", List(List(map, apply(key))))
-      x
-  }
-
-  /* Set Operaions */
+  /* Set Operations */
   rewrite += rule { case SetNew(s) => s }
   rewrite += rule {
     case nm @ SetNew2() => PardisCast(unit(0).asInstanceOf[Expression[Any]])(apply(nm.tp), apply(nm.tp))
