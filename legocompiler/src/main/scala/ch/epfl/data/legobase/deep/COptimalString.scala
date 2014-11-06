@@ -10,17 +10,19 @@ import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.shallow.c.CLangTypes
 import pardis.optimization._
-
 class OptimalStringOptimizations(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
-
   type Rep[T] = IR.Rep[T]
 
-  implicit class OptimalStringRep1(self: IR.Rep[IR.OptimalString]) {
-    def getBaseValue(s: IR.Rep[IR.OptimalString]): IR.Rep[LPointer[Char]] = s.asInstanceOf[IR.Rep[LPointer[Char]]]
+  implicit class OptimalStringRep1(self: Rep[OptimalString]) {
+    def getBaseValue(s: Rep[OptimalString]): Rep[LPointer[Char]] = s.charArray
+    def charArray: Rep[LPointer[Char]] = self.asInstanceOf[Rep[LPointer[Char]]]
   }
-
-  rewrite += rule { case OptimalStringNew(self) => self }
+  def __newCOptimalString(charArray: Rep[LPointer[Char]]): Rep[OptimalString] = charArray.asInstanceOf[Rep[OptimalString]]
+  rewrite += rule {
+    case OptimalStringNew(charArray) =>
+      charArray
+  }
 
   rewrite += rule {
     case OptimalStringString(self) =>
@@ -82,7 +84,7 @@ class OptimalStringOptimizations(override val IR: LoweringLegoBase) extends Recu
 
   rewrite += rule {
     case OptimalStringApply(self, idx) =>
-      CLang.*(CLang.pointer_add[Char](self.getBaseValue(self), idx))
+      CLang.$times[Char](CLang.pointer_add[Char](self.getBaseValue(self), idx))
   }
 
   rewrite += rule {
@@ -91,7 +93,7 @@ class OptimalStringOptimizations(override val IR: LoweringLegoBase) extends Recu
         val len: this.Rep[Int] = end.$minus(start).$plus(unit(1));
         val newbuf: this.Rep[ch.epfl.data.pardis.shallow.c.CLangTypes.LPointer[Char]] = CStdLib.malloc[Char](len);
         CString.strncpy(newbuf, CLang.pointer_add[Char](self.getBaseValue(self), start), len.$minus(unit(1)));
-        newbuf
+        __newCOptimalString(newbuf)
       }
   }
 

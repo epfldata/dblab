@@ -23,12 +23,13 @@ import pardis.deep.scalalib.collection._
 import pardis.shallow.c.CLangTypes
 import pardis.optimization._
 """,
-  """OptimalStringsComponent""",
+  "",
   "DeepDSL")
 class MetaInfo
 
 @deep
 @reflect[pardis.shallow.OptimalString]
+@transformation
 class COptimalString(val charArray: LPointer[Char] = NULL[Char]) {
   private implicit def getBaseValue(s: COptimalString) = s.charArray
 
