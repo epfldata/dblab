@@ -15,7 +15,12 @@ else
     TMPFILE=`mktemp -q /tmp/tmp.XXXXXX`
 fi
 
-for f in `ls *.out`
+files=$(ls *.out)
+if [ "$#" -gt 0 ]; then
+	files=$@
+fi
+
+for f in $files
 do
     QUERY=`echo $f | cut -d'.' -f1`
     echo "Running query $QUERY..."
