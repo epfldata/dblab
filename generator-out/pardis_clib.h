@@ -19,4 +19,7 @@ char* ltoa(long num) {
 
 #define str_subtract(x, y) (x - y)
 
+typedef GHashTable LGHashTable;
+typedef GList LGList;
+
 #endif
