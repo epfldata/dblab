@@ -156,12 +156,14 @@ class MetaInfo
 }
 
 @deep
-class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String, rightAlias: String)(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
+class HashJoinOp[A <: Record: Manifest, B <: Record, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String, rightAlias: String)(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   def this(leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) = this(leftParent, rightParent, "", "")(joinCond)(leftHash)(rightHash)
   @inline var mode: scala.Int = 0
 
   val expectedSize = leftParent.expectedSize * 100 // Assume 1 tuple from the left side joins with 100 from the right
-  val hm = HashMap[C, ArrayBuffer[A]]()
+  // val hm = HashMap[C, ArrayBuffer[A]]()
+  val hm = new pardis.shallow.MultiMapOptimal[C, A]()
+  // val hm = new HashMap[C, Set[A]] with scala.collection.mutable.MultiMap[C, A]
 
   def reset() {
     rightParent.reset; leftParent.reset; hm.clear;
@@ -181,23 +183,32 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
   def consume(tuple: Record) {
     if (mode == 0) {
       val k = leftHash(tuple.asInstanceOf[A])
-      val v = hm.getOrElseUpdate(k, ArrayBuffer[A]())
-      v.append(tuple.asInstanceOf[A])
+      // val v = hm.getOrElseUpdate(k, ArrayBuffer[A]())
+      // v.append(tuple.asInstanceOf[A])
+      hm.addBinding(k, tuple.asInstanceOf[A])
     } else if (mode == 1) {
       val k = rightHash(tuple.asInstanceOf[B])
-      if (hm.contains(k)) {
-        val tmpBuffer = hm(k)
-        var tmpCount = 0
-        var break = false
-        val size = tmpBuffer.size
-        while (!stop && !break) {
-          val bufElem = tmpBuffer(tmpCount) // We know there is at least one element
+      // if (hm.contains(k)) {
+      //   val tmpBuffer = hm(k)
+      //   var tmpCount = 0
+      //   var break = false
+      //   val size = tmpBuffer.size
+      //   while (!stop && !break) {
+      //     val bufElem = tmpBuffer(tmpCount) // We know there is at least one element
+      //     if (joinCond(bufElem, tuple.asInstanceOf[B])) {
+      //       val res = bufElem.concatenateDynamic(tuple.asInstanceOf[B], leftAlias, rightAlias)
+      //       child.consume(res)
+      //     }
+      //     if (tmpCount + 1 >= size) break = true
+      //     tmpCount += 1
+      //   }
+      // }
+      hm.get(k) foreach { tmpBuffer =>
+        tmpBuffer foreach { bufElem =>
           if (joinCond(bufElem, tuple.asInstanceOf[B])) {
             val res = bufElem.concatenateDynamic(tuple.asInstanceOf[B], leftAlias, rightAlias)
             child.consume(res)
           }
-          if (tmpCount + 1 >= size) break = true
-          tmpCount += 1
         }
       }
     }
@@ -225,6 +236,12 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
       val key = grp(elem.get(0))
       child.consume(new WindowRecord[B, C](key, wnd))
     }
+    // hm.foreach {
+    //   case (k, elem) =>
+    //     val wnd = wndf(elem)
+    //     val key = grp(elem(0))
+    //     child.consume(new WindowRecord[B, C](key, wnd))
+    // }
   }
   def consume(tuple: Record) {
     val key = grp(tuple.asInstanceOf[A])
@@ -332,11 +349,13 @@ class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   }
 }
 
-@deep
-class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
+@deep // class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
+class HashJoinAnti[A: Manifest, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   @inline var mode: scala.Int = 0
-  val hm = HashMap[C, ArrayBuffer[A]]()
-  var keySet = Set(hm.keySet.toSeq: _*)
+  // val hm = HashMap[C, ArrayBuffer[A]]()
+  // var keySet = Set(hm.keySet.toSeq: _*)
+  val hm = new pardis.shallow.MultiMapOptimal[C, A]()
+  // val hm = new HashMap[C, Set[A]] with scala.collection.mutable.MultiMap[C, A]
   val expectedSize = leftParent.expectedSize * 100
 
   def open() {
@@ -351,19 +370,25 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
     mode = 1
     rightParent.next
     // Step 3: Return everything that left in the hash table
-    keySet = Set(hm.keySet.toSeq: _*)
-    while ( /*!stop && */ hm.size != 0) {
-      val key = keySet.head
-      keySet.remove(key)
-      val elems = hm.remove(key)
-      var i = 0
-      val len = elems.get.size
-      val l = elems.get
-      while (i < len) {
-        val e = l(i)
-        child.consume(e.asInstanceOf[Record])
-        i += 1
-      }
+    // keySet = Set(hm.keySet.toSeq: _*)
+    // while ( /*!stop && */ hm.size != 0) {
+    //   val key = keySet.head
+    //   keySet.remove(key)
+    //   val elems = hm.remove(key)
+    //   var i = 0
+    //   val len = elems.get.size
+    //   val l = elems.get
+    //   while (i < len) {
+    //     val e = l(i)
+    //     child.consume(e.asInstanceOf[Record])
+    //     i += 1
+    //   }
+    // }
+    hm.foreach {
+      case (k, v) =>
+        v.foreach { e =>
+          child.consume(e.asInstanceOf[Record])
+        }
     }
   }
   def consume(tuple: Record) {
@@ -371,29 +396,37 @@ class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(j
     if (mode == 0) {
       val t = tuple.asInstanceOf[A]
       val k = leftHash(t)
-      val v = hm.getOrElseUpdate(k, ArrayBuffer[A]())
-      v.append(t)
+      // val v = hm.getOrElseUpdate(k, ArrayBuffer[A]())
+      // v.append(t)
+      hm.addBinding(k, t)
     } else {
       val t = tuple.asInstanceOf[B]
       val k = rightHash(t)
-      if (hm.contains(k)) {
-        val elems = hm(k)
-        // Sligtly complex logic here: we want to remove while
-        // iterating. This is the simplest way to do it, while
-        // making it easy to generate C code as well (otherwise we
-        // could use filter in scala and assign the result to the hm)
-        var removed = 0
-        var i = 0;
-        val len = elems.size
-        while (i < len) {
-          var idx = i - removed
-          val e = elems(idx)
-          if (joinCond(e, t)) {
-            elems.remove(idx)
-            removed += 1
-          }
-          i += 1
-        }
+      // if (hm.contains(k)) {
+      //   val elems = hm(k)
+      //   // Sligtly complex logic here: we want to remove while
+      //   // iterating. This is the simplest way to do it, while
+      //   // making it easy to generate C code as well (otherwise we
+      //   // could use filter in scala and assign the result to the hm)
+      //   var removed = 0
+      //   var i = 0;
+      //   val len = elems.size
+      //   while (i < len) {
+      //     var idx = i - removed
+      //     val e = elems(idx)
+      //     if (joinCond(e, t)) {
+      //       elems.remove(idx)
+      //       removed += 1
+      //     }
+      //     i += 1
+      //   }
+      //   // val it = elems.iterator
+      //   // while(it.hasNext) {
+
+      //   // }
+      // }
+      hm.get(k).foreach { elems =>
+        elems.retain(e => !joinCond(e, t))
       }
     }
   }
