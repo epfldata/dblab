@@ -21,9 +21,10 @@ import pardis.ir._
 import pardis.types.PardisTypeImplicits._
 import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
-import pardis.shallow.c.CLangTypes
+import pardis.shallow.c.CLangTypes._
 import pardis.shallow.c.GLibTypes._
 import pardis.optimization._
+import CTypes._
 """,
   "",
   "DeepDSL")
@@ -33,6 +34,14 @@ class MetaInfo
 @reflect[scala.collection.mutable.HashMap[_, _]]
 @transformation
 class CHashMap[K: CKeyType, V: CType](val gHashTable: LPointer[LGHashTable]) {
+  def this() = {
+    this(g_hash_table_new(&((s: gconstpointer) => {
+      s.asInstanceOf[K].hashCode
+    }), &((s1: gconstpointer, s2: gconstpointer) => {
+      if (s1.asInstanceOf[K] == s2.asInstanceOf[K]) 1 else 0
+    })))
+  }
+
   def update(k: K, v: V) = {
     g_hash_table_insert(gHashTable, k.asInstanceOf[gconstpointer], v.asInstanceOf[gconstpointer])
   }
@@ -56,22 +65,21 @@ class CHashMap[K: CKeyType, V: CType](val gHashTable: LPointer[LGHashTable]) {
     g_hash_table_lookup(gHashTable, k.asInstanceOf[gconstpointer]) != NULL[Any]
   }
 
-  def -=(k: K): V = {
+  def remove(k: K) = {
     val v = apply(k)
     g_hash_table_remove(gHashTable, k.asInstanceOf[gconstpointer])
+    //Some(v)
     v
-  }
-
-  def remove(k: K) = {
-    Some(-=(k))
   }
 
   def getOrElseUpdate(k: K, v: => V): V = {
     val res = g_hash_table_lookup(gHashTable, k.asInstanceOf[gconstpointer])
     if (res != NULL[V]) res.asInstanceOf[V]
     else {
-      this(k) = v
-      v
+      val vres = v
+      //this(k) = v
+      update(k, vres)
+      vres
     }
   }
 }

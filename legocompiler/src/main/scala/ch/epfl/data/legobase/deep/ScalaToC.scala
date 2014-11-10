@@ -32,15 +32,16 @@ trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base 
   import CTypes._
   override def structName[T](m: PardisType[T]): String = {
     m match {
-      case CArrayType(args)    => "ArrayOf" + structName(args)
-      case ArrayType(args)     => structName(args)
-      case PointerType(args)   => structName(args)
-      case IntType             => "int"
-      case ByteType | CharType => "char"
-      case DoubleType          => "double"
-      case OptimalStringType   => "OptimalString"
-      case c if c.isRecord     => m.name.replaceAll("struct ", "")
-      case _                   => super.structName(m)
+      case CArrayType(args)                   => "ArrayOf" + structName(args)
+      case ArrayType(args)                    => structName(args)
+      case PointerType(args)                  => structName(args)
+      case _ if m.name.startsWith("LPointer") => structName(m.typeArguments(0))
+      case IntType                            => "int"
+      case ByteType | CharType                => "char"
+      case DoubleType                         => "double"
+      case OptimalStringType                  => "OptimalString"
+      case c if c.isRecord                    => m.name.replaceAll("struct ", "")
+      case _                                  => super.structName(m)
     }
   }
 }
@@ -53,11 +54,12 @@ object CTransformersPipeline extends TransformerHandler {
     val b1 = new GenericEngineToCTransformer(context).optimize(b)
     val b2 = new ScalaScannerToCFileTransformer(context).optimize(b1)
     val b3 = new ScalaArrayToCStructTransformer(context).optimize(b2)
-    val b4 = new ScalaHashMapToGLibTransformer(context).optimize(b3)
+    //val b4 = new ScalaHashMapToGLibTransformer(context).optimize(b3)
+    val b4 = new HashMapOptimizations(context).optimize(b3)
     val b5 = new ScalaCollectionsToGLibTransfomer(context).optimize(b4)
     val b6 = new HashEqualsFuncsToCTraansformer(context).optimize(b5)
-    val b7 = new OptimalStringToCTransformer(context).optimize(b6)
-    //val b7 = new OptimalStringOptimizations(context).optimize(b6)
+    //val b7 = new OptimalStringToCTransformer(context).optimize(b6)
+    val b7 = new OptimalStringOptimizations(context).optimize(b6)
     val b8 = new ScalaConstructsToCTranformer(context).optimize(b7)
     b8
   }
@@ -286,6 +288,20 @@ class ScalaHashMapToGLibTransformer(override val IR: LoweringLegoBase) extends R
   import CNodes._
   import CTypes._
 
+  override def transformType[T: PardisType]: PardisType[Any] = ({
+    val tp = typeRep[T]
+    tp match {
+      case ArrayBufferType(t)  => typePointer(typeGArray(transformType(t)))
+      case SeqType(t)          => typePointer(typeGList(transformType(t)))
+      case TreeSetType(t)      => typePointer(typeGTree(transformType(t)))
+      case SetType(t)          => typePointer(typeGList(transformType(t)))
+      case OptionType(t)       => typePointer(transformType(t))
+      case HashMapType(t1, t2) => typePointer(typeGHashTable(transformType(t1), transformType(t2)))
+      case CArrayType(t1)      => tp
+      case _                   => super.transformType[T]
+    }
+  }).asInstanceOf[PardisType[Any]]
+
   /* HashMap Operations */
   def getMapKeyType[A: PardisType, B: PardisType](map: Expression[HashMap[A, B]]): PardisType[Any] =
     map.tp.typeArguments(0).typeArguments(1).asInstanceOf[PardisType[Any]]
@@ -298,10 +314,10 @@ class ScalaHashMapToGLibTransformer(override val IR: LoweringLegoBase) extends R
     case nm @ HashMapNew4(_, _) =>
       apply(HashMapNew()(nm.typeA, nm.typeB))
     case nm @ HashMapNew() =>
-      val nA = typePointer(nm.typeA)
-      val nB = typePointer(nm.typeB)
-      def hashFunc[T: TypeRep] = (s: Rep[T]) => infix_hashCode(s)
-      def equalsFunc[T: TypeRep] = doLambda2Def((s1: Rep[T], s2: Rep[T]) => infix_==(s1, s2))
+      val nA = typePointer(transformType(nm.typeA))
+      val nB = typePointer(transformType(nm.typeB))
+      def hashFunc[T: TypeRep] = transformDef(doLambdaDef((s: Rep[T]) => infix_hashCode(s)))
+      def equalsFunc[T: TypeRep] = transformDef(doLambda2Def((s1: Rep[T], s2: Rep[T]) => infix_==(s1, s2)))
       if (nm.typeA.isPrimitive || nm.typeA == StringType || nm.typeA == OptimalStringType)
         GHashTableNew(hashFunc(nm.typeA), equalsFunc(nm.typeA))(nm.typeA, nB, IntType)
       else GHashTableNew(hashFunc(nA), equalsFunc(nA))(nA, nB, IntType)
@@ -315,12 +331,12 @@ class ScalaHashMapToGLibTransformer(override val IR: LoweringLegoBase) extends R
   }
   rewrite += rule {
     case HashMapContains(map, key) =>
-      val z = toAtom(HashMapApply(map, key))(getMapValueType(map))
+      val z = toAtom(transformDef(HashMapApply(map, key)))(getMapValueType(apply(map)))
       infix_!=(z, unit(null))
   }
   rewrite += rule {
     case ma @ HashMapApply(map, key) =>
-      NameAlias(None, "g_hash_table_lookup", List(List(map, key)))(getMapValueType(map))
+      NameAlias(None, "g_hash_table_lookup", List(List(map, key)))(getMapValueType(apply(map)))
   }
   rewrite += rule {
     case mu @ HashMapUpdate(map, key, value) =>
@@ -328,21 +344,18 @@ class ScalaHashMapToGLibTransformer(override val IR: LoweringLegoBase) extends R
   }
   rewrite += rule {
     case hmgu @ HashMapGetOrElseUpdate(map, key, value) =>
-      val ktp = getMapKeyType(map)
-      val vtp = getMapValueType(map)
-      val v = map.apply(key)
-      //val v = toAtom(HashMapApply(map, key)(ktp, vtp))(vtp)
+      val ktp = getMapKeyType(apply(map))
+      val vtp = getMapValueType(apply(map))
+      val v = toAtom(transformDef(HashMapApply(map, key)(ktp, vtp))(vtp))(vtp)
       __ifThenElse(infix_==(v, unit(null)), {
-        val res = inlineBlock(value)
-        map(key) = res
-        //toAtom(HashMapUpdate(map, key, res))
+        val res = inlineBlock(apply(value))
+        toAtom(HashMapUpdate(map, key, res))
         res
       }, v)(v.tp)
   }
   rewrite += rule {
     case mr @ HashMapRemove(map, key) =>
-      val x = map.apply(key)
-      //val x = toAtom(HashMapApply(map, key))(getMapValueType(map))
+      val x = toAtom(transformDef(HashMapApply(map, key)))(getMapValueType(apply(map)))
       nameAlias[Unit](None, "g_hash_table_remove", List(List(map, key)))
       x
   }
@@ -484,7 +497,7 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
   import CTypes._
 
   // Handling proper hascode and equals
-  def __isRecord(e: Expression[Any]) = e.tp.isRecord || (e.tp.name.startsWith("Pointer") && e.tp.typeArguments(0).isRecord)
+  def __isRecord(e: Expression[Any]) = e.tp.isRecord || (e.tp.name.startsWith("Pointer") && e.tp.typeArguments(0).isRecord) || (e.tp.name.startsWith("LPointer") && e.tp.typeArguments(0).isRecord)
   object Equals {
     def unapply(node: Def[Any]): Option[(Rep[Any], Rep[Any], Boolean)] = node match {
       case Equal(a, b)    => Some((a, b, true))
@@ -529,9 +542,10 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
   }
   rewrite += rule {
     case ToString(obj) => obj.tp.asInstanceOf[PardisType[_]] match {
-      case PointerType(tp) if tp.isRecord => {
+      case LPointerType(tp) if tp.isRecord =>
         Apply(getStructToStringFunc(tp), obj)
-      }
+      case PointerType(tp) if tp.isRecord =>
+        Apply(getStructToStringFunc(tp), obj)
       case tp => throw new Exception(s"toString conversion for non-record type $tp is not handled for the moment")
     }
   }
