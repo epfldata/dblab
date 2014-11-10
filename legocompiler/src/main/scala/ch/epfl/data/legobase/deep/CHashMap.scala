@@ -12,7 +12,7 @@ import pardis.shallow.c.CLangTypes._
 import pardis.shallow.c.GLibTypes._
 import pardis.optimization._
 import CTypes._
-class HashMapOptimizations(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer with ManualHMO {
+class HashMapOptimizations(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer with ManualHashMapOptimizations {
   import IR._
   type Rep[T] = IR.Rep[T]
 
