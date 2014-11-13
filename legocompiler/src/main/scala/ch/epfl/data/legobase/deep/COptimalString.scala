@@ -13,6 +13,7 @@ import pardis.optimization._
 class OptimalStringOptimizations(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   type Rep[T] = IR.Rep[T]
+  type Var[T] = IR.Var[T]
 
   implicit class OptimalStringRep1(self: Rep[OptimalString]) {
     def getBaseValue(s: Rep[OptimalString]): Rep[LPointer[Char]] = s.charArray
@@ -24,23 +25,23 @@ class OptimalStringOptimizations(override val IR: LoweringLegoBase) extends Recu
       charArray
   }
 
-  rewrite += rule {
-    case node @ OptimalStringString(nodeself) =>
+  rewrite += statement {
+    case sym -> (node @ OptimalStringString(nodeself)) =>
       val self = nodeself.asInstanceOf[Rep[OptimalString]]
 
       self.getBaseValue(self)
   }
 
-  rewrite += rule {
-    case node @ OptimalStringDiff(nodeself, nodey) =>
+  rewrite += statement {
+    case sym -> (node @ OptimalStringDiff(nodeself, nodey)) =>
       val self = nodeself.asInstanceOf[Rep[OptimalString]]
       val y = nodey.asInstanceOf[Rep[OptimalString]]
 
       CString.strcmp(self.getBaseValue(self), self.getBaseValue(y))
   }
 
-  rewrite += rule {
-    case node @ OptimalStringEndsWith(nodeself, nodey) =>
+  rewrite += statement {
+    case sym -> (node @ OptimalStringEndsWith(nodeself, nodey)) =>
       val self = nodeself.asInstanceOf[Rep[OptimalString]]
       val y = nodey.asInstanceOf[Rep[OptimalString]]
 
@@ -52,55 +53,55 @@ class OptimalStringOptimizations(override val IR: LoweringLegoBase) extends Recu
       }
   }
 
-  rewrite += rule {
-    case node @ OptimalStringStartsWith(nodeself, nodey) =>
+  rewrite += statement {
+    case sym -> (node @ OptimalStringStartsWith(nodeself, nodey)) =>
       val self = nodeself.asInstanceOf[Rep[OptimalString]]
       val y = nodey.asInstanceOf[Rep[OptimalString]]
 
       infix_$eq$eq(CString.strncmp(self.getBaseValue(self), self.getBaseValue(y), CString.strlen(self.getBaseValue(y))), unit(0))
   }
 
-  rewrite += rule {
-    case node @ OptimalStringCompare(nodeself, nodey) =>
+  rewrite += statement {
+    case sym -> (node @ OptimalStringCompare(nodeself, nodey)) =>
       val self = nodeself.asInstanceOf[Rep[OptimalString]]
       val y = nodey.asInstanceOf[Rep[OptimalString]]
 
       CString.strcmp(self.getBaseValue(self), self.getBaseValue(y))
   }
 
-  rewrite += rule {
-    case node @ OptimalStringLength(nodeself) =>
+  rewrite += statement {
+    case sym -> (node @ OptimalStringLength(nodeself)) =>
       val self = nodeself.asInstanceOf[Rep[OptimalString]]
 
       CString.strlen(self.getBaseValue(self))
   }
 
-  rewrite += rule {
-    case node @ OptimalString$eq$eq$eq(nodeself, nodey) =>
+  rewrite += statement {
+    case sym -> (node @ OptimalString$eq$eq$eq(nodeself, nodey)) =>
       val self = nodeself.asInstanceOf[Rep[OptimalString]]
       val y = nodey.asInstanceOf[Rep[OptimalString]]
 
       infix_$eq$eq(CString.strcmp(self.getBaseValue(self), self.getBaseValue(y)), unit(0))
   }
 
-  rewrite += rule {
-    case node @ OptimalString$eq$bang$eq(nodeself, nodey) =>
+  rewrite += statement {
+    case sym -> (node @ OptimalString$eq$bang$eq(nodeself, nodey)) =>
       val self = nodeself.asInstanceOf[Rep[OptimalString]]
       val y = nodey.asInstanceOf[Rep[OptimalString]]
 
       infix_$bang$eq(CString.strcmp(self.getBaseValue(self), self.getBaseValue(y)), unit(0))
   }
 
-  rewrite += rule {
-    case node @ OptimalStringContainsSlice(nodeself, nodey) =>
+  rewrite += statement {
+    case sym -> (node @ OptimalStringContainsSlice(nodeself, nodey)) =>
       val self = nodeself.asInstanceOf[Rep[OptimalString]]
       val y = nodey.asInstanceOf[Rep[OptimalString]]
 
       infix_$bang$eq(CString.strstr(self.getBaseValue(self), self.getBaseValue(y)), CLang.NULL[Char])
   }
 
-  rewrite += rule {
-    case node @ OptimalStringIndexOfSlice(nodeself, nodey, nodeidx) =>
+  rewrite += statement {
+    case sym -> (node @ OptimalStringIndexOfSlice(nodeself, nodey, nodeidx)) =>
       val self = nodeself.asInstanceOf[Rep[OptimalString]]
       val y = nodey.asInstanceOf[Rep[OptimalString]]
       val idx = nodeidx.asInstanceOf[Rep[Int]]
@@ -111,16 +112,16 @@ class OptimalStringOptimizations(override val IR: LoweringLegoBase) extends Recu
       }
   }
 
-  rewrite += rule {
-    case node @ OptimalStringApply(nodeself, nodeidx) =>
+  rewrite += statement {
+    case sym -> (node @ OptimalStringApply(nodeself, nodeidx)) =>
       val self = nodeself.asInstanceOf[Rep[OptimalString]]
       val idx = nodeidx.asInstanceOf[Rep[Int]]
 
       CLang.$times[Char](CLang.pointer_add[Char](self.getBaseValue(self), idx))
   }
 
-  rewrite += rule {
-    case node @ OptimalStringSlice(nodeself, nodestart, nodeend) =>
+  rewrite += statement {
+    case sym -> (node @ OptimalStringSlice(nodeself, nodestart, nodeend)) =>
       val self = nodeself.asInstanceOf[Rep[OptimalString]]
       val start = nodestart.asInstanceOf[Rep[Int]]
       val end = nodeend.asInstanceOf[Rep[Int]]

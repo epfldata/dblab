@@ -15,6 +15,7 @@ import CTypes._
 class HashMapOptimizations(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer with ManualHashMapOptimizations {
   import IR._
   type Rep[T] = IR.Rep[T]
+  type Var[T] = IR.Var[T]
 
   class K
   class V
@@ -30,8 +31,8 @@ class HashMapOptimizations(override val IR: LoweringLegoBase) extends RecursiveR
       gHashTable
   }
 
-  rewrite += rule {
-    case node @ HashMapNew2() =>
+  rewrite += statement {
+    case sym -> (node @ HashMapNew2()) =>
 
       implicit val typeK = transformType(node.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
       implicit val typeV = transformType(node.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
@@ -41,70 +42,70 @@ class HashMapOptimizations(override val IR: LoweringLegoBase) extends RecursiveR
       }
   }
 
-  rewrite += rule {
-    case node @ HashMapUpdate(nodeself, nodek, nodev) =>
+  rewrite += statement {
+    case sym -> (node @ HashMapUpdate(nodeself, nodek, nodev)) =>
       val self = nodeself.asInstanceOf[Rep[HashMap[K, V]]]
       val k = nodek.asInstanceOf[Rep[K]]
       val v = nodev.asInstanceOf[Rep[V]]
-      implicit val typeK = transformType(self.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
-      implicit val typeV = transformType(self.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
+      implicit val typeK = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
+      implicit val typeV = transformType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
 
       LGHashTableHeader.g_hash_table_insert(self.gHashTable, infix_asInstanceOf[ch.epfl.data.pardis.shallow.c.GLibTypes.gconstpointer](k), infix_asInstanceOf[ch.epfl.data.pardis.shallow.c.GLibTypes.gconstpointer](v))
   }
 
-  rewrite += rule {
-    case node @ HashMapApply(nodeself, nodek) =>
+  rewrite += statement {
+    case sym -> (node @ HashMapApply(nodeself, nodek)) =>
       val self = nodeself.asInstanceOf[Rep[HashMap[K, V]]]
       val k = nodek.asInstanceOf[Rep[K]]
-      implicit val typeK = transformType(self.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
-      implicit val typeV = transformType(self.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
+      implicit val typeK = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
+      implicit val typeV = transformType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
 
       infix_asInstanceOf[V](LGHashTableHeader.g_hash_table_lookup(self.gHashTable, infix_asInstanceOf[ch.epfl.data.pardis.shallow.c.GLibTypes.gconstpointer](k)))
   }
 
-  rewrite += rule {
-    case node @ HashMapSize(nodeself) =>
+  rewrite += statement {
+    case sym -> (node @ HashMapSize(nodeself)) =>
       val self = nodeself.asInstanceOf[Rep[HashMap[K, V]]]
-      implicit val typeK = transformType(self.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
-      implicit val typeV = transformType(self.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
+      implicit val typeK = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
+      implicit val typeV = transformType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
 
       LGHashTableHeader.g_hash_table_size(self.gHashTable)
   }
 
-  rewrite += rule {
-    case node @ HashMapClear(nodeself) =>
+  rewrite += statement {
+    case sym -> (node @ HashMapClear(nodeself)) =>
       val self = nodeself.asInstanceOf[Rep[HashMap[K, V]]]
-      implicit val typeK = transformType(self.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
-      implicit val typeV = transformType(self.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
+      implicit val typeK = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
+      implicit val typeV = transformType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
 
       LGHashTableHeader.g_hash_table_remove_all(self.gHashTable)
   }
 
-  rewrite += rule {
-    case node @ HashMapKeySet(nodeself) =>
+  rewrite += statement {
+    case sym -> (node @ HashMapKeySet(nodeself)) =>
       val self = nodeself.asInstanceOf[Rep[HashMap[K, V]]]
-      implicit val typeK = transformType(self.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
-      implicit val typeV = transformType(self.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
+      implicit val typeK = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
+      implicit val typeV = transformType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
 
       infix_asInstanceOf[ch.epfl.data.pardis.shallow.c.CLangTypes.LPointer[ch.epfl.data.pardis.shallow.c.GLibTypes.LGList[K]]](LGHashTableHeader.g_hash_table_get_keys(self.gHashTable))
   }
 
-  rewrite += rule {
-    case node @ HashMapContains(nodeself, nodek) =>
+  rewrite += statement {
+    case sym -> (node @ HashMapContains(nodeself, nodek)) =>
       val self = nodeself.asInstanceOf[Rep[HashMap[K, V]]]
       val k = nodek.asInstanceOf[Rep[K]]
-      implicit val typeK = transformType(self.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
-      implicit val typeV = transformType(self.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
+      implicit val typeK = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
+      implicit val typeV = transformType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
 
       infix_$bang$eq(LGHashTableHeader.g_hash_table_lookup(self.gHashTable, infix_asInstanceOf[ch.epfl.data.pardis.shallow.c.GLibTypes.gconstpointer](k)), CLang.NULL[Any])
   }
 
-  rewrite += rule {
-    case node @ HashMapRemove(nodeself, nodek) =>
+  rewrite += statement {
+    case sym -> (node @ HashMapRemove(nodeself, nodek)) =>
       val self = nodeself.asInstanceOf[Rep[HashMap[K, V]]]
       val k = nodek.asInstanceOf[Rep[K]]
-      implicit val typeK = transformType(self.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
-      implicit val typeV = transformType(self.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
+      implicit val typeK = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
+      implicit val typeV = transformType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
 
       {
         val v: this.Rep[V] = self.apply(k);
@@ -113,13 +114,13 @@ class HashMapOptimizations(override val IR: LoweringLegoBase) extends RecursiveR
       }
   }
 
-  rewrite += rule {
-    case node @ HashMapGetOrElseUpdate(nodeself, nodek, nodevOutput) =>
+  rewrite += statement {
+    case sym -> (node @ HashMapGetOrElseUpdate(nodeself, nodek, nodevOutput)) =>
       val self = nodeself.asInstanceOf[Rep[HashMap[K, V]]]
       val k = nodek.asInstanceOf[Rep[K]]
       val v = nodevOutput.asInstanceOf[Block[V]]
-      implicit val typeK = transformType(self.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
-      implicit val typeV = transformType(self.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
+      implicit val typeK = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[K]]
+      implicit val typeV = transformType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[V]]
 
       {
         val res: this.Rep[ch.epfl.data.pardis.shallow.c.GLibTypes.gpointer] = LGHashTableHeader.g_hash_table_lookup(self.gHashTable, infix_asInstanceOf[ch.epfl.data.pardis.shallow.c.GLibTypes.gconstpointer](k));
