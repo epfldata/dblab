@@ -162,8 +162,8 @@ class HashJoinOp[A <: Record: Manifest, B <: Record, C](val leftParent: Operator
 
   val expectedSize = leftParent.expectedSize * 100 // Assume 1 tuple from the left side joins with 100 from the right
   // val hm = HashMap[C, ArrayBuffer[A]]()
-  val hm = new pardis.shallow.MultiMapOptimal[C, A]()
-  // val hm = new HashMap[C, Set[A]] with scala.collection.mutable.MultiMap[C, A]
+  // val hm = new pardis.shallow.scalalib.collection.MultiMapOptimal[C, A]()
+  val hm = pardis.shallow.scalalib.collection.MultiMap[C, A]
 
   def reset() {
     rightParent.reset; leftParent.reset; hm.clear;
@@ -217,6 +217,8 @@ class HashJoinOp[A <: Record: Manifest, B <: Record, C](val leftParent: Operator
 
 @deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: ArrayBuffer[A] => C) extends Operator[WindowRecord[B, C]] {
   val hm = HashMap[B, ArrayBuffer[A]]()
+  // val hm = new pardis.shallow.scalalib.collection.MultiMapOptimal[B, A]()
+  // val hm = pardis.shallow.scalalib.collection.MultiMap[B, A]
 
   val expectedSize = parent.expectedSize
 
@@ -242,11 +244,18 @@ class HashJoinOp[A <: Record: Manifest, B <: Record, C](val leftParent: Operator
     //     val key = grp(elem(0))
     //     child.consume(new WindowRecord[B, C](key, wnd))
     // }
+    // hm.foreach {
+    //   case (k, elem) =>
+    //     val wnd = wndf(elem)
+    //     val key = grp(elem(0))
+    //     child.consume(new WindowRecord[B, C](key, wnd))
+    // }
   }
   def consume(tuple: Record) {
     val key = grp(tuple.asInstanceOf[A])
     val v = hm.getOrElseUpdate(key, ArrayBuffer[A]())
     v.append(tuple.asInstanceOf[A])
+    // hm.addBinding(key, tuple.asInstanceOf[A])
   }
 }
 
@@ -354,8 +363,8 @@ class HashJoinAnti[A: Manifest, B, C](leftParent: Operator[A], rightParent: Oper
   @inline var mode: scala.Int = 0
   // val hm = HashMap[C, ArrayBuffer[A]]()
   // var keySet = Set(hm.keySet.toSeq: _*)
-  val hm = new pardis.shallow.MultiMapOptimal[C, A]()
-  // val hm = new HashMap[C, Set[A]] with scala.collection.mutable.MultiMap[C, A]
+  // val hm = new pardis.shallow.scalalib.collection.MultiMapOptimal[C, A]()
+  val hm = pardis.shallow.scalalib.collection.MultiMap[C, A]
   val expectedSize = leftParent.expectedSize * 100
 
   def open() {
