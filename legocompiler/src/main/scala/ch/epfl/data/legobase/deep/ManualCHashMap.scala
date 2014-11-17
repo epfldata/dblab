@@ -12,7 +12,7 @@ import pardis.optimization._
 
 // Additional manual changes needed:
 //
-//  - Replace self.<init> with __newCHashMap in HashMapNew2 case
+//  - Replace self.<init> with __newCHashMap[K, V] in HashMapNew2 case
 //  - Remove the unit(()) at the end of the HashMapNew2 case
 //  - Remove (evidence$3, evidence$4) at the end of the HashMapNew2 case
 //  - Extend ManualHashMapOptimizations
@@ -26,10 +26,8 @@ trait ManualHashMapOptimizations extends RecursiveRuleBasedTransformer[LoweringL
     typeRep[K].isPrimitive || typeRep[K] == typeRep[String] || typeRep[K] == typeRep[OptimalString]
   }
 
-  object HashMapNew1 {
-    def unapply[T: TypeRep](node: Def[T]): Option[Def[T]] = node match {
-      case _ => None
-    }
+  case class HashMapNew1[A, B](gHashTable: Rep[LPointer[LGHashTable]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[HashMap[A, B]](List(typeA, typeB), "HashMap", List(List())) {
+    override def curriedConstructor = (x: Any) => copy[A, B]()
   }
 
   object HashMapNew2 {
@@ -39,20 +37,25 @@ trait ManualHashMapOptimizations extends RecursiveRuleBasedTransformer[LoweringL
     }
   }
 
-  rewrite += rule {
-    case nm @ HashMapNew3(_, _) =>
-      apply(HashMapNew()(nm.typeA, ArrayBufferType(nm.typeB)))
-    case nm @ HashMapNew4(_, _) =>
-      apply(HashMapNew()(nm.typeA, nm.typeB))
+  rewrite += statement {
+    case sym -> (nm @ HashMapNew3(_, _)) =>
+      __newCHashMap()(nm.typeA, ArrayBufferType(nm.typeB), sym)
+    case sym -> (nm @ HashMapNew4(_, _)) =>
+      __newCHashMap()(nm.typeA, nm.typeB, sym)
   }
 
   class K
   class V
 
-  rewrite += rule {
-    case node @ HashMapNew() if !shouldUseDirectKeys(node) =>
+  def __newCHashMap[K, V]()(implicit typeK: TypeRep[K], typeV: TypeRep[V], sym: Sym[Any]): Rep[HashMap[K, V]]
+  def __newCHashMap[K, V](gHashTable: Rep[LPointer[LGHashTable]])(implicit typeK: TypeRep[K], typeV: TypeRep[V], sym: Sym[Any]): Rep[HashMap[K, V]]
+
+  rewrite += statement {
+    case sym -> (node @ HashMapNew()) if !shouldUseDirectKeys(node) =>
+      System.out.println(s"1: HashMapNew for symbol $sym")
       implicit val ktype = transformType(node.typeA).asInstanceOf[TypeRep[K]]
       implicit val vtype = transformType(node.typeB).asInstanceOf[TypeRep[V]]
+      implicit val symany = sym.asInstanceOf[Sym[Any]]
       def hashFunc[T: TypeRep] =
         doLambda[gconstpointer, Int]((s: Rep[gconstpointer]) => {
           infix_hashCode[T](infix_asInstanceOf[T](s))
@@ -62,6 +65,26 @@ trait ManualHashMapOptimizations extends RecursiveRuleBasedTransformer[LoweringL
           infix_==[T, T](infix_asInstanceOf[T](s1), infix_asInstanceOf[T](s2)).asInstanceOf[Rep[Int]]
         })
 
-      LGHashTableHeader.g_hash_table_new(CLang.&(hashFunc[LPointer[K]]), CLang.&(equalsFunc[LPointer[K]]))
+      __newCHashMap[K, V](LGHashTableHeader.g_hash_table_new(CLang.&(hashFunc[LPointer[K]]), CLang.&(equalsFunc[LPointer[K]])))
   }
+}
+
+// Additional manual changes needed:
+//  - replace SetNew with SetNew2
+trait ManualSet extends RecursiveRuleBasedTransformer[LoweringLegoBase] {
+  import IR._
+
+  /*object SetNew {
+    def unapply[T: TypeRep](node: Def[T]): Option[Def[T]] = node match {
+      case _ => None
+    }
+  }*/
+}
+
+// Additional manual changes needed:
+//  - extend ManualOptimalString
+trait ManualOptimalString extends RecursiveRuleBasedTransformer[LoweringLegoBase] {
+  import IR._
+
+  def OptimalStringNew(charArray: Rep[LPointer[Char]]): Rep[OptimalString] = new OptimalStringNew(charArray.asInstanceOf[Rep[Array[Byte]]])
 }
