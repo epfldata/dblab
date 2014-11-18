@@ -42,6 +42,13 @@ class MetaInfo
   val expectedSize: Int
 }
 
+object MultiMap {
+  def apply[K, V] = {
+    pardis.shallow.scalalib.collection.MultiMap[K, V]
+    // new pardis.shallow.scalalib.collection.MultiMapOptimal[K, V]()
+  }
+}
+
 @deep class ScanOp[A](table: Array[A]) extends Operator[A] {
   var i = 0
   val expectedSize = table.length
@@ -62,6 +69,9 @@ class MetaInfo
   def consume(tuple: Record) { throw new Exception("PUSH ENGINE BUG:: Consume function in ScanOp should never be called!!!!\n") }
 }
 
+/** Amir: the following line removes the need for stop */
+// class PrintOpStop extends Exception("STOP!")
+
 @deep class PrintOp[A](parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean) extends Operator[A] { self =>
   var numRows = (0)
   val expectedSize = parent.expectedSize
@@ -71,10 +81,18 @@ class MetaInfo
   }
   def next() = {
     parent.next;
+    /** Amir: the following line removes the need for stop */
+    // try {
+    //   parent.next
+    // } catch {
+    //   case ex: PrintOpStop =>
+    // }
     if (printQueryOutput) printf("(%d rows)\n", numRows)
   }
   def consume(tuple: Record) {
     if (limit() == false) parent.stop = (true)
+    /** Amir: the following line removes the need for stop */
+    // if (limit() == false) throw new PrintOpStop
     else {
       if (printQueryOutput) printFunc(tuple.asInstanceOf[A]);
       numRows += 1
@@ -163,7 +181,8 @@ class HashJoinOp[A <: Record: Manifest, B <: Record, C](val leftParent: Operator
   val expectedSize = leftParent.expectedSize * 100 // Assume 1 tuple from the left side joins with 100 from the right
   // val hm = HashMap[C, ArrayBuffer[A]]()
   // val hm = new pardis.shallow.scalalib.collection.MultiMapOptimal[C, A]()
-  val hm = pardis.shallow.scalalib.collection.MultiMap[C, A]
+  // val hm = pardis.shallow.scalalib.collection.MultiMap[C, A]
+  val hm = MultiMap[C, A]
 
   def reset() {
     rightParent.reset; leftParent.reset; hm.clear;
@@ -215,10 +234,11 @@ class HashJoinOp[A <: Record: Manifest, B <: Record, C](val leftParent: Operator
   }
 }
 
-@deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: ArrayBuffer[A] => C) extends Operator[WindowRecord[B, C]] {
-  val hm = HashMap[B, ArrayBuffer[A]]()
+@deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: Set[A] => C) extends Operator[WindowRecord[B, C]] {
+  // val hm = HashMap[B, ArrayBuffer[A]]()
   // val hm = new pardis.shallow.scalalib.collection.MultiMapOptimal[B, A]()
   // val hm = pardis.shallow.scalalib.collection.MultiMap[B, A]
+  val hm = MultiMap[B, A]
 
   val expectedSize = parent.expectedSize
 
@@ -229,40 +249,41 @@ class HashJoinOp[A <: Record: Manifest, B <: Record, C](val leftParent: Operator
   def reset() { parent.reset; hm.clear; open }
   def next() {
     parent.next
-    var keySet = Set(hm.keySet.toSeq: _*)
-    while ( /*!stop && */ hm.size != 0) {
-      val k = keySet.head
-      keySet.remove(k)
-      val elem = hm.remove(k)
-      val wnd = wndf(elem.get)
-      val key = grp(elem.get(0))
+    // var keySet = Set(hm.keySet.toSeq: _*)
+    // while ( /*!stop && */ hm.size != 0) {
+    //   val k = keySet.head
+    //   keySet.remove(k)
+    //   val elem = hm.remove(k)
+    //   val wnd = wndf(elem.get)
+    //   val key = grp(elem.get(0))
+    //   child.consume(new WindowRecord[B, C](key, wnd))
+    // }
+    // hm.foreach {
+    //   case (k, elem) =>
+    //     val wnd = wndf(elem)
+    //     val key = grp(elem(0))
+    //     child.consume(new WindowRecord[B, C](key, wnd))
+    // }
+    hm.foreach { pair =>
+      val elem = pair._2
+      val wnd = wndf(elem)
+      val key = grp(elem.head)
       child.consume(new WindowRecord[B, C](key, wnd))
     }
-    // hm.foreach {
-    //   case (k, elem) =>
-    //     val wnd = wndf(elem)
-    //     val key = grp(elem(0))
-    //     child.consume(new WindowRecord[B, C](key, wnd))
-    // }
-    // hm.foreach {
-    //   case (k, elem) =>
-    //     val wnd = wndf(elem)
-    //     val key = grp(elem(0))
-    //     child.consume(new WindowRecord[B, C](key, wnd))
-    // }
   }
   def consume(tuple: Record) {
     val key = grp(tuple.asInstanceOf[A])
-    val v = hm.getOrElseUpdate(key, ArrayBuffer[A]())
-    v.append(tuple.asInstanceOf[A])
-    // hm.addBinding(key, tuple.asInstanceOf[A])
+    // val v = hm.getOrElseUpdate(key, ArrayBuffer[A]())
+    // v.append(tuple.asInstanceOf[A])
+    hm.addBinding(key, tuple.asInstanceOf[A])
   }
 }
 
 @deep
 class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   @inline var mode: scala.Int = 0
-  val hm = HashMap[C, ArrayBuffer[B]]()
+  // val hm = HashMap[C, ArrayBuffer[B]]()
+  val hm = MultiMap[C, B]
   val expectedSize = leftParent.expectedSize
 
   def open() {
@@ -280,26 +301,31 @@ class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator
   def consume(tuple: Record) {
     if (mode == 0) {
       val k = rightHash(tuple.asInstanceOf[B])
-      val v = hm.getOrElseUpdate(k, ArrayBuffer[B]())
-      v.append(tuple.asInstanceOf[B])
+      // val v = hm.getOrElseUpdate(k, ArrayBuffer[B]())
+      // v.append(tuple.asInstanceOf[B])
+      hm.addBinding(k, tuple.asInstanceOf[B])
     } else {
       val k = leftHash(tuple.asInstanceOf[A])
-      if (hm.contains(k)) {
-        val tmpBuffer = hm(k)
-        //        val idx = tmpBuffer.indexWhere(e => joinCond(tuple.asInstanceOf[A], e))
-        var i = 0
-        var found = false
-        val size = tmpBuffer.size
-        var break = false
-        while (!found && !break) {
-          if (joinCond(tuple.asInstanceOf[A], tmpBuffer(i))) found = true
-          else {
-            if (i + 1 >= size) break = true
-            i += 1
-          }
-        }
+      // if (hm.contains(k)) {
+      //   val tmpBuffer = hm(k)
+      //   //        val idx = tmpBuffer.indexWhere(e => joinCond(tuple.asInstanceOf[A], e))
+      //   var i = 0
+      //   var found = false
+      //   val size = tmpBuffer.size
+      //   var break = false
+      //   while (!found && !break) {
+      //     if (joinCond(tuple.asInstanceOf[A], tmpBuffer(i))) found = true
+      //     else {
+      //       if (i + 1 >= size) break = true
+      //       i += 1
+      //     }
+      //   }
 
-        if (found == true)
+      //   if (found == true)
+      //     child.consume(tuple.asInstanceOf[Record])
+      // }
+      hm.get(k).foreach { tmpBuffer =>
+        if (tmpBuffer.exists(elem => joinCond(tuple.asInstanceOf[A], elem)))
           child.consume(tuple.asInstanceOf[Record])
       }
     }
@@ -364,7 +390,8 @@ class HashJoinAnti[A: Manifest, B, C](leftParent: Operator[A], rightParent: Oper
   // val hm = HashMap[C, ArrayBuffer[A]]()
   // var keySet = Set(hm.keySet.toSeq: _*)
   // val hm = new pardis.shallow.scalalib.collection.MultiMapOptimal[C, A]()
-  val hm = pardis.shallow.scalalib.collection.MultiMap[C, A]
+  // val hm = pardis.shallow.scalalib.collection.MultiMap[C, A]
+  val hm = MultiMap[C, A]
   val expectedSize = leftParent.expectedSize * 100
 
   def open() {
@@ -393,11 +420,11 @@ class HashJoinAnti[A: Manifest, B, C](leftParent: Operator[A], rightParent: Oper
     //     i += 1
     //   }
     // }
-    hm.foreach {
-      case (k, v) =>
-        v.foreach { e =>
-          child.consume(e.asInstanceOf[Record])
-        }
+    hm.foreach { pair =>
+      val v = pair._2
+      v.foreach { e =>
+        child.consume(e.asInstanceOf[Record])
+      }
     }
   }
   def consume(tuple: Record) {
@@ -470,7 +497,10 @@ class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
 @deep
 class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   @inline var mode: scala.Int = 0
-  val hm = HashMap[C, ArrayBuffer[B]]()
+  // val hm = HashMap[C, ArrayBuffer[B]]()
+  // val hm = new pardis.shallow.scalalib.collection.MultiMapOptimal[C, B]()
+  // val hm = pardis.shallow.scalalib.collection.MultiMap[C, B]
+  val hm = MultiMap[C, B]
   val defaultB = Record.getDefaultRecord[B]()
   val expectedSize = leftParent.expectedSize
   def open() = {
@@ -488,27 +518,44 @@ class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Ope
   def consume(tuple: Record) {
     if (mode == 0) {
       val k = rightHash(tuple.asInstanceOf[B])
-      val v = hm.getOrElseUpdate(k, ArrayBuffer[B]())
-      v.append(tuple.asInstanceOf[B])
+      // val v = hm.getOrElseUpdate(k, ArrayBuffer[B]())
+      // v.append(tuple.asInstanceOf[B])
+      hm.addBinding(k, tuple.asInstanceOf[B])
     } else {
       val k = leftHash(tuple.asInstanceOf[A])
-      if (hm.contains(k)) {
-        val tmpBuffer = hm(k)
-        var tmpCount = 0
-        val size = tmpBuffer.size
-        var break = false
-        while (!stop && !break) {
-          val bufElem = tmpBuffer(tmpCount)
+
+      // if (hm.contains(k)) {
+      //   val tmpBuffer = hm(k)
+      //   var tmpCount = 0
+      //   val size = tmpBuffer.size
+      //   var break = false
+      //   while (!stop && !break) {
+      //     val bufElem = tmpBuffer(tmpCount)
+      //     val elem = {
+      //       if (joinCond(tuple.asInstanceOf[A], bufElem)) {
+      //         tuple.asInstanceOf[A].concatenateDynamic(bufElem, "", "")
+      //       } else
+      //         tuple.asInstanceOf[A].concatenateDynamic(defaultB, "", "")
+      //     }
+      //     //printf("%s\n", elem.toString)
+      //     child.consume(elem)
+      //     if (tmpCount + 1 >= size) break = true
+      //     tmpCount += 1
+      //   }
+      // } else {
+      //   child.consume(tuple.asInstanceOf[A].concatenateDynamic(defaultB, "", ""))
+      // }
+      val hmGet = hm.get(k)
+      if (hmGet.nonEmpty) {
+        val tmpBuffer = hmGet.get
+        tmpBuffer foreach { bufElem =>
           val elem = {
             if (joinCond(tuple.asInstanceOf[A], bufElem)) {
               tuple.asInstanceOf[A].concatenateDynamic(bufElem, "", "")
             } else
               tuple.asInstanceOf[A].concatenateDynamic(defaultB, "", "")
           }
-          //printf("%s\n", elem.toString)
           child.consume(elem)
-          if (tmpCount + 1 >= size) break = true
-          tmpCount += 1
         }
       } else {
         child.consume(tuple.asInstanceOf[A].concatenateDynamic(defaultB, "", ""))
