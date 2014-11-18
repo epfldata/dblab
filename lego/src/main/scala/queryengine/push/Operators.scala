@@ -47,7 +47,9 @@ object MultiMap {
     // pardis.shallow.scalalib.collection.MultiMap[K, V]
     new pardis.shallow.scalalib.collection.MultiMapOptimal[K, V]()
   }
-  type Set[T] = pardis.shallow.scalalib.collection.SetLinkedList[T]
+  // type Set[T] = scala.collection.mutable.Set[T]
+  // type Set[T] = pardis.shallow.scalalib.collection.SetLinkedList[T]
+  type Set[T] = pardis.shallow.scalalib.collection.SetArray[T]
 }
 
 @deep class ScanOp[A](table: Array[A]) extends Operator[A] {
