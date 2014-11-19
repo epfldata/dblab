@@ -12,7 +12,7 @@ import pardis.ir._
 import pardis.types.PardisTypeImplicits._
 import pardis.effects._
 
-trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with ManifestOps with RichIntOps with pardis.deep.scalalib.ByteComponent with LegoHashMap with LegoArrayBuffer { this: DeepDSL =>
+trait ManualLiftedLegoBase extends /*OptionOps with*/ SetOps with OrderingOps with ManifestOps with RichIntOps with pardis.deep.scalalib.ByteComponent with LegoHashMap with LegoArrayBuffer { this: DeepDSL =>
   /* TODO These methods should be lifted from scala.Predef */
   case class Println(x: Rep[Any]) extends FunctionDef[Unit](None, "println", List(List(x))) {
     override def curriedConstructor = (copy _)
@@ -72,17 +72,6 @@ trait ManualLiftedLegoBase extends OptionOps with SetOps with OrderingOps with M
   }
 
   def byteArrayOps(arr: Rep[Array[Byte]]): Rep[Array[Byte]] = arr
-}
-
-// TODO should be generated automatically
-trait OptionOps { this: DeepDSL =>
-  implicit class OptionRep[A](self: Rep[Option[A]])(implicit typeA: TypeRep[A]) {
-    def get(): Rep[A] = optionGet[A](self)(typeA)
-  }
-  def optionGet[A](self: Rep[Option[A]])(implicit typeA: TypeRep[A]): Rep[A] = OptionGet[A](self)
-  case class OptionGet[A](self: Rep[Option[A]])(implicit typeA: TypeRep[A]) extends FunctionDef[A](Some(self), "get", List()) {
-    override def curriedConstructor = copy[A] _
-  }
 }
 
 trait SetOps extends pardis.deep.scalalib.collection.SetOps { this: DeepDSL =>

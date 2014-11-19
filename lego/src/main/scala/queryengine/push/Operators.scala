@@ -44,12 +44,12 @@ class MetaInfo
 
 object MultiMap {
   def apply[K, V] = {
-    // pardis.shallow.scalalib.collection.MultiMap[K, V]
-    new pardis.shallow.scalalib.collection.MultiMapOptimal[K, V]()
+    pardis.shallow.scalalib.collection.MultiMap[K, V]
+    // new pardis.shallow.scalalib.collection.MultiMapOptimal[K, V]()
   }
   // type Set[T] = scala.collection.mutable.Set[T]
   // type Set[T] = pardis.shallow.scalalib.collection.SetLinkedList[T]
-  type Set[T] = pardis.shallow.scalalib.collection.SetArray[T]
+  // type Set[T] = pardis.shallow.scalalib.collection.SetArray[T]
 }
 
 @deep class ScanOp[A](table: Array[A]) extends Operator[A] {
@@ -177,7 +177,7 @@ object MultiMap {
 }
 
 @deep
-class HashJoinOp[A <: Record: Manifest, B <: Record, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String, rightAlias: String)(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
+class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String, rightAlias: String)(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   def this(leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) = this(leftParent, rightParent, "", "")(joinCond)(leftHash)(rightHash)
   @inline var mode: scala.Int = 0
 
@@ -216,9 +216,8 @@ class HashJoinOp[A <: Record: Manifest, B <: Record, C](val leftParent: Operator
     }
   }
 }
-
-// @deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: Set[A] => C) extends Operator[WindowRecord[B, C]] {
-@deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: MultiMap.Set[A] => C) extends Operator[WindowRecord[B, C]] {
+// @deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: MultiMap.Set[A] => C) extends Operator[WindowRecord[B, C]] {
+@deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: Set[A] => C) extends Operator[WindowRecord[B, C]] {
   val hm = MultiMap[B, A]
 
   val expectedSize = parent.expectedSize

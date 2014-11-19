@@ -2436,4 +2436,7 @@ trait DeepDSL extends push.OperatorsComponent
   with ArrayBufferComponent
   with ManualLiftedLegoBase
   with QueryComponent
+  with Tuple2Component
+  with MultiMapComponent
+  with OptionComponent
 
