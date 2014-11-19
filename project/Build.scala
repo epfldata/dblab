@@ -94,7 +94,8 @@ object LegoBuild extends Build {
    settings = defaults ++ generatorSettings ++  Seq(
      name := "lego-core",
      scalacOptions ++= Seq("-optimize"),
-     libraryDependencies += "ch.epfl.data" % "pardis-library_2.11" % "0.1-SNAPSHOT")) // hack for being able to generate implementations
+     libraryDependencies += "ch.epfl.data" % "pardis-library_2.11" % "0.1-SNAPSHOT",
+     libraryDependencies += "ch.epfl.data" % "pardis-library-c_2.11" % "0.1-SNAPSHOT")) // hack for being able to generate implementations
   lazy val legolifter = Project(id = "legolifter", base = file("legolifter"),
     settings = defaults ++ generatorSettings ++ Seq(name := "legolifter"))
     .dependsOn(lego_core)
