@@ -238,8 +238,9 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
       val mCompRec = implicitly[TypeRep[DynamicCompositeRecord[pardis.shallow.Record, pardis.shallow.Record]]].rebuild(ma, mb).asInstanceOf[TypeRep[Any]]
       val newSize = toAtom(PardisStructImmutableField(ho.leftParent, "expectedSize")(IntType))(IntType)
       to.__newDef[HashJoinOpTp](
-        ("hm", true, to.__newHashMap3[Any, Any](ho.leftHash.asInstanceOf[Rep[Any => Any]],
-          newSize)(apply(mc), apply(ma.asInstanceOf[TypeRep[Any]]))),
+        // ("hm", true, to.__newHashMap3[Any, Any](ho.leftHash.asInstanceOf[Rep[Any => Any]],
+        //   newSize)(apply(mc), apply(ma.asInstanceOf[TypeRep[Any]]))),
+        ("hm", false, to.__newMultiMap[Any, Any]()(apply(mc), apply(ma.asInstanceOf[TypeRep[Any]]))),
         ("expectedSize", false, newSize * 100),
         stop)(tp).asInstanceOf[to.Def[T]]
 
@@ -253,7 +254,8 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
       val mwinRecBC = implicitly[TypeRep[WindowRecord[Any, Any]]].rebuild(mb, mc).asInstanceOf[TypeRep[Any]]
       val newSize = toAtom(PardisStructImmutableField(wo.parent, "expectedSize")(IntType))(IntType)
       to.__newDef[WindowOp[Any, Any, Any]]( //("hm", false, to.__newHashMap()(to.overloaded2, apply(mb), apply(marrBuffA))),
-        ("hm", false, to.__newHashMap3[Any, Any](wo.grp.asInstanceOf[Rep[Any => Any]], newSize * 100)(apply(mb), apply(ma))),
+        // ("hm", false, to.__newHashMap3[Any, Any](wo.grp.asInstanceOf[Rep[Any => Any]], newSize * 100)(apply(mb), apply(ma))),
+        ("hm", false, to.__newMultiMap[Any, Any]()(apply(mb), apply(ma))),
         ("expectedSize", false, newSize * 100),
         stop).asInstanceOf[to.Def[T]]
     }

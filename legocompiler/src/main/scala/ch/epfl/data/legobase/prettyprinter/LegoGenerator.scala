@@ -24,6 +24,7 @@ package legobase
 $getShallowHeader
 import scala.collection.mutable.Set
 import scala.collection.mutable.HashMap
+import pardis.shallow.scalalib.collection.MultiMap
 import scala.collection.mutable.TreeSet
 import scala.collection.mutable.ArrayBuffer
 import storagemanager.K2DBScanner

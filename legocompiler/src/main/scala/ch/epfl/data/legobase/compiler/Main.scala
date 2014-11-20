@@ -82,6 +82,12 @@ object Main extends LegoRunner {
     }
   }
 
+  object MultiMapOptimizations extends TransformerHandler {
+    def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
+      new pardis.deep.scalalib.collection.MultiMapOptimizations(context.asInstanceOf[LoweringLegoBase]).optimize(block)
+    }
+  }
+
   def compileQuery(context: LoweringLegoBase, block: pardis.ir.PardisBlock[Unit], number: Int, shallow: Boolean, generateCCode: Boolean) {
     val pipeline = new TransformerPipeline()
     pipeline += LBLowering(generateCCode)
@@ -93,20 +99,23 @@ object Main extends LegoRunner {
       //pipeline += ColumnStoreTransformer
     }
 
-    pipeline += PartiallyEvaluate
+    // pipeline += PartiallyEvaluate
     // pipeline += HashMapHoist
     // pipeline += HashMapToArrayTransformer(generateCCode)
     //pipeline += MemoryManagementTransfomer //NOTE FIX TOPOLOGICAL SORT :-(
+
+    pipeline += TreeDumper
+
+    // pipeline += MultiMapOptimizations
 
     //pipeline += ParameterPromotion
 
     //pipeline += DCE
 
-    pipeline += PartiallyEvaluate
-    pipeline += SingletonArrayToValueTransformer
+    // pipeline += PartiallyEvaluate
+    // pipeline += SingletonArrayToValueTransformer
 
     if (generateCCode) pipeline += CTransformersPipeline
-    pipeline += TreeDumper
 
     pipeline += DCECLang //NEVER REMOVE!!!!
 
