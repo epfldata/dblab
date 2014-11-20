@@ -357,7 +357,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
 
   /* Set Operaions */
-  rewrite += rule { case SetNew(s) => s }
+  rewrite += rule { case SetVarArgNew(s) => s }
   rewrite += rule {
     case nm @ SetNew2() => PardisCast(unit(0).asInstanceOf[Expression[Any]])(apply(nm.tp), apply(nm.tp))
   }

@@ -84,13 +84,16 @@ object Main extends LegoRunner {
 
   object MultiMapOptimizations extends TransformerHandler {
     def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-      new pardis.deep.scalalib.collection.MultiMapOptimizations(context.asInstanceOf[LoweringLegoBase]).optimize(block)
+      new pardis.deep.scalalib.collection.MultiMapOptimalTransformation(context.asInstanceOf[LoweringLegoBase]).optimize(block)
     }
   }
 
   def compileQuery(context: LoweringLegoBase, block: pardis.ir.PardisBlock[Unit], number: Int, shallow: Boolean, generateCCode: Boolean) {
+    // removes the unused fields from a record
+    val removeUnusedFields = true
     val pipeline = new TransformerPipeline()
-    pipeline += LBLowering(generateCCode)
+
+    pipeline += LBLowering(generateCCode, removeUnusedFields)
     pipeline += ParameterPromotion
     pipeline += DCE
     pipeline += PartiallyEvaluate

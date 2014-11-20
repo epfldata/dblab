@@ -11,15 +11,15 @@ import pardis.types.PardisTypeImplicits._
 import pardis.optimization._
 
 object LBLowering {
-  def apply(generateHashAndEqual: Boolean) = new TransformerHandler {
+  def apply(generateHashAndEqual: Boolean, removeUnusedFields: Boolean) = new TransformerHandler {
     def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
       val lbContext = context.asInstanceOf[LoweringLegoBase]
-      new LBLowering(lbContext, lbContext, generateHashAndEqual).lower(block)
+      new LBLowering(lbContext, lbContext, generateHashAndEqual, removeUnusedFields).lower(block)
     }
   }
 }
 
-class LBLowering(override val from: LoweringLegoBase, override val to: LoweringLegoBase, override val generateHashAndEqual: Boolean) extends Lowering[LoweringLegoBase, LoweringLegoBase](from, to) {
+class LBLowering(override val from: LoweringLegoBase, override val to: LoweringLegoBase, override val generateHashAndEqual: Boolean, val removeUnusedFields: Boolean) extends Lowering[LoweringLegoBase, LoweringLegoBase](from, to) {
   import from._
 
   // override val lowerStructs: Boolean = false
@@ -93,7 +93,8 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
       val rightTag = getTag(getType(record2.tp))
       val concatTag = StructTags.CompositeTag[Any, Any](la, ra, leftTag, rightTag)
       val regFields = getRegisteredFieldsOfType(self.tp) ++ getRegisteredFieldsOfType(record2.tp)
-      val newElems = getStructElems(leftTag).filter(e => regFields.contains(e.name)).map(x => StructElemInformation(la + x.name, x.tpe, x.mutable)) ++ getStructElems(rightTag).filter(e => regFields.contains(e.name)).map(x => StructElemInformation(ra + x.name, x.tpe, x.mutable))
+      def fieldIsRegistered(f: StructElemInformation): Boolean = regFields.contains(f.name) || !removeUnusedFields
+      val newElems = getStructElems(leftTag).filter(fieldIsRegistered).map(x => StructElemInformation(la + x.name, x.tpe, x.mutable)) ++ getStructElems(rightTag).filter(fieldIsRegistered).map(x => StructElemInformation(ra + x.name, x.tpe, x.mutable))
       structs += concatTag -> newElems
       manifestTags += getType(node.tp) -> concatTag
     }
@@ -149,8 +150,8 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
     case ps @ PardisStruct(tag, elems, methods) =>
       val registeredFields = fieldsAccessed.get(tag)
       val newFields = registeredFields match {
-        case Some(x) => elems.filter(e => x.contains(e.name))
-        case None    => elems
+        case Some(x) if removeUnusedFields => elems.filter(e => x.contains(e.name))
+        case _                             => elems
       }
       val newTpe = ps.tp.asInstanceOf[TypeRep[Any]]
       val newMethods = List(PardisStructMethod("equals", getEquals(newTpe, newFields)),
@@ -168,7 +169,8 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
       val elems = getStructElems(concatTag)
       case class ElemInfo[T](name: String, rec: Rep[T], tp: TypeRep[Any])
       val regFields = getRegisteredFieldsOfType(record1.tp) ++ getRegisteredFieldsOfType(record2.tp)
-      val elemsRhs = getElems(record1).filter(e => regFields.contains(e.name)).map(x => ElemInfo(x.name, record1, x.tpe)) ++ getElems(record2).filter(e => regFields.contains(e.name)).map(x => ElemInfo(x.name, record2, x.tpe))
+      def fieldIsRegistered(f: StructElemInformation): Boolean = regFields.contains(f.name) || !removeUnusedFields
+      val elemsRhs = getElems(record1).filter(fieldIsRegistered).map(x => ElemInfo(x.name, record1, x.tpe)) ++ getElems(record2).filter(fieldIsRegistered).map(x => ElemInfo(x.name, record2, x.tpe))
       // Amir: FIXME should handle both cases for mutable and immutable fields (immutable and getter)
       val structFields = elems.zip(elemsRhs).map(x => PardisStructArg(x._1.name, x._1.mutable, to.toAtom(StructImmutableField(x._2.rec, x._2.name)(x._2.tp))(x._2.tp)))
       val newTpe = new RecordType(concatTag)

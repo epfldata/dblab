@@ -75,14 +75,14 @@ trait ManualLiftedLegoBase extends /*OptionOps with*/ SetOps with OrderingOps wi
 }
 
 trait SetOps extends pardis.deep.scalalib.collection.SetOps { this: DeepDSL =>
-  case class SetNew[T: TypeRep](seq: Rep[Seq[T]]) extends FunctionDef[Set[T]](None, "Set", List(List(__varArg(seq)))) {
+  case class SetVarArgNew[T: TypeRep](seq: Rep[Seq[T]]) extends FunctionDef[Set[T]](None, "Set", List(List(__varArg(seq)))) {
     override def curriedConstructor = copy[T] _
   }
 
   // These are needed for rewiring `Set.apply()` to `new Set()`
   // TODO if YinYang virtualizes `:_*` correctly there's no need to lift this one manually,
   // only the reflected one should be changed to var arg one.
-  override def setApplyObject1[T](seq: Rep[Seq[T]])(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetNew[T](seq)
+  override def setApplyObject1[T](seq: Rep[Seq[T]])(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetVarArgNew[T](seq)
   // TODO as Set doesn't have a constructor they should be manually lifted
   override def setApplyObject2[T]()(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetNew2[T]()
   case class SetNew2[T: TypeRep]() extends FunctionDef[Set[T]](None, s"Set[${t2s(implicitly[TypeRep[T]])}]", List(List())) {
