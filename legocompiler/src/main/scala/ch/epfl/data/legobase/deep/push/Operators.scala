@@ -94,6 +94,7 @@ trait OperatorImplicits extends OperatorOps { this: DeepDSL =>
 trait OperatorImplementations extends OperatorOps { this: DeepDSL =>
 
 }
+
 trait OperatorPartialEvaluation extends OperatorComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
 
@@ -231,6 +232,7 @@ trait ScanOpImplementations extends ScanOpOps { this: DeepDSL =>
     throw __newException(unit("PUSH ENGINE BUG:: Consume function in ScanOp should never be called!!!!\n"))
   }
 }
+
 trait ScanOpPartialEvaluation extends ScanOpComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
   override def scanOp_Field_Table[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Array[A]] = self match {
@@ -393,8 +395,8 @@ trait PrintOpImplementations extends PrintOpOps { this: DeepDSL =>
     }
   }
   override def printOpConsume[A](self: Rep[PrintOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = {
-    __ifThenElse(infix_$eq$eq(__app(self.limit).apply(), unit(false)), self.parent.stop_$eq(unit(true)), {
-      __ifThenElse(self.printQueryOutput, __app(self.printFunc).apply(infix_asInstanceOf[A](tuple)), unit(()));
+    __ifThenElse(infix_$eq$eq(__app[Boolean](self.limit).apply(), unit(false)), self.parent.stop_$eq(unit(true)), {
+      __ifThenElse(self.printQueryOutput, __app[A, Unit](self.printFunc).apply(infix_asInstanceOf[A](tuple)), unit(()));
       self.numRows_$eq(self.numRows.$plus(unit(1)))
     })
   }
@@ -402,6 +404,7 @@ trait PrintOpImplementations extends PrintOpOps { this: DeepDSL =>
     self.parent.reset()
   }
 }
+
 trait PrintOpPartialEvaluation extends PrintOpComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
   override def printOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[(() => Boolean)] = self match {
@@ -544,9 +547,10 @@ trait SelectOpImplementations extends SelectOpOps { this: DeepDSL =>
     self.parent.reset()
   }
   override def selectOpConsume[A](self: Rep[SelectOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = {
-    __ifThenElse(__app(self.selectPred).apply(infix_asInstanceOf[A](tuple)), self.child.consume(tuple), unit(()))
+    __ifThenElse(__app[A, Boolean](self.selectPred).apply(infix_asInstanceOf[A](tuple)), self.child.consume(tuple), unit(()))
   }
 }
+
 trait SelectOpPartialEvaluation extends SelectOpComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
   override def selectOp_Field_SelectPred[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[(A => Boolean)] = self match {
@@ -726,17 +730,18 @@ trait AggOpImplementations extends AggOpOps { this: DeepDSL =>
   }
   override def aggOpConsume[A, B](self: Rep[AggOp[A, B]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
     {
-      val key: this.Rep[B] = __app(self.grp).apply(infix_asInstanceOf[A](tuple));
+      val key: this.Rep[B] = __app[A, B](self.grp).apply(infix_asInstanceOf[A](tuple));
       val elem: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[B]] = self.hm.getOrElseUpdate(key, __newAGGRecord(key, __newArray[Double](self.numAggs)));
       val aggs: this.Rep[Array[Double]] = elem.aggs;
       var i: this.Var[Int] = __newVar(unit(0));
       self.aggFuncs.foreach[Unit](__lambda(((aggFun: this.Rep[(A, Double) => Double]) => {
-        aggs.update(__readVar(i), __app(aggFun).apply(infix_asInstanceOf[A](tuple), aggs.apply(__readVar(i))));
+        aggs.update(__readVar(i), __app[A, Double, Double](aggFun).apply(infix_asInstanceOf[A](tuple), aggs.apply(__readVar(i))));
         __assign(i, __readVar(i).$plus(unit(1)))
       })))
     }
   }
 }
+
 trait AggOpPartialEvaluation extends AggOpComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
   override def aggOp_Field_AggFuncs[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Seq[((A, Double) => Double)]] = self match {
@@ -887,11 +892,12 @@ trait MapOpImplementations extends MapOpOps { this: DeepDSL =>
   }
   override def mapOpConsume[A](self: Rep[MapOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     {
-      self.mapFuncs.foreach[Unit](__lambda(((mf: this.Rep[A => Unit]) => __app(mf).apply(infix_asInstanceOf[A](tuple)))));
+      self.mapFuncs.foreach[Unit](__lambda(((mf: this.Rep[A => Unit]) => __app[A, Unit](mf).apply(infix_asInstanceOf[A](tuple)))));
       self.child.consume(tuple)
     }
   }
 }
+
 trait MapOpPartialEvaluation extends MapOpComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
   override def mapOp_Field_MapFuncs[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Seq[(A => Unit)]] = self match {
@@ -1054,6 +1060,7 @@ trait SortOpImplementations extends SortOpOps { this: DeepDSL =>
     }
   }
 }
+
 trait SortOpPartialEvaluation extends SortOpComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
   override def sortOp_Field_OrderingFunc[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[((A, A) => Int)] = self match {
@@ -1272,20 +1279,21 @@ trait HashJoinOpImplementations extends HashJoinOpOps { this: DeepDSL =>
   }
   override def hashJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
     __ifThenElse(infix_$eq$eq(self.mode, unit(0)), {
-      val k: this.Rep[C] = __app(self.leftHash).apply(infix_asInstanceOf[A](tuple));
+      val k: this.Rep[C] = __app[A, C](self.leftHash).apply(infix_asInstanceOf[A](tuple));
       {
         self.hm.addBinding(k, infix_asInstanceOf[A](tuple));
         unit(())
       }
     }, __ifThenElse(infix_$eq$eq(self.mode, unit(1)), {
-      val k: this.Rep[C] = __app(self.rightHash).apply(infix_asInstanceOf[B](tuple));
-      self.hm.get(k).foreach[Unit](__lambda(((tmpBuffer: this.Rep[scala.collection.mutable.Set[A]]) => tmpBuffer.foreach[Unit](__lambda(((bufElem: this.Rep[A]) => __ifThenElse(__app(self.joinCond).apply(bufElem, infix_asInstanceOf[B](tuple)), {
+      val k: this.Rep[C] = __app[B, C](self.rightHash).apply(infix_asInstanceOf[B](tuple));
+      self.hm.get(k).foreach[Unit](__lambda(((tmpBuffer: this.Rep[scala.collection.mutable.Set[A]]) => tmpBuffer.foreach[Unit](__lambda(((bufElem: this.Rep[A]) => __ifThenElse(__app[A, B, Boolean](self.joinCond).apply(bufElem, infix_asInstanceOf[B](tuple)), {
         val res: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]] = RecordOps[A](bufElem).concatenateDynamic[B](infix_asInstanceOf[B](tuple), self.leftAlias, self.rightAlias);
         self.child.consume(res)
       }, unit(()))))))))
     }, unit(())))
   }
 }
+
 trait HashJoinOpPartialEvaluation extends HashJoinOpComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
   override def hashJoinOp_Field_RightHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = self match {
@@ -1479,15 +1487,15 @@ trait WindowOpImplementations extends WindowOpOps { this: DeepDSL =>
       self.parent.next();
       self.hm.foreach[Unit](__lambda(((pair: this.Rep[(B, scala.collection.mutable.Set[A])]) => {
         val elem: this.Rep[scala.collection.mutable.Set[A]] = pair._2;
-        val wnd: this.Rep[C] = __app(self.wndf).apply(elem);
-        val key: this.Rep[B] = __app(self.grp).apply(elem.head);
+        val wnd: this.Rep[C] = __app[Set[A], C](self.wndf).apply(elem);
+        val key: this.Rep[B] = __app[A, B](self.grp).apply(elem.head);
         self.child.consume(__newWindowRecord[B, C](key, wnd))
       })))
     }
   }
   override def windowOpConsume[A, B, C](self: Rep[WindowOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
     {
-      val key: this.Rep[B] = __app(self.grp).apply(infix_asInstanceOf[A](tuple));
+      val key: this.Rep[B] = __app[A, B](self.grp).apply(infix_asInstanceOf[A](tuple));
       {
         self.hm.addBinding(key, infix_asInstanceOf[A](tuple));
         unit(())
@@ -1495,6 +1503,7 @@ trait WindowOpImplementations extends WindowOpOps { this: DeepDSL =>
     }
   }
 }
+
 trait WindowOpPartialEvaluation extends WindowOpComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
   override def windowOp_Field_Wndf[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(Set[A] => C)] = self match {
@@ -1694,17 +1703,18 @@ trait LeftHashSemiJoinOpImplementations extends LeftHashSemiJoinOpOps { this: De
   }
   override def leftHashSemiJoinOpConsume[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = {
     __ifThenElse(infix_$eq$eq(self.mode, unit(0)), {
-      val k: this.Rep[C] = __app(self.rightHash).apply(infix_asInstanceOf[B](tuple));
+      val k: this.Rep[C] = __app[B, C](self.rightHash).apply(infix_asInstanceOf[B](tuple));
       {
         self.hm.addBinding(k, infix_asInstanceOf[B](tuple));
         unit(())
       }
     }, {
-      val k: this.Rep[C] = __app(self.leftHash).apply(infix_asInstanceOf[A](tuple));
-      self.hm.get(k).foreach[Unit](__lambda(((tmpBuffer: this.Rep[scala.collection.mutable.Set[B]]) => __ifThenElse(tmpBuffer.exists(__lambda(((elem: this.Rep[B]) => __app(self.joinCond).apply(infix_asInstanceOf[A](tuple), elem)))), self.child.consume(infix_asInstanceOf[ch.epfl.data.pardis.shallow.Record](tuple)), unit(())))))
+      val k: this.Rep[C] = __app[A, C](self.leftHash).apply(infix_asInstanceOf[A](tuple));
+      self.hm.get(k).foreach[Unit](__lambda(((tmpBuffer: this.Rep[scala.collection.mutable.Set[B]]) => __ifThenElse(tmpBuffer.exists(__lambda(((elem: this.Rep[B]) => __app[A, B, Boolean](self.joinCond).apply(infix_asInstanceOf[A](tuple), elem)))), self.child.consume(infix_asInstanceOf[ch.epfl.data.pardis.shallow.Record](tuple)), unit(())))))
     })
   }
 }
+
 trait LeftHashSemiJoinOpPartialEvaluation extends LeftHashSemiJoinOpComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
   override def leftHashSemiJoinOp_Field_RightHash[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = self match {
@@ -1923,9 +1933,10 @@ trait NestedLoopsJoinOpImplementations extends NestedLoopsJoinOpOps { this: Deep
       self.rightParent.next();
       self.mode_$eq(unit(0));
       self.rightParent.reset()
-    }, __ifThenElse(__app(self.joinCond).apply(self.leftTuple, infix_asInstanceOf[B](tuple)), self.child.consume(RecordOps[A](self.leftTuple).concatenateDynamic[B](infix_asInstanceOf[B](tuple), self.leftAlias, self.rightAlias)), unit(())))
+    }, __ifThenElse(__app[A, B, Boolean](self.joinCond).apply(self.leftTuple, infix_asInstanceOf[B](tuple)), self.child.consume(RecordOps[A](self.leftTuple).concatenateDynamic[B](infix_asInstanceOf[B](tuple), self.leftAlias, self.rightAlias)), unit(())))
   }
 }
+
 trait NestedLoopsJoinOpPartialEvaluation extends NestedLoopsJoinOpComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
   override def nestedLoopsJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[((A, B) => Boolean)] = self match {
@@ -2101,6 +2112,7 @@ trait SubquerySingleResultImplementations extends SubquerySingleResultOps { this
     }
   }
 }
+
 trait SubquerySingleResultPartialEvaluation extends SubquerySingleResultComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
   override def subquerySingleResult_Field_Parent[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = self match {
@@ -2305,18 +2317,19 @@ trait HashJoinAntiImplementations extends HashJoinAntiOps { this: DeepDSL =>
   override def hashJoinAntiConsume[A, B, C](self: Rep[HashJoinAnti[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[A]): Rep[Unit] = {
     __ifThenElse(infix_$eq$eq(self.mode, unit(0)), {
       val t: this.Rep[A] = infix_asInstanceOf[A](tuple);
-      val k: this.Rep[C] = __app(self.leftHash).apply(t);
+      val k: this.Rep[C] = __app[A, C](self.leftHash).apply(t);
       {
         self.hm.addBinding(k, t);
         unit(())
       }
     }, {
       val t: this.Rep[B] = infix_asInstanceOf[B](tuple);
-      val k: this.Rep[C] = __app(self.rightHash).apply(t);
-      self.hm.get(k).foreach[Unit](__lambda(((elems: this.Rep[scala.collection.mutable.Set[A]]) => elems.retain(__lambda(((e: this.Rep[A]) => __app(self.joinCond).apply(e, t).unary_$bang))))))
+      val k: this.Rep[C] = __app[B, C](self.rightHash).apply(t);
+      self.hm.get(k).foreach[Unit](__lambda(((elems: this.Rep[scala.collection.mutable.Set[A]]) => elems.retain(__lambda(((e: this.Rep[A]) => __app[A, B, Boolean](self.joinCond).apply(e, t).unary_$bang))))))
     })
   }
 }
+
 trait HashJoinAntiPartialEvaluation extends HashJoinAntiComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
   override def hashJoinAnti_Field_RightHash[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = self match {
@@ -2508,6 +2521,7 @@ trait ViewOpImplementations extends ViewOpOps { this: DeepDSL =>
     }
   }
 }
+
 trait ViewOpPartialEvaluation extends ViewOpComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
   override def viewOp_Field_Parent[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = self match {
@@ -2715,24 +2729,25 @@ trait LeftOuterJoinOpImplementations extends LeftOuterJoinOpOps { this: DeepDSL 
   }
   override def leftOuterJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$3: Manifest[B]): Rep[Unit] = {
     __ifThenElse(infix_$eq$eq(self.mode, unit(0)), {
-      val k: this.Rep[C] = __app(self.rightHash).apply(infix_asInstanceOf[B](tuple));
+      val k: this.Rep[C] = __app[B, C](self.rightHash).apply(infix_asInstanceOf[B](tuple));
       {
         self.hm.addBinding(k, infix_asInstanceOf[B](tuple));
         unit(())
       }
     }, {
-      val k: this.Rep[C] = __app(self.leftHash).apply(infix_asInstanceOf[A](tuple));
+      val k: this.Rep[C] = __app[A, C](self.leftHash).apply(infix_asInstanceOf[A](tuple));
       val hmGet: this.Rep[Option[scala.collection.mutable.Set[B]]] = self.hm.get(k);
       __ifThenElse(hmGet.nonEmpty, {
         val tmpBuffer: this.Rep[scala.collection.mutable.Set[B]] = hmGet.get;
         tmpBuffer.foreach[Unit](__lambda(((bufElem: this.Rep[B]) => {
-          val elem: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]] = __ifThenElse(__app(self.joinCond).apply(infix_asInstanceOf[A](tuple), bufElem), RecordOps[A](infix_asInstanceOf[A](tuple)).concatenateDynamic[B](bufElem, unit(""), unit("")), RecordOps[A](infix_asInstanceOf[A](tuple)).concatenateDynamic[B](self.defaultB, unit(""), unit("")));
+          val elem: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[A, B]] = __ifThenElse(__app[A, B, Boolean](self.joinCond).apply(infix_asInstanceOf[A](tuple), bufElem), RecordOps[A](infix_asInstanceOf[A](tuple)).concatenateDynamic[B](bufElem, unit(""), unit("")), RecordOps[A](infix_asInstanceOf[A](tuple)).concatenateDynamic[B](self.defaultB, unit(""), unit("")));
           self.child.consume(elem)
         })))
       }, self.child.consume(RecordOps[A](infix_asInstanceOf[A](tuple)).concatenateDynamic[B](self.defaultB, unit(""), unit(""))))
     })
   }
 }
+
 trait LeftOuterJoinOpPartialEvaluation extends LeftOuterJoinOpComponent with BasePartialEvaluation { this: DeepDSL =>
   // Immutable field inlining 
   override def leftOuterJoinOp_Field_RightHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = self match {
