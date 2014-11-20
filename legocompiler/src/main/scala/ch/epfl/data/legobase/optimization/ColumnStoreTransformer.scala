@@ -77,7 +77,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimize
         val newElems = structDef.fields.map(el => PardisStructArg("arrayOf" + el.name, true, arrayNew(size)(el.tpe)))
         val newTag = tableColumnStoreTag(structDef.tag)
         val newType = tableColumnStoreType(newTag)
-        //val newMethods = List(PardisStructMethod("equals", eqMethod), PardisStructMethod("hash", hashMethod))
+        //val newMethods = List(PardisStructMethod("equal", eqMethod), PardisStructMethod("hash", hashMethod))
         val newMethods = structDef.methods.map(m => m.copy(body =
           transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef])) //)(s.tp)))
 
@@ -141,7 +141,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimize
           //unit(true)
         })(tpe, tpe, BooleanType).asInstanceOf[PardisLambdaDef]
 
-        val newMethods = List(PardisStructMethod("equals", eqMethod), PardisStructMethod("hash", hashMethod))
+        val newMethods = List(PardisStructMethod("equal", eqMethod), PardisStructMethod("hash", hashMethod))
         //val newMethods = List()
         val newElems = List(PardisStructArg("columnStorePointer", false, arr), PardisStructArg("index", false, idx))
         val newTag = StructTags.ClassTag(structName(aa.tp))
