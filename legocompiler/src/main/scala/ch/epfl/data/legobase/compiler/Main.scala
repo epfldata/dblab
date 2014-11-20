@@ -106,7 +106,7 @@ object Main extends LegoRunner {
 
     pipeline += TreeDumper
 
-    // pipeline += MultiMapOptimizations
+    pipeline += MultiMapOptimizations
 
     //pipeline += ParameterPromotion
 

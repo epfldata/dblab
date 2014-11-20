@@ -625,6 +625,7 @@ object Queries {
           val sum = x.foldLeft(0.0)((cnt, e) => cnt + e.L_QUANTITY[Int])
           val count = x.size
           val avg = 0.2 * (sum / count)
+          printf("%d, %.6f\n", count, avg)
           x.foldLeft(0.0)((cnt, e) => {
             if (e.L_QUANTITY[Int] < avg) cnt + e.L_EXTENDEDPRICE[Double]
             else cnt
