@@ -12,7 +12,7 @@ import pardis.ir._
 import pardis.types.PardisTypeImplicits._
 import pardis.effects._
 
-trait ManualLiftedLegoBase extends /*OptionOps with*/ SetOps with OrderingOps with ManifestOps with RichIntOps with pardis.deep.scalalib.ByteComponent with LegoHashMap with LegoArrayBuffer { this: DeepDSL =>
+trait ManualLiftedLegoBase extends /*OptionOps with*/ SetOps with OrderingOps with ManifestOps with RichIntOps with pardis.deep.scalalib.ByteComponent with LegoHashMap with LegoArrayBuffer /*with pardis.deep.scalalib.collection.ContComponent */ { this: DeepDSL =>
   /* TODO These methods should be lifted from scala.Predef */
   case class Println(x: Rep[Any]) extends FunctionDef[Unit](None, "println", List(List(x))) {
     override def curriedConstructor = (copy _)
@@ -75,14 +75,6 @@ trait ManualLiftedLegoBase extends /*OptionOps with*/ SetOps with OrderingOps wi
 }
 
 trait SetOps extends pardis.deep.scalalib.collection.SetOps { this: DeepDSL =>
-  case class SetVarArgNew[T: TypeRep](seq: Rep[Seq[T]]) extends FunctionDef[Set[T]](None, "Set", List(List(__varArg(seq)))) {
-    override def curriedConstructor = copy[T] _
-  }
-
-  // These are needed for rewiring `Set.apply()` to `new Set()`
-  // TODO if YinYang virtualizes `:_*` correctly there's no need to lift this one manually,
-  // only the reflected one should be changed to var arg one.
-  override def setApplyObject1[T](seq: Rep[Seq[T]])(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetVarArgNew[T](seq)
   // TODO as Set doesn't have a constructor they should be manually lifted
   override def setApplyObject2[T]()(implicit typeT: TypeRep[T]): Rep[Set[T]] = SetNew2[T]()
   case class SetNew2[T: TypeRep]() extends FunctionDef[Set[T]](None, s"Set[${t2s(implicitly[TypeRep[T]])}]", List(List())) {

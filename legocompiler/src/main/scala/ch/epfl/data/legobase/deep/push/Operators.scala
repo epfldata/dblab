@@ -713,7 +713,7 @@ trait AggOpImplementations extends AggOpOps { this: DeepDSL =>
   override def aggOpNext[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
     {
       self.parent.next();
-      var keySet: this.Var[scala.collection.mutable.Set[B]] = __newVar(Set.apply[B](self.hm.keySet.toSeq));
+      var keySet: this.Var[scala.collection.mutable.Set[B]] = __newVar(Set.apply[B](((__castVarArg(self.hm.keySet.toSeq)): _*)));
       __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
         val key: this.Rep[B] = __readVar(keySet).head;
         __readVar(keySet).remove(key);
