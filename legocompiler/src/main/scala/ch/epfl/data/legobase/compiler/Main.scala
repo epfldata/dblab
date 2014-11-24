@@ -111,6 +111,9 @@ object Main extends LegoRunner {
 
     pipeline += MultiMapOptimizations
 
+    // pipeline += PartiallyEvaluate
+    // pipeline += DCE
+
     pipeline += SetLinkedListTransformation
 
     /*pipeline += new TransformerHandler {

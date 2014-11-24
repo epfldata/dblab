@@ -90,6 +90,21 @@ trait OrderingOps { this: DeepDSL =>
   case class OrderingNew[T: TypeRep](comp: Rep[Function2[T, T, Int]]) extends FunctionDef[Ordering[T]](None, "OrderingFactory", List(List(comp))) {
     override def curriedConstructor = copy[T] _
   }
+  object OrderingRep {
+    def apply[T: TypeRep]: Rep[Ordering[T]] = OrderingNew2[T]()
+  }
+  case class OrderingNew2[T]()(implicit typeT: TypeRep[T]) extends FunctionDef[Ordering[T]](None, s"Ordering[${t2s(typeT)}]", Nil) {
+    // override def curriedConstructor = copy[T] _
+    override def rebuild(children: PardisFunArg*) = OrderingNew2[T]()
+  }
+
+  implicit class OrderingOps[T: TypeRep](cmp: Rep[Ordering[T]]) {
+    def lt(lhs: Rep[T], rhs: Rep[T]) = ordering_lt(lhs, rhs)
+  }
+  def ordering_lt[T: TypeRep](lhs: Rep[T], rhs: Rep[T]): Rep[Boolean] = OrderingLT(lhs, rhs)
+  case class OrderingLT[T: TypeRep](lhs: Rep[T], rhs: Rep[T]) extends FunctionDef[Boolean](Some(lhs), s"<", List(List(rhs))) {
+    override def curriedConstructor = (copy[T] _).curried
+  }
 }
 
 // TODO needs lifting type classes
