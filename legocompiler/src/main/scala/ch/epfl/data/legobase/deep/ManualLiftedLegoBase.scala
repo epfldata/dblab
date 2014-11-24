@@ -12,7 +12,7 @@ import pardis.ir._
 import pardis.types.PardisTypeImplicits._
 import pardis.effects._
 
-trait ManualLiftedLegoBase extends /*OptionOps with*/ SetOps with OrderingOps with ManifestOps with RichIntOps with pardis.deep.scalalib.ByteComponent with LegoHashMap with LegoArrayBuffer /*with pardis.deep.scalalib.collection.ContComponent */ { this: DeepDSL =>
+trait ManualLiftedLegoBase extends /*OptionOps with*/ SetOps with OrderingOps with ManifestOps with RichIntOps with pardis.deep.scalalib.ByteComponent with LegoHashMap with LegoArrayBuffer with pardis.deep.scalalib.collection.ContOps /*with pardis.deep.scalalib.collection.ContComponent */ { this: DeepDSL =>
   /* TODO These methods should be lifted from scala.Predef */
   case class Println(x: Rep[Any]) extends FunctionDef[Unit](None, "println", List(List(x))) {
     override def curriedConstructor = (copy _)

@@ -111,6 +111,8 @@ object Main extends LegoRunner {
 
     pipeline += MultiMapOptimizations
 
+    pipeline += SetLinkedListTransformation
+
     /*pipeline += new TransformerHandler {
       def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
         new pardis.deep.scalalib.collection.SetLinkedListTransformation(context.asInstanceOf[LoweringLegoBase]).optimize(block)

@@ -30,6 +30,7 @@ import storagemanager.K2DBScanner
 import storagemanager.Loader
 import queryengine.GenericEngine
 import pardis.shallow.OptimalString
+import pardis.shallow.scalalib.collection.Cont
 
 class MultiMap[T, S] extends HashMap[T, Set[S]] with scala.collection.mutable.MultiMap[T, S]
 
