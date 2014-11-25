@@ -125,15 +125,19 @@ object MultiMap {
   }
   def next() {
     parent.next
-    var keySet = Set(hm.keySet.toSeq: _*)
-    while (!stop && hm.size != 0) {
-      val key = keySet.head
-      keySet.remove(key)
-      val elem = hm.remove(key)
-      child.consume(elem.get)
+    // var keySet = Set(hm.keySet.toSeq: _*)
+    // while (!stop && hm.size != 0) {
+    //   val key = keySet.head
+    //   keySet.remove(key)
+    //   val elem = hm.remove(key)
+    //   child.consume(elem.get)
+    // }
+    hm.foreach { pair =>
+      child.consume(pair._2)
+      hm.remove(pair._1)
     }
   }
-  def reset() { parent.reset; /*hm.clear;*/ open }
+  def reset() { parent.reset; hm.clear; open }
   def consume(tuple: Record) {
     val key = grp(tuple.asInstanceOf[A])
     val elem = hm.getOrElseUpdate(key, new AGGRecord(key, new Array[Double](numAggs)))
