@@ -115,6 +115,9 @@ object Main extends LegoRunner {
     // pipeline += DCE
 
     pipeline += SetLinkedListTransformation
+    // pipeline += ContainerFlatTransformer
+
+    // pipeline += SetArrayTransformation
 
     /*pipeline += new TransformerHandler {
       def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {

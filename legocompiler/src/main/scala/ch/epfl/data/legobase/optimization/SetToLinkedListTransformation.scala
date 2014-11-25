@@ -65,8 +65,12 @@ class SetLinkedListTransformation(override val IR: SetComponent with pardis.deep
       // __readVar(v).asInstanceOf[Rep[Cont[A]]]
       self match {
         case Def(ReadVar(v)) => {
+          v.e match {
+            case Def(NewVar(arrApp @ Def(ArrayApply(arr, i)))) => apply(arrApp).asInstanceOf[Rep[Cont[A]]]
+            case _ => __readVar(v.asInstanceOf[Var[Cont[A]]])
+          }
           // System.out.println(s"reading $v $self")
-          __readVar(v.asInstanceOf[Var[Cont[A]]])
+
         }
         case _ =>
           val v = Var(self.asInstanceOf[Rep[Var[Cont[A]]]])
@@ -362,3 +366,4 @@ class SetLinkedListTransformation(override val IR: SetComponent with pardis.deep
   }
 
 }
+
