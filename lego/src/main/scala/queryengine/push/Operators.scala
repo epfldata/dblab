@@ -118,6 +118,7 @@ object MultiMap {
 
 @deep class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B])(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
   val hm = HashMap[B, AGGRecord[B]]() //Array[Double]]()
+  // val hm = new pardis.shallow.scalalib.collection.HashMapOptimal[B, AGGRecord[B]]((x: AGGRecord[B]) => x.key)
 
   val expectedSize = 33554432 // Assume a huge aggregation number just to be sure
   def open() {
@@ -132,12 +133,17 @@ object MultiMap {
     //   val elem = hm.remove(key)
     //   child.consume(elem.get)
     // }
+    // var i = 0
+    // hm.foreach { pair =>
+    //   i += 1
+    // }
+    // println(s"size $i")
     hm.foreach { pair =>
       child.consume(pair._2)
-      hm.remove(pair._1)
+      // hm.remove(pair._2.key)
     }
   }
-  def reset() { parent.reset; hm.clear; open }
+  def reset() { parent.reset; /*hm.clear;*/ open }
   def consume(tuple: Record) {
     val key = grp(tuple.asInstanceOf[A])
     val elem = hm.getOrElseUpdate(key, new AGGRecord(key, new Array[Double](numAggs)))
@@ -375,6 +381,7 @@ class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
   var size = 0
   val table = new Array[A](parent.expectedSize)
   val expectedSize = parent.expectedSize
+  @inline var initialized = false
 
   def open() {
     parent.child = this
@@ -382,7 +389,10 @@ class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
   }
   def reset() {}
   def next() {
-    parent.next
+    if (!initialized) {
+      parent.next
+      initialized = true
+    }
     var idx = 0
     while (!stop && idx < size) {
       val e = table(idx)
