@@ -74,6 +74,12 @@ trait OperatorOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Operator[A]]
+      self.expectedSize
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   // method definitions
@@ -163,6 +169,12 @@ trait ScanOpOps extends Base { this: DeepDSL =>
   case class ScanOp_Field_ExpectedSize[A](self: Rep[ScanOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Int](self, "expectedSize") {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[ScanOp[A]]
+      self.expectedSize
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -309,11 +321,23 @@ trait PrintOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Boolean = {
+      val self = children(0).asInstanceOf[PrintOp[A]]
+      self.printQueryOutput
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class PrintOp_Field_ExpectedSize[A](self: Rep[PrintOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Int](self, "expectedSize") {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[PrintOp[A]]
+      self.expectedSize
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -485,6 +509,12 @@ trait SelectOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[SelectOp[A]]
+      self.expectedSize
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class SelectOp_Field_SelectPred[A](self: Rep[SelectOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[(A => Boolean)](self, "selectPred") {
@@ -631,11 +661,23 @@ trait AggOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[AggOp[A, B]]
+      self.expectedSize
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class AggOp_Field_Hm[A, B](self: Rep[AggOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[HashMap[B, AGGRecord[B]]](self, "hm") {
     override def curriedConstructor = (copy[A, B] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): HashMap[B, AGGRecord[B]] = {
+      val self = children(0).asInstanceOf[AggOp[A, B]]
+      self.hm
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -643,11 +685,23 @@ trait AggOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Seq[((A, Double) => Double)] = {
+      val self = children(0).asInstanceOf[AggOp[A, B]]
+      self.aggFuncs
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class AggOp_Field_Grp[A, B](self: Rep[AggOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[(A => B)](self, "grp") {
     override def curriedConstructor = (copy[A, B] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): (A => B) = {
+      val self = children(0).asInstanceOf[AggOp[A, B]]
+      self.grp
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -713,13 +767,7 @@ trait AggOpImplementations extends AggOpOps { this: DeepDSL =>
   override def aggOpNext[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
     {
       self.parent.next();
-      var keySet: this.Var[scala.collection.mutable.Set[B]] = __newVar(Set.apply[B](((__castVarArg(self.hm.keySet.toSeq)): _*)));
-      __whileDo(self.stop.unary_$bang.$amp$amp(infix_$bang$eq(self.hm.size, unit(0))), {
-        val key: this.Rep[B] = __readVar(keySet).head;
-        __readVar(keySet).remove(key);
-        val elem: this.Rep[Option[ch.epfl.data.legobase.queryengine.AGGRecord[B]]] = self.hm.remove(key);
-        self.child.consume(elem.get)
-      })
+      self.hm.foreach[Unit](__lambda(((pair: this.Rep[(B, ch.epfl.data.legobase.queryengine.AGGRecord[B])]) => self.child.consume(pair._2))))
     }
   }
   override def aggOpReset[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
@@ -825,6 +873,12 @@ trait MapOpOps extends Base { this: DeepDSL =>
   case class MapOp_Field_ExpectedSize[A](self: Rep[MapOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Int](self, "expectedSize") {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[MapOp[A]]
+      self.expectedSize
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -975,11 +1029,23 @@ trait SortOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): TreeSet[A] = {
+      val self = children(0).asInstanceOf[SortOp[A]]
+      self.sortedTree
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class SortOp_Field_ExpectedSize[A](self: Rep[SortOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Int](self, "expectedSize") {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[SortOp[A]]
+      self.expectedSize
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1152,11 +1218,23 @@ trait HashJoinOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): MultiMap[C, A] = {
+      val self = children(0).asInstanceOf[HashJoinOp[A, B, C]]
+      self.hm
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class HashJoinOp_Field_ExpectedSize[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[Int](self, "expectedSize") {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[HashJoinOp[A, B, C]]
+      self.expectedSize
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1172,17 +1250,35 @@ trait HashJoinOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): (B => C) = {
+      val self = children(0).asInstanceOf[HashJoinOp[A, B, C]]
+      self.rightHash
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class HashJoinOp_Field_LeftHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[(A => C)](self, "leftHash") {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): (A => C) = {
+      val self = children(0).asInstanceOf[HashJoinOp[A, B, C]]
+      self.leftHash
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class HashJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[((A, B) => Boolean)](self, "joinCond") {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): ((A, B) => Boolean) = {
+      val self = children(0).asInstanceOf[HashJoinOp[A, B, C]]
+      self.joinCond
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1202,11 +1298,23 @@ trait HashJoinOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Operator[B] = {
+      val self = children(0).asInstanceOf[HashJoinOp[A, B, C]]
+      self.rightParent
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class HashJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[Operator[A]](self, "leftParent") {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Operator[A] = {
+      val self = children(0).asInstanceOf[HashJoinOp[A, B, C]]
+      self.leftParent
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1406,11 +1514,23 @@ trait WindowOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[WindowOp[A, B, C]]
+      self.expectedSize
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class WindowOp_Field_Hm[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[MultiMap[B, A]](self, "hm") {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): MultiMap[B, A] = {
+      val self = children(0).asInstanceOf[WindowOp[A, B, C]]
+      self.hm
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1418,11 +1538,23 @@ trait WindowOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): (Set[A] => C) = {
+      val self = children(0).asInstanceOf[WindowOp[A, B, C]]
+      self.wndf
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class WindowOp_Field_Grp[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[(A => B)](self, "grp") {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): (A => B) = {
+      val self = children(0).asInstanceOf[WindowOp[A, B, C]]
+      self.grp
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1592,11 +1724,23 @@ trait LeftHashSemiJoinOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[LeftHashSemiJoinOp[A, B, C]]
+      self.expectedSize
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class LeftHashSemiJoinOp_Field_Hm[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[MultiMap[C, B]](self, "hm") {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): MultiMap[C, B] = {
+      val self = children(0).asInstanceOf[LeftHashSemiJoinOp[A, B, C]]
+      self.hm
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1818,6 +1962,12 @@ trait NestedLoopsJoinOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[NestedLoopsJoinOp[A, B]]
+      self.expectedSize
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class NestedLoopsJoinOp_Field_LeftTuple_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[A])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[A](self, "leftTuple", x$1) {
@@ -2038,6 +2188,12 @@ trait SubquerySingleResultOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[SubquerySingleResult[A]]
+      self.expectedSize
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class SubquerySingleResult_Field_Result_$eq[A](self: Rep[SubquerySingleResult[A]], x$1: Rep[A])(implicit val typeA: TypeRep[A]) extends FieldSetter[A](self, "result", x$1) {
@@ -2194,11 +2350,23 @@ trait HashJoinAntiOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[HashJoinAnti[A, B, C]]
+      self.expectedSize
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class HashJoinAnti_Field_Hm[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[MultiMap[C, A]](self, "hm") {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): MultiMap[C, A] = {
+      val self = children(0).asInstanceOf[HashJoinAnti[A, B, C]]
+      self.hm
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -2387,6 +2555,8 @@ trait ViewOpOps extends Base { this: DeepDSL =>
     def reset(): Rep[Unit] = viewOpReset[A](self)(typeA, evidence$2)
     def next(): Rep[Unit] = viewOpNext[A](self)(typeA, evidence$2)
     def consume(tuple: Rep[Record]): Rep[Unit] = viewOpConsume[A](self, tuple)(typeA, evidence$2)
+    def initialized_=(x$1: Rep[Boolean]): Rep[Unit] = viewOp_Field_Initialized_$eq[A](self, x$1)(typeA)
+    def initialized: Rep[Boolean] = viewOp_Field_Initialized[A](self)(typeA)
     def expectedSize: Rep[Int] = viewOp_Field_ExpectedSize[A](self)(typeA)
     def table: Rep[Array[A]] = viewOp_Field_Table[A](self)(typeA)
     def size_=(x$1: Rep[Int]): Rep[Unit] = viewOp_Field_Size_$eq[A](self, x$1)(typeA)
@@ -2424,15 +2594,35 @@ trait ViewOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A] _).curried
   }
 
+  case class ViewOp_Field_Initialized_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "initialized", x$1) {
+    override def curriedConstructor = (copy[A] _).curried
+  }
+
+  case class ViewOp_Field_Initialized[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldGetter[Boolean](self, "initialized") {
+    override def curriedConstructor = (copy[A] _)
+  }
+
   case class ViewOp_Field_ExpectedSize[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Int](self, "expectedSize") {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[ViewOp[A]]
+      self.expectedSize
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
   case class ViewOp_Field_Table[A](self: Rep[ViewOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Array[A]](self, "table") {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Array[A] = {
+      val self = children(0).asInstanceOf[ViewOp[A]]
+      self.table
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -2478,6 +2668,8 @@ trait ViewOpOps extends Base { this: DeepDSL =>
   def viewOpReset[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]): Rep[Unit] = ViewOpReset[A](self)
   def viewOpNext[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]): Rep[Unit] = ViewOpNext[A](self)
   def viewOpConsume[A](self: Rep[ViewOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]): Rep[Unit] = ViewOpConsume[A](self, tuple)
+  def viewOp_Field_Initialized_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Initialized_$eq[A](self, x$1)
+  def viewOp_Field_Initialized[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = ViewOp_Field_Initialized[A](self)
   def viewOp_Field_ExpectedSize[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ViewOp_Field_ExpectedSize[A](self)
   def viewOp_Field_Table[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Array[A]] = ViewOp_Field_Table[A](self)
   def viewOp_Field_Size_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Size_$eq[A](self, x$1)
@@ -2505,7 +2697,10 @@ trait ViewOpImplementations extends ViewOpOps { this: DeepDSL =>
   }
   override def viewOpNext[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]): Rep[Unit] = {
     {
-      self.parent.next();
+      __ifThenElse(self.initialized.unary_$bang, {
+        self.parent.next();
+        self.initialized_$eq(unit(true))
+      }, unit(()));
       var idx: this.Var[Int] = __newVar(unit(0));
       __whileDo(self.stop.unary_$bang.$amp$amp(__readVar(idx).$less(self.size)), {
         val e: this.Rep[A] = self.table.apply(__readVar(idx));
@@ -2530,6 +2725,13 @@ trait ViewOpPartialEvaluation extends ViewOpComponent with BasePartialEvaluation
   }
 
   // Mutable field inlining 
+  override def viewOp_Field_Initialized_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    mutableFieldValues(self -> "initialized") = x$1
+    unit(())
+  }
+
+  override def viewOp_Field_Initialized[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] =
+    mutableFieldValues.get(self -> "initialized").getOrElse(unit(false)).asInstanceOf[Rep[Boolean]]
   override def viewOp_Field_Child_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     mutableFieldValues(self -> "child") = x$1
     unit(())
@@ -2604,17 +2806,35 @@ trait LeftOuterJoinOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[LeftOuterJoinOp[A, B, C]]
+      self.expectedSize
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class LeftOuterJoinOp_Field_DefaultB[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[B](self, "defaultB") {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): B = {
+      val self = children(0).asInstanceOf[LeftOuterJoinOp[A, B, C]]
+      self.defaultB
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class LeftOuterJoinOp_Field_Hm[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[MultiMap[C, B]](self, "hm") {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): MultiMap[C, B] = {
+      val self = children(0).asInstanceOf[LeftOuterJoinOp[A, B, C]]
+      self.hm
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -2636,11 +2856,23 @@ trait LeftOuterJoinOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): (B => C) = {
+      val self = children(0).asInstanceOf[LeftOuterJoinOp[A, B, C]]
+      self.rightHash
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class LeftOuterJoinOp_Field_LeftHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[(A => C)](self, "leftHash") {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): (A => C) = {
+      val self = children(0).asInstanceOf[LeftOuterJoinOp[A, B, C]]
+      self.leftHash
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -2648,17 +2880,35 @@ trait LeftOuterJoinOpOps extends Base { this: DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): ((A, B) => Boolean) = {
+      val self = children(0).asInstanceOf[LeftOuterJoinOp[A, B, C]]
+      self.joinCond
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class LeftOuterJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[Operator[B]](self, "rightParent") {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Operator[B] = {
+      val self = children(0).asInstanceOf[LeftOuterJoinOp[A, B, C]]
+      self.rightParent
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class LeftOuterJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[Operator[A]](self, "leftParent") {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Operator[A] = {
+      val self = children(0).asInstanceOf[LeftOuterJoinOp[A, B, C]]
+      self.leftParent
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 

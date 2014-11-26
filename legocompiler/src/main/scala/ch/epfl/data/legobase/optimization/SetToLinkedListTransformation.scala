@@ -256,8 +256,9 @@ class SetLinkedListTransformation(override val IR: SetComponent with pardis.deep
       {
         var current: this.Var[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = __newVar(self.headCont);
         __whileDo(infix_$bang$eq(__readVar(current), unit(null)), {
+          val next: this.Rep[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = __readVar(current).next;
           __app[A, Unit](f).apply(__readVar(current).elem);
-          __assign(current, __readVar(current).next)
+          __assign(current, next)
         })
       }
   }
@@ -362,6 +363,21 @@ class SetLinkedListTransformation(override val IR: SetComponent with pardis.deep
           }, unit(()))
         })));
         __readVar(min)
+      }
+  }
+
+  rewrite += rule {
+    case node @ SetFind(nodeself, nodep) if shouldBeLowered(nodeself) =>
+
+      val self = nodeself.asInstanceOf[Rep[Set[A]]]
+      val p = nodep.asInstanceOf[Rep[((A) => Boolean)]]
+      implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
+
+      {
+        var current: this.Var[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = __newVar(self.headCont);
+        var found: this.Var[Boolean] = __newVar(unit(false));
+        __whileDo(infix_$bang$eq(__readVar(current), unit(null)).$amp$amp(__readVar(found).unary_$bang), __ifThenElse(__app[A, Boolean](p).apply(__readVar(current).elem), __assign(found, unit(true)), __assign(current, __readVar(current).next)));
+        __ifThenElse(__readVar(found).unary_$bang, Option.apply[A](infix_asInstanceOf[A](unit(null))), Option.apply[A](__readVar(current).elem))
       }
   }
 

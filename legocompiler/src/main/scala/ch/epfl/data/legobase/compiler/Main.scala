@@ -110,6 +110,7 @@ object Main extends LegoRunner {
     pipeline += TreeDumper
 
     pipeline += MultiMapOptimizations
+    pipeline += HashMapToSetTransformation
 
     // pipeline += PartiallyEvaluate
     // pipeline += DCE

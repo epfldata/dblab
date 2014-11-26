@@ -118,7 +118,9 @@ object MultiMap {
 
 @deep class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B])(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
   val hm = HashMap[B, AGGRecord[B]]() //Array[Double]]()
-  // val hm = new pardis.shallow.scalalib.collection.HashMapOptimal[B, AGGRecord[B]]((x: AGGRecord[B]) => x.key)
+  // val hm = new pardis.shallow.scalalib.collection.HashMapOptimal[B, AGGRecord[B]]() {
+  //   override def extractKey(value: AGGRecord[B]): B = value.key
+  // }
 
   val expectedSize = 33554432 // Assume a huge aggregation number just to be sure
   def open() {

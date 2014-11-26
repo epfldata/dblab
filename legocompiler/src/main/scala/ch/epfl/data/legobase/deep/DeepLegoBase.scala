@@ -43,11 +43,23 @@ trait GroupByClassOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Char = {
+      val self = children(0).asInstanceOf[GroupByClass]
+      self.L_LINESTATUS
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class GroupByClass_Field_L_RETURNFLAG(self: Rep[GroupByClass]) extends FieldDef[Char](self, "L_RETURNFLAG") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Char = {
+      val self = children(0).asInstanceOf[GroupByClass]
+      self.L_RETURNFLAG
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -115,17 +127,35 @@ trait Q3GRPRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Q3GRPRecord]
+      self.O_SHIPPRIORITY
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q3GRPRecord_Field_O_ORDERDATE(self: Rep[Q3GRPRecord]) extends FieldDef[Int](self, "O_ORDERDATE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Q3GRPRecord]
+      self.O_ORDERDATE
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q3GRPRecord_Field_L_ORDERKEY(self: Rep[Q3GRPRecord]) extends FieldDef[Int](self, "L_ORDERKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Q3GRPRecord]
+      self.L_ORDERKEY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -198,17 +228,35 @@ trait Q7GRPRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Q7GRPRecord]
+      self.L_YEAR
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q7GRPRecord_Field_CUST_NATION(self: Rep[Q7GRPRecord]) extends FieldDef[OptimalString](self, "CUST_NATION") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[Q7GRPRecord]
+      self.CUST_NATION
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q7GRPRecord_Field_SUPP_NATION(self: Rep[Q7GRPRecord]) extends FieldDef[OptimalString](self, "SUPP_NATION") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[Q7GRPRecord]
+      self.SUPP_NATION
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -280,11 +328,23 @@ trait Q9GRPRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Q9GRPRecord]
+      self.O_YEAR
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q9GRPRecord_Field_NATION(self: Rep[Q9GRPRecord]) extends FieldDef[OptimalString](self, "NATION") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[Q9GRPRecord]
+      self.NATION
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -356,11 +416,23 @@ trait Q10GRPRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[Q10GRPRecord]
+      self.C_COMMENT
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q10GRPRecord_Field_C_ADDRESS(self: Rep[Q10GRPRecord]) extends FieldDef[OptimalString](self, "C_ADDRESS") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[Q10GRPRecord]
+      self.C_ADDRESS
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -368,11 +440,23 @@ trait Q10GRPRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[Q10GRPRecord]
+      self.N_NAME
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q10GRPRecord_Field_C_PHONE(self: Rep[Q10GRPRecord]) extends FieldDef[OptimalString](self, "C_PHONE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[Q10GRPRecord]
+      self.C_PHONE
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -380,17 +464,35 @@ trait Q10GRPRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Double = {
+      val self = children(0).asInstanceOf[Q10GRPRecord]
+      self.C_ACCTBAL
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q10GRPRecord_Field_C_NAME(self: Rep[Q10GRPRecord]) extends FieldDef[OptimalString](self, "C_NAME") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[Q10GRPRecord]
+      self.C_NAME
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q10GRPRecord_Field_C_CUSTKEY(self: Rep[Q10GRPRecord]) extends FieldDef[Int](self, "C_CUSTKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Q10GRPRecord]
+      self.C_CUSTKEY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -484,11 +586,23 @@ trait Q16GRPRecord1Ops extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Q16GRPRecord1]
+      self.PS_SUPPKEY
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q16GRPRecord1_Field_P_SIZE(self: Rep[Q16GRPRecord1]) extends FieldDef[Int](self, "P_SIZE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Q16GRPRecord1]
+      self.P_SIZE
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -496,11 +610,23 @@ trait Q16GRPRecord1Ops extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[Q16GRPRecord1]
+      self.P_TYPE
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q16GRPRecord1_Field_P_BRAND(self: Rep[Q16GRPRecord1]) extends FieldDef[OptimalString](self, "P_BRAND") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[Q16GRPRecord1]
+      self.P_BRAND
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -578,17 +704,35 @@ trait Q16GRPRecord2Ops extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Q16GRPRecord2]
+      self.P_SIZE
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q16GRPRecord2_Field_P_TYPE(self: Rep[Q16GRPRecord2]) extends FieldDef[OptimalString](self, "P_TYPE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[Q16GRPRecord2]
+      self.P_TYPE
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q16GRPRecord2_Field_P_BRAND(self: Rep[Q16GRPRecord2]) extends FieldDef[OptimalString](self, "P_BRAND") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[Q16GRPRecord2]
+      self.P_BRAND
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -663,11 +807,23 @@ trait Q18GRPRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Double = {
+      val self = children(0).asInstanceOf[Q18GRPRecord]
+      self.O_TOTALPRICE
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q18GRPRecord_Field_O_ORDERDATE(self: Rep[Q18GRPRecord]) extends FieldDef[Int](self, "O_ORDERDATE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Q18GRPRecord]
+      self.O_ORDERDATE
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -675,17 +831,35 @@ trait Q18GRPRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Q18GRPRecord]
+      self.O_ORDERKEY
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q18GRPRecord_Field_C_CUSTKEY(self: Rep[Q18GRPRecord]) extends FieldDef[Int](self, "C_CUSTKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Q18GRPRecord]
+      self.C_CUSTKEY
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q18GRPRecord_Field_C_NAME(self: Rep[Q18GRPRecord]) extends FieldDef[OptimalString](self, "C_NAME") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[Q18GRPRecord]
+      self.C_NAME
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -768,17 +942,35 @@ trait Q20GRPRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Q20GRPRecord]
+      self.PS_AVAILQTY
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q20GRPRecord_Field_PS_SUPPKEY(self: Rep[Q20GRPRecord]) extends FieldDef[Int](self, "PS_SUPPKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Q20GRPRecord]
+      self.PS_SUPPKEY
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class Q20GRPRecord_Field_PS_PARTKEY(self: Rep[Q20GRPRecord]) extends FieldDef[Int](self, "PS_PARTKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Q20GRPRecord]
+      self.PS_PARTKEY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -851,11 +1043,23 @@ trait AGGRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy[B] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Array[Double] = {
+      val self = children(0).asInstanceOf[AGGRecord[B]]
+      self.aggs
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class AGGRecord_Field_Key[B](self: Rep[AGGRecord[B]])(implicit val typeB: TypeRep[B]) extends FieldDef[B](self, "key") {
     override def curriedConstructor = (copy[B] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): B = {
+      val self = children(0).asInstanceOf[AGGRecord[B]]
+      self.key
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1005,11 +1209,23 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_COMMENT
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class LINEITEMRecord_Field_L_SHIPMODE(self: Rep[LINEITEMRecord]) extends FieldDef[OptimalString](self, "L_SHIPMODE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_SHIPMODE
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1017,11 +1233,23 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_SHIPINSTRUCT
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class LINEITEMRecord_Field_L_RECEIPTDATE(self: Rep[LINEITEMRecord]) extends FieldDef[Int](self, "L_RECEIPTDATE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_RECEIPTDATE
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1029,11 +1257,23 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_COMMITDATE
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class LINEITEMRecord_Field_L_SHIPDATE(self: Rep[LINEITEMRecord]) extends FieldDef[Int](self, "L_SHIPDATE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_SHIPDATE
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1041,11 +1281,23 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Char = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_LINESTATUS
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class LINEITEMRecord_Field_L_RETURNFLAG(self: Rep[LINEITEMRecord]) extends FieldDef[Char](self, "L_RETURNFLAG") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Char = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_RETURNFLAG
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1053,11 +1305,23 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Double = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_TAX
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class LINEITEMRecord_Field_L_DISCOUNT(self: Rep[LINEITEMRecord]) extends FieldDef[Double](self, "L_DISCOUNT") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Double = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_DISCOUNT
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1065,11 +1329,23 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Double = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_EXTENDEDPRICE
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class LINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]) extends FieldDef[Int](self, "L_QUANTITY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_QUANTITY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1077,11 +1353,23 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_LINENUMBER
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class LINEITEMRecord_Field_L_SUPPKEY(self: Rep[LINEITEMRecord]) extends FieldDef[Int](self, "L_SUPPKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_SUPPKEY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1089,11 +1377,23 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_PARTKEY
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class LINEITEMRecord_Field_L_ORDERKEY(self: Rep[LINEITEMRecord]) extends FieldDef[Int](self, "L_ORDERKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[LINEITEMRecord]
+      self.L_ORDERKEY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1235,11 +1535,23 @@ trait SUPPLIERRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[SUPPLIERRecord]
+      self.S_COMMENT
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class SUPPLIERRecord_Field_S_ACCTBAL(self: Rep[SUPPLIERRecord]) extends FieldDef[Double](self, "S_ACCTBAL") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Double = {
+      val self = children(0).asInstanceOf[SUPPLIERRecord]
+      self.S_ACCTBAL
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1247,11 +1559,23 @@ trait SUPPLIERRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[SUPPLIERRecord]
+      self.S_PHONE
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class SUPPLIERRecord_Field_S_NATIONKEY(self: Rep[SUPPLIERRecord]) extends FieldDef[Int](self, "S_NATIONKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[SUPPLIERRecord]
+      self.S_NATIONKEY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1259,17 +1583,35 @@ trait SUPPLIERRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[SUPPLIERRecord]
+      self.S_ADDRESS
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class SUPPLIERRecord_Field_S_NAME(self: Rep[SUPPLIERRecord]) extends FieldDef[OptimalString](self, "S_NAME") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[SUPPLIERRecord]
+      self.S_NAME
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class SUPPLIERRecord_Field_S_SUPPKEY(self: Rep[SUPPLIERRecord]) extends FieldDef[Int](self, "S_SUPPKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[SUPPLIERRecord]
+      self.S_SUPPKEY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1364,11 +1706,23 @@ trait PARTSUPPRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[PARTSUPPRecord]
+      self.PS_COMMENT
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class PARTSUPPRecord_Field_PS_SUPPLYCOST(self: Rep[PARTSUPPRecord]) extends FieldDef[Double](self, "PS_SUPPLYCOST") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Double = {
+      val self = children(0).asInstanceOf[PARTSUPPRecord]
+      self.PS_SUPPLYCOST
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1376,17 +1730,35 @@ trait PARTSUPPRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[PARTSUPPRecord]
+      self.PS_AVAILQTY
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class PARTSUPPRecord_Field_PS_SUPPKEY(self: Rep[PARTSUPPRecord]) extends FieldDef[Int](self, "PS_SUPPKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[PARTSUPPRecord]
+      self.PS_SUPPKEY
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class PARTSUPPRecord_Field_PS_PARTKEY(self: Rep[PARTSUPPRecord]) extends FieldDef[Int](self, "PS_PARTKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[PARTSUPPRecord]
+      self.PS_PARTKEY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1469,17 +1841,35 @@ trait REGIONRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[REGIONRecord]
+      self.R_COMMENT
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class REGIONRecord_Field_R_NAME(self: Rep[REGIONRecord]) extends FieldDef[OptimalString](self, "R_NAME") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[REGIONRecord]
+      self.R_NAME
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class REGIONRecord_Field_R_REGIONKEY(self: Rep[REGIONRecord]) extends FieldDef[Int](self, "R_REGIONKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[REGIONRecord]
+      self.R_REGIONKEY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1553,11 +1943,23 @@ trait NATIONRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[NATIONRecord]
+      self.N_COMMENT
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class NATIONRecord_Field_N_REGIONKEY(self: Rep[NATIONRecord]) extends FieldDef[Int](self, "N_REGIONKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[NATIONRecord]
+      self.N_REGIONKEY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1565,11 +1967,23 @@ trait NATIONRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[NATIONRecord]
+      self.N_NAME
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class NATIONRecord_Field_N_NATIONKEY(self: Rep[NATIONRecord]) extends FieldDef[Int](self, "N_NATIONKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[NATIONRecord]
+      self.N_NATIONKEY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1653,11 +2067,23 @@ trait PARTRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[PARTRecord]
+      self.P_COMMENT
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class PARTRecord_Field_P_RETAILPRICE(self: Rep[PARTRecord]) extends FieldDef[Double](self, "P_RETAILPRICE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Double = {
+      val self = children(0).asInstanceOf[PARTRecord]
+      self.P_RETAILPRICE
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1665,11 +2091,23 @@ trait PARTRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[PARTRecord]
+      self.P_CONTAINER
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class PARTRecord_Field_P_SIZE(self: Rep[PARTRecord]) extends FieldDef[Int](self, "P_SIZE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[PARTRecord]
+      self.P_SIZE
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1677,11 +2115,23 @@ trait PARTRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[PARTRecord]
+      self.P_TYPE
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class PARTRecord_Field_P_BRAND(self: Rep[PARTRecord]) extends FieldDef[OptimalString](self, "P_BRAND") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[PARTRecord]
+      self.P_BRAND
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1689,17 +2139,35 @@ trait PARTRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[PARTRecord]
+      self.P_MFGR
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class PARTRecord_Field_P_NAME(self: Rep[PARTRecord]) extends FieldDef[OptimalString](self, "P_NAME") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[PARTRecord]
+      self.P_NAME
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class PARTRecord_Field_P_PARTKEY(self: Rep[PARTRecord]) extends FieldDef[Int](self, "P_PARTKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[PARTRecord]
+      self.P_PARTKEY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1807,11 +2275,23 @@ trait CUSTOMERRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[CUSTOMERRecord]
+      self.C_COMMENT
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class CUSTOMERRecord_Field_C_MKTSEGMENT(self: Rep[CUSTOMERRecord]) extends FieldDef[OptimalString](self, "C_MKTSEGMENT") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[CUSTOMERRecord]
+      self.C_MKTSEGMENT
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1819,11 +2299,23 @@ trait CUSTOMERRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Double = {
+      val self = children(0).asInstanceOf[CUSTOMERRecord]
+      self.C_ACCTBAL
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class CUSTOMERRecord_Field_C_PHONE(self: Rep[CUSTOMERRecord]) extends FieldDef[OptimalString](self, "C_PHONE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[CUSTOMERRecord]
+      self.C_PHONE
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1831,11 +2323,23 @@ trait CUSTOMERRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[CUSTOMERRecord]
+      self.C_NATIONKEY
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class CUSTOMERRecord_Field_C_ADDRESS(self: Rep[CUSTOMERRecord]) extends FieldDef[OptimalString](self, "C_ADDRESS") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[CUSTOMERRecord]
+      self.C_ADDRESS
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1843,11 +2347,23 @@ trait CUSTOMERRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[CUSTOMERRecord]
+      self.C_NAME
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class CUSTOMERRecord_Field_C_CUSTKEY(self: Rep[CUSTOMERRecord]) extends FieldDef[Int](self, "C_CUSTKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[CUSTOMERRecord]
+      self.C_CUSTKEY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1951,11 +2467,23 @@ trait ORDERSRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[ORDERSRecord]
+      self.O_COMMENT
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class ORDERSRecord_Field_O_SHIPPRIORITY(self: Rep[ORDERSRecord]) extends FieldDef[Int](self, "O_SHIPPRIORITY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[ORDERSRecord]
+      self.O_SHIPPRIORITY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1963,11 +2491,23 @@ trait ORDERSRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[ORDERSRecord]
+      self.O_CLERK
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class ORDERSRecord_Field_O_ORDERPRIORITY(self: Rep[ORDERSRecord]) extends FieldDef[OptimalString](self, "O_ORDERPRIORITY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): OptimalString = {
+      val self = children(0).asInstanceOf[ORDERSRecord]
+      self.O_ORDERPRIORITY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1975,11 +2515,23 @@ trait ORDERSRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[ORDERSRecord]
+      self.O_ORDERDATE
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class ORDERSRecord_Field_O_TOTALPRICE(self: Rep[ORDERSRecord]) extends FieldDef[Double](self, "O_TOTALPRICE") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Double = {
+      val self = children(0).asInstanceOf[ORDERSRecord]
+      self.O_TOTALPRICE
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -1987,17 +2539,35 @@ trait ORDERSRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Char = {
+      val self = children(0).asInstanceOf[ORDERSRecord]
+      self.O_ORDERSTATUS
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class ORDERSRecord_Field_O_CUSTKEY(self: Rep[ORDERSRecord]) extends FieldDef[Int](self, "O_CUSTKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[ORDERSRecord]
+      self.O_CUSTKEY
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class ORDERSRecord_Field_O_ORDERKEY(self: Rep[ORDERSRecord]) extends FieldDef[Int](self, "O_ORDERKEY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[ORDERSRecord]
+      self.O_ORDERKEY
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -2104,6 +2674,12 @@ trait NextContainerOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy[T] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): T = {
+      val self = children(0).asInstanceOf[NextContainer[T]]
+      self.current
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   // method definitions
@@ -2180,6 +2756,12 @@ trait NextKeyContainerOps extends Base with OptimalStringOps {
   case class NextKeyContainer_Field_Current[K, T](self: Rep[NextKeyContainer[K, T]])(implicit val typeK: TypeRep[K], val typeT: TypeRep[T]) extends FieldDef[T](self, "current") {
     override def curriedConstructor = (copy[K, T] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): T = {
+      val self = children(0).asInstanceOf[NextKeyContainer[K, T]]
+      self.current
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
@@ -2377,11 +2959,23 @@ trait WindowRecordOps extends Base with OptimalStringOps {
     override def curriedConstructor = (copy[B, C] _)
     override def isPure = true
 
+    override def partialEvaluate(children: Any*): C = {
+      val self = children(0).asInstanceOf[WindowRecord[B, C]]
+      self.wnd
+    }
+    override def partialEvaluable: Boolean = true
+
   }
 
   case class WindowRecord_Field_Key[B, C](self: Rep[WindowRecord[B, C]])(implicit val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldDef[B](self, "key") {
     override def curriedConstructor = (copy[B, C] _)
     override def isPure = true
+
+    override def partialEvaluate(children: Any*): B = {
+      val self = children(0).asInstanceOf[WindowRecord[B, C]]
+      self.key
+    }
+    override def partialEvaluable: Boolean = true
 
   }
 
