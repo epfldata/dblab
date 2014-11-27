@@ -113,9 +113,12 @@ object Main extends LegoRunner {
     pipeline += HashMapToSetTransformation
 
     // pipeline += PartiallyEvaluate
-    // pipeline += DCE
+    pipeline += DCE
 
     pipeline += SetLinkedListTransformation
+
+    pipeline += AssertTransformer(TypeAssertion(t => !t.isInstanceOf[context.SetType[_]]))
+
     // pipeline += ContainerFlatTransformer
 
     // pipeline += SetArrayTransformation

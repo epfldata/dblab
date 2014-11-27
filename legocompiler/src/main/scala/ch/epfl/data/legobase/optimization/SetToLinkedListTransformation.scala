@@ -98,6 +98,14 @@ class SetLinkedListTransformation(override val IR: SetComponent with pardis.deep
     }
   }
 
+  rewrite += statement {
+    case sym -> ArrayApply(arr, i) if loweredSetArrays.contains(arr) => {
+      class B
+      implicit val typeB = apply(arr).tp.typeArguments(0).asInstanceOf[TypeRep[Cont[B]]]
+      apply(arr).asInstanceOf[Rep[Array[Cont[B]]]](i).asInstanceOf[Rep[Any]]
+    }
+  }
+
   // Var usage
 
   analysis += statement {
@@ -122,6 +130,16 @@ class SetLinkedListTransformation(override val IR: SetComponent with pardis.deep
       val e = __newVar[Cont[B]](apply(v)).e
       // System.out.println(s"new var $e $v ${apply(v)}")
       e.asInstanceOf[Rep[Any]]
+    }
+  }
+
+  rewrite += statement {
+    case sym -> ReadVar(nodev) if shouldBeLowered(sym) => {
+      class B
+      // System.out.println(s"tp ${sym.tp}")
+      implicit val typeB = sym.tp.typeArguments(0).asInstanceOf[TypeRep[B]]
+      val v = Var(apply(nodev.e)).asInstanceOf[Var[Cont[B]]]
+      readVar(v).asInstanceOf[Rep[Any]]
     }
   }
 
@@ -176,13 +194,27 @@ class SetLinkedListTransformation(override val IR: SetComponent with pardis.deep
   }
 
   rewrite += statement {
-    case sym -> Tuple2New(node_1, node_2) if loweredSetTuples.contains(sym) => {
+    case sym -> Tuple2New(node_1, node_2) if shouldBeLowered(node_2) => {
       class B
       val _1 = node_1.asInstanceOf[Rep[A]]
-      val _2 = node_2.asInstanceOf[Rep[Cont[B]]]
+      val _2 = apply(node_2).asInstanceOf[Rep[Cont[B]]]
+      // System.out.println(s"tp for tuple2: ${sym.tp} ${node_2.tp} ${apply(node_2).tp}")
       implicit val typeA = node_1.tp.asInstanceOf[TypeRep[A]]
-      implicit val typeB = node_2.tp.typeArguments(0).asInstanceOf[TypeRep[B]]
+      implicit val typeB = apply(node_2).tp.typeArguments(0).asInstanceOf[TypeRep[B]]
       __newTuple2(_1, _2).asInstanceOf[Rep[Any]]
+    }
+  }
+
+  rewrite += statement {
+    case sym -> Tuple2_Field__2(nodeself) if shouldBeLowered(sym) => {
+      class B
+      val self = apply(nodeself).asInstanceOf[Rep[(A, Cont[B])]]
+      // System.out.println(s"tp for $nodeself._2=$sym: ${sym.tp} ${nodeself.tp} ${apply(nodeself).tp}")
+      implicit val typeA = apply(nodeself).tp.typeArguments(1).asInstanceOf[TypeRep[A]]
+      implicit val typeB = sym.tp.typeArguments(0).asInstanceOf[TypeRep[Cont[B]]]
+      /*val res = */ self._2.asInstanceOf[Rep[Any]]
+      // System.out.println(s"res $res for sym $sym")
+      // res
     }
   }
 
@@ -198,6 +230,20 @@ class SetLinkedListTransformation(override val IR: SetComponent with pardis.deep
     case sym -> OptionGet(v) if loweredSetOptions.contains(v) =>
       loweredSets += sym
       ()
+  }
+
+  rewrite += statement {
+    case sym -> OptionApplyObject(nodev) if shouldBeLowered(nodev) =>
+      implicit val typeA = apply(nodev).tp.asInstanceOf[TypeRep[A]]
+      val v = apply(nodev).asInstanceOf[Rep[A]]
+      Option(v).asInstanceOf[Rep[Any]]
+  }
+
+  rewrite += statement {
+    case sym -> OptionGet(nodev) if shouldBeLowered(sym) =>
+      implicit val typeA = apply(nodev).tp.typeArguments(0).asInstanceOf[TypeRep[A]]
+      val v = apply(nodev).asInstanceOf[Rep[Option[A]]]
+      v.get.asInstanceOf[Rep[Any]]
   }
 
   // Set
