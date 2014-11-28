@@ -123,12 +123,6 @@ object Main extends LegoRunner {
 
     // pipeline += SetArrayTransformation
 
-    /*pipeline += new TransformerHandler {
-      def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-        new pardis.deep.scalalib.collection.SetLinkedListTransformation(context.asInstanceOf[LoweringLegoBase]).optimize(block)
-      }
-    }*/
-
     //pipeline += ParameterPromotion
 
     //pipeline += DCE
