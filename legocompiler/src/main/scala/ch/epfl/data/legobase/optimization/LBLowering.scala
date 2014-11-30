@@ -193,7 +193,7 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
       val hm = to.__newHashMap[Any, Any]()(apply(mb), apply(magg.asInstanceOf[TypeRep[Any]]))
       to.__newDef[AggOp[Any, Any]](("hm", false, hm),
         ("expectedSize", false, unit(1048576)),
-        ("keySet", true, to.Set()(apply(mb), to.overloaded2)),
+        // ("keySet", true, to.Set()(apply(mb), to.overloaded2)),
         stop).asInstanceOf[to.Def[T]]
     }
     case po: PrintOpNew[_] => {
@@ -312,8 +312,8 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
         // ("hm", false, to.__newHashMap3[Any, Any](ho.leftHash.asInstanceOf[Rep[Any => Any]], newSize)(apply(mc), apply(ma))),
         ("hm", false, to.__newMultiMap[Any, Any]()(apply(mc), apply(ma))),
         stop,
-        ("expectedSize", false, newSize * 100),
-        ("keySet", true, to.Set()(apply(mc), to.overloaded2))).asInstanceOf[to.Def[T]]
+        ("expectedSize", false, newSize * 100) //, ("keySet", true, to.Set()(apply(mc), to.overloaded2))
+        ).asInstanceOf[to.Def[T]]
     }
     case loj: LeftOuterJoinOpNew[_, _, _] => {
       val ma = loj.typeA
