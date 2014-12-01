@@ -70,7 +70,6 @@ object Queries {
   }
 
   def Q2(numRuns: Int) {
-    import queryengine._
     val partTable = loadPart()
     val partsuppTable = loadPartsupp()
     val nationTable = loadNation()

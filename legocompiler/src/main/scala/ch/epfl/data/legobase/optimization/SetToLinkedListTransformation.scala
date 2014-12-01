@@ -69,9 +69,10 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
         case Def(OptionGet(Def(OptionApplyObject(Def(ArrayApply(arr, i)))))) =>
           arr.asInstanceOf[Rep[Array[Cont[A]]]](i) = x$1
         case _ =>
-          System.out.println(s"Assigning Default ${apply(self)}")
+          System.out.println(s"Assigning Default ${apply(self)}, ${apply(self).correspondingNode}")
           val v = Var(self.asInstanceOf[Rep[Var[Cont[A]]]])
           __assign(v, x$1)
+        // new SetRep1(apply(self).asInstanceOf[Rep[Set[A]]]).headCont_=(x$1)
       }
     }
     def headCont: Rep[Cont[A]] = {
