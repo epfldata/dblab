@@ -119,7 +119,7 @@ object Main extends LegoRunner {
 
     pipeline += AssertTransformer(TypeAssertion(t => !t.isInstanceOf[context.SetType[_]]))
 
-    // pipeline += ContainerFlatTransformer
+    pipeline += ContainerFlatTransformer
 
     // pipeline += SetArrayTransformation
 
