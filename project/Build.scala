@@ -13,47 +13,6 @@ object LegoBuild extends Build {
     ScalariformKeys.preferences in Test    := formattingPreferences
   )
 
-  // // We can make an SBT plugin out of these. However, for the time being this is good enough.
-  // val generatorMode = SettingKey[Boolean]("generator-mode",
-  //   "Is the compiler used for generating the deep embedding")
-
-  // def embed = Command.command("embed") { state =>
-  //   val cleaned = Project.runTask(Keys.clean in Compile, state)
-  //   cleaned match {
-  //     case Some((state, _)) =>
-  //       Project.evaluateTask(Keys.compile in Compile,
-  //         (Project extract state).append(Seq(generatorMode := true), state))
-  //       Project.evaluateTask(Keys.clean in Compile, state)
-  //       state
-  //     case None =>
-  //       state
-  //   }
-  // }
-
-  // def generatorSettings: Seq[Setting[_]] = Seq(
-  //   libraryDependencies ++= Seq("ch.epfl.data" % "pardis-core_2.11" % "0.1-SNAPSHOT",
-  //     "ch.epfl.data" % "purgatory-core_2.11" % "0.1-SNAPSHOT",
-  //     "ch.epfl.data" % "purgatory_2.11" % "0.1-SNAPSHOT"
-  //     ),
-  //   generatorMode := false,
-  //   scalacOptions ++= {
-  //     if(generatorMode.value) {
-  //       val cpath = update.value.matching(configurationFilter()).classpath
-  //       val plugin = cpath.files.find(_.getName contains "purgatory_").get.absString
-  //       val pardis_core = cpath.files.find(_.getName contains "pardis-core").get.absString
-  //       val purgatory_core = cpath.files.find(_.getName contains "purgatory-core").get.absString
-  //       val yy_core = cpath.files.find(_.getName contains "yinyang-core").get.absString
-  //       val yy = cpath.files.find(_.getName contains "scala-yinyang").get.absString
-  //       Seq(
-  //         s"-Xplugin:$plugin:$yy_core:$yy:$purgatory_core:$pardis_core",
-  //         "-Ystop-after:backend-generator"
-  //       )
-  //     } else
-  //       Seq()
-  //   },
-  //   commands += embed
-  // )
-
   lazy val defaults = Project.defaultSettings ++ formatSettings ++ Seq(
     resolvers +=  "OSSH" at "https://oss.sonatype.org/content/groups/public",
     resolvers += Resolver.sonatypeRepo("snapshots"),
@@ -62,8 +21,8 @@ object LegoBuild extends Build {
     libraryDependencies ++= Seq(
       "junit" % "junit-dep" % "4.10" % "test",
       "org.scalatest" % "scalatest_2.11" % "2.2.0" % "test",
-      "org.scala-lang"         %  "scala-reflect" % "2.11.1",
-      "org.scala-lang" % "scala-compiler" % "2.11.1" % "optional"
+      "org.scala-lang"         %  "scala-reflect" % "2.11.2",
+      "org.scala-lang" % "scala-compiler" % "2.11.2" % "optional"
     ),
 
     // add scalac options (verbose deprecation warnings)
@@ -76,7 +35,7 @@ object LegoBuild extends Build {
     // testing
     parallelExecution in Test := false,
     fork in Test := false,
-    scalaVersion := "2.11.1"
+    scalaVersion := "2.11.2"
   )
 
   def formattingPreferences = {

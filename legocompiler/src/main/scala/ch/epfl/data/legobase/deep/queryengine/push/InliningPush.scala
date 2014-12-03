@@ -1,6 +1,7 @@
 package ch.epfl.data
 package legobase
 package deep
+package queryengine
 package push
 
 import scala.language.implicitConversions

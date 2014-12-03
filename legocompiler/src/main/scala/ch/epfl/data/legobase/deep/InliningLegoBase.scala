@@ -7,7 +7,7 @@ import pardis.ir._
 import pardis.types.PardisTypeImplicits._
 
 // trait InliningLegoBase extends volcano.InliningVolcano with DeepDSL with pardis.ir.InlineFunctions with QueriesImplementations with LoopUnrolling with InliningLoader
-trait InliningLegoBase extends push.InliningPush with DeepDSL with pardis.ir.InlineFunctions with QueriesImplementations with LoopUnrolling with InliningLoader
+trait InliningLegoBase extends queryengine.push.InliningPush with DeepDSL with pardis.ir.InlineFunctions with QueriesImplementations with LoopUnrolling with InliningLoader
 
 trait InliningLoader extends LoaderImplementations { this: InliningLegoBase =>
   override def loaderGetFullPathObject(fileName: Rep[String]): Rep[String] = fileName match {

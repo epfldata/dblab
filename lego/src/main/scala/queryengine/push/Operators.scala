@@ -15,21 +15,10 @@ import scala.reflect.ClassTag
 
 // This is a temporary solution until we introduce dependency management and adopt policies. Not a priority now!
 @metadeep(
-  "legocompiler/src/main/scala/ch/epfl/data/legobase/deep/push",
-  """
-package ch.epfl.data
-package legobase
-package deep
-package push
-
-import pardis.ir._
-import pardis.types.PardisTypeImplicits._
-import pardis.deep.scalalib._
-import pardis.deep.scalalib.collection._
-import pardis.effects._
-""",
-  """OperatorsComponent""",
-  "DeepDSL")
+  folder = "",
+  header = "",
+  component = "OperatorsComponent",
+  thisComponent = "ch.epfl.data.legobase.deep.DeepDSL")
 class MetaInfo
 
 @deep abstract class Operator[+A] {

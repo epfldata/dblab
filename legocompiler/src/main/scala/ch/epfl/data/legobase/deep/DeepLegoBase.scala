@@ -3010,7 +3010,7 @@ trait WindowRecordPartialEvaluation extends WindowRecordComponent with BaseParti
 }
 trait WindowRecordComponent extends WindowRecordOps with WindowRecordImplicits {}
 
-trait DeepDSL extends push.OperatorsComponent
+trait DeepDSL extends queryengine.push.OperatorsComponent
   with AGGRecordComponent
   with WindowRecordComponent
   with CharComponent

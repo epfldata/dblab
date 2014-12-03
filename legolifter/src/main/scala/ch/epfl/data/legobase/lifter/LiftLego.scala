@@ -65,7 +65,7 @@ import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
 
 $liftedCode
-trait DeepDSL extends push.OperatorsComponent 
+trait DeepDSL extends queryengine.push.OperatorsComponent 
   with AGGRecordComponent 
   with WindowRecordComponent 
   with CharComponent 
