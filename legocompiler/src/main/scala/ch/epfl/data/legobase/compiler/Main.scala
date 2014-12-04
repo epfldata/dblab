@@ -137,8 +137,7 @@ object Main extends LegoRunner {
     val finalBlock = pipeline.apply(context)(block)
 
     // Convert to program
-    val ir2Program = new { val IR = context } with IRToProgram {}
-    val finalProgram = ir2Program.createProgram(finalBlock)
+    val finalProgram = IRToProgram(context).createProgram(finalBlock)
     if (generateCCode) (new LegoCGenerator(shallow, "Q" + number, false)).apply(finalProgram)
     else (new LegoScalaGenerator(shallow, "Q" + number)).apply(finalProgram)
   }
