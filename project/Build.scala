@@ -56,17 +56,14 @@ object LegoBuild extends Build {
     inputPackage := "ch.epfl.data.legobase",
     outputPackage := "ch.epfl.data.legobase.deep") ++ generatorSettings
 
-  lazy val lego            = Project(id = "root",             base = file("."), settings = defaults) aggregate (lego_core, legolifter, legocompiler)
+  lazy val lego            = Project(id = "root",             base = file("."), settings = defaults) aggregate (lego_core, legocompiler)
   lazy val lego_core       = Project(id = "lego-core",        base = file("lego"),
    settings = defaults ++ purgatorySettings ++  Seq(
      name := "lego-core",
      scalacOptions ++= Seq("-optimize"),
      libraryDependencies += "ch.epfl.data" % "pardis-library_2.11" % "0.1-SNAPSHOT")) // hack for being able to generate implementations
-  lazy val legolifter = Project(id = "legolifter", base = file("legolifter"),
-    settings = defaults ++ purgatorySettings ++ Seq(name := "legolifter"))
-    .dependsOn(lego_core)
   lazy val legocompiler = Project(id = "legocompiler", base = file("legocompiler"), settings = defaults ++ Seq(name := "legocompiler",
-      libraryDependencies ++= Seq("ch.epfl.lamp" % "scala-yinyang_2.11" % "0.2.0-SNAPSHOT",
+      libraryDependencies ++= Seq(//"ch.epfl.lamp" % "scala-yinyang_2.11" % "0.2.0-SNAPSHOT",
         "ch.epfl.data" % "pardis-compiler_2.11" % "0.1-SNAPSHOT"
         ),
       generate_test <<= inputTask { (argTask: TaskKey[Seq[String]]) =>

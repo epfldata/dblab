@@ -6,12 +6,16 @@ import java.io.FileReader
 import java.io.BufferedReader
 import java.text.SimpleDateFormat
 
+import pardis.annotations._
+
+@noImplementation
+@deep
 class K2DBScanner(filename: String) {
-  var byteRead: Int = 0
-  var intDigits: Int = 0
-  var delimiter: Char = '|'
-  var br: BufferedReader = new BufferedReader(new FileReader(filename))
-  val sdf = new SimpleDateFormat("yyyy-MM-dd");
+  @dontLift private var byteRead: Int = 0
+  @dontLift private var intDigits: Int = 0
+  @dontLift private var delimiter: Char = '|'
+  @dontLift private val br: BufferedReader = new BufferedReader(new FileReader(filename))
+  @dontLift private val sdf = new SimpleDateFormat("yyyy-MM-dd");
 
   def next_int() = {
     var number = 0

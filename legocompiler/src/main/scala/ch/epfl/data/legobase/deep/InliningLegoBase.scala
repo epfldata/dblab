@@ -9,7 +9,7 @@ import pardis.types.PardisTypeImplicits._
 // trait InliningLegoBase extends volcano.InliningVolcano with DeepDSL with pardis.ir.InlineFunctions with QueriesImplementations with LoopUnrolling with InliningLoader
 trait InliningLegoBase extends queryengine.push.InliningPush with DeepDSL with pardis.ir.InlineFunctions with QueriesImplementations with LoopUnrolling with InliningLoader
 
-trait InliningLoader extends LoaderImplementations { this: InliningLegoBase =>
+trait InliningLoader extends storagemanager.LoaderImplementations { this: InliningLegoBase =>
   override def loaderGetFullPathObject(fileName: Rep[String]): Rep[String] = fileName match {
     case Constant(name: String) => unit(Config.datapath + name)
     case _                      => throw new Exception(s"file name should be constant but here it is $fileName")

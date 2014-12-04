@@ -3,33 +3,19 @@ package legobase
 package storagemanager
 
 import utils.Utilities._
-import pardis.annotations.{ deep, metadeep, dontLift, dontInline /* ,  needs */ }
-import queryengine.TPCHRelations._
+import pardis.annotations.{ deep, metadeep, dontLift, dontInline }
+import queryengine._
 import pardis.shallow.OptimalString
 
-// This is a temporary solution until we introduce dependency management and adopt policies. Not a priority now!
 @metadeep(
-  "legocompiler/src/main/scala/ch/epfl/data/legobase/deep",
-  """
-package ch.epfl.data
-package legobase
-package deep
-
-import pardis.ir._
-import pardis.types.PardisTypeImplicits._
-import pardis.deep.scalalib._
-import pardis.deep.scalalib.collection._
-""",
-  """LoadersComponent""",
-  "DeepDSL")
+  folder = "",
+  header = "",
+  component = "",
+  thisComponent = "ch.epfl.data.legobase.deep.DeepDSL")
 class MetaInfo
 
-// FIXME just to cheat on auto-lifter
-// @needs[(Int, K2DBScanner, LINEITEMRecord, ORDERSRecord, CUSTOMERRecord, SUPPLIERRecord, PARTSUPPRecord, REGIONRecord, NATIONRecord, PARTRecord)]
 @deep
-trait Loader {
-
-}
+trait Loader
 
 object Loader {
   @dontInline

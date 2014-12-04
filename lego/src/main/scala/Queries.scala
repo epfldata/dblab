@@ -11,24 +11,14 @@ import queryengine.push._
 import pardis.annotations.{ deep, metadeep, dontLift }
 import storagemanager.Loader._
 import GenericEngine._
-import queryengine.TPCHRelations._
+// import queryengine.TPCHRelations._
 import storagemanager._
 
-// This is a temporary solution until we introduce dependency management and adopt policies. Not a priority now!
 @metadeep(
-  "legocompiler/src/main/scala/ch/epfl/data/legobase/deep",
-  """
-package ch.epfl.data
-package legobase
-package deep
-
-import pardis.ir._
-import pardis.types.PardisTypeImplicits._
-import pardis.deep.scalalib._
-import pardis.deep.scalalib.collection._
-""",
-  """QueryComponent""",
-  "DeepDSL")
+  folder = "",
+  header = "",
+  component = "QueryComponent",
+  thisComponent = "ch.epfl.data.legobase.deep.DeepDSL")
 class MetaInfo
 
 @deep

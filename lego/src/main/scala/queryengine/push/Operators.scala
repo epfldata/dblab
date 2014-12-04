@@ -13,7 +13,6 @@ import pardis.annotations.{ deep, metadeep, dontInline }
 import pardis.shallow.{ Record, DynamicCompositeRecord }
 import scala.reflect.ClassTag
 
-// This is a temporary solution until we introduce dependency management and adopt policies. Not a priority now!
 @metadeep(
   folder = "",
   header = "",

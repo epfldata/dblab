@@ -28,7 +28,7 @@ trait CTransformer extends TopDownTransformerTraverser[LoweringLegoBase] {
   }
 }
 
-trait ScalaToC extends DeepDSL with K2DBScannerOps with CFunctions { this: Base =>
+trait ScalaToC extends DeepDSL with CFunctions { this: Base =>
   import CNodes._
   import CTypes._
   override def structName[T](m: PardisType[T]): String = {
