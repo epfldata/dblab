@@ -12,8 +12,6 @@ import pardis.types._
 import pardis.compiler._
 
 class LegoCompiler(val DSL: LoweringLegoBase, val hashMapToArray: Boolean, val removeUnusedFields: Boolean, val number: Int, val generateCCode: Boolean) extends Compiler[LoweringLegoBase] {
-  /* For the moment this transformation is only valid for C code generation */
-
   object MultiMapOptimizations extends TransformerHandler {
     def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
       new pardis.deep.scalalib.collection.MultiMapOptimalTransformation(context.asInstanceOf[LoweringLegoBase]).optimize(block)
