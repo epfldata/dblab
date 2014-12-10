@@ -12,18 +12,8 @@ import pardis.ir._
 import pardis.types.PardisTypeImplicits._
 import pardis.effects._
 
-trait ManualLiftedLegoBase extends OrderingOps with ManifestOps with pardis.deep.scalalib.collection.RichIntOps with pardis.deep.scalalib.ByteComponent with LegoHashMap with LegoArrayBuffer with pardis.deep.scalalib.collection.ContOps { this: DeepDSL =>
-  /* TODO These methods should be lifted from scala.Predef */
-  case class Println(x: Rep[Any]) extends FunctionDef[Unit](None, "println", List(List(x))) {
-    override def curriedConstructor = (copy _)
-  }
-  def println(x: Rep[Any]): Rep[Unit] = Println(x)
-  // for performance reasons printf is written like this:
-  case class Printf(text: Rep[String], xs: Rep[Any]*) extends FunctionDef[Unit](None, "printf", List(text :: xs.toList)) {
-    override def rebuild(children: FunctionArg*) = Printf(children(0).asInstanceOf[Rep[String]], children.drop(1).toSeq.asInstanceOf[Seq[Rep[Any]]]: _*)
-  }
-  def printf(text: Rep[String], xs: Rep[Any]*): Rep[Unit] = Printf(text, xs: _*)
-
+trait ManualLiftedLegoBase extends OrderingOps with ManifestOps with pardis.deep.scalalib.collection.RichIntOps with pardis.deep.scalalib.ByteComponent with LegoHashMap with LegoArrayBuffer with pardis.deep.scalalib.collection.ContOps with pardis.deep.scalalib.ScalaPredef { this: DeepDSL =>
+  // TODO these methods should be automatically lifted
   object Console {
     def err: Rep[PrintStream] = consoleErr()
     def out: Rep[PrintStream] = consoleOut()
@@ -44,11 +34,6 @@ trait ManualLiftedLegoBase extends OrderingOps with ManifestOps with pardis.deep
   override def printStreamPrintf(self: Rep[PrintStream], s: Rep[String], objs: Rep[Any]*): Rep[Unit] = {
     PrintStreamPrintf2(self, s, objs: _*)
   }
-  // printf is not written like this for the reason mentioned above
-  // case class Printf(text: Rep[String], xs: Rep[Seq[Any]]) extends FunctionDef[Unit](None, "printf", List(List(text, __varArg(xs)))) {
-  //   override def curriedConstructor = (copy _).curried
-  // }
-  // def printf(text: Rep[String], xs: Rep[Any]*): Rep[Unit] = Printf(text, __liftSeq(xs.toSeq))
 
   def __newException(msg: Rep[String]) = new Exception(msg.toString)
 

@@ -16,7 +16,7 @@ object DCECLang extends TransformerHandler {
   }
 }
 
-class DCECLang(override val IR: LoweringLegoBase) extends DCE[LoweringLegoBase](IR) with deep.CTransformer
+class DCECLang(override val IR: LoweringLegoBase) extends DCE[LoweringLegoBase](IR) with CTransformer
 // {
 //   import IR._
 //   import CNodes._

@@ -1,6 +1,6 @@
 package ch.epfl.data
 package legobase
-package deep
+package optimization
 
 import scala.language.existentials
 import pardis.shallow.OptimalString
@@ -25,24 +25,6 @@ trait CTransformer extends TopDownTransformerTraverser[LoweringLegoBase] {
   override def transformExp[T: TypeRep, S: TypeRep](exp: Rep[T]): Rep[S] = exp match {
     case t: typeOf[_] => typeOf()(apply(t.tp)).asInstanceOf[Rep[S]]
     case _            => super.transformExp[T, S](exp)
-  }
-}
-
-trait ScalaToC extends DeepDSL with CFunctions { this: Base =>
-  import CNodes._
-  import CTypes._
-  override def structName[T](m: PardisType[T]): String = {
-    m match {
-      case CArrayType(args)    => "ArrayOf" + structName(args)
-      case ArrayType(args)     => structName(args)
-      case PointerType(args)   => structName(args)
-      case IntType             => "int"
-      case ByteType | CharType => "char"
-      case DoubleType          => "double"
-      case OptimalStringType   => "OptimalString"
-      case c if c.isRecord     => m.name.replaceAll("struct ", "")
-      case _                   => super.structName(m)
-    }
   }
 }
 
