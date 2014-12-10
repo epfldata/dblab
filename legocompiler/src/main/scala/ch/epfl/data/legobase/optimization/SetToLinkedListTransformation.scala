@@ -100,7 +100,7 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
   // Set
 
   analysis += statement {
-    case sym -> (node @ SetNew2()) => {
+    case sym -> (node @ SetApplyObject2()) => {
       addToLowered(sym)
       // System.out.println(s"sym $sym added to sets")
       ()
@@ -118,7 +118,7 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
   }
 
   rewrite += statement {
-    case sym -> (node @ SetNew2()) =>
+    case sym -> (node @ SetApplyObject2()) =>
       implicit val typeA = transformType(node.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
 
       // headContMap(sym) = __newVar[Cont[A]](unit(null))

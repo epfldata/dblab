@@ -208,7 +208,7 @@ class SetArrayTransformation[Lang <: SetComponent with pardis.deep.scalalib.Opti
   // Set
 
   analysis += statement {
-    case sym -> (node @ SetNew2()) => {
+    case sym -> (node @ SetApplyObject2()) => {
       loweredSets += sym
       ()
     }
@@ -226,7 +226,7 @@ class SetArrayTransformation[Lang <: SetComponent with pardis.deep.scalalib.Opti
   }
 
   rewrite += statement {
-    case sym -> (node @ SetNew2()) =>
+    case sym -> (node @ SetApplyObject2()) =>
       implicit val typeA = transformType(node.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
 
       // headContMap(sym) = __newVar[Cont[A]](unit(null))
