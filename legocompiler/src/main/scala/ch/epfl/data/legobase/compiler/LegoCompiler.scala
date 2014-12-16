@@ -57,7 +57,8 @@ class LegoCompiler(val DSL: LoweringLegoBase, val hashMapToArray: Boolean, val r
   //pipeline += DCE
 
   // pipeline += PartiallyEvaluate
-  // pipeline += SingletonArrayToValueTransformer
+  pipeline += SingletonArrayToValueTransformer
+  // pipeline += PartiallyEvaluate
 
   if (generateCCode) pipeline += CTransformersPipeline
 

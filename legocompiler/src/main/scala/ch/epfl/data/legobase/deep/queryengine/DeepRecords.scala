@@ -12,14 +12,8 @@ import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
 trait AGGRecordOps extends Base {
   // Type representation
-  case class AGGRecordType[B](typeB: TypeRep[B]) extends TypeRep[AGGRecord[B]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = AGGRecordType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagB = typeB.typeTag
-    val name = s"AGGRecord[${typeB.name}]"
-    val typeArguments = List(typeB)
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[AGGRecord[B]]
-  }
+  val AGGRecordType = AGGRecordIRs.AGGRecordType
+  type AGGRecordType[B] = AGGRecordIRs.AGGRecordType[B]
   implicit def typeAGGRecord[B: TypeRep] = AGGRecordType(implicitly[TypeRep[B]])
   implicit class AGGRecordRep[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = aGGRecordGetField[B](self, key)(typeB)
@@ -31,6 +25,33 @@ trait AGGRecordOps extends Base {
   }
   // constructors
   def __newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)(typeB)
+  // IR defs
+  val AGGRecordNew = AGGRecordIRs.AGGRecordNew
+  type AGGRecordNew[B] = AGGRecordIRs.AGGRecordNew[B]
+  val AGGRecordGetField = AGGRecordIRs.AGGRecordGetField
+  type AGGRecordGetField[B] = AGGRecordIRs.AGGRecordGetField[B]
+  val AGGRecord_Field_Aggs = AGGRecordIRs.AGGRecord_Field_Aggs
+  type AGGRecord_Field_Aggs[B] = AGGRecordIRs.AGGRecord_Field_Aggs[B]
+  val AGGRecord_Field_Key = AGGRecordIRs.AGGRecord_Field_Key
+  type AGGRecord_Field_Key[B] = AGGRecordIRs.AGGRecord_Field_Key[B]
+  // method definitions
+  def aGGRecordNew[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = AGGRecordNew[B](key, aggs)
+  def aGGRecordGetField[B](self: Rep[AGGRecord[B]], key: Rep[String])(implicit typeB: TypeRep[B]): Rep[Option[Any]] = AGGRecordGetField[B](self, key)
+  def aGGRecord_Field_Aggs[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]): Rep[Array[Double]] = AGGRecord_Field_Aggs[B](self)
+  def aGGRecord_Field_Key[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]): Rep[B] = AGGRecord_Field_Key[B](self)
+  type AGGRecord[B] = ch.epfl.data.legobase.queryengine.AGGRecord[B]
+}
+object AGGRecordIRs extends Base {
+  // Type representation
+  case class AGGRecordType[B](typeB: TypeRep[B]) extends TypeRep[AGGRecord[B]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = AGGRecordType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagB = typeB.typeTag
+    val name = s"AGGRecord[${typeB.name}]"
+    val typeArguments = List(typeB)
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[AGGRecord[B]]
+  }
+  implicit def typeAGGRecord[B: TypeRep] = AGGRecordType(implicitly[TypeRep[B]])
   // case classes
   case class AGGRecordNew[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit val typeB: TypeRep[B]) extends ConstructorDef[AGGRecord[B]](List(typeB), "AGGRecord", List(List(key, aggs))) {
     override def curriedConstructor = (copy[B] _).curried
@@ -64,11 +85,6 @@ trait AGGRecordOps extends Base {
 
   }
 
-  // method definitions
-  def aGGRecordNew[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = AGGRecordNew[B](key, aggs)
-  def aGGRecordGetField[B](self: Rep[AGGRecord[B]], key: Rep[String])(implicit typeB: TypeRep[B]): Rep[Option[Any]] = AGGRecordGetField[B](self, key)
-  def aGGRecord_Field_Aggs[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]): Rep[Array[Double]] = AGGRecord_Field_Aggs[B](self)
-  def aGGRecord_Field_Key[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]): Rep[B] = AGGRecord_Field_Key[B](self)
   type AGGRecord[B] = ch.epfl.data.legobase.queryengine.AGGRecord[B]
 }
 trait AGGRecordImplicits extends AGGRecordOps {
@@ -95,15 +111,8 @@ trait AGGRecordPartialEvaluation extends AGGRecordComponent with BasePartialEval
 trait AGGRecordComponent extends AGGRecordOps with AGGRecordImplicits {}
 trait WindowRecordOps extends Base {
   // Type representation
-  case class WindowRecordType[B, C](typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[WindowRecord[B, C]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = WindowRecordType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
-    val name = s"WindowRecord[${typeB.name}, ${typeC.name}]"
-    val typeArguments = List(typeB, typeC)
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[WindowRecord[B, C]]
-  }
+  val WindowRecordType = WindowRecordIRs.WindowRecordType
+  type WindowRecordType[B, C] = WindowRecordIRs.WindowRecordType[B, C]
   implicit def typeWindowRecord[B: TypeRep, C: TypeRep] = WindowRecordType(implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class WindowRecordRep[B, C](self: Rep[WindowRecord[B, C]])(implicit typeB: TypeRep[B], typeC: TypeRep[C]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = windowRecordGetField[B, C](self, key)(typeB, typeC)
@@ -115,6 +124,34 @@ trait WindowRecordOps extends Base {
   }
   // constructors
   def __newWindowRecord[B, C](key: Rep[B], wnd: Rep[C])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowRecord[B, C]] = windowRecordNew[B, C](key, wnd)(typeB, typeC)
+  // IR defs
+  val WindowRecordNew = WindowRecordIRs.WindowRecordNew
+  type WindowRecordNew[B, C] = WindowRecordIRs.WindowRecordNew[B, C]
+  val WindowRecordGetField = WindowRecordIRs.WindowRecordGetField
+  type WindowRecordGetField[B, C] = WindowRecordIRs.WindowRecordGetField[B, C]
+  val WindowRecord_Field_Wnd = WindowRecordIRs.WindowRecord_Field_Wnd
+  type WindowRecord_Field_Wnd[B, C] = WindowRecordIRs.WindowRecord_Field_Wnd[B, C]
+  val WindowRecord_Field_Key = WindowRecordIRs.WindowRecord_Field_Key
+  type WindowRecord_Field_Key[B, C] = WindowRecordIRs.WindowRecord_Field_Key[B, C]
+  // method definitions
+  def windowRecordNew[B, C](key: Rep[B], wnd: Rep[C])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowRecord[B, C]] = WindowRecordNew[B, C](key, wnd)
+  def windowRecordGetField[B, C](self: Rep[WindowRecord[B, C]], key: Rep[String])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Option[Any]] = WindowRecordGetField[B, C](self, key)
+  def windowRecord_Field_Wnd[B, C](self: Rep[WindowRecord[B, C]])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[C] = WindowRecord_Field_Wnd[B, C](self)
+  def windowRecord_Field_Key[B, C](self: Rep[WindowRecord[B, C]])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[B] = WindowRecord_Field_Key[B, C](self)
+  type WindowRecord[B, C] = ch.epfl.data.legobase.queryengine.WindowRecord[B, C]
+}
+object WindowRecordIRs extends Base {
+  // Type representation
+  case class WindowRecordType[B, C](typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[WindowRecord[B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = WindowRecordType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
+    private implicit val tagB = typeB.typeTag
+    private implicit val tagC = typeC.typeTag
+    val name = s"WindowRecord[${typeB.name}, ${typeC.name}]"
+    val typeArguments = List(typeB, typeC)
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[WindowRecord[B, C]]
+  }
+  implicit def typeWindowRecord[B: TypeRep, C: TypeRep] = WindowRecordType(implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
   case class WindowRecordNew[B, C](key: Rep[B], wnd: Rep[C])(implicit val typeB: TypeRep[B], val typeC: TypeRep[C]) extends ConstructorDef[WindowRecord[B, C]](List(typeB, typeC), "WindowRecord", List(List(key, wnd))) {
     override def curriedConstructor = (copy[B, C] _).curried
@@ -148,11 +185,6 @@ trait WindowRecordOps extends Base {
 
   }
 
-  // method definitions
-  def windowRecordNew[B, C](key: Rep[B], wnd: Rep[C])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowRecord[B, C]] = WindowRecordNew[B, C](key, wnd)
-  def windowRecordGetField[B, C](self: Rep[WindowRecord[B, C]], key: Rep[String])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Option[Any]] = WindowRecordGetField[B, C](self, key)
-  def windowRecord_Field_Wnd[B, C](self: Rep[WindowRecord[B, C]])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[C] = WindowRecord_Field_Wnd[B, C](self)
-  def windowRecord_Field_Key[B, C](self: Rep[WindowRecord[B, C]])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[B] = WindowRecord_Field_Key[B, C](self)
   type WindowRecord[B, C] = ch.epfl.data.legobase.queryengine.WindowRecord[B, C]
 }
 trait WindowRecordImplicits extends WindowRecordOps {
@@ -179,13 +211,7 @@ trait WindowRecordPartialEvaluation extends WindowRecordComponent with BaseParti
 trait WindowRecordComponent extends WindowRecordOps with WindowRecordImplicits {}
 trait GroupByClassOps extends Base {
   // Type representation
-  case object GroupByClassType extends TypeRep[GroupByClass] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GroupByClassType
-    val name = "GroupByClass"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[GroupByClass]
-  }
+  val GroupByClassType = GroupByClassIRs.GroupByClassType
   implicit val typeGroupByClass = GroupByClassType
   implicit class GroupByClassRep(self: Rep[GroupByClass]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = groupByClassGetField(self, key)
@@ -197,6 +223,32 @@ trait GroupByClassOps extends Base {
   }
   // constructors
   def __newGroupByClass(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]): Rep[GroupByClass] = groupByClassNew(L_RETURNFLAG, L_LINESTATUS)
+  // IR defs
+  val GroupByClassNew = GroupByClassIRs.GroupByClassNew
+  type GroupByClassNew = GroupByClassIRs.GroupByClassNew
+  val GroupByClassGetField = GroupByClassIRs.GroupByClassGetField
+  type GroupByClassGetField = GroupByClassIRs.GroupByClassGetField
+  val GroupByClass_Field_L_LINESTATUS = GroupByClassIRs.GroupByClass_Field_L_LINESTATUS
+  type GroupByClass_Field_L_LINESTATUS = GroupByClassIRs.GroupByClass_Field_L_LINESTATUS
+  val GroupByClass_Field_L_RETURNFLAG = GroupByClassIRs.GroupByClass_Field_L_RETURNFLAG
+  type GroupByClass_Field_L_RETURNFLAG = GroupByClassIRs.GroupByClass_Field_L_RETURNFLAG
+  // method definitions
+  def groupByClassNew(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]): Rep[GroupByClass] = GroupByClassNew(L_RETURNFLAG, L_LINESTATUS)
+  def groupByClassGetField(self: Rep[GroupByClass], key: Rep[String]): Rep[Option[Any]] = GroupByClassGetField(self, key)
+  def groupByClass_Field_L_LINESTATUS(self: Rep[GroupByClass]): Rep[Char] = GroupByClass_Field_L_LINESTATUS(self)
+  def groupByClass_Field_L_RETURNFLAG(self: Rep[GroupByClass]): Rep[Char] = GroupByClass_Field_L_RETURNFLAG(self)
+  type GroupByClass = ch.epfl.data.legobase.queryengine.GroupByClass
+}
+object GroupByClassIRs extends Base {
+  // Type representation
+  case object GroupByClassType extends TypeRep[GroupByClass] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GroupByClassType
+    val name = "GroupByClass"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[GroupByClass]
+  }
+  implicit val typeGroupByClass = GroupByClassType
   // case classes
   case class GroupByClassNew(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]) extends ConstructorDef[GroupByClass](List(), "GroupByClass", List(List(L_RETURNFLAG, L_LINESTATUS))) {
     override def curriedConstructor = (copy _).curried
@@ -230,11 +282,6 @@ trait GroupByClassOps extends Base {
 
   }
 
-  // method definitions
-  def groupByClassNew(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]): Rep[GroupByClass] = GroupByClassNew(L_RETURNFLAG, L_LINESTATUS)
-  def groupByClassGetField(self: Rep[GroupByClass], key: Rep[String]): Rep[Option[Any]] = GroupByClassGetField(self, key)
-  def groupByClass_Field_L_LINESTATUS(self: Rep[GroupByClass]): Rep[Char] = GroupByClass_Field_L_LINESTATUS(self)
-  def groupByClass_Field_L_RETURNFLAG(self: Rep[GroupByClass]): Rep[Char] = GroupByClass_Field_L_RETURNFLAG(self)
   type GroupByClass = ch.epfl.data.legobase.queryengine.GroupByClass
 }
 trait GroupByClassImplicits extends GroupByClassOps {
@@ -261,13 +308,7 @@ trait GroupByClassPartialEvaluation extends GroupByClassComponent with BaseParti
 trait GroupByClassComponent extends GroupByClassOps with GroupByClassImplicits {}
 trait Q3GRPRecordOps extends Base {
   // Type representation
-  case object Q3GRPRecordType extends TypeRep[Q3GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q3GRPRecordType
-    val name = "Q3GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q3GRPRecord]
-  }
+  val Q3GRPRecordType = Q3GRPRecordIRs.Q3GRPRecordType
   implicit val typeQ3GRPRecord = Q3GRPRecordType
   implicit class Q3GRPRecordRep(self: Rep[Q3GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q3GRPRecordGetField(self, key)
@@ -280,6 +321,35 @@ trait Q3GRPRecordOps extends Base {
   }
   // constructors
   def __newQ3GRPRecord(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = q3GRPRecordNew(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
+  // IR defs
+  val Q3GRPRecordNew = Q3GRPRecordIRs.Q3GRPRecordNew
+  type Q3GRPRecordNew = Q3GRPRecordIRs.Q3GRPRecordNew
+  val Q3GRPRecordGetField = Q3GRPRecordIRs.Q3GRPRecordGetField
+  type Q3GRPRecordGetField = Q3GRPRecordIRs.Q3GRPRecordGetField
+  val Q3GRPRecord_Field_O_SHIPPRIORITY = Q3GRPRecordIRs.Q3GRPRecord_Field_O_SHIPPRIORITY
+  type Q3GRPRecord_Field_O_SHIPPRIORITY = Q3GRPRecordIRs.Q3GRPRecord_Field_O_SHIPPRIORITY
+  val Q3GRPRecord_Field_O_ORDERDATE = Q3GRPRecordIRs.Q3GRPRecord_Field_O_ORDERDATE
+  type Q3GRPRecord_Field_O_ORDERDATE = Q3GRPRecordIRs.Q3GRPRecord_Field_O_ORDERDATE
+  val Q3GRPRecord_Field_L_ORDERKEY = Q3GRPRecordIRs.Q3GRPRecord_Field_L_ORDERKEY
+  type Q3GRPRecord_Field_L_ORDERKEY = Q3GRPRecordIRs.Q3GRPRecord_Field_L_ORDERKEY
+  // method definitions
+  def q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = Q3GRPRecordNew(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
+  def q3GRPRecordGetField(self: Rep[Q3GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q3GRPRecordGetField(self, key)
+  def q3GRPRecord_Field_O_SHIPPRIORITY(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_O_SHIPPRIORITY(self)
+  def q3GRPRecord_Field_O_ORDERDATE(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_O_ORDERDATE(self)
+  def q3GRPRecord_Field_L_ORDERKEY(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_L_ORDERKEY(self)
+  type Q3GRPRecord = ch.epfl.data.legobase.queryengine.Q3GRPRecord
+}
+object Q3GRPRecordIRs extends Base {
+  // Type representation
+  case object Q3GRPRecordType extends TypeRep[Q3GRPRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q3GRPRecordType
+    val name = "Q3GRPRecord"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q3GRPRecord]
+  }
+  implicit val typeQ3GRPRecord = Q3GRPRecordType
   // case classes
   case class Q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]) extends ConstructorDef[Q3GRPRecord](List(), "Q3GRPRecord", List(List(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY))) {
     override def curriedConstructor = (copy _).curried
@@ -325,12 +395,6 @@ trait Q3GRPRecordOps extends Base {
 
   }
 
-  // method definitions
-  def q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = Q3GRPRecordNew(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
-  def q3GRPRecordGetField(self: Rep[Q3GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q3GRPRecordGetField(self, key)
-  def q3GRPRecord_Field_O_SHIPPRIORITY(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_O_SHIPPRIORITY(self)
-  def q3GRPRecord_Field_O_ORDERDATE(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_O_ORDERDATE(self)
-  def q3GRPRecord_Field_L_ORDERKEY(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_L_ORDERKEY(self)
   type Q3GRPRecord = ch.epfl.data.legobase.queryengine.Q3GRPRecord
 }
 trait Q3GRPRecordImplicits extends Q3GRPRecordOps {
@@ -361,13 +425,7 @@ trait Q3GRPRecordPartialEvaluation extends Q3GRPRecordComponent with BasePartial
 trait Q3GRPRecordComponent extends Q3GRPRecordOps with Q3GRPRecordImplicits {}
 trait Q7GRPRecordOps extends Base with OptimalStringOps {
   // Type representation
-  case object Q7GRPRecordType extends TypeRep[Q7GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q7GRPRecordType
-    val name = "Q7GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q7GRPRecord]
-  }
+  val Q7GRPRecordType = Q7GRPRecordIRs.Q7GRPRecordType
   implicit val typeQ7GRPRecord = Q7GRPRecordType
   implicit class Q7GRPRecordRep(self: Rep[Q7GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q7GRPRecordGetField(self, key)
@@ -380,6 +438,36 @@ trait Q7GRPRecordOps extends Base with OptimalStringOps {
   }
   // constructors
   def __newQ7GRPRecord(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]): Rep[Q7GRPRecord] = q7GRPRecordNew(SUPP_NATION, CUST_NATION, L_YEAR)
+  // IR defs
+  val Q7GRPRecordNew = Q7GRPRecordIRs.Q7GRPRecordNew
+  type Q7GRPRecordNew = Q7GRPRecordIRs.Q7GRPRecordNew
+  val Q7GRPRecordGetField = Q7GRPRecordIRs.Q7GRPRecordGetField
+  type Q7GRPRecordGetField = Q7GRPRecordIRs.Q7GRPRecordGetField
+  val Q7GRPRecord_Field_L_YEAR = Q7GRPRecordIRs.Q7GRPRecord_Field_L_YEAR
+  type Q7GRPRecord_Field_L_YEAR = Q7GRPRecordIRs.Q7GRPRecord_Field_L_YEAR
+  val Q7GRPRecord_Field_CUST_NATION = Q7GRPRecordIRs.Q7GRPRecord_Field_CUST_NATION
+  type Q7GRPRecord_Field_CUST_NATION = Q7GRPRecordIRs.Q7GRPRecord_Field_CUST_NATION
+  val Q7GRPRecord_Field_SUPP_NATION = Q7GRPRecordIRs.Q7GRPRecord_Field_SUPP_NATION
+  type Q7GRPRecord_Field_SUPP_NATION = Q7GRPRecordIRs.Q7GRPRecord_Field_SUPP_NATION
+  // method definitions
+  def q7GRPRecordNew(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]): Rep[Q7GRPRecord] = Q7GRPRecordNew(SUPP_NATION, CUST_NATION, L_YEAR)
+  def q7GRPRecordGetField(self: Rep[Q7GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q7GRPRecordGetField(self, key)
+  def q7GRPRecord_Field_L_YEAR(self: Rep[Q7GRPRecord]): Rep[Int] = Q7GRPRecord_Field_L_YEAR(self)
+  def q7GRPRecord_Field_CUST_NATION(self: Rep[Q7GRPRecord]): Rep[OptimalString] = Q7GRPRecord_Field_CUST_NATION(self)
+  def q7GRPRecord_Field_SUPP_NATION(self: Rep[Q7GRPRecord]): Rep[OptimalString] = Q7GRPRecord_Field_SUPP_NATION(self)
+  type Q7GRPRecord = ch.epfl.data.legobase.queryengine.Q7GRPRecord
+}
+object Q7GRPRecordIRs extends Base {
+  import OptimalStringIRs._
+  // Type representation
+  case object Q7GRPRecordType extends TypeRep[Q7GRPRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q7GRPRecordType
+    val name = "Q7GRPRecord"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q7GRPRecord]
+  }
+  implicit val typeQ7GRPRecord = Q7GRPRecordType
   // case classes
   case class Q7GRPRecordNew(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]) extends ConstructorDef[Q7GRPRecord](List(), "Q7GRPRecord", List(List(SUPP_NATION, CUST_NATION, L_YEAR))) {
     override def curriedConstructor = (copy _).curried
@@ -425,12 +513,6 @@ trait Q7GRPRecordOps extends Base with OptimalStringOps {
 
   }
 
-  // method definitions
-  def q7GRPRecordNew(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]): Rep[Q7GRPRecord] = Q7GRPRecordNew(SUPP_NATION, CUST_NATION, L_YEAR)
-  def q7GRPRecordGetField(self: Rep[Q7GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q7GRPRecordGetField(self, key)
-  def q7GRPRecord_Field_L_YEAR(self: Rep[Q7GRPRecord]): Rep[Int] = Q7GRPRecord_Field_L_YEAR(self)
-  def q7GRPRecord_Field_CUST_NATION(self: Rep[Q7GRPRecord]): Rep[OptimalString] = Q7GRPRecord_Field_CUST_NATION(self)
-  def q7GRPRecord_Field_SUPP_NATION(self: Rep[Q7GRPRecord]): Rep[OptimalString] = Q7GRPRecord_Field_SUPP_NATION(self)
   type Q7GRPRecord = ch.epfl.data.legobase.queryengine.Q7GRPRecord
 }
 trait Q7GRPRecordImplicits extends Q7GRPRecordOps {
@@ -461,13 +543,7 @@ trait Q7GRPRecordPartialEvaluation extends Q7GRPRecordComponent with BasePartial
 trait Q7GRPRecordComponent extends Q7GRPRecordOps with Q7GRPRecordImplicits {}
 trait Q9GRPRecordOps extends Base with OptimalStringOps {
   // Type representation
-  case object Q9GRPRecordType extends TypeRep[Q9GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q9GRPRecordType
-    val name = "Q9GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q9GRPRecord]
-  }
+  val Q9GRPRecordType = Q9GRPRecordIRs.Q9GRPRecordType
   implicit val typeQ9GRPRecord = Q9GRPRecordType
   implicit class Q9GRPRecordRep(self: Rep[Q9GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q9GRPRecordGetField(self, key)
@@ -479,6 +555,33 @@ trait Q9GRPRecordOps extends Base with OptimalStringOps {
   }
   // constructors
   def __newQ9GRPRecord(NATION: Rep[OptimalString], O_YEAR: Rep[Int]): Rep[Q9GRPRecord] = q9GRPRecordNew(NATION, O_YEAR)
+  // IR defs
+  val Q9GRPRecordNew = Q9GRPRecordIRs.Q9GRPRecordNew
+  type Q9GRPRecordNew = Q9GRPRecordIRs.Q9GRPRecordNew
+  val Q9GRPRecordGetField = Q9GRPRecordIRs.Q9GRPRecordGetField
+  type Q9GRPRecordGetField = Q9GRPRecordIRs.Q9GRPRecordGetField
+  val Q9GRPRecord_Field_O_YEAR = Q9GRPRecordIRs.Q9GRPRecord_Field_O_YEAR
+  type Q9GRPRecord_Field_O_YEAR = Q9GRPRecordIRs.Q9GRPRecord_Field_O_YEAR
+  val Q9GRPRecord_Field_NATION = Q9GRPRecordIRs.Q9GRPRecord_Field_NATION
+  type Q9GRPRecord_Field_NATION = Q9GRPRecordIRs.Q9GRPRecord_Field_NATION
+  // method definitions
+  def q9GRPRecordNew(NATION: Rep[OptimalString], O_YEAR: Rep[Int]): Rep[Q9GRPRecord] = Q9GRPRecordNew(NATION, O_YEAR)
+  def q9GRPRecordGetField(self: Rep[Q9GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q9GRPRecordGetField(self, key)
+  def q9GRPRecord_Field_O_YEAR(self: Rep[Q9GRPRecord]): Rep[Int] = Q9GRPRecord_Field_O_YEAR(self)
+  def q9GRPRecord_Field_NATION(self: Rep[Q9GRPRecord]): Rep[OptimalString] = Q9GRPRecord_Field_NATION(self)
+  type Q9GRPRecord = ch.epfl.data.legobase.queryengine.Q9GRPRecord
+}
+object Q9GRPRecordIRs extends Base {
+  import OptimalStringIRs._
+  // Type representation
+  case object Q9GRPRecordType extends TypeRep[Q9GRPRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q9GRPRecordType
+    val name = "Q9GRPRecord"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q9GRPRecord]
+  }
+  implicit val typeQ9GRPRecord = Q9GRPRecordType
   // case classes
   case class Q9GRPRecordNew(NATION: Rep[OptimalString], O_YEAR: Rep[Int]) extends ConstructorDef[Q9GRPRecord](List(), "Q9GRPRecord", List(List(NATION, O_YEAR))) {
     override def curriedConstructor = (copy _).curried
@@ -512,11 +615,6 @@ trait Q9GRPRecordOps extends Base with OptimalStringOps {
 
   }
 
-  // method definitions
-  def q9GRPRecordNew(NATION: Rep[OptimalString], O_YEAR: Rep[Int]): Rep[Q9GRPRecord] = Q9GRPRecordNew(NATION, O_YEAR)
-  def q9GRPRecordGetField(self: Rep[Q9GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q9GRPRecordGetField(self, key)
-  def q9GRPRecord_Field_O_YEAR(self: Rep[Q9GRPRecord]): Rep[Int] = Q9GRPRecord_Field_O_YEAR(self)
-  def q9GRPRecord_Field_NATION(self: Rep[Q9GRPRecord]): Rep[OptimalString] = Q9GRPRecord_Field_NATION(self)
   type Q9GRPRecord = ch.epfl.data.legobase.queryengine.Q9GRPRecord
 }
 trait Q9GRPRecordImplicits extends Q9GRPRecordOps {
@@ -543,13 +641,7 @@ trait Q9GRPRecordPartialEvaluation extends Q9GRPRecordComponent with BasePartial
 trait Q9GRPRecordComponent extends Q9GRPRecordOps with Q9GRPRecordImplicits {}
 trait Q10GRPRecordOps extends Base with OptimalStringOps {
   // Type representation
-  case object Q10GRPRecordType extends TypeRep[Q10GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q10GRPRecordType
-    val name = "Q10GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q10GRPRecord]
-  }
+  val Q10GRPRecordType = Q10GRPRecordIRs.Q10GRPRecordType
   implicit val typeQ10GRPRecord = Q10GRPRecordType
   implicit class Q10GRPRecordRep(self: Rep[Q10GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q10GRPRecordGetField(self, key)
@@ -566,6 +658,48 @@ trait Q10GRPRecordOps extends Base with OptimalStringOps {
   }
   // constructors
   def __newQ10GRPRecord(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[Q10GRPRecord] = q10GRPRecordNew(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT)
+  // IR defs
+  val Q10GRPRecordNew = Q10GRPRecordIRs.Q10GRPRecordNew
+  type Q10GRPRecordNew = Q10GRPRecordIRs.Q10GRPRecordNew
+  val Q10GRPRecordGetField = Q10GRPRecordIRs.Q10GRPRecordGetField
+  type Q10GRPRecordGetField = Q10GRPRecordIRs.Q10GRPRecordGetField
+  val Q10GRPRecord_Field_C_COMMENT = Q10GRPRecordIRs.Q10GRPRecord_Field_C_COMMENT
+  type Q10GRPRecord_Field_C_COMMENT = Q10GRPRecordIRs.Q10GRPRecord_Field_C_COMMENT
+  val Q10GRPRecord_Field_C_ADDRESS = Q10GRPRecordIRs.Q10GRPRecord_Field_C_ADDRESS
+  type Q10GRPRecord_Field_C_ADDRESS = Q10GRPRecordIRs.Q10GRPRecord_Field_C_ADDRESS
+  val Q10GRPRecord_Field_N_NAME = Q10GRPRecordIRs.Q10GRPRecord_Field_N_NAME
+  type Q10GRPRecord_Field_N_NAME = Q10GRPRecordIRs.Q10GRPRecord_Field_N_NAME
+  val Q10GRPRecord_Field_C_PHONE = Q10GRPRecordIRs.Q10GRPRecord_Field_C_PHONE
+  type Q10GRPRecord_Field_C_PHONE = Q10GRPRecordIRs.Q10GRPRecord_Field_C_PHONE
+  val Q10GRPRecord_Field_C_ACCTBAL = Q10GRPRecordIRs.Q10GRPRecord_Field_C_ACCTBAL
+  type Q10GRPRecord_Field_C_ACCTBAL = Q10GRPRecordIRs.Q10GRPRecord_Field_C_ACCTBAL
+  val Q10GRPRecord_Field_C_NAME = Q10GRPRecordIRs.Q10GRPRecord_Field_C_NAME
+  type Q10GRPRecord_Field_C_NAME = Q10GRPRecordIRs.Q10GRPRecord_Field_C_NAME
+  val Q10GRPRecord_Field_C_CUSTKEY = Q10GRPRecordIRs.Q10GRPRecord_Field_C_CUSTKEY
+  type Q10GRPRecord_Field_C_CUSTKEY = Q10GRPRecordIRs.Q10GRPRecord_Field_C_CUSTKEY
+  // method definitions
+  def q10GRPRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[Q10GRPRecord] = Q10GRPRecordNew(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT)
+  def q10GRPRecordGetField(self: Rep[Q10GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q10GRPRecordGetField(self, key)
+  def q10GRPRecord_Field_C_COMMENT(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_COMMENT(self)
+  def q10GRPRecord_Field_C_ADDRESS(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_ADDRESS(self)
+  def q10GRPRecord_Field_N_NAME(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_N_NAME(self)
+  def q10GRPRecord_Field_C_PHONE(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_PHONE(self)
+  def q10GRPRecord_Field_C_ACCTBAL(self: Rep[Q10GRPRecord]): Rep[Double] = Q10GRPRecord_Field_C_ACCTBAL(self)
+  def q10GRPRecord_Field_C_NAME(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_NAME(self)
+  def q10GRPRecord_Field_C_CUSTKEY(self: Rep[Q10GRPRecord]): Rep[Int] = Q10GRPRecord_Field_C_CUSTKEY(self)
+  type Q10GRPRecord = ch.epfl.data.legobase.queryengine.Q10GRPRecord
+}
+object Q10GRPRecordIRs extends Base {
+  import OptimalStringIRs._
+  // Type representation
+  case object Q10GRPRecordType extends TypeRep[Q10GRPRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q10GRPRecordType
+    val name = "Q10GRPRecord"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q10GRPRecord]
+  }
+  implicit val typeQ10GRPRecord = Q10GRPRecordType
   // case classes
   case class Q10GRPRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends ConstructorDef[Q10GRPRecord](List(), "Q10GRPRecord", List(List(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT))) {
     override def curriedConstructor = (copy _).curried
@@ -659,16 +793,6 @@ trait Q10GRPRecordOps extends Base with OptimalStringOps {
 
   }
 
-  // method definitions
-  def q10GRPRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[Q10GRPRecord] = Q10GRPRecordNew(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT)
-  def q10GRPRecordGetField(self: Rep[Q10GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q10GRPRecordGetField(self, key)
-  def q10GRPRecord_Field_C_COMMENT(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_COMMENT(self)
-  def q10GRPRecord_Field_C_ADDRESS(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_ADDRESS(self)
-  def q10GRPRecord_Field_N_NAME(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_N_NAME(self)
-  def q10GRPRecord_Field_C_PHONE(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_PHONE(self)
-  def q10GRPRecord_Field_C_ACCTBAL(self: Rep[Q10GRPRecord]): Rep[Double] = Q10GRPRecord_Field_C_ACCTBAL(self)
-  def q10GRPRecord_Field_C_NAME(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_NAME(self)
-  def q10GRPRecord_Field_C_CUSTKEY(self: Rep[Q10GRPRecord]): Rep[Int] = Q10GRPRecord_Field_C_CUSTKEY(self)
   type Q10GRPRecord = ch.epfl.data.legobase.queryengine.Q10GRPRecord
 }
 trait Q10GRPRecordImplicits extends Q10GRPRecordOps {
@@ -715,13 +839,7 @@ trait Q10GRPRecordPartialEvaluation extends Q10GRPRecordComponent with BaseParti
 trait Q10GRPRecordComponent extends Q10GRPRecordOps with Q10GRPRecordImplicits {}
 trait Q16GRPRecord1Ops extends Base with OptimalStringOps {
   // Type representation
-  case object Q16GRPRecord1Type extends TypeRep[Q16GRPRecord1] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q16GRPRecord1Type
-    val name = "Q16GRPRecord1"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q16GRPRecord1]
-  }
+  val Q16GRPRecord1Type = Q16GRPRecord1IRs.Q16GRPRecord1Type
   implicit val typeQ16GRPRecord1 = Q16GRPRecord1Type
   implicit class Q16GRPRecord1Rep(self: Rep[Q16GRPRecord1]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q16GRPRecord1GetField(self, key)
@@ -735,6 +853,39 @@ trait Q16GRPRecord1Ops extends Base with OptimalStringOps {
   }
   // constructors
   def __newQ16GRPRecord1(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]): Rep[Q16GRPRecord1] = q16GRPRecord1New(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY)
+  // IR defs
+  val Q16GRPRecord1New = Q16GRPRecord1IRs.Q16GRPRecord1New
+  type Q16GRPRecord1New = Q16GRPRecord1IRs.Q16GRPRecord1New
+  val Q16GRPRecord1GetField = Q16GRPRecord1IRs.Q16GRPRecord1GetField
+  type Q16GRPRecord1GetField = Q16GRPRecord1IRs.Q16GRPRecord1GetField
+  val Q16GRPRecord1_Field_PS_SUPPKEY = Q16GRPRecord1IRs.Q16GRPRecord1_Field_PS_SUPPKEY
+  type Q16GRPRecord1_Field_PS_SUPPKEY = Q16GRPRecord1IRs.Q16GRPRecord1_Field_PS_SUPPKEY
+  val Q16GRPRecord1_Field_P_SIZE = Q16GRPRecord1IRs.Q16GRPRecord1_Field_P_SIZE
+  type Q16GRPRecord1_Field_P_SIZE = Q16GRPRecord1IRs.Q16GRPRecord1_Field_P_SIZE
+  val Q16GRPRecord1_Field_P_TYPE = Q16GRPRecord1IRs.Q16GRPRecord1_Field_P_TYPE
+  type Q16GRPRecord1_Field_P_TYPE = Q16GRPRecord1IRs.Q16GRPRecord1_Field_P_TYPE
+  val Q16GRPRecord1_Field_P_BRAND = Q16GRPRecord1IRs.Q16GRPRecord1_Field_P_BRAND
+  type Q16GRPRecord1_Field_P_BRAND = Q16GRPRecord1IRs.Q16GRPRecord1_Field_P_BRAND
+  // method definitions
+  def q16GRPRecord1New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]): Rep[Q16GRPRecord1] = Q16GRPRecord1New(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY)
+  def q16GRPRecord1GetField(self: Rep[Q16GRPRecord1], key: Rep[String]): Rep[Option[Any]] = Q16GRPRecord1GetField(self, key)
+  def q16GRPRecord1_Field_PS_SUPPKEY(self: Rep[Q16GRPRecord1]): Rep[Int] = Q16GRPRecord1_Field_PS_SUPPKEY(self)
+  def q16GRPRecord1_Field_P_SIZE(self: Rep[Q16GRPRecord1]): Rep[Int] = Q16GRPRecord1_Field_P_SIZE(self)
+  def q16GRPRecord1_Field_P_TYPE(self: Rep[Q16GRPRecord1]): Rep[OptimalString] = Q16GRPRecord1_Field_P_TYPE(self)
+  def q16GRPRecord1_Field_P_BRAND(self: Rep[Q16GRPRecord1]): Rep[OptimalString] = Q16GRPRecord1_Field_P_BRAND(self)
+  type Q16GRPRecord1 = ch.epfl.data.legobase.queryengine.Q16GRPRecord1
+}
+object Q16GRPRecord1IRs extends Base {
+  import OptimalStringIRs._
+  // Type representation
+  case object Q16GRPRecord1Type extends TypeRep[Q16GRPRecord1] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q16GRPRecord1Type
+    val name = "Q16GRPRecord1"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q16GRPRecord1]
+  }
+  implicit val typeQ16GRPRecord1 = Q16GRPRecord1Type
   // case classes
   case class Q16GRPRecord1New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]) extends ConstructorDef[Q16GRPRecord1](List(), "Q16GRPRecord1", List(List(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY))) {
     override def curriedConstructor = (copy _).curried
@@ -792,13 +943,6 @@ trait Q16GRPRecord1Ops extends Base with OptimalStringOps {
 
   }
 
-  // method definitions
-  def q16GRPRecord1New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]): Rep[Q16GRPRecord1] = Q16GRPRecord1New(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY)
-  def q16GRPRecord1GetField(self: Rep[Q16GRPRecord1], key: Rep[String]): Rep[Option[Any]] = Q16GRPRecord1GetField(self, key)
-  def q16GRPRecord1_Field_PS_SUPPKEY(self: Rep[Q16GRPRecord1]): Rep[Int] = Q16GRPRecord1_Field_PS_SUPPKEY(self)
-  def q16GRPRecord1_Field_P_SIZE(self: Rep[Q16GRPRecord1]): Rep[Int] = Q16GRPRecord1_Field_P_SIZE(self)
-  def q16GRPRecord1_Field_P_TYPE(self: Rep[Q16GRPRecord1]): Rep[OptimalString] = Q16GRPRecord1_Field_P_TYPE(self)
-  def q16GRPRecord1_Field_P_BRAND(self: Rep[Q16GRPRecord1]): Rep[OptimalString] = Q16GRPRecord1_Field_P_BRAND(self)
   type Q16GRPRecord1 = ch.epfl.data.legobase.queryengine.Q16GRPRecord1
 }
 trait Q16GRPRecord1Implicits extends Q16GRPRecord1Ops {
@@ -833,13 +977,7 @@ trait Q16GRPRecord1PartialEvaluation extends Q16GRPRecord1Component with BasePar
 trait Q16GRPRecord1Component extends Q16GRPRecord1Ops with Q16GRPRecord1Implicits {}
 trait Q16GRPRecord2Ops extends Base with OptimalStringOps {
   // Type representation
-  case object Q16GRPRecord2Type extends TypeRep[Q16GRPRecord2] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q16GRPRecord2Type
-    val name = "Q16GRPRecord2"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q16GRPRecord2]
-  }
+  val Q16GRPRecord2Type = Q16GRPRecord2IRs.Q16GRPRecord2Type
   implicit val typeQ16GRPRecord2 = Q16GRPRecord2Type
   implicit class Q16GRPRecord2Rep(self: Rep[Q16GRPRecord2]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q16GRPRecord2GetField(self, key)
@@ -852,6 +990,36 @@ trait Q16GRPRecord2Ops extends Base with OptimalStringOps {
   }
   // constructors
   def __newQ16GRPRecord2(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]): Rep[Q16GRPRecord2] = q16GRPRecord2New(P_BRAND, P_TYPE, P_SIZE)
+  // IR defs
+  val Q16GRPRecord2New = Q16GRPRecord2IRs.Q16GRPRecord2New
+  type Q16GRPRecord2New = Q16GRPRecord2IRs.Q16GRPRecord2New
+  val Q16GRPRecord2GetField = Q16GRPRecord2IRs.Q16GRPRecord2GetField
+  type Q16GRPRecord2GetField = Q16GRPRecord2IRs.Q16GRPRecord2GetField
+  val Q16GRPRecord2_Field_P_SIZE = Q16GRPRecord2IRs.Q16GRPRecord2_Field_P_SIZE
+  type Q16GRPRecord2_Field_P_SIZE = Q16GRPRecord2IRs.Q16GRPRecord2_Field_P_SIZE
+  val Q16GRPRecord2_Field_P_TYPE = Q16GRPRecord2IRs.Q16GRPRecord2_Field_P_TYPE
+  type Q16GRPRecord2_Field_P_TYPE = Q16GRPRecord2IRs.Q16GRPRecord2_Field_P_TYPE
+  val Q16GRPRecord2_Field_P_BRAND = Q16GRPRecord2IRs.Q16GRPRecord2_Field_P_BRAND
+  type Q16GRPRecord2_Field_P_BRAND = Q16GRPRecord2IRs.Q16GRPRecord2_Field_P_BRAND
+  // method definitions
+  def q16GRPRecord2New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]): Rep[Q16GRPRecord2] = Q16GRPRecord2New(P_BRAND, P_TYPE, P_SIZE)
+  def q16GRPRecord2GetField(self: Rep[Q16GRPRecord2], key: Rep[String]): Rep[Option[Any]] = Q16GRPRecord2GetField(self, key)
+  def q16GRPRecord2_Field_P_SIZE(self: Rep[Q16GRPRecord2]): Rep[Int] = Q16GRPRecord2_Field_P_SIZE(self)
+  def q16GRPRecord2_Field_P_TYPE(self: Rep[Q16GRPRecord2]): Rep[OptimalString] = Q16GRPRecord2_Field_P_TYPE(self)
+  def q16GRPRecord2_Field_P_BRAND(self: Rep[Q16GRPRecord2]): Rep[OptimalString] = Q16GRPRecord2_Field_P_BRAND(self)
+  type Q16GRPRecord2 = ch.epfl.data.legobase.queryengine.Q16GRPRecord2
+}
+object Q16GRPRecord2IRs extends Base {
+  import OptimalStringIRs._
+  // Type representation
+  case object Q16GRPRecord2Type extends TypeRep[Q16GRPRecord2] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q16GRPRecord2Type
+    val name = "Q16GRPRecord2"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q16GRPRecord2]
+  }
+  implicit val typeQ16GRPRecord2 = Q16GRPRecord2Type
   // case classes
   case class Q16GRPRecord2New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]) extends ConstructorDef[Q16GRPRecord2](List(), "Q16GRPRecord2", List(List(P_BRAND, P_TYPE, P_SIZE))) {
     override def curriedConstructor = (copy _).curried
@@ -897,12 +1065,6 @@ trait Q16GRPRecord2Ops extends Base with OptimalStringOps {
 
   }
 
-  // method definitions
-  def q16GRPRecord2New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]): Rep[Q16GRPRecord2] = Q16GRPRecord2New(P_BRAND, P_TYPE, P_SIZE)
-  def q16GRPRecord2GetField(self: Rep[Q16GRPRecord2], key: Rep[String]): Rep[Option[Any]] = Q16GRPRecord2GetField(self, key)
-  def q16GRPRecord2_Field_P_SIZE(self: Rep[Q16GRPRecord2]): Rep[Int] = Q16GRPRecord2_Field_P_SIZE(self)
-  def q16GRPRecord2_Field_P_TYPE(self: Rep[Q16GRPRecord2]): Rep[OptimalString] = Q16GRPRecord2_Field_P_TYPE(self)
-  def q16GRPRecord2_Field_P_BRAND(self: Rep[Q16GRPRecord2]): Rep[OptimalString] = Q16GRPRecord2_Field_P_BRAND(self)
   type Q16GRPRecord2 = ch.epfl.data.legobase.queryengine.Q16GRPRecord2
 }
 trait Q16GRPRecord2Implicits extends Q16GRPRecord2Ops {
@@ -933,13 +1095,7 @@ trait Q16GRPRecord2PartialEvaluation extends Q16GRPRecord2Component with BasePar
 trait Q16GRPRecord2Component extends Q16GRPRecord2Ops with Q16GRPRecord2Implicits {}
 trait Q18GRPRecordOps extends Base with OptimalStringOps {
   // Type representation
-  case object Q18GRPRecordType extends TypeRep[Q18GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q18GRPRecordType
-    val name = "Q18GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q18GRPRecord]
-  }
+  val Q18GRPRecordType = Q18GRPRecordIRs.Q18GRPRecordType
   implicit val typeQ18GRPRecord = Q18GRPRecordType
   implicit class Q18GRPRecordRep(self: Rep[Q18GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q18GRPRecordGetField(self, key)
@@ -954,6 +1110,42 @@ trait Q18GRPRecordOps extends Base with OptimalStringOps {
   }
   // constructors
   def __newQ18GRPRecord(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = q18GRPRecordNew(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
+  // IR defs
+  val Q18GRPRecordNew = Q18GRPRecordIRs.Q18GRPRecordNew
+  type Q18GRPRecordNew = Q18GRPRecordIRs.Q18GRPRecordNew
+  val Q18GRPRecordGetField = Q18GRPRecordIRs.Q18GRPRecordGetField
+  type Q18GRPRecordGetField = Q18GRPRecordIRs.Q18GRPRecordGetField
+  val Q18GRPRecord_Field_O_TOTALPRICE = Q18GRPRecordIRs.Q18GRPRecord_Field_O_TOTALPRICE
+  type Q18GRPRecord_Field_O_TOTALPRICE = Q18GRPRecordIRs.Q18GRPRecord_Field_O_TOTALPRICE
+  val Q18GRPRecord_Field_O_ORDERDATE = Q18GRPRecordIRs.Q18GRPRecord_Field_O_ORDERDATE
+  type Q18GRPRecord_Field_O_ORDERDATE = Q18GRPRecordIRs.Q18GRPRecord_Field_O_ORDERDATE
+  val Q18GRPRecord_Field_O_ORDERKEY = Q18GRPRecordIRs.Q18GRPRecord_Field_O_ORDERKEY
+  type Q18GRPRecord_Field_O_ORDERKEY = Q18GRPRecordIRs.Q18GRPRecord_Field_O_ORDERKEY
+  val Q18GRPRecord_Field_C_CUSTKEY = Q18GRPRecordIRs.Q18GRPRecord_Field_C_CUSTKEY
+  type Q18GRPRecord_Field_C_CUSTKEY = Q18GRPRecordIRs.Q18GRPRecord_Field_C_CUSTKEY
+  val Q18GRPRecord_Field_C_NAME = Q18GRPRecordIRs.Q18GRPRecord_Field_C_NAME
+  type Q18GRPRecord_Field_C_NAME = Q18GRPRecordIRs.Q18GRPRecord_Field_C_NAME
+  // method definitions
+  def q18GRPRecordNew(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = Q18GRPRecordNew(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
+  def q18GRPRecordGetField(self: Rep[Q18GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q18GRPRecordGetField(self, key)
+  def q18GRPRecord_Field_O_TOTALPRICE(self: Rep[Q18GRPRecord]): Rep[Double] = Q18GRPRecord_Field_O_TOTALPRICE(self)
+  def q18GRPRecord_Field_O_ORDERDATE(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_O_ORDERDATE(self)
+  def q18GRPRecord_Field_O_ORDERKEY(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_O_ORDERKEY(self)
+  def q18GRPRecord_Field_C_CUSTKEY(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_C_CUSTKEY(self)
+  def q18GRPRecord_Field_C_NAME(self: Rep[Q18GRPRecord]): Rep[OptimalString] = Q18GRPRecord_Field_C_NAME(self)
+  type Q18GRPRecord = ch.epfl.data.legobase.queryengine.Q18GRPRecord
+}
+object Q18GRPRecordIRs extends Base {
+  import OptimalStringIRs._
+  // Type representation
+  case object Q18GRPRecordType extends TypeRep[Q18GRPRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q18GRPRecordType
+    val name = "Q18GRPRecord"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q18GRPRecord]
+  }
+  implicit val typeQ18GRPRecord = Q18GRPRecordType
   // case classes
   case class Q18GRPRecordNew(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]) extends ConstructorDef[Q18GRPRecord](List(), "Q18GRPRecord", List(List(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE))) {
     override def curriedConstructor = (copy _).curried
@@ -1023,14 +1215,6 @@ trait Q18GRPRecordOps extends Base with OptimalStringOps {
 
   }
 
-  // method definitions
-  def q18GRPRecordNew(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = Q18GRPRecordNew(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
-  def q18GRPRecordGetField(self: Rep[Q18GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q18GRPRecordGetField(self, key)
-  def q18GRPRecord_Field_O_TOTALPRICE(self: Rep[Q18GRPRecord]): Rep[Double] = Q18GRPRecord_Field_O_TOTALPRICE(self)
-  def q18GRPRecord_Field_O_ORDERDATE(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_O_ORDERDATE(self)
-  def q18GRPRecord_Field_O_ORDERKEY(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_O_ORDERKEY(self)
-  def q18GRPRecord_Field_C_CUSTKEY(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_C_CUSTKEY(self)
-  def q18GRPRecord_Field_C_NAME(self: Rep[Q18GRPRecord]): Rep[OptimalString] = Q18GRPRecord_Field_C_NAME(self)
   type Q18GRPRecord = ch.epfl.data.legobase.queryengine.Q18GRPRecord
 }
 trait Q18GRPRecordImplicits extends Q18GRPRecordOps {
@@ -1069,13 +1253,7 @@ trait Q18GRPRecordPartialEvaluation extends Q18GRPRecordComponent with BaseParti
 trait Q18GRPRecordComponent extends Q18GRPRecordOps with Q18GRPRecordImplicits {}
 trait Q20GRPRecordOps extends Base {
   // Type representation
-  case object Q20GRPRecordType extends TypeRep[Q20GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q20GRPRecordType
-    val name = "Q20GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q20GRPRecord]
-  }
+  val Q20GRPRecordType = Q20GRPRecordIRs.Q20GRPRecordType
   implicit val typeQ20GRPRecord = Q20GRPRecordType
   implicit class Q20GRPRecordRep(self: Rep[Q20GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q20GRPRecordGetField(self, key)
@@ -1088,6 +1266,35 @@ trait Q20GRPRecordOps extends Base {
   }
   // constructors
   def __newQ20GRPRecord(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]): Rep[Q20GRPRecord] = q20GRPRecordNew(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY)
+  // IR defs
+  val Q20GRPRecordNew = Q20GRPRecordIRs.Q20GRPRecordNew
+  type Q20GRPRecordNew = Q20GRPRecordIRs.Q20GRPRecordNew
+  val Q20GRPRecordGetField = Q20GRPRecordIRs.Q20GRPRecordGetField
+  type Q20GRPRecordGetField = Q20GRPRecordIRs.Q20GRPRecordGetField
+  val Q20GRPRecord_Field_PS_AVAILQTY = Q20GRPRecordIRs.Q20GRPRecord_Field_PS_AVAILQTY
+  type Q20GRPRecord_Field_PS_AVAILQTY = Q20GRPRecordIRs.Q20GRPRecord_Field_PS_AVAILQTY
+  val Q20GRPRecord_Field_PS_SUPPKEY = Q20GRPRecordIRs.Q20GRPRecord_Field_PS_SUPPKEY
+  type Q20GRPRecord_Field_PS_SUPPKEY = Q20GRPRecordIRs.Q20GRPRecord_Field_PS_SUPPKEY
+  val Q20GRPRecord_Field_PS_PARTKEY = Q20GRPRecordIRs.Q20GRPRecord_Field_PS_PARTKEY
+  type Q20GRPRecord_Field_PS_PARTKEY = Q20GRPRecordIRs.Q20GRPRecord_Field_PS_PARTKEY
+  // method definitions
+  def q20GRPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]): Rep[Q20GRPRecord] = Q20GRPRecordNew(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY)
+  def q20GRPRecordGetField(self: Rep[Q20GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q20GRPRecordGetField(self, key)
+  def q20GRPRecord_Field_PS_AVAILQTY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_AVAILQTY(self)
+  def q20GRPRecord_Field_PS_SUPPKEY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_SUPPKEY(self)
+  def q20GRPRecord_Field_PS_PARTKEY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_PARTKEY(self)
+  type Q20GRPRecord = ch.epfl.data.legobase.queryengine.Q20GRPRecord
+}
+object Q20GRPRecordIRs extends Base {
+  // Type representation
+  case object Q20GRPRecordType extends TypeRep[Q20GRPRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q20GRPRecordType
+    val name = "Q20GRPRecord"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q20GRPRecord]
+  }
+  implicit val typeQ20GRPRecord = Q20GRPRecordType
   // case classes
   case class Q20GRPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]) extends ConstructorDef[Q20GRPRecord](List(), "Q20GRPRecord", List(List(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY))) {
     override def curriedConstructor = (copy _).curried
@@ -1133,12 +1340,6 @@ trait Q20GRPRecordOps extends Base {
 
   }
 
-  // method definitions
-  def q20GRPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]): Rep[Q20GRPRecord] = Q20GRPRecordNew(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY)
-  def q20GRPRecordGetField(self: Rep[Q20GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q20GRPRecordGetField(self, key)
-  def q20GRPRecord_Field_PS_AVAILQTY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_AVAILQTY(self)
-  def q20GRPRecord_Field_PS_SUPPKEY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_SUPPKEY(self)
-  def q20GRPRecord_Field_PS_PARTKEY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_PARTKEY(self)
   type Q20GRPRecord = ch.epfl.data.legobase.queryengine.Q20GRPRecord
 }
 trait Q20GRPRecordImplicits extends Q20GRPRecordOps {

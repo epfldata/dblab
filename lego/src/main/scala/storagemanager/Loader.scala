@@ -3,17 +3,19 @@ package legobase
 package storagemanager
 
 import utils.Utilities._
-import pardis.annotations.{ deep, metadeep, dontLift, dontInline }
+import pardis.annotations.{ deep, metadeep, dontLift, dontInline, needs }
 import queryengine._
 import pardis.shallow.OptimalString
 
 @metadeep(
   folder = "",
-  header = "",
+  header = """import ch.epfl.data.legobase.deep._
+import ch.epfl.data.legobase.deep.queryengine._""",
   component = "",
   thisComponent = "ch.epfl.data.legobase.deep.DeepDSL")
 class MetaInfo
 
+@needs[(K2DBScanner, Array[_], REGIONRecord, PARTSUPPRecord, PARTRecord, NATIONRecord, SUPPLIERRecord, LINEITEMRecord, ORDERSRecord, CUSTOMERRecord, OptimalString)]
 @deep
 trait Loader
 

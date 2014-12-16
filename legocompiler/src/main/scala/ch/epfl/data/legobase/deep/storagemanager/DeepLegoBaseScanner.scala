@@ -12,13 +12,7 @@ import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
 trait K2DBScannerOps extends Base {
   // Type representation
-  case object K2DBScannerType extends TypeRep[K2DBScanner] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = K2DBScannerType
-    val name = "K2DBScanner"
-    val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[K2DBScanner]
-  }
+  val K2DBScannerType = K2DBScannerIRs.K2DBScannerType
   implicit val typeK2DBScanner = K2DBScannerType
   implicit class K2DBScannerRep(self: Rep[K2DBScanner]) {
     def next_int(): Rep[Int] = k2DBScannerNext_int(self)
@@ -35,6 +29,47 @@ trait K2DBScannerOps extends Base {
   }
   // constructors
   def __newK2DBScanner(filename: Rep[String]): Rep[K2DBScanner] = k2DBScannerNew(filename)
+  // IR defs
+  val K2DBScannerNew = K2DBScannerIRs.K2DBScannerNew
+  type K2DBScannerNew = K2DBScannerIRs.K2DBScannerNew
+  val K2DBScannerNext_int = K2DBScannerIRs.K2DBScannerNext_int
+  type K2DBScannerNext_int = K2DBScannerIRs.K2DBScannerNext_int
+  val K2DBScannerNext_double = K2DBScannerIRs.K2DBScannerNext_double
+  type K2DBScannerNext_double = K2DBScannerIRs.K2DBScannerNext_double
+  val K2DBScannerNext_char = K2DBScannerIRs.K2DBScannerNext_char
+  type K2DBScannerNext_char = K2DBScannerIRs.K2DBScannerNext_char
+  val K2DBScannerNext1 = K2DBScannerIRs.K2DBScannerNext1
+  type K2DBScannerNext1 = K2DBScannerIRs.K2DBScannerNext1
+  val K2DBScannerNext2 = K2DBScannerIRs.K2DBScannerNext2
+  type K2DBScannerNext2 = K2DBScannerIRs.K2DBScannerNext2
+  val K2DBScannerNext_date = K2DBScannerIRs.K2DBScannerNext_date
+  type K2DBScannerNext_date = K2DBScannerIRs.K2DBScannerNext_date
+  val K2DBScannerHasNext = K2DBScannerIRs.K2DBScannerHasNext
+  type K2DBScannerHasNext = K2DBScannerIRs.K2DBScannerHasNext
+  val K2DBScanner_Field_Filename = K2DBScannerIRs.K2DBScanner_Field_Filename
+  type K2DBScanner_Field_Filename = K2DBScannerIRs.K2DBScanner_Field_Filename
+  // method definitions
+  def k2DBScannerNew(filename: Rep[String]): Rep[K2DBScanner] = K2DBScannerNew(filename)
+  def k2DBScannerNext_int(self: Rep[K2DBScanner]): Rep[Int] = K2DBScannerNext_int(self)
+  def k2DBScannerNext_double(self: Rep[K2DBScanner]): Rep[Double] = K2DBScannerNext_double(self)
+  def k2DBScannerNext_char(self: Rep[K2DBScanner]): Rep[Char] = K2DBScannerNext_char(self)
+  def k2DBScannerNext1(self: Rep[K2DBScanner], buf: Rep[Array[Byte]]): Rep[Int] = K2DBScannerNext1(self, buf)
+  def k2DBScannerNext2(self: Rep[K2DBScanner], buf: Rep[Array[Byte]], offset: Rep[Int]): Rep[Int] = K2DBScannerNext2(self, buf, offset)
+  def k2DBScannerNext_date(self: Rep[K2DBScanner]): Rep[Int] = K2DBScannerNext_date(self)
+  def k2DBScannerHasNext(self: Rep[K2DBScanner]): Rep[Boolean] = K2DBScannerHasNext(self)
+  def k2DBScanner_Field_Filename(self: Rep[K2DBScanner]): Rep[String] = K2DBScanner_Field_Filename(self)
+  type K2DBScanner = ch.epfl.data.legobase.storagemanager.K2DBScanner
+}
+object K2DBScannerIRs extends Base {
+  // Type representation
+  case object K2DBScannerType extends TypeRep[K2DBScanner] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = K2DBScannerType
+    val name = "K2DBScanner"
+    val typeArguments = Nil
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[K2DBScanner]
+  }
+  implicit val typeK2DBScanner = K2DBScannerType
   // case classes
   case class K2DBScannerNew(filename: Rep[String]) extends ConstructorDef[K2DBScanner](List(), "K2DBScanner", List(List(filename))) {
     override def curriedConstructor = (copy _)
@@ -74,16 +109,6 @@ trait K2DBScannerOps extends Base {
 
   }
 
-  // method definitions
-  def k2DBScannerNew(filename: Rep[String]): Rep[K2DBScanner] = K2DBScannerNew(filename)
-  def k2DBScannerNext_int(self: Rep[K2DBScanner]): Rep[Int] = K2DBScannerNext_int(self)
-  def k2DBScannerNext_double(self: Rep[K2DBScanner]): Rep[Double] = K2DBScannerNext_double(self)
-  def k2DBScannerNext_char(self: Rep[K2DBScanner]): Rep[Char] = K2DBScannerNext_char(self)
-  def k2DBScannerNext1(self: Rep[K2DBScanner], buf: Rep[Array[Byte]]): Rep[Int] = K2DBScannerNext1(self, buf)
-  def k2DBScannerNext2(self: Rep[K2DBScanner], buf: Rep[Array[Byte]], offset: Rep[Int]): Rep[Int] = K2DBScannerNext2(self, buf, offset)
-  def k2DBScannerNext_date(self: Rep[K2DBScanner]): Rep[Int] = K2DBScannerNext_date(self)
-  def k2DBScannerHasNext(self: Rep[K2DBScanner]): Rep[Boolean] = K2DBScannerHasNext(self)
-  def k2DBScanner_Field_Filename(self: Rep[K2DBScanner]): Rep[String] = K2DBScanner_Field_Filename(self)
   type K2DBScanner = ch.epfl.data.legobase.storagemanager.K2DBScanner
 }
 trait K2DBScannerImplicits extends K2DBScannerOps {

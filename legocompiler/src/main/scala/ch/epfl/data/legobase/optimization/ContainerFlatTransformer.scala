@@ -53,7 +53,7 @@ class ContainerFlatTransformer(override val IR: pardis.deep.scalalib.ArrayCompon
   }
 
   analysis += rule {
-    case Cont_Field_Next_$eq(self, x) if shouldBeLowered(self) =>
+    case Cont_Field_Next__eq(self, x) if shouldBeLowered(self) =>
       addSymRecordType(self)
   }
 
@@ -74,7 +74,7 @@ class ContainerFlatTransformer(override val IR: pardis.deep.scalalib.ArrayCompon
   }
 
   rewrite += rule {
-    case Cont_Field_Next_$eq(self, x) if shouldBeLowered(self) =>
+    case Cont_Field_Next__eq(self, x) if shouldBeLowered(self) =>
       fieldSetter(self, "next", x)
   }
 

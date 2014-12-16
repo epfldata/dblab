@@ -9,13 +9,13 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.Set
 import scala.collection.mutable.TreeSet
 import GenericEngine._
-import pardis.annotations.{ deep, metadeep, dontInline }
+import pardis.annotations.{ deep, metadeep, dontInline, needs }
 import pardis.shallow.{ Record, DynamicCompositeRecord }
 import scala.reflect.ClassTag
 
 @metadeep(
   folder = "",
-  header = "",
+  header = "import ch.epfl.data.legobase.deep.queryengine._",
   component = "OperatorsComponent",
   thisComponent = "ch.epfl.data.legobase.deep.DeepDSL")
 class MetaInfo
@@ -104,6 +104,7 @@ object MultiMap {
   }
 }
 
+@needs[(HashMap[Any, Any], AGGRecord[_])]
 @deep class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B])(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
   val hm = HashMap[B, AGGRecord[B]]() //Array[Double]]()
   // val hm = new pardis.shallow.scalalib.collection.HashMapOptimal[B, AGGRecord[B]]() {
@@ -157,6 +158,7 @@ object MultiMap {
   }
 }
 
+@needs[TreeSet[Any]]
 @deep class SortOp[A](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends Operator[A] {
   val expectedSize = parent.expectedSize
   val sortedTree = new TreeSet()(
@@ -176,6 +178,7 @@ object MultiMap {
   def consume(tuple: Record) { sortedTree += tuple.asInstanceOf[A] }
 }
 
+@needs[scala.collection.mutable.MultiMap[Any, Any]]
 @deep
 class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String, rightAlias: String)(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   def this(leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) = this(leftParent, rightParent, "", "")(joinCond)(leftHash)(rightHash)
@@ -217,6 +220,7 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
   }
 }
 // @deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: MultiMap.Set[A] => C) extends Operator[WindowRecord[B, C]] {
+@needs[(scala.collection.mutable.MultiMap[Any, Any], Set[_])]
 @deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: Set[A] => C) extends Operator[WindowRecord[B, C]] {
   val hm = MultiMap[B, A]
 
@@ -242,6 +246,7 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
   }
 }
 
+@needs[scala.collection.mutable.MultiMap[Any, Any]]
 @deep
 class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   @inline var mode: scala.Int = 0
@@ -326,6 +331,7 @@ class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   }
 }
 
+@needs[scala.collection.mutable.MultiMap[Any, Any]]
 @deep // class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
 class HashJoinAnti[A: Manifest, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   @inline var mode: scala.Int = 0
@@ -366,6 +372,7 @@ class HashJoinAnti[A: Manifest, B, C](leftParent: Operator[A], rightParent: Oper
   }
 }
 
+@needs[Array[Any]]
 @deep
 class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
   var size = 0
@@ -396,6 +403,7 @@ class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
   }
 }
 
+@needs[scala.collection.mutable.MultiMap[Any, Any]]
 @deep
 class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   @inline var mode: scala.Int = 0

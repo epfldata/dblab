@@ -10,15 +10,11 @@ import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
 
-trait LoaderOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
+import ch.epfl.data.legobase.deep._
+import ch.epfl.data.legobase.deep.queryengine._
+trait LoaderOps extends Base with K2DBScannerOps with ArrayOps with REGIONRecordOps with PARTSUPPRecordOps with PARTRecordOps with NATIONRecordOps with SUPPLIERRecordOps with LINEITEMRecordOps with ORDERSRecordOps with CUSTOMERRecordOps with OptimalStringOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case object LoaderType extends TypeRep[Loader] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LoaderType
-    val name = "Loader"
-    val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[Loader]
-  }
+  val LoaderType = LoaderIRs.LoaderType
   implicit val typeLoader = LoaderType
   implicit class LoaderRep(self: Rep[Loader]) {
 
@@ -38,6 +34,64 @@ trait LoaderOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   }
   // constructors
 
+  // IR defs
+  val LoaderGetFullPathObject = LoaderIRs.LoaderGetFullPathObject
+  type LoaderGetFullPathObject = LoaderIRs.LoaderGetFullPathObject
+  val LoaderLoadStringObject = LoaderIRs.LoaderLoadStringObject
+  type LoaderLoadStringObject = LoaderIRs.LoaderLoadStringObject
+  val LoaderFileLineCountObject = LoaderIRs.LoaderFileLineCountObject
+  type LoaderFileLineCountObject = LoaderIRs.LoaderFileLineCountObject
+  val LoaderLoadRegionObject = LoaderIRs.LoaderLoadRegionObject
+  type LoaderLoadRegionObject = LoaderIRs.LoaderLoadRegionObject
+  val LoaderLoadPartsuppObject = LoaderIRs.LoaderLoadPartsuppObject
+  type LoaderLoadPartsuppObject = LoaderIRs.LoaderLoadPartsuppObject
+  val LoaderLoadPartObject = LoaderIRs.LoaderLoadPartObject
+  type LoaderLoadPartObject = LoaderIRs.LoaderLoadPartObject
+  val LoaderLoadNationObject = LoaderIRs.LoaderLoadNationObject
+  type LoaderLoadNationObject = LoaderIRs.LoaderLoadNationObject
+  val LoaderLoadSupplierObject = LoaderIRs.LoaderLoadSupplierObject
+  type LoaderLoadSupplierObject = LoaderIRs.LoaderLoadSupplierObject
+  val LoaderLoadLineitemObject = LoaderIRs.LoaderLoadLineitemObject
+  type LoaderLoadLineitemObject = LoaderIRs.LoaderLoadLineitemObject
+  val LoaderLoadOrdersObject = LoaderIRs.LoaderLoadOrdersObject
+  type LoaderLoadOrdersObject = LoaderIRs.LoaderLoadOrdersObject
+  val LoaderLoadCustomerObject = LoaderIRs.LoaderLoadCustomerObject
+  type LoaderLoadCustomerObject = LoaderIRs.LoaderLoadCustomerObject
+  // method definitions
+  def loaderGetFullPathObject(fileName: Rep[String]): Rep[String] = LoaderGetFullPathObject(fileName)
+  def loaderLoadStringObject(size: Rep[Int], s: Rep[K2DBScanner]): Rep[OptimalString] = LoaderLoadStringObject(size, s)
+  def loaderFileLineCountObject(file: Rep[String]): Rep[Int] = LoaderFileLineCountObject(file)
+  def loaderLoadRegionObject(): Rep[Array[REGIONRecord]] = LoaderLoadRegionObject()
+  def loaderLoadPartsuppObject(): Rep[Array[PARTSUPPRecord]] = LoaderLoadPartsuppObject()
+  def loaderLoadPartObject(): Rep[Array[PARTRecord]] = LoaderLoadPartObject()
+  def loaderLoadNationObject(): Rep[Array[NATIONRecord]] = LoaderLoadNationObject()
+  def loaderLoadSupplierObject(): Rep[Array[SUPPLIERRecord]] = LoaderLoadSupplierObject()
+  def loaderLoadLineitemObject(): Rep[Array[LINEITEMRecord]] = LoaderLoadLineitemObject()
+  def loaderLoadOrdersObject(): Rep[Array[ORDERSRecord]] = LoaderLoadOrdersObject()
+  def loaderLoadCustomerObject(): Rep[Array[CUSTOMERRecord]] = LoaderLoadCustomerObject()
+  type Loader = ch.epfl.data.legobase.storagemanager.Loader
+}
+object LoaderIRs extends Base {
+  import K2DBScannerIRs._
+  import ArrayIRs._
+  import REGIONRecordIRs._
+  import PARTSUPPRecordIRs._
+  import PARTRecordIRs._
+  import NATIONRecordIRs._
+  import SUPPLIERRecordIRs._
+  import LINEITEMRecordIRs._
+  import ORDERSRecordIRs._
+  import CUSTOMERRecordIRs._
+  import OptimalStringIRs._
+  // Type representation
+  case object LoaderType extends TypeRep[Loader] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LoaderType
+    val name = "Loader"
+    val typeArguments = Nil
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[Loader]
+  }
+  implicit val typeLoader = LoaderType
   // case classes
   case class LoaderGetFullPathObject(fileName: Rep[String]) extends FunctionDef[String](None, "Loader.getFullPath", List(List(fileName))) {
     override def curriedConstructor = (copy _)
@@ -83,18 +137,6 @@ trait LoaderOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (x: Any) => copy()
   }
 
-  // method definitions
-  def loaderGetFullPathObject(fileName: Rep[String]): Rep[String] = LoaderGetFullPathObject(fileName)
-  def loaderLoadStringObject(size: Rep[Int], s: Rep[K2DBScanner]): Rep[OptimalString] = LoaderLoadStringObject(size, s)
-  def loaderFileLineCountObject(file: Rep[String]): Rep[Int] = LoaderFileLineCountObject(file)
-  def loaderLoadRegionObject(): Rep[Array[REGIONRecord]] = LoaderLoadRegionObject()
-  def loaderLoadPartsuppObject(): Rep[Array[PARTSUPPRecord]] = LoaderLoadPartsuppObject()
-  def loaderLoadPartObject(): Rep[Array[PARTRecord]] = LoaderLoadPartObject()
-  def loaderLoadNationObject(): Rep[Array[NATIONRecord]] = LoaderLoadNationObject()
-  def loaderLoadSupplierObject(): Rep[Array[SUPPLIERRecord]] = LoaderLoadSupplierObject()
-  def loaderLoadLineitemObject(): Rep[Array[LINEITEMRecord]] = LoaderLoadLineitemObject()
-  def loaderLoadOrdersObject(): Rep[Array[ORDERSRecord]] = LoaderLoadOrdersObject()
-  def loaderLoadCustomerObject(): Rep[Array[CUSTOMERRecord]] = LoaderLoadCustomerObject()
   type Loader = ch.epfl.data.legobase.storagemanager.Loader
 }
 trait LoaderImplicits extends LoaderOps { this: ch.epfl.data.legobase.deep.DeepDSL =>

@@ -10,16 +10,11 @@ import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
 
+import ch.epfl.data.legobase.deep.queryengine._
 trait OperatorOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case class OperatorType[A](typeA: TypeRep[A]) extends TypeRep[Operator[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = OperatorType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"Operator[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[Operator[A]]
-  }
+  val OperatorType = OperatorIRs.OperatorType
+  type OperatorType[A] = OperatorIRs.OperatorType[A]
   implicit def typeOperator[A: TypeRep] = OperatorType(implicitly[TypeRep[A]])
   implicit class OperatorRep[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = operatorOpen[A](self)(typeA)
@@ -37,6 +32,48 @@ trait OperatorOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   }
   // constructors
 
+  // IR defs
+  val OperatorOpen = OperatorIRs.OperatorOpen
+  type OperatorOpen[A] = OperatorIRs.OperatorOpen[A]
+  val OperatorNext = OperatorIRs.OperatorNext
+  type OperatorNext[A] = OperatorIRs.OperatorNext[A]
+  val OperatorReset = OperatorIRs.OperatorReset
+  type OperatorReset[A] = OperatorIRs.OperatorReset[A]
+  val OperatorConsume = OperatorIRs.OperatorConsume
+  type OperatorConsume[A] = OperatorIRs.OperatorConsume[A]
+  val Operator_Field_Stop__eq = OperatorIRs.Operator_Field_Stop__eq
+  type Operator_Field_Stop__eq[A] = OperatorIRs.Operator_Field_Stop__eq[A]
+  val Operator_Field_Stop = OperatorIRs.Operator_Field_Stop
+  type Operator_Field_Stop[A] = OperatorIRs.Operator_Field_Stop[A]
+  val Operator_Field_Child__eq = OperatorIRs.Operator_Field_Child__eq
+  type Operator_Field_Child__eq[A] = OperatorIRs.Operator_Field_Child__eq[A]
+  val Operator_Field_Child = OperatorIRs.Operator_Field_Child
+  type Operator_Field_Child[A] = OperatorIRs.Operator_Field_Child[A]
+  val Operator_Field_ExpectedSize = OperatorIRs.Operator_Field_ExpectedSize
+  type Operator_Field_ExpectedSize[A] = OperatorIRs.Operator_Field_ExpectedSize[A]
+  // method definitions
+  def operatorOpen[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = OperatorOpen[A](self)
+  def operatorNext[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = OperatorNext[A](self)
+  def operatorReset[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = OperatorReset[A](self)
+  def operatorConsume[A](self: Rep[Operator[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = OperatorConsume[A](self, tuple)
+  def operator_Field_Stop_$eq[A](self: Rep[Operator[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = Operator_Field_Stop__eq[A](self, x$1)
+  def operator_Field_Stop[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = Operator_Field_Stop[A](self)
+  def operator_Field_Child_$eq[A](self: Rep[Operator[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = Operator_Field_Child__eq[A](self, x$1)
+  def operator_Field_Child[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = Operator_Field_Child[A](self)
+  def operator_Field_ExpectedSize[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Int] = Operator_Field_ExpectedSize[A](self)
+  type Operator[A] = ch.epfl.data.legobase.queryengine.push.Operator[A]
+}
+object OperatorIRs extends Base {
+  // Type representation
+  case class OperatorType[A](typeA: TypeRep[A]) extends TypeRep[Operator[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = OperatorType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"Operator[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[Operator[A]]
+  }
+  implicit def typeOperator[A: TypeRep] = OperatorType(implicitly[TypeRep[A]])
   // case classes
   case class OperatorOpen[A](self: Rep[Operator[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
     override def curriedConstructor = (copy[A] _)
@@ -54,7 +91,7 @@ trait OperatorOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A] _).curried
   }
 
-  case class Operator_Field_Stop_$eq[A](self: Rep[Operator[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
+  case class Operator_Field_Stop__eq[A](self: Rep[Operator[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -62,7 +99,7 @@ trait OperatorOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class Operator_Field_Child_$eq[A](self: Rep[Operator[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
+  case class Operator_Field_Child__eq[A](self: Rep[Operator[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -82,16 +119,6 @@ trait OperatorOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  // method definitions
-  def operatorOpen[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = OperatorOpen[A](self)
-  def operatorNext[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = OperatorNext[A](self)
-  def operatorReset[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = OperatorReset[A](self)
-  def operatorConsume[A](self: Rep[Operator[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = OperatorConsume[A](self, tuple)
-  def operator_Field_Stop_$eq[A](self: Rep[Operator[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = Operator_Field_Stop_$eq[A](self, x$1)
-  def operator_Field_Stop[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = Operator_Field_Stop[A](self)
-  def operator_Field_Child_$eq[A](self: Rep[Operator[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = Operator_Field_Child_$eq[A](self, x$1)
-  def operator_Field_Child[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = Operator_Field_Child[A](self)
-  def operator_Field_ExpectedSize[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Int] = Operator_Field_ExpectedSize[A](self)
   type Operator[A] = ch.epfl.data.legobase.queryengine.push.Operator[A]
 }
 trait OperatorImplicits extends OperatorOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
@@ -115,16 +142,10 @@ trait OperatorPartialEvaluation extends OperatorComponent with BasePartialEvalua
   // Pure function partial evaluation
 }
 trait OperatorComponent extends OperatorOps with OperatorImplicits { this: ch.epfl.data.legobase.deep.DeepDSL => }
-trait ScanOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
+trait ScanOpOps extends Base with OperatorOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case class ScanOpType[A](typeA: TypeRep[A]) extends TypeRep[ScanOp[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ScanOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"ScanOp[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[ScanOp[A]]
-  }
+  val ScanOpType = ScanOpIRs.ScanOpType
+  type ScanOpType[A] = ScanOpIRs.ScanOpType[A]
   implicit def typeScanOp[A: TypeRep] = ScanOpType(implicitly[TypeRep[A]])
   implicit class ScanOpRep[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = scanOpOpen[A](self)(typeA)
@@ -145,6 +166,61 @@ trait ScanOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   }
   // constructors
   def __newScanOp[A](table: Rep[Array[A]])(implicit typeA: TypeRep[A]): Rep[ScanOp[A]] = scanOpNew[A](table)(typeA)
+  // IR defs
+  val ScanOpNew = ScanOpIRs.ScanOpNew
+  type ScanOpNew[A] = ScanOpIRs.ScanOpNew[A]
+  val ScanOpOpen = ScanOpIRs.ScanOpOpen
+  type ScanOpOpen[A] = ScanOpIRs.ScanOpOpen[A]
+  val ScanOpNext = ScanOpIRs.ScanOpNext
+  type ScanOpNext[A] = ScanOpIRs.ScanOpNext[A]
+  val ScanOpReset = ScanOpIRs.ScanOpReset
+  type ScanOpReset[A] = ScanOpIRs.ScanOpReset[A]
+  val ScanOpConsume = ScanOpIRs.ScanOpConsume
+  type ScanOpConsume[A] = ScanOpIRs.ScanOpConsume[A]
+  val ScanOp_Field_ExpectedSize = ScanOpIRs.ScanOp_Field_ExpectedSize
+  type ScanOp_Field_ExpectedSize[A] = ScanOpIRs.ScanOp_Field_ExpectedSize[A]
+  val ScanOp_Field_I__eq = ScanOpIRs.ScanOp_Field_I__eq
+  type ScanOp_Field_I__eq[A] = ScanOpIRs.ScanOp_Field_I__eq[A]
+  val ScanOp_Field_I = ScanOpIRs.ScanOp_Field_I
+  type ScanOp_Field_I[A] = ScanOpIRs.ScanOp_Field_I[A]
+  val ScanOp_Field_Table = ScanOpIRs.ScanOp_Field_Table
+  type ScanOp_Field_Table[A] = ScanOpIRs.ScanOp_Field_Table[A]
+  val ScanOp_Field_Stop__eq = ScanOpIRs.ScanOp_Field_Stop__eq
+  type ScanOp_Field_Stop__eq[A] = ScanOpIRs.ScanOp_Field_Stop__eq[A]
+  val ScanOp_Field_Stop = ScanOpIRs.ScanOp_Field_Stop
+  type ScanOp_Field_Stop[A] = ScanOpIRs.ScanOp_Field_Stop[A]
+  val ScanOp_Field_Child__eq = ScanOpIRs.ScanOp_Field_Child__eq
+  type ScanOp_Field_Child__eq[A] = ScanOpIRs.ScanOp_Field_Child__eq[A]
+  val ScanOp_Field_Child = ScanOpIRs.ScanOp_Field_Child
+  type ScanOp_Field_Child[A] = ScanOpIRs.ScanOp_Field_Child[A]
+  // method definitions
+  def scanOpNew[A](table: Rep[Array[A]])(implicit typeA: TypeRep[A]): Rep[ScanOp[A]] = ScanOpNew[A](table)
+  def scanOpOpen[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ScanOpOpen[A](self)
+  def scanOpNext[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ScanOpNext[A](self)
+  def scanOpReset[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ScanOpReset[A](self)
+  def scanOpConsume[A](self: Rep[ScanOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = ScanOpConsume[A](self, tuple)
+  def scanOp_Field_ExpectedSize[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ScanOp_Field_ExpectedSize[A](self)
+  def scanOp_Field_I_$eq[A](self: Rep[ScanOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = ScanOp_Field_I__eq[A](self, x$1)
+  def scanOp_Field_I[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ScanOp_Field_I[A](self)
+  def scanOp_Field_Table[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Array[A]] = ScanOp_Field_Table[A](self)
+  def scanOp_Field_Stop_$eq[A](self: Rep[ScanOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = ScanOp_Field_Stop__eq[A](self, x$1)
+  def scanOp_Field_Stop[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = ScanOp_Field_Stop[A](self)
+  def scanOp_Field_Child_$eq[A](self: Rep[ScanOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = ScanOp_Field_Child__eq[A](self, x$1)
+  def scanOp_Field_Child[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = ScanOp_Field_Child[A](self)
+  type ScanOp[A] = ch.epfl.data.legobase.queryengine.push.ScanOp[A]
+}
+object ScanOpIRs extends Base {
+  import OperatorIRs._
+  // Type representation
+  case class ScanOpType[A](typeA: TypeRep[A]) extends TypeRep[ScanOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ScanOpType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"ScanOp[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[ScanOp[A]]
+  }
+  implicit def typeScanOp[A: TypeRep] = ScanOpType(implicitly[TypeRep[A]])
   // case classes
   case class ScanOpNew[A](table: Rep[Array[A]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[ScanOp[A]](List(typeA), "ScanOp", List(List(table))) {
     override def curriedConstructor = (copy[A] _)
@@ -178,7 +254,7 @@ trait ScanOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  case class ScanOp_Field_I_$eq[A](self: Rep[ScanOp[A]], x$1: Rep[Int])(implicit val typeA: TypeRep[A]) extends FieldSetter[Int](self, "i", x$1) {
+  case class ScanOp_Field_I__eq[A](self: Rep[ScanOp[A]], x$1: Rep[Int])(implicit val typeA: TypeRep[A]) extends FieldSetter[Int](self, "i", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -192,7 +268,7 @@ trait ScanOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  case class ScanOp_Field_Stop_$eq[A](self: Rep[ScanOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
+  case class ScanOp_Field_Stop__eq[A](self: Rep[ScanOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -200,7 +276,7 @@ trait ScanOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class ScanOp_Field_Child_$eq[A](self: Rep[ScanOp[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
+  case class ScanOp_Field_Child__eq[A](self: Rep[ScanOp[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -208,20 +284,6 @@ trait ScanOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A] _)
   }
 
-  // method definitions
-  def scanOpNew[A](table: Rep[Array[A]])(implicit typeA: TypeRep[A]): Rep[ScanOp[A]] = ScanOpNew[A](table)
-  def scanOpOpen[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ScanOpOpen[A](self)
-  def scanOpNext[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ScanOpNext[A](self)
-  def scanOpReset[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = ScanOpReset[A](self)
-  def scanOpConsume[A](self: Rep[ScanOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = ScanOpConsume[A](self, tuple)
-  def scanOp_Field_ExpectedSize[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ScanOp_Field_ExpectedSize[A](self)
-  def scanOp_Field_I_$eq[A](self: Rep[ScanOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = ScanOp_Field_I_$eq[A](self, x$1)
-  def scanOp_Field_I[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ScanOp_Field_I[A](self)
-  def scanOp_Field_Table[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Array[A]] = ScanOp_Field_Table[A](self)
-  def scanOp_Field_Stop_$eq[A](self: Rep[ScanOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = ScanOp_Field_Stop_$eq[A](self, x$1)
-  def scanOp_Field_Stop[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = ScanOp_Field_Stop[A](self)
-  def scanOp_Field_Child_$eq[A](self: Rep[ScanOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = ScanOp_Field_Child_$eq[A](self, x$1)
-  def scanOp_Field_Child[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = ScanOp_Field_Child[A](self)
   type ScanOp[A] = ch.epfl.data.legobase.queryengine.push.ScanOp[A]
 }
 trait ScanOpImplicits extends ScanOpOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
@@ -263,16 +325,10 @@ trait ScanOpPartialEvaluation extends ScanOpComponent with BasePartialEvaluation
   // Pure function partial evaluation
 }
 trait ScanOpComponent extends ScanOpOps with ScanOpImplicits { this: ch.epfl.data.legobase.deep.DeepDSL => }
-trait PrintOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
+trait PrintOpOps extends Base with OperatorOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case class PrintOpType[A](typeA: TypeRep[A]) extends TypeRep[PrintOp[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PrintOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"PrintOp[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[PrintOp[A]]
-  }
+  val PrintOpType = PrintOpIRs.PrintOpType
+  type PrintOpType[A] = PrintOpIRs.PrintOpType[A]
   implicit def typePrintOp[A: TypeRep] = PrintOpType(implicitly[TypeRep[A]])
   implicit class PrintOpRep[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = printOpOpen[A](self)(typeA)
@@ -296,6 +352,70 @@ trait PrintOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   }
   // constructors
   def __newPrintOp[A](parent: Rep[Operator[A]])(printFunc: Rep[(A => Unit)], limit: Rep[(() => Boolean)])(implicit typeA: TypeRep[A]): Rep[PrintOp[A]] = printOpNew[A](parent, printFunc, limit)(typeA)
+  // IR defs
+  val PrintOpNew = PrintOpIRs.PrintOpNew
+  type PrintOpNew[A] = PrintOpIRs.PrintOpNew[A]
+  val PrintOpOpen = PrintOpIRs.PrintOpOpen
+  type PrintOpOpen[A] = PrintOpIRs.PrintOpOpen[A]
+  val PrintOpNext = PrintOpIRs.PrintOpNext
+  type PrintOpNext[A] = PrintOpIRs.PrintOpNext[A]
+  val PrintOpConsume = PrintOpIRs.PrintOpConsume
+  type PrintOpConsume[A] = PrintOpIRs.PrintOpConsume[A]
+  val PrintOpReset = PrintOpIRs.PrintOpReset
+  type PrintOpReset[A] = PrintOpIRs.PrintOpReset[A]
+  val PrintOp_Field_PrintQueryOutput = PrintOpIRs.PrintOp_Field_PrintQueryOutput
+  type PrintOp_Field_PrintQueryOutput[A] = PrintOpIRs.PrintOp_Field_PrintQueryOutput[A]
+  val PrintOp_Field_ExpectedSize = PrintOpIRs.PrintOp_Field_ExpectedSize
+  type PrintOp_Field_ExpectedSize[A] = PrintOpIRs.PrintOp_Field_ExpectedSize[A]
+  val PrintOp_Field_NumRows__eq = PrintOpIRs.PrintOp_Field_NumRows__eq
+  type PrintOp_Field_NumRows__eq[A] = PrintOpIRs.PrintOp_Field_NumRows__eq[A]
+  val PrintOp_Field_NumRows = PrintOpIRs.PrintOp_Field_NumRows
+  type PrintOp_Field_NumRows[A] = PrintOpIRs.PrintOp_Field_NumRows[A]
+  val PrintOp_Field_Limit = PrintOpIRs.PrintOp_Field_Limit
+  type PrintOp_Field_Limit[A] = PrintOpIRs.PrintOp_Field_Limit[A]
+  val PrintOp_Field_PrintFunc = PrintOpIRs.PrintOp_Field_PrintFunc
+  type PrintOp_Field_PrintFunc[A] = PrintOpIRs.PrintOp_Field_PrintFunc[A]
+  val PrintOp_Field_Parent = PrintOpIRs.PrintOp_Field_Parent
+  type PrintOp_Field_Parent[A] = PrintOpIRs.PrintOp_Field_Parent[A]
+  val PrintOp_Field_Stop__eq = PrintOpIRs.PrintOp_Field_Stop__eq
+  type PrintOp_Field_Stop__eq[A] = PrintOpIRs.PrintOp_Field_Stop__eq[A]
+  val PrintOp_Field_Stop = PrintOpIRs.PrintOp_Field_Stop
+  type PrintOp_Field_Stop[A] = PrintOpIRs.PrintOp_Field_Stop[A]
+  val PrintOp_Field_Child__eq = PrintOpIRs.PrintOp_Field_Child__eq
+  type PrintOp_Field_Child__eq[A] = PrintOpIRs.PrintOp_Field_Child__eq[A]
+  val PrintOp_Field_Child = PrintOpIRs.PrintOp_Field_Child
+  type PrintOp_Field_Child[A] = PrintOpIRs.PrintOp_Field_Child[A]
+  // method definitions
+  def printOpNew[A](parent: Rep[Operator[A]], printFunc: Rep[((A) => Unit)], limit: Rep[(() => Boolean)])(implicit typeA: TypeRep[A]): Rep[PrintOp[A]] = PrintOpNew[A](parent, printFunc, limit)
+  def printOpOpen[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpOpen[A](self)
+  def printOpNext[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpNext[A](self)
+  def printOpConsume[A](self: Rep[PrintOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpConsume[A](self, tuple)
+  def printOpReset[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpReset[A](self)
+  def printOp_Field_PrintQueryOutput[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = PrintOp_Field_PrintQueryOutput[A](self)
+  def printOp_Field_ExpectedSize[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = PrintOp_Field_ExpectedSize[A](self)
+  def printOp_Field_NumRows_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOp_Field_NumRows__eq[A](self, x$1)
+  def printOp_Field_NumRows[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = PrintOp_Field_NumRows[A](self)
+  def printOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[(() => Boolean)] = PrintOp_Field_Limit[A](self)
+  def printOp_Field_PrintFunc[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[(A => Unit)] = PrintOp_Field_PrintFunc[A](self)
+  def printOp_Field_Parent[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = PrintOp_Field_Parent[A](self)
+  def printOp_Field_Stop_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOp_Field_Stop__eq[A](self, x$1)
+  def printOp_Field_Stop[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = PrintOp_Field_Stop[A](self)
+  def printOp_Field_Child_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOp_Field_Child__eq[A](self, x$1)
+  def printOp_Field_Child[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = PrintOp_Field_Child[A](self)
+  type PrintOp[A] = ch.epfl.data.legobase.queryengine.push.PrintOp[A]
+}
+object PrintOpIRs extends Base {
+  import OperatorIRs._
+  // Type representation
+  case class PrintOpType[A](typeA: TypeRep[A]) extends TypeRep[PrintOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PrintOpType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"PrintOp[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[PrintOp[A]]
+  }
+  implicit def typePrintOp[A: TypeRep] = PrintOpType(implicitly[TypeRep[A]])
   // case classes
   case class PrintOpNew[A](parent: Rep[Operator[A]], printFunc: Rep[((A) => Unit)], limit: Rep[(() => Boolean)])(implicit val typeA: TypeRep[A]) extends ConstructorDef[PrintOp[A]](List(typeA), "PrintOp", List(List(parent), List(printFunc, limit))) {
     override def curriedConstructor = (copy[A] _).curried
@@ -341,7 +461,7 @@ trait PrintOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  case class PrintOp_Field_NumRows_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Int])(implicit val typeA: TypeRep[A]) extends FieldSetter[Int](self, "numRows", x$1) {
+  case class PrintOp_Field_NumRows__eq[A](self: Rep[PrintOp[A]], x$1: Rep[Int])(implicit val typeA: TypeRep[A]) extends FieldSetter[Int](self, "numRows", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -367,7 +487,7 @@ trait PrintOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  case class PrintOp_Field_Stop_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
+  case class PrintOp_Field_Stop__eq[A](self: Rep[PrintOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -375,7 +495,7 @@ trait PrintOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class PrintOp_Field_Child_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
+  case class PrintOp_Field_Child__eq[A](self: Rep[PrintOp[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -383,23 +503,6 @@ trait PrintOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A] _)
   }
 
-  // method definitions
-  def printOpNew[A](parent: Rep[Operator[A]], printFunc: Rep[((A) => Unit)], limit: Rep[(() => Boolean)])(implicit typeA: TypeRep[A]): Rep[PrintOp[A]] = PrintOpNew[A](parent, printFunc, limit)
-  def printOpOpen[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpOpen[A](self)
-  def printOpNext[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpNext[A](self)
-  def printOpConsume[A](self: Rep[PrintOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpConsume[A](self, tuple)
-  def printOpReset[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpReset[A](self)
-  def printOp_Field_PrintQueryOutput[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = PrintOp_Field_PrintQueryOutput[A](self)
-  def printOp_Field_ExpectedSize[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = PrintOp_Field_ExpectedSize[A](self)
-  def printOp_Field_NumRows_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOp_Field_NumRows_$eq[A](self, x$1)
-  def printOp_Field_NumRows[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = PrintOp_Field_NumRows[A](self)
-  def printOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[(() => Boolean)] = PrintOp_Field_Limit[A](self)
-  def printOp_Field_PrintFunc[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[(A => Unit)] = PrintOp_Field_PrintFunc[A](self)
-  def printOp_Field_Parent[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = PrintOp_Field_Parent[A](self)
-  def printOp_Field_Stop_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOp_Field_Stop_$eq[A](self, x$1)
-  def printOp_Field_Stop[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = PrintOp_Field_Stop[A](self)
-  def printOp_Field_Child_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOp_Field_Child_$eq[A](self, x$1)
-  def printOp_Field_Child[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = PrintOp_Field_Child[A](self)
   type PrintOp[A] = ch.epfl.data.legobase.queryengine.push.PrintOp[A]
 }
 trait PrintOpImplicits extends PrintOpOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
@@ -455,16 +558,10 @@ trait PrintOpPartialEvaluation extends PrintOpComponent with BasePartialEvaluati
   // Pure function partial evaluation
 }
 trait PrintOpComponent extends PrintOpOps with PrintOpImplicits { this: ch.epfl.data.legobase.deep.DeepDSL => }
-trait SelectOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
+trait SelectOpOps extends Base with OperatorOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case class SelectOpType[A](typeA: TypeRep[A]) extends TypeRep[SelectOp[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SelectOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"SelectOp[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[SelectOp[A]]
-  }
+  val SelectOpType = SelectOpIRs.SelectOpType
+  type SelectOpType[A] = SelectOpIRs.SelectOpType[A]
   implicit def typeSelectOp[A: TypeRep] = SelectOpType(implicitly[TypeRep[A]])
   implicit class SelectOpRep[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = selectOpOpen[A](self)(typeA)
@@ -484,6 +581,58 @@ trait SelectOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   }
   // constructors
   def __newSelectOp[A](parent: Rep[Operator[A]])(selectPred: Rep[(A => Boolean)])(implicit typeA: TypeRep[A]): Rep[SelectOp[A]] = selectOpNew[A](parent, selectPred)(typeA)
+  // IR defs
+  val SelectOpNew = SelectOpIRs.SelectOpNew
+  type SelectOpNew[A] = SelectOpIRs.SelectOpNew[A]
+  val SelectOpOpen = SelectOpIRs.SelectOpOpen
+  type SelectOpOpen[A] = SelectOpIRs.SelectOpOpen[A]
+  val SelectOpNext = SelectOpIRs.SelectOpNext
+  type SelectOpNext[A] = SelectOpIRs.SelectOpNext[A]
+  val SelectOpReset = SelectOpIRs.SelectOpReset
+  type SelectOpReset[A] = SelectOpIRs.SelectOpReset[A]
+  val SelectOpConsume = SelectOpIRs.SelectOpConsume
+  type SelectOpConsume[A] = SelectOpIRs.SelectOpConsume[A]
+  val SelectOp_Field_ExpectedSize = SelectOpIRs.SelectOp_Field_ExpectedSize
+  type SelectOp_Field_ExpectedSize[A] = SelectOpIRs.SelectOp_Field_ExpectedSize[A]
+  val SelectOp_Field_SelectPred = SelectOpIRs.SelectOp_Field_SelectPred
+  type SelectOp_Field_SelectPred[A] = SelectOpIRs.SelectOp_Field_SelectPred[A]
+  val SelectOp_Field_Parent = SelectOpIRs.SelectOp_Field_Parent
+  type SelectOp_Field_Parent[A] = SelectOpIRs.SelectOp_Field_Parent[A]
+  val SelectOp_Field_Stop__eq = SelectOpIRs.SelectOp_Field_Stop__eq
+  type SelectOp_Field_Stop__eq[A] = SelectOpIRs.SelectOp_Field_Stop__eq[A]
+  val SelectOp_Field_Stop = SelectOpIRs.SelectOp_Field_Stop
+  type SelectOp_Field_Stop[A] = SelectOpIRs.SelectOp_Field_Stop[A]
+  val SelectOp_Field_Child__eq = SelectOpIRs.SelectOp_Field_Child__eq
+  type SelectOp_Field_Child__eq[A] = SelectOpIRs.SelectOp_Field_Child__eq[A]
+  val SelectOp_Field_Child = SelectOpIRs.SelectOp_Field_Child
+  type SelectOp_Field_Child[A] = SelectOpIRs.SelectOp_Field_Child[A]
+  // method definitions
+  def selectOpNew[A](parent: Rep[Operator[A]], selectPred: Rep[((A) => Boolean)])(implicit typeA: TypeRep[A]): Rep[SelectOp[A]] = SelectOpNew[A](parent, selectPred)
+  def selectOpOpen[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SelectOpOpen[A](self)
+  def selectOpNext[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SelectOpNext[A](self)
+  def selectOpReset[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SelectOpReset[A](self)
+  def selectOpConsume[A](self: Rep[SelectOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = SelectOpConsume[A](self, tuple)
+  def selectOp_Field_ExpectedSize[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = SelectOp_Field_ExpectedSize[A](self)
+  def selectOp_Field_SelectPred[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[(A => Boolean)] = SelectOp_Field_SelectPred[A](self)
+  def selectOp_Field_Parent[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = SelectOp_Field_Parent[A](self)
+  def selectOp_Field_Stop_$eq[A](self: Rep[SelectOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = SelectOp_Field_Stop__eq[A](self, x$1)
+  def selectOp_Field_Stop[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = SelectOp_Field_Stop[A](self)
+  def selectOp_Field_Child_$eq[A](self: Rep[SelectOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = SelectOp_Field_Child__eq[A](self, x$1)
+  def selectOp_Field_Child[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = SelectOp_Field_Child[A](self)
+  type SelectOp[A] = ch.epfl.data.legobase.queryengine.push.SelectOp[A]
+}
+object SelectOpIRs extends Base {
+  import OperatorIRs._
+  // Type representation
+  case class SelectOpType[A](typeA: TypeRep[A]) extends TypeRep[SelectOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SelectOpType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"SelectOp[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[SelectOp[A]]
+  }
+  implicit def typeSelectOp[A: TypeRep] = SelectOpType(implicitly[TypeRep[A]])
   // case classes
   case class SelectOpNew[A](parent: Rep[Operator[A]], selectPred: Rep[((A) => Boolean)])(implicit val typeA: TypeRep[A]) extends ConstructorDef[SelectOp[A]](List(typeA), "SelectOp", List(List(parent), List(selectPred))) {
     override def curriedConstructor = (copy[A] _).curried
@@ -529,7 +678,7 @@ trait SelectOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  case class SelectOp_Field_Stop_$eq[A](self: Rep[SelectOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
+  case class SelectOp_Field_Stop__eq[A](self: Rep[SelectOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -537,7 +686,7 @@ trait SelectOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class SelectOp_Field_Child_$eq[A](self: Rep[SelectOp[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
+  case class SelectOp_Field_Child__eq[A](self: Rep[SelectOp[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -545,19 +694,6 @@ trait SelectOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A] _)
   }
 
-  // method definitions
-  def selectOpNew[A](parent: Rep[Operator[A]], selectPred: Rep[((A) => Boolean)])(implicit typeA: TypeRep[A]): Rep[SelectOp[A]] = SelectOpNew[A](parent, selectPred)
-  def selectOpOpen[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SelectOpOpen[A](self)
-  def selectOpNext[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SelectOpNext[A](self)
-  def selectOpReset[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SelectOpReset[A](self)
-  def selectOpConsume[A](self: Rep[SelectOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = SelectOpConsume[A](self, tuple)
-  def selectOp_Field_ExpectedSize[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = SelectOp_Field_ExpectedSize[A](self)
-  def selectOp_Field_SelectPred[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[(A => Boolean)] = SelectOp_Field_SelectPred[A](self)
-  def selectOp_Field_Parent[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = SelectOp_Field_Parent[A](self)
-  def selectOp_Field_Stop_$eq[A](self: Rep[SelectOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = SelectOp_Field_Stop_$eq[A](self, x$1)
-  def selectOp_Field_Stop[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = SelectOp_Field_Stop[A](self)
-  def selectOp_Field_Child_$eq[A](self: Rep[SelectOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = SelectOp_Field_Child_$eq[A](self, x$1)
-  def selectOp_Field_Child[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = SelectOp_Field_Child[A](self)
   type SelectOp[A] = ch.epfl.data.legobase.queryengine.push.SelectOp[A]
 }
 trait SelectOpImplicits extends SelectOpOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
@@ -603,17 +739,10 @@ trait SelectOpPartialEvaluation extends SelectOpComponent with BasePartialEvalua
   // Pure function partial evaluation
 }
 trait SelectOpComponent extends SelectOpOps with SelectOpImplicits { this: ch.epfl.data.legobase.deep.DeepDSL => }
-trait AggOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
+trait AggOpOps extends Base with HashMapOps with AGGRecordOps with OperatorOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case class AggOpType[A, B](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[AggOp[A, B]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = AggOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    val name = s"AggOp[${typeA.name}, ${typeB.name}]"
-    val typeArguments = List(typeA, typeB)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[AggOp[A, B]]
-  }
+  val AggOpType = AggOpIRs.AggOpType
+  type AggOpType[A, B] = AggOpIRs.AggOpType[A, B]
   implicit def typeAggOp[A: TypeRep, B: TypeRep] = AggOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
   implicit class AggOpRep[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]) {
     def open(): Rep[Unit] = aggOpOpen[A, B](self)(typeA, typeB)
@@ -636,6 +765,73 @@ trait AggOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   }
   // constructors
   def __newAggOp[A, B](parent: Rep[Operator[A]], numAggs: Rep[Int])(grp: Rep[(A => B)])(aggFuncs: Rep[((A, Double) => Double)]*)(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[AggOp[A, B]] = aggOpNew[A, B](parent, numAggs, grp, aggFuncs: _*)(typeA, typeB)
+  // IR defs
+  val AggOpNew = AggOpIRs.AggOpNew
+  type AggOpNew[A, B] = AggOpIRs.AggOpNew[A, B]
+  val AggOpOpen = AggOpIRs.AggOpOpen
+  type AggOpOpen[A, B] = AggOpIRs.AggOpOpen[A, B]
+  val AggOpNext = AggOpIRs.AggOpNext
+  type AggOpNext[A, B] = AggOpIRs.AggOpNext[A, B]
+  val AggOpReset = AggOpIRs.AggOpReset
+  type AggOpReset[A, B] = AggOpIRs.AggOpReset[A, B]
+  val AggOpConsume = AggOpIRs.AggOpConsume
+  type AggOpConsume[A, B] = AggOpIRs.AggOpConsume[A, B]
+  val AggOp_Field_ExpectedSize = AggOpIRs.AggOp_Field_ExpectedSize
+  type AggOp_Field_ExpectedSize[A, B] = AggOpIRs.AggOp_Field_ExpectedSize[A, B]
+  val AggOp_Field_Hm = AggOpIRs.AggOp_Field_Hm
+  type AggOp_Field_Hm[A, B] = AggOpIRs.AggOp_Field_Hm[A, B]
+  val AggOp_Field_AggFuncs = AggOpIRs.AggOp_Field_AggFuncs
+  type AggOp_Field_AggFuncs[A, B] = AggOpIRs.AggOp_Field_AggFuncs[A, B]
+  val AggOp_Field_Grp = AggOpIRs.AggOp_Field_Grp
+  type AggOp_Field_Grp[A, B] = AggOpIRs.AggOp_Field_Grp[A, B]
+  val AggOp_Field_NumAggs = AggOpIRs.AggOp_Field_NumAggs
+  type AggOp_Field_NumAggs[A, B] = AggOpIRs.AggOp_Field_NumAggs[A, B]
+  val AggOp_Field_Parent = AggOpIRs.AggOp_Field_Parent
+  type AggOp_Field_Parent[A, B] = AggOpIRs.AggOp_Field_Parent[A, B]
+  val AggOp_Field_Stop__eq = AggOpIRs.AggOp_Field_Stop__eq
+  type AggOp_Field_Stop__eq[A, B] = AggOpIRs.AggOp_Field_Stop__eq[A, B]
+  val AggOp_Field_Stop = AggOpIRs.AggOp_Field_Stop
+  type AggOp_Field_Stop[A, B] = AggOpIRs.AggOp_Field_Stop[A, B]
+  val AggOp_Field_Child__eq = AggOpIRs.AggOp_Field_Child__eq
+  type AggOp_Field_Child__eq[A, B] = AggOpIRs.AggOp_Field_Child__eq[A, B]
+  val AggOp_Field_Child = AggOpIRs.AggOp_Field_Child
+  type AggOp_Field_Child[A, B] = AggOpIRs.AggOp_Field_Child[A, B]
+  // method definitions
+  def aggOpNew[A, B](parent: Rep[Operator[A]], numAggs: Rep[Int], grp: Rep[((A) => B)], aggFuncs: Rep[((A, Double) => Double)]*)(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[AggOp[A, B]] = {
+    val aggFuncsOutput = __liftSeq(aggFuncs.toSeq)
+    AggOpNew[A, B](parent, numAggs, grp, aggFuncsOutput)
+  }
+  def aggOpOpen[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = AggOpOpen[A, B](self)
+  def aggOpNext[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = AggOpNext[A, B](self)
+  def aggOpReset[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = AggOpReset[A, B](self)
+  def aggOpConsume[A, B](self: Rep[AggOp[A, B]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = AggOpConsume[A, B](self, tuple)
+  def aggOp_Field_ExpectedSize[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = AggOp_Field_ExpectedSize[A, B](self)
+  def aggOp_Field_Hm[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[B, AGGRecord[B]]] = AggOp_Field_Hm[A, B](self)
+  def aggOp_Field_AggFuncs[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Seq[((A, Double) => Double)]] = AggOp_Field_AggFuncs[A, B](self)
+  def aggOp_Field_Grp[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[(A => B)] = AggOp_Field_Grp[A, B](self)
+  def aggOp_Field_NumAggs[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = AggOp_Field_NumAggs[A, B](self)
+  def aggOp_Field_Parent[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[A]] = AggOp_Field_Parent[A, B](self)
+  def aggOp_Field_Stop_$eq[A, B](self: Rep[AggOp[A, B]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = AggOp_Field_Stop__eq[A, B](self, x$1)
+  def aggOp_Field_Stop[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Boolean] = AggOp_Field_Stop[A, B](self)
+  def aggOp_Field_Child_$eq[A, B](self: Rep[AggOp[A, B]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = AggOp_Field_Child__eq[A, B](self, x$1)
+  def aggOp_Field_Child[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[Any]] = AggOp_Field_Child[A, B](self)
+  type AggOp[A, B] = ch.epfl.data.legobase.queryengine.push.AggOp[A, B]
+}
+object AggOpIRs extends Base {
+  import HashMapIRs._
+  import AGGRecordIRs._
+  import OperatorIRs._
+  // Type representation
+  case class AggOpType[A, B](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[AggOp[A, B]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = AggOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    val name = s"AggOp[${typeA.name}, ${typeB.name}]"
+    val typeArguments = List(typeA, typeB)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[AggOp[A, B]]
+  }
+  implicit def typeAggOp[A: TypeRep, B: TypeRep] = AggOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
   // case classes
   case class AggOpNew[A, B](parent: Rep[Operator[A]], numAggs: Rep[Int], grp: Rep[((A) => B)], aggFuncsOutput: Rep[Seq[((A, Double) => Double)]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[AggOp[A, B]](List(typeA, typeB), "AggOp", List(List(parent, numAggs), List(grp), List(__varArg(aggFuncsOutput)))) {
     override def curriedConstructor = (copy[A, B] _).curried
@@ -717,7 +913,7 @@ trait AggOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  case class AggOp_Field_Stop_$eq[A, B](self: Rep[AggOp[A, B]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[Boolean](self, "stop", x$1) {
+  case class AggOp_Field_Stop__eq[A, B](self: Rep[AggOp[A, B]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[Boolean](self, "stop", x$1) {
     override def curriedConstructor = (copy[A, B] _).curried
   }
 
@@ -725,7 +921,7 @@ trait AggOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A, B] _)
   }
 
-  case class AggOp_Field_Child_$eq[A, B](self: Rep[AggOp[A, B]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
+  case class AggOp_Field_Child__eq[A, B](self: Rep[AggOp[A, B]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
     override def curriedConstructor = (copy[A, B] _).curried
   }
 
@@ -733,25 +929,6 @@ trait AggOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A, B] _)
   }
 
-  // method definitions
-  def aggOpNew[A, B](parent: Rep[Operator[A]], numAggs: Rep[Int], grp: Rep[((A) => B)], aggFuncs: Rep[((A, Double) => Double)]*)(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[AggOp[A, B]] = {
-    val aggFuncsOutput = __liftSeq(aggFuncs.toSeq)
-    AggOpNew[A, B](parent, numAggs, grp, aggFuncsOutput)
-  }
-  def aggOpOpen[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = AggOpOpen[A, B](self)
-  def aggOpNext[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = AggOpNext[A, B](self)
-  def aggOpReset[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = AggOpReset[A, B](self)
-  def aggOpConsume[A, B](self: Rep[AggOp[A, B]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = AggOpConsume[A, B](self, tuple)
-  def aggOp_Field_ExpectedSize[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = AggOp_Field_ExpectedSize[A, B](self)
-  def aggOp_Field_Hm[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[B, AGGRecord[B]]] = AggOp_Field_Hm[A, B](self)
-  def aggOp_Field_AggFuncs[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Seq[((A, Double) => Double)]] = AggOp_Field_AggFuncs[A, B](self)
-  def aggOp_Field_Grp[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[(A => B)] = AggOp_Field_Grp[A, B](self)
-  def aggOp_Field_NumAggs[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = AggOp_Field_NumAggs[A, B](self)
-  def aggOp_Field_Parent[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[A]] = AggOp_Field_Parent[A, B](self)
-  def aggOp_Field_Stop_$eq[A, B](self: Rep[AggOp[A, B]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = AggOp_Field_Stop_$eq[A, B](self, x$1)
-  def aggOp_Field_Stop[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Boolean] = AggOp_Field_Stop[A, B](self)
-  def aggOp_Field_Child_$eq[A, B](self: Rep[AggOp[A, B]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = AggOp_Field_Child_$eq[A, B](self, x$1)
-  def aggOp_Field_Child[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[Any]] = AggOp_Field_Child[A, B](self)
   type AggOp[A, B] = ch.epfl.data.legobase.queryengine.push.AggOp[A, B]
 }
 trait AggOpImplicits extends AggOpOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
@@ -820,16 +997,10 @@ trait AggOpPartialEvaluation extends AggOpComponent with BasePartialEvaluation {
   // Pure function partial evaluation
 }
 trait AggOpComponent extends AggOpOps with AggOpImplicits { this: ch.epfl.data.legobase.deep.DeepDSL => }
-trait MapOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
+trait MapOpOps extends Base with OperatorOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case class MapOpType[A](typeA: TypeRep[A]) extends TypeRep[MapOp[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = MapOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"MapOp[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[MapOp[A]]
-  }
+  val MapOpType = MapOpIRs.MapOpType
+  type MapOpType[A] = MapOpIRs.MapOpType[A]
   implicit def typeMapOp[A: TypeRep] = MapOpType(implicitly[TypeRep[A]])
   implicit class MapOpRep[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]) {
     def reset(): Rep[Unit] = mapOpReset[A](self)(typeA)
@@ -849,6 +1020,61 @@ trait MapOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   }
   // constructors
   def __newMapOp[A](parent: Rep[Operator[A]])(mapFuncs: Rep[(A => Unit)]*)(implicit typeA: TypeRep[A]): Rep[MapOp[A]] = mapOpNew[A](parent, mapFuncs: _*)(typeA)
+  // IR defs
+  val MapOpNew = MapOpIRs.MapOpNew
+  type MapOpNew[A] = MapOpIRs.MapOpNew[A]
+  val MapOpReset = MapOpIRs.MapOpReset
+  type MapOpReset[A] = MapOpIRs.MapOpReset[A]
+  val MapOpOpen = MapOpIRs.MapOpOpen
+  type MapOpOpen[A] = MapOpIRs.MapOpOpen[A]
+  val MapOpNext = MapOpIRs.MapOpNext
+  type MapOpNext[A] = MapOpIRs.MapOpNext[A]
+  val MapOpConsume = MapOpIRs.MapOpConsume
+  type MapOpConsume[A] = MapOpIRs.MapOpConsume[A]
+  val MapOp_Field_ExpectedSize = MapOpIRs.MapOp_Field_ExpectedSize
+  type MapOp_Field_ExpectedSize[A] = MapOpIRs.MapOp_Field_ExpectedSize[A]
+  val MapOp_Field_MapFuncs = MapOpIRs.MapOp_Field_MapFuncs
+  type MapOp_Field_MapFuncs[A] = MapOpIRs.MapOp_Field_MapFuncs[A]
+  val MapOp_Field_Parent = MapOpIRs.MapOp_Field_Parent
+  type MapOp_Field_Parent[A] = MapOpIRs.MapOp_Field_Parent[A]
+  val MapOp_Field_Stop__eq = MapOpIRs.MapOp_Field_Stop__eq
+  type MapOp_Field_Stop__eq[A] = MapOpIRs.MapOp_Field_Stop__eq[A]
+  val MapOp_Field_Stop = MapOpIRs.MapOp_Field_Stop
+  type MapOp_Field_Stop[A] = MapOpIRs.MapOp_Field_Stop[A]
+  val MapOp_Field_Child__eq = MapOpIRs.MapOp_Field_Child__eq
+  type MapOp_Field_Child__eq[A] = MapOpIRs.MapOp_Field_Child__eq[A]
+  val MapOp_Field_Child = MapOpIRs.MapOp_Field_Child
+  type MapOp_Field_Child[A] = MapOpIRs.MapOp_Field_Child[A]
+  // method definitions
+  def mapOpNew[A](parent: Rep[Operator[A]], mapFuncs: Rep[((A) => Unit)]*)(implicit typeA: TypeRep[A]): Rep[MapOp[A]] = {
+    val mapFuncsOutput = __liftSeq(mapFuncs.toSeq)
+    MapOpNew[A](parent, mapFuncsOutput)
+  }
+  def mapOpReset[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpReset[A](self)
+  def mapOpOpen[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpOpen[A](self)
+  def mapOpNext[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpNext[A](self)
+  def mapOpConsume[A](self: Rep[MapOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpConsume[A](self, tuple)
+  def mapOp_Field_ExpectedSize[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = MapOp_Field_ExpectedSize[A](self)
+  def mapOp_Field_MapFuncs[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Seq[(A => Unit)]] = MapOp_Field_MapFuncs[A](self)
+  def mapOp_Field_Parent[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = MapOp_Field_Parent[A](self)
+  def mapOp_Field_Stop_$eq[A](self: Rep[MapOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOp_Field_Stop__eq[A](self, x$1)
+  def mapOp_Field_Stop[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = MapOp_Field_Stop[A](self)
+  def mapOp_Field_Child_$eq[A](self: Rep[MapOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOp_Field_Child__eq[A](self, x$1)
+  def mapOp_Field_Child[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = MapOp_Field_Child[A](self)
+  type MapOp[A] = ch.epfl.data.legobase.queryengine.push.MapOp[A]
+}
+object MapOpIRs extends Base {
+  import OperatorIRs._
+  // Type representation
+  case class MapOpType[A](typeA: TypeRep[A]) extends TypeRep[MapOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = MapOpType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"MapOp[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[MapOp[A]]
+  }
+  implicit def typeMapOp[A: TypeRep] = MapOpType(implicitly[TypeRep[A]])
   // case classes
   case class MapOpNew[A](parent: Rep[Operator[A]], mapFuncsOutput: Rep[Seq[((A) => Unit)]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[MapOp[A]](List(typeA), "MapOp", List(List(parent), List(__varArg(mapFuncsOutput)))) {
     override def curriedConstructor = (copy[A] _).curried
@@ -894,7 +1120,7 @@ trait MapOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  case class MapOp_Field_Stop_$eq[A](self: Rep[MapOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
+  case class MapOp_Field_Stop__eq[A](self: Rep[MapOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -902,7 +1128,7 @@ trait MapOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class MapOp_Field_Child_$eq[A](self: Rep[MapOp[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
+  case class MapOp_Field_Child__eq[A](self: Rep[MapOp[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -910,22 +1136,6 @@ trait MapOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A] _)
   }
 
-  // method definitions
-  def mapOpNew[A](parent: Rep[Operator[A]], mapFuncs: Rep[((A) => Unit)]*)(implicit typeA: TypeRep[A]): Rep[MapOp[A]] = {
-    val mapFuncsOutput = __liftSeq(mapFuncs.toSeq)
-    MapOpNew[A](parent, mapFuncsOutput)
-  }
-  def mapOpReset[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpReset[A](self)
-  def mapOpOpen[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpOpen[A](self)
-  def mapOpNext[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpNext[A](self)
-  def mapOpConsume[A](self: Rep[MapOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOpConsume[A](self, tuple)
-  def mapOp_Field_ExpectedSize[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = MapOp_Field_ExpectedSize[A](self)
-  def mapOp_Field_MapFuncs[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Seq[(A => Unit)]] = MapOp_Field_MapFuncs[A](self)
-  def mapOp_Field_Parent[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = MapOp_Field_Parent[A](self)
-  def mapOp_Field_Stop_$eq[A](self: Rep[MapOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOp_Field_Stop_$eq[A](self, x$1)
-  def mapOp_Field_Stop[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = MapOp_Field_Stop[A](self)
-  def mapOp_Field_Child_$eq[A](self: Rep[MapOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = MapOp_Field_Child_$eq[A](self, x$1)
-  def mapOp_Field_Child[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = MapOp_Field_Child[A](self)
   type MapOp[A] = ch.epfl.data.legobase.queryengine.push.MapOp[A]
 }
 trait MapOpImplicits extends MapOpOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
@@ -974,16 +1184,10 @@ trait MapOpPartialEvaluation extends MapOpComponent with BasePartialEvaluation {
   // Pure function partial evaluation
 }
 trait MapOpComponent extends MapOpOps with MapOpImplicits { this: ch.epfl.data.legobase.deep.DeepDSL => }
-trait SortOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
+trait SortOpOps extends Base with TreeSetOps with OperatorOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case class SortOpType[A](typeA: TypeRep[A]) extends TypeRep[SortOp[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SortOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"SortOp[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[SortOp[A]]
-  }
+  val SortOpType = SortOpIRs.SortOpType
+  type SortOpType[A] = SortOpIRs.SortOpType[A]
   implicit def typeSortOp[A: TypeRep] = SortOpType(implicitly[TypeRep[A]])
   implicit class SortOpRep[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]) {
     def next(): Rep[Unit] = sortOpNext[A](self)(typeA)
@@ -1004,6 +1208,62 @@ trait SortOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   }
   // constructors
   def __newSortOp[A](parent: Rep[Operator[A]])(orderingFunc: Rep[((A, A) => Int)])(implicit typeA: TypeRep[A]): Rep[SortOp[A]] = sortOpNew[A](parent, orderingFunc)(typeA)
+  // IR defs
+  val SortOpNew = SortOpIRs.SortOpNew
+  type SortOpNew[A] = SortOpIRs.SortOpNew[A]
+  val SortOpNext = SortOpIRs.SortOpNext
+  type SortOpNext[A] = SortOpIRs.SortOpNext[A]
+  val SortOpReset = SortOpIRs.SortOpReset
+  type SortOpReset[A] = SortOpIRs.SortOpReset[A]
+  val SortOpOpen = SortOpIRs.SortOpOpen
+  type SortOpOpen[A] = SortOpIRs.SortOpOpen[A]
+  val SortOpConsume = SortOpIRs.SortOpConsume
+  type SortOpConsume[A] = SortOpIRs.SortOpConsume[A]
+  val SortOp_Field_SortedTree = SortOpIRs.SortOp_Field_SortedTree
+  type SortOp_Field_SortedTree[A] = SortOpIRs.SortOp_Field_SortedTree[A]
+  val SortOp_Field_ExpectedSize = SortOpIRs.SortOp_Field_ExpectedSize
+  type SortOp_Field_ExpectedSize[A] = SortOpIRs.SortOp_Field_ExpectedSize[A]
+  val SortOp_Field_OrderingFunc = SortOpIRs.SortOp_Field_OrderingFunc
+  type SortOp_Field_OrderingFunc[A] = SortOpIRs.SortOp_Field_OrderingFunc[A]
+  val SortOp_Field_Parent = SortOpIRs.SortOp_Field_Parent
+  type SortOp_Field_Parent[A] = SortOpIRs.SortOp_Field_Parent[A]
+  val SortOp_Field_Stop__eq = SortOpIRs.SortOp_Field_Stop__eq
+  type SortOp_Field_Stop__eq[A] = SortOpIRs.SortOp_Field_Stop__eq[A]
+  val SortOp_Field_Stop = SortOpIRs.SortOp_Field_Stop
+  type SortOp_Field_Stop[A] = SortOpIRs.SortOp_Field_Stop[A]
+  val SortOp_Field_Child__eq = SortOpIRs.SortOp_Field_Child__eq
+  type SortOp_Field_Child__eq[A] = SortOpIRs.SortOp_Field_Child__eq[A]
+  val SortOp_Field_Child = SortOpIRs.SortOp_Field_Child
+  type SortOp_Field_Child[A] = SortOpIRs.SortOp_Field_Child[A]
+  // method definitions
+  def sortOpNew[A](parent: Rep[Operator[A]], orderingFunc: Rep[((A, A) => Int)])(implicit typeA: TypeRep[A]): Rep[SortOp[A]] = SortOpNew[A](parent, orderingFunc)
+  def sortOpNext[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SortOpNext[A](self)
+  def sortOpReset[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SortOpReset[A](self)
+  def sortOpOpen[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SortOpOpen[A](self)
+  def sortOpConsume[A](self: Rep[SortOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = SortOpConsume[A](self, tuple)
+  def sortOp_Field_SortedTree[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[TreeSet[A]] = SortOp_Field_SortedTree[A](self)
+  def sortOp_Field_ExpectedSize[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = SortOp_Field_ExpectedSize[A](self)
+  def sortOp_Field_OrderingFunc[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[((A, A) => Int)] = SortOp_Field_OrderingFunc[A](self)
+  def sortOp_Field_Parent[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = SortOp_Field_Parent[A](self)
+  def sortOp_Field_Stop_$eq[A](self: Rep[SortOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = SortOp_Field_Stop__eq[A](self, x$1)
+  def sortOp_Field_Stop[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = SortOp_Field_Stop[A](self)
+  def sortOp_Field_Child_$eq[A](self: Rep[SortOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = SortOp_Field_Child__eq[A](self, x$1)
+  def sortOp_Field_Child[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = SortOp_Field_Child[A](self)
+  type SortOp[A] = ch.epfl.data.legobase.queryengine.push.SortOp[A]
+}
+object SortOpIRs extends Base {
+  import TreeSetIRs._
+  import OperatorIRs._
+  // Type representation
+  case class SortOpType[A](typeA: TypeRep[A]) extends TypeRep[SortOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SortOpType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"SortOp[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[SortOp[A]]
+  }
+  implicit def typeSortOp[A: TypeRep] = SortOpType(implicitly[TypeRep[A]])
   // case classes
   case class SortOpNew[A](parent: Rep[Operator[A]], orderingFunc: Rep[((A, A) => Int)])(implicit val typeA: TypeRep[A]) extends ConstructorDef[SortOp[A]](List(typeA), "SortOp", List(List(parent), List(orderingFunc))) {
     override def curriedConstructor = (copy[A] _).curried
@@ -1061,7 +1321,7 @@ trait SortOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  case class SortOp_Field_Stop_$eq[A](self: Rep[SortOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
+  case class SortOp_Field_Stop__eq[A](self: Rep[SortOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -1069,7 +1329,7 @@ trait SortOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class SortOp_Field_Child_$eq[A](self: Rep[SortOp[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
+  case class SortOp_Field_Child__eq[A](self: Rep[SortOp[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -1077,20 +1337,6 @@ trait SortOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A] _)
   }
 
-  // method definitions
-  def sortOpNew[A](parent: Rep[Operator[A]], orderingFunc: Rep[((A, A) => Int)])(implicit typeA: TypeRep[A]): Rep[SortOp[A]] = SortOpNew[A](parent, orderingFunc)
-  def sortOpNext[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SortOpNext[A](self)
-  def sortOpReset[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SortOpReset[A](self)
-  def sortOpOpen[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SortOpOpen[A](self)
-  def sortOpConsume[A](self: Rep[SortOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = SortOpConsume[A](self, tuple)
-  def sortOp_Field_SortedTree[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[TreeSet[A]] = SortOp_Field_SortedTree[A](self)
-  def sortOp_Field_ExpectedSize[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = SortOp_Field_ExpectedSize[A](self)
-  def sortOp_Field_OrderingFunc[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[((A, A) => Int)] = SortOp_Field_OrderingFunc[A](self)
-  def sortOp_Field_Parent[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = SortOp_Field_Parent[A](self)
-  def sortOp_Field_Stop_$eq[A](self: Rep[SortOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = SortOp_Field_Stop_$eq[A](self, x$1)
-  def sortOp_Field_Stop[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = SortOp_Field_Stop[A](self)
-  def sortOp_Field_Child_$eq[A](self: Rep[SortOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = SortOp_Field_Child_$eq[A](self, x$1)
-  def sortOp_Field_Child[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = SortOp_Field_Child[A](self)
   type SortOp[A] = ch.epfl.data.legobase.queryengine.push.SortOp[A]
 }
 trait SortOpImplicits extends SortOpOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
@@ -1149,18 +1395,10 @@ trait SortOpPartialEvaluation extends SortOpComponent with BasePartialEvaluation
   // Pure function partial evaluation
 }
 trait SortOpComponent extends SortOpOps with SortOpImplicits { this: ch.epfl.data.legobase.deep.DeepDSL => }
-trait HashJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
+trait HashJoinOpOps extends Base with MultiMapOps with OperatorOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case class HashJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[HashJoinOp[A, B, C]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = HashJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(2).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
-    val name = s"HashJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
-    val typeArguments = List(typeA, typeB, typeC)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[HashJoinOp[A, B, C]]
-  }
+  val HashJoinOpType = HashJoinOpIRs.HashJoinOpType
+  type HashJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOpType[A, B, C]
   implicit def typeHashJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep] = HashJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class HashJoinOpRep[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) {
     def reset(): Rep[Unit] = hashJoinOpReset[A, B, C](self)(typeA, typeB, typeC)
@@ -1189,6 +1427,88 @@ trait HashJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // constructors
   def __newHashJoinOp[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String])(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit overload1: Overloaded1, typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = hashJoinOpNew1[A, B, C](leftParent, rightParent, leftAlias, rightAlias, joinCond, leftHash, rightHash)(typeA, typeB, typeC)
   def __newHashJoinOp[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]])(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit overload2: Overloaded2, typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = hashJoinOpNew2[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)(typeA, typeB, typeC)
+  // IR defs
+  val HashJoinOpNew1 = HashJoinOpIRs.HashJoinOpNew1
+  type HashJoinOpNew1[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOpNew1[A, B, C]
+  val HashJoinOpNew2 = HashJoinOpIRs.HashJoinOpNew2
+  type HashJoinOpNew2[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOpNew2[A, B, C]
+  val HashJoinOpReset = HashJoinOpIRs.HashJoinOpReset
+  type HashJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOpReset[A, B, C]
+  val HashJoinOpOpen = HashJoinOpIRs.HashJoinOpOpen
+  type HashJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOpOpen[A, B, C]
+  val HashJoinOpNext = HashJoinOpIRs.HashJoinOpNext
+  type HashJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOpNext[A, B, C]
+  val HashJoinOpConsume = HashJoinOpIRs.HashJoinOpConsume
+  type HashJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOpConsume[A, B, C]
+  val HashJoinOp_Field_Hm = HashJoinOpIRs.HashJoinOp_Field_Hm
+  type HashJoinOp_Field_Hm[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOp_Field_Hm[A, B, C]
+  val HashJoinOp_Field_ExpectedSize = HashJoinOpIRs.HashJoinOp_Field_ExpectedSize
+  type HashJoinOp_Field_ExpectedSize[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOp_Field_ExpectedSize[A, B, C]
+  val HashJoinOp_Field_Mode__eq = HashJoinOpIRs.HashJoinOp_Field_Mode__eq
+  type HashJoinOp_Field_Mode__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOp_Field_Mode__eq[A, B, C]
+  val HashJoinOp_Field_Mode = HashJoinOpIRs.HashJoinOp_Field_Mode
+  type HashJoinOp_Field_Mode[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOp_Field_Mode[A, B, C]
+  val HashJoinOp_Field_RightHash = HashJoinOpIRs.HashJoinOp_Field_RightHash
+  type HashJoinOp_Field_RightHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOp_Field_RightHash[A, B, C]
+  val HashJoinOp_Field_LeftHash = HashJoinOpIRs.HashJoinOp_Field_LeftHash
+  type HashJoinOp_Field_LeftHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOp_Field_LeftHash[A, B, C]
+  val HashJoinOp_Field_JoinCond = HashJoinOpIRs.HashJoinOp_Field_JoinCond
+  type HashJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOp_Field_JoinCond[A, B, C]
+  val HashJoinOp_Field_RightAlias = HashJoinOpIRs.HashJoinOp_Field_RightAlias
+  type HashJoinOp_Field_RightAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOp_Field_RightAlias[A, B, C]
+  val HashJoinOp_Field_LeftAlias = HashJoinOpIRs.HashJoinOp_Field_LeftAlias
+  type HashJoinOp_Field_LeftAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOp_Field_LeftAlias[A, B, C]
+  val HashJoinOp_Field_RightParent = HashJoinOpIRs.HashJoinOp_Field_RightParent
+  type HashJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOp_Field_RightParent[A, B, C]
+  val HashJoinOp_Field_LeftParent = HashJoinOpIRs.HashJoinOp_Field_LeftParent
+  type HashJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOp_Field_LeftParent[A, B, C]
+  val HashJoinOp_Field_Stop__eq = HashJoinOpIRs.HashJoinOp_Field_Stop__eq
+  type HashJoinOp_Field_Stop__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOp_Field_Stop__eq[A, B, C]
+  val HashJoinOp_Field_Stop = HashJoinOpIRs.HashJoinOp_Field_Stop
+  type HashJoinOp_Field_Stop[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOp_Field_Stop[A, B, C]
+  val HashJoinOp_Field_Child__eq = HashJoinOpIRs.HashJoinOp_Field_Child__eq
+  type HashJoinOp_Field_Child__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOp_Field_Child__eq[A, B, C]
+  val HashJoinOp_Field_Child = HashJoinOpIRs.HashJoinOp_Field_Child
+  type HashJoinOp_Field_Child[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOp_Field_Child[A, B, C]
+  // method definitions
+  def hashJoinOpNew1[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = HashJoinOpNew1[A, B, C](leftParent, rightParent, leftAlias, rightAlias, joinCond, leftHash, rightHash)
+  def hashJoinOpNew2[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = HashJoinOpNew2[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)
+  def hashJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOpReset[A, B, C](self)
+  def hashJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOpOpen[A, B, C](self)
+  def hashJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOpNext[A, B, C](self)
+  def hashJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOpConsume[A, B, C](self, tuple)
+  def hashJoinOp_Field_Hm[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[MultiMap[C, A]] = HashJoinOp_Field_Hm[A, B, C](self)
+  def hashJoinOp_Field_ExpectedSize[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = HashJoinOp_Field_ExpectedSize[A, B, C](self)
+  def hashJoinOp_Field_Mode_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOp_Field_Mode__eq[A, B, C](self, x$1)
+  def hashJoinOp_Field_Mode[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = HashJoinOp_Field_Mode[A, B, C](self)
+  def hashJoinOp_Field_RightHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = HashJoinOp_Field_RightHash[A, B, C](self)
+  def hashJoinOp_Field_LeftHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = HashJoinOp_Field_LeftHash[A, B, C](self)
+  def hashJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = HashJoinOp_Field_JoinCond[A, B, C](self)
+  def hashJoinOp_Field_RightAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[String] = HashJoinOp_Field_RightAlias[A, B, C](self)
+  def hashJoinOp_Field_LeftAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[String] = HashJoinOp_Field_LeftAlias[A, B, C](self)
+  def hashJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = HashJoinOp_Field_RightParent[A, B, C](self)
+  def hashJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = HashJoinOp_Field_LeftParent[A, B, C](self)
+  def hashJoinOp_Field_Stop_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOp_Field_Stop__eq[A, B, C](self, x$1)
+  def hashJoinOp_Field_Stop[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Boolean] = HashJoinOp_Field_Stop[A, B, C](self)
+  def hashJoinOp_Field_Child_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOp_Field_Child__eq[A, B, C](self, x$1)
+  def hashJoinOp_Field_Child[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] = HashJoinOp_Field_Child[A, B, C](self)
+  type HashJoinOp[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = ch.epfl.data.legobase.queryengine.push.HashJoinOp[A, B, C]
+}
+object HashJoinOpIRs extends Base {
+  import MultiMapIRs._
+  import OperatorIRs._
+  // Type representation
+  case class HashJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[HashJoinOp[A, B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = HashJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(2).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    private implicit val tagC = typeC.typeTag
+    val name = s"HashJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
+    val typeArguments = List(typeA, typeB, typeC)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[HashJoinOp[A, B, C]]
+  }
+  implicit def typeHashJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep] = HashJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
   case class HashJoinOpNew1[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends ConstructorDef[HashJoinOp[A, B, C]](List(typeA, typeB, typeC), "HashJoinOp", List(List(leftParent, rightParent, leftAlias, rightAlias), List(joinCond), List(leftHash), List(rightHash))) {
     override def curriedConstructor = (copy[A, B, C] _).curried
@@ -1238,7 +1558,7 @@ trait HashJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  case class HashJoinOp_Field_Mode_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], x$1: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Int](self, "mode", x$1) {
+  case class HashJoinOp_Field_Mode__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], x$1: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Int](self, "mode", x$1) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -1318,7 +1638,7 @@ trait HashJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  case class HashJoinOp_Field_Stop_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Boolean](self, "stop", x$1) {
+  case class HashJoinOp_Field_Stop__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Boolean](self, "stop", x$1) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -1326,7 +1646,7 @@ trait HashJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  case class HashJoinOp_Field_Child_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
+  case class HashJoinOp_Field_Child__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -1334,28 +1654,6 @@ trait HashJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  // method definitions
-  def hashJoinOpNew1[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = HashJoinOpNew1[A, B, C](leftParent, rightParent, leftAlias, rightAlias, joinCond, leftHash, rightHash)
-  def hashJoinOpNew2[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = HashJoinOpNew2[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)
-  def hashJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOpReset[A, B, C](self)
-  def hashJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOpOpen[A, B, C](self)
-  def hashJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOpNext[A, B, C](self)
-  def hashJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOpConsume[A, B, C](self, tuple)
-  def hashJoinOp_Field_Hm[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[MultiMap[C, A]] = HashJoinOp_Field_Hm[A, B, C](self)
-  def hashJoinOp_Field_ExpectedSize[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = HashJoinOp_Field_ExpectedSize[A, B, C](self)
-  def hashJoinOp_Field_Mode_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOp_Field_Mode_$eq[A, B, C](self, x$1)
-  def hashJoinOp_Field_Mode[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = HashJoinOp_Field_Mode[A, B, C](self)
-  def hashJoinOp_Field_RightHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = HashJoinOp_Field_RightHash[A, B, C](self)
-  def hashJoinOp_Field_LeftHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = HashJoinOp_Field_LeftHash[A, B, C](self)
-  def hashJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = HashJoinOp_Field_JoinCond[A, B, C](self)
-  def hashJoinOp_Field_RightAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[String] = HashJoinOp_Field_RightAlias[A, B, C](self)
-  def hashJoinOp_Field_LeftAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[String] = HashJoinOp_Field_LeftAlias[A, B, C](self)
-  def hashJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = HashJoinOp_Field_RightParent[A, B, C](self)
-  def hashJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = HashJoinOp_Field_LeftParent[A, B, C](self)
-  def hashJoinOp_Field_Stop_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOp_Field_Stop_$eq[A, B, C](self, x$1)
-  def hashJoinOp_Field_Stop[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Boolean] = HashJoinOp_Field_Stop[A, B, C](self)
-  def hashJoinOp_Field_Child_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinOp_Field_Child_$eq[A, B, C](self, x$1)
-  def hashJoinOp_Field_Child[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] = HashJoinOp_Field_Child[A, B, C](self)
   type HashJoinOp[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = ch.epfl.data.legobase.queryengine.push.HashJoinOp[A, B, C]
 }
 trait HashJoinOpImplicits extends HashJoinOpOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
@@ -1456,18 +1754,10 @@ trait HashJoinOpPartialEvaluation extends HashJoinOpComponent with BasePartialEv
   // Pure function partial evaluation
 }
 trait HashJoinOpComponent extends HashJoinOpOps with HashJoinOpImplicits { this: ch.epfl.data.legobase.deep.DeepDSL => }
-trait WindowOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
+trait WindowOpOps extends Base with MultiMapOps with SetOps with OperatorOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case class WindowOpType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[WindowOp[A, B, C]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = WindowOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
-    val name = s"WindowOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
-    val typeArguments = List(typeA, typeB, typeC)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[WindowOp[A, B, C]]
-  }
+  val WindowOpType = WindowOpIRs.WindowOpType
+  type WindowOpType[A, B, C] = WindowOpIRs.WindowOpType[A, B, C]
   implicit def typeWindowOp[A: TypeRep, B: TypeRep, C: TypeRep] = WindowOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class WindowOpRep[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) {
     def open(): Rep[Unit] = windowOpOpen[A, B, C](self)(typeA, typeB, typeC)
@@ -1489,6 +1779,68 @@ trait WindowOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   }
   // constructors
   def __newWindowOp[A, B, C](parent: Rep[Operator[A]])(grp: Rep[(A => B)])(wndf: Rep[(Set[A] => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowOp[A, B, C]] = windowOpNew[A, B, C](parent, grp, wndf)(typeA, typeB, typeC)
+  // IR defs
+  val WindowOpNew = WindowOpIRs.WindowOpNew
+  type WindowOpNew[A, B, C] = WindowOpIRs.WindowOpNew[A, B, C]
+  val WindowOpOpen = WindowOpIRs.WindowOpOpen
+  type WindowOpOpen[A, B, C] = WindowOpIRs.WindowOpOpen[A, B, C]
+  val WindowOpReset = WindowOpIRs.WindowOpReset
+  type WindowOpReset[A, B, C] = WindowOpIRs.WindowOpReset[A, B, C]
+  val WindowOpNext = WindowOpIRs.WindowOpNext
+  type WindowOpNext[A, B, C] = WindowOpIRs.WindowOpNext[A, B, C]
+  val WindowOpConsume = WindowOpIRs.WindowOpConsume
+  type WindowOpConsume[A, B, C] = WindowOpIRs.WindowOpConsume[A, B, C]
+  val WindowOp_Field_ExpectedSize = WindowOpIRs.WindowOp_Field_ExpectedSize
+  type WindowOp_Field_ExpectedSize[A, B, C] = WindowOpIRs.WindowOp_Field_ExpectedSize[A, B, C]
+  val WindowOp_Field_Hm = WindowOpIRs.WindowOp_Field_Hm
+  type WindowOp_Field_Hm[A, B, C] = WindowOpIRs.WindowOp_Field_Hm[A, B, C]
+  val WindowOp_Field_Wndf = WindowOpIRs.WindowOp_Field_Wndf
+  type WindowOp_Field_Wndf[A, B, C] = WindowOpIRs.WindowOp_Field_Wndf[A, B, C]
+  val WindowOp_Field_Grp = WindowOpIRs.WindowOp_Field_Grp
+  type WindowOp_Field_Grp[A, B, C] = WindowOpIRs.WindowOp_Field_Grp[A, B, C]
+  val WindowOp_Field_Parent = WindowOpIRs.WindowOp_Field_Parent
+  type WindowOp_Field_Parent[A, B, C] = WindowOpIRs.WindowOp_Field_Parent[A, B, C]
+  val WindowOp_Field_Stop__eq = WindowOpIRs.WindowOp_Field_Stop__eq
+  type WindowOp_Field_Stop__eq[A, B, C] = WindowOpIRs.WindowOp_Field_Stop__eq[A, B, C]
+  val WindowOp_Field_Stop = WindowOpIRs.WindowOp_Field_Stop
+  type WindowOp_Field_Stop[A, B, C] = WindowOpIRs.WindowOp_Field_Stop[A, B, C]
+  val WindowOp_Field_Child__eq = WindowOpIRs.WindowOp_Field_Child__eq
+  type WindowOp_Field_Child__eq[A, B, C] = WindowOpIRs.WindowOp_Field_Child__eq[A, B, C]
+  val WindowOp_Field_Child = WindowOpIRs.WindowOp_Field_Child
+  type WindowOp_Field_Child[A, B, C] = WindowOpIRs.WindowOp_Field_Child[A, B, C]
+  // method definitions
+  def windowOpNew[A, B, C](parent: Rep[Operator[A]], grp: Rep[((A) => B)], wndf: Rep[((Set[A]) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowOp[A, B, C]] = WindowOpNew[A, B, C](parent, grp, wndf)
+  def windowOpOpen[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = WindowOpOpen[A, B, C](self)
+  def windowOpReset[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = WindowOpReset[A, B, C](self)
+  def windowOpNext[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = WindowOpNext[A, B, C](self)
+  def windowOpConsume[A, B, C](self: Rep[WindowOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = WindowOpConsume[A, B, C](self, tuple)
+  def windowOp_Field_ExpectedSize[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = WindowOp_Field_ExpectedSize[A, B, C](self)
+  def windowOp_Field_Hm[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[MultiMap[B, A]] = WindowOp_Field_Hm[A, B, C](self)
+  def windowOp_Field_Wndf[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(Set[A] => C)] = WindowOp_Field_Wndf[A, B, C](self)
+  def windowOp_Field_Grp[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => B)] = WindowOp_Field_Grp[A, B, C](self)
+  def windowOp_Field_Parent[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = WindowOp_Field_Parent[A, B, C](self)
+  def windowOp_Field_Stop_$eq[A, B, C](self: Rep[WindowOp[A, B, C]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = WindowOp_Field_Stop__eq[A, B, C](self, x$1)
+  def windowOp_Field_Stop[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Boolean] = WindowOp_Field_Stop[A, B, C](self)
+  def windowOp_Field_Child_$eq[A, B, C](self: Rep[WindowOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = WindowOp_Field_Child__eq[A, B, C](self, x$1)
+  def windowOp_Field_Child[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] = WindowOp_Field_Child[A, B, C](self)
+  type WindowOp[A, B, C] = ch.epfl.data.legobase.queryengine.push.WindowOp[A, B, C]
+}
+object WindowOpIRs extends Base {
+  import MultiMapIRs._
+  import SetIRs._
+  import OperatorIRs._
+  // Type representation
+  case class WindowOpType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[WindowOp[A, B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = WindowOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    private implicit val tagC = typeC.typeTag
+    val name = s"WindowOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
+    val typeArguments = List(typeA, typeB, typeC)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[WindowOp[A, B, C]]
+  }
+  implicit def typeWindowOp[A: TypeRep, B: TypeRep, C: TypeRep] = WindowOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
   case class WindowOpNew[A, B, C](parent: Rep[Operator[A]], grp: Rep[((A) => B)], wndf: Rep[((Set[A]) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends ConstructorDef[WindowOp[A, B, C]](List(typeA, typeB, typeC), "WindowOp", List(List(parent), List(grp), List(wndf))) {
     override def curriedConstructor = (copy[A, B, C] _).curried
@@ -1564,7 +1916,7 @@ trait WindowOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  case class WindowOp_Field_Stop_$eq[A, B, C](self: Rep[WindowOp[A, B, C]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Boolean](self, "stop", x$1) {
+  case class WindowOp_Field_Stop__eq[A, B, C](self: Rep[WindowOp[A, B, C]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Boolean](self, "stop", x$1) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -1572,7 +1924,7 @@ trait WindowOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  case class WindowOp_Field_Child_$eq[A, B, C](self: Rep[WindowOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
+  case class WindowOp_Field_Child__eq[A, B, C](self: Rep[WindowOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -1580,21 +1932,6 @@ trait WindowOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  // method definitions
-  def windowOpNew[A, B, C](parent: Rep[Operator[A]], grp: Rep[((A) => B)], wndf: Rep[((Set[A]) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowOp[A, B, C]] = WindowOpNew[A, B, C](parent, grp, wndf)
-  def windowOpOpen[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = WindowOpOpen[A, B, C](self)
-  def windowOpReset[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = WindowOpReset[A, B, C](self)
-  def windowOpNext[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = WindowOpNext[A, B, C](self)
-  def windowOpConsume[A, B, C](self: Rep[WindowOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = WindowOpConsume[A, B, C](self, tuple)
-  def windowOp_Field_ExpectedSize[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = WindowOp_Field_ExpectedSize[A, B, C](self)
-  def windowOp_Field_Hm[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[MultiMap[B, A]] = WindowOp_Field_Hm[A, B, C](self)
-  def windowOp_Field_Wndf[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(Set[A] => C)] = WindowOp_Field_Wndf[A, B, C](self)
-  def windowOp_Field_Grp[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => B)] = WindowOp_Field_Grp[A, B, C](self)
-  def windowOp_Field_Parent[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = WindowOp_Field_Parent[A, B, C](self)
-  def windowOp_Field_Stop_$eq[A, B, C](self: Rep[WindowOp[A, B, C]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = WindowOp_Field_Stop_$eq[A, B, C](self, x$1)
-  def windowOp_Field_Stop[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Boolean] = WindowOp_Field_Stop[A, B, C](self)
-  def windowOp_Field_Child_$eq[A, B, C](self: Rep[WindowOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = WindowOp_Field_Child_$eq[A, B, C](self, x$1)
-  def windowOp_Field_Child[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] = WindowOp_Field_Child[A, B, C](self)
   type WindowOp[A, B, C] = ch.epfl.data.legobase.queryengine.push.WindowOp[A, B, C]
 }
 trait WindowOpImplicits extends WindowOpOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
@@ -1662,18 +1999,10 @@ trait WindowOpPartialEvaluation extends WindowOpComponent with BasePartialEvalua
   // Pure function partial evaluation
 }
 trait WindowOpComponent extends WindowOpOps with WindowOpImplicits { this: ch.epfl.data.legobase.deep.DeepDSL => }
-trait LeftHashSemiJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
+trait LeftHashSemiJoinOpOps extends Base with MultiMapOps with OperatorOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case class LeftHashSemiJoinOpType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[LeftHashSemiJoinOp[A, B, C]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LeftHashSemiJoinOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
-    val name = s"LeftHashSemiJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
-    val typeArguments = List(typeA, typeB, typeC)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[LeftHashSemiJoinOp[A, B, C]]
-  }
+  val LeftHashSemiJoinOpType = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOpType
+  type LeftHashSemiJoinOpType[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOpType[A, B, C]
   implicit def typeLeftHashSemiJoinOp[A: TypeRep, B: TypeRep, C: TypeRep] = LeftHashSemiJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class LeftHashSemiJoinOpRep[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) {
     def open(): Rep[Unit] = leftHashSemiJoinOpOpen[A, B, C](self)(typeA, typeB, typeC)
@@ -1699,6 +2028,79 @@ trait LeftHashSemiJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.Deep
   }
   // constructors
   def __newLeftHashSemiJoinOp[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]])(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[LeftHashSemiJoinOp[A, B, C]] = leftHashSemiJoinOpNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)(typeA, typeB, typeC)
+  // IR defs
+  val LeftHashSemiJoinOpNew = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOpNew
+  type LeftHashSemiJoinOpNew[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOpNew[A, B, C]
+  val LeftHashSemiJoinOpOpen = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOpOpen
+  type LeftHashSemiJoinOpOpen[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOpOpen[A, B, C]
+  val LeftHashSemiJoinOpReset = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOpReset
+  type LeftHashSemiJoinOpReset[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOpReset[A, B, C]
+  val LeftHashSemiJoinOpNext = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOpNext
+  type LeftHashSemiJoinOpNext[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOpNext[A, B, C]
+  val LeftHashSemiJoinOpConsume = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOpConsume
+  type LeftHashSemiJoinOpConsume[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOpConsume[A, B, C]
+  val LeftHashSemiJoinOp_Field_ExpectedSize = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_ExpectedSize
+  type LeftHashSemiJoinOp_Field_ExpectedSize[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_ExpectedSize[A, B, C]
+  val LeftHashSemiJoinOp_Field_Hm = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_Hm
+  type LeftHashSemiJoinOp_Field_Hm[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_Hm[A, B, C]
+  val LeftHashSemiJoinOp_Field_Mode__eq = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_Mode__eq
+  type LeftHashSemiJoinOp_Field_Mode__eq[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_Mode__eq[A, B, C]
+  val LeftHashSemiJoinOp_Field_Mode = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_Mode
+  type LeftHashSemiJoinOp_Field_Mode[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_Mode[A, B, C]
+  val LeftHashSemiJoinOp_Field_RightHash = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_RightHash
+  type LeftHashSemiJoinOp_Field_RightHash[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_RightHash[A, B, C]
+  val LeftHashSemiJoinOp_Field_LeftHash = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_LeftHash
+  type LeftHashSemiJoinOp_Field_LeftHash[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_LeftHash[A, B, C]
+  val LeftHashSemiJoinOp_Field_JoinCond = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_JoinCond
+  type LeftHashSemiJoinOp_Field_JoinCond[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_JoinCond[A, B, C]
+  val LeftHashSemiJoinOp_Field_RightParent = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_RightParent
+  type LeftHashSemiJoinOp_Field_RightParent[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_RightParent[A, B, C]
+  val LeftHashSemiJoinOp_Field_LeftParent = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_LeftParent
+  type LeftHashSemiJoinOp_Field_LeftParent[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_LeftParent[A, B, C]
+  val LeftHashSemiJoinOp_Field_Stop__eq = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_Stop__eq
+  type LeftHashSemiJoinOp_Field_Stop__eq[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_Stop__eq[A, B, C]
+  val LeftHashSemiJoinOp_Field_Stop = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_Stop
+  type LeftHashSemiJoinOp_Field_Stop[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_Stop[A, B, C]
+  val LeftHashSemiJoinOp_Field_Child__eq = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_Child__eq
+  type LeftHashSemiJoinOp_Field_Child__eq[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_Child__eq[A, B, C]
+  val LeftHashSemiJoinOp_Field_Child = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_Child
+  type LeftHashSemiJoinOp_Field_Child[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOp_Field_Child[A, B, C]
+  // method definitions
+  def leftHashSemiJoinOpNew[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[LeftHashSemiJoinOp[A, B, C]] = LeftHashSemiJoinOpNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)
+  def leftHashSemiJoinOpOpen[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftHashSemiJoinOpOpen[A, B, C](self)
+  def leftHashSemiJoinOpReset[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftHashSemiJoinOpReset[A, B, C](self)
+  def leftHashSemiJoinOpNext[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftHashSemiJoinOpNext[A, B, C](self)
+  def leftHashSemiJoinOpConsume[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftHashSemiJoinOpConsume[A, B, C](self, tuple)
+  def leftHashSemiJoinOp_Field_ExpectedSize[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = LeftHashSemiJoinOp_Field_ExpectedSize[A, B, C](self)
+  def leftHashSemiJoinOp_Field_Hm[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[MultiMap[C, B]] = LeftHashSemiJoinOp_Field_Hm[A, B, C](self)
+  def leftHashSemiJoinOp_Field_Mode_$eq[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftHashSemiJoinOp_Field_Mode__eq[A, B, C](self, x$1)
+  def leftHashSemiJoinOp_Field_Mode[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = LeftHashSemiJoinOp_Field_Mode[A, B, C](self)
+  def leftHashSemiJoinOp_Field_RightHash[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = LeftHashSemiJoinOp_Field_RightHash[A, B, C](self)
+  def leftHashSemiJoinOp_Field_LeftHash[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = LeftHashSemiJoinOp_Field_LeftHash[A, B, C](self)
+  def leftHashSemiJoinOp_Field_JoinCond[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = LeftHashSemiJoinOp_Field_JoinCond[A, B, C](self)
+  def leftHashSemiJoinOp_Field_RightParent[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = LeftHashSemiJoinOp_Field_RightParent[A, B, C](self)
+  def leftHashSemiJoinOp_Field_LeftParent[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = LeftHashSemiJoinOp_Field_LeftParent[A, B, C](self)
+  def leftHashSemiJoinOp_Field_Stop_$eq[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftHashSemiJoinOp_Field_Stop__eq[A, B, C](self, x$1)
+  def leftHashSemiJoinOp_Field_Stop[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Boolean] = LeftHashSemiJoinOp_Field_Stop[A, B, C](self)
+  def leftHashSemiJoinOp_Field_Child_$eq[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftHashSemiJoinOp_Field_Child__eq[A, B, C](self, x$1)
+  def leftHashSemiJoinOp_Field_Child[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] = LeftHashSemiJoinOp_Field_Child[A, B, C](self)
+  type LeftHashSemiJoinOp[A, B, C] = ch.epfl.data.legobase.queryengine.push.LeftHashSemiJoinOp[A, B, C]
+}
+object LeftHashSemiJoinOpIRs extends Base {
+  import MultiMapIRs._
+  import OperatorIRs._
+  // Type representation
+  case class LeftHashSemiJoinOpType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[LeftHashSemiJoinOp[A, B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LeftHashSemiJoinOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    private implicit val tagC = typeC.typeTag
+    val name = s"LeftHashSemiJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
+    val typeArguments = List(typeA, typeB, typeC)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[LeftHashSemiJoinOp[A, B, C]]
+  }
+  implicit def typeLeftHashSemiJoinOp[A: TypeRep, B: TypeRep, C: TypeRep] = LeftHashSemiJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
   case class LeftHashSemiJoinOpNew[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends ConstructorDef[LeftHashSemiJoinOp[A, B, C]](List(typeA, typeB, typeC), "LeftHashSemiJoinOp", List(List(leftParent, rightParent), List(joinCond), List(leftHash), List(rightHash))) {
     override def curriedConstructor = (copy[A, B, C] _).curried
@@ -1744,7 +2146,7 @@ trait LeftHashSemiJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.Deep
 
   }
 
-  case class LeftHashSemiJoinOp_Field_Mode_$eq[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], x$1: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Int](self, "mode", x$1) {
+  case class LeftHashSemiJoinOp_Field_Mode__eq[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], x$1: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Int](self, "mode", x$1) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -1782,7 +2184,7 @@ trait LeftHashSemiJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.Deep
 
   }
 
-  case class LeftHashSemiJoinOp_Field_Stop_$eq[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Boolean](self, "stop", x$1) {
+  case class LeftHashSemiJoinOp_Field_Stop__eq[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Boolean](self, "stop", x$1) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -1790,7 +2192,7 @@ trait LeftHashSemiJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.Deep
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  case class LeftHashSemiJoinOp_Field_Child_$eq[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
+  case class LeftHashSemiJoinOp_Field_Child__eq[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -1798,25 +2200,6 @@ trait LeftHashSemiJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.Deep
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  // method definitions
-  def leftHashSemiJoinOpNew[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[LeftHashSemiJoinOp[A, B, C]] = LeftHashSemiJoinOpNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)
-  def leftHashSemiJoinOpOpen[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftHashSemiJoinOpOpen[A, B, C](self)
-  def leftHashSemiJoinOpReset[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftHashSemiJoinOpReset[A, B, C](self)
-  def leftHashSemiJoinOpNext[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftHashSemiJoinOpNext[A, B, C](self)
-  def leftHashSemiJoinOpConsume[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftHashSemiJoinOpConsume[A, B, C](self, tuple)
-  def leftHashSemiJoinOp_Field_ExpectedSize[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = LeftHashSemiJoinOp_Field_ExpectedSize[A, B, C](self)
-  def leftHashSemiJoinOp_Field_Hm[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[MultiMap[C, B]] = LeftHashSemiJoinOp_Field_Hm[A, B, C](self)
-  def leftHashSemiJoinOp_Field_Mode_$eq[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftHashSemiJoinOp_Field_Mode_$eq[A, B, C](self, x$1)
-  def leftHashSemiJoinOp_Field_Mode[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = LeftHashSemiJoinOp_Field_Mode[A, B, C](self)
-  def leftHashSemiJoinOp_Field_RightHash[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = LeftHashSemiJoinOp_Field_RightHash[A, B, C](self)
-  def leftHashSemiJoinOp_Field_LeftHash[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = LeftHashSemiJoinOp_Field_LeftHash[A, B, C](self)
-  def leftHashSemiJoinOp_Field_JoinCond[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = LeftHashSemiJoinOp_Field_JoinCond[A, B, C](self)
-  def leftHashSemiJoinOp_Field_RightParent[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = LeftHashSemiJoinOp_Field_RightParent[A, B, C](self)
-  def leftHashSemiJoinOp_Field_LeftParent[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = LeftHashSemiJoinOp_Field_LeftParent[A, B, C](self)
-  def leftHashSemiJoinOp_Field_Stop_$eq[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftHashSemiJoinOp_Field_Stop_$eq[A, B, C](self, x$1)
-  def leftHashSemiJoinOp_Field_Stop[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Boolean] = LeftHashSemiJoinOp_Field_Stop[A, B, C](self)
-  def leftHashSemiJoinOp_Field_Child_$eq[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftHashSemiJoinOp_Field_Child_$eq[A, B, C](self, x$1)
-  def leftHashSemiJoinOp_Field_Child[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] = LeftHashSemiJoinOp_Field_Child[A, B, C](self)
   type LeftHashSemiJoinOp[A, B, C] = ch.epfl.data.legobase.queryengine.push.LeftHashSemiJoinOp[A, B, C]
 }
 trait LeftHashSemiJoinOpImplicits extends LeftHashSemiJoinOpOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
@@ -1900,17 +2283,10 @@ trait LeftHashSemiJoinOpPartialEvaluation extends LeftHashSemiJoinOpComponent wi
   // Pure function partial evaluation
 }
 trait LeftHashSemiJoinOpComponent extends LeftHashSemiJoinOpOps with LeftHashSemiJoinOpImplicits { this: ch.epfl.data.legobase.deep.DeepDSL => }
-trait NestedLoopsJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
+trait NestedLoopsJoinOpOps extends Base with OperatorOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case class NestedLoopsJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[NestedLoopsJoinOp[A, B]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = NestedLoopsJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    val name = s"NestedLoopsJoinOp[${typeA.name}, ${typeB.name}]"
-    val typeArguments = List(typeA, typeB)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[NestedLoopsJoinOp[A, B]]
-  }
+  val NestedLoopsJoinOpType = NestedLoopsJoinOpIRs.NestedLoopsJoinOpType
+  type NestedLoopsJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOpType[A, B]
   implicit def typeNestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep] = NestedLoopsJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
   implicit class NestedLoopsJoinOpRep[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]) {
     def open(): Rep[Unit] = nestedLoopsJoinOpOpen[A, B](self)(typeA, typeB)
@@ -1937,6 +2313,80 @@ trait NestedLoopsJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepD
   }
   // constructors
   def __newNestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String])(joinCond: Rep[((A, B) => Boolean)])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[NestedLoopsJoinOp[A, B]] = nestedLoopsJoinOpNew[A, B](leftParent, rightParent, leftAlias, rightAlias, joinCond)(typeA, typeB)
+  // IR defs
+  val NestedLoopsJoinOpNew = NestedLoopsJoinOpIRs.NestedLoopsJoinOpNew
+  type NestedLoopsJoinOpNew[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOpNew[A, B]
+  val NestedLoopsJoinOpOpen = NestedLoopsJoinOpIRs.NestedLoopsJoinOpOpen
+  type NestedLoopsJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOpOpen[A, B]
+  val NestedLoopsJoinOpReset = NestedLoopsJoinOpIRs.NestedLoopsJoinOpReset
+  type NestedLoopsJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOpReset[A, B]
+  val NestedLoopsJoinOpNext = NestedLoopsJoinOpIRs.NestedLoopsJoinOpNext
+  type NestedLoopsJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOpNext[A, B]
+  val NestedLoopsJoinOpConsume = NestedLoopsJoinOpIRs.NestedLoopsJoinOpConsume
+  type NestedLoopsJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOpConsume[A, B]
+  val NestedLoopsJoinOp_Field_ExpectedSize = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_ExpectedSize
+  type NestedLoopsJoinOp_Field_ExpectedSize[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_ExpectedSize[A, B]
+  val NestedLoopsJoinOp_Field_LeftTuple__eq = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_LeftTuple__eq
+  type NestedLoopsJoinOp_Field_LeftTuple__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_LeftTuple__eq[A, B]
+  val NestedLoopsJoinOp_Field_LeftTuple = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_LeftTuple
+  type NestedLoopsJoinOp_Field_LeftTuple[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_LeftTuple[A, B]
+  val NestedLoopsJoinOp_Field_Mode__eq = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_Mode__eq
+  type NestedLoopsJoinOp_Field_Mode__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_Mode__eq[A, B]
+  val NestedLoopsJoinOp_Field_Mode = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_Mode
+  type NestedLoopsJoinOp_Field_Mode[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_Mode[A, B]
+  val NestedLoopsJoinOp_Field_JoinCond = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_JoinCond
+  type NestedLoopsJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_JoinCond[A, B]
+  val NestedLoopsJoinOp_Field_RightAlias = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_RightAlias
+  type NestedLoopsJoinOp_Field_RightAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_RightAlias[A, B]
+  val NestedLoopsJoinOp_Field_LeftAlias = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_LeftAlias
+  type NestedLoopsJoinOp_Field_LeftAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_LeftAlias[A, B]
+  val NestedLoopsJoinOp_Field_RightParent = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_RightParent
+  type NestedLoopsJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_RightParent[A, B]
+  val NestedLoopsJoinOp_Field_LeftParent = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_LeftParent
+  type NestedLoopsJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_LeftParent[A, B]
+  val NestedLoopsJoinOp_Field_Stop__eq = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_Stop__eq
+  type NestedLoopsJoinOp_Field_Stop__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_Stop__eq[A, B]
+  val NestedLoopsJoinOp_Field_Stop = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_Stop
+  type NestedLoopsJoinOp_Field_Stop[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_Stop[A, B]
+  val NestedLoopsJoinOp_Field_Child__eq = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_Child__eq
+  type NestedLoopsJoinOp_Field_Child__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_Child__eq[A, B]
+  val NestedLoopsJoinOp_Field_Child = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_Child
+  type NestedLoopsJoinOp_Field_Child[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOp_Field_Child[A, B]
+  // method definitions
+  def nestedLoopsJoinOpNew[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[NestedLoopsJoinOp[A, B]] = NestedLoopsJoinOpNew[A, B](leftParent, rightParent, leftAlias, rightAlias, joinCond)
+  def nestedLoopsJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOpOpen[A, B](self)
+  def nestedLoopsJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOpReset[A, B](self)
+  def nestedLoopsJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOpNext[A, B](self)
+  def nestedLoopsJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOpConsume[A, B](self, tuple)
+  def nestedLoopsJoinOp_Field_ExpectedSize[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = NestedLoopsJoinOp_Field_ExpectedSize[A, B](self)
+  def nestedLoopsJoinOp_Field_LeftTuple_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[A])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOp_Field_LeftTuple__eq[A, B](self, x$1)
+  def nestedLoopsJoinOp_Field_LeftTuple[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[A] = NestedLoopsJoinOp_Field_LeftTuple[A, B](self)
+  def nestedLoopsJoinOp_Field_Mode_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOp_Field_Mode__eq[A, B](self, x$1)
+  def nestedLoopsJoinOp_Field_Mode[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = NestedLoopsJoinOp_Field_Mode[A, B](self)
+  def nestedLoopsJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[((A, B) => Boolean)] = NestedLoopsJoinOp_Field_JoinCond[A, B](self)
+  def nestedLoopsJoinOp_Field_RightAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[String] = NestedLoopsJoinOp_Field_RightAlias[A, B](self)
+  def nestedLoopsJoinOp_Field_LeftAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[String] = NestedLoopsJoinOp_Field_LeftAlias[A, B](self)
+  def nestedLoopsJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[B]] = NestedLoopsJoinOp_Field_RightParent[A, B](self)
+  def nestedLoopsJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[A]] = NestedLoopsJoinOp_Field_LeftParent[A, B](self)
+  def nestedLoopsJoinOp_Field_Stop_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOp_Field_Stop__eq[A, B](self, x$1)
+  def nestedLoopsJoinOp_Field_Stop[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Boolean] = NestedLoopsJoinOp_Field_Stop[A, B](self)
+  def nestedLoopsJoinOp_Field_Child_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOp_Field_Child__eq[A, B](self, x$1)
+  def nestedLoopsJoinOp_Field_Child[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[Any]] = NestedLoopsJoinOp_Field_Child[A, B](self)
+  type NestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = ch.epfl.data.legobase.queryengine.push.NestedLoopsJoinOp[A, B]
+}
+object NestedLoopsJoinOpIRs extends Base {
+  import OperatorIRs._
+  // Type representation
+  case class NestedLoopsJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[NestedLoopsJoinOp[A, B]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = NestedLoopsJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    val name = s"NestedLoopsJoinOp[${typeA.name}, ${typeB.name}]"
+    val typeArguments = List(typeA, typeB)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[NestedLoopsJoinOp[A, B]]
+  }
+  implicit def typeNestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep] = NestedLoopsJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
   // case classes
   case class NestedLoopsJoinOpNew[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[NestedLoopsJoinOp[A, B]](List(typeA, typeB), "NestedLoopsJoinOp", List(List(leftParent, rightParent, leftAlias, rightAlias), List(joinCond))) {
     override def curriedConstructor = (copy[A, B] _).curried
@@ -1970,7 +2420,7 @@ trait NestedLoopsJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepD
 
   }
 
-  case class NestedLoopsJoinOp_Field_LeftTuple_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[A])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[A](self, "leftTuple", x$1) {
+  case class NestedLoopsJoinOp_Field_LeftTuple__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[A])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[A](self, "leftTuple", x$1) {
     override def curriedConstructor = (copy[A, B] _).curried
   }
 
@@ -1978,7 +2428,7 @@ trait NestedLoopsJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepD
     override def curriedConstructor = (copy[A, B] _)
   }
 
-  case class NestedLoopsJoinOp_Field_Mode_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[Int](self, "mode", x$1) {
+  case class NestedLoopsJoinOp_Field_Mode__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[Int](self, "mode", x$1) {
     override def curriedConstructor = (copy[A, B] _).curried
   }
 
@@ -2016,7 +2466,7 @@ trait NestedLoopsJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepD
 
   }
 
-  case class NestedLoopsJoinOp_Field_Stop_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[Boolean](self, "stop", x$1) {
+  case class NestedLoopsJoinOp_Field_Stop__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[Boolean](self, "stop", x$1) {
     override def curriedConstructor = (copy[A, B] _).curried
   }
 
@@ -2024,7 +2474,7 @@ trait NestedLoopsJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepD
     override def curriedConstructor = (copy[A, B] _)
   }
 
-  case class NestedLoopsJoinOp_Field_Child_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
+  case class NestedLoopsJoinOp_Field_Child__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
     override def curriedConstructor = (copy[A, B] _).curried
   }
 
@@ -2032,26 +2482,6 @@ trait NestedLoopsJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepD
     override def curriedConstructor = (copy[A, B] _)
   }
 
-  // method definitions
-  def nestedLoopsJoinOpNew[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[NestedLoopsJoinOp[A, B]] = NestedLoopsJoinOpNew[A, B](leftParent, rightParent, leftAlias, rightAlias, joinCond)
-  def nestedLoopsJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOpOpen[A, B](self)
-  def nestedLoopsJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOpReset[A, B](self)
-  def nestedLoopsJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOpNext[A, B](self)
-  def nestedLoopsJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOpConsume[A, B](self, tuple)
-  def nestedLoopsJoinOp_Field_ExpectedSize[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = NestedLoopsJoinOp_Field_ExpectedSize[A, B](self)
-  def nestedLoopsJoinOp_Field_LeftTuple_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[A])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOp_Field_LeftTuple_$eq[A, B](self, x$1)
-  def nestedLoopsJoinOp_Field_LeftTuple[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[A] = NestedLoopsJoinOp_Field_LeftTuple[A, B](self)
-  def nestedLoopsJoinOp_Field_Mode_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOp_Field_Mode_$eq[A, B](self, x$1)
-  def nestedLoopsJoinOp_Field_Mode[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = NestedLoopsJoinOp_Field_Mode[A, B](self)
-  def nestedLoopsJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[((A, B) => Boolean)] = NestedLoopsJoinOp_Field_JoinCond[A, B](self)
-  def nestedLoopsJoinOp_Field_RightAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[String] = NestedLoopsJoinOp_Field_RightAlias[A, B](self)
-  def nestedLoopsJoinOp_Field_LeftAlias[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[String] = NestedLoopsJoinOp_Field_LeftAlias[A, B](self)
-  def nestedLoopsJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[B]] = NestedLoopsJoinOp_Field_RightParent[A, B](self)
-  def nestedLoopsJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[A]] = NestedLoopsJoinOp_Field_LeftParent[A, B](self)
-  def nestedLoopsJoinOp_Field_Stop_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOp_Field_Stop_$eq[A, B](self, x$1)
-  def nestedLoopsJoinOp_Field_Stop[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Boolean] = NestedLoopsJoinOp_Field_Stop[A, B](self)
-  def nestedLoopsJoinOp_Field_Child_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = NestedLoopsJoinOp_Field_Child_$eq[A, B](self, x$1)
-  def nestedLoopsJoinOp_Field_Child[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[Any]] = NestedLoopsJoinOp_Field_Child[A, B](self)
   type NestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = ch.epfl.data.legobase.queryengine.push.NestedLoopsJoinOp[A, B]
 }
 trait NestedLoopsJoinOpImplicits extends NestedLoopsJoinOpOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
@@ -2128,16 +2558,10 @@ trait NestedLoopsJoinOpPartialEvaluation extends NestedLoopsJoinOpComponent with
   // Pure function partial evaluation
 }
 trait NestedLoopsJoinOpComponent extends NestedLoopsJoinOpOps with NestedLoopsJoinOpImplicits { this: ch.epfl.data.legobase.deep.DeepDSL => }
-trait SubquerySingleResultOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
+trait SubquerySingleResultOps extends Base with OperatorOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case class SubquerySingleResultType[A](typeA: TypeRep[A]) extends TypeRep[SubquerySingleResult[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SubquerySingleResultType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"SubquerySingleResult[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[SubquerySingleResult[A]]
-  }
+  val SubquerySingleResultType = SubquerySingleResultIRs.SubquerySingleResultType
+  type SubquerySingleResultType[A] = SubquerySingleResultIRs.SubquerySingleResultType[A]
   implicit def typeSubquerySingleResult[A: TypeRep] = SubquerySingleResultType(implicitly[TypeRep[A]])
   implicit class SubquerySingleResultRep[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = subquerySingleResultOpen[A](self)(typeA)
@@ -2159,6 +2583,64 @@ trait SubquerySingleResultOps extends Base { this: ch.epfl.data.legobase.deep.De
   }
   // constructors
   def __newSubquerySingleResult[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[SubquerySingleResult[A]] = subquerySingleResultNew[A](parent)(typeA)
+  // IR defs
+  val SubquerySingleResultNew = SubquerySingleResultIRs.SubquerySingleResultNew
+  type SubquerySingleResultNew[A] = SubquerySingleResultIRs.SubquerySingleResultNew[A]
+  val SubquerySingleResultOpen = SubquerySingleResultIRs.SubquerySingleResultOpen
+  type SubquerySingleResultOpen[A] = SubquerySingleResultIRs.SubquerySingleResultOpen[A]
+  val SubquerySingleResultNext = SubquerySingleResultIRs.SubquerySingleResultNext
+  type SubquerySingleResultNext[A] = SubquerySingleResultIRs.SubquerySingleResultNext[A]
+  val SubquerySingleResultReset = SubquerySingleResultIRs.SubquerySingleResultReset
+  type SubquerySingleResultReset[A] = SubquerySingleResultIRs.SubquerySingleResultReset[A]
+  val SubquerySingleResultConsume = SubquerySingleResultIRs.SubquerySingleResultConsume
+  type SubquerySingleResultConsume[A] = SubquerySingleResultIRs.SubquerySingleResultConsume[A]
+  val SubquerySingleResultGetResult = SubquerySingleResultIRs.SubquerySingleResultGetResult
+  type SubquerySingleResultGetResult[A] = SubquerySingleResultIRs.SubquerySingleResultGetResult[A]
+  val SubquerySingleResult_Field_ExpectedSize = SubquerySingleResultIRs.SubquerySingleResult_Field_ExpectedSize
+  type SubquerySingleResult_Field_ExpectedSize[A] = SubquerySingleResultIRs.SubquerySingleResult_Field_ExpectedSize[A]
+  val SubquerySingleResult_Field_Result__eq = SubquerySingleResultIRs.SubquerySingleResult_Field_Result__eq
+  type SubquerySingleResult_Field_Result__eq[A] = SubquerySingleResultIRs.SubquerySingleResult_Field_Result__eq[A]
+  val SubquerySingleResult_Field_Result = SubquerySingleResultIRs.SubquerySingleResult_Field_Result
+  type SubquerySingleResult_Field_Result[A] = SubquerySingleResultIRs.SubquerySingleResult_Field_Result[A]
+  val SubquerySingleResult_Field_Parent = SubquerySingleResultIRs.SubquerySingleResult_Field_Parent
+  type SubquerySingleResult_Field_Parent[A] = SubquerySingleResultIRs.SubquerySingleResult_Field_Parent[A]
+  val SubquerySingleResult_Field_Stop__eq = SubquerySingleResultIRs.SubquerySingleResult_Field_Stop__eq
+  type SubquerySingleResult_Field_Stop__eq[A] = SubquerySingleResultIRs.SubquerySingleResult_Field_Stop__eq[A]
+  val SubquerySingleResult_Field_Stop = SubquerySingleResultIRs.SubquerySingleResult_Field_Stop
+  type SubquerySingleResult_Field_Stop[A] = SubquerySingleResultIRs.SubquerySingleResult_Field_Stop[A]
+  val SubquerySingleResult_Field_Child__eq = SubquerySingleResultIRs.SubquerySingleResult_Field_Child__eq
+  type SubquerySingleResult_Field_Child__eq[A] = SubquerySingleResultIRs.SubquerySingleResult_Field_Child__eq[A]
+  val SubquerySingleResult_Field_Child = SubquerySingleResultIRs.SubquerySingleResult_Field_Child
+  type SubquerySingleResult_Field_Child[A] = SubquerySingleResultIRs.SubquerySingleResult_Field_Child[A]
+  // method definitions
+  def subquerySingleResultNew[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[SubquerySingleResult[A]] = SubquerySingleResultNew[A](parent)
+  def subquerySingleResultOpen[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultOpen[A](self)
+  def subquerySingleResultNext[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultNext[A](self)
+  def subquerySingleResultReset[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultReset[A](self)
+  def subquerySingleResultConsume[A](self: Rep[SubquerySingleResult[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultConsume[A](self, tuple)
+  def subquerySingleResultGetResult[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[A] = SubquerySingleResultGetResult[A](self)
+  def subquerySingleResult_Field_ExpectedSize[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Int] = SubquerySingleResult_Field_ExpectedSize[A](self)
+  def subquerySingleResult_Field_Result_$eq[A](self: Rep[SubquerySingleResult[A]], x$1: Rep[A])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResult_Field_Result__eq[A](self, x$1)
+  def subquerySingleResult_Field_Result[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[A] = SubquerySingleResult_Field_Result[A](self)
+  def subquerySingleResult_Field_Parent[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = SubquerySingleResult_Field_Parent[A](self)
+  def subquerySingleResult_Field_Stop_$eq[A](self: Rep[SubquerySingleResult[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResult_Field_Stop__eq[A](self, x$1)
+  def subquerySingleResult_Field_Stop[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = SubquerySingleResult_Field_Stop[A](self)
+  def subquerySingleResult_Field_Child_$eq[A](self: Rep[SubquerySingleResult[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResult_Field_Child__eq[A](self, x$1)
+  def subquerySingleResult_Field_Child[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = SubquerySingleResult_Field_Child[A](self)
+  type SubquerySingleResult[A] = ch.epfl.data.legobase.queryengine.push.SubquerySingleResult[A]
+}
+object SubquerySingleResultIRs extends Base {
+  import OperatorIRs._
+  // Type representation
+  case class SubquerySingleResultType[A](typeA: TypeRep[A]) extends TypeRep[SubquerySingleResult[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SubquerySingleResultType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"SubquerySingleResult[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[SubquerySingleResult[A]]
+  }
+  implicit def typeSubquerySingleResult[A: TypeRep] = SubquerySingleResultType(implicitly[TypeRep[A]])
   // case classes
   case class SubquerySingleResultNew[A](parent: Rep[Operator[A]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[SubquerySingleResult[A]](List(typeA), "SubquerySingleResult", List(List(parent))) {
     override def curriedConstructor = (copy[A] _)
@@ -2196,7 +2678,7 @@ trait SubquerySingleResultOps extends Base { this: ch.epfl.data.legobase.deep.De
 
   }
 
-  case class SubquerySingleResult_Field_Result_$eq[A](self: Rep[SubquerySingleResult[A]], x$1: Rep[A])(implicit val typeA: TypeRep[A]) extends FieldSetter[A](self, "result", x$1) {
+  case class SubquerySingleResult_Field_Result__eq[A](self: Rep[SubquerySingleResult[A]], x$1: Rep[A])(implicit val typeA: TypeRep[A]) extends FieldSetter[A](self, "result", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -2210,7 +2692,7 @@ trait SubquerySingleResultOps extends Base { this: ch.epfl.data.legobase.deep.De
 
   }
 
-  case class SubquerySingleResult_Field_Stop_$eq[A](self: Rep[SubquerySingleResult[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
+  case class SubquerySingleResult_Field_Stop__eq[A](self: Rep[SubquerySingleResult[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -2218,7 +2700,7 @@ trait SubquerySingleResultOps extends Base { this: ch.epfl.data.legobase.deep.De
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class SubquerySingleResult_Field_Child_$eq[A](self: Rep[SubquerySingleResult[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
+  case class SubquerySingleResult_Field_Child__eq[A](self: Rep[SubquerySingleResult[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -2226,21 +2708,6 @@ trait SubquerySingleResultOps extends Base { this: ch.epfl.data.legobase.deep.De
     override def curriedConstructor = (copy[A] _)
   }
 
-  // method definitions
-  def subquerySingleResultNew[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[SubquerySingleResult[A]] = SubquerySingleResultNew[A](parent)
-  def subquerySingleResultOpen[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultOpen[A](self)
-  def subquerySingleResultNext[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultNext[A](self)
-  def subquerySingleResultReset[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultReset[A](self)
-  def subquerySingleResultConsume[A](self: Rep[SubquerySingleResult[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResultConsume[A](self, tuple)
-  def subquerySingleResultGetResult[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[A] = SubquerySingleResultGetResult[A](self)
-  def subquerySingleResult_Field_ExpectedSize[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Int] = SubquerySingleResult_Field_ExpectedSize[A](self)
-  def subquerySingleResult_Field_Result_$eq[A](self: Rep[SubquerySingleResult[A]], x$1: Rep[A])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResult_Field_Result_$eq[A](self, x$1)
-  def subquerySingleResult_Field_Result[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[A] = SubquerySingleResult_Field_Result[A](self)
-  def subquerySingleResult_Field_Parent[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = SubquerySingleResult_Field_Parent[A](self)
-  def subquerySingleResult_Field_Stop_$eq[A](self: Rep[SubquerySingleResult[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResult_Field_Stop_$eq[A](self, x$1)
-  def subquerySingleResult_Field_Stop[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = SubquerySingleResult_Field_Stop[A](self)
-  def subquerySingleResult_Field_Child_$eq[A](self: Rep[SubquerySingleResult[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = SubquerySingleResult_Field_Child_$eq[A](self, x$1)
-  def subquerySingleResult_Field_Child[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = SubquerySingleResult_Field_Child[A](self)
   type SubquerySingleResult[A] = ch.epfl.data.legobase.queryengine.push.SubquerySingleResult[A]
 }
 trait SubquerySingleResultImplicits extends SubquerySingleResultOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
@@ -2287,18 +2754,10 @@ trait SubquerySingleResultPartialEvaluation extends SubquerySingleResultComponen
   // Pure function partial evaluation
 }
 trait SubquerySingleResultComponent extends SubquerySingleResultOps with SubquerySingleResultImplicits { this: ch.epfl.data.legobase.deep.DeepDSL => }
-trait HashJoinAntiOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
+trait HashJoinAntiOps extends Base with MultiMapOps with OperatorOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case class HashJoinAntiType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[HashJoinAnti[A, B, C]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = HashJoinAntiType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
-    val name = s"HashJoinAnti[${typeA.name}, ${typeB.name}, ${typeC.name}]"
-    val typeArguments = List(typeA, typeB, typeC)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[HashJoinAnti[A, B, C]]
-  }
+  val HashJoinAntiType = HashJoinAntiIRs.HashJoinAntiType
+  type HashJoinAntiType[A, B, C] = HashJoinAntiIRs.HashJoinAntiType[A, B, C]
   implicit def typeHashJoinAnti[A: TypeRep, B: TypeRep, C: TypeRep] = HashJoinAntiType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class HashJoinAntiRep[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[A]) {
     def open(): Rep[Unit] = hashJoinAntiOpen[A, B, C](self)(typeA, typeB, typeC, evidence$1)
@@ -2325,6 +2784,82 @@ trait HashJoinAntiOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   }
   // constructors
   def __newHashJoinAnti[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]])(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit evidence$1: Manifest[A], typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinAnti[A, B, C]] = hashJoinAntiNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)(typeA, typeB, typeC, evidence$1)
+  // IR defs
+  val HashJoinAntiNew = HashJoinAntiIRs.HashJoinAntiNew
+  type HashJoinAntiNew[A, B, C] = HashJoinAntiIRs.HashJoinAntiNew[A, B, C]
+  val HashJoinAntiOpen = HashJoinAntiIRs.HashJoinAntiOpen
+  type HashJoinAntiOpen[A, B, C] = HashJoinAntiIRs.HashJoinAntiOpen[A, B, C]
+  val HashJoinAntiReset = HashJoinAntiIRs.HashJoinAntiReset
+  type HashJoinAntiReset[A, B, C] = HashJoinAntiIRs.HashJoinAntiReset[A, B, C]
+  val HashJoinAntiNext = HashJoinAntiIRs.HashJoinAntiNext
+  type HashJoinAntiNext[A, B, C] = HashJoinAntiIRs.HashJoinAntiNext[A, B, C]
+  val HashJoinAntiConsume = HashJoinAntiIRs.HashJoinAntiConsume
+  type HashJoinAntiConsume[A, B, C] = HashJoinAntiIRs.HashJoinAntiConsume[A, B, C]
+  val HashJoinAnti_Field_ExpectedSize = HashJoinAntiIRs.HashJoinAnti_Field_ExpectedSize
+  type HashJoinAnti_Field_ExpectedSize[A, B, C] = HashJoinAntiIRs.HashJoinAnti_Field_ExpectedSize[A, B, C]
+  val HashJoinAnti_Field_Hm = HashJoinAntiIRs.HashJoinAnti_Field_Hm
+  type HashJoinAnti_Field_Hm[A, B, C] = HashJoinAntiIRs.HashJoinAnti_Field_Hm[A, B, C]
+  val HashJoinAnti_Field_Mode__eq = HashJoinAntiIRs.HashJoinAnti_Field_Mode__eq
+  type HashJoinAnti_Field_Mode__eq[A, B, C] = HashJoinAntiIRs.HashJoinAnti_Field_Mode__eq[A, B, C]
+  val HashJoinAnti_Field_Mode = HashJoinAntiIRs.HashJoinAnti_Field_Mode
+  type HashJoinAnti_Field_Mode[A, B, C] = HashJoinAntiIRs.HashJoinAnti_Field_Mode[A, B, C]
+  val HashJoinAnti_Field_Evidence$1 = HashJoinAntiIRs.HashJoinAnti_Field_Evidence$1
+  type HashJoinAnti_Field_Evidence$1[A, B, C] = HashJoinAntiIRs.HashJoinAnti_Field_Evidence$1[A, B, C]
+  val HashJoinAnti_Field_RightHash = HashJoinAntiIRs.HashJoinAnti_Field_RightHash
+  type HashJoinAnti_Field_RightHash[A, B, C] = HashJoinAntiIRs.HashJoinAnti_Field_RightHash[A, B, C]
+  val HashJoinAnti_Field_LeftHash = HashJoinAntiIRs.HashJoinAnti_Field_LeftHash
+  type HashJoinAnti_Field_LeftHash[A, B, C] = HashJoinAntiIRs.HashJoinAnti_Field_LeftHash[A, B, C]
+  val HashJoinAnti_Field_JoinCond = HashJoinAntiIRs.HashJoinAnti_Field_JoinCond
+  type HashJoinAnti_Field_JoinCond[A, B, C] = HashJoinAntiIRs.HashJoinAnti_Field_JoinCond[A, B, C]
+  val HashJoinAnti_Field_RightParent = HashJoinAntiIRs.HashJoinAnti_Field_RightParent
+  type HashJoinAnti_Field_RightParent[A, B, C] = HashJoinAntiIRs.HashJoinAnti_Field_RightParent[A, B, C]
+  val HashJoinAnti_Field_LeftParent = HashJoinAntiIRs.HashJoinAnti_Field_LeftParent
+  type HashJoinAnti_Field_LeftParent[A, B, C] = HashJoinAntiIRs.HashJoinAnti_Field_LeftParent[A, B, C]
+  val HashJoinAnti_Field_Stop__eq = HashJoinAntiIRs.HashJoinAnti_Field_Stop__eq
+  type HashJoinAnti_Field_Stop__eq[A, B, C] = HashJoinAntiIRs.HashJoinAnti_Field_Stop__eq[A, B, C]
+  val HashJoinAnti_Field_Stop = HashJoinAntiIRs.HashJoinAnti_Field_Stop
+  type HashJoinAnti_Field_Stop[A, B, C] = HashJoinAntiIRs.HashJoinAnti_Field_Stop[A, B, C]
+  val HashJoinAnti_Field_Child__eq = HashJoinAntiIRs.HashJoinAnti_Field_Child__eq
+  type HashJoinAnti_Field_Child__eq[A, B, C] = HashJoinAntiIRs.HashJoinAnti_Field_Child__eq[A, B, C]
+  val HashJoinAnti_Field_Child = HashJoinAntiIRs.HashJoinAnti_Field_Child
+  type HashJoinAnti_Field_Child[A, B, C] = HashJoinAntiIRs.HashJoinAnti_Field_Child[A, B, C]
+  // method definitions
+  def hashJoinAntiNew[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[A]): Rep[HashJoinAnti[A, B, C]] = HashJoinAntiNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)
+  def hashJoinAntiOpen[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[A]): Rep[Unit] = HashJoinAntiOpen[A, B, C](self)
+  def hashJoinAntiReset[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[A]): Rep[Unit] = HashJoinAntiReset[A, B, C](self)
+  def hashJoinAntiNext[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[A]): Rep[Unit] = HashJoinAntiNext[A, B, C](self)
+  def hashJoinAntiConsume[A, B, C](self: Rep[HashJoinAnti[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[A]): Rep[Unit] = HashJoinAntiConsume[A, B, C](self, tuple)
+  def hashJoinAnti_Field_ExpectedSize[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = HashJoinAnti_Field_ExpectedSize[A, B, C](self)
+  def hashJoinAnti_Field_Hm[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[MultiMap[C, A]] = HashJoinAnti_Field_Hm[A, B, C](self)
+  def hashJoinAnti_Field_Mode_$eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAnti_Field_Mode__eq[A, B, C](self, x$1)
+  def hashJoinAnti_Field_Mode[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = HashJoinAnti_Field_Mode[A, B, C](self)
+  def hashJoinAnti_Field_Evidence$1[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Manifest[A]] = HashJoinAnti_Field_Evidence$1[A, B, C](self)
+  def hashJoinAnti_Field_RightHash[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = HashJoinAnti_Field_RightHash[A, B, C](self)
+  def hashJoinAnti_Field_LeftHash[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = HashJoinAnti_Field_LeftHash[A, B, C](self)
+  def hashJoinAnti_Field_JoinCond[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = HashJoinAnti_Field_JoinCond[A, B, C](self)
+  def hashJoinAnti_Field_RightParent[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = HashJoinAnti_Field_RightParent[A, B, C](self)
+  def hashJoinAnti_Field_LeftParent[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = HashJoinAnti_Field_LeftParent[A, B, C](self)
+  def hashJoinAnti_Field_Stop_$eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAnti_Field_Stop__eq[A, B, C](self, x$1)
+  def hashJoinAnti_Field_Stop[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Boolean] = HashJoinAnti_Field_Stop[A, B, C](self)
+  def hashJoinAnti_Field_Child_$eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAnti_Field_Child__eq[A, B, C](self, x$1)
+  def hashJoinAnti_Field_Child[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] = HashJoinAnti_Field_Child[A, B, C](self)
+  type HashJoinAnti[A, B, C] = ch.epfl.data.legobase.queryengine.push.HashJoinAnti[A, B, C]
+}
+object HashJoinAntiIRs extends Base {
+  import MultiMapIRs._
+  import OperatorIRs._
+  // Type representation
+  case class HashJoinAntiType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[HashJoinAnti[A, B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = HashJoinAntiType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    private implicit val tagC = typeC.typeTag
+    val name = s"HashJoinAnti[${typeA.name}, ${typeB.name}, ${typeC.name}]"
+    val typeArguments = List(typeA, typeB, typeC)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[HashJoinAnti[A, B, C]]
+  }
+  implicit def typeHashJoinAnti[A: TypeRep, B: TypeRep, C: TypeRep] = HashJoinAntiType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
   case class HashJoinAntiNew[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$1: Manifest[A]) extends ConstructorDef[HashJoinAnti[A, B, C]](List(typeA, typeB, typeC), "HashJoinAnti", List(List(leftParent, rightParent), List(joinCond), List(leftHash), List(rightHash))) {
     override def curriedConstructor = (copy[A, B, C] _).curried
@@ -2370,7 +2905,7 @@ trait HashJoinAntiOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  case class HashJoinAnti_Field_Mode_$eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Int](self, "mode", x$1) {
+  case class HashJoinAnti_Field_Mode__eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Int](self, "mode", x$1) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -2414,7 +2949,7 @@ trait HashJoinAntiOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  case class HashJoinAnti_Field_Stop_$eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Boolean](self, "stop", x$1) {
+  case class HashJoinAnti_Field_Stop__eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Boolean](self, "stop", x$1) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -2422,7 +2957,7 @@ trait HashJoinAntiOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  case class HashJoinAnti_Field_Child_$eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
+  case class HashJoinAnti_Field_Child__eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -2430,26 +2965,6 @@ trait HashJoinAntiOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  // method definitions
-  def hashJoinAntiNew[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[A]): Rep[HashJoinAnti[A, B, C]] = HashJoinAntiNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)
-  def hashJoinAntiOpen[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[A]): Rep[Unit] = HashJoinAntiOpen[A, B, C](self)
-  def hashJoinAntiReset[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[A]): Rep[Unit] = HashJoinAntiReset[A, B, C](self)
-  def hashJoinAntiNext[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[A]): Rep[Unit] = HashJoinAntiNext[A, B, C](self)
-  def hashJoinAntiConsume[A, B, C](self: Rep[HashJoinAnti[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[A]): Rep[Unit] = HashJoinAntiConsume[A, B, C](self, tuple)
-  def hashJoinAnti_Field_ExpectedSize[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = HashJoinAnti_Field_ExpectedSize[A, B, C](self)
-  def hashJoinAnti_Field_Hm[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[MultiMap[C, A]] = HashJoinAnti_Field_Hm[A, B, C](self)
-  def hashJoinAnti_Field_Mode_$eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAnti_Field_Mode_$eq[A, B, C](self, x$1)
-  def hashJoinAnti_Field_Mode[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = HashJoinAnti_Field_Mode[A, B, C](self)
-  def hashJoinAnti_Field_Evidence$1[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Manifest[A]] = HashJoinAnti_Field_Evidence$1[A, B, C](self)
-  def hashJoinAnti_Field_RightHash[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = HashJoinAnti_Field_RightHash[A, B, C](self)
-  def hashJoinAnti_Field_LeftHash[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = HashJoinAnti_Field_LeftHash[A, B, C](self)
-  def hashJoinAnti_Field_JoinCond[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = HashJoinAnti_Field_JoinCond[A, B, C](self)
-  def hashJoinAnti_Field_RightParent[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = HashJoinAnti_Field_RightParent[A, B, C](self)
-  def hashJoinAnti_Field_LeftParent[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = HashJoinAnti_Field_LeftParent[A, B, C](self)
-  def hashJoinAnti_Field_Stop_$eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAnti_Field_Stop_$eq[A, B, C](self, x$1)
-  def hashJoinAnti_Field_Stop[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Boolean] = HashJoinAnti_Field_Stop[A, B, C](self)
-  def hashJoinAnti_Field_Child_$eq[A, B, C](self: Rep[HashJoinAnti[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = HashJoinAnti_Field_Child_$eq[A, B, C](self, x$1)
-  def hashJoinAnti_Field_Child[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] = HashJoinAnti_Field_Child[A, B, C](self)
   type HashJoinAnti[A, B, C] = ch.epfl.data.legobase.queryengine.push.HashJoinAnti[A, B, C]
 }
 trait HashJoinAntiImplicits extends HashJoinAntiOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
@@ -2539,16 +3054,10 @@ trait HashJoinAntiPartialEvaluation extends HashJoinAntiComponent with BaseParti
   // Pure function partial evaluation
 }
 trait HashJoinAntiComponent extends HashJoinAntiOps with HashJoinAntiImplicits { this: ch.epfl.data.legobase.deep.DeepDSL => }
-trait ViewOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
+trait ViewOpOps extends Base with ArrayOps with OperatorOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case class ViewOpType[A](typeA: TypeRep[A]) extends TypeRep[ViewOp[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ViewOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"ViewOp[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[ViewOp[A]]
-  }
+  val ViewOpType = ViewOpIRs.ViewOpType
+  type ViewOpType[A] = ViewOpIRs.ViewOpType[A]
   implicit def typeViewOp[A: TypeRep] = ViewOpType(implicitly[TypeRep[A]])
   implicit class ViewOpRep[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]) {
     def open(): Rep[Unit] = viewOpOpen[A](self)(typeA, evidence$2)
@@ -2573,6 +3082,74 @@ trait ViewOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   }
   // constructors
   def __newViewOp[A](parent: Rep[Operator[A]])(implicit evidence$2: Manifest[A], typeA: TypeRep[A]): Rep[ViewOp[A]] = viewOpNew[A](parent)(typeA, evidence$2)
+  // IR defs
+  val ViewOpNew = ViewOpIRs.ViewOpNew
+  type ViewOpNew[A] = ViewOpIRs.ViewOpNew[A]
+  val ViewOpOpen = ViewOpIRs.ViewOpOpen
+  type ViewOpOpen[A] = ViewOpIRs.ViewOpOpen[A]
+  val ViewOpReset = ViewOpIRs.ViewOpReset
+  type ViewOpReset[A] = ViewOpIRs.ViewOpReset[A]
+  val ViewOpNext = ViewOpIRs.ViewOpNext
+  type ViewOpNext[A] = ViewOpIRs.ViewOpNext[A]
+  val ViewOpConsume = ViewOpIRs.ViewOpConsume
+  type ViewOpConsume[A] = ViewOpIRs.ViewOpConsume[A]
+  val ViewOp_Field_Initialized__eq = ViewOpIRs.ViewOp_Field_Initialized__eq
+  type ViewOp_Field_Initialized__eq[A] = ViewOpIRs.ViewOp_Field_Initialized__eq[A]
+  val ViewOp_Field_Initialized = ViewOpIRs.ViewOp_Field_Initialized
+  type ViewOp_Field_Initialized[A] = ViewOpIRs.ViewOp_Field_Initialized[A]
+  val ViewOp_Field_ExpectedSize = ViewOpIRs.ViewOp_Field_ExpectedSize
+  type ViewOp_Field_ExpectedSize[A] = ViewOpIRs.ViewOp_Field_ExpectedSize[A]
+  val ViewOp_Field_Table = ViewOpIRs.ViewOp_Field_Table
+  type ViewOp_Field_Table[A] = ViewOpIRs.ViewOp_Field_Table[A]
+  val ViewOp_Field_Size__eq = ViewOpIRs.ViewOp_Field_Size__eq
+  type ViewOp_Field_Size__eq[A] = ViewOpIRs.ViewOp_Field_Size__eq[A]
+  val ViewOp_Field_Size = ViewOpIRs.ViewOp_Field_Size
+  type ViewOp_Field_Size[A] = ViewOpIRs.ViewOp_Field_Size[A]
+  val ViewOp_Field_Evidence$2 = ViewOpIRs.ViewOp_Field_Evidence$2
+  type ViewOp_Field_Evidence$2[A] = ViewOpIRs.ViewOp_Field_Evidence$2[A]
+  val ViewOp_Field_Parent = ViewOpIRs.ViewOp_Field_Parent
+  type ViewOp_Field_Parent[A] = ViewOpIRs.ViewOp_Field_Parent[A]
+  val ViewOp_Field_Stop__eq = ViewOpIRs.ViewOp_Field_Stop__eq
+  type ViewOp_Field_Stop__eq[A] = ViewOpIRs.ViewOp_Field_Stop__eq[A]
+  val ViewOp_Field_Stop = ViewOpIRs.ViewOp_Field_Stop
+  type ViewOp_Field_Stop[A] = ViewOpIRs.ViewOp_Field_Stop[A]
+  val ViewOp_Field_Child__eq = ViewOpIRs.ViewOp_Field_Child__eq
+  type ViewOp_Field_Child__eq[A] = ViewOpIRs.ViewOp_Field_Child__eq[A]
+  val ViewOp_Field_Child = ViewOpIRs.ViewOp_Field_Child
+  type ViewOp_Field_Child[A] = ViewOpIRs.ViewOp_Field_Child[A]
+  // method definitions
+  def viewOpNew[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]): Rep[ViewOp[A]] = ViewOpNew[A](parent)
+  def viewOpOpen[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]): Rep[Unit] = ViewOpOpen[A](self)
+  def viewOpReset[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]): Rep[Unit] = ViewOpReset[A](self)
+  def viewOpNext[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]): Rep[Unit] = ViewOpNext[A](self)
+  def viewOpConsume[A](self: Rep[ViewOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]): Rep[Unit] = ViewOpConsume[A](self, tuple)
+  def viewOp_Field_Initialized_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Initialized__eq[A](self, x$1)
+  def viewOp_Field_Initialized[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = ViewOp_Field_Initialized[A](self)
+  def viewOp_Field_ExpectedSize[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ViewOp_Field_ExpectedSize[A](self)
+  def viewOp_Field_Table[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Array[A]] = ViewOp_Field_Table[A](self)
+  def viewOp_Field_Size_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Size__eq[A](self, x$1)
+  def viewOp_Field_Size[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ViewOp_Field_Size[A](self)
+  def viewOp_Field_Evidence$2[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Manifest[A]] = ViewOp_Field_Evidence$2[A](self)
+  def viewOp_Field_Parent[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = ViewOp_Field_Parent[A](self)
+  def viewOp_Field_Stop_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Stop__eq[A](self, x$1)
+  def viewOp_Field_Stop[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = ViewOp_Field_Stop[A](self)
+  def viewOp_Field_Child_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Child__eq[A](self, x$1)
+  def viewOp_Field_Child[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = ViewOp_Field_Child[A](self)
+  type ViewOp[A] = ch.epfl.data.legobase.queryengine.push.ViewOp[A]
+}
+object ViewOpIRs extends Base {
+  import ArrayIRs._
+  import OperatorIRs._
+  // Type representation
+  case class ViewOpType[A](typeA: TypeRep[A]) extends TypeRep[ViewOp[A]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ViewOpType(newArguments(0).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    val name = s"ViewOp[${typeA.name}]"
+    val typeArguments = List(typeA)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[ViewOp[A]]
+  }
+  implicit def typeViewOp[A: TypeRep] = ViewOpType(implicitly[TypeRep[A]])
   // case classes
   case class ViewOpNew[A](parent: Rep[Operator[A]])(implicit val typeA: TypeRep[A], val evidence$2: Manifest[A]) extends ConstructorDef[ViewOp[A]](List(typeA), "ViewOp", List(List(parent))) {
     override def curriedConstructor = (copy[A] _)
@@ -2594,7 +3171,7 @@ trait ViewOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A] _).curried
   }
 
-  case class ViewOp_Field_Initialized_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "initialized", x$1) {
+  case class ViewOp_Field_Initialized__eq[A](self: Rep[ViewOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "initialized", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -2626,7 +3203,7 @@ trait ViewOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  case class ViewOp_Field_Size_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit val typeA: TypeRep[A]) extends FieldSetter[Int](self, "size", x$1) {
+  case class ViewOp_Field_Size__eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit val typeA: TypeRep[A]) extends FieldSetter[Int](self, "size", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -2646,7 +3223,7 @@ trait ViewOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
 
   }
 
-  case class ViewOp_Field_Stop_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
+  case class ViewOp_Field_Stop__eq[A](self: Rep[ViewOp[A]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A]) extends FieldSetter[Boolean](self, "stop", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -2654,7 +3231,7 @@ trait ViewOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class ViewOp_Field_Child_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
+  case class ViewOp_Field_Child__eq[A](self: Rep[ViewOp[A]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -2662,24 +3239,6 @@ trait ViewOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy[A] _)
   }
 
-  // method definitions
-  def viewOpNew[A](parent: Rep[Operator[A]])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]): Rep[ViewOp[A]] = ViewOpNew[A](parent)
-  def viewOpOpen[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]): Rep[Unit] = ViewOpOpen[A](self)
-  def viewOpReset[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]): Rep[Unit] = ViewOpReset[A](self)
-  def viewOpNext[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]): Rep[Unit] = ViewOpNext[A](self)
-  def viewOpConsume[A](self: Rep[ViewOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]): Rep[Unit] = ViewOpConsume[A](self, tuple)
-  def viewOp_Field_Initialized_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Initialized_$eq[A](self, x$1)
-  def viewOp_Field_Initialized[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = ViewOp_Field_Initialized[A](self)
-  def viewOp_Field_ExpectedSize[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ViewOp_Field_ExpectedSize[A](self)
-  def viewOp_Field_Table[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Array[A]] = ViewOp_Field_Table[A](self)
-  def viewOp_Field_Size_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Size_$eq[A](self, x$1)
-  def viewOp_Field_Size[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = ViewOp_Field_Size[A](self)
-  def viewOp_Field_Evidence$2[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Manifest[A]] = ViewOp_Field_Evidence$2[A](self)
-  def viewOp_Field_Parent[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = ViewOp_Field_Parent[A](self)
-  def viewOp_Field_Stop_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Stop_$eq[A](self, x$1)
-  def viewOp_Field_Stop[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = ViewOp_Field_Stop[A](self)
-  def viewOp_Field_Child_$eq[A](self: Rep[ViewOp[A]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A]): Rep[Unit] = ViewOp_Field_Child_$eq[A](self, x$1)
-  def viewOp_Field_Child[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] = ViewOp_Field_Child[A](self)
   type ViewOp[A] = ch.epfl.data.legobase.queryengine.push.ViewOp[A]
 }
 trait ViewOpImplicits extends ViewOpOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
@@ -2742,18 +3301,10 @@ trait ViewOpPartialEvaluation extends ViewOpComponent with BasePartialEvaluation
   // Pure function partial evaluation
 }
 trait ViewOpComponent extends ViewOpOps with ViewOpImplicits { this: ch.epfl.data.legobase.deep.DeepDSL => }
-trait LeftOuterJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
+trait LeftOuterJoinOpOps extends Base with MultiMapOps with OperatorOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case class LeftOuterJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[LeftOuterJoinOp[A, B, C]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LeftOuterJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(2).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
-    val name = s"LeftOuterJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
-    val typeArguments = List(typeA, typeB, typeC)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[LeftOuterJoinOp[A, B, C]]
-  }
+  val LeftOuterJoinOpType = LeftOuterJoinOpIRs.LeftOuterJoinOpType
+  type LeftOuterJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOpType[A, B, C]
   implicit def typeLeftOuterJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep] = LeftOuterJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class LeftOuterJoinOpRep[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$3: Manifest[B]) {
     def open(): Rep[Unit] = leftOuterJoinOpOpen[A, B, C](self)(typeA, typeB, typeC, evidence$3)
@@ -2781,6 +3332,85 @@ trait LeftOuterJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL
   }
   // constructors
   def __newLeftOuterJoinOp[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]])(joinCond: Rep[((A, B) => Boolean)])(leftHash: Rep[(A => C)])(rightHash: Rep[(B => C)])(implicit evidence$3: Manifest[B], typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[LeftOuterJoinOp[A, B, C]] = leftOuterJoinOpNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)(typeA, typeB, typeC, evidence$3)
+  // IR defs
+  val LeftOuterJoinOpNew = LeftOuterJoinOpIRs.LeftOuterJoinOpNew
+  type LeftOuterJoinOpNew[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOpNew[A, B, C]
+  val LeftOuterJoinOpOpen = LeftOuterJoinOpIRs.LeftOuterJoinOpOpen
+  type LeftOuterJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOpOpen[A, B, C]
+  val LeftOuterJoinOpNext = LeftOuterJoinOpIRs.LeftOuterJoinOpNext
+  type LeftOuterJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOpNext[A, B, C]
+  val LeftOuterJoinOpReset = LeftOuterJoinOpIRs.LeftOuterJoinOpReset
+  type LeftOuterJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOpReset[A, B, C]
+  val LeftOuterJoinOpConsume = LeftOuterJoinOpIRs.LeftOuterJoinOpConsume
+  type LeftOuterJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOpConsume[A, B, C]
+  val LeftOuterJoinOp_Field_ExpectedSize = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_ExpectedSize
+  type LeftOuterJoinOp_Field_ExpectedSize[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_ExpectedSize[A, B, C]
+  val LeftOuterJoinOp_Field_DefaultB = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_DefaultB
+  type LeftOuterJoinOp_Field_DefaultB[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_DefaultB[A, B, C]
+  val LeftOuterJoinOp_Field_Hm = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Hm
+  type LeftOuterJoinOp_Field_Hm[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Hm[A, B, C]
+  val LeftOuterJoinOp_Field_Mode__eq = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Mode__eq
+  type LeftOuterJoinOp_Field_Mode__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Mode__eq[A, B, C]
+  val LeftOuterJoinOp_Field_Mode = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Mode
+  type LeftOuterJoinOp_Field_Mode[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Mode[A, B, C]
+  val LeftOuterJoinOp_Field_Evidence$3 = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Evidence$3
+  type LeftOuterJoinOp_Field_Evidence$3[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Evidence$3[A, B, C]
+  val LeftOuterJoinOp_Field_RightHash = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_RightHash
+  type LeftOuterJoinOp_Field_RightHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_RightHash[A, B, C]
+  val LeftOuterJoinOp_Field_LeftHash = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_LeftHash
+  type LeftOuterJoinOp_Field_LeftHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_LeftHash[A, B, C]
+  val LeftOuterJoinOp_Field_JoinCond = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_JoinCond
+  type LeftOuterJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_JoinCond[A, B, C]
+  val LeftOuterJoinOp_Field_RightParent = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_RightParent
+  type LeftOuterJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_RightParent[A, B, C]
+  val LeftOuterJoinOp_Field_LeftParent = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_LeftParent
+  type LeftOuterJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_LeftParent[A, B, C]
+  val LeftOuterJoinOp_Field_Stop__eq = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Stop__eq
+  type LeftOuterJoinOp_Field_Stop__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Stop__eq[A, B, C]
+  val LeftOuterJoinOp_Field_Stop = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Stop
+  type LeftOuterJoinOp_Field_Stop[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Stop[A, B, C]
+  val LeftOuterJoinOp_Field_Child__eq = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Child__eq
+  type LeftOuterJoinOp_Field_Child__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Child__eq[A, B, C]
+  val LeftOuterJoinOp_Field_Child = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Child
+  type LeftOuterJoinOp_Field_Child[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOp_Field_Child[A, B, C]
+  // method definitions
+  def leftOuterJoinOpNew[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$3: Manifest[B]): Rep[LeftOuterJoinOp[A, B, C]] = LeftOuterJoinOpNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)
+  def leftOuterJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$3: Manifest[B]): Rep[Unit] = LeftOuterJoinOpOpen[A, B, C](self)
+  def leftOuterJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$3: Manifest[B]): Rep[Unit] = LeftOuterJoinOpNext[A, B, C](self)
+  def leftOuterJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$3: Manifest[B]): Rep[Unit] = LeftOuterJoinOpReset[A, B, C](self)
+  def leftOuterJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$3: Manifest[B]): Rep[Unit] = LeftOuterJoinOpConsume[A, B, C](self, tuple)
+  def leftOuterJoinOp_Field_ExpectedSize[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = LeftOuterJoinOp_Field_ExpectedSize[A, B, C](self)
+  def leftOuterJoinOp_Field_DefaultB[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[B] = LeftOuterJoinOp_Field_DefaultB[A, B, C](self)
+  def leftOuterJoinOp_Field_Hm[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[MultiMap[C, B]] = LeftOuterJoinOp_Field_Hm[A, B, C](self)
+  def leftOuterJoinOp_Field_Mode_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftOuterJoinOp_Field_Mode__eq[A, B, C](self, x$1)
+  def leftOuterJoinOp_Field_Mode[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = LeftOuterJoinOp_Field_Mode[A, B, C](self)
+  def leftOuterJoinOp_Field_Evidence$3[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Manifest[B]] = LeftOuterJoinOp_Field_Evidence$3[A, B, C](self)
+  def leftOuterJoinOp_Field_RightHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = LeftOuterJoinOp_Field_RightHash[A, B, C](self)
+  def leftOuterJoinOp_Field_LeftHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = LeftOuterJoinOp_Field_LeftHash[A, B, C](self)
+  def leftOuterJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = LeftOuterJoinOp_Field_JoinCond[A, B, C](self)
+  def leftOuterJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = LeftOuterJoinOp_Field_RightParent[A, B, C](self)
+  def leftOuterJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = LeftOuterJoinOp_Field_LeftParent[A, B, C](self)
+  def leftOuterJoinOp_Field_Stop_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftOuterJoinOp_Field_Stop__eq[A, B, C](self, x$1)
+  def leftOuterJoinOp_Field_Stop[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Boolean] = LeftOuterJoinOp_Field_Stop[A, B, C](self)
+  def leftOuterJoinOp_Field_Child_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftOuterJoinOp_Field_Child__eq[A, B, C](self, x$1)
+  def leftOuterJoinOp_Field_Child[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] = LeftOuterJoinOp_Field_Child[A, B, C](self)
+  type LeftOuterJoinOp[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = ch.epfl.data.legobase.queryengine.push.LeftOuterJoinOp[A, B, C]
+}
+object LeftOuterJoinOpIRs extends Base {
+  import MultiMapIRs._
+  import OperatorIRs._
+  // Type representation
+  case class LeftOuterJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[LeftOuterJoinOp[A, B, C]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LeftOuterJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.pardis.shallow.Record]], newArguments(2).asInstanceOf[TypeRep[_]])
+    private implicit val tagA = typeA.typeTag
+    private implicit val tagB = typeB.typeTag
+    private implicit val tagC = typeC.typeTag
+    val name = s"LeftOuterJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
+    val typeArguments = List(typeA, typeB, typeC)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[LeftOuterJoinOp[A, B, C]]
+  }
+  implicit def typeLeftOuterJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep] = LeftOuterJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
   case class LeftOuterJoinOpNew[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$3: Manifest[B]) extends ConstructorDef[LeftOuterJoinOp[A, B, C]](List(typeA, typeB, typeC), "LeftOuterJoinOp", List(List(leftParent, rightParent), List(joinCond), List(leftHash), List(rightHash))) {
     override def curriedConstructor = (copy[A, B, C] _).curried
@@ -2838,7 +3468,7 @@ trait LeftOuterJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL
 
   }
 
-  case class LeftOuterJoinOp_Field_Mode_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Int](self, "mode", x$1) {
+  case class LeftOuterJoinOp_Field_Mode__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Int](self, "mode", x$1) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -2912,7 +3542,7 @@ trait LeftOuterJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL
 
   }
 
-  case class LeftOuterJoinOp_Field_Stop_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Boolean](self, "stop", x$1) {
+  case class LeftOuterJoinOp_Field_Stop__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Boolean])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Boolean](self, "stop", x$1) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -2920,7 +3550,7 @@ trait LeftOuterJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  case class LeftOuterJoinOp_Field_Child_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
+  case class LeftOuterJoinOp_Field_Child__eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FieldSetter[Operator[Any]](self, "child", x$1) {
     override def curriedConstructor = (copy[A, B, C] _).curried
   }
 
@@ -2928,27 +3558,6 @@ trait LeftOuterJoinOpOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL
     override def curriedConstructor = (copy[A, B, C] _)
   }
 
-  // method definitions
-  def leftOuterJoinOpNew[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$3: Manifest[B]): Rep[LeftOuterJoinOp[A, B, C]] = LeftOuterJoinOpNew[A, B, C](leftParent, rightParent, joinCond, leftHash, rightHash)
-  def leftOuterJoinOpOpen[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$3: Manifest[B]): Rep[Unit] = LeftOuterJoinOpOpen[A, B, C](self)
-  def leftOuterJoinOpNext[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$3: Manifest[B]): Rep[Unit] = LeftOuterJoinOpNext[A, B, C](self)
-  def leftOuterJoinOpReset[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$3: Manifest[B]): Rep[Unit] = LeftOuterJoinOpReset[A, B, C](self)
-  def leftOuterJoinOpConsume[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$3: Manifest[B]): Rep[Unit] = LeftOuterJoinOpConsume[A, B, C](self, tuple)
-  def leftOuterJoinOp_Field_ExpectedSize[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = LeftOuterJoinOp_Field_ExpectedSize[A, B, C](self)
-  def leftOuterJoinOp_Field_DefaultB[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[B] = LeftOuterJoinOp_Field_DefaultB[A, B, C](self)
-  def leftOuterJoinOp_Field_Hm[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[MultiMap[C, B]] = LeftOuterJoinOp_Field_Hm[A, B, C](self)
-  def leftOuterJoinOp_Field_Mode_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftOuterJoinOp_Field_Mode_$eq[A, B, C](self, x$1)
-  def leftOuterJoinOp_Field_Mode[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Int] = LeftOuterJoinOp_Field_Mode[A, B, C](self)
-  def leftOuterJoinOp_Field_Evidence$3[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Manifest[B]] = LeftOuterJoinOp_Field_Evidence$3[A, B, C](self)
-  def leftOuterJoinOp_Field_RightHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(B => C)] = LeftOuterJoinOp_Field_RightHash[A, B, C](self)
-  def leftOuterJoinOp_Field_LeftHash[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[(A => C)] = LeftOuterJoinOp_Field_LeftHash[A, B, C](self)
-  def leftOuterJoinOp_Field_JoinCond[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[((A, B) => Boolean)] = LeftOuterJoinOp_Field_JoinCond[A, B, C](self)
-  def leftOuterJoinOp_Field_RightParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[B]] = LeftOuterJoinOp_Field_RightParent[A, B, C](self)
-  def leftOuterJoinOp_Field_LeftParent[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[A]] = LeftOuterJoinOp_Field_LeftParent[A, B, C](self)
-  def leftOuterJoinOp_Field_Stop_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftOuterJoinOp_Field_Stop_$eq[A, B, C](self, x$1)
-  def leftOuterJoinOp_Field_Stop[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Boolean] = LeftOuterJoinOp_Field_Stop[A, B, C](self)
-  def leftOuterJoinOp_Field_Child_$eq[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]], x$1: Rep[Operator[Any]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Unit] = LeftOuterJoinOp_Field_Child_$eq[A, B, C](self, x$1)
-  def leftOuterJoinOp_Field_Child[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] = LeftOuterJoinOp_Field_Child[A, B, C](self)
   type LeftOuterJoinOp[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = ch.epfl.data.legobase.queryengine.push.LeftOuterJoinOp[A, B, C]
 }
 trait LeftOuterJoinOpImplicits extends LeftOuterJoinOpOps { this: ch.epfl.data.legobase.deep.DeepDSL =>

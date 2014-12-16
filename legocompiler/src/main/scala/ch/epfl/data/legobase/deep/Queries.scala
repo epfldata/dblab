@@ -12,13 +12,7 @@ import pardis.deep.scalalib.io._
 
 trait QueriesOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
-  case object QueriesType extends TypeRep[Queries] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = QueriesType
-    val name = "Queries"
-    val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[Queries]
-  }
+  val QueriesType = QueriesIRs.QueriesType
   implicit val typeQueries = QueriesType
   implicit class QueriesRep(self: Rep[Queries]) {
 
@@ -49,6 +43,86 @@ trait QueriesOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   }
   // constructors
 
+  // IR defs
+  val QueriesQ1Object = QueriesIRs.QueriesQ1Object
+  type QueriesQ1Object = QueriesIRs.QueriesQ1Object
+  val QueriesQ2Object = QueriesIRs.QueriesQ2Object
+  type QueriesQ2Object = QueriesIRs.QueriesQ2Object
+  val QueriesQ3Object = QueriesIRs.QueriesQ3Object
+  type QueriesQ3Object = QueriesIRs.QueriesQ3Object
+  val QueriesQ4Object = QueriesIRs.QueriesQ4Object
+  type QueriesQ4Object = QueriesIRs.QueriesQ4Object
+  val QueriesQ5Object = QueriesIRs.QueriesQ5Object
+  type QueriesQ5Object = QueriesIRs.QueriesQ5Object
+  val QueriesQ6Object = QueriesIRs.QueriesQ6Object
+  type QueriesQ6Object = QueriesIRs.QueriesQ6Object
+  val QueriesQ7Object = QueriesIRs.QueriesQ7Object
+  type QueriesQ7Object = QueriesIRs.QueriesQ7Object
+  val QueriesQ8Object = QueriesIRs.QueriesQ8Object
+  type QueriesQ8Object = QueriesIRs.QueriesQ8Object
+  val QueriesQ9Object = QueriesIRs.QueriesQ9Object
+  type QueriesQ9Object = QueriesIRs.QueriesQ9Object
+  val QueriesQ10Object = QueriesIRs.QueriesQ10Object
+  type QueriesQ10Object = QueriesIRs.QueriesQ10Object
+  val QueriesQ11Object = QueriesIRs.QueriesQ11Object
+  type QueriesQ11Object = QueriesIRs.QueriesQ11Object
+  val QueriesQ12Object = QueriesIRs.QueriesQ12Object
+  type QueriesQ12Object = QueriesIRs.QueriesQ12Object
+  val QueriesQ13Object = QueriesIRs.QueriesQ13Object
+  type QueriesQ13Object = QueriesIRs.QueriesQ13Object
+  val QueriesQ14Object = QueriesIRs.QueriesQ14Object
+  type QueriesQ14Object = QueriesIRs.QueriesQ14Object
+  val QueriesQ15Object = QueriesIRs.QueriesQ15Object
+  type QueriesQ15Object = QueriesIRs.QueriesQ15Object
+  val QueriesQ16Object = QueriesIRs.QueriesQ16Object
+  type QueriesQ16Object = QueriesIRs.QueriesQ16Object
+  val QueriesQ17Object = QueriesIRs.QueriesQ17Object
+  type QueriesQ17Object = QueriesIRs.QueriesQ17Object
+  val QueriesQ18Object = QueriesIRs.QueriesQ18Object
+  type QueriesQ18Object = QueriesIRs.QueriesQ18Object
+  val QueriesQ19Object = QueriesIRs.QueriesQ19Object
+  type QueriesQ19Object = QueriesIRs.QueriesQ19Object
+  val QueriesQ20Object = QueriesIRs.QueriesQ20Object
+  type QueriesQ20Object = QueriesIRs.QueriesQ20Object
+  val QueriesQ21Object = QueriesIRs.QueriesQ21Object
+  type QueriesQ21Object = QueriesIRs.QueriesQ21Object
+  val QueriesQ22Object = QueriesIRs.QueriesQ22Object
+  type QueriesQ22Object = QueriesIRs.QueriesQ22Object
+  // method definitions
+  def queriesQ1Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ1Object(numRuns)
+  def queriesQ2Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ2Object(numRuns)
+  def queriesQ3Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ3Object(numRuns)
+  def queriesQ4Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ4Object(numRuns)
+  def queriesQ5Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ5Object(numRuns)
+  def queriesQ6Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ6Object(numRuns)
+  def queriesQ7Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ7Object(numRuns)
+  def queriesQ8Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ8Object(numRuns)
+  def queriesQ9Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ9Object(numRuns)
+  def queriesQ10Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ10Object(numRuns)
+  def queriesQ11Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ11Object(numRuns)
+  def queriesQ12Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ12Object(numRuns)
+  def queriesQ13Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ13Object(numRuns)
+  def queriesQ14Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ14Object(numRuns)
+  def queriesQ15Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ15Object(numRuns)
+  def queriesQ16Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ16Object(numRuns)
+  def queriesQ17Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ17Object(numRuns)
+  def queriesQ18Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ18Object(numRuns)
+  def queriesQ19Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ19Object(numRuns)
+  def queriesQ20Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ20Object(numRuns)
+  def queriesQ21Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ21Object(numRuns)
+  def queriesQ22Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ22Object(numRuns)
+  type Queries = ch.epfl.data.legobase.Queries
+}
+object QueriesIRs extends Base {
+  // Type representation
+  case object QueriesType extends TypeRep[Queries] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = QueriesType
+    val name = "Queries"
+    val typeArguments = Nil
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[Queries]
+  }
+  implicit val typeQueries = QueriesType
   // case classes
   case class QueriesQ1Object(numRuns: Rep[Int]) extends FunctionDef[Unit](None, "Queries.Q1", List(List(numRuns))) {
     override def curriedConstructor = (copy _)
@@ -138,29 +212,6 @@ trait QueriesOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
     override def curriedConstructor = (copy _)
   }
 
-  // method definitions
-  def queriesQ1Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ1Object(numRuns)
-  def queriesQ2Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ2Object(numRuns)
-  def queriesQ3Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ3Object(numRuns)
-  def queriesQ4Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ4Object(numRuns)
-  def queriesQ5Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ5Object(numRuns)
-  def queriesQ6Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ6Object(numRuns)
-  def queriesQ7Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ7Object(numRuns)
-  def queriesQ8Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ8Object(numRuns)
-  def queriesQ9Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ9Object(numRuns)
-  def queriesQ10Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ10Object(numRuns)
-  def queriesQ11Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ11Object(numRuns)
-  def queriesQ12Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ12Object(numRuns)
-  def queriesQ13Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ13Object(numRuns)
-  def queriesQ14Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ14Object(numRuns)
-  def queriesQ15Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ15Object(numRuns)
-  def queriesQ16Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ16Object(numRuns)
-  def queriesQ17Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ17Object(numRuns)
-  def queriesQ18Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ18Object(numRuns)
-  def queriesQ19Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ19Object(numRuns)
-  def queriesQ20Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ20Object(numRuns)
-  def queriesQ21Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ21Object(numRuns)
-  def queriesQ22Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ22Object(numRuns)
   type Queries = ch.epfl.data.legobase.Queries
 }
 trait QueriesImplicits extends QueriesOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
