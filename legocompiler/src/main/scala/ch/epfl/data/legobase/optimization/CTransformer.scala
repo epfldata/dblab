@@ -164,7 +164,7 @@ class ScalaScannerToCFileTransformer(override val IR: LoweringLegoBase) extends 
   }
 }
 
-class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._
@@ -240,7 +240,19 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       if (elemType.isPrimitive) ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, apply(v))
       else if (elemType.name == "OptimalString")
         PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, apply(v))
-      else
+      else if (elemType.isRecord) {
+        class T
+        implicit val typeT = apply(v).tp.typeArguments(0).asInstanceOf[TypeRep[T]]
+        val newV = apply(v).asInstanceOf[Expression[Pointer[T]]]
+        val vContent = *(newV)
+        val tArr = arr.asInstanceOf[Expression[Pointer[T]]]
+        pointer_assign(tArr, i, vContent)
+        val pointerVar = newV match {
+          case Def(ReadVar(v)) => v.asInstanceOf[Var[Pointer[T]]]
+          case x               => Var(x.asInstanceOf[Rep[Var[Pointer[T]]]])
+        }
+        Assign(pointerVar, (&(tArr, i)).asInstanceOf[Rep[Pointer[T]]])(PointerType(typeT))
+      } else
         PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(apply(v).asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
           case x if v.tp.isArray            => transformType(v.tp).typeArguments(0).asInstanceOf[PardisType[Any]]
           case x if x.startsWith("Pointer") => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
@@ -498,11 +510,18 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
         fieldExp __== unit(null)
       else
         fieldExp __!= unit(null)
+    // case Equals(e1, e2, isEqual) if __isRecord(e1) && __isRecord(e2) =>
+    //   class T
+    //   implicit val ttp = (if (e1.tp.isRecord) e1.tp else e1.tp.typeArguments(0)).asInstanceOf[TypeRep[T]]
+    //   val eq = getStructEqualsFunc[T]()
+    //   val res = inlineFunction(eq, e1.asInstanceOf[Rep[T]], e2.asInstanceOf[Rep[T]])
+    //   if (isEqual) res else !res
     case Equals(e1, e2, isEqual) if __isRecord(e1) && __isRecord(e2) =>
-      class T
-      implicit val ttp = (if (e1.tp.isRecord) e1.tp else e1.tp.typeArguments(0)).asInstanceOf[TypeRep[T]]
-      val eq = getStructEqualsFunc[T]()
-      val res = inlineFunction(eq, e1.asInstanceOf[Rep[T]], e2.asInstanceOf[Rep[T]])
+      val ttp = (if (e1.tp.isRecord) e1.tp else e1.tp.typeArguments(0))
+      val structDef = getStructDef(ttp).get
+      val res = structDef.fields.map(f => field(e1, f.name)(f.tpe) __== field(e2, f.name)(f.tpe)).reduce(_ && _)
+      // val eq = getStructEqualsFunc[T]()
+      // val res = inlineFunction(eq, e1.asInstanceOf[Rep[T]], e2.asInstanceOf[Rep[T]])
       if (isEqual) res else !res
   }
   rewrite += rule {
@@ -612,7 +631,7 @@ class OptionToCTransformer(override val IR: LoweringLegoBase) extends RecursiveR
 
   rewrite += rule { case OptionGet(x) => x }
 
-  rewrite += rule { case OptionNonEmpty(x) => infix_!=(x, unit(0)) }
+  rewrite += rule { case OptionNonEmpty(x) => infix_!=(x, unit(null)) }
 
 }
 
