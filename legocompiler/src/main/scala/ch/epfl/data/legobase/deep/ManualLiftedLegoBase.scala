@@ -73,6 +73,7 @@ trait OrderingOps { this: DeepDSL =>
   case class OrderingNew2[T]()(implicit typeT: TypeRep[T]) extends FunctionDef[Ordering[T]](None, s"Ordering[${t2s(typeT)}]", Nil) {
     // override def curriedConstructor = copy[T] _
     override def rebuild(children: PardisFunArg*) = OrderingNew2[T]()
+    override def isPure = true
   }
 
   implicit class OrderingOps[T: TypeRep](cmp: Rep[Ordering[T]]) {

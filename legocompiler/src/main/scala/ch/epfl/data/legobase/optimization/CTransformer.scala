@@ -237,9 +237,9 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       }).asInstanceOf[PardisType[Any]] //if (elemType.isPrimitive) elemType else typePointer(elemType)
       // Read array and perform update
       val arr = field(s, "array")(newTp)
-      if (elemType.isPrimitive) ArrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, apply(v))
+      if (elemType.isPrimitive) arrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, apply(v))
       else if (elemType.name == "OptimalString")
-        PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, apply(v))
+        pointer_assign(arr.asInstanceOf[Expression[Pointer[Any]]], i, apply(v))
       else if (elemType.isRecord) {
         class T
         implicit val typeT = apply(v).tp.typeArguments(0).asInstanceOf[TypeRep[T]]
@@ -251,16 +251,16 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
           case Def(ReadVar(v)) => v.asInstanceOf[Var[Pointer[T]]]
           case x               => Var(x.asInstanceOf[Rep[Var[Pointer[T]]]])
         }
-        Assign(pointerVar, (&(tArr, i)).asInstanceOf[Rep[Pointer[T]]])(PointerType(typeT))
+        __assign(pointerVar, (&(tArr, i)).asInstanceOf[Rep[Pointer[T]]])(PointerType(typeT))
       } else
-        PTRASSIGN(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(apply(v).asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
+        pointer_assign(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(apply(v).asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
           case x if v.tp.isArray            => transformType(v.tp).typeArguments(0).asInstanceOf[PardisType[Any]]
           case x if x.startsWith("Pointer") => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
           case _                            => v.tp
         }))
   }
   rewrite += rule {
-    case ArrayFilter(a, op) => field(a, "array")(transformType(a.tp)).correspondingNode
+    case ArrayFilter(a, op) => field(apply(a), "array")(transformType(a.tp))
   }
   rewrite += rule {
     case ArrayApply(a, i) =>
@@ -504,7 +504,8 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
         getStructDef(e1.tp).get
       else
         getStructDef(e1.tp.typeArguments(0)).get
-      val firstField = structDef.fields.find(f => f.tpe.isPointerType).get
+      System.out.println(structDef.fields)
+      val firstField = structDef.fields.find(f => f.tpe.isPointerType || f.tpe == OptimalStringType).get
       val fieldExp = field(e1, firstField.name)(firstField.tpe)
       if (isEqual)
         fieldExp __== unit(null)
@@ -526,14 +527,18 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
   }
   rewrite += rule {
     case HashCode(t) if t.tp == StringType => unit(0) // KEY is constant. No need to hash anything
-    case HashCode(t) if __isRecord(t) =>
-      val tp = t.tp.asInstanceOf[PardisType[Any]]
-      val hashFunc = {
-        if (t.tp.isRecord) getStructHashFunc[Any]()(tp)
-        else getStructHashFunc[Any]()(tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
-      }
-      val hf = toAtom(hashFunc)(hashFunc.tp)
-      inlineFunction(hf.asInstanceOf[Rep[Any => Int]], apply(t))
+    // case HashCode(t) if __isRecord(t) =>
+    //   val tp = t.tp.asInstanceOf[PardisType[Any]]
+    //   val hashFunc = {
+    //     if (t.tp.isRecord) getStructHashFunc[Any]()(tp)
+    //     else getStructHashFunc[Any]()(tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
+    //   }
+    //   val hf = toAtom(hashFunc)(hashFunc.tp)
+    //   inlineFunction(hf.asInstanceOf[Rep[Any => Int]], apply(t))
+    case HashCode(e) if __isRecord(e) =>
+      val ttp = (if (e.tp.isRecord) e.tp else e.tp.typeArguments(0))
+      val structDef = getStructDef(ttp).get
+      structDef.fields.map(f => infix_hashCode(field(e, f.name)(f.tpe))).reduce(_ + _)
     case HashCode(t) if t.tp.isPrimitive      => infix_asInstanceOf[Int](t)
     case HashCode(t) if t.tp == CharacterType => infix_asInstanceOf[Int](t)
     case HashCode(t) if t.tp == OptimalStringType =>
@@ -646,11 +651,19 @@ class Tuple2ToCTransformer(override val IR: LoweringLegoBase) extends RecursiveR
 
   // rewrite += rule { case n @ Tuple2_Field__2(self) => field(apply(self), "_2")((n.tp)) }
 
-  rewrite += remove { case Tuple2ApplyObject(_1, _2) => () }
+  object Tuple2Create {
+    def unapply[T](d: Def[T]): Option[(Rep[Any], Rep[Any])] = d match {
+      case Tuple2ApplyObject(_1, _2) => Some(_1 -> _2)
+      case Tuple2New(_1, _2)         => Some(_1 -> _2)
+      case _                         => None
+    }
+  }
 
-  rewrite += rule { case n @ Tuple2_Field__1(Def(Tuple2ApplyObject(_1, _2))) => _1 }
+  rewrite += remove { case Tuple2Create(_1, _2) => () }
 
-  rewrite += rule { case n @ Tuple2_Field__2(Def(Tuple2ApplyObject(_1, _2))) => _2 }
+  rewrite += rule { case n @ Tuple2_Field__1(Def(Tuple2Create(_1, _2))) => _1 }
+
+  rewrite += rule { case n @ Tuple2_Field__2(Def(Tuple2Create(_1, _2))) => _2 }
 
 }
 
