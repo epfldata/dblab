@@ -174,6 +174,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
     tp match {
       case c if c.isPrimitive    => super.transformType[T]
       case ArrayBufferType(args) => typePointer(typeGArray(transformType(args)))
+      // case ArrayType(x) if x == ByteType => typePointer(ByteType)
       case ArrayType(args) => typePointer(typeCArray({
         if (args.isArray) typeCArray(args)
         else args
@@ -240,7 +241,16 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       if (elemType.isPrimitive) arrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, apply(v))
       else if (elemType.name == "OptimalString")
         pointer_assign(arr.asInstanceOf[Expression[Pointer[Any]]], i, apply(v))
-      else if (elemType.isRecord) {
+      else if (v match {
+        case Def(Cast(Constant(null))) => true
+        case Constant(null)            => true
+        case _                         => false
+      }) {
+        class T
+        implicit val typeT = apply(v).tp.typeArguments(0).asInstanceOf[TypeRep[T]]
+        val tArr = arr.asInstanceOf[Expression[Pointer[T]]]
+        pointer_assign(tArr, i, unit(null))
+      } else if (elemType.isRecord) {
         class T
         implicit val typeT = apply(v).tp.typeArguments(0).asInstanceOf[TypeRep[T]]
         val newV = apply(v).asInstanceOf[Expression[Pointer[T]]]
@@ -498,7 +508,11 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
 
   rewrite += rule {
     case Equals(e1, e2, isEqual) if e1.tp == OptimalStringType || e1.tp == StringType =>
-      if (isEqual) !strcmp(e1, e2) else strcmp(e1, e2)
+      val ne2 = e2 match {
+        case Constant(null) => unit("")
+        case _              => e2
+      }
+      if (isEqual) !strcmp(e1, ne2) else strcmp(e1, ne2)
     case Equals(e1, Constant(null), isEqual) if __isRecord(e1) =>
       val structDef = if (e1.tp.isRecord)
         getStructDef(e1.tp).get
@@ -582,6 +596,7 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Rec
     case OptimalStringStartsWith(x, y) =>
       strncmp(x, y, strlen(y)) __== unit(0)
   }
+  rewrite += rule { case OptimalStringCompare(x, y) => strcmp(x, y) }
   rewrite += rule { case OptimalStringCompare(x, y) => strcmp(x, y) }
   rewrite += rule { case OptimalStringLength(x) => strlen(x) }
   rewrite += rule { case OptimalString$eq$eq$eq(x, y) => strcmp(x, y) __== unit(0) }
