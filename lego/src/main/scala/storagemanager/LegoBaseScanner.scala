@@ -50,7 +50,8 @@ class K2DBScanner(filename: String) {
         intDigits = intDigits - 1
       }
     }
-    numeral + fractal
+    if (numeral >= 0) numeral + fractal
+    else numeral - fractal
   }
 
   def next_char() = {
