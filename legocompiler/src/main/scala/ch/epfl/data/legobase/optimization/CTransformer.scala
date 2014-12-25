@@ -284,7 +284,21 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       }).asInstanceOf[PardisType[Any]]
       val arr = field(s, "array")(newTp)
       if (elemType.isPrimitive) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], i)(newTp.asInstanceOf[PardisType[Any]])
-      else PTRADDRESS(arr.asInstanceOf[Expression[Pointer[Any]]], i)(typePointer(newTp).asInstanceOf[PardisType[Pointer[Any]]])
+      else {
+        i match {
+          case Constant(0) => Cast(arr)(arr.tp, typePointer(newTp))
+          case _           => PTRADDRESS(arr.asInstanceOf[Expression[Pointer[Any]]], i)(typePointer(newTp).asInstanceOf[PardisType[Pointer[Any]]])
+        }
+      }
+    // class T
+    // implicit val typeT = a.tp.typeArguments(0).asInstanceOf[PardisType[T]]
+    // val newTp = ({
+    //   if (elemType.isArray) typePointer(typeCArray(elemType.typeArguments(0)))
+    //   else typeArray(typePointer(elemType))
+    // }).asInstanceOf[PardisType[Any]]
+    // val arr = field[Array[T]](s, "array")(newTp.asInstanceOf[PardisType[Array[T]]])
+    // if (elemType.isPrimitive) arrayApply(arr, i)(newTp.asInstanceOf[PardisType[T]])
+    // else &(arr, i)(newTp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Array[T]]])
   }
   rewrite += rule {
     case ArrayLength(a) =>
