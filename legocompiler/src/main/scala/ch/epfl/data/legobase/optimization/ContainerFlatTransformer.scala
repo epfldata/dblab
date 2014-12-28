@@ -17,15 +17,18 @@ object ContainerFlatTransformer extends TransformerHandler {
   }
 }
 
-class ContainerFlatTransformer(override val IR: pardis.deep.scalalib.ArrayComponent with pardis.deep.scalalib.Tuple2Component with ContOps) extends pardis.optimization.RecursiveRuleBasedTransformer[pardis.deep.scalalib.ArrayComponent with pardis.deep.scalalib.Tuple2Component with ContOps](IR) {
+class ContainerFlatTransformer[Lang <: pardis.deep.scalalib.ArrayComponent with pardis.deep.scalalib.Tuple2Component with ContOps](override val IR: Lang) extends pardis.optimization.RecursiveRuleBasedTransformer[Lang](IR) with StructCollector[Lang] {
   import IR._
   type Rep[T] = IR.Rep[T]
   type Var[T] = IR.Var[T]
 
   val recordTypes = scala.collection.mutable.Set[TypeRep[Any]]()
 
-  def shouldBeLowered[T](sym: Rep[T]): Boolean =
+  def mayBeLowered[T](sym: Rep[T]): Boolean =
     isContRecord(sym.tp)
+
+  def mustBeLowered[T](node: Def[T]): Boolean =
+    recordTypes.exists(x => x == node.tp) // && getStructDef(sym.tp).get.fields.forall(f => f.name != "next")
 
   def isContRecord[T](tp: TypeRep[T]): Boolean = tp match {
     case ContType(t) if t.isRecord => true
@@ -48,50 +51,58 @@ class ContainerFlatTransformer(override val IR: pardis.deep.scalalib.ArrayCompon
   }).asInstanceOf[PardisType[Any]]
 
   analysis += statement {
-    case sym -> (node @ ContNew(elem, next)) if shouldBeLowered(sym) =>
+    case sym -> (node @ ContNew(elem, next)) if mayBeLowered(sym) =>
       addSymRecordType(sym)
   }
 
   analysis += rule {
-    case Cont_Field_Next__eq(self, x) if shouldBeLowered(self) =>
+    case Cont_Field_Next__eq(self, x) if mayBeLowered(self) =>
       addSymRecordType(self)
   }
 
   analysis += rule {
-    case Cont_Field_Next(self) if shouldBeLowered(self) =>
+    case Cont_Field_Next(self) if mayBeLowered(self) =>
       addSymRecordType(self)
   }
 
   analysis += rule {
-    case Cont_Field_Elem(self) if shouldBeLowered(self) =>
+    case Cont_Field_Elem(self) if mayBeLowered(self) =>
       addSymRecordType(self)
   }
 
   rewrite += statement {
-    case sym -> (node @ ContNew(elem, next)) if shouldBeLowered(sym) =>
+    case sym -> (node @ ContNew(elem, next)) if mayBeLowered(sym) =>
       fieldSetter(elem, "next", next)
       elem
   }
 
   rewrite += rule {
-    case Cont_Field_Next__eq(self, x) if shouldBeLowered(self) =>
+    case Cont_Field_Next__eq(self, x) if mayBeLowered(self) =>
       fieldSetter(self, "next", x)
   }
 
   rewrite += rule {
-    case Cont_Field_Next(self) if shouldBeLowered(self) =>
-      fieldGetter(self, "next")
+    case n @ Cont_Field_Next(self) if mayBeLowered(self) =>
+      fieldGetter(self, "next")(apply(n.tp))
   }
 
   rewrite += rule {
-    case Cont_Field_Elem(self) if shouldBeLowered(self) =>
+    case Cont_Field_Elem(self) if mayBeLowered(self) =>
       self
   }
 
-  rewrite += rule {
-    case node @ Struct(tag, elems, methods) if recordTypes.exists(x => x == node.tp) =>
-      System.out.println(s"appending next to ${node.tp}")
-      Struct(tag, elems :+ PardisStructArg("next", true, infix_asInstanceOf(unit(null))(node.tp)), methods)
+  // analysis += statement {
+  //   case sym -> (node @ Struct(tag, elems, methods)) /*if mustBeLowered(sym) && elems.forall(f => f.name != "next")*/ =>
+  //     System.out.println(s"found next for ${node.tp}, $sym, ${sym.tp}")
+  //     // IR.asInstanceOf[LoweringLegoBase].printf(unit(s"struct creation $tag: ${node.tp}"))
+  //     ()
+  // }
+
+  rewrite += statement {
+    case sym -> (node @ Struct(tag, elems, methods)) if mustBeLowered(node) && elems.forall(f => f.name != "next") =>
+      System.out.println(s"appending next to ${node.tp}, $sym")
+      // IR.asInstanceOf[LoweringLegoBase].printf(unit(s"struct creation $tag: ${node.tp}"))
+      toAtom(Struct(tag, elems :+ PardisStructArg("next", true, infix_asInstanceOf(unit(null))(node.tp)), methods)(node.tp))(node.tp)
   }
 
   analysis += statement {

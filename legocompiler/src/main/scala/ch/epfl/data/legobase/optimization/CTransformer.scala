@@ -533,8 +533,11 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
       else
         getStructDef(e1.tp.typeArguments(0)).get
       System.out.println(structDef.fields)
-      val firstField = structDef.fields.find(f => f.tpe.isPointerType || f.tpe == OptimalStringType).get
-      val fieldExp = field(e1, firstField.name)(firstField.tpe)
+      val fieldExp = structDef.fields.find(f => f.tpe.isPointerType || f.tpe == OptimalStringType) match {
+        case Some(firstField) =>
+          field(e1, firstField.name)(firstField.tpe)
+        case None => e1
+      }
       if (isEqual)
         fieldExp __== unit(null)
       else

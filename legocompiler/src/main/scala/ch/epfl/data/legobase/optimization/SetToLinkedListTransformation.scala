@@ -90,9 +90,9 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
 
         }
         case _ =>
-          val v = Var(self.asInstanceOf[Rep[Var[Cont[A]]]])
-          __readVar(v).asInstanceOf[Rep[Cont[A]]]
-        // self.asInstanceOf[Rep[Cont[A]]]
+          // val v = Var(self.asInstanceOf[Rep[Var[Cont[A]]]])
+          // __readVar(v).asInstanceOf[Rep[Cont[A]]]
+          self.asInstanceOf[Rep[Cont[A]]]
       }
     }
   }
