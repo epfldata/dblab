@@ -56,12 +56,16 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
       // val v = Var(self.asInstanceOf[Rep[Var[Cont[A]]]])
       // __assign(v, x$1)
       // System.out.println(s"assigning to headCont $self ${apply(self)} ${apply(x$1)}")
+      // printf(unit(s"assigning to headCont $self ${apply(self)} ${apply(x$1)} ${self.correspondingNode}"))
       self match {
         case Def(ReadVar(v)) =>
           // System.out.println(s"with var $v ${apply(v.e)} ${v.e.correspondingNode}")
           v.e match {
-            case Def(NewVar(Def(ArrayApply(arr, i)))) => arr.asInstanceOf[Rep[Array[Cont[A]]]](i) = x$1
-            case _                                    => ()
+            case Def(NewVar(Def(ArrayApply(arr, i)))) => {
+              // printf(unit(s"arr update ${apply(arr)} ${apply(i)} ${apply(x$1)}"))
+              arr.asInstanceOf[Rep[Array[Cont[A]]]](i) = x$1
+            }
+            case _ => ()
           }
           __assign(v.asInstanceOf[Var[Cont[A]]], x$1)
         case Def(ArrayApply(arr, i)) =>
@@ -139,7 +143,22 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
 
       {
         val prevHead: this.Rep[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = self.headCont;
+        // printf(unit(s"set+=, prevHead: $prevHead"))
         self.headCont_$eq(__newCont(elem, prevHead))
+
+        // val prevHead: this.Rep[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = self.headCont;
+        // __ifThenElse(infix_==(prevHead, unit(null)), {
+        //   self.headCont_$eq(__newCont(elem, unit(null)))
+        // }, {
+        //   val prevNext = prevHead.next
+        //   val c = __newCont(elem, prevNext)
+        //   prevHead.next = c
+        //   // self.headCont_$eq(c)
+        // })
+
+        // val prevHead: this.Rep[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = self.headCont;
+        // printf(unit(s"set+=, prevHead: $prevHead"))
+        // self.headCont_$eq(__newCont(elem, unit(null)))
       }
   }
 
