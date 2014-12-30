@@ -129,7 +129,8 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
 
       // unit(null.asInstanceOf[Any])(node.tp.asInstanceOf[TypeRep[Any]])
       // System.out.println(s"handling $sym added to sets")
-      readVar(__newVar[Cont[A]](unit(null)))
+      // readVar(__newVar[Cont[A]](unit(null)))
+      readVar(__newVar[Cont[A]](__newCont(unit(null), unit(null))))
   }
 
   def __newSetLinkedList[A]()(implicit typeA: TypeRep[A]): Rep[Set[A]] = SetNew[A]()
@@ -142,19 +143,19 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
       implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
 
       {
-        val prevHead: this.Rep[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = self.headCont;
-        // printf(unit(s"set+=, prevHead: $prevHead"))
-        self.headCont_$eq(__newCont(elem, prevHead))
-
         // val prevHead: this.Rep[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = self.headCont;
-        // __ifThenElse(infix_==(prevHead, unit(null)), {
-        //   self.headCont_$eq(__newCont(elem, unit(null)))
-        // }, {
-        //   val prevNext = prevHead.next
-        //   val c = __newCont(elem, prevNext)
-        //   prevHead.next = c
-        //   // self.headCont_$eq(c)
-        // })
+        // // printf(unit(s"set+=, prevHead: $prevHead"))
+        // self.headCont_$eq(__newCont(elem, prevHead))
+
+        val prevHead: this.Rep[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = self.headCont;
+        __ifThenElse(infix_==(prevHead, unit(null)), {
+          self.headCont_$eq(__newCont(elem, unit(null)))
+        }, {
+          val prevNext = prevHead.next
+          val c = __newCont(elem, prevNext)
+          prevHead.next = c
+          // self.headCont_$eq(c)
+        })
 
         // val prevHead: this.Rep[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = self.headCont;
         // printf(unit(s"set+=, prevHead: $prevHead"))

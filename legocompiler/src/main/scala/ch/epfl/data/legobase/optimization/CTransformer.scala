@@ -247,7 +247,8 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         case _                         => false
       }) {
         class T
-        implicit val typeT = apply(v).tp.typeArguments(0).asInstanceOf[TypeRep[T]]
+        // implicit val typeT = apply(v).tp.typeArguments(0).asInstanceOf[TypeRep[T]]
+        implicit val typeT = newTp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[T]]
         val tArr = arr.asInstanceOf[Expression[Pointer[T]]]
         pointer_assign(tArr, i, unit(null))
       } else if (elemType.isRecord) {
@@ -520,6 +521,8 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
     }
   }
 
+  val alreadyEquals = scala.collection.mutable.ArrayBuffer[Rep[Any]]()
+
   rewrite += rule {
     case Equals(e1, e2, isEqual) if e1.tp == OptimalStringType || e1.tp == StringType =>
       val ne2 = e2 match {
@@ -527,21 +530,27 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
         case _              => e2
       }
       if (isEqual) !strcmp(e1, ne2) else strcmp(e1, ne2)
-    case Equals(e1, Constant(null), isEqual) if __isRecord(e1) =>
+    case Equals(e1, Constant(null), isEqual) if __isRecord(e1) && !alreadyEquals.contains(e1) =>
       val structDef = if (e1.tp.isRecord)
         getStructDef(e1.tp).get
       else
         getStructDef(e1.tp.typeArguments(0)).get
-      System.out.println(structDef.fields)
-      val fieldExp = structDef.fields.find(f => f.tpe.isPointerType || f.tpe == OptimalStringType) match {
+      // System.out.println(structDef.fields)
+      alreadyEquals += e1
+      structDef.fields.find(f => f.tpe.isPointerType || f.tpe == OptimalStringType) match {
         case Some(firstField) =>
-          field(e1, firstField.name)(firstField.tpe)
-        case None => e1
+          val fieldExp = field(e1, firstField.name)(firstField.tpe)
+          if (isEqual)
+            (e1 __== unit(null)) || (fieldExp __== unit(null))
+          else
+            (e1 __!= unit(null)) && (fieldExp __!= unit(null))
+        case None => {
+          if (isEqual)
+            (e1 __== unit(null))
+          else
+            (e1 __!= unit(null))
+        }
       }
-      if (isEqual)
-        fieldExp __== unit(null)
-      else
-        fieldExp __!= unit(null)
     // case Equals(e1, e2, isEqual) if __isRecord(e1) && __isRecord(e2) =>
     //   class T
     //   implicit val ttp = (if (e1.tp.isRecord) e1.tp else e1.tp.typeArguments(0)).asInstanceOf[TypeRep[T]]
