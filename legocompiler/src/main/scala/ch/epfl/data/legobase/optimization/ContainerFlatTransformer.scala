@@ -72,7 +72,10 @@ class ContainerFlatTransformer[Lang <: pardis.deep.scalalib.ArrayComponent with 
 
   rewrite += statement {
     case sym -> (node @ ContNew(elem, next)) if mayBeLowered(sym) =>
-      fieldSetter(elem, "next", next)
+      elem match {
+        case Constant(null) =>
+        case _              => fieldSetter(elem, "next", next)
+      }
       elem
   }
 
@@ -100,7 +103,7 @@ class ContainerFlatTransformer[Lang <: pardis.deep.scalalib.ArrayComponent with 
 
   rewrite += statement {
     case sym -> (node @ Struct(tag, elems, methods)) if mustBeLowered(node) && elems.forall(f => f.name != "next") =>
-      System.out.println(s"appending next to ${node.tp}, $sym")
+      // System.out.println(s"appending next to ${node.tp}, $sym")
       // IR.asInstanceOf[LoweringLegoBase].printf(unit(s"struct creation $tag: ${node.tp}"))
       toAtom(Struct(tag, elems :+ PardisStructArg("next", true, infix_asInstanceOf(unit(null))(node.tp)), methods)(node.tp))(node.tp)
   }

@@ -11,15 +11,15 @@ import pardis.types.PardisTypeImplicits._
 import pardis.optimization._
 
 object LBLowering {
-  def apply(generateHashAndEqual: Boolean, removeUnusedFields: Boolean) = new TransformerHandler {
+  def apply(removeUnusedFields: Boolean) = new TransformerHandler {
     def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
       val lbContext = context.asInstanceOf[LoweringLegoBase]
-      new LBLowering(lbContext, lbContext, generateHashAndEqual, removeUnusedFields).lower(block)
+      new LBLowering(lbContext, lbContext, removeUnusedFields).lower(block)
     }
   }
 }
 
-class LBLowering(override val from: LoweringLegoBase, override val to: LoweringLegoBase, override val generateHashAndEqual: Boolean, val removeUnusedFields: Boolean) extends Lowering[LoweringLegoBase, LoweringLegoBase](from, to) {
+class LBLowering(override val from: LoweringLegoBase, override val to: LoweringLegoBase, val removeUnusedFields: Boolean) extends Lowering[LoweringLegoBase, LoweringLegoBase](from, to) {
   import from._
 
   // override val lowerStructs: Boolean = false
@@ -111,35 +111,6 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
     res
   }
 
-  def getPrint(tpe: TypeRep[Any], structFields: Seq[PardisStructArg]): Option[PardisStructMethod] = {
-    if (generateHashAndEqual) {
-      val printFunctionNode = doLambdaDef((x: Rep[Any]) => {
-        def getDescriptor(field: PardisStructArg): String = field.init.tp.asInstanceOf[PardisType[_]] match {
-          case IntType | ShortType            => "%d"
-          case DoubleType | FloatType         => "%f"
-          case LongType                       => "%lf"
-          case StringType | OptimalStringType => "%s"
-          case ArrayType(elemTpe)             => s"Array[$elemTpe]"
-          case tp                             => tp.toString
-        }
-        val fieldsWithDescriptor = structFields.map(f => f -> getDescriptor(f))
-        val descriptor = tpe.name + "(" + fieldsWithDescriptor.map(f => f._2).mkString(", ") + ")"
-        val fields = fieldsWithDescriptor.collect {
-          case f if f._2.startsWith("%") => {
-            val tp = f._1.init.tp
-            field(x, f._1.name)(tp)
-          }
-        }
-        val str = malloc(4096)(CharType)
-        sprintf(str.asInstanceOf[Rep[String]], unit(descriptor), fields: _*)
-        str.asInstanceOf[Rep[String]]
-      })(tpe, StringType).asInstanceOf[PardisLambdaDef]
-      Some(PardisStructMethod("to_string", printFunctionNode))
-    } else {
-      None
-    }
-  }
-
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = node match {
     case an @ ArrayNew(size) =>
       ArrayNew(size)(apply(an.tp.typeArguments(0)))
@@ -154,10 +125,7 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
         case _                             => elems
       }
       val newTpe = ps.tp.asInstanceOf[TypeRep[Any]]
-      val newMethods = List(PardisStructMethod("equals", getEquals(newTpe, newFields)),
-        PardisStructMethod("hash", getHash(newTpe, newFields)) //, PardisStructMethod("==", getEquals(newTpe, newFields))
-        ) ++ getPrint(newTpe, newFields)
-      super.transformDef(PardisStruct(tag, newFields, newMethods)(ps.tp))(ps.tp)
+      super.transformDef(PardisStruct(tag, newFields, Nil)(ps.tp))(ps.tp)
     case ConcatDynamic(record1, record2, leftAlias, rightAlias) if lowerStructs => {
       val tp = node.tp.asInstanceOf[TypeRep[(Any, Any)]]
       val leftTag = getTag(getType(record1.tp))
@@ -173,14 +141,8 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
       val elemsRhs = getElems(record1).filter(fieldIsRegistered).map(x => ElemInfo(x.name, record1, x.tpe)) ++ getElems(record2).filter(fieldIsRegistered).map(x => ElemInfo(x.name, record2, x.tpe))
       // Amir: FIXME should handle both cases for mutable and immutable fields (immutable and getter)
       val structFields = elems.zip(elemsRhs).map(x => PardisStructArg(x._1.name, x._1.mutable, to.toAtom(StructImmutableField(x._2.rec, x._2.name)(x._2.tp))(x._2.tp)))
-      val newTpe = new RecordType(concatTag)
-      val methods = if (generateHashAndEqual) {
-        val eqMethod = getEquals(newTpe.asInstanceOf[TypeRep[Any]], structFields)
-        val hashMethod = getHash(newTpe.asInstanceOf[TypeRep[Any]], structFields)
-        val printMethod = getPrint(newTpe.asInstanceOf[TypeRep[Any]], structFields)
-        List(PardisStructMethod("equals", eqMethod), PardisStructMethod("hash", hashMethod)) ++ printMethod
-      } else Nil
-      super.transformDef(PardisStruct(concatTag, structFields, methods)(newTpe).asInstanceOf[to.Def[T]])
+      val newTpe = new RecordType(concatTag, Some(tp))
+      super.transformDef(PardisStruct(concatTag, structFields, Nil)(newTpe).asInstanceOf[to.Def[T]])
     }
 
     case ag: AggOpNew[_, _] => {
@@ -242,8 +204,6 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
       val mCompRec = implicitly[TypeRep[DynamicCompositeRecord[pardis.shallow.Record, pardis.shallow.Record]]].rebuild(ma, mb).asInstanceOf[TypeRep[Any]]
       val newSize = toAtom(PardisStructImmutableField(ho.leftParent, "expectedSize")(IntType))(IntType)
       to.__newDef[HashJoinOpTp](
-        // ("hm", true, to.__newHashMap3[Any, Any](ho.leftHash.asInstanceOf[Rep[Any => Any]],
-        //   newSize)(apply(mc), apply(ma.asInstanceOf[TypeRep[Any]]))),
         ("hm", false, to.__newMultiMap[Any, Any]()(apply(mc), apply(ma.asInstanceOf[TypeRep[Any]]))),
         ("expectedSize", false, newSize * 100),
         stop)(tp).asInstanceOf[to.Def[T]]

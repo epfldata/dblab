@@ -55,7 +55,7 @@ class SetArrayTransformation[Lang <: SetComponent with pardis.deep.scalalib.Opti
   def lowerType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
     tp match {
-      case SetType(t) => new RecordType(getClassTag[T](tp))
+      case SetType(t) => new RecordType(getClassTag[T](tp), Some(tp))
       case _          => tp
     }
   }).asInstanceOf[PardisType[Any]]

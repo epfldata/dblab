@@ -7,6 +7,8 @@ import pardis.ir._
 import pardis.prettyprinter._
 import scala.language.implicitConversions
 
+class LegoScalaASTGenerator(val IR: Base, override val shallow: Boolean = false, override val outputFileName: String = "generatedProgram") extends LegoScalaGenerator(shallow, outputFileName) with ScalaASTCodeGenerator[Base]
+
 class LegoScalaGenerator(val shallow: Boolean = false, val outputFileName: String = "generatedProgram") extends ScalaCodeGenerator {
 
   def getShallowHeader: String = if (shallow) """

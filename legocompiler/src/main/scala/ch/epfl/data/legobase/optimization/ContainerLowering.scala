@@ -30,7 +30,7 @@ class ContainerLowering[Lang <: pardis.deep.scalalib.ArrayComponent with pardis.
   def lowerType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
     tp match {
-      case ContType(t) => new RecordType(getClassTag[T](tp))
+      case ContType(t) => new RecordType(getClassTag[T](tp), Some(tp))
       case _           => tp
     }
   }).asInstanceOf[PardisType[Any]]
