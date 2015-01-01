@@ -958,7 +958,7 @@ trait AggOpImplementations extends AggOpOps { this: ch.epfl.data.legobase.deep.D
       val key: this.Rep[B] = __app[A, B](self.grp).apply(infix_asInstanceOf[A](tuple));
       val elem: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[B]] = self.hm.getOrElseUpdate(key, __newAGGRecord(key, __newArray[Double](self.numAggs)));
       val aggs: this.Rep[Array[Double]] = elem.aggs;
-      var i: this.Var[Int] = __newVar(unit(0));
+      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
       self.aggFuncs.foreach[Unit](__lambda(((aggFun: this.Rep[(A, Double) => Double]) => {
         aggs.update(__readVar(i), __app[A, Double, Double](aggFun).apply(infix_asInstanceOf[A](tuple), aggs.apply(__readVar(i))));
         __assign(i, __readVar(i).$plus(unit(1)))
@@ -3260,7 +3260,7 @@ trait ViewOpImplementations extends ViewOpOps { this: ch.epfl.data.legobase.deep
         self.parent.next();
         self.initialized_$eq(unit(true))
       }, unit(()));
-      var idx: this.Var[Int] = __newVar(unit(0));
+      var idx: this.Var[Int] = __newVarNamed(unit(0), unit("idx"));
       __whileDo(self.stop.unary_$bang.$amp$amp(__readVar(idx).$less(self.size)), {
         val e: this.Rep[A] = self.table.apply(__readVar(idx));
         __assign(idx, __readVar(idx).$plus(unit(1)));

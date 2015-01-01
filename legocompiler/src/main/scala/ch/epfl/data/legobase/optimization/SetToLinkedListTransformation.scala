@@ -130,7 +130,9 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
       // unit(null.asInstanceOf[Any])(node.tp.asInstanceOf[TypeRep[Any]])
       // System.out.println(s"handling $sym added to sets")
       // readVar(__newVar[Cont[A]](unit(null)))
-      readVar(__newVar[Cont[A]](__newCont(unit(null), unit(null))))
+      // readVar(__newVar[Cont[A]](__newCont(unit(null), unit(null))))
+      val newCont = __newCont(unit[A](null), unit[Cont[A]](null))
+      readVar(__newVarNamed[Cont[A]](newCont, "newSet"))
   }
 
   def __newSetLinkedList[A]()(implicit typeA: TypeRep[A]): Rep[Set[A]] = SetNew[A]()
@@ -171,7 +173,7 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
       implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
 
       {
-        var current: this.Var[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = __newVar(self.headCont);
+        var current: this.Var[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = __newVarNamed(self.headCont, "current");
         __whileDo(infix_$bang$eq(__readVar(current), unit(null)), {
           val next: this.Rep[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = __readVar(current).next;
           __app[A, Unit](f).apply(__readVar(current).elem);
@@ -188,8 +190,8 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
       implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
 
       {
-        var prev: this.Var[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = __newVar(infix_asInstanceOf[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]](unit(null)));
-        var current: this.Var[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = __newVar(self.headCont);
+        var prev: this.Var[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = __newVarNamed(infix_asInstanceOf[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]](unit(null)), "prev");
+        var current: this.Var[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = __newVarNamed(self.headCont, "current");
         __whileDo(infix_$bang$eq(__readVar(current), unit(null)), {
           __ifThenElse(__app[A, Boolean](p).apply(__readVar(current).elem).unary_$bang, __ifThenElse(infix_$eq$eq(self.headCont, __readVar(current)), self.headCont_$eq(unit(null)), unit(())), {
             __ifThenElse(infix_$bang$eq(__readVar(prev), unit(null)), __readVar(prev).next_$eq(__readVar(current)), unit(()));
@@ -209,8 +211,8 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
       implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
 
       {
-        var current: this.Var[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = __newVar(self.headCont);
-        var found: this.Var[Boolean] = __newVar(unit(false));
+        var current: this.Var[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = __newVarNamed(self.headCont, "current");
+        var found: this.Var[Boolean] = __newVarNamed(unit(false), "found");
         __whileDo(infix_$bang$eq(__readVar(current), unit(null)).$amp$amp(__readVar(found).unary_$bang), {
           __ifThenElse(__app[A, Boolean](p).apply(__readVar(current).elem), __assign(found, unit(true)), unit(()));
           __assign(current, __readVar(current).next)
@@ -238,7 +240,7 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
       implicit val typeB = transformType(z.tp).asInstanceOf[TypeRep[B]]
 
       {
-        var acc: this.Var[B] = __newVar(z);
+        var acc: this.Var[B] = __newVarNamed(z, "acc");
         self.foreach(__lambda(((e: this.Rep[A]) => __assign(acc, __app[B, A, B](op).apply(__readVar(acc), e)))));
         __readVar(acc)
       }
@@ -251,7 +253,7 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
       implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
 
       {
-        var s: this.Var[Int] = __newVar(unit(0));
+        var s: this.Var[Int] = __newVarNamed(unit(0), "s");
         self.foreach(__lambda(((e: this.Rep[A]) => __assign(s, __readVar(s).$plus(unit(1))))));
         __readVar(s)
       }
@@ -270,8 +272,8 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
       val cmp = OrderingRep[B]
 
       {
-        var min: this.Var[A] = __newVar(self.head);
-        var minValue: this.Var[B] = __newVar(__app[A, B](f).apply(__readVar(min)));
+        var min: this.Var[A] = __newVarNamed(self.head, "min");
+        var minValue: this.Var[B] = __newVarNamed(__app[A, B](f).apply(__readVar(min)), "minValue");
         self.foreach(__lambda(((e: this.Rep[A]) => {
           val v: this.Rep[B] = __app[A, B](f).apply(e);
           __ifThenElse(cmp.lt(v, __readVar(minValue)), {
@@ -291,8 +293,8 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
       implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
 
       {
-        var current: this.Var[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = __newVar(self.headCont);
-        var found: this.Var[Boolean] = __newVar(unit(false));
+        var current: this.Var[ch.epfl.data.pardis.shallow.scalalib.collection.Cont[A]] = __newVarNamed(self.headCont, "current");
+        var found: this.Var[Boolean] = __newVarNamed(unit(false), "found");
         __whileDo(infix_$bang$eq(__readVar(current), unit(null)).$amp$amp(__readVar(found).unary_$bang), __ifThenElse(__app[A, Boolean](p).apply(__readVar(current).elem), __assign(found, unit(true)), __assign(current, __readVar(current).next)));
         __ifThenElse(__readVar(found).unary_$bang, Option.apply[A](infix_asInstanceOf[A](unit(null))), Option.apply[A](__readVar(current).elem))
       }

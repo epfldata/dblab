@@ -156,7 +156,7 @@ trait LoaderImplementations extends LoaderOps { this: ch.epfl.data.legobase.deep
       val size: this.Rep[Int] = Loader.fileLineCount(file);
       val s: this.Rep[ch.epfl.data.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
       val hm: this.Rep[Array[ch.epfl.data.legobase.queryengine.REGIONRecord]] = __newArray[ch.epfl.data.legobase.queryengine.REGIONRecord](size);
-      var i: this.Var[Int] = __newVar(unit(0));
+      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
       __whileDo(s.hasNext(), {
         val newEntry: this.Rep[ch.epfl.data.legobase.queryengine.REGIONRecord] = __newREGIONRecord(s.next_int(), Loader.loadString(unit(25), s), Loader.loadString(unit(152), s));
         hm.update(__readVar(i), newEntry);
@@ -171,7 +171,7 @@ trait LoaderImplementations extends LoaderOps { this: ch.epfl.data.legobase.deep
       val size: this.Rep[Int] = Loader.fileLineCount(file);
       val s: this.Rep[ch.epfl.data.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
       val hm: this.Rep[Array[ch.epfl.data.legobase.queryengine.PARTSUPPRecord]] = __newArray[ch.epfl.data.legobase.queryengine.PARTSUPPRecord](size);
-      var i: this.Var[Int] = __newVar(unit(0));
+      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
       __whileDo(s.hasNext(), {
         val newEntry: this.Rep[ch.epfl.data.legobase.queryengine.PARTSUPPRecord] = __newPARTSUPPRecord(s.next_int(), s.next_int(), s.next_int(), s.next_double(), Loader.loadString(unit(199), s));
         hm.update(__readVar(i), newEntry);
@@ -186,7 +186,7 @@ trait LoaderImplementations extends LoaderOps { this: ch.epfl.data.legobase.deep
       val size: this.Rep[Int] = Loader.fileLineCount(file);
       val s: this.Rep[ch.epfl.data.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
       val hm: this.Rep[Array[ch.epfl.data.legobase.queryengine.PARTRecord]] = __newArray[ch.epfl.data.legobase.queryengine.PARTRecord](size);
-      var i: this.Var[Int] = __newVar(unit(0));
+      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
       __whileDo(s.hasNext(), {
         val newEntry: this.Rep[ch.epfl.data.legobase.queryengine.PARTRecord] = __newPARTRecord(s.next_int(), Loader.loadString(unit(55), s), Loader.loadString(unit(25), s), Loader.loadString(unit(10), s), Loader.loadString(unit(25), s), s.next_int(), Loader.loadString(unit(10), s), s.next_double(), Loader.loadString(unit(23), s));
         hm.update(__readVar(i), newEntry);
@@ -201,7 +201,7 @@ trait LoaderImplementations extends LoaderOps { this: ch.epfl.data.legobase.deep
       val size: this.Rep[Int] = Loader.fileLineCount(file);
       val s: this.Rep[ch.epfl.data.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
       val hm: this.Rep[Array[ch.epfl.data.legobase.queryengine.NATIONRecord]] = __newArray[ch.epfl.data.legobase.queryengine.NATIONRecord](size);
-      var i: this.Var[Int] = __newVar(unit(0));
+      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
       __whileDo(s.hasNext(), {
         val newEntry: this.Rep[ch.epfl.data.legobase.queryengine.NATIONRecord] = __newNATIONRecord(s.next_int(), Loader.loadString(unit(25), s), s.next_int(), Loader.loadString(unit(152), s));
         hm.update(__readVar(i), newEntry);
@@ -216,7 +216,7 @@ trait LoaderImplementations extends LoaderOps { this: ch.epfl.data.legobase.deep
       val size: this.Rep[Int] = Loader.fileLineCount(file);
       val s: this.Rep[ch.epfl.data.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
       val hm: this.Rep[Array[ch.epfl.data.legobase.queryengine.SUPPLIERRecord]] = __newArray[ch.epfl.data.legobase.queryengine.SUPPLIERRecord](size);
-      var i: this.Var[Int] = __newVar(unit(0));
+      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
       __whileDo(s.hasNext(), {
         val newEntry: this.Rep[ch.epfl.data.legobase.queryengine.SUPPLIERRecord] = __newSUPPLIERRecord(s.next_int(), Loader.loadString(unit(25), s), Loader.loadString(unit(40), s), s.next_int(), Loader.loadString(unit(15), s), s.next_double(), Loader.loadString(unit(101), s));
         hm.update(__readVar(i), newEntry);
@@ -231,7 +231,7 @@ trait LoaderImplementations extends LoaderOps { this: ch.epfl.data.legobase.deep
       val size: this.Rep[Int] = Loader.fileLineCount(file);
       val s: this.Rep[ch.epfl.data.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
       val hm: this.Rep[Array[ch.epfl.data.legobase.queryengine.LINEITEMRecord]] = __newArray[ch.epfl.data.legobase.queryengine.LINEITEMRecord](size);
-      var i: this.Var[Int] = __newVar(unit(0));
+      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
       __whileDo(s.hasNext(), {
         val newEntry: this.Rep[ch.epfl.data.legobase.queryengine.LINEITEMRecord] = __newLINEITEMRecord(s.next_int(), s.next_int(), s.next_int(), s.next_int(), s.next_int(), s.next_double(), s.next_double(), s.next_double(), s.next_char(), s.next_char(), s.next_date, s.next_date, s.next_date, Loader.loadString(unit(25), s), Loader.loadString(unit(10), s), Loader.loadString(unit(44), s));
         hm.update(__readVar(i), newEntry);
@@ -246,7 +246,7 @@ trait LoaderImplementations extends LoaderOps { this: ch.epfl.data.legobase.deep
       val size: this.Rep[Int] = Loader.fileLineCount(file);
       val s: this.Rep[ch.epfl.data.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
       val hm: this.Rep[Array[ch.epfl.data.legobase.queryengine.ORDERSRecord]] = __newArray[ch.epfl.data.legobase.queryengine.ORDERSRecord](size);
-      var i: this.Var[Int] = __newVar(unit(0));
+      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
       __whileDo(s.hasNext(), {
         val newEntry: this.Rep[ch.epfl.data.legobase.queryengine.ORDERSRecord] = __newORDERSRecord(s.next_int(), s.next_int(), s.next_char(), s.next_double(), s.next_date, Loader.loadString(unit(15), s), Loader.loadString(unit(15), s), s.next_int(), Loader.loadString(unit(79), s));
         hm.update(__readVar(i), newEntry);
@@ -261,7 +261,7 @@ trait LoaderImplementations extends LoaderOps { this: ch.epfl.data.legobase.deep
       val size: this.Rep[Int] = Loader.fileLineCount(file);
       val s: this.Rep[ch.epfl.data.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
       val hm: this.Rep[Array[ch.epfl.data.legobase.queryengine.CUSTOMERRecord]] = __newArray[ch.epfl.data.legobase.queryengine.CUSTOMERRecord](size);
-      var i: this.Var[Int] = __newVar(unit(0));
+      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
       __whileDo(s.hasNext(), {
         val newEntry: this.Rep[ch.epfl.data.legobase.queryengine.CUSTOMERRecord] = __newCUSTOMERRecord(s.next_int(), Loader.loadString(unit(25), s), Loader.loadString(unit(40), s), s.next_int(), Loader.loadString(unit(15), s), s.next_double(), Loader.loadString(unit(10), s), Loader.loadString(unit(117), s));
         hm.update(__readVar(i), newEntry);
