@@ -42,12 +42,12 @@ class LegoCompiler(val DSL: LoweringLegoBase, val hashMapToArray: Boolean, val r
   // pipeline += PartiallyEvaluate
   pipeline += DCE
 
-  // pipeline += SetLinkedListTransformation
+  pipeline += SetLinkedListTransformation
 
-  // // pipeline += ContainerFlatTransformer
-  // pipeline += ContainerLowering
+  // pipeline += ContainerFlatTransformer
+  pipeline += ContainerLowering
 
-  pipeline += SetArrayTransformation
+  // pipeline += SetArrayTransformation
 
   pipeline += AssertTransformer(TypeAssertion(t => !t.isInstanceOf[DSL.SetType[_]]))
 
@@ -59,8 +59,6 @@ class LegoCompiler(val DSL: LoweringLegoBase, val hashMapToArray: Boolean, val r
 
   pipeline += PartiallyEvaluate
   pipeline += SingletonArrayToValueTransformer
-  // pipeline += new OptionToCTransformer(DSL)
-  // pipeline += new Tuple2ToCTransformer(DSL)
   pipeline += new OptionToCTransformer(DSL) | new Tuple2ToCTransformer(DSL)
 
   // pipeline += PartiallyEvaluate

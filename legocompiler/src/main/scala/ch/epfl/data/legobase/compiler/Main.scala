@@ -30,6 +30,7 @@ object Main extends LegoRunner {
   val removeUnusedFields = true
 
   def executeQuery(query: String): Unit = {
+    System.out.println(s"Running $query!")
 
     val context = new LoweringLegoBase {}
 

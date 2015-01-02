@@ -40,21 +40,10 @@ object CTransformersPipeline extends TransformerHandler {
     apply[T](context.asInstanceOf[LoweringLegoBase], block)
   }
   def apply[A: PardisType](context: LoweringLegoBase, b: PardisBlock[A]) = {
-    // val b1 = new GenericEngineToCTransformer(context).optimize(b)
-    // val b8 = new OptionToCTransformer(context).optimize(b1)
-    // val b9 = new Tuple2ToCTransformer(context).optimize(b8)
-    // val b2 = new ScalaScannerToCFileTransformer(context).optimize(b9)
-    // val b3 = new ScalaArrayToCStructTransformer(context).optimize(b2)
-    // val b4 = new ScalaCollectionsToGLibTransfomer(context).optimize(b3)
-    // val b5 = new HashEqualsFuncsToCTraansformer(context).optimize(b4)
-    // val b6 = new OptimalStringToCTransformer(context).optimize(b5)
-    // val b7 = new RangeToCTransformer(context).optimize(b6)
-    // val b10 = new ScalaConstructsToCTranformer(context).optimize(b7)
-    // b10
     val pipeline = new TransformerPipeline()
     pipeline += new GenericEngineToCTransformer(context)
-    pipeline += new OptionToCTransformer(context)
-    pipeline += new Tuple2ToCTransformer(context)
+    // pipeline += new OptionToCTransformer(context)
+    // pipeline += new Tuple2ToCTransformer(context)
     pipeline += new ScalaScannerToCFileTransformer(context)
     pipeline += new ScalaArrayToCStructTransformer(context)
     pipeline += new ScalaCollectionsToGLibTransfomer(context)
@@ -539,7 +528,7 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
       alreadyEquals += e1
       structDef.fields.find(f => f.tpe.isPointerType || f.tpe == OptimalStringType) match {
         case Some(firstField) =>
-          val fieldExp = field(e1, firstField.name)(firstField.tpe)
+          def fieldExp = field(e1, firstField.name)(firstField.tpe)
           if (isEqual)
             (e1 __== unit(null)) || (fieldExp __== unit(null))
           else
@@ -560,7 +549,7 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
     case Equals(e1, e2, isEqual) if __isRecord(e1) && __isRecord(e2) =>
       val ttp = (if (e1.tp.isRecord) e1.tp else e1.tp.typeArguments(0))
       val structDef = getStructDef(ttp).get
-      val res = structDef.fields.map(f => field(e1, f.name)(f.tpe) __== field(e2, f.name)(f.tpe)).reduce(_ && _)
+      val res = structDef.fields.filter(_.name != "next").map(f => field(e1, f.name)(f.tpe) __== field(e2, f.name)(f.tpe)).reduce(_ && _)
       // val eq = getStructEqualsFunc[T]()
       // val res = inlineFunction(eq, e1.asInstanceOf[Rep[T]], e2.asInstanceOf[Rep[T]])
       if (isEqual) res else !res
@@ -595,8 +584,30 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
   }
   rewrite += rule {
     case ToString(obj) => obj.tp.asInstanceOf[PardisType[_]] match {
-      case PointerType(tp) if tp.isRecord => {
-        Apply(getStructToStringFunc(tp), obj)
+      case PointerType(tpe) if tpe.isRecord => {
+        val structFields = {
+          val structDef = getStructDef(tpe).get
+          structDef.fields
+        }
+        def getDescriptor(field: StructElemInformation): String = field.tpe.asInstanceOf[PardisType[_]] match {
+          case IntType | ShortType            => "%d"
+          case DoubleType | FloatType         => "%f"
+          case LongType                       => "%lf"
+          case StringType | OptimalStringType => "%s"
+          case ArrayType(elemTpe)             => s"Array[$elemTpe]"
+          case tp                             => tp.toString
+        }
+        val fieldsWithDescriptor = structFields.map(f => f -> getDescriptor(f))
+        val descriptor = tpe.name + "(" + fieldsWithDescriptor.map(f => f._2).mkString(", ") + ")"
+        val fields = fieldsWithDescriptor.collect {
+          case f if f._2.startsWith("%") => {
+            val tp = f._1.tpe
+            field(obj, f._1.name)(tp)
+          }
+        }
+        val str = malloc(4096)(CharType)
+        sprintf(str.asInstanceOf[Rep[String]], unit(descriptor), fields: _*)
+        str.asInstanceOf[Rep[String]]
       }
       case tp => throw new Exception(s"toString conversion for non-record type $tp is not handled for the moment")
     }
@@ -733,6 +744,17 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends Re
       __ifThenElse(case1, b, unit(false))
     }
   }
+  // rewrite += rule {
+  //   case and @ Boolean$amp$amp(case1, b) if b.stmts.forall(stm => stm.rhs.isPure) && b.stmts.nonEmpty => {
+  //     val rb = inlineBlock(b)
+  //     case1 && rb
+  //   }
+  // }
+  // rewrite += rule {
+  //   case and @ Boolean$amp$amp(case1, b) if b.stmts.nonEmpty => {
+  //     __ifThenElse(case1, b, unit(false))
+  //   }
+  // }
   rewrite += rule { case IntUnary_$minus(self) => unit(-1) * self }
   rewrite += rule { case IntToLong(x) => x }
   rewrite += rule { case ByteToInt(x) => x }
