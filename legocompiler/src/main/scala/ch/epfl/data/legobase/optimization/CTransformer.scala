@@ -240,18 +240,37 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         implicit val typeT = newTp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[T]]
         val tArr = arr.asInstanceOf[Expression[Pointer[T]]]
         pointer_assign(tArr, i, unit(null))
-      } else if (elemType.isRecord) {
+      } // else if (elemType.isRecord) {
+      //   class T
+      //   implicit val typeT = apply(v).tp.typeArguments(0).asInstanceOf[TypeRep[T]]
+      //   val newV = apply(v).asInstanceOf[Expression[Pointer[T]]]
+      //   val vContent = *(newV)
+      //   val tArr = arr.asInstanceOf[Expression[Pointer[T]]]
+      //   pointer_assign(tArr, i, vContent)
+      //   val pointerVar = newV match {
+      //     case Def(ReadVar(v)) => v.asInstanceOf[Var[Pointer[T]]]
+      //     case x               => Var(x.asInstanceOf[Rep[Var[Pointer[T]]]])
+      //   }
+      //   __assign(pointerVar, (&(tArr, i)).asInstanceOf[Rep[Pointer[T]]])(PointerType(typeT))
+      else if (elemType.isRecord) {
         class T
         implicit val typeT = apply(v).tp.typeArguments(0).asInstanceOf[TypeRep[T]]
         val newV = apply(v).asInstanceOf[Expression[Pointer[T]]]
-        val vContent = *(newV)
-        val tArr = arr.asInstanceOf[Expression[Pointer[T]]]
-        pointer_assign(tArr, i, vContent)
-        val pointerVar = newV match {
-          case Def(ReadVar(v)) => v.asInstanceOf[Var[Pointer[T]]]
-          case x               => Var(x.asInstanceOf[Rep[Var[Pointer[T]]]])
-        }
-        __assign(pointerVar, (&(tArr, i)).asInstanceOf[Rep[Pointer[T]]])(PointerType(typeT))
+        __ifThenElse(apply(v) __== unit(null), {
+          class T1
+          implicit val typeT1 = newTp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[T1]]
+          val tArr = arr.asInstanceOf[Expression[Pointer[T1]]]
+          pointer_assign(tArr, i, unit(null))
+        }, {
+          val vContent = *(newV)
+          val tArr = arr.asInstanceOf[Expression[Pointer[T]]]
+          pointer_assign(tArr, i, vContent)
+          val pointerVar = newV match {
+            case Def(ReadVar(v)) => v.asInstanceOf[Var[Pointer[T]]]
+            case x               => Var(x.asInstanceOf[Rep[Var[Pointer[T]]]])
+          }
+          __assign(pointerVar, (&(tArr, i)).asInstanceOf[Rep[Pointer[T]]])(PointerType(typeT))
+        })
       } else
         pointer_assign(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(apply(v).asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
           case x if v.tp.isArray            => transformType(v.tp).typeArguments(0).asInstanceOf[PardisType[Any]]
@@ -513,12 +532,11 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
   val alreadyEquals = scala.collection.mutable.ArrayBuffer[Rep[Any]]()
 
   rewrite += rule {
-    case Equals(e1, e2, isEqual) if e1.tp == OptimalStringType || e1.tp == StringType =>
-      val ne2 = e2 match {
-        case Constant(null) => unit("")
-        case _              => e2
-      }
-      if (isEqual) !strcmp(e1, ne2) else strcmp(e1, ne2)
+    case Equals(e1, Constant(null), isEqual) if (e1.tp == OptimalStringType || e1.tp == StringType) && !alreadyEquals.contains(e1) =>
+      alreadyEquals += e1
+      if (isEqual) (e1 __== unit(null)) || !strcmp(e1, unit("")) else (e1 __!= unit(null)) && strcmp(e1, unit(""))
+    case Equals(e1, e2, isEqual) if (e1.tp == OptimalStringType || e1.tp == StringType) && !alreadyEquals.contains(e1) =>
+      if (isEqual) !strcmp(e1, e2) else strcmp(e1, e2)
     case Equals(e1, Constant(null), isEqual) if __isRecord(e1) && !alreadyEquals.contains(e1) =>
       val structDef = if (e1.tp.isRecord)
         getStructDef(e1.tp).get
@@ -526,7 +544,7 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
         getStructDef(e1.tp.typeArguments(0)).get
       // System.out.println(structDef.fields)
       alreadyEquals += e1
-      structDef.fields.find(f => f.tpe.isPointerType || f.tpe == OptimalStringType) match {
+      structDef.fields.filter(_.name != "next").find(f => f.tpe.isPointerType || f.tpe == OptimalStringType || f.tpe == StringType) match {
         case Some(firstField) =>
           def fieldExp = field(e1, firstField.name)(firstField.tpe)
           if (isEqual)
