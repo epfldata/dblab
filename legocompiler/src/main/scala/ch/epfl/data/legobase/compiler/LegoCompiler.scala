@@ -11,7 +11,32 @@ import pardis.types.PardisTypeImplicits._
 import pardis.types._
 import pardis.compiler._
 
-class LegoCompiler(val DSL: LoweringLegoBase, val hashMapToArray: Boolean, val removeUnusedFields: Boolean, val number: Int, val generateCCode: Boolean) extends Compiler[LoweringLegoBase] {
+class Settings(val args: List[String]) {
+  import Settings._
+  def validate(targetIsC: Boolean): Unit = {
+    if (!hashMapLowering && targetIsC) {
+      throw new Exception(s"C code generator for HashMap and MultiMap is not supported yet! Consider adding $hm2set.")
+    }
+    if (!(setToArray || setToLinkedList) && targetIsC) {
+      throw new Exception("C code generator for Set is not supported yet! Consider adding $set2arr or $set2ll.")
+    }
+    if (!hashMapLowering && (setToArray || setToLinkedList || containerFlattenning))
+      throw new Exception("It's impossible to lower Sets without lowering HashMap and MultiMap!")
+  }
+  def hashMapLowering: Boolean = args.exists(_ == hm2set)
+  def setToArray: Boolean = args.exists(_ == set2arr)
+  def setToLinkedList: Boolean = args.exists(_ == set2ll)
+  def containerFlattenning: Boolean = args.exists(_ == contFlat)
+}
+
+object Settings {
+  val hm2set = "+hm2set"
+  val set2arr = "+set2arr"
+  val set2ll = "+set2ll"
+  val contFlat = "+cont-flat"
+}
+
+class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, val number: Int, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
   object MultiMapOptimizations extends TransformerHandler {
     def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
       new pardis.deep.scalalib.collection.MultiMapOptimalTransformation(context.asInstanceOf[LoweringLegoBase]).optimize(block)
@@ -36,30 +61,37 @@ class LegoCompiler(val DSL: LoweringLegoBase, val hashMapToArray: Boolean, val r
   // pipeline += HashMapToArrayTransformer(generateCCode)
   //pipeline += MemoryManagementTransfomer //NOTE FIX TOPOLOGICAL SORT :-(
 
-  pipeline += MultiMapOptimizations
-  pipeline += HashMapToSetTransformation
+  if (settings.hashMapLowering) {
+    pipeline += MultiMapOptimizations
+    pipeline += HashMapToSetTransformation
+    // pipeline += PartiallyEvaluate
+    pipeline += DCE
 
-  // pipeline += PartiallyEvaluate
-  pipeline += DCE
+    if (settings.setToLinkedList) {
+      pipeline += SetLinkedListTransformation
+      if (settings.containerFlattenning) {
+        pipeline += ContainerFlatTransformer
+      }
+      pipeline += ContainerLowering
+    }
 
-  // pipeline += SetLinkedListTransformation
+    if (settings.setToArray) {
+      pipeline += SetArrayTransformation
+    }
+    if (settings.setToLinkedList || settings.setToArray) {
+      pipeline += AssertTransformer(TypeAssertion(t => !t.isInstanceOf[DSL.SetType[_]]))
+    }
 
-  // pipeline += ContainerFlatTransformer
-  // pipeline += ContainerLowering
+    pipeline += DCE
+    pipeline += PartiallyEvaluate
 
-  pipeline += SetArrayTransformation
-
-  pipeline += AssertTransformer(TypeAssertion(t => !t.isInstanceOf[DSL.SetType[_]]))
-
-  //pipeline += ParameterPromotion
-
-  pipeline += DCE
+    pipeline += new OptionToCTransformer(DSL) | new Tuple2ToCTransformer(DSL)
+    //pipeline += ParameterPromotion
+  }
 
   pipeline += TreeDumper(false)
 
-  pipeline += PartiallyEvaluate
   pipeline += SingletonArrayToValueTransformer
-  pipeline += new OptionToCTransformer(DSL) | new Tuple2ToCTransformer(DSL)
 
   // pipeline += PartiallyEvaluate
   // pipeline += DCE

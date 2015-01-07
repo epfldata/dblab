@@ -7,6 +7,16 @@ VERBOSE=true
 #rm *.out
 #make
 
+if [ $# -ne 0 ]; then
+    SF=$1
+    echo "SF set to "$SF"!"
+    if [ $# -eq 2 ]; then
+        if [ "$2" == "silent" ]; then
+            VERBOSE=false
+        fi
+    fi
+fi
+
 TMPFILE="tmpfile.txt"
 if [ "`uname`" == "Linux" ]; then
     TMPFILE=`mktemp`

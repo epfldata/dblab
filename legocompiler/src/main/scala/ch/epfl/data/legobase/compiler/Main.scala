@@ -12,20 +12,27 @@ import pardis.types._
 
 object Main extends LegoRunner {
 
+  var settings: Settings = _
+
   def main(args: Array[String]) {
     if (args.length < 3) {
       System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
-      System.out.println("USAGE: run <data_folder> <scaling_factor_number> <list of queries to run> <copy>?")
+      System.out.println("USAGE: run <data_folder> <scaling_factor_number> <list of queries to run> <copy>? <+optimizations>")
       System.out.println("     : data_folder_name should contain folders named sf0.1 sf1 sf2 sf4 etc")
+      System.out.println(""" available optimizations:
+      +hm2set: Lowering HashMap and MultiMap to Array of Set
+      +set2arr: Lowering Set to Array
+      +set2ll: Lowering 
+      +cont-flat
+""")
       System.exit(0)
     }
     Config.checkResults = false
-
+    if (args(2).startsWith("testsuite-")) {
+      settings = new Settings(args.toList.filter(_.startsWith("+")))
+    }
     run(args)
   }
-
-  /* For the moment this transformation is only valid for C code generation */
-  val hashMapToArray = true
 
   val removeUnusedFields = true
 
@@ -90,7 +97,9 @@ object Main extends LegoRunner {
         case "Q22_C" => (22, cCode, () => Q22(unit(Config.numRuns)))
       }
 
-    val compiler = new LegoCompiler(context, hashMapToArray, removeUnusedFields, queryNumber, targetCode)
+    settings.validate(targetCode)
+
+    val compiler = new LegoCompiler(context, removeUnusedFields, queryNumber, targetCode, settings)
     compiler.compile(queryFunction())
   }
 }
