@@ -28,9 +28,7 @@ object Main extends LegoRunner {
       System.exit(0)
     }
     Config.checkResults = false
-    if (args(2).startsWith("testsuite-")) {
-      settings = new Settings(args.toList.filter(_.startsWith("+")))
-    }
+    settings = new Settings(args.toList.filter(_.startsWith("+")))
     run(args)
   }
 

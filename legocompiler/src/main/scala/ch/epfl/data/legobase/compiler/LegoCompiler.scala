@@ -80,13 +80,12 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
     }
     if (settings.setToLinkedList || settings.setToArray) {
       pipeline += AssertTransformer(TypeAssertion(t => !t.isInstanceOf[DSL.SetType[_]]))
+      //pipeline += ParameterPromotion
+      pipeline += DCE
+      pipeline += PartiallyEvaluate
+      pipeline += new OptionToCTransformer(DSL) | new Tuple2ToCTransformer(DSL)
     }
 
-    pipeline += DCE
-    pipeline += PartiallyEvaluate
-
-    pipeline += new OptionToCTransformer(DSL) | new Tuple2ToCTransformer(DSL)
-    //pipeline += ParameterPromotion
   }
 
   pipeline += TreeDumper(false)

@@ -23,7 +23,7 @@ trait LegoRunner {
     val queries: scala.collection.immutable.List[String] =
       if (args.length >= 3 && args(2) == "testsuite-scala") (for (i <- 1 to 22 if !excludedQueries.contains(i)) yield "Q" + i).toList
       else if (args.length >= 3 && args(2) == "testsuite-c") (for (i <- 1 to 22 if !excludedQueries.contains(i)) yield "Q" + i + "_C").toList
-      else args.tail.tail.toList
+      else args.drop(2).filter(x => !x.startsWith("+")).toList
     for (q <- queries) {
       currQuery = q
       Console.withOut(new PrintStream(getOutputName)) {
