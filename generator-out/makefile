@@ -3,9 +3,9 @@ OPTFLAG=-O3
 PKG_CONFIG=$(shell locate pkg-config | head -n 1)
 LIBS=`pkg-config --cflags glib-2.0 --libs glib-2.0`
 # For debugging
-# CFLAGS=-g 
+CFLAGS=-g 
 # For testing
-CFLAGS=-w
+# CFLAGS=-w
 FILES=$(wildcard *.c)
 UNAME := $(shell uname)
 

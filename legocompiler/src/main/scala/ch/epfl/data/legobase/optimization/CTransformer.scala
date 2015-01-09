@@ -326,7 +326,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
   }
 }
 
-class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
   import CNodes._
   import CTypes._
@@ -447,7 +447,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       val elemType = t.tp.typeArguments(0).typeArguments(0)
       val init = infix_asInstanceOf(Constant(null))(elemType)
       nameAlias[Unit](None, "g_tree_foreach", List(List(t, treeHead(elemType, elemType), &(init)(elemType.asInstanceOf[PardisType[Any]]))))
-      ReadVal(init)(init.tp)
+      init
   }
 
   /* ArrayBuffer Operations */
