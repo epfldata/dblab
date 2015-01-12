@@ -13,15 +13,13 @@ import pardis.shallow.utils.DefaultValue
 
 object ColumnStorePartitioner extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    val afterCs = new ColumnStoreTransformer(context.asInstanceOf[LoweringLegoBase]).optimize(block)
     val pipeline = new TransformerPipeline()
+    pipeline += new ColumnStoreTransformer(context.asInstanceOf[LoweringLegoBase])
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE
-    val afterPipeline = pipeline(context)(afterCs)
-    val afterPart = new PartitionTransformer(context.asInstanceOf[LoweringLegoBase]).optimize(afterPipeline)
-    afterPart
-    // afterPipeline
+    pipeline += new PartitionTransformer(context.asInstanceOf[LoweringLegoBase])
+    pipeline(context)(block)
   }
 }
 
@@ -321,10 +319,10 @@ class PartitionTransformer(override val IR: LoweringLegoBase) extends RuleBasedT
       partitionedObjectsCount += partitionedObject -> partitionedCount
       Range(unit(0), buckets).foreach {
         __lambda { i =>
-          partitionedArray(i) = Struct(tag, elems.map(recreateArg), methods).asInstanceOf[Def[StructType]]
+          partitionedArray(i) = Struct[StructType](tag.asInstanceOf[StructTags.StructTag[StructType]], elems.map(recreateArg), methods).asInstanceOf[Def[StructType]]
         }
       }
-      // System.out.println(s"partitionedArray $partitionedArray")
+      // System.out.println(s"partitionedArray $partitionedArray, sym $sym")
       sym
   }
 
@@ -336,10 +334,10 @@ class PartitionTransformer(override val IR: LoweringLegoBase) extends RuleBasedT
       val pfs = partitionedObject.partitionFunctionSymbol.asInstanceOf[Rep[Int]]
       val bucket = bucketFunction(s.tp, pfs)
       val lineitemCounts = partitionedObjectsCount(partitionedObject)
-      val partitionedArray = partitionedObjectsArray(partitionedObject)
+      val partitionedArray = partitionedObjectsArray(partitionedObject).asInstanceOf[Rep[Array[StructType]]]
       val idx = lineitemCounts(bucket)
       // lineitemCounts(bucket) += unit(1)
-      val newS = partitionedArray(bucket).asInstanceOf[Rep[StructType]]
+      val newS = partitionedArray(bucket)
       val newA = field(newS, name)(self.tp)
       newA(idx) = v
     }
@@ -397,10 +395,15 @@ class PartitionTransformer(override val IR: LoweringLegoBase) extends RuleBasedT
       implicit val typeS = s.tp.asInstanceOf[PardisType[StructType]]
       val partitionedObject = partitionedObjects.find(p => s == p.columnArray).get
       val lb = partitionedObjectsForeachCount(partitionedObject)
-      val partitionedArray = partitionedObjectsArray(partitionedObject)
-      val newS = partitionedArray(lb).asInstanceOf[Rep[StructType]]
-      val newA = field(newS, name)(self.tp)
-      newA(idx)
+      val partitionedArray = partitionedObjectsArray(partitionedObject).asInstanceOf[Rep[Array[StructType]]]
+      val newS = partitionedArray(lb)
+      class SelfType
+      implicit val typeSelf = self.tp.typeArguments(0).asInstanceOf[PardisType[SelfType]]
+      val newA = field[Array[SelfType]](newS, name)
+
+      val res = newA(idx)
+      // System.out.println(s"array apply $newA, $idx, $res, ${res.tp}}")
+      res
     }
   }
 

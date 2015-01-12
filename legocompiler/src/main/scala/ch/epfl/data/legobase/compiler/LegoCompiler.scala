@@ -92,8 +92,6 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   }
 
-  pipeline += TreeDumper(false)
-
   pipeline += SingletonArrayToValueTransformer
 
   // pipeline += PartiallyEvaluate
@@ -112,6 +110,8 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
   if (generateCCode) pipeline += CTransformersPipeline
 
   pipeline += DCECLang //NEVER REMOVE!!!!
+
+  pipeline += TreeDumper(false)
 
   val codeGenerator =
     if (generateCCode)

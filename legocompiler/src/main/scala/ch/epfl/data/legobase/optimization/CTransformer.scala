@@ -51,6 +51,7 @@ object CTransformersPipeline extends TransformerHandler {
     pipeline += new OptimalStringToCTransformer(context)
     pipeline += new RangeToCTransformer(context)
     pipeline += new ScalaConstructsToCTranformer(context)
+    pipeline += new BlockFlattening(context)
     pipeline(context)(b)
   }
 }
@@ -780,3 +781,15 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends Re
   rewrite += rule { case DoubleToInt(x) => infix_asInstanceOf[Double](x) }
   rewrite += rule { case BooleanUnary_$bang(b) => NameAlias[Boolean](None, "!", List(List(b))) }
 }
+
+class BlockFlattening(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+  import IR._
+  import CNodes._
+  import CTypes._
+
+  rewrite += statement {
+    case sym -> (blk @ Block(stmts, res)) =>
+      inlineBlock(blk)
+  }
+}
+
