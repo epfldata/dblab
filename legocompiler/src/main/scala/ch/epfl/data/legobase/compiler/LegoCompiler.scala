@@ -62,6 +62,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   // pipeline += PartiallyEvaluate
   // pipeline += HashMapHoist
+  pipeline += SingletonHashMapToValueTransformer
   // pipeline += HashMapToArrayTransformer(generateCCode)
   //pipeline += MemoryManagementTransfomer //NOTE FIX TOPOLOGICAL SORT :-(
 
