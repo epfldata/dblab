@@ -35,7 +35,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimize
     StructTags.ClassTag[Any]("ColumnStoreOf" + oldTag.typeName)
 
   def tableColumnStoreType(newTag: StructTags.StructTag[_]) =
-    new RecordType(newTag).asInstanceOf[TypeRep[Any]]
+    new RecordType(newTag, None).asInstanceOf[TypeRep[Any]]
 
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
@@ -123,9 +123,10 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends Optimize
 
           //val fy = field(y, "columnStorePointer")(newType) //(arr.tp)
           val ix = field(x, "index")(IntType)
-          System.out.println(new RecordType(structDef.tag))
+          //System.out.println(new RecordType(structDef.tag))
           System.out.println(structsDefMap.map(sd => sd._1))
-          System.out.println(getStructDef(new RecordType(structDef.tag)).get.fields.map(f => f.name))
+
+          //System.out.println(getStructDef(new RecordType(structDef.tag)).get.fields.map(f => f.name))
 
           //val iy = field(y, "index")(IntType)
           /*System.out.println(x.tp)

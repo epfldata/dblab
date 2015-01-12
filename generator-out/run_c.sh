@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SF=0.1
+SF=1
 NUMRUNS=1
 VERBOSE=true
 
@@ -25,7 +25,7 @@ else
     TMPFILE=`mktemp -q /tmp/tmp.XXXXXX`
 fi
 
-for f in `ls *.out`
+for f in `ls -1v *.out`
 do
     QUERY=`echo $f | cut -d'.' -f1`
     echo "Running query $QUERY..."

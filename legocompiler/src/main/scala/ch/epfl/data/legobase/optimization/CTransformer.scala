@@ -44,7 +44,8 @@ object CTransformersPipeline extends TransformerHandler {
     pipeline += new GenericEngineToCTransformer(context)
     // pipeline += new OptionToCTransformer(context)
     // pipeline += new Tuple2ToCTransformer(context)
-    pipeline += new ScalaScannerToCFileTransformer(context)
+    pipeline += new ScalaScannerToCmmapTransformer(context)
+    //pipeline += new ScalaScannerToCFScanfTransformer(context)
     pipeline += new ScalaArrayToCStructTransformer(context)
     pipeline += new ScalaCollectionsToGLibTransfomer(context)
     pipeline += new HashEqualsFuncsToCTraansformer(context)
@@ -87,7 +88,7 @@ class GenericEngineToCTransformer(override val IR: LoweringLegoBase) extends Rul
 }
 
 // Mapping Scala Scanner operations to C FILE operations
-class ScalaScannerToCFileTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class ScalaScannerToCFScanfTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
   import CNodes._
   import CTypes._
@@ -143,6 +144,95 @@ class ScalaScannerToCFileTransformer(override val IR: LoweringLegoBase) extends 
       (x * unit(10000)) + (y * unit(100)) + z
   }
   rewrite += rule { case K2DBScannerHasNext(s) => unit(true) }
+  rewrite += rule {
+    case LoaderFileLineCountObject(Constant(x: String)) =>
+      val p = popen(unit("wc -l " + x), unit("r"))
+      val cnt = readVar(__newVar[Int](0))
+      fscanf(p, unit("%d"), &(cnt))
+      pclose(p)
+      cnt
+  }
+}
+
+// Mapping Scala Scanner operations to C mmap operations
+class ScalaScannerToCmmapTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+  import IR._
+  import CNodes._
+  import CTypes._
+
+  implicit def toArrayChar(s: Expression[K2DBScanner]): Expression[Pointer[Char]] =
+    s.asInstanceOf[Expression[Pointer[Char]]]
+
+  override def transformType[T: PardisType]: PardisType[Any] = ({
+    val tp = typeRep[T]
+    if (tp == typeK2DBScanner) typePointer(typeChar)
+    else super.transformType[T]
+  }).asInstanceOf[PardisType[Any]]
+
+  /* Helper functions */
+  def readInt(s: Expression[Pointer[Char]]): Expression[Int] = {
+    val num = readVar(__newVar[Int](0))
+    pointer_assign(s,
+      toAtom(NameAlias[Pointer[Char]](None, "strntoi_unchecked", List(List(s, &(num))))))
+    num
+  }
+
+  // rewritings
+  rewrite += rule {
+    case K2DBScannerNew(f) => {
+      val fd: Expression[Int] = open(f, O_RDONLY)
+      val st = &(__newVar[StructStat](infix_asInstanceOf(unit(0))(typeStat)))
+      stat(f, st)
+      val size: Expression[Int] = field(st, "st_size")(typeInt)
+      NameAlias[Pointer[Char]](None, "mmap", List(List(Constant(null), size, PROT_READ, MAP_PRIVATE, fd, Constant(0))))
+    }
+  }
+
+  rewrite += rule { case K2DBScannerNext_int(s) => readInt(s) }
+
+  rewrite += rule {
+    case K2DBScannerNext_double(s) =>
+      val num = readVar(__newVar[Double](unit(0.0)))
+      pointer_assign(s,
+        toAtom(NameAlias[Pointer[Char]](None, "strntod_unchecked", List(List(s, &(num))))))
+      num
+  }
+
+  rewrite += rule {
+    case K2DBScannerNext_char(s) =>
+      val tmp = __newVar[Char](*(s));
+      pointer_increase(s) // move to next char, which is the delimiter
+      pointer_increase(s) // skip '|'
+      readVar(tmp)
+  }
+
+  rewrite += rule {
+    case K2DBScannerNext_date(s) => {
+      val year = readInt(s)
+      val month = readInt(s)
+      val day = readInt(s)
+      (year * 10000) + (month * 100) + day
+    }
+  }
+
+  rewrite += rule {
+    case nn @ K2DBScannerNext1(s, buf) =>
+      val array = field(buf, "array")(typePointer(typeChar))
+      val begin = __newVar[Pointer[Char]](s)
+      __whileDo((*(s) __!= unit('|')) && (*(s) __!= unit('\n')), {
+        pointer_increase(s)
+      })
+      val size = pointer_minus(s, readVar(begin))
+      strncpy(array, readVar(begin), size)
+      pointer_assign_content(array, size, unit('\u0000'))
+      pointer_increase(s) // skip '|'
+      size
+  }
+
+  rewrite += rule {
+    case K2DBScannerHasNext(s) => infix_!=(*(s), unit('\u0000'))
+
+  }
   rewrite += rule {
     case LoaderFileLineCountObject(Constant(x: String)) =>
       val p = popen(unit("wc -l " + x), unit("r"))
@@ -229,7 +319,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       val arr = field(s, "array")(newTp)
       if (elemType.isPrimitive) arrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, apply(v))
       else if (elemType.name == "OptimalString")
-        pointer_assign(arr.asInstanceOf[Expression[Pointer[Any]]], i, apply(v))
+        pointer_assign_content(arr.asInstanceOf[Expression[Pointer[Any]]], i, apply(v))
       else if (v match {
         case Def(Cast(Constant(null))) => true
         case Constant(null)            => true
@@ -239,7 +329,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         // implicit val typeT = apply(v).tp.typeArguments(0).asInstanceOf[TypeRep[T]]
         implicit val typeT = newTp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[T]]
         val tArr = arr.asInstanceOf[Expression[Pointer[T]]]
-        pointer_assign(tArr, i, unit(null))
+        pointer_assign_content(tArr, i, unit(null))
       } // else if (elemType.isRecord) {
       //   class T
       //   implicit val typeT = apply(v).tp.typeArguments(0).asInstanceOf[TypeRep[T]]
@@ -260,11 +350,11 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
           class T1
           implicit val typeT1 = newTp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[T1]]
           val tArr = arr.asInstanceOf[Expression[Pointer[T1]]]
-          pointer_assign(tArr, i, unit(null))
+          pointer_assign_content(tArr, i, unit(null))
         }, {
           val vContent = *(newV)
           val tArr = arr.asInstanceOf[Expression[Pointer[T]]]
-          pointer_assign(tArr, i, vContent)
+          pointer_assign_content(tArr, i, vContent)
           val pointerVar = newV match {
             case Def(ReadVar(v)) => v.asInstanceOf[Var[Pointer[T]]]
             case x               => Var(x.asInstanceOf[Rep[Var[Pointer[T]]]])
@@ -272,7 +362,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
           __assign(pointerVar, (&(tArr, i)).asInstanceOf[Rep[Pointer[T]]])(PointerType(typeT))
         })
       } else
-        pointer_assign(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(apply(v).asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
+        pointer_assign_content(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(apply(v).asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
           case x if v.tp.isArray            => transformType(v.tp).typeArguments(0).asInstanceOf[PardisType[Any]]
           case x if x.startsWith("Pointer") => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
           case _                            => v.tp
@@ -441,7 +531,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   rewrite += rule {
     case op @ TreeSetHead(t) =>
       def treeHead[A: PardisType, B: PardisType] = doLambda3((s1: Rep[A], s2: Rep[A], s3: Rep[Pointer[B]]) => {
-        pointer_assign(s3.asInstanceOf[Expression[Pointer[Any]]], s2)
+        pointer_assign_content(s3.asInstanceOf[Expression[Pointer[Any]]], s2)
         unit(0)
       })
       val elemType = t.tp.typeArguments(0).typeArguments(0)
@@ -780,3 +870,4 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends Re
   rewrite += rule { case DoubleToInt(x) => infix_asInstanceOf[Double](x) }
   rewrite += rule { case BooleanUnary_$bang(b) => NameAlias[Boolean](None, "!", List(List(b))) }
 }
+
