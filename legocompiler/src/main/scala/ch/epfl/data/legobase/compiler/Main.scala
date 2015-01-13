@@ -25,7 +25,8 @@ object Main extends LegoRunner {
       $set2arr: Lowering Set to Array
       $set2ll: Lowering Set to Linked List
       $contFlat: Flattening the next field of a container of a record to the record itself
-      $csPar: Column-Store and Partitioning in the same time (Not finished yet!)
+      $cstore: Column-Store optimization (Not finished yet!)
+      $part: Partitioning optimization which only should be combined with $cstore (Not finished yet!)
 """)
       System.exit(0)
     }

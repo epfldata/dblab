@@ -22,14 +22,15 @@ class Settings(val args: List[String]) {
     }
     if (!hashMapLowering && (setToArray || setToLinkedList || containerFlattenning))
       throw new Exception("It's impossible to lower Sets without lowering HashMap and MultiMap!")
-    if (columnStorePartitioning && tpchQuery != 6)
-      throw new Exception(s"$csPar only works for Query 6 for the moment!")
+    if ((columnStore || partitioning) && (tpchQuery != 6 && tpchQuery != 1))
+      throw new Exception(s"$cstore and $part only work for the Queries 1 & 6 for the moment!")
   }
   def hashMapLowering: Boolean = args.exists(_ == hm2set)
   def setToArray: Boolean = args.exists(_ == set2arr)
   def setToLinkedList: Boolean = args.exists(_ == set2ll)
   def containerFlattenning: Boolean = args.exists(_ == contFlat)
-  def columnStorePartitioning: Boolean = args.exists(_ == csPar)
+  def columnStore: Boolean = args.exists(_ == cstore)
+  def partitioning: Boolean = args.exists(_ == part)
 }
 
 object Settings {
@@ -37,7 +38,8 @@ object Settings {
   val set2arr = "+set2arr"
   val set2ll = "+set2ll"
   val contFlat = "+cont-flat"
-  val csPar = "+cs-par"
+  val cstore = "+cstore"
+  val part = "+part"
 }
 
 class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, val number: Int, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
@@ -98,9 +100,14 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
   // pipeline += PartiallyEvaluate
   // pipeline += DCE
 
-  if (settings.columnStorePartitioning) {
-    pipeline += ColumnStorePartitioner
-
+  if (settings.columnStore) {
+    pipeline += new ColumnStoreTransformer(DSL)
+    pipeline += ParameterPromotion
+    pipeline += PartiallyEvaluate
+    pipeline += DCE
+    if (settings.partitioning) {
+      pipeline += new PartitionTransformer(DSL)
+    }
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE

@@ -11,18 +11,6 @@ import pardis.types._
 import pardis.types.PardisTypeImplicits._
 import pardis.shallow.utils.DefaultValue
 
-object ColumnStorePartitioner extends TransformerHandler {
-  def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    val pipeline = new TransformerPipeline()
-    pipeline += new ColumnStoreTransformer(context.asInstanceOf[LoweringLegoBase])
-    pipeline += ParameterPromotion
-    pipeline += PartiallyEvaluate
-    pipeline += DCE
-    pipeline += new PartitionTransformer(context.asInstanceOf[LoweringLegoBase])
-    pipeline(context)(block)
-  }
-}
-
 class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
 
