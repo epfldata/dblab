@@ -61,6 +61,8 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
   // pipeline += HashMapToArrayTransformer(generateCCode)
   //pipeline += MemoryManagementTransfomer //NOTE FIX TOPOLOGICAL SORT :-(
 
+  pipeline += StringCompressionTransformer
+
   if (settings.hashMapLowering) {
     pipeline += MultiMapOptimizations
     pipeline += HashMapToSetTransformation
