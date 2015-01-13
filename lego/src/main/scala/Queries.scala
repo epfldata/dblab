@@ -210,8 +210,8 @@ object Queries {
       runQuery({
         val constantDate1: Int = parseDate("1996-01-01")
         val constantDate2: Int = parseDate("1997-01-01")
-        val lineitemScan = new SelectOp(new ScanOp(lineitemTable))(x => x.L_DISCOUNT <= 0.1 && (
-          x.L_SHIPDATE < constantDate2 && (x.L_QUANTITY < 24 && (x.L_SHIPDATE >= constantDate1 && (x.L_DISCOUNT >= 0.08)))))
+        val lineitemScan = new SelectOp(new ScanOp(lineitemTable))(x =>
+          x.L_SHIPDATE >= constantDate1 && (x.L_SHIPDATE < constantDate2 && (x.L_DISCOUNT >= 0.08 && (x.L_DISCOUNT <= 0.1 && (x.L_QUANTITY < 24)))))
         val aggOp = new AggOp(lineitemScan, 1)(x => "Total")((t, currAgg) => { (t.L_EXTENDEDPRICE * t.L_DISCOUNT) + currAgg })
         val po = new PrintOp(aggOp)(kv => { kv.key; printf("%.4f\n", kv.aggs(0)) }, () => true)
         po.open
