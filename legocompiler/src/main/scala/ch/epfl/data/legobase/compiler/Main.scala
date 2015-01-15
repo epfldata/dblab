@@ -10,121 +10,97 @@ import pardis.ir._
 import pardis.types.PardisTypeImplicits._
 import pardis.types._
 
-object TransformerPipeline {
-
-}
-
 object Main extends LegoRunner {
+
+  var settings: Settings = _
 
   def main(args: Array[String]) {
     if (args.length < 3) {
+      import Settings._
       System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
-      System.out.println("USAGE: run <data_folder> <scaling_factor_number> <list of queries to run> <copy>?")
+      System.out.println("USAGE: run <data_folder> <scaling_factor_number> <list of queries to run> <copy>? <+optimizations>")
       System.out.println("     : data_folder_name should contain folders named sf0.1 sf1 sf2 sf4 etc")
+      System.out.println(s""" Available optimizations:
+      $hm2set: Lowering HashMap and MultiMap to Array of Set
+      $set2arr: Lowering Set to Array
+      $set2ll: Lowering Set to Linked List
+      $contFlat: Flattening the next field of a container of a record to the record itself
+      $cstore: Column-Store optimization (Not finished yet!)
+      $part: Partitioning optimization which only should be combined with $cstore (Not finished yet!)
+""")
       System.exit(0)
     }
     Config.checkResults = false
-
+    settings = new Settings(args.toList.filter(_.startsWith("+")))
     run(args)
   }
 
-  /* For the moment this transformation is only valid for C code generation */
-  val hashMapToArray = true
+  val removeUnusedFields = true
 
   def executeQuery(query: String): Unit = {
+    System.out.println(s"Running $query!")
+
     val context = new LoweringLegoBase {}
-    import context._
-    query match {
-      case "Q1"    => compileQuery(context, reifyBlock { Queries.Q1(unit(Config.numRuns)) }, 1, false, false)
-      case "Q1_C"  => compileQuery(context, reifyBlock { Queries.Q1(unit(Config.numRuns)) }, 1, false, true)
-      case "Q2"    => compileQuery(context, reifyBlock { Queries.Q2(unit(Config.numRuns)) }, 2, false, false)
-      case "Q2_C"  => compileQuery(context, reifyBlock { Queries.Q2(unit(Config.numRuns)) }, 2, false, true)
-      case "Q3"    => compileQuery(context, reifyBlock { Queries.Q3(unit(Config.numRuns)) }, 3, false, false)
-      case "Q3_C"  => compileQuery(context, reifyBlock { Queries.Q3(unit(Config.numRuns)) }, 3, false, true)
-      case "Q4"    => compileQuery(context, reifyBlock { Queries.Q4(unit(Config.numRuns)) }, 4, false, false)
-      case "Q4_C"  => compileQuery(context, reifyBlock { Queries.Q4(unit(Config.numRuns)) }, 4, false, true)
-      case "Q5"    => compileQuery(context, reifyBlock { Queries.Q5(unit(Config.numRuns)) }, 5, false, false)
-      case "Q5_C"  => compileQuery(context, reifyBlock { Queries.Q5(unit(Config.numRuns)) }, 5, false, true)
-      case "Q6"    => compileQuery(context, reifyBlock { Queries.Q6(unit(Config.numRuns)) }, 6, false, false)
-      case "Q6_C"  => compileQuery(context, reifyBlock { Queries.Q6(unit(Config.numRuns)) }, 6, false, true)
-      case "Q7"    => compileQuery(context, reifyBlock { Queries.Q7(unit(Config.numRuns)) }, 7, false, false)
-      case "Q7_C"  => compileQuery(context, reifyBlock { Queries.Q7(unit(Config.numRuns)) }, 7, false, true)
-      case "Q8"    => compileQuery(context, reifyBlock { Queries.Q8(unit(Config.numRuns)) }, 8, false, false)
-      case "Q8_C"  => compileQuery(context, reifyBlock { Queries.Q8(unit(Config.numRuns)) }, 8, false, true)
-      case "Q9"    => compileQuery(context, reifyBlock { Queries.Q9(unit(Config.numRuns)) }, 9, false, false)
-      case "Q9_C"  => compileQuery(context, reifyBlock { Queries.Q9(unit(Config.numRuns)) }, 9, false, true)
-      case "Q10"   => compileQuery(context, reifyBlock { Queries.Q10(unit(Config.numRuns)) }, 10, false, false)
-      case "Q10_C" => compileQuery(context, reifyBlock { Queries.Q10(unit(Config.numRuns)) }, 10, false, true)
-      case "Q11"   => compileQuery(context, reifyBlock { Queries.Q11(unit(Config.numRuns)) }, 11, false, false)
-      case "Q11_C" => compileQuery(context, reifyBlock { Queries.Q11(unit(Config.numRuns)) }, 11, false, true)
-      case "Q12"   => compileQuery(context, reifyBlock { Queries.Q12(unit(Config.numRuns)) }, 12, false, false)
-      case "Q12_C" => compileQuery(context, reifyBlock { Queries.Q12(unit(Config.numRuns)) }, 12, false, true)
-      case "Q13"   => compileQuery(context, reifyBlock { Queries.Q13(unit(Config.numRuns)) }, 13, false, false)
-      case "Q13_C" => compileQuery(context, reifyBlock { Queries.Q13(unit(Config.numRuns)) }, 13, false, true)
-      case "Q14"   => compileQuery(context, reifyBlock { Queries.Q14(unit(Config.numRuns)) }, 14, false, false)
-      case "Q14_C" => compileQuery(context, reifyBlock { Queries.Q14(unit(Config.numRuns)) }, 14, false, true)
-      case "Q15"   => compileQuery(context, reifyBlock { Queries.Q15(unit(Config.numRuns)) }, 15, false, false)
-      case "Q15_C" => compileQuery(context, reifyBlock { Queries.Q15(unit(Config.numRuns)) }, 15, false, true)
-      case "Q16"   => compileQuery(context, reifyBlock { Queries.Q16(unit(Config.numRuns)) }, 16, false, false)
-      case "Q16_C" => compileQuery(context, reifyBlock { Queries.Q16(unit(Config.numRuns)) }, 16, false, true)
-      case "Q17"   => compileQuery(context, reifyBlock { Queries.Q17(unit(Config.numRuns)) }, 17, false, false)
-      case "Q17_C" => compileQuery(context, reifyBlock { Queries.Q17(unit(Config.numRuns)) }, 17, false, true)
-      case "Q18"   => compileQuery(context, reifyBlock { Queries.Q18(unit(Config.numRuns)) }, 18, false, false)
-      case "Q18_C" => compileQuery(context, reifyBlock { Queries.Q18(unit(Config.numRuns)) }, 18, false, true)
-      case "Q19"   => compileQuery(context, reifyBlock { Queries.Q19(unit(Config.numRuns)) }, 19, false, false)
-      case "Q19_C" => compileQuery(context, reifyBlock { Queries.Q19(unit(Config.numRuns)) }, 19, false, true)
-      case "Q20"   => compileQuery(context, reifyBlock { Queries.Q20(unit(Config.numRuns)) }, 20, false, false)
-      case "Q20_C" => compileQuery(context, reifyBlock { Queries.Q20(unit(Config.numRuns)) }, 20, false, true)
-      case "Q21"   => compileQuery(context, reifyBlock { Queries.Q21(unit(Config.numRuns)) }, 21, false, false)
-      case "Q21_C" => compileQuery(context, reifyBlock { Queries.Q21(unit(Config.numRuns)) }, 21, false, true)
-      case "Q22"   => compileQuery(context, reifyBlock { Queries.Q22(unit(Config.numRuns)) }, 22, false, false)
-      case "Q22_C" => compileQuery(context, reifyBlock { Queries.Q22(unit(Config.numRuns)) }, 22, false, true)
-    }
-  }
 
-  def compileQuery(context: LoweringLegoBase, block: pardis.ir.PardisBlock[Unit], number: Int, shallow: Boolean, generateCCode: Boolean) {
-    val pipeline = new TransformerPipeline()
-    pipeline += LBLowering(generateCCode)
-    pipeline += ParameterPromotion
-    pipeline += DCE
-    pipeline += PartiallyEvaluate
+    val cCode =
+      true
 
-    if (generateCCode) {
-      //pipeline += ColumnStoreTransformer
-    }
+    val scalaCode =
+      false
 
-    pipeline += PartiallyEvaluate
-    pipeline += HashMapHoist
-    pipeline += HashMapToArrayTransformer(generateCCode)
-    //pipeline += MemoryManagementTransfomer //NOTE FIX TOPOLOGICAL SORT :-(
+    import context.unit
+    import context.Queries._
+    val (queryNumber, targetCode, queryFunction) =
+      query match {
+        case "Q1"    => (1, scalaCode, () => Q1(unit(Config.numRuns)))
+        case "Q1_C"  => (1, cCode, () => Q1(unit(Config.numRuns)))
+        case "Q2"    => (2, scalaCode, () => Q2(unit(Config.numRuns)))
+        case "Q2_C"  => (2, cCode, () => Q2(unit(Config.numRuns)))
+        case "Q3"    => (3, scalaCode, () => Q3(unit(Config.numRuns)))
+        case "Q3_C"  => (3, cCode, () => Q3(unit(Config.numRuns)))
+        case "Q4"    => (4, scalaCode, () => Q4(unit(Config.numRuns)))
+        case "Q4_C"  => (4, cCode, () => Q4(unit(Config.numRuns)))
+        case "Q5"    => (5, scalaCode, () => Q5(unit(Config.numRuns)))
+        case "Q5_C"  => (5, cCode, () => Q5(unit(Config.numRuns)))
+        case "Q6"    => (6, scalaCode, () => Q6(unit(Config.numRuns)))
+        case "Q6_C"  => (6, cCode, () => Q6(unit(Config.numRuns)))
+        case "Q7"    => (7, scalaCode, () => Q7(unit(Config.numRuns)))
+        case "Q7_C"  => (7, cCode, () => Q7(unit(Config.numRuns)))
+        case "Q8"    => (8, scalaCode, () => Q8(unit(Config.numRuns)))
+        case "Q8_C"  => (8, cCode, () => Q8(unit(Config.numRuns)))
+        case "Q9"    => (9, scalaCode, () => Q9(unit(Config.numRuns)))
+        case "Q9_C"  => (9, cCode, () => Q9(unit(Config.numRuns)))
+        case "Q10"   => (10, scalaCode, () => Q10(unit(Config.numRuns)))
+        case "Q10_C" => (10, cCode, () => Q10(unit(Config.numRuns)))
+        case "Q11"   => (11, scalaCode, () => Q11(unit(Config.numRuns)))
+        case "Q11_C" => (11, cCode, () => Q11(unit(Config.numRuns)))
+        case "Q12"   => (12, scalaCode, () => Q12(unit(Config.numRuns)))
+        case "Q12_C" => (12, cCode, () => Q12(unit(Config.numRuns)))
+        case "Q13"   => (13, scalaCode, () => Q13(unit(Config.numRuns)))
+        case "Q13_C" => (13, cCode, () => Q13(unit(Config.numRuns)))
+        case "Q14"   => (14, scalaCode, () => Q14(unit(Config.numRuns)))
+        case "Q14_C" => (14, cCode, () => Q14(unit(Config.numRuns)))
+        case "Q15"   => (15, scalaCode, () => Q15(unit(Config.numRuns)))
+        case "Q15_C" => (15, cCode, () => Q15(unit(Config.numRuns)))
+        case "Q16"   => (16, scalaCode, () => Q16(unit(Config.numRuns)))
+        case "Q16_C" => (16, cCode, () => Q16(unit(Config.numRuns)))
+        case "Q17"   => (17, scalaCode, () => Q17(unit(Config.numRuns)))
+        case "Q17_C" => (17, cCode, () => Q17(unit(Config.numRuns)))
+        case "Q18"   => (18, scalaCode, () => Q18(unit(Config.numRuns)))
+        case "Q18_C" => (18, cCode, () => Q18(unit(Config.numRuns)))
+        case "Q19"   => (19, scalaCode, () => Q19(unit(Config.numRuns)))
+        case "Q19_C" => (19, cCode, () => Q19(unit(Config.numRuns)))
+        case "Q20"   => (20, scalaCode, () => Q20(unit(Config.numRuns)))
+        case "Q20_C" => (20, cCode, () => Q20(unit(Config.numRuns)))
+        case "Q21"   => (21, scalaCode, () => Q21(unit(Config.numRuns)))
+        case "Q21_C" => (21, cCode, () => Q21(unit(Config.numRuns)))
+        case "Q22"   => (22, scalaCode, () => Q22(unit(Config.numRuns)))
+        case "Q22_C" => (22, cCode, () => Q22(unit(Config.numRuns)))
+      }
 
-    //pipeline += ParameterPromotion
+    settings.validate(targetCode, queryNumber)
 
-    //pipeline += DCE
-
-    pipeline += PartiallyEvaluate
-    pipeline += SingletonArrayToValueTransformer
-
-    if (generateCCode) pipeline += CTransformersPipeline
-    pipeline += TreeDumper
-
-    pipeline += DCECLang //NEVER REMOVE!!!!
-
-    val finalBlock = pipeline.apply(context)(block)
-
-    // Convert to program
-    val ir2Program = new { val IR = context } with IRToProgram {}
-    val finalProgram = ir2Program.createProgram(finalBlock)
-    if (generateCCode) (new LegoCGenerator(shallow, "Q" + number, false)).apply(finalProgram)
-    else (new LegoScalaGenerator(shallow, "Q" + number)).apply(finalProgram)
-  }
-}
-
-object TreeDumper extends TransformerHandler {
-  def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    val pw = new java.io.PrintWriter(new java.io.File("tree_debug_dump.txt"))
-    pw.println(block.toString)
-    pw.flush()
-    block
+    val compiler = new LegoCompiler(context, removeUnusedFields, queryNumber, targetCode, settings)
+    compiler.compile(queryFunction())
   }
 }

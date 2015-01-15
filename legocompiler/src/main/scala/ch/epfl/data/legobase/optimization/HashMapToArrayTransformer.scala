@@ -87,12 +87,12 @@ class HashMapToArrayTransformer(override val IR: LoweringLegoBase, val generateC
   }
 
   override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = stm match {
-    case Stm(sym, SetHead(s))                   => Nil
-    case Stm(sym, SetRemove(s, k))              => Nil
-    case Stm(sym, HashMapKeySet(m))             => Nil
-    case Stm(sym, SetToSeq(s))                  => Nil
-    case Stm(sym, SetNew(s))                    => Nil
-    case Stm(sym, PardisNewVar(Def(SetNew(s)))) => Nil
+    case Stm(sym, SetHead(s))                            => Nil
+    case Stm(sym, SetRemove(s, k))                       => Nil
+    case Stm(sym, HashMapKeySet(m))                      => Nil
+    case Stm(sym, SetToSeq(s))                           => Nil
+    case Stm(sym, SetApplyObject1(s))                    => Nil
+    case Stm(sym, PardisNewVar(Def(SetApplyObject1(s)))) => Nil
     case Stm(sym, PardisAssign(PardisVar(z), y)) =>
       if (z.tp.name.contains("Set") && y.tp.name.contains("Set")) Nil
       else super.transformStmToMultiple(stm)

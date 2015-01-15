@@ -11,24 +11,14 @@ import queryengine.push._
 import pardis.annotations.{ deep, metadeep, dontLift }
 import storagemanager.Loader._
 import GenericEngine._
-import queryengine.TPCHRelations._
+// import queryengine.TPCHRelations._
 import storagemanager._
 
-// This is a temporary solution until we introduce dependency management and adopt policies. Not a priority now!
 @metadeep(
-  "legocompiler/src/main/scala/ch/epfl/data/legobase/deep",
-  """
-package ch.epfl.data
-package legobase
-package deep
-
-import pardis.ir._
-import pardis.types.PardisTypeImplicits._
-import pardis.deep.scalalib._
-import pardis.deep.scalalib.collection._
-""",
-  """QueryComponent""",
-  "DeepDSL")
+  folder = "",
+  header = "",
+  component = "QueryComponent",
+  thisComponent = "ch.epfl.data.legobase.deep.DeepDSL")
 class MetaInfo
 
 @deep
@@ -61,7 +51,6 @@ object Queries {
         val po = new PrintOp(sortOp)(kv => printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n",
           kv.key.L_RETURNFLAG, kv.key.L_LINESTATUS, kv.aggs(1), kv.aggs(2), kv.aggs(3), kv.aggs(4),
           kv.aggs(6), kv.aggs(7), kv.aggs(8), kv.aggs(5)), () => true)
-        //val po = new PrintOp(aggOp)(kv => {}, () => true)
         po.open
         po.next
         ()
@@ -70,7 +59,6 @@ object Queries {
   }
 
   def Q2(numRuns: Int) {
-    import queryengine._
     val partTable = loadPart()
     val partsuppTable = loadPartsupp()
     val nationTable = loadNation()
@@ -222,8 +210,8 @@ object Queries {
       runQuery({
         val constantDate1: Int = parseDate("1996-01-01")
         val constantDate2: Int = parseDate("1997-01-01")
-        val lineitemScan = new SelectOp(new ScanOp(lineitemTable))(x => x.L_DISCOUNT <= 0.1 && (
-          x.L_SHIPDATE < constantDate2 && (x.L_QUANTITY < 24 && (x.L_SHIPDATE >= constantDate1 && (x.L_DISCOUNT >= 0.08)))))
+        val lineitemScan = new SelectOp(new ScanOp(lineitemTable))(x =>
+          x.L_SHIPDATE >= constantDate1 && (x.L_SHIPDATE < constantDate2 && (x.L_DISCOUNT >= 0.08 && (x.L_DISCOUNT <= 0.1 && (x.L_QUANTITY < 24)))))
         val aggOp = new AggOp(lineitemScan, 1)(x => "Total")((t, currAgg) => { (t.L_EXTENDEDPRICE * t.L_DISCOUNT) + currAgg })
         val po = new PrintOp(aggOp)(kv => { kv.key; printf("%.4f\n", kv.aggs(0)) }, () => true)
         po.open
@@ -735,7 +723,6 @@ object Queries {
     }
   }
 
-  // Amir: Check if it works on bigger data, because Yannis told that diff method of ArrayByteOps does not work
   def Q20(numRuns: Int) {
     val nationTable = loadNation()
     val supplierTable = loadSupplier()

@@ -4,51 +4,13 @@ import Keys._
 import Process._
 import com.typesafe.sbt.SbtScalariform
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
+import ch.epfl.data.purgatory.plugin.PurgatoryPlugin._
 
 object LegoBuild extends Build {
 
   lazy val formatSettings = SbtScalariform.scalariformSettings ++ Seq(
     ScalariformKeys.preferences in Compile := formattingPreferences,
     ScalariformKeys.preferences in Test    := formattingPreferences
-  )
-
-  // We can make an SBT plugin out of these. However, for the time being this is good enough.
-  val generatorMode = SettingKey[Boolean]("generator-mode",
-    "Is the compiler used for generating the deep embedding")
-
-  def embed = Command.command("embed") { state =>
-    val cleaned = Project.runTask(Keys.clean in Compile, state)
-    cleaned match {
-      case Some((state, _)) =>
-        Project.evaluateTask(Keys.compile in Compile,
-          (Project extract state).append(Seq(generatorMode := true), state))
-        Project.evaluateTask(Keys.clean in Compile, state)
-        state
-      case None =>
-        state
-    }
-  }
-
-  def generatorSettings: Seq[Setting[_]] = Seq(
-    libraryDependencies ++= Seq("ch.epfl.data" % "purgatory-core_2.11" % "0.1-SNAPSHOT",
-      "ch.epfl.data" % "purgatory_2.11" % "0.1-SNAPSHOT"
-      ),
-    generatorMode := false,
-    scalacOptions ++= {
-      if(generatorMode.value) {
-        val cpath = update.value.matching(configurationFilter()).classpath
-        val plugin = cpath.files.find(_.getName contains "purgatory_").get.absString
-        val purgatory_core = cpath.files.find(_.getName contains "purgatory-core").get.absString
-        val yy_core = cpath.files.find(_.getName contains "yinyang-core").get.absString
-        val yy = cpath.files.find(_.getName contains "scala-yinyang").get.absString
-        Seq(
-          s"-Xplugin:$plugin:$yy_core:$yy:$purgatory_core",
-          "-Ystop-after:backend-generator"
-        )
-      } else
-        Seq()
-    },
-    commands += embed
   )
 
   lazy val defaults = Project.defaultSettings ++ formatSettings ++ Seq(
@@ -59,8 +21,8 @@ object LegoBuild extends Build {
     libraryDependencies ++= Seq(
       "junit" % "junit-dep" % "4.10" % "test",
       "org.scalatest" % "scalatest_2.11" % "2.2.0" % "test",
-      "org.scala-lang"         %  "scala-reflect" % "2.11.1",
-      "org.scala-lang" % "scala-compiler" % "2.11.1" % "optional"
+      "org.scala-lang"         %  "scala-reflect" % "2.11.2",
+      "org.scala-lang" % "scala-compiler" % "2.11.2" % "optional"
     ),
 
     // add scalac options (verbose deprecation warnings)
@@ -73,7 +35,7 @@ object LegoBuild extends Build {
     // testing
     parallelExecution in Test := false,
     fork in Test := false,
-    scalaVersion := "2.11.1"
+    scalaVersion := "2.11.2"
   )
 
   def formattingPreferences = {
@@ -89,18 +51,21 @@ object LegoBuild extends Build {
   val generate_test = InputKey[Unit]("generate-test")
   // val test_run = InputKey[Unit]("test-run")
 
-  lazy val lego            = Project(id = "root",             base = file("."), settings = defaults) aggregate (lego_core, legolifter, legocompiler)
+  def purgatorySettings = Seq(
+    outputFolder := "legocompiler/src/main/scala/ch/epfl/data/legobase/deep",
+    inputPackage := "ch.epfl.data.legobase",
+    outputPackage := "ch.epfl.data.legobase.deep") ++ generatorSettings
+
+  lazy val lego            = Project(id = "root",             base = file("."), settings = defaults) aggregate (lego_core, legocompiler)
   lazy val lego_core       = Project(id = "lego-core",        base = file("lego"),
-   settings = defaults ++ generatorSettings ++  Seq(
+   settings = defaults ++ purgatorySettings ++  Seq(
      name := "lego-core",
      scalacOptions ++= Seq("-optimize"),
-     libraryDependencies += "ch.epfl.data" % "pardis-library_2.11" % "0.1-SNAPSHOT",
-     libraryDependencies += "ch.epfl.data" % "pardis-library-c_2.11" % "0.1-SNAPSHOT")) // hack for being able to generate implementations
-  lazy val legolifter = Project(id = "legolifter", base = file("legolifter"),
-    settings = defaults ++ generatorSettings ++ Seq(name := "legolifter"))
-    .dependsOn(lego_core)
+     libraryDependencies += "ch.epfl.data" % "pardis-library_2.11" % "0.1-SNAPSHOT", // hack for being able to generate implementations
+     libraryDependencies += "ch.epfl.data" % "c-scala-library_2.11" % "0.1-SNAPSHOT",
+     libraryDependencies += "ch.epfl.data" % "c-scala-deep_2.11" % "0.1-SNAPSHOT"))
   lazy val legocompiler = Project(id = "legocompiler", base = file("legocompiler"), settings = defaults ++ Seq(name := "legocompiler",
-      libraryDependencies ++= Seq("ch.epfl.lamp" % "scala-yinyang_2.11" % "0.2.0-SNAPSHOT",
+      libraryDependencies ++= Seq(//"ch.epfl.lamp" % "scala-yinyang_2.11" % "0.2.0-SNAPSHOT",
         "ch.epfl.data" % "pardis-compiler_2.11" % "0.1-SNAPSHOT"
         ),
       generate_test <<= inputTask { (argTask: TaskKey[Seq[String]]) =>

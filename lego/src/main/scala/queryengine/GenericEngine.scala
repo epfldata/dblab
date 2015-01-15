@@ -2,10 +2,12 @@ package ch.epfl.data
 package legobase
 package queryengine
 
-// FIXME just to cheat on auto-lifter
-trait GenericEngine {
+import pardis.annotations._
 
-}
+@noImplementation
+@deep
+@needs[pardis.shallow.OptimalString]
+trait GenericEngine
 
 object GenericEngine {
   def runQuery[T](query: => T): T = {

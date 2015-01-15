@@ -7,6 +7,8 @@ import pardis.ir._
 import pardis.prettyprinter._
 import scala.language.implicitConversions
 
+class LegoScalaASTGenerator(val IR: Base, override val shallow: Boolean = false, override val outputFileName: String = "generatedProgram") extends LegoScalaGenerator(shallow, outputFileName) with ASTCodeGenerator[Base]
+
 class LegoScalaGenerator(val shallow: Boolean = false, val outputFileName: String = "generatedProgram") extends ScalaCodeGenerator {
 
   def getShallowHeader: String = if (shallow) """
@@ -30,6 +32,9 @@ import storagemanager.K2DBScanner
 import storagemanager.Loader
 import queryengine.GenericEngine
 import pardis.shallow.OptimalString
+import pardis.shallow.scalalib.collection.Cont
+
+class MultiMap[T, S] extends HashMap[T, Set[S]] with scala.collection.mutable.MultiMap[T, S]
 
 object OrderingFactory {
   def apply[T](fun: (T, T) => Int): Ordering[T] = new Ordering[T] {
@@ -52,7 +57,9 @@ object OrderingFactory {
   }
 }
 
-class LegoCGenerator(val shallow: Boolean = false, val outputFileName: String = "generatedProgram", val verb: Boolean = true) extends CCodeGenerator(verb) {
+class LegoCASTGenerator(val IR: Base, override val shallow: Boolean = false, override val outputFileName: String = "generatedProgram", override val verbose: Boolean = true) extends LegoCGenerator(shallow, outputFileName, verbose) with CASTCodeGenerator[Base]
+
+class LegoCGenerator(val shallow: Boolean = false, val outputFileName: String = "generatedProgram", override val verbose: Boolean = true) extends CCodeGenerator {
   def apply(program: PardisProgram) {
     generate(program, outputFileName)
   }
