@@ -2,12 +2,9 @@ package ch.epfl.data
 package legobase
 package optimization
 
-//import scala.collection.mutable.ArrayBuffer
 import pardis.ir._
 import pardis.types._
 import pardis.types.PardisTypeImplicits._
-//import pardis.deep.scalalib._
-//import pardis.deep.scalalib.collection._
 import pardis.optimization._
 import legobase.deep._
 
@@ -19,139 +16,160 @@ object StringCompressionTransformer extends TransformerHandler {
 
 class StringCompressionTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
-  //import CNodes._
-  //import CTypes._
 
   sealed trait Phase
   case object LoadingPhase extends Phase
-  case object QueryPhase extends Phase
+  case object QueryExecutionPhase extends Phase
   var phase: Phase = LoadingPhase
 
-  val compressedStringsMaps = scala.collection.mutable.Map[String, (Var[Int], Expression[HashMap[OptimalString, Int]])]()
-  val hoistedStatements = collection.mutable.ArrayBuffer[String]()
+  val debugEnabled = false
+  val compressedStringsMaps = scala.collection.mutable.Map[String, (Var[Int], Expression[ArrayBuffer[OptimalString]])]()
+  val hoistedStatements = collection.mutable.Set[String]() // CAN DIE & WILL DIE SOON
+  val modifiedExpressions = collection.mutable.Map[Expression[Any], String]()
 
   override def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     traverseBlock(node)
+    System.out.println("StringCompressionTransformer: Modified symbols are: " + modifiedExpressions.mkString(","))
+    phase = LoadingPhase
     reifyBlock {
+      // Generate and hoist needed maps for string compression
       hoistedStatements.foreach(hs => {
+        System.out.println("StringCompressionTransformer: Creating map for field " + hs)
         compressedStringsMaps.getOrElseUpdate(hs, {
-          (__newVar[Int](unit(0)), hashMapNew[OptimalString, Int]())
-        }) // Get list of unique values for this string
+          (__newVar[Int](unit(0)), __newArrayBuffer[OptimalString]())
+        })
       })
-      // your reifying statements 
+      // Now generate rest of program
       toAtom(transformProgram(node))
     }
   }
-  /*analysis += statement {
-    case sym -> K2DBScannerNext1(Def(K2DBScannerNew(Constant(filename))), buf) =>
-      System.out.println("StringCompressionTransformer Analysis: Relation file found: " + filename)
-  }*/
 
   analysis += rule {
-    case Struct(tag, elems, methods) => elems.foreach(e => {
-      if (e.init.tp == OptimalStringType) {
-        hoistedStatements += e.name
-      }
+    case GenericEngineRunQueryObject(b) => {
+      phase = QueryExecutionPhase
+      traverseBlock(b)
+    }
+    case s @ Struct(tag, elems, methods) if phase == LoadingPhase =>
+      elems.foreach(e => {
+        if (e.init.tp == OptimalStringType) hoistedStatements += e.name
+      })
+  }
+
+  // !!! HIGHLY EXPERIMENTAL DEPENDENCY ANALYSIS (is there a generic mechanism for this is SysC?)
+  def checkAndAddDependency(c: Expression[Any], a: Expression[Any]*): Unit = {
+    if (modifiedExpressions.contains(c)) a.foreach(e => {
+      modifiedExpressions += e -> modifiedExpressions(c)
     })
+  }
+  analysis += statement {
+    case sym -> Struct(tag, elems, methods) if phase == QueryExecutionPhase =>
+      elems.foreach(e => {
+        if (e.init.tp == OptimalStringType) modifiedExpressions += sym -> {
+          e.init match {
+            case Def(PardisStructImmutableField(s, f)) => f
+          }
+        }
+      })
+    case sym -> PardisStructImmutableField(s, f) if phase == QueryExecutionPhase =>
+      checkAndAddDependency(s, sym)
+    case sym -> HashMapGetOrElseUpdate(map, key, Block(b, res)) =>
+      checkAndAddDependency(res, sym, map)
+    case sym -> HashMapForeach(map, Def(PardisLambda(f, i, b))) =>
+      checkAndAddDependency(map, i)
+      traverseBlock(b)
+    case sym -> TreeSet$plus$eq(tree, elem) =>
+      checkAndAddDependency(elem, tree)
+      tree match {
+        case Def(TreeSetNew2(Def(OrderingNew(Def(PardisLambda2(f, i1, i2, b)))))) =>
+          checkAndAddDependency(elem, i1)
+          checkAndAddDependency(elem, i2)
+          traverseBlock(b)
+        case _ => throw new Exception("StringCompressionTransformer BUG: unknown node type in analysis of trees: " + tree.correspondingNode)
+      }
+    case sym -> TreeSetHead(tree)      => checkAndAddDependency(tree, sym)
+    case sym -> Tuple2_Field__1(tuple) => checkAndAddDependency(tuple, sym)
+    case sym -> Tuple2_Field__2(tuple) => checkAndAddDependency(tuple, sym)
   }
 
   rewrite += rule {
     case origStruct @ Struct(tag, elems, methods) if phase == LoadingPhase =>
-      System.out.println("StringCompressionTransformer: Struct " + tag + " found with elems " + elems.mkString)
+      if (debugEnabled) System.out.println("StringCompressionTransformer: Struct " + tag + " found with elems " + elems.mkString)
+
       Struct(tag, elems.map(e => {
         if (e.init.tp == OptimalStringType) {
-          System.out.println("StringCompressionTransformer: Field " + e.name + " of type " + e.init.tp)
+          if (debugEnabled) System.out.println("StringCompressionTransformer: Field " + e.name + " of type " + e.init.tp)
+          if (debugEnabled) System.out.println("StringCompressionTransformer: Map now is " + compressedStringsMaps.mkString)
 
-          //val uncompressedString = init
-
-          System.out.println("StringCompressionTransformer: Map now is " + compressedStringsMaps.mkString)
           val compressedStringMetaData = compressedStringsMaps(e.name)
           val num_unique_strings = compressedStringMetaData._1
           val compressedStringValues = compressedStringMetaData._2
 
           val uncompressedString = e.init.asInstanceOf[Expression[OptimalString]]
           __ifThenElse(!compressedStringValues.contains(uncompressedString), {
-            val counterValue = readVar(num_unique_strings)
-            compressedStringValues.update(uncompressedString, counterValue)
             __assign(num_unique_strings, readVar(num_unique_strings) + unit(1))
+            compressedStringValues.append(uncompressedString)
           }, unit)
-          // Update the list if needed
-          //map.getOrElseUpdate()
-          PardisStructArg(e.name, e.mutable, compressedStringValues(uncompressedString))
+          PardisStructArg(e.name, e.mutable, compressedStringValues.indexOf(uncompressedString))
         } else e
 
       }), methods)(origStruct.tp)
-    case origStruct @ Struct(tag, elems, methods) if phase == QueryPhase =>
+
+    case origStruct @ Struct(tag, elems, methods) if phase == QueryExecutionPhase =>
       Struct(tag, elems.map(e => {
         if (e.init.tp == OptimalStringType) {
-          /*  System.out.println("StringCompressionTransformer: Field " + e.name + " of type " + e.init.tp)
-
-          //val uncompressedString = init
-          val compressedStringMetaData = compressedStringsMaps.getOrElseUpdate(e.name, {
-            (__newVar[Int](unit(0)), hashMapNew[OptimalString, Int]())
-          }) // Get list of unique values for this string
-          System.out.println("StringCompressionTransformer: Map now is " + compressedStringsMaps.mkString)
-
-          val num_unique_strings = compressedStringMetaData._1
-          val compressedStringValues = compressedStringMetaData._2
-
-          val uncompressedString = e.init.asInstanceOf[Expression[OptimalString]]
-          __ifThenElse(!compressedStringValues.contains(uncompressedString), {
-            val counterValue = readVar(num_unique_strings)
-            compressedStringValues.update(uncompressedString, counterValue)
-            __assign(num_unique_strings, readVar(num_unique_strings) + unit(1))
-          }, unit)
-          // Update the list if needed
-          //map.getOrElseUpdate()
-          PardisStructArg(e.name, e.mutable, readVar(num_unique_strings))*/
           PardisStructArg(e.name, e.mutable, infix_asInstanceOf(e.init)(typeInt))
         } else e
-
       }), methods)(origStruct.tp)
   }
-  /*rewrite += rule {
-    case PardisStructDef(tag, elems, methods) =>
-      System.out.println("StringCompressionTransformer: StructDef " + tag + " encountered!")
-      PardisStructDef(tag, elems.map(e => StructElemInformation(e.name,
-        if (e.tpe == OptimalStringType) typeInt.asInstanceOf[PardisType[Any]] else e.tpe,
-        e.mutable)), methods)
-  }*/
-  //  rewrite += remove { case GenericEngineParseStringObject(constantString) => () }
 
+  // Overwrite behaviour of string operations
   rewrite += rule {
     case OptimalString$eq$eq$eq(str1, str2) => str2 match {
       case Def(GenericEngineParseStringObject(constantString)) =>
-        System.out.println("StringCompressionTransformer: GenericEngineParseStringObject of " + constantString + " encountered ")
+        if (debugEnabled) System.out.println("StringCompressionTransformer: GenericEngineParseStringObject of " + constantString + " encountered ")
         str1 match {
           case Def(PardisStructImmutableField(s, name)) =>
             val compressedStringMetaData = compressedStringsMaps(name)
             val compressedStringValues = compressedStringMetaData._2
-            val compressedConstantString = compressedStringValues(str2)
+            val compressedConstantString = compressedStringValues.indexOf(str2)
             infix_==(str1, compressedConstantString)
           case dflt @ _ =>
             throw new Exception("StringCompressionTransformer BUG: unknown node type in LHS of comparison with constant string. LHS node is " + str1.correspondingNode)
-
         }
       case _ => infix_==(str1, str2)
     }
+
+    // This usually appears in sorting
+    case OptimalStringDiff(str1, str2) =>
+      val fieldName = modifiedExpressions.get(str1).get
+      val compressedStringValues = compressedStringsMaps(fieldName)._2
+      val uncompressedStr1 = compressedStringValues(str1.asInstanceOf[Expression[Int]])
+      val uncompressedStr2 = compressedStringValues(str2.asInstanceOf[Expression[Int]])
+      optimalStringDiff(uncompressedStr1, uncompressedStr2)
+
+    case OptimalStringString(str) => {
+      System.out.println("StringCompressionTransformer: Stringification of compressed string: Corresponding node is " + str.correspondingNode)
+      modifiedExpressions.get(str) match {
+        case Some(fieldName) =>
+          val compressedStringMetaData = compressedStringsMaps(fieldName)
+          val compressedStringValues = compressedStringMetaData._2
+          compressedStringValues(str.asInstanceOf[Expression[Int]])
+        case None =>
+          throw new Exception("StringCompressionTransformer BUG: unknown node type in stringification of compressed string. LHS node is " + str.correspondingNode)
+      }
+    }
   }
+
+  rewrite += rule {
+    case hm @ HashMapNew() if hm.typeA == OptimalStringType =>
+      System.out.println("StringCompressionTransformer: Replacing map of OptimalString with map of Int")
+      HashMapNew()(typeRep[Int].asInstanceOf[PardisType[Any]], hm.typeB)
+  }
+
   rewrite += rule {
     case GenericEngineRunQueryObject(b) => {
-      phase = QueryPhase
+      phase = QueryExecutionPhase
       val tb = transformBlock(b)
-      /*System.out.println("StringCompressionTransformer: StructsDefMap is " + structsDefMap.mkString("\n"))
-      structsDefMap.map(sd => (sd._1, {
-        val structDef = sd._2
-        val newFields = structDef.fields.map(e => StructElemInformation(e.name,
-          if (e.tpe == OptimalStringType) {
-            System.out.println("StringCompressionTransformer: field " + e.name + " of type " + e.tpe + " in struct " + sd._1 + " changed to INT")
-            typeInt.asInstanceOf[PardisType[Any]]
-          } else e.tpe,
-          e.mutable))
-        PardisStructDef(structDef.tag, newFields, structDef.methods)
-      }))
-      System.out.println("StringCompressionTransformer: StructsDefMap is " + structsDefMap.mkString("\n"))
-*/
       GenericEngineRunQueryObject(tb)
     }
   }

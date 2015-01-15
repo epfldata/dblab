@@ -27,6 +27,7 @@ class Settings(val args: List[String]) {
   def setToArray: Boolean = args.exists(_ == set2arr)
   def setToLinkedList: Boolean = args.exists(_ == set2ll)
   def containerFlattenning: Boolean = args.exists(_ == contFlat)
+  def stringCompression: Boolean = args.exists(_ == comprStrings)
 }
 
 object Settings {
@@ -34,6 +35,7 @@ object Settings {
   val set2arr = "+set2arr"
   val set2ll = "+set2ll"
   val contFlat = "+cont-flat"
+  val comprStrings = "+comprStrings"
 }
 
 class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, val number: Int, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
@@ -61,7 +63,8 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
   // pipeline += HashMapToArrayTransformer(generateCCode)
   //pipeline += MemoryManagementTransfomer //NOTE FIX TOPOLOGICAL SORT :-(
 
-  pipeline += StringCompressionTransformer
+  if (settings.stringCompression) pipeline += StringCompressionTransformer
+  pipeline += TreeDumper(false)
 
   if (settings.hashMapLowering) {
     pipeline += MultiMapOptimizations
@@ -90,8 +93,6 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   }
 
-  pipeline += TreeDumper(false)
-
   pipeline += SingletonArrayToValueTransformer
 
   // pipeline += PartiallyEvaluate
@@ -114,7 +115,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
       // new LegoCGenerator(false, outputFile, true)
       new LegoCASTGenerator(DSL, false, outputFile, true)
     else
-      // new LegoScalaGenerator(false, outputFile)
+      //new LegoScalaGenerator(false, outputFile)
       new LegoScalaASTGenerator(DSL, false, outputFile)
 
 }
