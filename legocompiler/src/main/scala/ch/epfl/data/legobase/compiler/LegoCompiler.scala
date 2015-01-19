@@ -31,6 +31,7 @@ class Settings(val args: List[String]) {
   def containerFlattenning: Boolean = args.exists(_ == contFlat)
   def columnStore: Boolean = args.exists(_ == cstore)
   def partitioning: Boolean = args.exists(_ == part)
+  def hashMapPartitioning: Boolean = args.exists(_ == hmPart)
 }
 
 object Settings {
@@ -40,6 +41,7 @@ object Settings {
   val contFlat = "+cont-flat"
   val cstore = "+cstore"
   val part = "+part"
+  val hmPart = "+hm-part"
 }
 
 class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, val number: Int, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
@@ -64,9 +66,13 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   // pipeline += PartiallyEvaluate
   pipeline += HashMapHoist
-  pipeline += SingletonHashMapToValueTransformer
+  // pipeline += SingletonHashMapToValueTransformer
   // pipeline += HashMapToArrayTransformer(generateCCode)
   //pipeline += MemoryManagementTransfomer //NOTE FIX TOPOLOGICAL SORT :-(
+
+  if (settings.hashMapPartitioning) {
+    pipeline += new HashMapPartitioningTransformer(DSL)
+  }
 
   if (settings.hashMapLowering) {
     pipeline += MultiMapOptimizations
@@ -123,8 +129,8 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   val codeGenerator =
     if (generateCCode)
-      // new LegoCGenerator(false, outputFile, true)
-      new LegoCASTGenerator(DSL, false, outputFile, true)
+      new LegoCGenerator(false, outputFile, true)
+    // new LegoCASTGenerator(DSL, false, outputFile, true)
     else
       // new LegoScalaGenerator(false, outputFile)
       new LegoScalaASTGenerator(DSL, false, outputFile)
