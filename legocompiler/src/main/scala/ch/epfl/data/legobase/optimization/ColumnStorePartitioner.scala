@@ -66,7 +66,10 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends RuleBase
       structDef.fields.map(el => {
         val column = field(apply(arr), "arrayOf" + el.name)(typeArray(el.tpe))
         val Def(s) = value
-        val v = s.asInstanceOf[PardisStruct[Any]].elems.find(e => e.name == el.name).get.init
+        val v = s.asInstanceOf[PardisStruct[Any]].elems.find(e => e.name == el.name) match {
+          case Some(e) => e.init
+          case None    => throw new Exception(s"could not find any element for $s with name `${el.name}`")
+        }
         arrayUpdate(column, idx, v)
       })
       unit(())

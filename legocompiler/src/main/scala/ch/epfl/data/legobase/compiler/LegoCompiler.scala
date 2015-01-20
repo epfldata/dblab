@@ -18,11 +18,11 @@ class Settings(val args: List[String]) {
       throw new Exception(s"C code generator for HashMap and MultiMap is not supported yet! Consider adding $hm2set.")
     }
     if (!(setToArray || setToLinkedList) && targetIsC) {
-      throw new Exception("C code generator for Set is not supported yet! Consider adding $set2arr or $set2ll.")
+      throw new Exception(s"C code generator for Set is not supported yet! Consider adding $set2arr or $set2ll.")
     }
     if (!hashMapLowering && (setToArray || setToLinkedList || containerFlattenning))
       throw new Exception("It's impossible to lower Sets without lowering HashMap and MultiMap!")
-    if ((columnStore || partitioning) && (tpchQuery != 6 && tpchQuery != 1))
+    if ((columnStore || partitioning) && (!List(1, 6, 12).contains(tpchQuery)))
       throw new Exception(s"$cstore and $part only work for the Queries 1 & 6 for the moment!")
   }
   def hashMapLowering: Boolean = args.exists(_ == hm2set)
@@ -72,6 +72,9 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   if (settings.hashMapPartitioning) {
     pipeline += new HashMapPartitioningTransformer(DSL)
+    pipeline += ParameterPromotion
+    pipeline += PartiallyEvaluate
+    pipeline += DCE
   }
 
   if (settings.hashMapLowering) {
