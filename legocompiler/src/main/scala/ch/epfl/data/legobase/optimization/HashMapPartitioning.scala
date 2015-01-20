@@ -19,8 +19,11 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
   val rightPartFunc = scala.collection.mutable.Map[Rep[Any], String]()
   val leftPartArr = scala.collection.mutable.Map[Rep[Any], Rep[Array[Any]]]()
   val rightPartArr = scala.collection.mutable.Map[Rep[Any], Rep[Array[Any]]]()
+  val leftLoopSymbol = scala.collection.mutable.Map[Rep[Any], While]()
+  val rightLoopSymbol = scala.collection.mutable.Map[Rep[Any], While]()
+
   case class HashMapPartitionObject(mapSymbol: Rep[Any], left: Option[PartitionObject], right: Option[PartitionObject])
-  case class PartitionObject(arr: Rep[Array[Any]], fieldFunc: String) {
+  case class PartitionObject(arr: Rep[Array[Any]], fieldFunc: String, loopSymbol: While) {
     def buckets = numBuckets(this)
     def count = partitionedObjectsCount(this)
     def parArr = partitionedObjectsArray(this).asInstanceOf[Rep[Array[Array[Any]]]]
@@ -45,11 +48,11 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     System.out.println(s"leftPartArr: $leftPartArr")
     System.out.println(s"rightPartArr: $rightPartArr")
     partitionedHashMapObjects ++= partitionedMaps.map({ hm =>
-      val left = leftPartArr.get(hm).map(v => PartitionObject(v, leftPartFunc(hm)))
-      val right = rightPartArr.get(hm).map(v => PartitionObject(v, rightPartFunc(hm)))
+      val left = leftPartArr.get(hm).map(v => PartitionObject(v, leftPartFunc(hm), leftLoopSymbol(hm)))
+      val right = rightPartArr.get(hm).map(v => PartitionObject(v, rightPartFunc(hm), rightLoopSymbol(hm)))
       HashMapPartitionObject(hm, left, right)
     })
-    System.out.println(s"partitionedHashMapObjects: $partitionedHashMapObjects")
+    // System.out.println(s"partitionedHashMapObjects: $partitionedHashMapObjects")
     System.out.println(s"partitionedMaps: $partitionedMaps")
 
     transformProgram(node)
@@ -65,6 +68,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     case node @ MultiMapAddBinding(nodeself, Def(StructImmutableField(struct, field)), nodev) if allMaps.contains(nodeself) =>
       partitionedMaps += nodeself
       leftPartFunc += nodeself -> field
+      leftLoopSymbol += nodeself -> currentLoopSymbol
       struct match {
         case Def(ArrayApply(arr, ind)) => leftPartArr += nodeself -> arr
         case _                         =>
@@ -76,11 +80,19 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     case node @ MultiMapGet(nodeself, Def(StructImmutableField(struct, field))) if allMaps.contains(nodeself) =>
       partitionedMaps += nodeself
       rightPartFunc += nodeself -> field
+      rightLoopSymbol += nodeself -> currentLoopSymbol
       struct match {
         case Def(ArrayApply(arr, ind)) => rightPartArr += nodeself -> arr
         case _                         =>
       }
       ()
+  }
+
+  var currentLoopSymbol: While = _
+
+  analysis += statement {
+    case sym -> (node @ While(_, _)) =>
+      currentLoopSymbol = node
   }
 
   def numBuckets[T](tp: PardisType[T]): Rep[Int] = unit(100)
@@ -166,7 +178,12 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
       // hmParObj.right.foreach { r =>
       //   createPartitionArray(r)
       // }
-      unit()
+      if (shouldBePartitioned(sym)) {
+        sym
+      } else {
+        recreateNode(node)
+      }
+      // recreateNode(node)
     }
   }
 
@@ -177,7 +194,33 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
   }
 
   rewrite += remove {
-    case MultiMapAddBinding(mm, _, nodev) if shouldBePartitioned(mm) =>
+    case MultiMapAddBinding(mm, _, nodev) if shouldBePartitioned(mm) && fillingHole.get(mm).isEmpty =>
+      ()
+  }
+
+  rewrite += rule {
+    case MultiMapAddBinding(mm, _, nodev) if shouldBePartitioned(mm) && fillingHole(mm) =>
+      // System.out.println(s"came here! for $mm")
+      fillingFunction(mm)()
+  }
+
+  rewrite += rule {
+    case ArrayApply(arr, _) if {
+      partitionedHashMapObjects.find(obj => obj.left.nonEmpty && obj.left.get.arr == arr) match {
+        case Some(obj) => shouldBePartitioned(obj.mapSymbol) && fillingHole.get(obj.mapSymbol).nonEmpty
+        case _         => false
+      }
+    } =>
+      fillingElem(partitionedHashMapObjects.find(obj => obj.left.nonEmpty && obj.left.get.arr == arr).get.mapSymbol)
+  }
+
+  rewrite += remove {
+    case node @ While(_, _) if {
+      partitionedHashMapObjects.find(obj => obj.left.nonEmpty && obj.left.get.loopSymbol == node) match {
+        case Some(obj) => shouldBePartitioned(obj.mapSymbol)
+        case _         => false
+      }
+    } =>
       ()
   }
 
@@ -193,21 +236,42 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     }
   }
 
+  val fillingHole = scala.collection.mutable.Map[Rep[Any], Boolean]()
+  var fillingFunction = scala.collection.mutable.Map[Rep[Any], () => Rep[Any]]()
+  var fillingElem = scala.collection.mutable.Map[Rep[Any], Rep[Any]]()
+
   rewrite += rule {
     case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) if shouldBePartitioned(mm) && getPartitionedObject(mm).left.nonEmpty => {
       val hmParObj = getPartitionedObject(mm)
       val leftArray = hmParObj.left.get
       val key = elem.asInstanceOf[Rep[Int]] % leftArray.buckets
-      Range(unit(0), leftArray.count(key)).foreach {
+      val whileLoop = leftArray.loopSymbol
+      // System.out.println(s"loop: ${leftArray.loopSymbol}")
+
+      val res = Range(unit(0), leftArray.count(key)).foreach {
         __lambda { i =>
           val e = leftArray.parArr(key)(i)
-          __ifThenElse(field[Int](e, leftArray.fieldFunc) __== elem, {
-            inlineFunction(f, e)
-          }, {
-            unit(())
-          })
+          fillingElem(mm) = e
+          fillingFunction(mm) = () => {
+            __ifThenElse(field[Int](e, leftArray.fieldFunc) __== elem, {
+              inlineFunction(f, e)
+            }, {
+              unit(())
+            })
+          }
+          fillingHole(mm) = true
+          System.out.println(s"inlining block ${whileLoop.body}")
+          val res1 = inlineBlock2(whileLoop.body)
+          System.out.println(s"inlining block done")
+          // System.out.println(s"fillingHole $fillingHole")
+          fillingHole.remove(mm)
+          // System.out.println(s"fillingHole $fillingHole")
+          res1
         }
       }
+      // System.out.println(s"foreach done $res")
+
+      res
     }
   }
 }
