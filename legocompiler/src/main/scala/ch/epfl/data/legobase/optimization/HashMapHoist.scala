@@ -33,14 +33,16 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
       foundFlag = false
       traverseBlock(node)
     } while (foundFlag)
-    System.out.println(s"all hoisted stms before: $hoistedStatements")
+    // System.out.println(s"all hoisted stms before: $hoistedStatements")
     scheduleHoistedStatements()
-    System.out.println(s"all hoisted stms after: $hoistedStatements")
+    // System.out.println(s"all hoisted stms after: $hoistedStatements")
     transformProgram(node)
   }
 
   var startCollecting = false
   var foundFlag = false
+  // specifies the depth level statement with respect to the source anchor
+  var depthLevel = 0
   val hoistedStatements = collection.mutable.ArrayBuffer[Stm[Any]]()
   val currentHoistedStatements = collection.mutable.ArrayBuffer[Stm[Any]]()
   val workList = collection.mutable.Set[Sym[Any]]()
@@ -62,12 +64,19 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
   override def traverseDef(node: Def[_]): Unit = node match {
     case GenericEngineRunQueryObject(b) => {
       startCollecting = enabled
+      depthLevel = 0
       currentHoistedStatements.clear()
       traverseBlock(b)
       hoistedStatements.prependAll(currentHoistedStatements)
       startCollecting = false
     }
     case _ => super.traverseDef(node)
+  }
+
+  override def traverseBlock(block: Block[_]): Unit = {
+    depthLevel += 1
+    super.traverseBlock(block)
+    depthLevel -= 1
   }
 
   override def traverseStm(stm: Stm[_]): Unit = stm match {
@@ -91,6 +100,9 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
         case MultiMapNew() if startCollecting && !hoistedStatements.contains(stm) => {
           hoistStatement()
         }
+        case ArrayNew(_) if startCollecting && depthLevel == 1 && !hoistedStatements.contains(stm) => {
+          hoistStatement()
+        }
         case _ if startCollecting && workList.contains(sym) && !hoistedStatements.contains(stm) => {
           hoistStatement()
           workList -= sym
@@ -107,7 +119,7 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
     case GenericEngineRunQueryObject(b) =>
       //Console.err.printf(unit("New place for hash maps\n"))
       for (stm <- hoistedStatements) {
-        System.out.println(s"reflecting $stm!")
+        // System.out.println(s"reflecting $stm!")
         reflectStm(stm)
       }
       startCollecting = enabled

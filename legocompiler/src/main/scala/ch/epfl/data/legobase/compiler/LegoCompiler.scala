@@ -67,8 +67,14 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
   }
 
   def compile[T: PardisType](program: => Expression[T]): Unit = compile[T](program, outputFile)
+  /**
+   * If MultiMap is remaining without being converted to something which doesn't have set,
+   * the field removal causes the program to be wrong
+   */
+  def shouldRemoveUnusedFields = removeUnusedFields && (
+    settings.hashMapLowering && (settings.setToArray || settings.setToLinkedList))
 
-  pipeline += LBLowering(removeUnusedFields)
+  pipeline += LBLowering(shouldRemoveUnusedFields)
   pipeline += ParameterPromotion
   pipeline += DCE
   pipeline += PartiallyEvaluate
@@ -85,8 +91,8 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   if (settings.hashMapPartitioning) {
     pipeline += new HashMapPartitioningTransformer(DSL)
-    // pipeline += ParameterPromotion
-    // pipeline += PartiallyEvaluate
+    pipeline += ParameterPromotion
+    pipeline += PartiallyEvaluate
     pipeline += DCE
   }
 
