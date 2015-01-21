@@ -15,6 +15,8 @@ char* ltoa(long num) {
 	return buf;
 } 
 
+#define pointer_assign(x, y) (*x = y)
+
 #define pointer_add(x, y) (x + y)
 
 #define str_subtract(x, y) (x - y)

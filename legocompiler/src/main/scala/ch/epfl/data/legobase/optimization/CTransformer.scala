@@ -15,6 +15,8 @@ import scala.language.implicitConversions
 import pardis.utils.Utils._
 import scala.reflect.runtime.universe
 import pardis.ir.StructTags._
+import cscala.CLangTypesDeep._
+import cscala.GLibTypes._
 
 trait CTransformer extends TopDownTransformerTraverser[LoweringLegoBase] {
   val IR: LoweringLegoBase
@@ -100,24 +102,24 @@ class ScalaScannerToCFileTransformer(override val IR: LoweringLegoBase) extends 
   }).asInstanceOf[PardisType[Any]]
 
   rewrite += rule {
-    case K2DBScannerNew(f) => NameAlias[FILE](None, "fopen", List(List(f, unit("r"))))
+    case K2DBScannerNew(f) => CStdIO.fopen(f.asInstanceOf[Rep[LPointer[Char]]], unit("r"))
   }
   rewrite += rule {
     case K2DBScannerNext_int(s) =>
       val v = readVar(__newVar[Int](0))
-      __ifThenElse(fscanf(s, unit("%d|"), &(v)) __== eof, break, unit(()))
+      __ifThenElse(fscanf(apply(s), unit("%d|"), &(v)) __== eof, break, unit(()))
       v
   }
   rewrite += rule {
     case K2DBScannerNext_double(s) =>
       val v = readVar(__newVar(unit(0.0)))
-      __ifThenElse(fscanf(s, unit("%lf|"), &(v)) __== eof, break, unit)
+      __ifThenElse(fscanf(apply(s), unit("%lf|"), &(v)) __== eof, break, unit)
       v
   }
   rewrite += rule {
     case K2DBScannerNext_char(s) =>
       val v = readVar(__newVar(unit('a')))
-      __ifThenElse(fscanf(s, unit("%c|"), &(v)) __== eof, break, unit)
+      __ifThenElse(fscanf(apply(s), unit("%c|"), &(v)) __== eof, break, unit)
       v
   }
   rewrite += rule {
@@ -125,7 +127,7 @@ class ScalaScannerToCFileTransformer(override val IR: LoweringLegoBase) extends 
       var i = __newVar[Int](0)
       __whileDo(unit(true), {
         val v = readVar(__newVar[Byte](unit('a')))
-        __ifThenElse(fscanf(s, unit("%c"), &(v)) __== eof, break, unit)
+        __ifThenElse(fscanf(apply(s), unit("%c"), &(v)) __== eof, break, unit)
         // have we found the end of line or end of string?
         __ifThenElse((v __== unit('|')) || (v __== unit('\n')), break, unit)
         buf(i) = v
@@ -139,7 +141,7 @@ class ScalaScannerToCFileTransformer(override val IR: LoweringLegoBase) extends 
       val x = readVar(__newVar[Int](unit(0)))
       val y = readVar(__newVar[Int](unit(0)))
       val z = readVar(__newVar[Int](unit(0)))
-      __ifThenElse(fscanf(s, unit("%d-%d-%d|"), &(x), &(y), &(z)) __== eof, break, unit)
+      __ifThenElse(fscanf(apply(s), unit("%d-%d-%d|"), &(x), &(y), &(z)) __== eof, break, unit)
       (x * unit(10000)) + (y * unit(100)) + z
   }
   rewrite += rule { case K2DBScannerHasNext(s) => unit(true) }
@@ -330,6 +332,10 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   import IR._
   import CNodes._
   import CTypes._
+  import LGHashTableHeader._
+  import LGListHeader._
+  import LGTreeHeader._
+  import LGArrayHeader._
 
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
@@ -366,11 +372,10 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       else GHashTableNew(hashFunc(nA), equalsFunc(nA))(nA, nB, IntType)
   }
   rewrite += rule {
-    case HashMapSize(map) => NameAlias[Int](None, "g_hash_table_size", List(List(map)))
+    case HashMapSize(map) => g_hash_table_size(map.asInstanceOf[Rep[LPointer[LGHashTable]]])
   }
   rewrite += rule {
-    case HashMapKeySet(map) =>
-      NameAlias[Pointer[GList[FILE]]](None, "g_hash_table_get_keys", List(List(map)))
+    case HashMapKeySet(map) => g_hash_table_get_keys(map.asInstanceOf[Rep[LPointer[LGHashTable]]])
   }
   rewrite += rule {
     case HashMapContains(map, key) =>
@@ -379,11 +384,13 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
   rewrite += rule {
     case ma @ HashMapApply(map, key) =>
-      NameAlias(None, "g_hash_table_lookup", List(List(map, key)))(getMapValueType(apply(map)))
+      g_hash_table_lookup(map.asInstanceOf[Rep[LPointer[LGHashTable]]], key.asInstanceOf[Rep[gconstpointer]])
   }
   rewrite += rule {
     case mu @ HashMapUpdate(map, key, value) =>
-      NameAlias[Unit](None, "g_hash_table_insert", List(List(map, key, value)))
+      g_hash_table_insert(map.asInstanceOf[Rep[LPointer[LGHashTable]]],
+        key.asInstanceOf[Rep[gconstpointer]],
+        value.asInstanceOf[Rep[gpointer]])
   }
   rewrite += rule {
     case hmgu @ HashMapGetOrElseUpdate(map, key, value) =>
@@ -399,7 +406,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   rewrite += rule {
     case mr @ HashMapRemove(map, key) =>
       val x = toAtom(transformDef(HashMapApply(map, key)))(getMapValueType(apply(map)))
-      nameAlias[Unit](None, "g_hash_table_remove", List(List(map, key)))
+      g_hash_table_remove(map.asInstanceOf[Rep[LPointer[LGHashTable]]], key.asInstanceOf[Rep[gconstpointer]])
       x
   }
 
@@ -410,13 +417,13 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
   rewrite += rule {
     case SetHead(s) =>
-      val x = nameAlias(None, "g_list_first", List(List(s)))(transformType(s.tp))
-      field(x, "data")(apply(s).tp.typeArguments(0).typeArguments(0))
+      val x = g_list_first(s.asInstanceOf[Rep[LPointer[LGList[Any]]]])
+      CLang.->[LGList[Any], gpointer](x, unit("data"))
   }
   rewrite += rule {
     case SetRemove(s @ Def(PardisReadVar(x)), e) =>
-      val newHead = nameAlias(None, "g_list_remove", List(List(s, apply(e))))(transformType(s.tp))
-      PardisAssign(x, newHead)
+      val newHead = g_list_remove(s.asInstanceOf[Rep[LPointer[LGList[Any]]]], apply(e).asInstanceOf[Rep[LPointer[Any]]])
+      PardisAssign[Any](x, newHead)(transformType(s.tp))
     case SetRemove(s, e) => throw new Exception("Implementation Limitation: Sets should always" +
       " be Vars when using Scala collections to GLib transformer!")
   }
@@ -427,58 +434,57 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
   rewrite += rule {
     case ts @ TreeSetNew2(Def(OrderingNew(Def(Lambda2(f, i1, i2, o))))) =>
-      NameAlias(None, "g_tree_new", List(List(Lambda2(f, i2, i1, transformBlock(o)))))(transformType(ts.tp))
+      val compare = Lambda2(f, i2.asInstanceOf[Rep[LPointer[Any]]], i1.asInstanceOf[Rep[LPointer[Any]]], transformBlock(o))
+      g_tree_new(CLang.&(compare))
   }
   rewrite += rule {
-    case TreeSet$plus$eq(t, s) => NameAlias[Unit](None, "g_tree_insert", List(List(t, s, s)))
+    case TreeSet$plus$eq(t, s) => g_tree_insert(t.asInstanceOf[Rep[LPointer[LGTree]]], s.asInstanceOf[Rep[gpointer]], s.asInstanceOf[Rep[gpointer]])
   }
   rewrite += rule {
-    case TreeSet$minus$eq(self, t) => NameAlias[Boolean](None, "g_tree_remove", List(List(self, t)))
+    case TreeSet$minus$eq(self, t) =>
+      g_tree_remove(self.asInstanceOf[Rep[LPointer[LGTree]]], t.asInstanceOf[Rep[gconstpointer]])
   }
   rewrite += rule {
-    case TreeSetSize(t) => NameAlias[Int](None, "g_tree_nnodes", List(List(t)))
+    case TreeSetSize(t) => g_tree_nnodes(t.asInstanceOf[Rep[LPointer[LGTree]]])
   }
   rewrite += rule {
     case op @ TreeSetHead(t) =>
-      def treeHead[A: PardisType, B: PardisType] = doLambda3((s1: Rep[A], s2: Rep[A], s3: Rep[Pointer[B]]) => {
-        pointer_assign(s3.asInstanceOf[Expression[Pointer[Any]]], s2)
+      def treeHead[T: TypeRep] = doLambda3((s1: Rep[gpointer], s2: Rep[gpointer], s3: Rep[gpointer]) => {
+        CLang.pointer_assign(infix_asInstanceOf[LPointer[T]](s3), infix_asInstanceOf[T](s2))
         unit(0)
       })
-      val elemType = t.tp.typeArguments(0).typeArguments(0)
-      val init = infix_asInstanceOf(Constant(null))(elemType)
-      nameAlias[Unit](None, "g_tree_foreach", List(List(t, treeHead(elemType, elemType), &(init)(elemType.asInstanceOf[PardisType[Any]]))))
-      init
+      class X
+      implicit val elemType = t.tp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[X]]
+      val init = CLang.NULL[Any]
+      g_tree_foreach(t.asInstanceOf[Rep[LPointer[LGTree]]], (treeHead(elemType)).asInstanceOf[Rep[LPointer[(gpointer, gpointer, gpointer) => Int]]], CLang.&(init).asInstanceOf[Rep[gpointer]])
+      init.asInstanceOf[Rep[LPointer[Any]]]
+      infix_asInstanceOf[X](init)
   }
 
   /* ArrayBuffer Operations */
   rewrite += rule {
-    case abn @ ArrayBufferNew2() =>
-      val sz = sizeof()(abn.tp.typeArguments(0))
-      NameAlias(None, "g_array_new", List(List(unit(null), unit(true), sz)))(apply(abn.tp))
-  }
-  rewrite += rule {
-    case abn @ ArrayBufferNew3() =>
-      val sz = sizeof()(abn.tp.typeArguments(0))
-      NameAlias(None, "g_array_new", List(List(unit(null), unit(true), sz)))(apply(abn.tp))
+    case abn @ (ArrayBufferNew2() | ArrayBufferNew3()) =>
+      class X
+      implicit val tpX = abn.tp.typeArguments(0).asInstanceOf[TypeRep[X]]
+      g_array_new(0, 1, CLang.sizeof[X])
   }
   rewrite += rule {
     case aba @ ArrayBufferApply(a, i) =>
-      val tp = typeOf()({
-        if (aba.tp.isPrimitive) aba.tp else typePointer(aba.tp)
-      })
-      NameAlias(None, "g_array_index", List(List(a, tp, i)))(apply(aba.tp))
+      class X
+      implicit val tp = (if (aba.tp.isPrimitive) aba.tp else typePointer(aba.tp)).asInstanceOf[TypeRep[X]]
+      g_array_index[X](a.asInstanceOf[Rep[LPointer[LGArray]]], i)
   }
   rewrite += rule {
     case ArrayBufferAppend(a, e) =>
-      NameAlias[Unit](None, "g_array_append_val", List(List(apply(a), e)))
+      g_array_append_vals(apply(a).asInstanceOf[Rep[LPointer[LGArray]]], CLang.&(e.asInstanceOf[Rep[gconstpointer]]), 1)
   }
   rewrite += rule {
     case ArrayBufferSize(a) =>
-      PardisStructFieldGetter(a, "len")(IntType)
+      CLang.->[LGArray, Int](a.asInstanceOf[Rep[LPointer[LGArray]]], unit("len"))
   }
   rewrite += rule {
     case ArrayBufferRemove(a, e) =>
-      NameAlias[Unit](None, "g_array_remove_index", List(List(a, e)))
+      g_array_remove_index(a.asInstanceOf[Rep[LPointer[LGArray]]], e)
   }
   rewrite += rule {
     case ArrayBufferMinBy(a, f @ Def(Lambda(fun, input, o))) =>
