@@ -53,6 +53,19 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   def outputFile: String = "Q" + number
 
+  val reportCompilationTime: Boolean = true
+
+  override def compile[T: PardisType](program: => Expression[T], outputFile: String): Unit = {
+    if (reportCompilationTime) {
+      val block = utils.Utilities.time(DSL.reifyBlock(program), "Reification")
+      val optimizedBlock = utils.Utilities.time(optimize(block), "Optimization")
+      val irProgram = IRToProgram(DSL).createProgram(optimizedBlock)
+      utils.Utilities.time(codeGenerator.generate(irProgram, outputFile), "Code Generation")
+    } else {
+      super.compile(program, outputFile)
+    }
+  }
+
   def compile[T: PardisType](program: => Expression[T]): Unit = compile[T](program, outputFile)
 
   pipeline += LBLowering(removeUnusedFields)
@@ -66,14 +79,14 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   // pipeline += PartiallyEvaluate
   pipeline += HashMapHoist
-  // pipeline += SingletonHashMapToValueTransformer
+  pipeline += SingletonHashMapToValueTransformer
   // pipeline += HashMapToArrayTransformer(generateCCode)
   //pipeline += MemoryManagementTransfomer //NOTE FIX TOPOLOGICAL SORT :-(
 
   if (settings.hashMapPartitioning) {
     pipeline += new HashMapPartitioningTransformer(DSL)
-    pipeline += ParameterPromotion
-    pipeline += PartiallyEvaluate
+    // pipeline += ParameterPromotion
+    // pipeline += PartiallyEvaluate
     pipeline += DCE
   }
 
@@ -126,14 +139,14 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   if (generateCCode) pipeline += CTransformersPipeline
 
-  pipeline += DCECLang //NEVER REMOVE!!!!
+  // pipeline += DCECLang //NEVER REMOVE!!!!
 
-  pipeline += TreeDumper(false)
+  // pipeline += TreeDumper(false)
 
   val codeGenerator =
     if (generateCCode)
-      new LegoCGenerator(false, outputFile, true)
-    // new LegoCASTGenerator(DSL, false, outputFile, true)
+      // new LegoCGenerator(false, outputFile, true)
+      new LegoCASTGenerator(DSL, false, outputFile, true)
     else
       // new LegoScalaGenerator(false, outputFile)
       new LegoScalaASTGenerator(DSL, false, outputFile)
