@@ -66,11 +66,11 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
       HashMapPartitionObject(hm, left, right)
     })
     // System.out.println(s"partitionedHashMapObjects: $partitionedHashMapObjects")
-    System.out.println(s"notSupportedMaps: $notSupportedMaps")
-    System.out.println(s"supportedMaps: $supportedMaps")
+    // System.out.println(s"notSupportedMaps: $notSupportedMaps")
+    // System.out.println(s"supportedMaps: $supportedMaps")
 
     val res = transformProgram(node)
-    System.out.println(s"$transformedMapsCount MultiMaps partitioned!")
+    System.out.println(s"[${scala.Console.BLUE}$transformedMapsCount${scala.Console.BLACK}] MultiMaps partitioned!")
     res
   }
 
@@ -338,6 +338,43 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
       // System.out.println(s"foreach done $res")
 
       res
+    }
+  }
+
+  rewrite += rule {
+    case SetExists(Def(OptionGet(Def(MultiMapGet(mm, elem)))), p) if shouldBePartitioned(mm) && getPartitionedObject(mm).hasLeft => {
+      val hmParObj = getPartitionedObject(mm)
+      val leftArray = hmParObj.partitionedObject
+      val key = elem.asInstanceOf[Rep[Int]] % leftArray.buckets
+      val whileLoop = leftArray.loopSymbol
+      // System.out.println(s"loop: ${leftArray.loopSymbol}")
+
+      val result = __newVarNamed[Boolean](unit(false), "existsResult")
+      Range(unit(0), leftArray.count(key)).foreach {
+        __lambda { i =>
+          val e = leftArray.parArr(key)(i)
+          fillingElem(mm) = e
+          fillingFunction(mm) = () => {
+            __ifThenElse((field[Int](e, leftArray.fieldFunc) __== elem) && inlineFunction(p, e), {
+              __assign(result, unit(true))
+            }, {
+              unit(())
+            })
+          }
+          fillingHole(mm) = true
+          // System.out.println(s"inlining block ${whileLoop.body}")
+          val res1 = inlineBlock2(whileLoop.body)
+          // System.out.println(s"inlining block done")
+          // System.out.println(s"fillingHole $fillingHole")
+          fillingHole.remove(mm)
+          transformedMapsCount += 1
+          // System.out.println(s"fillingHole $fillingHole")
+          res1
+        }
+      }
+      // System.out.println(s"foreach done $res")
+
+      readVar(result)
     }
   }
 
