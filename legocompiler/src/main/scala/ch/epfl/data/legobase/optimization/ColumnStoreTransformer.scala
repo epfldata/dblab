@@ -25,6 +25,17 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends RuleBase
   def tableColumnStoreType(newTag: StructTags.StructTag[_]) =
     new RecordType(newTag, None).asInstanceOf[TypeRep[Any]]
 
+  def elemColumnStoreType(oldTag: StructTags.StructTag[_]) = {
+    val newTag = StructTags.ClassTag(s"RowOf${oldTag.typeName}")
+    new RecordType(newTag, None).asInstanceOf[TypeRep[Any]]
+  }
+
+  val COLUMN_STORE_POINTER = "columnStorePointer"
+  val INDEX = "index"
+  implicit class FieldNameOps(fieldName: String) {
+    def arrayOf: String = s"arrayOf$fieldName"
+  }
+
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
     if (tp.isArray) {
@@ -43,19 +54,11 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends RuleBase
     case an @ ArrayNew(size) if shouldBeColumnarized(an.tp.typeArguments(0)) => {
       val elemType = an.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
       val structDef = getStructDef(elemType).get
-      val newElems = structDef.fields.map(el => PardisStructArg("arrayOf" + el.name, true, arrayNew(size)(el.tpe)))
+      val newElems = structDef.fields.map(el => PardisStructArg(el.name.arrayOf, true, arrayNew(size)(el.tpe)))
       val newTag = tableColumnStoreTag(structDef.tag)
       val newType = tableColumnStoreType(newTag)
-      //val newMethods = List(PardisStructMethod("equal", eqMethod), PardisStructMethod("hash", hashMethod))
-      // val newMethods = structDef.methods.map(m => m.copy(body =
-      //   transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef])) //)(s.tp)))
-      val newMethods = Nil
-
-      //structsDefMap(newTag) =
-      //  PardisStructDef(newTag.asInstanceOf[StructTags.StructTag[Any]],
-      //  newElems.map(x => StructElemInformation(x.name, x.init.tp, x.mutable)),
-      //  newMethods)(node.tp.asInstanceOf[TypeRep[Any]])
-      PardisStruct(newTag, newElems, newMethods)(newType)
+      // PardisStruct(newTag, newElems, Nil)(newType)
+      struct(newElems: _*)(newType)
     }
   }
 
@@ -63,92 +66,56 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends RuleBase
     case au @ ArrayUpdate(arr, idx, value) if shouldBeColumnarized(arr.tp.typeArguments(0)) =>
       val elemType = arr.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
       val structDef = getStructDef(elemType).get
-      structDef.fields.map(el => {
-        val column = field(apply(arr), "arrayOf" + el.name)(typeArray(el.tpe))
+      for (el <- structDef.fields) {
+        class ColumnType
+        implicit val columnType = el.tpe.asInstanceOf[TypeRep[ColumnType]]
+        val column = field[Array[ColumnType]](apply(arr), el.name.arrayOf)
         val Def(s) = value
         val v = s.asInstanceOf[PardisStruct[Any]].elems.find(e => e.name == el.name) match {
-          case Some(e) => e.init
+          case Some(e) => e.init.asInstanceOf[Rep[ColumnType]]
           case None    => throw new Exception(s"could not find any element for $s with name `${el.name}`")
         }
-        arrayUpdate(column, idx, v)
-      })
+        column(idx) = v
+      }
       unit(())
   }
 
-  rewrite += rule {
+  rewrite += statement {
     /* Nodes returning struct nodes -- convert them to a reference to column store */
-    case aa @ ArrayApply(arr, idx) if shouldBeColumnarized(aa.tp) =>
-      val tpe = aa.tp.asInstanceOf[PardisType[Any]]
-
-      // val hashMethod = doLambdaDef((x: Rep[Any]) => {
-      //   unit(0)
-      //   //infix_hashCode(field(x, "index")(IntType))(IntType)
-      // })(tpe, IntType).asInstanceOf[PardisLambdaDef]
-
-      // val eqMethod = doLambda2Def((x: Rep[Any], y: Rep[Any]) => {
-      //   printf(unit("EQUALS\n"))
-      //   val structDef = getStructDef(arr.tp.typeArguments(0)).get
-      //   val newTag = tableColumnStoreTag(structDef.tag)
-      //   val newType = tableColumnStoreType(newTag)
-
-      //   val fx = field(x, "columnStorePointer")(newType)
-
-      //   //val fy = field(y, "columnStorePointer")(newType) //(arr.tp)
-      //   val ix = field(x, "index")(IntType)
-      //   System.out.println(new RecordType(structDef.tag))
-      //   System.out.println(structsDefMap.map(sd => sd._1))
-      //   System.out.println(getStructDef(new RecordType(structDef.tag)).get.fields.map(f => f.name))
-
-      //   //val iy = field(y, "index")(IntType)
-      //   /*System.out.println(x.tp)
-      //     System.out.println(structsDefMap.map(s => s._1).mkString("\n"))
-      //     System.out.println(fx.tp)
-      //     val eq = getStructEqualsFunc()(fx.tp, typeLambda3(fx.tp, fy.tp, typeInt, typeBoolean))
-      //     //__app(eq).apply(fx, fy, 0)*/
-      //   printf(unit("EQUALS\n"))
-
-      //   infix_==(fx, fx)
-      //   //inlineFunction(eq.asInstanceOf[Rep[(Any, Any, Int) => Boolean]], fx, fy, 0)
-      //   //__eqMethod(fx, fy, ix, iy)(x.tp)
-      //   //unit(true)
-      // })(tpe, tpe, BooleanType).asInstanceOf[PardisLambdaDef]
-
-      // val newMethods = List(PardisStructMethod("equal", eqMethod), PardisStructMethod("hash", hashMethod))
-      val newMethods = Nil
-      //val newMethods = List()
-      val newElems = List(PardisStructArg("columnStorePointer", false, apply(arr)), PardisStructArg("index", false, idx))
-      val newTag = StructTags.ClassTag(structName(aa.tp))
-      // structsDefMap(newTag) = PardisStructDef(newTag.asInstanceOf[StructTags.StructTag[Any]],
-      // newElems.map(x => StructElemInformation(x.name, x.init.tp, x.mutable)),
-      // newMethods)(node.tp.asInstanceOf[TypeRep[Any]])
-      PardisStruct(newTag, newElems, newMethods)(aa.tp)
+    case sym -> (aa @ ArrayApply(arr, idx)) if shouldBeColumnarized(sym.tp) =>
+      val tpe = sym.tp.asInstanceOf[PardisType[Any]].asInstanceOf[RecordType[Any]]
+      val newElems = List(PardisStructArg(COLUMN_STORE_POINTER, false, apply(arr)), PardisStructArg(INDEX, false, idx))
+      val rTpe = elemColumnStoreType(tpe.tag)
+      struct[Any](newElems: _*)(rTpe)
   }
 
   rewrite += rule {
     case psif @ PardisStructImmutableField(s, f) if shouldBeColumnarized(s.tp) =>
       val structDef = getStructDef(s.tp).get
-      //System.out.println(structDef.fields.mkString("\n"))
-      //System.out.println(f)
-      val columnElemType = structDef.fields.find(el => el.name == f).get.tpe
+      class ColumnType
+      implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]
       val newTag = tableColumnStoreTag(structDef.tag)
-      val newType = tableColumnStoreType(newTag)
-      val columnStorePointer = field(s, "columnStorePointer")(newType)
-      val column = field(columnStorePointer, "arrayOf" + f)(typeArray(columnElemType))
-      val idx = field(s, "index")(typeInt)
-      ArrayApply(column.asInstanceOf[Expression[Array[Any]]], idx)
+      class ColumnStorePointerType
+      implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
+      val columnStorePointer = field[ColumnStorePointerType](apply(s), COLUMN_STORE_POINTER)
+      val column = field[Array[ColumnType]](columnStorePointer, f.arrayOf)
+      val idx = field[Int](apply(s), INDEX)
+      column(idx)
   }
 
   rewrite += rule {
     case psif @ PardisStructFieldSetter(s, f, v) if shouldBeColumnarized(s.tp) =>
       val structDef = getStructDef(s.tp).get
-      //System.out.println(structDef.fields)
-      //System.out.println(f)
-      val columnElemType = structDef.fields.find(el => el.name == f).get.tpe
+      class ColumnType
+      implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]
+      val value = v.asInstanceOf[Rep[ColumnType]]
       val newTag = tableColumnStoreTag(structDef.tag)
-      val newType = tableColumnStoreType(newTag)
-      val columnStorePointer = field(s, "columnStorePointer")(newType)
-      val column = field(columnStorePointer, "arrayOf" + f)(typeArray(columnElemType))
-      val idx = field(s, "index")(typeInt)
-      ArrayUpdate(column.asInstanceOf[Expression[Array[Any]]], idx, v)
+      class ColumnStorePointerType
+      implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
+
+      val columnStorePointer = field[ColumnStorePointerType](apply(s), COLUMN_STORE_POINTER)
+      val column = field[Array[ColumnType]](columnStorePointer, f.arrayOf)
+      val idx = field[Int](s, INDEX)
+      column(idx) = value
   }
 }
