@@ -29,7 +29,13 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
     case 12 => List("LINEITEMRecord")
     case 14 => List("LINEITEMRecord")
     case 15 => List("LINEITEMRecord")
+    case 16 => List("PARTSUPPRecord", "SUPPLIERRecord")
+    case 17 => List("LINEITEMRecord")
+    case 18 => List("LINEITEMRecord")
     case 19 => List("LINEITEMRecord")
+    case 20 => List("PARTSUPPRecord")
+    case 21 => List("SUPPLIERRecord")
+    case 22 => List("ORDERSRecord" /*, "CUSTOMERRecord"*/ )
     case _  => throw new Exception(s"Column store not supported yet for $queryNumber")
   }
 
@@ -62,6 +68,9 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
         val structDef = getStructDef(tp.typeArguments(0)).get
         tableColumnStoreType(tableColumnStoreTag(structDef.tag))
       } else super.transformType[T]
+    } else if (shouldBeColumnarized(tp)) {
+      val structDef = getStructDef(tp).get
+      elemColumnStoreType(structDef.tag)
     } else super.transformType[T]
   })
 
