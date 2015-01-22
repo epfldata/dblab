@@ -22,8 +22,9 @@ class Settings(val args: List[String]) {
     }
     if (!hashMapLowering && (setToArray || setToLinkedList || containerFlattenning))
       throw new Exception("It's impossible to lower Sets without lowering HashMap and MultiMap!")
-    if ((columnStore || partitioning) && (!List(1, 6, 12).contains(tpchQuery)))
-      throw new Exception(s"$cstore and $part only work for the Queries 1 & 6 for the moment!")
+    val SUPPORTED_CS = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 19)
+    if ((columnStore || partitioning) && (!SUPPORTED_CS.contains(tpchQuery)))
+      throw new Exception(s"$cstore and $part only work for the Queries ${SUPPORTED_CS.mkString(" & ")} for the moment!")
   }
   def hashMapLowering: Boolean = args.exists(_ == hm2set)
   def setToArray: Boolean = args.exists(_ == set2arr)
@@ -71,17 +72,18 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
    * If MultiMap is remaining without being converted to something which doesn't have set,
    * the field removal causes the program to be wrong
    */
-  def shouldRemoveUnusedFields = removeUnusedFields && (
-    settings.hashMapLowering && (settings.setToArray || settings.setToLinkedList))
+  def shouldRemoveUnusedFields = removeUnusedFields && (settings.hashMapPartitioning ||
+    (
+      settings.hashMapLowering && (settings.setToArray || settings.setToLinkedList)))
 
   pipeline += LBLowering(shouldRemoveUnusedFields)
   pipeline += ParameterPromotion
   pipeline += DCE
   pipeline += PartiallyEvaluate
 
-  if (generateCCode) {
-    //pipeline += ColumnStoreTransformer
-  }
+  // if (generateCCode) {
+  //   //pipeline += ColumnStoreTransformer
+  // }
 
   // pipeline += PartiallyEvaluate
   pipeline += HashMapHoist
@@ -129,7 +131,10 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
   // pipeline += DCE
 
   if (settings.columnStore) {
-    pipeline += new ColumnStoreTransformer(DSL)
+    pipeline += new ColumnStoreTransformer(DSL, number)
+    // if (settings.hashMapPartitioning) {
+    //   pipeline += new ColumnStore2DTransformer(DSL, number)
+    // }
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE
@@ -145,9 +150,9 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   if (generateCCode) pipeline += CTransformersPipeline
 
-  // pipeline += DCECLang //NEVER REMOVE!!!!
+  pipeline += DCECLang //NEVER REMOVE!!!!
 
-  // pipeline += TreeDumper(false)
+  pipeline += TreeDumper(false)
 
   val codeGenerator =
     if (generateCCode)

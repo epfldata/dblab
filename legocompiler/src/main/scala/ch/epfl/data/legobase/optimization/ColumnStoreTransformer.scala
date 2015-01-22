@@ -11,12 +11,31 @@ import pardis.types._
 import pardis.types.PardisTypeImplicits._
 import pardis.shallow.utils.DefaultValue
 
-class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber: Int) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
 
+  val typeList = queryNumber match {
+    case 1  => List("LINEITEMRecord")
+    case 2  => List("PARTSUPPRecord")
+    case 3  => List("ORDERSRecord")
+    case 4  => List("ORDERSRecord")
+    case 5  => List("NATIONRecord")
+    case 6  => List("LINEITEMRecord")
+    case 7  => List("NATIONRecord")
+    case 8  => List("LINEITEMRecord")
+    case 9  => List("SUPPLIERRecord")
+    case 10 => List("CUSTOMERRecord")
+    case 11 => List("SUPPLIERRecord")
+    case 12 => List("LINEITEMRecord")
+    case 14 => List("LINEITEMRecord")
+    case 15 => List("LINEITEMRecord")
+    case 19 => List("LINEITEMRecord")
+    case _  => throw new Exception(s"Column store not supported yet for $queryNumber")
+  }
+
   def shouldBeColumnarized[T](tp: PardisType[T]): Boolean = tp.name match {
-    case "LINEITEMRecord" => true
-    case _                => false
+    case name if typeList.contains(name) => true
+    case _                               => false
   }
 
   def tableColumnStoreTag(oldTag: StructTags.StructTag[_]) =
@@ -75,6 +94,17 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase) extends RuleBase
           case Some(e) => e.init.asInstanceOf[Rep[ColumnType]]
           case None    => throw new Exception(s"could not find any element for $s with name `${el.name}`")
         }
+
+        // val v = apply(value) match {
+        //   case Def(s: Struct[_]) => s.elems.find(e => e.name == el.name) match {
+        //     case Some(e) => e.init.asInstanceOf[Rep[ColumnType]]
+        //     case None    => throw new Exception(s"could not find any element for $s with name `${el.name}`")
+        //   }
+        //   case va @ Def(ReadVar(_)) => {
+        //     val res = apply(StructImmutableField[ColumnType](va, el.name))
+        //     toAtom(res)
+        //   }
+        // }
         column(idx) = v
       }
       unit(())
