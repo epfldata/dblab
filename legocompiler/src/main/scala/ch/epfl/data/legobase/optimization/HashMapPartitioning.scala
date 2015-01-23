@@ -244,7 +244,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
 
       val res = Range(unit(0), leftArray.count(key)).foreach {
         __lambda { i =>
-          val e = leftArray.parArr(key)(i)
+          class InnerType
+          implicit val typeInner = leftArray.parArr.tp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[InnerType]]
+          val leftParArray = leftArray.parArr.asInstanceOf[Rep[Array[Array[InnerType]]]]
+          val e = leftParArray(key)(i)
           fillingElem(mm) = e
           fillingFunction(mm) = () => nodev
           // fillingFunction(mm) = () => {
@@ -322,8 +325,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
           val e = leftParArray(key)(i)
           fillingElem(mm) = e
           fillingFunction(mm) = () => {
-            __ifThenElse(field[Int](e, leftArray.fieldFunc) __== elem, {
-              inlineFunction(f, e)
+            __ifThenElse[Unit](field[Int](e, leftArray.fieldFunc) __== elem, {
+              inlineFunction(f.asInstanceOf[Rep[InnerType => Unit]], e)
             }, {
               unit(())
             })
@@ -356,10 +359,13 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
       val result = __newVarNamed[Boolean](unit(false), "existsResult")
       Range(unit(0), leftArray.count(key)).foreach {
         __lambda { i =>
-          val e = leftArray.parArr(key)(i)
+          class InnerType
+          implicit val typeInner = leftArray.parArr.tp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[InnerType]]
+          val leftParArray = leftArray.parArr.asInstanceOf[Rep[Array[Array[InnerType]]]]
+          val e = leftParArray(key)(i)
           fillingElem(mm) = e
           fillingFunction(mm) = () => {
-            __ifThenElse((field[Int](e, leftArray.fieldFunc) __== elem) && inlineFunction(p, e), {
+            __ifThenElse[Unit]((field[Int](e, leftArray.fieldFunc) __== elem) && inlineFunction(p, e), {
               __assign(result, unit(true))
             }, {
               unit(())
