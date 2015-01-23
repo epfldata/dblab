@@ -274,13 +274,18 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
   }
 
   rewrite += rule {
-    case ArrayApply(arr, _) if {
-      partitionedHashMapObjects.find(obj => shouldBePartitioned(obj.mapSymbol) /* && obj.hasLeft */ && obj.partitionedObject.arr == arr) match {
-        case Some(obj) => fillingHole.get(obj.mapSymbol).nonEmpty
-        case _         => false
-      }
-    } =>
-      fillingElem(partitionedHashMapObjects.find(obj => shouldBePartitioned(obj.mapSymbol) /* && obj.hasLeft*/ && obj.partitionedObject.arr == arr).get.mapSymbol)
+    case ArrayApply(arr, _) if partitionedHashMapObjects.exists(obj => shouldBePartitioned(obj.mapSymbol) && obj.partitionedObject.arr == arr && fillingHole.get(obj.mapSymbol).nonEmpty) // {
+    //   val res = partitionedHashMapObjects.find(obj => shouldBePartitioned(obj.mapSymbol) /* && obj.hasLeft */ && obj.partitionedObject.arr == arr && fillingHole.get(obj.mapSymbol).nonEmpty) match {
+    //     case Some(obj) => true
+    //     case _         => false
+    //   }
+    //   if (arr.asInstanceOf[Sym[Any]].id == 3) {
+    //     System.out.println(s"$arr is here with res $res, $fillingHole, my map ${partitionedHashMapObjects.find(obj => shouldBePartitioned(obj.mapSymbol) /* && obj.hasLeft */ && obj.partitionedObject.arr == arr).get.mapSymbol}")
+    //   }
+    //   res
+    // }
+    =>
+      fillingElem(partitionedHashMapObjects.find(obj => shouldBePartitioned(obj.mapSymbol) && obj.partitionedObject.arr == arr && fillingHole.get(obj.mapSymbol).nonEmpty).get.mapSymbol)
   }
 
   rewrite += remove {
@@ -372,7 +377,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
             })
           }
           fillingHole(mm) = true
-          // System.out.println(s"inlining block ${whileLoop.body}")
+          // System.out.println(s"inlining block ${whileLoop.body} for hashmap ${mm}")
           val res1 = inlineBlock2(whileLoop.body)
           // System.out.println(s"inlining block done")
           // System.out.println(s"fillingHole $fillingHole")
