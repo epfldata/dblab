@@ -21,18 +21,21 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
   val rightPartArr = scala.collection.mutable.Map[Rep[Any], Rep[Array[Any]]]()
   val leftLoopSymbol = scala.collection.mutable.Map[Rep[Any], While]()
   val rightLoopSymbol = scala.collection.mutable.Map[Rep[Any], While]()
-  // TODO when WindowOp and LeftHashSemiJoin and HashJoinAnti are supported will be removed
+  val hashJoinAntiMaps = scala.collection.mutable.Set[Rep[Any]]()
+  // TODO when WindowOp is supported will be removed
   val notSupportedMaps = scala.collection.mutable.Set[Rep[Any]]()
 
   var transformedMapsCount = 0
 
   case class HashMapPartitionObject(mapSymbol: Rep[Any], left: Option[PartitionObject], right: Option[PartitionObject]) {
     def partitionedObject: PartitionObject = (left, right) match {
+      case _ if isAnti     => right.get
       case (Some(v), _)    => v
       case (None, Some(v)) => v
       case _               => throw new Exception(s"$this doesn't have partitioned object")
     }
     def hasLeft: Boolean = left.nonEmpty
+    def isAnti: Boolean = hashJoinAntiMaps.contains(mapSymbol)
   }
   case class PartitionObject(arr: Rep[Array[Any]], fieldFunc: String, loopSymbol: While) {
     def buckets = numBuckets(this)
@@ -59,6 +62,11 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     // System.out.println(s"rightPartFunc: $rightPartFunc")
     // System.out.println(s"leftPartArr: $leftPartArr")
     // System.out.println(s"rightPartArr: $rightPartArr")
+    val realHashJoinAntiMaps = hashJoinAntiMaps intersect notSupportedMaps
+    // System.out.println(s"hashJoinAntiMaps: $hashJoinAntiMaps")
+    notSupportedMaps --= realHashJoinAntiMaps
+    hashJoinAntiMaps.clear()
+    hashJoinAntiMaps ++= realHashJoinAntiMaps
     val supportedMaps = partitionedMaps diff notSupportedMaps
     partitionedHashMapObjects ++= partitionedMaps.map({ hm =>
       val left = leftPartArr.get(hm).map(v => PartitionObject(v, leftPartFunc(hm), leftLoopSymbol(hm)))
@@ -68,6 +76,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     // System.out.println(s"partitionedHashMapObjects: $partitionedHashMapObjects")
     // System.out.println(s"notSupportedMaps: $notSupportedMaps")
     // System.out.println(s"supportedMaps: $supportedMaps")
+    System.out.println(s"${scala.Console.RED}hashJoinAntiMaps: $hashJoinAntiMaps${scala.Console.BLACK}")
 
     val res = transformProgram(node)
     System.out.println(s"[${scala.Console.BLUE}$transformedMapsCount${scala.Console.BLACK}] MultiMaps partitioned!")
@@ -104,10 +113,17 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
       ()
   }
 
-  // TODO when WindowOp, HashJoinAnti are supported, this case should be removed
+  // TODO when WindowOp is supported, this case should be removed
   analysis += rule {
     case node @ MultiMapForeach(nodeself, _) if allMaps.contains(nodeself) =>
       notSupportedMaps += nodeself
+      ()
+  }
+
+  analysis += rule {
+    case OptionGet(Def(MultiMapGet(mm, elem))) if allMaps.contains(mm) =>
+      // At this phase it's potentially hash join multimap, it's not specified for sure
+      hashJoinAntiMaps += mm
       ()
   }
 
@@ -197,7 +213,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
   }
 
   rewrite += statement {
-    case sym -> (node @ MultiMapNew()) if shouldBePartitioned(sym) => {
+    case sym -> (node @ MultiMapNew()) if shouldBePartitioned(sym) || notSupportedMaps.contains(sym) => {
       if (shouldBePartitioned(sym)) {
         val hmParObj = getPartitionedObject(sym)(sym.tp)
         // hmParObj.left.foreach { l =>
@@ -211,6 +227,15 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
         createPartitionArray(hmParObj.partitionedObject)
 
         sym
+      } else if (notSupportedMaps.contains(sym)) {
+        val hmParObj = getPartitionedObject(sym)(sym.tp)
+        // hmParObj.left.foreach { l =>
+        //   createPartitionArray(l)
+        // }
+        hmParObj.right.foreach { r =>
+          createPartitionArray(r)
+        }
+        recreateNode(node)
       } else {
         recreateNode(node)
       }
