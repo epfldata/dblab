@@ -265,9 +265,31 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
       val key = apply(elem).asInstanceOf[Rep[Int]] % rightArray.buckets
       val antiLambda = hmParObj.antiLambda
       val foreachFunction = antiLambda.body.stmts.collect({ case Statement(sym, SetForeach(_, f)) => f }).head.asInstanceOf[Rep[ElemType => Unit]]
+      val resultRetain = __newVarNamed[Boolean](unit(false), "resultRetain")
       val count = rightArray.count(key)
+      class ElemType2
+      implicit val elemType2 = rightArray.arr.tp.typeArguments(0).asInstanceOf[TypeRep[ElemType2]]
+      val parArrWhole = rightArray.parArr.asInstanceOf[Rep[Array[Array[ElemType2]]]]
+      val parArr = parArrWhole(key)
+      Range(unit(0), count).foreach {
+        __lambda { i =>
+          val e = parArr(i)
+          fillingElem(mm) = e
+          fillingFunction(mm) = () => {
+            __ifThenElse[Unit](field[Int](e, rightArray.fieldFunc) __== elem, {
+              __assign(resultRetain, unit(true))
+            }, {
+              unit(())
+            })
+          }
+          fillingHole(mm) = true
+          val res = inlineBlock2(rightArray.loopSymbol.body)
+          fillingHole.remove(mm)
+          res
+        }
+      }
       transformedMapsCount += 1
-      __ifThenElse(count __== unit(0), {
+      __ifThenElse(!readVar(resultRetain), {
         inlineFunction(foreachFunction, value)
       }, unit())
     // System.out.println(s"addb: ${foreachFunction.correspondingNode}")
@@ -452,6 +474,12 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
   rewrite += remove {
     case MultiMapForeach(mm, f) if shouldBePartitioned(mm) && getPartitionedObject(mm).isAnti =>
       ()
+  }
+
+  rewrite += rule {
+    case IfThenElse(Def(OptionNonEmpty(Def(MultiMapGet(mm, elem)))), thenp, elsep) if shouldBePartitioned(mm) && getPartitionedObject(mm).isAnti && fillingHole.get(mm).nonEmpty =>
+      // System.out.println(s"came here! for $mm")
+      fillingFunction(mm)()
   }
 
   rewrite += rule {
