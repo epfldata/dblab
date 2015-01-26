@@ -22,6 +22,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
   val leftLoopSymbol = scala.collection.mutable.Map[Rep[Any], While]()
   val rightLoopSymbol = scala.collection.mutable.Map[Rep[Any], While]()
   val hashJoinAntiMaps = scala.collection.mutable.Set[Rep[Any]]()
+  val hashJoinAntiForeachLambda = scala.collection.mutable.Map[Rep[Any], Lambda[Any, Unit]]()
   // TODO when WindowOp is supported will be removed
   val notSupportedMaps = scala.collection.mutable.Set[Rep[Any]]()
 
@@ -36,6 +37,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     }
     def hasLeft: Boolean = left.nonEmpty
     def isAnti: Boolean = hashJoinAntiMaps.contains(mapSymbol)
+    def antiLambda: Lambda[Any, Unit] = hashJoinAntiForeachLambda(mapSymbol)
   }
   case class PartitionObject(arr: Rep[Array[Any]], fieldFunc: String, loopSymbol: While) {
     def buckets = numBuckets(this)
@@ -64,7 +66,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     // System.out.println(s"rightPartArr: $rightPartArr")
     val realHashJoinAntiMaps = hashJoinAntiMaps intersect notSupportedMaps
     // System.out.println(s"hashJoinAntiMaps: $hashJoinAntiMaps")
-    notSupportedMaps --= realHashJoinAntiMaps
+    notSupportedMaps --= realHashJoinAntiMaps // TODO should be uncommented
     hashJoinAntiMaps.clear()
     hashJoinAntiMaps ++= realHashJoinAntiMaps
     val supportedMaps = partitionedMaps diff notSupportedMaps
@@ -77,6 +79,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     // System.out.println(s"notSupportedMaps: $notSupportedMaps")
     // System.out.println(s"supportedMaps: $supportedMaps")
     System.out.println(s"${scala.Console.RED}hashJoinAntiMaps: $hashJoinAntiMaps${scala.Console.BLACK}")
+    System.out.println(s"${scala.Console.RED}hashJoinAntiMaps: ${hashJoinAntiMaps.map(x => getPartitionedObject(x).antiLambda)}${scala.Console.BLACK}")
 
     val res = transformProgram(node)
     System.out.println(s"[${scala.Console.BLUE}$transformedMapsCount${scala.Console.BLACK}] MultiMaps partitioned!")
@@ -115,14 +118,18 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
 
   // TODO when WindowOp is supported, this case should be removed
   analysis += rule {
-    case node @ MultiMapForeach(nodeself, _) if allMaps.contains(nodeself) =>
+    case node @ MultiMapForeach(nodeself, f) if allMaps.contains(nodeself) =>
       notSupportedMaps += nodeself
+      f match {
+        case Def(fun @ Lambda(_, _, _)) => hashJoinAntiForeachLambda += nodeself -> fun.asInstanceOf[Lambda[Any, Unit]]
+        case _                          => ()
+      }
       ()
   }
 
   analysis += rule {
     case OptionGet(Def(MultiMapGet(mm, elem))) if allMaps.contains(mm) =>
-      // At this phase it's potentially hash join multimap, it's not specified for sure
+      // At this phase it's potentially anti hash join multimap, it's not specified for sure
       hashJoinAntiMaps += mm
       ()
   }
@@ -213,7 +220,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
   }
 
   rewrite += statement {
-    case sym -> (node @ MultiMapNew()) if shouldBePartitioned(sym) || notSupportedMaps.contains(sym) => {
+    case sym -> (node @ MultiMapNew()) if shouldBePartitioned(sym) /* || notSupportedMaps.contains(sym)*/ => {
       if (shouldBePartitioned(sym)) {
         val hmParObj = getPartitionedObject(sym)(sym.tp)
         // hmParObj.left.foreach { l =>
@@ -227,15 +234,15 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
         createPartitionArray(hmParObj.partitionedObject)
 
         sym
-      } else if (notSupportedMaps.contains(sym)) {
-        val hmParObj = getPartitionedObject(sym)(sym.tp)
-        // hmParObj.left.foreach { l =>
-        //   createPartitionArray(l)
-        // }
-        hmParObj.right.foreach { r =>
-          createPartitionArray(r)
-        }
-        recreateNode(node)
+        // } else if (notSupportedMaps.contains(sym)) {
+        //   val hmParObj = getPartitionedObject(sym)(sym.tp)
+        //   // hmParObj.left.foreach { l =>
+        //   //   createPartitionArray(l)
+        //   // }
+        //   hmParObj.right.foreach { r =>
+        //     createPartitionArray(r)
+        //   }
+        //   recreateNode(node)
       } else {
         recreateNode(node)
       }
@@ -246,6 +253,25 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     case MultiMapGet(mm, elem) if shouldBePartitioned(mm) => {
       ()
     }
+  }
+
+  rewrite += rule {
+    case MultiMapAddBinding(mm, elem, nodev) if shouldBePartitioned(mm) && getPartitionedObject(mm).isAnti =>
+      class ElemType
+      implicit val elemType = nodev.tp.asInstanceOf[TypeRep[ElemType]]
+      val value = apply(nodev).asInstanceOf[Rep[ElemType]]
+      val hmParObj = getPartitionedObject(mm)
+      val rightArray = hmParObj.partitionedObject
+      val key = apply(elem).asInstanceOf[Rep[Int]] % rightArray.buckets
+      val antiLambda = hmParObj.antiLambda
+      val foreachFunction = antiLambda.body.stmts.collect({ case Statement(sym, SetForeach(_, f)) => f }).head.asInstanceOf[Rep[ElemType => Unit]]
+      val count = rightArray.count(key)
+      transformedMapsCount += 1
+      __ifThenElse(count __== unit(0), {
+        inlineFunction(foreachFunction, value)
+      }, unit())
+    // System.out.println(s"addb: ${foreachFunction.correspondingNode}")
+    // printf(unit("TODO"))
   }
 
   rewrite += remove {
@@ -263,7 +289,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     case MultiMapAddBinding(mm, elem, nodev) if shouldBePartitioned(mm) && !getPartitionedObject(mm).hasLeft =>
       val hmParObj = getPartitionedObject(mm)
       val leftArray = hmParObj.partitionedObject
-      val key = elem.asInstanceOf[Rep[Int]] % leftArray.buckets
+      val key = apply(elem).asInstanceOf[Rep[Int]] % leftArray.buckets
       val whileLoop = leftArray.loopSymbol
       // System.out.println(s"loop: ${leftArray.loopSymbol}")
 
@@ -274,7 +300,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
           val leftParArray = leftArray.parArr.asInstanceOf[Rep[Array[Array[InnerType]]]]
           val e = leftParArray(key)(i)
           fillingElem(mm) = e
-          fillingFunction(mm) = () => nodev
+          fillingFunction(mm) = () => apply(nodev)
           // fillingFunction(mm) = () => {
           //   __ifThenElse(field[Int](e, leftArray.fieldFunc) __== elem, {
           //     inlineFunction(f, e)
@@ -343,7 +369,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) if shouldBePartitioned(mm) && getPartitionedObject(mm).hasLeft => {
       val hmParObj = getPartitionedObject(mm)
       val leftArray = hmParObj.partitionedObject
-      val key = elem.asInstanceOf[Rep[Int]] % leftArray.buckets
+      val key = apply(elem).asInstanceOf[Rep[Int]] % leftArray.buckets
       val whileLoop = leftArray.loopSymbol
       // System.out.println(s"loop: ${leftArray.loopSymbol}")
 
@@ -382,7 +408,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     case SetExists(Def(OptionGet(Def(MultiMapGet(mm, elem)))), p) if shouldBePartitioned(mm) && getPartitionedObject(mm).hasLeft => {
       val hmParObj = getPartitionedObject(mm)
       val leftArray = hmParObj.partitionedObject
-      val key = elem.asInstanceOf[Rep[Int]] % leftArray.buckets
+      val key = apply(elem).asInstanceOf[Rep[Int]] % leftArray.buckets
       val whileLoop = leftArray.loopSymbol
       // System.out.println(s"loop: ${leftArray.loopSymbol}")
 
@@ -420,6 +446,11 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
 
   rewrite += remove {
     case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) if shouldBePartitioned(mm) && !getPartitionedObject(mm).hasLeft && fillingHole.get(mm).isEmpty =>
+      ()
+  }
+
+  rewrite += remove {
+    case MultiMapForeach(mm, f) if shouldBePartitioned(mm) && getPartitionedObject(mm).isAnti =>
       ()
   }
 
