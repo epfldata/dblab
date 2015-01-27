@@ -23,6 +23,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
   val rightLoopSymbol = scala.collection.mutable.Map[Rep[Any], While]()
   val hashJoinAntiMaps = scala.collection.mutable.Set[Rep[Any]]()
   val hashJoinAntiForeachLambda = scala.collection.mutable.Map[Rep[Any], Lambda[Any, Unit]]()
+  var hashJoinAntiRetainVar = scala.collection.mutable.Map[Rep[Any], Var[Boolean]]()
   // TODO when WindowOp is supported will be removed
   val notSupportedMaps = scala.collection.mutable.Set[Rep[Any]]()
 
@@ -255,6 +256,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     }
   }
 
+  // The case for HashJoinAnit
   rewrite += rule {
     case MultiMapAddBinding(mm, elem, nodev) if shouldBePartitioned(mm) && getPartitionedObject(mm).isAnti =>
       class ElemType
@@ -266,6 +268,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
       val antiLambda = hmParObj.antiLambda
       val foreachFunction = antiLambda.body.stmts.collect({ case Statement(sym, SetForeach(_, f)) => f }).head.asInstanceOf[Rep[ElemType => Unit]]
       val resultRetain = __newVarNamed[Boolean](unit(false), "resultRetain")
+      hashJoinAntiRetainVar += mm -> resultRetain
       val count = rightArray.count(key)
       class ElemType2
       implicit val elemType2 = rightArray.arr.tp.typeArguments(0).asInstanceOf[TypeRep[ElemType2]]
@@ -275,16 +278,12 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
         __lambda { i =>
           val e = parArr(i)
           fillingElem(mm) = e
-          fillingFunction(mm) = () => {
-            __ifThenElse[Unit](field[Int](e, rightArray.fieldFunc) __== elem, {
-              __assign(resultRetain, unit(true))
-            }, {
-              unit(())
-            })
-          }
-          fillingHole(mm) = true
+          fillingFunction(mm) = () => apply(nodev)
+          fillingHole(mm) = loopDepth
+          loopDepth += 1
           val res = inlineBlock2(rightArray.loopSymbol.body)
           fillingHole.remove(mm)
+          loopDepth -= 1
           res
         }
       }
@@ -302,7 +301,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
   }
 
   rewrite += rule {
-    case MultiMapAddBinding(mm, _, nodev) if shouldBePartitioned(mm) && getPartitionedObject(mm).hasLeft && fillingHole(mm) =>
+    case MultiMapAddBinding(mm, _, nodev) if shouldBePartitioned(mm) && getPartitionedObject(mm).hasLeft && fillingHole.get(mm).nonEmpty =>
       // System.out.println(s"came here! for $mm")
       fillingFunction(mm)()
   }
@@ -330,12 +329,14 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
           //     unit(())
           //   })
           // }
-          fillingHole(mm) = true
+          fillingHole(mm) = loopDepth
+          loopDepth += 1
           // System.out.println(s"inlining block ${whileLoop.body}")
           val res1 = inlineBlock2(whileLoop.body)
           // System.out.println(s"inlining block done")
           // System.out.println(s"fillingHole $fillingHole")
           fillingHole.remove(mm)
+          loopDepth -= 1
           transformedMapsCount += 1
           // System.out.println(s"fillingHole $fillingHole")
           res1
@@ -358,7 +359,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     //   res
     // }
     =>
-      fillingElem(partitionedHashMapObjects.find(obj => shouldBePartitioned(obj.mapSymbol) && obj.partitionedObject.arr == arr && fillingHole.get(obj.mapSymbol).nonEmpty).get.mapSymbol)
+      val allObjs = partitionedHashMapObjects.filter(obj => shouldBePartitioned(obj.mapSymbol) && obj.partitionedObject.arr == arr && fillingHole.get(obj.mapSymbol).nonEmpty)
+      val sortedObjs = allObjs.toList.sortBy(obj => fillingHole(obj.mapSymbol))
+      fillingElem(sortedObjs.last.mapSymbol)
   }
 
   rewrite += remove {
@@ -383,7 +386,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
     }
   }
 
-  val fillingHole = scala.collection.mutable.Map[Rep[Any], Boolean]()
+  var loopDepth: Int = 0
+  // associates each multimap with a level which specifies the depth of the corresponding for loop
+  val fillingHole = scala.collection.mutable.Map[Rep[Any], Int]()
   var fillingFunction = scala.collection.mutable.Map[Rep[Any], () => Rep[Any]]()
   var fillingElem = scala.collection.mutable.Map[Rep[Any], Rep[Any]]()
 
@@ -403,18 +408,20 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
           val e = leftParArray(key)(i)
           fillingElem(mm) = e
           fillingFunction(mm) = () => {
-            __ifThenElse[Unit](field[Int](e, leftArray.fieldFunc) __== elem, {
+            __ifThenElse[Unit](field[Int](e, leftArray.fieldFunc) __== apply(elem), {
               inlineFunction(f.asInstanceOf[Rep[InnerType => Unit]], e)
             }, {
               unit(())
             })
           }
-          fillingHole(mm) = true
+          fillingHole(mm) = loopDepth
+          loopDepth += 1
           // System.out.println(s"inlining block ${whileLoop.body}")
           val res1 = inlineBlock2(whileLoop.body)
           // System.out.println(s"inlining block done")
           // System.out.println(s"fillingHole $fillingHole")
           fillingHole.remove(mm)
+          loopDepth -= 1
           transformedMapsCount += 1
           // System.out.println(s"fillingHole $fillingHole")
           res1
@@ -449,12 +456,14 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
               unit(())
             })
           }
-          fillingHole(mm) = true
+          fillingHole(mm) = loopDepth
+          loopDepth += 1
           // System.out.println(s"inlining block ${whileLoop.body} for hashmap ${mm}")
           val res1 = inlineBlock2(whileLoop.body)
           // System.out.println(s"inlining block done")
           // System.out.println(s"fillingHole $fillingHole")
           fillingHole.remove(mm)
+          loopDepth -= 1
           transformedMapsCount += 1
           // System.out.println(s"fillingHole $fillingHole")
           res1
@@ -478,12 +487,27 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase) extends 
 
   rewrite += rule {
     case IfThenElse(Def(OptionNonEmpty(Def(MultiMapGet(mm, elem)))), thenp, elsep) if shouldBePartitioned(mm) && getPartitionedObject(mm).isAnti && fillingHole.get(mm).nonEmpty =>
+      class ElemType
+      val retainPredicate = thenp.stmts.collect({ case Statement(sym, SetRetain(_, p)) => p }).head.asInstanceOf[Rep[ElemType => Boolean]]
       // System.out.println(s"came here! for $mm")
-      fillingFunction(mm)()
+      // val typedElem = (elem match {
+      //   case Def(StructImmutableField(s, _)) => apply(s)
+      // }).asInstanceOf[Rep[ElemType]]
+      // val typedElem = fillingElem(mm).asInstanceOf[Rep[ElemType]]
+      val typedElem = fillingFunction(mm)().asInstanceOf[Rep[ElemType]]
+      implicit val elemType = typedElem.tp.asInstanceOf[TypeRep[ElemType]]
+      val resultRetain = hashJoinAntiRetainVar(mm)
+      System.out.println(s"typedElem: $typedElem, fun: ${retainPredicate.correspondingNode}")
+      __ifThenElse(!inlineFunction(retainPredicate, typedElem), {
+        __assign(resultRetain, unit(true))
+      }, {
+        unit()
+      })
+    // fillingFunction(mm)()
   }
 
   rewrite += rule {
-    case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) if shouldBePartitioned(mm) && !getPartitionedObject(mm).hasLeft && fillingHole(mm) =>
+    case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) if shouldBePartitioned(mm) && !getPartitionedObject(mm).hasLeft && fillingHole.get(mm).nonEmpty =>
       inlineFunction(f, fillingFunction(mm)())
   }
 }
