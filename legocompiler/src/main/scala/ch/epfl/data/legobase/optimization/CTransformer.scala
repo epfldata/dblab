@@ -409,6 +409,21 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       g_hash_table_remove(map.asInstanceOf[Rep[LPointer[LGHashTable]]], key.asInstanceOf[Rep[gconstpointer]])
       x
   }
+  rewrite += rule {
+    case hmfe @ HashMapForeach(map, f) => {
+      def func[K: TypeRep, V: TypeRep] = doLambda3((s1: Rep[gpointer], s2: Rep[gpointer], s3: Rep[gpointer]) => {
+        lambdaApply(f,
+          __newTuple2(infix_asInstanceOf[K](s1),
+            infix_asInstanceOf[V](s2)))
+      })
+      val ktp = getMapKeyType(apply(map))
+      val vtp = getMapValueType(apply(map))
+      g_hash_table_foreach(
+        map.asInstanceOf[Rep[LPointer[LGHashTable]]],
+        func(ktp, vtp).asInstanceOf[Rep[GHFunc]],
+        CLang.NULL[Any])
+    }
+  }
 
   /* Set Operaions */
   rewrite += rule { case SetApplyObject1(s) => s }
