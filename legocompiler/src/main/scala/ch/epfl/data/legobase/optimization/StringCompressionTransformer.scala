@@ -31,6 +31,8 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
   var compressedStringsMaps = scala.collection.mutable.Map[String, (Var[Int], Expression[ArrayBuffer[OptimalString]], Expression[ArrayBuffer[OptimalString]])]()
   val hoistedStatements = collection.mutable.Set[String]()
   val modifiedExpressions = collection.mutable.Map[Expression[Any], String]()
+  case class ConstantStringInfo(val poolName: String, val isStartsWithOperation: Boolean)
+  val constantStrings = collection.mutable.Map[Expression[Any], ConstantStringInfo]()
 
   override def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     traverseBlock(node)
@@ -59,6 +61,20 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
     }
   }
 
+  // Used to hoist out compression of constant strings
+  analysis += rule {
+    case OptimalStringComparison(Def(PardisStructImmutableField(s, name)),
+      str2 @ Def(GenericEngineParseStringObject(constantString)), _) =>
+      constantStrings += str2 -> ConstantStringInfo(name, false)
+      ()
+    case OptimalStringStartsOrEndsWith(Def(PardisStructImmutableField(s, name)),
+      str2 @ Def(GenericEngineParseStringObject(constantString)), reverseString) =>
+      constantStrings += str2 -> ConstantStringInfo(name, true)
+      twoPhaseStringCompressionNeeded = true
+      if (reverseString) stringReversalNeeded = true
+      ()
+  }
+
   analysis += rule {
     case GenericEngineRunQueryObject(b) => {
       phase = QueryExecutionPhase
@@ -68,13 +84,6 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
       elems.foreach(e => {
         if (e.init.tp == OptimalStringType) hoistedStatements += e.name
       })
-  }
-
-  analysis += rule {
-    case OptimalStringStartsWith(str1, str2) => twoPhaseStringCompressionNeeded = true
-    case OptimalStringEndsWith(str1, str2) =>
-      twoPhaseStringCompressionNeeded = true
-      stringReversalNeeded = true
   }
 
   // !!! HIGHLY EXPERIMENTAL DEPENDENCY ANALYSIS (is there a generic mechanism for this is SysC?)
@@ -148,9 +157,14 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
       System.out.println("StringCompressionTransformer: Rewriting struct during query with tag: " + tag)
       Struct(tag, elems.map(e => {
         if (e.init.tp == OptimalStringType) {
-          PardisStructArg(e.name, e.mutable, infix_asInstanceOf(e.init)(typeInt))
+          PardisStructArg(e.name, e.mutable, infix_asInstanceOf(apply(e.init))(typeInt))
         } else e
       }), methods)(origStruct.tp)
+  }
+
+  rewrite += rule {
+    case sf @ StructImmutableField(s, f) if sf.tp == OptimalStringType => field[Int](s, f)
+    case sf @ StructFieldGetter(s, f) if sf.tp == OptimalStringType    => fieldGetter[Int](s, f)
   }
 
   object OptimalStringComparison {
@@ -162,26 +176,38 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
   }
 
   object OptimalStringStartsOrEndsWith {
-    def unapply(node: Def[Any]): Option[(Rep[OptimalString], Rep[OptimalString])] = node match {
-      case OptimalStringStartsWith(str1, str2) => Some((str1, str2))
-      case OptimalStringEndsWith(str1, str2)   => Some((str1, str2))
+    def unapply(node: Def[Any]): Option[(Rep[OptimalString], Rep[OptimalString], Boolean)] = node match {
+      case OptimalStringStartsWith(str1, str2) => Some((str1, str2, false))
+      case OptimalStringEndsWith(str1, str2)   => Some((str1, str2, true))
       case _                                   => None
     }
   }
 
   // Overwrite behaviour of string operations
+  rewrite += statement {
+    case sym -> GenericEngineParseStringObject(constantString) =>
+      val csi = constantStrings(sym)
+      System.out.println("StringCompressionTransformer: Generating code for compressing constant string " + csi.poolName)
+      val newSym = GenericEngine.parseString(constantString)
+      val str2tmp = if (stringReversalNeeded) newSym.reverse else newSym
+      val compressedStringMetaData = compressedStringsMaps(csi.poolName)
+      val compressedStringValues = compressedStringMetaData._2
+      if (!csi.isStartsWithOperation) compressedStringValues.indexOf(str2tmp)
+      else {
+        val startIndex = compressedStringValues.indexWhere({ (str: Rep[OptimalString]) => str.startsWith(str2tmp) })
+        val endIndex = compressedStringValues.lastIndexWhere({ (str: Rep[OptimalString]) => str.startsWith(str2tmp) })
+        Tuple2(startIndex, endIndex)
+      }
+  }
+
   rewrite += rule {
     case OptimalStringComparison(str1, str2, equalityCheck) => str2 match {
       case Def(GenericEngineParseStringObject(constantString)) =>
         if (debugEnabled) System.out.println("StringCompressionTransformer: GenericEngineParseStringObject of " + constantString + " encountered ")
         str1 match {
           case Def(PardisStructImmutableField(s, name)) =>
-            val str2tmp = if (stringReversalNeeded) str2.reverse else str2
-            val compressedStringMetaData = compressedStringsMaps(name)
-            val compressedStringValues = compressedStringMetaData._2
-            val compressedConstantString = compressedStringValues.indexOf(str2tmp)
-            if (equalityCheck) infix_==(str1, compressedConstantString)
-            else infix_!=(str1, compressedConstantString)
+            if (equalityCheck) infix_==(apply(str1), apply(str2))
+            else infix_!=(apply(str1), apply(str2))
           case dflt @ _ =>
             throw new Exception("StringCompressionTransformer BUG: unknown node type in LHS of comparison with constant string. LHS node is " + str1.correspondingNode)
         }
@@ -223,18 +249,14 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
       if (stringReversalNeeded) tmpString.reverse else tmpString
     }
 
-    case OptimalStringStartsOrEndsWith(str1, str2) => str2 match {
+    case OptimalStringStartsOrEndsWith(str1, str2, _) => str2 match {
       case Def(GenericEngineParseStringObject(constantString)) =>
         if (debugEnabled) System.out.println("StringCompressionTransformer: GenericEngineParseStringObject of " + constantString + " encountered ")
         str1 match {
           case Def(PardisStructImmutableField(s, name)) =>
-            val str2tmp = if (stringReversalNeeded) str2.reverse else str2
-            val compressedStringMetaData = compressedStringsMaps(name)
-            val compressedStringValues = compressedStringMetaData._2
-            val startIndex = compressedStringValues.indexWhere({ (str: Rep[OptimalString]) => str.startsWith(str2tmp) })
-            val endIndex = compressedStringValues.lastIndexWhere({ (str: Rep[OptimalString]) => str.startsWith(str2tmp) })
-            val index = str1.asInstanceOf[Expression[Int]]
-            index >= startIndex && index <= endIndex
+            val range = apply(str2).asInstanceOf[Expression[Tuple2[Int, Int]]]
+            val index = apply(str1).asInstanceOf[Expression[Int]]
+            index >= range._1 && index <= range._2
           case dflt @ _ =>
             throw new Exception("StringCompressionTransformer BUG: unknown node type in LHS of startsWith node. LHS node is " + str1.correspondingNode)
         }
@@ -250,8 +272,11 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
 
   rewrite += rule {
     case GenericEngineRunQueryObject(b) => {
+      System.out.println(constantStrings.size)
+
       phase = QueryExecutionPhase
       System.out.println("StringCompressionTransformer: twoPhaseStringCompressionNeeded = " + twoPhaseStringCompressionNeeded)
+
       if (twoPhaseStringCompressionNeeded) {
         reifyBlock {
           compressedStringsMaps = compressedStringsMaps.map(csm => {

@@ -416,7 +416,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
   }
 }
 
-class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._
@@ -601,6 +601,33 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         __assign(idx, readVar(idx) + unit(1))
       })
       ReadVar(agg)
+  }
+
+  def arrayBufferIndexOf[T: PardisType](a: Expression[IR.ArrayBuffer[T]], elem: Expression[T]): Expression[Int] = {
+    val idx = __newVar[Int](unit(-1))
+    Range(unit(0), fieldGetter[Int](a, "len")).foreach {
+      __lambda { i =>
+        val elemNode = apply(ArrayBufferApply(apply(a), i))
+        val elem2 = toAtom(elemNode)(elemNode.tp)
+        __ifThenElse(elem2 __== elem, {
+          __assign(idx, i)
+        }, unit())
+      }
+    }
+    readVar(idx)
+  }
+
+  rewrite += rule {
+    case ArrayBufferIndexOf(a, elem) =>
+      val tp = a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]
+      arrayBufferIndexOf(a, elem)(tp)
+  }
+  rewrite += rule {
+    case ArrayBufferContains(a, elem) => {
+      val tp = a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]
+      val idx = arrayBufferIndexOf(a, elem)(tp)
+      idx __!= unit(-1)
+    }
   }
 }
 
