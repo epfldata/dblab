@@ -65,7 +65,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   val partitionedObjectsArray = scala.collection.mutable.Map[PartitionObject, Rep[Array[Any]]]()
   val partitionedObjectsCount = scala.collection.mutable.Map[PartitionObject, Rep[Array[Int]]]()
 
-  def supportsWindowOp(): Boolean = (queryNumber == 2) /* || (queryNumber == 11)*/
+  def supportsWindowOp(): Boolean = (queryNumber == 2) || (queryNumber == 11)
 
   // TODO should be `|| ?.right.nonEmpty`
   def shouldBePartitioned[T: TypeRep](hm: Rep[T]): Boolean = {
@@ -327,6 +327,11 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     }
   }
 
+  rewrite += removeStatement {
+    case sym -> (node @ MultiMapNew()) if shouldBePartitioned(sym) && windowOpMaps.contains(sym) =>
+      ()
+  }
+
   rewrite += remove {
     case MultiMapGet(mm, elem) if shouldBePartitioned(mm) => {
       ()
@@ -392,8 +397,13 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       val key = nodekey.asInstanceOf[Rep[Int]]
       val value = nodev.asInstanceOf[Rep[ElemType]]
       windowOpFoldLefts(mm).toList match {
-        case List(WindowOpMetaInfo(arr, node)) => ???
-        case _                                 =>
+        case List(WindowOpMetaInfo(arr, node)) => {
+          val tArr = arr.asInstanceOf[Rep[Array[Double]]]
+          val oldValue = tArr(key)
+          tArr(key) = inlineFunction(node.op.asInstanceOf[Rep[(Double, ElemType) => Double]], oldValue, value)
+
+        }
+        case _ =>
       }
       // System.out.println(s"here for window op addBinding with mins ${windowOpMins(mm)}")
       windowOpMins(mm).toList match {
@@ -598,6 +608,29 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     case MultiMapForeach(mm, f) if shouldBePartitioned(mm) && getPartitionedObject(mm).isWindow =>
       class ElemType
       windowOpForeachMode = true
+      windowOpFoldLefts(mm).toList match {
+        case List(WindowOpMetaInfo(arr, node)) => {
+          Range(unit(0), NUM_AGGS).foreach {
+            __lambda { i =>
+
+              implicit val elemType = arr.tp.typeArguments(0).asInstanceOf[TypeRep[ElemType]]
+              val value = arr.asInstanceOf[Rep[Array[Double]]](i)
+              // System.out.println(s"elem tp: ${elem}:${elem.tp}!${elemType}")
+
+              val res = __ifThenElse(value __!= unit(0.0), {
+                inlineFunction(f, Tuple2(value, i.asInstanceOf[Rep[Set[Any]]]))
+              }, unit())
+
+              res
+            }
+          }
+          // printf(unit("%s"), newValue)
+          // System.out.println(s"inlined function with $newValue")
+          ()
+        }
+        case _ =>
+      }
+
       windowOpMins(mm).toList match {
         case List(WindowOpMetaInfo(arr: Rep[Array[ElemType]], node: SetMinBy[Any, Double])) => {
           Range(unit(0), NUM_AGGS).foreach {
@@ -608,7 +641,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
               System.out.println(s"elem tp: ${elem}:${elem.tp}!${elemType}")
 
               val res = __ifThenElse(elem __!= unit(null), {
-                inlineFunction(f, Tuple2(elem, arr.asInstanceOf[Rep[Set[Any]]]))
+                inlineFunction(f, Tuple2(elem, i.asInstanceOf[Rep[Set[Any]]]))
               }, unit())
 
               res
@@ -629,6 +662,30 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       _1
     }
   }
+
+  rewrite += rule {
+    case SetFoldLeft(TDef(Tuple2_Field__2(tup @ TDef(Tuple2ApplyObject(_1, _2)))), _, _) if windowOpForeachMode => {
+      _1
+    }
+  }
+
+  rewrite += rule {
+    case SetHead(TDef(Tuple2_Field__2(tup @ TDef(Tuple2ApplyObject(_1, _2))))) if windowOpForeachMode => {
+      _2
+    }
+  }
+
+  rewrite += rule {
+    case StructImmutableField(s, _) if windowOpForeachMode => {
+      s
+    }
+  }
+
+  // rewrite += remove {
+  //   case SetHead(TDef(Tuple2_Field__2(tup @ TDef(Tuple2ApplyObject(_1, _2)))), _) if windowOpForeachMode => {
+  //     _1
+  //   }
+  // }
 
   rewrite += rule {
     case IfThenElse(Def(OptionNonEmpty(Def(MultiMapGet(mm, elem)))), thenp, elsep) if shouldBePartitioned(mm) && getPartitionedObject(mm).isAnti && fillingHole.get(mm).nonEmpty =>
