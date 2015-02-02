@@ -27,6 +27,7 @@ object Main extends LegoRunner {
       $contFlat: Flattening the next field of a container of a record to the record itself
       $cstore: Column-Store optimization (Not finished yet!)
       $part: Partitioning optimization which only should be combined with $cstore (Not finished yet!)
+      $hmPart: Converts HashMaps into partitioned arrays!)
 """)
       System.exit(0)
     }
