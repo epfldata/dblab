@@ -29,13 +29,13 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
     case 12 => List("LINEITEMRecord")
     case 14 => List("LINEITEMRecord")
     case 15 => List("LINEITEMRecord")
-    case 16 => List("PARTSUPPRecord", "SUPPLIERRecord")
+    case 16 => List("PARTSUPPRecord")
     case 17 => List("LINEITEMRecord")
     case 18 => List("LINEITEMRecord")
     case 19 => List("LINEITEMRecord")
     case 20 => List("PARTSUPPRecord")
     case 21 => List("SUPPLIERRecord")
-    case 22 => List("ORDERSRecord" /*, "CUSTOMERRecord"*/ )
+    case 22 => List("CUSTOMERRecord")
     case _  => throw new Exception(s"Column store not supported yet for $queryNumber")
   }
 
@@ -98,7 +98,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
         class ColumnType
         implicit val columnType = el.tpe.asInstanceOf[TypeRep[ColumnType]]
         val column = field[Array[ColumnType]](apply(arr), el.name.arrayOf)
-        val Def(s) = value
+        val Def(s) = apply(value)
         val v = s.asInstanceOf[PardisStruct[Any]].elems.find(e => e.name == el.name) match {
           case Some(e) => e.init.asInstanceOf[Rep[ColumnType]]
           case None    => throw new Exception(s"could not find any element for $s with name `${el.name}`")

@@ -17,7 +17,8 @@ object HashMapToSetTransformation extends TransformerHandler {
   }
 }
 
-class HashMapToSetTransformation(val LB: LoweringLegoBase) extends HashMapOptimalTransformation(LB) {
+// class HashMapToSetTransformation(val LB: LoweringLegoBase) extends HashMapOptimalTransformation(LB) {
+class HashMapToSetTransformation(val LB: LoweringLegoBase) extends HashMapOptimalNoMallocTransformation(LB) {
   import LB._
   override def hashMapExtractKey[A, B](self: Rep[HashMap[A, B]], value: Rep[B])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[A] = typeB match {
     case t if t.isRecord && t.name.startsWith("AGGRecord") => {
