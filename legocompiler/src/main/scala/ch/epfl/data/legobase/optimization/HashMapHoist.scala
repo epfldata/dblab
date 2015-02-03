@@ -54,7 +54,7 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
     //   hoistedStatements.clear()
     //   hoistedStatements ++= pardis.utils.Graph.tsort(dependenceGraphEdges)
     // }
-    val result = pardis.utils.Graph.schedule(hoistedStatements.toList, (stm1: Stm[Any], stm2: Stm[Any]) => getDependencies(stm1.rhs).contains(stm2.sym))
+    val result = pardis.utils.Graph.schedule(hoistedStatements.toList, (stm1: Stm[Any], stm2: Stm[Any]) => getDependencies(stm2.rhs).contains(stm1.sym))
     hoistedStatements.clear()
     hoistedStatements ++= result
   }

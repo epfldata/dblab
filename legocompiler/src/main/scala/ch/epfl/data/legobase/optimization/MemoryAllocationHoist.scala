@@ -159,7 +159,7 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase) extends RuleBased
             val mallocNode = mallocInstance.asInstanceOf[StructMallocInfo].node
             val newElems = mallocNode.elems.map(e => {
               val in = {
-                if ((e.init.tp.isRecord) || (e.init.tp.isArray)) {
+                if ((e.init.tp.isRecord && e.init.tp != mallocInstance.asInstanceOf[StructMallocInfo].tp) || (e.init.tp.isArray)) {
                   System.out.println("----->" + e.init.tp.name)
                   val other = mallocBuffers.find(mb => mb._1.name == e.init.tp.name).get._2.pool
                   arrayApply(other.asInstanceOf[Expression[Array[Any]]], i)(e.init.tp)
