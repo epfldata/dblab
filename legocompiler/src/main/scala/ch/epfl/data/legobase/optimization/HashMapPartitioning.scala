@@ -38,6 +38,20 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     SIZE_ORDER.zipWithIndex.find(x => x._1 == name).get._2
   }
 
+  val ONE_D_ENABLED = true
+
+  def isPrimaryKey[T](tp: TypeRep[T], field: String): Boolean = (tp.name, field) match {
+    case ("REGIONRecord", "R_REGIONKEY") => true
+    case ("NATIONRecord", "N_NATIONKEY") => true
+    case ("SUPPLIERRecord", "S_SUPPKEY") => true
+    case ("CUSTOMERRecord", "C_CUSTKEY") => true
+    case ("PARTRecord", "P_PARTKEY")     => true
+    // case ("PARTSUPPRecord", _) => false
+    case ("ORDERSRecord", "O_ORDERKEY")  => true
+    // case ("LINEITEMRecord", "L_ORDERKEY") => true
+    case _                               => false
+  }
+
   var transformedMapsCount = 0
 
   case class HashMapPartitionObject(mapSymbol: Rep[Any], left: Option[PartitionObject], right: Option[PartitionObject]) {
@@ -57,14 +71,16 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   }
   case class PartitionObject(arr: Rep[Array[Any]], fieldFunc: String, loopSymbol: While) {
     def tpe = arr.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
-    def buckets = numBuckets(this)
+    def buckets = if (is1D) numBucketsFull(this) else numBuckets(this)
     def count = partitionedObjectsCount(this)
     def parArr = partitionedObjectsArray(this).asInstanceOf[Rep[Array[Array[Any]]]]
+    def is1D: Boolean = if (ONE_D_ENABLED) isPrimaryKey(arr.tp.typeArguments(0), fieldFunc) else false
   }
   val partitionedHashMapObjects = scala.collection.mutable.Set[HashMapPartitionObject]()
   val partitionedObjectsArray = scala.collection.mutable.Map[PartitionObject, Rep[Array[Any]]]()
   val partitionedObjectsCount = scala.collection.mutable.Map[PartitionObject, Rep[Array[Int]]]()
 
+  // TODO uncomment
   def supportsWindowOp(): Boolean = //(queryNumber == 2) || (queryNumber == 11)
     false
 
@@ -201,6 +217,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     case Def(ArrayNew(l)) => l / unit(4)
     case sym              => throw new Exception(s"setting default value for $sym")
   }
+  def numBucketsFull(partitionedObject: PartitionObject): Rep[Int] = partitionedObject.arr match {
+    case Def(ArrayNew(l)) => l * unit(5)
+    case sym              => throw new Exception(s"setting default value for $sym")
+  }
   def bucketSize(partitionedObject: PartitionObject): Rep[Int] = //unit(100)
     // numBuckets(partitionedObject)
     unit(1 << 10)
@@ -225,22 +245,28 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   }
 
   def par_array_foreach[T: TypeRep](partitionedObject: PartitionObject, bucket: Rep[Int], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
-    val count = partitionedObject.count(bucket)
-    val parArrWhole = partitionedObject.parArr.asInstanceOf[Rep[Array[Array[T]]]]
-    val parArr = parArrWhole(bucket)
-    Range(unit(0), count).foreach {
-      __lambda { i =>
-        val e = parArr(i)
-        f(e)
+    if (partitionedObject.is1D) {
+      val parArr = partitionedObject.parArr.asInstanceOf[Rep[Array[T]]]
+      val e = parArr(bucket)
+      f(e)
+    } else {
+      val count = partitionedObject.count(bucket)
+      val parArrWhole = partitionedObject.parArr.asInstanceOf[Rep[Array[Array[T]]]]
+      val parArr = parArrWhole(bucket)
+      Range(unit(0), count).foreach {
+        __lambda { i =>
+          val e = parArr(i)
+          f(e)
+        }
       }
     }
   }
 
   def createPartitionArray(partitionedObject: PartitionObject): Unit = {
     System.out.println(scala.Console.RED + partitionedObject.arr.tp.typeArguments(0) + " Partitioned on field " + partitionedObject.fieldFunc + scala.Console.BLACK)
+
     class InnerType
     implicit val typeInner = partitionedObject.arr.tp.typeArguments(0).asInstanceOf[TypeRep[InnerType]]
-    val buckets = numBuckets(partitionedObject)
     val originalArray = {
       val origArray =
         if (!seenArrays.contains(partitionedObject.arr)) {
@@ -251,26 +277,38 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
         }
       origArray.asInstanceOf[Rep[Array[InnerType]]]
     }
-    val partitionedArray = __newArray[Array[InnerType]](buckets)
-    val partitionedCount = __newArray[Int](buckets)
-    partitionedObjectsArray += partitionedObject -> partitionedArray.asInstanceOf[Rep[Array[Any]]]
-    partitionedObjectsCount += partitionedObject -> partitionedCount
-    Range(unit(0), buckets).foreach {
-      __lambda { i =>
-        partitionedArray(i) = __newArray[InnerType](bucketSize(partitionedObject))
+    val buckets = partitionedObject.buckets
+    if (partitionedObject.is1D) {
+      System.out.println(s"${scala.Console.BLUE}1D Array!!!${scala.Console.BLACK}")
+      val partitionedArray = __newArray[InnerType](buckets)
+      partitionedObjectsArray += partitionedObject -> partitionedArray.asInstanceOf[Rep[Array[Any]]]
+      array_foreach(originalArray, {
+        (e: Rep[InnerType]) =>
+          val pkey = field[Int](e, partitionedObject.fieldFunc) % buckets
+          partitionedArray(pkey) = e
+      })
+    } else {
+      val partitionedArray = __newArray[Array[InnerType]](buckets)
+      val partitionedCount = __newArray[Int](buckets)
+      partitionedObjectsArray += partitionedObject -> partitionedArray.asInstanceOf[Rep[Array[Any]]]
+      partitionedObjectsCount += partitionedObject -> partitionedCount
+      Range(unit(0), buckets).foreach {
+        __lambda { i =>
+          partitionedArray(i) = __newArray[InnerType](bucketSize(partitionedObject))
+        }
       }
+      val index = __newVarNamed[Int](unit(0), "partIndex")
+      array_foreach(originalArray, {
+        (e: Rep[InnerType]) =>
+          // TODO needs a better way of computing the index of each object
+          val pkey = field[Int](e, partitionedObject.fieldFunc) % buckets
+          val currIndex = partitionedCount(pkey)
+          val partitionedArrayBucket = partitionedArray(pkey)
+          partitionedArrayBucket(currIndex) = e
+          partitionedCount(pkey) = currIndex + unit(1)
+          __assign(index, readVar(index) + unit(1))
+      })
     }
-    val index = __newVarNamed[Int](unit(0), "partIndex")
-    array_foreach(originalArray, {
-      (e: Rep[InnerType]) =>
-        // TODO needs a better way of computing the index of each object
-        val pkey = field[Int](e, partitionedObject.fieldFunc) % buckets
-        val currIndex = partitionedCount(pkey)
-        val partitionedArrayBucket = partitionedArray(pkey)
-        partitionedArrayBucket(currIndex) = e
-        partitionedCount(pkey) = currIndex + unit(1)
-        __assign(index, readVar(index) + unit(1))
-    })
   }
 
   val seenArrays = scala.collection.mutable.Set[Rep[Any]]()
@@ -316,7 +354,6 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       val foreachFunction = antiLambda.body.stmts.collect({ case Statement(sym, SetForeach(_, f)) => f }).head.asInstanceOf[Rep[ElemType => Unit]]
       val resultRetain = __newVarNamed[Boolean](unit(false), "resultRetain")
       hashJoinAntiRetainVar += mm -> resultRetain
-      val count = rightArray.count(key)
       class ElemType2
       implicit val elemType2 = rightArray.arr.tp.typeArguments(0).asInstanceOf[TypeRep[ElemType2]]
       par_array_foreach[ElemType2](rightArray, key, (e: Rep[ElemType2]) => {
@@ -329,21 +366,6 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
         loopDepth -= 1
         res
       })
-      // val parArrWhole = rightArray.parArr.asInstanceOf[Rep[Array[Array[ElemType2]]]]
-      // val parArr = parArrWhole(key)
-      // Range(unit(0), count).foreach {
-      //   __lambda { i =>
-      //     val e = parArr(i)
-      //     fillingElem(mm) = e
-      //     fillingFunction(mm) = () => apply(nodev)
-      //     fillingHole(mm) = loopDepth
-      //     loopDepth += 1
-      //     val res = inlineBlock2(rightArray.loopSymbol.body)
-      //     fillingHole.remove(mm)
-      //     loopDepth -= 1
-      //     res
-      //   }
-      // }
       transformedMapsCount += 1
       __ifThenElse(!readVar(resultRetain), {
         inlineFunction(foreachFunction, value)
@@ -399,7 +421,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       val key = apply(elem).asInstanceOf[Rep[Int]] % leftArray.buckets
       val whileLoop = leftArray.loopSymbol
       class InnerType
-      implicit val typeInner = leftArray.parArr.tp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[InnerType]]
+      implicit val typeInner = leftArray.tpe.asInstanceOf[TypeRep[InnerType]]
       par_array_foreach[InnerType](leftArray, key, (e: Rep[InnerType]) => {
         fillingElem(mm) = e
         fillingFunction(mm) = () => apply(nodev)
@@ -411,25 +433,6 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
         transformedMapsCount += 1
         res1
       })
-    //     val leftParArray = leftArray.parArr.asInstanceOf[Rep[Array[Array[InnerType]]]]
-    // val res = Range(unit(0), leftArray.count(key)).foreach {
-    //   __lambda { i =>
-    //     class InnerType
-    //     implicit val typeInner = leftArray.parArr.tp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[InnerType]]
-    //     val leftParArray = leftArray.parArr.asInstanceOf[Rep[Array[Array[InnerType]]]]
-    //     val e = leftParArray(key)(i)
-    //     fillingElem(mm) = e
-    //     fillingFunction(mm) = () => apply(nodev)
-    //     fillingHole(mm) = loopDepth
-    //     loopDepth += 1
-    //     val res1 = inlineBlock2(whileLoop.body)
-    //     fillingHole.remove(mm)
-    //     loopDepth -= 1
-    //     transformedMapsCount += 1
-    //     res1
-    //   }
-    // }
-    // res
   }
 
   rewrite += rule {
@@ -466,7 +469,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       val key = apply(elem).asInstanceOf[Rep[Int]] % leftArray.buckets
       val whileLoop = leftArray.loopSymbol
       class InnerType
-      implicit val typeInner = leftArray.parArr.tp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[InnerType]]
+      implicit val typeInner = leftArray.tpe.asInstanceOf[TypeRep[InnerType]]
       par_array_foreach[InnerType](leftArray, key, (e: Rep[InnerType]) => {
         fillingElem(mm) = e
         fillingFunction(mm) = () => {
@@ -484,30 +487,6 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
         transformedMapsCount += 1
         res1
       })
-      // val res = Range(unit(0), leftArray.count(key)).foreach {
-      //   __lambda { i =>
-      //     class InnerType
-      //     implicit val typeInner = leftArray.parArr.tp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[InnerType]]
-      //     val leftParArray = leftArray.parArr.asInstanceOf[Rep[Array[Array[InnerType]]]]
-      //     val e = leftParArray(key)(i)
-      //     fillingElem(mm) = e
-      //     fillingFunction(mm) = () => {
-      //       __ifThenElse[Unit](field[Int](e, leftArray.fieldFunc) __== apply(elem), {
-      //         inlineFunction(f.asInstanceOf[Rep[InnerType => Unit]], e)
-      //       }, {
-      //         unit(())
-      //       })
-      //     }
-      //     fillingHole(mm) = loopDepth
-      //     loopDepth += 1
-      //     val res1 = inlineBlock2(whileLoop.body)
-      //     fillingHole.remove(mm)
-      //     loopDepth -= 1
-      //     transformedMapsCount += 1
-      //     res1
-      //   }
-      // }
-      // res
     }
   }
 
@@ -519,7 +498,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       val whileLoop = leftArray.loopSymbol
       val result = __newVarNamed[Boolean](unit(false), "existsResult")
       class InnerType
-      implicit val typeInner = leftArray.parArr.tp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[InnerType]]
+      implicit val typeInner = leftArray.tpe.asInstanceOf[TypeRep[InnerType]]
       par_array_foreach[InnerType](leftArray, key, (e: Rep[InnerType]) => {
         fillingElem(mm) = e
         fillingFunction(mm) = () => {
@@ -537,29 +516,6 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
         transformedMapsCount += 1
         res1
       })
-      // Range(unit(0), leftArray.count(key)).foreach {
-      //   __lambda { i =>
-      //     class InnerType
-      //     implicit val typeInner = leftArray.parArr.tp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[InnerType]]
-      //     val leftParArray = leftArray.parArr.asInstanceOf[Rep[Array[Array[InnerType]]]]
-      //     val e = leftParArray(key)(i)
-      //     fillingElem(mm) = e
-      //     fillingFunction(mm) = () => {
-      //       __ifThenElse[Unit]((field[Int](e, leftArray.fieldFunc) __== elem) && inlineFunction(p, e), {
-      //         __assign(result, unit(true))
-      //       }, {
-      //         unit(())
-      //       })
-      //     }
-      //     fillingHole(mm) = loopDepth
-      //     loopDepth += 1
-      //     val res1 = inlineBlock2(whileLoop.body)
-      //     fillingHole.remove(mm)
-      //     loopDepth -= 1
-      //     transformedMapsCount += 1
-      //     res1
-      //   }
-      // }
       readVar(result)
     }
   }
