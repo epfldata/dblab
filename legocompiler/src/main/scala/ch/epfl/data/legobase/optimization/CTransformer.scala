@@ -43,11 +43,11 @@ object CTransformersPipeline extends TransformerHandler {
   def apply[A: PardisType](context: LoweringLegoBase, b: PardisBlock[A]) = {
     val pipeline = new TransformerPipeline()
     pipeline += new GenericEngineToCTransformer(context)
-    // pipeline += new OptionToCTransformer(context)
-    // pipeline += new Tuple2ToCTransformer(context)
     pipeline += new ScalaScannerToCFileTransformer(context)
     pipeline += new ScalaArrayToCStructTransformer(context)
     pipeline += new ScalaCollectionsToGLibTransfomer(context)
+    pipeline += new Tuple2ToCTransformer(context)
+    pipeline += new OptionToCTransformer(context)
     pipeline += new HashEqualsFuncsToCTraansformer(context)
     pipeline += new OptimalStringToCTransformer(context)
     pipeline += new RangeToCTransformer(context)
@@ -175,7 +175,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         case List(t) => typePointer(transformType(t))
       }
       case TreeSetType(args) => typePointer(typeGTree(transformType(args)))
-      case SetType(args)     => typePointer(typeGList(transformType(args)))
+      case SetType(args)     => typePointer(typeLGList)
       case OptionType(args)  => typePointer(transformType(args))
       case _                 => super.transformType[T]
     }
@@ -189,7 +189,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
     case a @ ArrayNew(x) =>
       if (a.tp.typeArguments(0).isArray) {
         // Get type of elements stored in array
-        val elemType = typeCArray(a.tp.typeArguments(0).typeArguments(0))
+        val elemType = typeCArray(transformType(a.tp.typeArguments(0).typeArguments(0)))
         // Allocate original array
         val array = malloc(x)(elemType)
         // Create wrapper with length
@@ -203,7 +203,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         m.asInstanceOf[Expression[Any]]
       } else {
         // Get type of elements stored in array
-        val elemType = a.tp.typeArguments(0)
+        val elemType = transformType(a.tp.typeArguments(0))
         // Allocate original array
         val array = malloc(x)(elemType)
         // Create wrapper with length
@@ -273,12 +273,9 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
           }
           __assign(pointerVar, (&(tArr, i)).asInstanceOf[Rep[Pointer[T]]])(PointerType(typeT))
         })
-      } else
-        pointer_assign(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(apply(v).asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
-          case x if v.tp.isArray            => transformType(v.tp).typeArguments(0).asInstanceOf[PardisType[Any]]
-          case x if x.startsWith("Pointer") => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
-          case _                            => v.tp
-        }))
+      } else {
+        pointer_assign(arr.asInstanceOf[Expression[Pointer[Any]]], i, apply(v).asInstanceOf[Expression[Pointer[Any]]])
+      }
   }
   rewrite += rule {
     case ArrayFilter(a, op) => field(apply(a), "array")(transformType(a.tp))
@@ -353,9 +350,9 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     val tp = typeRep[T]
     tp match {
       case ArrayBufferType(t)  => typePointer(typeGArray(transformType(t)))
-      case SeqType(t)          => typePointer(typeGList(transformType(t)))
+      case SeqType(t)          => typePointer(typeLGList)
       case TreeSetType(t)      => typePointer(typeGTree(transformType(t)))
-      case SetType(t)          => typePointer(typeGList(transformType(t)))
+      case SetType(t)          => typePointer(typeLGList)
       case OptionType(t)       => typePointer(transformType(t))
       case HashMapType(t1, t2) => typePointer(typeGHashTable(transformType(t1), transformType(t2)))
       case CArrayType(t1)      => tp
@@ -440,21 +437,34 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   /* Set Operaions */
   rewrite += rule { case SetApplyObject1(s) => s }
   rewrite += rule {
-    case nm @ SetApplyObject2() => PardisCast(unit(0).asInstanceOf[Expression[Any]])(apply(nm.tp), apply(nm.tp))
+    case nm @ SetApplyObject2() => CLang.NULL[LGList]
   }
   rewrite += rule {
     case SetHead(s) =>
-      val x = g_list_first(s.asInstanceOf[Rep[LPointer[LGList[Any]]]])
-      CLang.->[LGList[Any], gpointer](x, unit("data"))
+      val x = g_list_first(s.asInstanceOf[Rep[LPointer[LGList]]])
+      CLang.->[LGList, gpointer](x, unit("data"))
   }
   rewrite += rule {
     case SetRemove(s @ Def(PardisReadVar(x)), e) =>
-      val newHead = g_list_remove(s.asInstanceOf[Rep[LPointer[LGList[Any]]]], apply(e).asInstanceOf[Rep[LPointer[Any]]])
+      val newHead = g_list_remove(s.asInstanceOf[Rep[LPointer[LGList]]], apply(e).asInstanceOf[Rep[LPointer[Any]]])
       PardisAssign[Any](x, newHead)(transformType(s.tp))
     case SetRemove(s, e) => throw new Exception("Implementation Limitation: Sets should always" +
       " be Vars when using Scala collections to GLib transformer!")
   }
   rewrite += rule { case SetToSeq(set) => set }
+  rewrite += rule {
+    case Set$plus$eq(s @ Def(PardisReadVar(x)), e) =>
+      val newHead = g_list_prepend(s.asInstanceOf[Rep[LPointer[LGList]]], apply(e).asInstanceOf[Rep[LPointer[Any]]])
+      PardisAssign[Any](x, newHead)(transformType(s.tp))
+  }
+  rewrite += rule {
+    case sfe @ SetForeach(s, f) =>
+      def func[A: TypeRep] = doLambda2((s1: Rep[gpointer], s2: Rep[LPointer[Any]]) => {
+        lambdaApply(f, infix_asInstanceOf[A](s1))
+        unit(())
+      })
+      g_list_foreach(s.asInstanceOf[Rep[LPointer[LGList]]], func(sfe.typeA).asInstanceOf[Rep[GFunc[Any]]], CLang.NULL[Any])
+  }
 
   /* TreeSet Operations */
   rewrite += remove { case OrderingNew(o) => () }
