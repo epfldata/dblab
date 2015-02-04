@@ -14,6 +14,9 @@ import pardis.compiler._
 class Settings(val args: List[String]) {
   import Settings._
   def validate(targetIsC: Boolean, tpchQuery: Int): Unit = {
+    for (arg <- args.filter(arg => !ALL_FLAGS.contains(arg))) {
+      println(s"${Console.YELLOW}Warning: flag $arg is not defined!${Console.BLACK}")
+    }
     if (!hashMapLowering && targetIsC) {
       throw new Exception(s"C code generator for HashMap and MultiMap is not supported yet! Consider adding $hm2set.")
     }
@@ -22,17 +25,20 @@ class Settings(val args: List[String]) {
     }
     if (!hashMapLowering && (setToArray || setToLinkedList || containerFlattenning))
       throw new Exception("It's impossible to lower Sets without lowering HashMap and MultiMap!")
-    val SUPPORTED_CS = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 19)
+    val SUPPORTED_CS = (1 to 22).toList diff (List(13))
     if ((columnStore || partitioning) && (!SUPPORTED_CS.contains(tpchQuery)))
       throw new Exception(s"$cstore and $part only work for the Queries ${SUPPORTED_CS.mkString(" & ")} for the moment!")
   }
-  def hashMapLowering: Boolean = args.exists(_ == hm2set)
-  def setToArray: Boolean = args.exists(_ == set2arr)
-  def setToLinkedList: Boolean = args.exists(_ == set2ll)
-  def containerFlattenning: Boolean = args.exists(_ == contFlat)
-  def columnStore: Boolean = args.exists(_ == cstore)
-  def partitioning: Boolean = args.exists(_ == part)
-  def hashMapPartitioning: Boolean = args.exists(_ == hmPart)
+  @inline def hasFlag(flag: String): Boolean = args.exists(_ == flag)
+  def hashMapLowering: Boolean = hasFlag(hm2set)
+  def setToArray: Boolean = hasFlag(set2arr)
+  def setToLinkedList: Boolean = hasFlag(set2ll)
+  def containerFlattenning: Boolean = hasFlag(contFlat)
+  def columnStore: Boolean = hasFlag(cstore)
+  def partitioning: Boolean = hasFlag(part)
+  def hashMapPartitioning: Boolean = hasFlag(hmPart)
+  def mallocHoisting: Boolean = hasFlag(mallocHoist)
+  def constArray: Boolean = hasFlag(constArr)
 }
 
 object Settings {
@@ -43,6 +49,9 @@ object Settings {
   val cstore = "+cstore"
   val part = "+part"
   val hmPart = "+hm-part"
+  val mallocHoist = "+malloc-hoist"
+  val constArr = "+const-arr"
+  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr)
 }
 
 class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, val number: Int, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
@@ -90,9 +99,10 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
   pipeline += SingletonHashMapToValueTransformer
   // pipeline += HashMapToArrayTransformer(generateCCode)
   //pipeline += MemoryManagementTransfomer //NOTE FIX TOPOLOGICAL SORT :-(
+  // pipeline += SingletonArrayToValueTransformer
 
   if (settings.hashMapPartitioning) {
-    pipeline += new HashMapPartitioningTransformer(DSL)
+    pipeline += new HashMapPartitioningTransformer(DSL, number)
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE
@@ -125,10 +135,14 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   }
 
-  pipeline += SingletonArrayToValueTransformer
+  pipeline += TreeDumper(false)
 
   // pipeline += PartiallyEvaluate
   // pipeline += DCE
+
+  // if (settings.constArray) {
+  //   pipeline += ConstSizeArrayToLocalVars
+  // }
 
   if (settings.columnStore) {
     pipeline += new ColumnStoreTransformer(DSL, number)
@@ -148,11 +162,15 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
     pipeline += DCE
   }
 
+  if (settings.mallocHoisting) {
+    pipeline += MemoryAllocationHoist
+  }
+
   if (generateCCode) pipeline += CTransformersPipeline
 
   pipeline += DCECLang //NEVER REMOVE!!!!
 
-  pipeline += TreeDumper(false)
+  // pipeline += TreeDumper(false)
 
   val codeGenerator =
     if (generateCCode)
