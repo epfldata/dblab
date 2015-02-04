@@ -163,8 +163,8 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
   }
 
   rewrite += rule {
-    case sf @ StructImmutableField(s, f) if sf.tp == OptimalStringType => field[Int](s, f)
-    case sf @ StructFieldGetter(s, f) if sf.tp == OptimalStringType    => fieldGetter[Int](s, f)
+    case sf @ StructImmutableField(s, f) if sf.tp == OptimalStringType => field[Int](apply(s), f)
+    case sf @ StructFieldGetter(s, f) if sf.tp == OptimalStringType    => fieldGetter[Int](apply(s), f)
   }
 
   object OptimalStringComparison {
@@ -219,8 +219,8 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
       modifiedExpressions.get(str1) match {
         case Some(fieldName) =>
           val compressedStringValues = compressedStringsMaps(fieldName)._2
-          val uncompressedStr1 = compressedStringValues(str1.asInstanceOf[Expression[Int]])
-          val uncompressedStr2 = compressedStringValues(str2.asInstanceOf[Expression[Int]])
+          val uncompressedStr1 = compressedStringValues(apply(str1).asInstanceOf[Expression[Int]])
+          val uncompressedStr2 = compressedStringValues(apply(str2).asInstanceOf[Expression[Int]])
           optimalStringDiff(uncompressedStr1, uncompressedStr2)
         case None =>
           // str1 && str2 are already integers by propagation of compressed string 
@@ -245,7 +245,7 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
 
       val compressedStringMetaData = compressedStringsMaps(fieldName)
       val compressedStringValues = compressedStringMetaData._2
-      val tmpString = compressedStringValues(str.asInstanceOf[Expression[Int]])
+      val tmpString = compressedStringValues(apply(str).asInstanceOf[Expression[Int]])
       if (stringReversalNeeded) tmpString.reverse else tmpString
     }
 
