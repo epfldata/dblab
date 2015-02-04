@@ -39,6 +39,7 @@ class Settings(val args: List[String]) {
   def hashMapPartitioning: Boolean = hasFlag(hmPart)
   def mallocHoisting: Boolean = hasFlag(mallocHoist)
   def constArray: Boolean = hasFlag(constArr)
+  def stringCompression: Boolean = hasFlag(comprStrings)
 }
 
 object Settings {
@@ -51,7 +52,8 @@ object Settings {
   val hmPart = "+hm-part"
   val mallocHoist = "+malloc-hoist"
   val constArr = "+const-arr"
-  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr)
+  val comprStrings = "+comprStrings"
+  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings)
 }
 
 class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, val number: Int, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
@@ -107,6 +109,9 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
     pipeline += PartiallyEvaluate
     pipeline += DCE
   }
+
+  if (settings.stringCompression) pipeline += StringCompressionTransformer
+  pipeline += TreeDumper(false)
 
   if (settings.hashMapLowering) {
     pipeline += MultiMapOptimizations
@@ -177,7 +182,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
       // new LegoCGenerator(false, outputFile, true)
       new LegoCASTGenerator(DSL, false, outputFile, true)
     else
-      // new LegoScalaGenerator(false, outputFile)
+      //new LegoScalaGenerator(false, outputFile)
       new LegoScalaASTGenerator(DSL, false, outputFile)
 
 }
