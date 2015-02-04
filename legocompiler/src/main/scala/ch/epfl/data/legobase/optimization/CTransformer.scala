@@ -459,11 +459,14 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
   rewrite += rule {
     case sfe @ SetForeach(s, f) =>
-      def func[A: TypeRep] = doLambda2((s1: Rep[gpointer], s2: Rep[LPointer[Any]]) => {
-        lambdaApply(f, infix_asInstanceOf[A](s1))
+      val elemType = if (sfe.typeA.isRecord) typeLPointer(sfe.typeA) else sfe.typeA
+      val l = __newVar(s.asInstanceOf[Rep[LPointer[LGList]]])
+      __whileDo(__readVar(l) __!= CLang.NULL[LGList], {
+        val elem = infix_asInstanceOf(g_list_nth_data(readVar(l), unit(0)))(elemType)
+        __assign(l, g_list_next(readVar(l)))
+        inlineFunction(f, elem)
         unit(())
       })
-      g_list_foreach(s.asInstanceOf[Rep[LPointer[LGList]]], func(sfe.typeA).asInstanceOf[Rep[GFunc[Any]]], CLang.NULL[Any])
   }
 
   /* TreeSet Operations */
