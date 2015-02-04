@@ -434,7 +434,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     }
   }
 
-  /* Set Operaions */
+  /* Set Operations */
   rewrite += rule { case SetApplyObject1(s) => s }
   rewrite += rule {
     case nm @ SetApplyObject2() => CLang.NULL[LGList]
@@ -467,6 +467,22 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         inlineFunction(f, elem)
         unit(())
       })
+  }
+  rewrite += rule {
+    case sf @ SetFind(s, f) =>
+      val elemType = if (sf.typeA.isRecord) typeLPointer(sf.typeA) else sf.typeA
+      val result = __newVar(unit(null).asInstanceOf[Rep[Any]])(elemType.asInstanceOf[TypeRep[Any]])
+      val l = __newVar(s.asInstanceOf[Rep[LPointer[LGList]]])
+      __whileDo(__readVar(l) __!= CLang.NULL[LGList], {
+        val elem = infix_asInstanceOf(g_list_nth_data(readVar(l), unit(0)))(elemType)
+        __assign(l, g_list_next(readVar(l)))
+        val found = inlineFunction(f, elem)
+        __ifThenElse(found, {
+          __assign(result, elem)
+          break()
+        }, unit(()))
+      })
+      optionApplyObject(readVar(result)(elemType.asInstanceOf[TypeRep[Any]]))
   }
 
   /* TreeSet Operations */
