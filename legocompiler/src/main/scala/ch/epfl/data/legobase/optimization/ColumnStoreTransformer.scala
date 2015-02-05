@@ -67,6 +67,12 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
     def columnStoreOf = s"$CSTORE_OF_PREFIX$className"
   }
 
+  // case class StructArrayUpdate[T](arr: Rep[Array[T]], index: Rep[Int], struct: Option[Struct[T]])
+
+  // val structArrayUpdates = scala.collection.mutable.Map[Rep[Any], StructArrayUpdate[Any]]()
+
+  // def structHasArrayUpdate[T](sym: Rep[T]): Boolean = structArrayUpdates.contains(sym.asInstanceOf[Rep[Any]])
+
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
     if (tp.isArray) {
@@ -80,8 +86,28 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
     } else super.transformType[T]
   })
 
+  // analysis += rule {
+  //   case au @ ArrayUpdate(arr, idx, value) if shouldBeColumnarized(arr.tp.typeArguments(0)) =>
+  //     val structNode = value match {
+  //       case Def(struct: Struct[Any]) => Some(struct)
+  //       case _                        => None
+  //     }
+  //     structArrayUpdates += value -> StructArrayUpdate(arr, idx, structNode)
+  //     ()
+  // }
+
+  // rewrite += statement {
+  //   case sym -> (ps @ PardisStruct(_, _, _)) if shouldBeColumnarized(ps.tp) && structHasArrayUpdate(sym) =>
+  //     val StructArrayUpdate(arr, idx, _) = structArrayUpdates(sym)
+  //     val tpe = sym.tp.asInstanceOf[RecordType[Any]]
+  //     val newElems = List(PardisStructArg(COLUMN_STORE_POINTER, false, apply(arr)), PardisStructArg(INDEX, false, idx))
+  //     val rTpe = elemColumnStoreType(tpe.tag)
+  //     struct[Any](newElems: _*)(rTpe)
+  // }
+
   rewrite += remove {
-    case ps @ PardisStruct(_, _, _) if shouldBeColumnarized(ps.tp) => ()
+    case (ps @ PardisStruct(_, _, _)) if shouldBeColumnarized(ps.tp) =>
+      ()
   }
 
   rewrite += rule {
@@ -99,15 +125,39 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
   rewrite += rule {
     case au @ ArrayUpdate(arr, idx, value) if shouldBeColumnarized(arr.tp.typeArguments(0)) =>
       val elemType = arr.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+      // System.out.println(s"${scala.Console.RED}$value$structArrayUpdates${scala.Console.BLACK}")
       val structDef = getStructDef(elemType).get
       for (el <- structDef.fields) {
         class ColumnType
         implicit val columnType = el.tpe.asInstanceOf[TypeRep[ColumnType]]
         val column = field[Array[ColumnType]](apply(arr), el.name.arrayOf)
-        val v = apply(value) match {
-          case Def(struct: Struct[_]) if struct.elems.exists(e => e.name == el.name) =>
-            struct.elems.find(e => e.name == el.name).get.init.asInstanceOf[Rep[ColumnType]]
-          case Def(struct: Struct[_]) if struct.tag.typeName.startsWith(ROW_OF_PREFIX) =>
+        // val v = apply(value) match {
+
+        //   // case Def(struct: Struct[_]) if struct.elems.exists(e => e.name == el.name) =>
+        //   //   struct.elems.find(e => e.name == el.name).get.init.asInstanceOf[Rep[ColumnType]]
+        //   case _ if structHasArrayUpdate(value) && structArrayUpdates(value).struct.nonEmpty =>
+        //     val StructArrayUpdate(_, _, struct) = structArrayUpdates(value)
+        //     struct.get.elems.find(e => e.name == el.name).get.init.asInstanceOf[Rep[ColumnType]]
+        //   case sym @ Def(struct) if sym.tp.name.startsWith(ROW_OF_PREFIX) =>
+        //     val newTag = StructTags.ClassTag[Any](sym.tp.name.substring(ROW_OF_PREFIX.length).columnStoreOf)
+        //     class ColumnStorePointerType
+        //     implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
+        //     val columnStorePointer = field[ColumnStorePointerType](apply(value), COLUMN_STORE_POINTER)
+        //     val column = field[Array[ColumnType]](columnStorePointer, el.name.arrayOf)
+        //     val index = if (structArrayUpdates.contains(value.asInstanceOf[Rep[Any]])) {
+        //       idx
+        //     } else {
+        //       field[Int](apply(value), INDEX)
+        //     }
+        //     column(index)
+        //   case s @ Def(node) =>
+        //     throw new Exception(s"Cannot handle the node $node for column store")
+        // }
+        val Def(s) = apply(value)
+        val struct = s.asInstanceOf[PardisStruct[Any]]
+        val v = struct.elems.find(e => e.name == el.name) match {
+          case Some(e) => e.init.asInstanceOf[Rep[ColumnType]]
+          case None if struct.tag.typeName.startsWith(ROW_OF_PREFIX) =>
             val newTag = StructTags.ClassTag[Any](structDef.tag.typeName.substring(ROW_OF_PREFIX.length).columnStoreOf)
             class ColumnStorePointerType
             implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
@@ -118,19 +168,6 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
           case s @ Def(node) =>
             throw new Exception(s"Cannot handle the node $node for column store")
         }
-        // val struct = s.asInstanceOf[PardisStruct[Any]]
-        // val v = struct.elems.find(e => e.name == el.name) match {
-        //   case Some(e) => e.init.asInstanceOf[Rep[ColumnType]]
-        //   case None if struct.tag.typeName.startsWith(ROW_OF_PREFIX) =>
-        //     val newTag = StructTags.ClassTag[Any](structDef.tag.typeName.substring(ROW_OF_PREFIX.length).columnStoreOf)
-        //     class ColumnStorePointerType
-        //     implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
-        //     val columnStorePointer = field[ColumnStorePointerType](apply(value), COLUMN_STORE_POINTER)
-        //     val column = field[Array[ColumnType]](columnStorePointer, el.name.arrayOf)
-        //     val idx = field[Int](apply(value), INDEX)
-        //     column(idx)
-        //   // throw new Exception(s"could not find any element for $s with name `${el.name}` with node")
-        // }
 
         // val v = apply(value) match {
         //   case Def(s: Struct[_]) => s.elems.find(e => e.name == el.name) match {
@@ -196,7 +233,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
 
       val columnStorePointer = field[ColumnStorePointerType](apply(s), COLUMN_STORE_POINTER)
       val column = field[Array[ColumnType]](columnStorePointer, f.arrayOf)
-      val idx = field[Int](s, INDEX)
+      val idx = field[Int](apply(s), INDEX)
       column(idx) = value
   }
 }
