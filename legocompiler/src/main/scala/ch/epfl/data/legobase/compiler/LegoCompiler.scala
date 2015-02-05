@@ -15,7 +15,7 @@ class Settings(val args: List[String]) {
   import Settings._
   def validate(targetIsC: Boolean, tpchQuery: Int): Unit = {
     for (arg <- args.filter(arg => !ALL_FLAGS.contains(arg))) {
-      println(s"${Console.YELLOW}Warning: flag $arg is not defined!${Console.BLACK}")
+      System.out.println(s"${Console.YELLOW}Warning${Console.BLACK}: flag $arg is not defined!")
     }
     if (!hashMapLowering && targetIsC) {
       throw new Exception(s"C code generator for HashMap and MultiMap is not supported yet! Consider adding $hm2set.")
@@ -71,11 +71,17 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
     if (reportCompilationTime) {
       val block = utils.Utilities.time(DSL.reifyBlock(program), "Reification")
       val optimizedBlock = utils.Utilities.time(optimize(block), "Optimization")
-      val irProgram = IRToProgram(DSL).createProgram(optimizedBlock)
+      val irProgram = irToPorgram.createProgram(optimizedBlock)
       utils.Utilities.time(codeGenerator.generate(irProgram, outputFile), "Code Generation")
     } else {
       super.compile(program, outputFile)
     }
+  }
+
+  override def irToPorgram = if (generateCCode) {
+    IRToCProgram(DSL)
+  } else {
+    IRToProgram(DSL)
   }
 
   def compile[T: PardisType](program: => Expression[T]): Unit = compile[T](program, outputFile)
@@ -111,7 +117,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
   }
 
   if (settings.stringCompression) pipeline += StringCompressionTransformer
-  pipeline += TreeDumper(false)
+  // pipeline += TreeDumper(false)
 
   if (settings.hashMapLowering) {
     pipeline += MultiMapOptimizations
@@ -140,7 +146,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   }
 
-  pipeline += TreeDumper(false)
+  // pipeline += TreeDumper(false)
 
   // pipeline += PartiallyEvaluate
   // pipeline += DCE
@@ -179,8 +185,8 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   val codeGenerator =
     if (generateCCode)
-      // new LegoCGenerator(false, outputFile, true)
-      new LegoCASTGenerator(DSL, false, outputFile, true)
+      new LegoCGenerator(false, outputFile, true)
+    // new LegoCASTGenerator(DSL, false, outputFile, true)
     else
       //new LegoScalaGenerator(false, outputFile)
       new LegoScalaASTGenerator(DSL, false, outputFile)
