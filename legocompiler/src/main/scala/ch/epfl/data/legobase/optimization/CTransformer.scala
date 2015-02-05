@@ -175,7 +175,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         case List(t) => typePointer(transformType(t))
       }
       case TreeSetType(args) => typePointer(typeGTree(transformType(args)))
-      case SetType(args)     => typePointer(typeLGList)
+      case SetType(args)     => typePointer(typeLPointer(typeLGList))
       case OptionType(args)  => typePointer(transformType(args))
       case _                 => super.transformType[T]
     }
@@ -349,9 +349,9 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     val tp = typeRep[T]
     tp match {
       case ArrayBufferType(t)  => typePointer(typeGArray(transformType(t)))
-      case SeqType(t)          => typePointer(typeLGList)
+      case SeqType(t)          => typePointer(typeLPointer(typeLGList))
       case TreeSetType(t)      => typePointer(typeGTree(transformType(t)))
-      case SetType(t)          => typePointer(typeLGList)
+      case SetType(t)          => typePointer(typeLPointer(typeLGList))
       case OptionType(t)       => typePointer(transformType(t))
       case HashMapType(t1, t2) => typePointer(typeGHashTable(transformType(t1), transformType(t2)))
       case CArrayType(t1)      => tp
@@ -436,30 +436,37 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   /* Set Operations */
   rewrite += rule { case SetApplyObject1(s) => s }
   rewrite += rule {
-    case nm @ SetApplyObject2() => CLang.NULL[LGList]
+    case nm @ SetApplyObject2() =>
+      val s = CStdLib.malloc[LPointer[LGList]](1)
+      CLang.pointer_assign(s, CLang.NULL[LGList])
+      s
   }
   rewrite += rule {
-    case SetHead(s) =>
-      val x = g_list_first(s.asInstanceOf[Rep[LPointer[LGList]]])
-      CLang.->[LGList, gpointer](x, unit("data"))
+    case sh @ SetHead(s) =>
+      val elemType = if (sh.typeA.isRecord) typeLPointer(sh.typeA) else sh.typeA
+      val glist = CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]])
+      infix_asInstanceOf(g_list_nth_data(glist, unit(0)))(elemType)
   }
   rewrite += rule {
-    case SetRemove(s @ Def(PardisReadVar(x)), e) =>
-      val newHead = g_list_remove(s.asInstanceOf[Rep[LPointer[LGList]]], apply(e).asInstanceOf[Rep[LPointer[Any]]])
-      PardisAssign[Any](x, newHead)(transformType(s.tp))
-    case SetRemove(s, e) => throw new Exception("Implementation Limitation: Sets should always" +
-      " be Vars when using Scala collections to GLib transformer!")
+    case SetRemove(s, e) =>
+      val glist = CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]])
+      val newHead = g_list_remove(glist, apply(e).asInstanceOf[Rep[LPointer[Any]]])
+      CLang.pointer_assign(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]], newHead)
   }
-  rewrite += rule { case SetToSeq(set) => set }
   rewrite += rule {
-    case Set$plus$eq(s @ Def(PardisReadVar(x)), e) =>
-      val newHead = g_list_prepend(s.asInstanceOf[Rep[LPointer[LGList]]], apply(e).asInstanceOf[Rep[LPointer[Any]]])
-      PardisAssign[Any](x, newHead)(transformType(s.tp))
+    case SetToSeq(set) =>
+      set
+  }
+  rewrite += rule {
+    case Set$plus$eq(s, e) =>
+      val glist = CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]])
+      val newHead = g_list_prepend(glist, apply(e).asInstanceOf[Rep[LPointer[Any]]])
+      CLang.pointer_assign(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]], newHead)
   }
   rewrite += rule {
     case sfe @ SetForeach(s, f) =>
       val elemType = if (sfe.typeA.isRecord) typeLPointer(sfe.typeA) else sfe.typeA
-      val l = __newVar(s.asInstanceOf[Rep[LPointer[LGList]]])
+      val l = __newVar(CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]]))
       __whileDo(__readVar(l) __!= CLang.NULL[LGList], {
         val elem = infix_asInstanceOf(g_list_nth_data(readVar(l), unit(0)))(elemType)
         __assign(l, g_list_next(readVar(l)))
@@ -471,7 +478,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case sf @ SetFind(s, f) =>
       val elemType = if (sf.typeA.isRecord) typeLPointer(sf.typeA) else sf.typeA
       val result = __newVar(unit(null).asInstanceOf[Rep[Any]])(elemType.asInstanceOf[TypeRep[Any]])
-      val l = __newVar(s.asInstanceOf[Rep[LPointer[LGList]]])
+      val l = __newVar(CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]]))
       __whileDo(__readVar(l) __!= CLang.NULL[LGList], {
         val elem = infix_asInstanceOf(g_list_nth_data(readVar(l), unit(0)))(elemType)
         __assign(l, g_list_next(readVar(l)))
