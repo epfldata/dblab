@@ -44,12 +44,21 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
         System.out.println("StringCompressionTransformer: Creating map for field " + hs)
         compressedStringsMaps.getOrElseUpdate(hs, {
           (__newVar[Int](unit(0)), __newArrayBuffer[OptimalString](), {
-            if (twoPhaseStringCompressionNeeded) __newArrayBuffer[OptimalString] else unit(null)
+            if (twoPhaseStringCompressionNeeded) __newArrayBuffer[OptimalString]() else unit(null)
           })
         })
       })
       // Now generate rest of program
       toAtom(transformProgram(node))
+    }
+  }
+
+  def array_foreach[T: TypeRep](arr: Rep[Array[T]], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
+    Range(unit(0), arr.length).foreach {
+      __lambda { i =>
+        val e = arr(i)
+        f(e)
+      }
     }
   }
 
@@ -291,7 +300,7 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
             val arr = soa._1
             val fieldNames = soa._2
             val idx = __newVar[Int](0)
-            arr.foreach((ae: Rep[Any]) => {
+            array_foreach(arr, ((ae: Rep[Any]) => {
               fieldNames.foreach(fn => {
                 val compressedStringMetaData = compressedStringsMaps(fn)
                 val uncompressedString = compressedStringMetaData._3.apply(idx)
@@ -299,7 +308,7 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
                 fieldSetter(ae, fn, compressedString)
               })
               __assign(idx, readVar(idx) + 1)
-            })
+            }))(arr.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
           })
           // Print generic block of query execution
           GenericEngineRunQueryObject(transformBlock(b))

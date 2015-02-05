@@ -26,7 +26,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
     case 9  => List("SUPPLIERRecord")
     case 10 => List("CUSTOMERRecord")
     case 11 => List("SUPPLIERRecord")
-    case 12 => List("LINEITEMRecord")
+    case 12 => List("LINEITEMRecord", "ORDERSRecord")
     case 14 => List("LINEITEMRecord")
     case 15 => List("LINEITEMRecord")
     case 16 => List("PARTSUPPRecord")
@@ -99,9 +99,15 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
         implicit val columnType = el.tpe.asInstanceOf[TypeRep[ColumnType]]
         val column = field[Array[ColumnType]](apply(arr), el.name.arrayOf)
         val Def(s) = apply(value)
-        val v = s.asInstanceOf[PardisStruct[Any]].elems.find(e => e.name == el.name) match {
+        val struct = s.asInstanceOf[PardisStruct[Any]]
+        val v = struct.elems.find(e => e.name == el.name) match {
           case Some(e) => e.init.asInstanceOf[Rep[ColumnType]]
-          case None    => throw new Exception(s"could not find any element for $s with name `${el.name}`")
+          case None if struct.tag.typeName.startsWith("RowOf") =>
+            val columnStorePointer = field[Any](apply(value), COLUMN_STORE_POINTER)
+            val column = field[Array[ColumnType]](columnStorePointer, el.name.arrayOf)
+            val idx = field[Int](apply(value), INDEX)
+            column(idx)
+          // throw new Exception(s"could not find any element for $s with name `${el.name}` with node")
         }
 
         // val v = apply(value) match {
