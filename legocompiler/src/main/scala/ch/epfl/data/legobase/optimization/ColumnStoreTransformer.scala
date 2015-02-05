@@ -26,7 +26,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
     case 9  => List("SUPPLIERRecord")
     case 10 => List("CUSTOMERRecord")
     case 11 => List("SUPPLIERRecord")
-    case 12 => List("LINEITEMRecord", "ORDERSRecord")
+    case 12 => List("LINEITEMRecord", "ORDERSRecord", "Set_AGGRecord_OptimalString_")
     case 14 => List("LINEITEMRecord")
     case 15 => List("LINEITEMRecord")
     case 16 => List("PARTSUPPRecord")
@@ -45,20 +45,26 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
   }
 
   def tableColumnStoreTag(oldTag: StructTags.StructTag[_]) =
-    StructTags.ClassTag[Any]("ColumnStoreOf" + oldTag.typeName)
+    StructTags.ClassTag[Any](oldTag.typeName.columnStoreOf)
 
   def tableColumnStoreType(newTag: StructTags.StructTag[_]) =
     new RecordType(newTag, None).asInstanceOf[TypeRep[Any]]
 
   def elemColumnStoreType(oldTag: StructTags.StructTag[_]) = {
-    val newTag = StructTags.ClassTag(s"RowOf${oldTag.typeName}")
+    val newTag = StructTags.ClassTag(oldTag.typeName.rowOf)
     new RecordType(newTag, None).asInstanceOf[TypeRep[Any]]
   }
-
+  val ROW_OF_PREFIX = "RowOf"
+  val CSTORE_OF_PREFIX = "ColumnStoreOf"
   val COLUMN_STORE_POINTER = "columnStorePointer"
   val INDEX = "index"
   implicit class FieldNameOps(fieldName: String) {
     def arrayOf: String = s"arrayOf$fieldName"
+  }
+
+  implicit class ClassNameOps(className: String) {
+    def rowOf = s"$ROW_OF_PREFIX$className"
+    def columnStoreOf = s"$CSTORE_OF_PREFIX$className"
   }
 
   override def transformType[T: PardisType]: PardisType[Any] = ({
@@ -98,17 +104,33 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
         class ColumnType
         implicit val columnType = el.tpe.asInstanceOf[TypeRep[ColumnType]]
         val column = field[Array[ColumnType]](apply(arr), el.name.arrayOf)
-        val Def(s) = apply(value)
-        val struct = s.asInstanceOf[PardisStruct[Any]]
-        val v = struct.elems.find(e => e.name == el.name) match {
-          case Some(e) => e.init.asInstanceOf[Rep[ColumnType]]
-          case None if struct.tag.typeName.startsWith("RowOf") =>
-            val columnStorePointer = field[Any](apply(value), COLUMN_STORE_POINTER)
+        val v = apply(value) match {
+          case Def(struct: Struct[_]) if struct.elems.exists(e => e.name == el.name) =>
+            struct.elems.find(e => e.name == el.name).get.init.asInstanceOf[Rep[ColumnType]]
+          case Def(struct: Struct[_]) if struct.tag.typeName.startsWith(ROW_OF_PREFIX) =>
+            val newTag = StructTags.ClassTag[Any](structDef.tag.typeName.substring(ROW_OF_PREFIX.length).columnStoreOf)
+            class ColumnStorePointerType
+            implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
+            val columnStorePointer = field[ColumnStorePointerType](apply(value), COLUMN_STORE_POINTER)
             val column = field[Array[ColumnType]](columnStorePointer, el.name.arrayOf)
             val idx = field[Int](apply(value), INDEX)
             column(idx)
-          // throw new Exception(s"could not find any element for $s with name `${el.name}` with node")
+          case s @ Def(node) =>
+            throw new Exception(s"Cannot handle the node $node for column store")
         }
+        // val struct = s.asInstanceOf[PardisStruct[Any]]
+        // val v = struct.elems.find(e => e.name == el.name) match {
+        //   case Some(e) => e.init.asInstanceOf[Rep[ColumnType]]
+        //   case None if struct.tag.typeName.startsWith(ROW_OF_PREFIX) =>
+        //     val newTag = StructTags.ClassTag[Any](structDef.tag.typeName.substring(ROW_OF_PREFIX.length).columnStoreOf)
+        //     class ColumnStorePointerType
+        //     implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
+        //     val columnStorePointer = field[ColumnStorePointerType](apply(value), COLUMN_STORE_POINTER)
+        //     val column = field[Array[ColumnType]](columnStorePointer, el.name.arrayOf)
+        //     val idx = field[Int](apply(value), INDEX)
+        //     column(idx)
+        //   // throw new Exception(s"could not find any element for $s with name `${el.name}` with node")
+        // }
 
         // val v = apply(value) match {
         //   case Def(s: Struct[_]) => s.elems.find(e => e.name == el.name) match {
@@ -128,7 +150,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
   rewrite += statement {
     /* Nodes returning struct nodes -- convert them to a reference to column store */
     case sym -> (aa @ ArrayApply(arr, idx)) if shouldBeColumnarized(sym.tp) =>
-      val tpe = sym.tp.asInstanceOf[PardisType[Any]].asInstanceOf[RecordType[Any]]
+      val tpe = sym.tp.asInstanceOf[RecordType[Any]]
       val newElems = List(PardisStructArg(COLUMN_STORE_POINTER, false, apply(arr)), PardisStructArg(INDEX, false, idx))
       val rTpe = elemColumnStoreType(tpe.tag)
       struct[Any](newElems: _*)(rTpe)
@@ -136,6 +158,20 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
 
   rewrite += rule {
     case psif @ PardisStructImmutableField(s, f) if shouldBeColumnarized(s.tp) =>
+      val structDef = getStructDef(s.tp).get
+      class ColumnType
+      implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]
+      val newTag = tableColumnStoreTag(structDef.tag)
+      class ColumnStorePointerType
+      implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
+      val columnStorePointer = field[ColumnStorePointerType](apply(s), COLUMN_STORE_POINTER)
+      val column = field[Array[ColumnType]](columnStorePointer, f.arrayOf)
+      val idx = field[Int](apply(s), INDEX)
+      column(idx)
+  }
+
+  rewrite += rule {
+    case psif @ PardisStructFieldGetter(s, f) if shouldBeColumnarized(s.tp) =>
       val structDef = getStructDef(s.tp).get
       class ColumnType
       implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]
