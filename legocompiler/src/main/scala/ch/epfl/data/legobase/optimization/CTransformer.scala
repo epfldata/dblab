@@ -189,7 +189,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
     case a @ ArrayNew(x) =>
       if (a.tp.typeArguments(0).isArray) {
         // Get type of elements stored in array
-        val elemType = typeCArray(transformType(a.tp.typeArguments(0).typeArguments(0)))
+        val elemType = typeCArray(a.tp.typeArguments(0).typeArguments(0))
         // Allocate original array
         val array = malloc(x)(elemType)
         // Create wrapper with length
@@ -203,7 +203,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         m.asInstanceOf[Expression[Any]]
       } else {
         // Get type of elements stored in array
-        val elemType = transformType(a.tp.typeArguments(0))
+        val elemType = if (a.tp.typeArguments(0).isRecord) a.tp.typeArguments(0) else transformType(a.tp.typeArguments(0))
         // Allocate original array
         val array = malloc(x)(elemType)
         // Create wrapper with length
@@ -291,13 +291,12 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         else typeArray(typePointer(elemType))
       }).asInstanceOf[PardisType[Any]]
       val arr = field(s, "array")(newTp)
-      if (elemType.isPrimitive) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], apply(i))(newTp.asInstanceOf[PardisType[Any]])
-      else {
+      if (elemType.isRecord) {
         i match {
           case Constant(0) => Cast(arr)(arr.tp, typePointer(newTp))
           case _           => PTRADDRESS(arr.asInstanceOf[Expression[Pointer[Any]]], apply(i))(typePointer(newTp).asInstanceOf[PardisType[Pointer[Any]]])
         }
-      }
+      } else ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], apply(i))(newTp.asInstanceOf[PardisType[Any]])
     // class T
     // implicit val typeT = a.tp.typeArguments(0).asInstanceOf[PardisType[T]]
     // val newTp = ({
