@@ -97,7 +97,7 @@ class ScalaScannerToCFileTransformer(override val IR: LoweringLegoBase) extends 
   // TODO: Brainstorm about rewrite += tp abstraction for transforming types
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
-    if (tp == typeK2DBScanner) typePointer(typeFile)
+    if (tp == typeK2DBScanner) typePointer(typeFILE)
     else super.transformType[T]
   }).asInstanceOf[PardisType[Any]]
 
@@ -147,10 +147,10 @@ class ScalaScannerToCFileTransformer(override val IR: LoweringLegoBase) extends 
   rewrite += rule { case K2DBScannerHasNext(s) => unit(true) }
   rewrite += rule {
     case LoaderFileLineCountObject(Constant(x: String)) =>
-      val p = popen(unit("wc -l " + x), unit("r"))
+      val p = CStdIO.popen(unit("wc -l " + x), unit("r"))
       val cnt = readVar(__newVar[Int](0))
-      fscanf(p, unit("%d"), &(cnt))
-      pclose(p)
+      CStdIO.fscanf(p, unit("%d"), CLang.&(cnt))
+      CStdIO.pclose(p)
       cnt
   }
 }
@@ -164,7 +164,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
     val tp = typeRep[T]
     tp match {
       case c if c.isPrimitive    => super.transformType[T]
-      case ArrayBufferType(args) => typePointer(typeGArray(transformType(args)))
+      case ArrayBufferType(args) => typePointer(typeGArray)
       // case ArrayType(x) if x == ByteType => typePointer(ByteType)
       case ArrayType(args) => typePointer(typeCArray({
         if (args.isArray) typeCArray(args)
@@ -174,8 +174,8 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         case Nil     => typePointer(tp)
         case List(t) => typePointer(transformType(t))
       }
-      case TreeSetType(args) => typePointer(typeGTree(transformType(args)))
-      case SetType(args)     => typePointer(typeLPointer(typeLGList))
+      case TreeSetType(args) => typePointer(typeGTree)
+      case SetType(args)     => typePointer(typeLPointer(typeGList))
       case OptionType(args)  => typePointer(transformType(args))
       case _                 => super.transformType[T]
     }
@@ -340,20 +340,20 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   import IR._
   import CNodes._
   import CTypes._
-  import LGHashTableHeader._
-  import LGListHeader._
-  import LGTreeHeader._
-  import LGArrayHeader._
+  import GHashTableHeader._
+  import GListHeader._
+  import GTreeHeader._
+  import GArrayHeader._
 
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
     tp match {
-      case ArrayBufferType(t)  => typePointer(typeGArray(transformType(t)))
-      case SeqType(t)          => typePointer(typeLPointer(typeLGList))
-      case TreeSetType(t)      => typePointer(typeGTree(transformType(t)))
-      case SetType(t)          => typePointer(typeLPointer(typeLGList))
+      case ArrayBufferType(t)  => typePointer(typeGArray)
+      case SeqType(t)          => typePointer(typeLPointer(typeGList))
+      case TreeSetType(t)      => typePointer(typeGTree)
+      case SetType(t)          => typePointer(typeLPointer(typeGList))
       case OptionType(t)       => typePointer(transformType(t))
-      case HashMapType(t1, t2) => typePointer(typeGHashTable(transformType(t1), transformType(t2)))
+      case HashMapType(t1, t2) => typePointer(typeGHashTable)
       case CArrayType(t1)      => tp
       case _                   => super.transformType[T]
     }
@@ -370,20 +370,22 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       apply(HashMapNew()(nm.typeA, ArrayBufferType(nm.typeB)))
     case nm @ HashMapNew4(_, _) =>
       apply(HashMapNew()(nm.typeA, nm.typeB))
+  }
+  rewrite += rule {
     case nm @ HashMapNew() =>
       val nA = typePointer(transformType(nm.typeA))
       val nB = typePointer(transformType(nm.typeB))
-      def hashFunc[T: TypeRep] = transformDef(doLambdaDef((s: Rep[T]) => infix_hashCode(s)))
-      def equalsFunc[T: TypeRep] = transformDef(doLambda2Def((s1: Rep[T], s2: Rep[T]) => infix_==(s1, s2)))
+      def hashFunc[T: TypeRep] = transformDef(doLambdaDef((s: Rep[T]) => infix_hashCode(s))).asInstanceOf[Rep[GHashFunc]]
+      def equalsFunc[T: TypeRep] = transformDef(doLambda2Def((s1: Rep[T], s2: Rep[T]) => infix_==(s1, s2))).asInstanceOf[Rep[GEqualFunc]]
       if (nm.typeA.isPrimitive || nm.typeA == StringType || nm.typeA == OptimalStringType)
-        GHashTableNew(hashFunc(nm.typeA), equalsFunc(nm.typeA))(nm.typeA, nB, IntType)
-      else GHashTableNew(hashFunc(nA), equalsFunc(nA))(nA, nB, IntType)
+        g_hash_table_new(hashFunc(nm.typeA), equalsFunc(nm.typeA))
+      else g_hash_table_new(hashFunc(nA), equalsFunc(nA))
   }
   rewrite += rule {
-    case HashMapSize(map) => g_hash_table_size(map.asInstanceOf[Rep[LPointer[LGHashTable]]])
+    case HashMapSize(map) => g_hash_table_size(map.asInstanceOf[Rep[LPointer[GHashTable]]])
   }
   rewrite += rule {
-    case HashMapKeySet(map) => g_hash_table_get_keys(map.asInstanceOf[Rep[LPointer[LGHashTable]]])
+    case HashMapKeySet(map) => g_hash_table_get_keys(map.asInstanceOf[Rep[LPointer[GHashTable]]])
   }
   rewrite += rule {
     case HashMapContains(map, key) =>
@@ -392,11 +394,11 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
   rewrite += rule {
     case ma @ HashMapApply(map, key) =>
-      g_hash_table_lookup(map.asInstanceOf[Rep[LPointer[LGHashTable]]], key.asInstanceOf[Rep[gconstpointer]])
+      g_hash_table_lookup(map.asInstanceOf[Rep[LPointer[GHashTable]]], key.asInstanceOf[Rep[gconstpointer]])
   }
   rewrite += rule {
     case mu @ HashMapUpdate(map, key, value) =>
-      g_hash_table_insert(map.asInstanceOf[Rep[LPointer[LGHashTable]]],
+      g_hash_table_insert(map.asInstanceOf[Rep[LPointer[GHashTable]]],
         key.asInstanceOf[Rep[gconstpointer]],
         value.asInstanceOf[Rep[gpointer]])
   }
@@ -414,7 +416,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   rewrite += rule {
     case mr @ HashMapRemove(map, key) =>
       val x = toAtom(transformDef(HashMapApply(map, key)))(getMapValueType(apply(map)))
-      g_hash_table_remove(map.asInstanceOf[Rep[LPointer[LGHashTable]]], key.asInstanceOf[Rep[gconstpointer]])
+      g_hash_table_remove(map.asInstanceOf[Rep[LPointer[GHashTable]]], key.asInstanceOf[Rep[gconstpointer]])
       x
   }
   rewrite += rule {
@@ -427,7 +429,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       val ktp = getMapKeyType(apply(map))
       val vtp = getMapValueType(apply(map))
       g_hash_table_foreach(
-        map.asInstanceOf[Rep[LPointer[LGHashTable]]],
+        map.asInstanceOf[Rep[LPointer[GHashTable]]],
         func(ktp, vtp).asInstanceOf[Rep[GHFunc]],
         CLang.NULL[Any])
     }
@@ -437,21 +439,21 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   rewrite += rule { case SetApplyObject1(s) => s }
   rewrite += rule {
     case nm @ SetApplyObject2() =>
-      val s = CStdLib.malloc[LPointer[LGList]](1)
-      CLang.pointer_assign(s, CLang.NULL[LGList])
+      val s = CStdLib.malloc[LPointer[GList]](1)
+      CLang.pointer_assign(s, CLang.NULL[GList])
       s
   }
   rewrite += rule {
     case sh @ SetHead(s) =>
       val elemType = if (sh.typeA.isRecord) typeLPointer(sh.typeA) else sh.typeA
-      val glist = CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]])
+      val glist = CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[GList]]]])
       infix_asInstanceOf(g_list_nth_data(glist, unit(0)))(elemType)
   }
   rewrite += rule {
     case SetRemove(s, e) =>
-      val glist = CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]])
+      val glist = CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[GList]]]])
       val newHead = g_list_remove(glist, apply(e).asInstanceOf[Rep[LPointer[Any]]])
-      CLang.pointer_assign(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]], newHead)
+      CLang.pointer_assign(s.asInstanceOf[Rep[LPointer[LPointer[GList]]]], newHead)
   }
   rewrite += rule {
     case SetToSeq(set) =>
@@ -459,15 +461,15 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
   rewrite += rule {
     case Set$plus$eq(s, e) =>
-      val glist = CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]])
+      val glist = CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[GList]]]])
       val newHead = g_list_prepend(glist, apply(e).asInstanceOf[Rep[LPointer[Any]]])
-      CLang.pointer_assign(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]], newHead)
+      CLang.pointer_assign(s.asInstanceOf[Rep[LPointer[LPointer[GList]]]], newHead)
   }
   rewrite += rule {
     case sfe @ SetForeach(s, f) =>
       val elemType = if (sfe.typeA.isRecord) typeLPointer(sfe.typeA) else sfe.typeA
-      val l = __newVar(CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]]))
-      __whileDo(__readVar(l) __!= CLang.NULL[LGList], {
+      val l = __newVar(CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[GList]]]]))
+      __whileDo(__readVar(l) __!= CLang.NULL[GList], {
         val elem = infix_asInstanceOf(g_list_nth_data(readVar(l), unit(0)))(elemType)
         __assign(l, g_list_next(readVar(l)))
         inlineFunction(f, elem)
@@ -478,8 +480,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case sf @ SetFind(s, f) =>
       val elemType = if (sf.typeA.isRecord) typeLPointer(sf.typeA) else sf.typeA
       val result = __newVar(unit(null).asInstanceOf[Rep[Any]])(elemType.asInstanceOf[TypeRep[Any]])
-      val l = __newVar(CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]]))
-      __whileDo(__readVar(l) __!= CLang.NULL[LGList], {
+      val l = __newVar(CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[GList]]]]))
+      __whileDo(__readVar(l) __!= CLang.NULL[GList], {
         val elem = infix_asInstanceOf(g_list_nth_data(readVar(l), unit(0)))(elemType)
         __assign(l, g_list_next(readVar(l)))
         val found = inlineFunction(f, elem)
@@ -504,8 +506,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case sfl @ SetFoldLeft(s, z, f) =>
       val elemType = if (sfl.typeA.isRecord) typeLPointer(sfl.typeA) else sfl.typeA
       val state = __newVar(z)(sfl.typeB)
-      val l = __newVar(CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]]))
-      __whileDo(__readVar(l) __!= CLang.NULL[LGList], {
+      val l = __newVar(CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[GList]]]]))
+      __whileDo(__readVar(l) __!= CLang.NULL[GList], {
         val elem = infix_asInstanceOf(g_list_nth_data(readVar(l), unit(0)))(elemType)
         val newState = inlineFunction(f, __readVar(state)(sfl.typeB), elem)
         __assign(state, newState)(sfl.typeB)
@@ -515,21 +517,21 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
   rewrite += rule {
     case SetSize(s) =>
-      val l = CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]])
+      val l = CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[GList]]]])
       g_list_length(l)
   }
   rewrite += rule {
     case sr @ SetRetain(s, f) =>
       val elemType = if (sr.typeA.isRecord) typeLPointer(sr.typeA) else sr.typeA
-      val l = __newVar(CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]]))
-      val prevPtr = __newVar(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]])
+      val l = __newVar(CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[GList]]]]))
+      val prevPtr = __newVar(s.asInstanceOf[Rep[LPointer[LPointer[GList]]]])
 
-      __whileDo(__readVar(l) __!= CLang.NULL[LGList], {
+      __whileDo(__readVar(l) __!= CLang.NULL[GList], {
         val elem = infix_asInstanceOf(g_list_nth_data(readVar(l), unit(0)))(elemType)
         val keep = inlineFunction(f, elem)
         __ifThenElse(keep, {
-          //__assign(prevPtr, CLang.&(CLang.->[LGList, LPointer[LGList]](__readVar(l), unit("next"))))
-          __assign(prevPtr, CLang.&(field[LPointer[LGList]](__readVar[LPointer[LGList]](l), "next")))
+          //__assign(prevPtr, CLang.&(CLang.->[GList, LPointer[GList]](__readVar(l), unit("next"))))
+          __assign(prevPtr, CLang.&(field[LPointer[GList]](__readVar[LPointer[GList]](l), "next")))
         }, {
           CLang.pointer_assign(readVar(prevPtr), g_list_next(readVar(l)))
         })
@@ -546,14 +548,14 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       val set = s.asInstanceOf[Rep[Set[X]]]
       val fun = f.asInstanceOf[Rep[((X) => Y)]]
 
-      val l = __newVar(CLang.*(set.asInstanceOf[Rep[LPointer[LPointer[LGList]]]]))
+      val l = __newVar(CLang.*(set.asInstanceOf[Rep[LPointer[LPointer[GList]]]]))
       val first = infix_asInstanceOf[X](g_list_nth_data(__readVar(l), unit(0)))
       val result = __newVar(first)
       val min = __newVar(inlineFunction(fun, __readVar(result)))
 
       val cmp = OrderingRep(smb.typeB)
 
-      __whileDo(__readVar(l) __!= CLang.NULL[LGList], {
+      __whileDo(__readVar(l) __!= CLang.NULL[GList], {
         val elem = infix_asInstanceOf[X](g_list_nth_data(__readVar(l), unit(0)))
         __assign(l, g_list_next(readVar(l)))
         val newMin = inlineFunction(fun, elem)
@@ -574,14 +576,14 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       g_tree_new(CLang.&(compare))
   }
   rewrite += rule {
-    case TreeSet$plus$eq(t, s) => g_tree_insert(t.asInstanceOf[Rep[LPointer[LGTree]]], s.asInstanceOf[Rep[gpointer]], s.asInstanceOf[Rep[gpointer]])
+    case TreeSet$plus$eq(t, s) => g_tree_insert(t.asInstanceOf[Rep[LPointer[GTree]]], s.asInstanceOf[Rep[gpointer]], s.asInstanceOf[Rep[gpointer]])
   }
   rewrite += rule {
     case TreeSet$minus$eq(self, t) =>
-      g_tree_remove(self.asInstanceOf[Rep[LPointer[LGTree]]], t.asInstanceOf[Rep[gconstpointer]])
+      g_tree_remove(self.asInstanceOf[Rep[LPointer[GTree]]], t.asInstanceOf[Rep[gconstpointer]])
   }
   rewrite += rule {
-    case TreeSetSize(t) => g_tree_nnodes(t.asInstanceOf[Rep[LPointer[LGTree]]])
+    case TreeSetSize(t) => g_tree_nnodes(t.asInstanceOf[Rep[LPointer[GTree]]])
   }
   rewrite += rule {
     case op @ TreeSetHead(t) =>
@@ -590,9 +592,9 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         unit(0)
       })
       class X
-      implicit val elemType = t.tp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[X]]
+      implicit val elemType = transformType(if (op.typeA.isRecord) typeLPointer(op.typeA) else op.typeA).asInstanceOf[TypeRep[X]]
       val init = CLang.NULL[Any]
-      g_tree_foreach(t.asInstanceOf[Rep[LPointer[LGTree]]], (treeHead(elemType)).asInstanceOf[Rep[LPointer[(gpointer, gpointer, gpointer) => Int]]], CLang.&(init).asInstanceOf[Rep[gpointer]])
+      g_tree_foreach(t.asInstanceOf[Rep[LPointer[GTree]]], (treeHead(elemType)).asInstanceOf[Rep[LPointer[(gpointer, gpointer, gpointer) => Int]]], CLang.&(init).asInstanceOf[Rep[gpointer]])
       init.asInstanceOf[Rep[LPointer[Any]]]
       infix_asInstanceOf[X](init)
   }
@@ -608,19 +610,19 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case aba @ ArrayBufferApply(a, i) =>
       class X
       implicit val tp = (if (aba.tp.isPrimitive) aba.tp else typePointer(aba.tp)).asInstanceOf[TypeRep[X]]
-      g_array_index[X](a.asInstanceOf[Rep[LPointer[LGArray]]], i)
+      g_array_index[X](a.asInstanceOf[Rep[LPointer[GArray]]], i)
   }
   rewrite += rule {
     case ArrayBufferAppend(a, e) =>
-      g_array_append_vals(apply(a).asInstanceOf[Rep[LPointer[LGArray]]], CLang.&(e.asInstanceOf[Rep[gconstpointer]]), 1)
+      g_array_append_vals(apply(a).asInstanceOf[Rep[LPointer[GArray]]], CLang.&(e.asInstanceOf[Rep[gconstpointer]]), 1)
   }
   rewrite += rule {
     case ArrayBufferSize(a) =>
-      CLang.->[LGArray, Int](a.asInstanceOf[Rep[LPointer[LGArray]]], unit("len"))
+      CLang.->[GArray, Int](a.asInstanceOf[Rep[LPointer[GArray]]], unit("len"))
   }
   rewrite += rule {
     case ArrayBufferRemove(a, e) =>
-      g_array_remove_index(a.asInstanceOf[Rep[LPointer[LGArray]]], e)
+      g_array_remove_index(a.asInstanceOf[Rep[LPointer[GArray]]], e)
   }
   rewrite += rule {
     case ArrayBufferMinBy(a, f @ Def(Lambda(fun, input, o))) =>
