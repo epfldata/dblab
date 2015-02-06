@@ -40,6 +40,8 @@ class Settings(val args: List[String]) {
   def mallocHoisting: Boolean = hasFlag(mallocHoist)
   def constArray: Boolean = hasFlag(constArr)
   def stringCompression: Boolean = hasFlag(comprStrings)
+  def noLetBinding: Boolean = hasFlag(noLet)
+  def ifAggressive: Boolean = hasFlag(ifAgg)
 }
 
 object Settings {
@@ -53,7 +55,9 @@ object Settings {
   val mallocHoist = "+malloc-hoist"
   val constArr = "+const-arr"
   val comprStrings = "+comprStrings"
-  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings)
+  val noLet = "+no-let"
+  val ifAgg = "+if-agg"
+  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg)
 }
 
 class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, val number: Int, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
@@ -179,19 +183,24 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
     pipeline += MemoryAllocationHoist
   }
 
-  if (generateCCode) pipeline += CTransformersPipeline
+  if (generateCCode) pipeline += new CTransformersPipeline(settings)
 
   pipeline += DCECLang //NEVER REMOVE!!!!
 
   // pipeline += TreeDumper(false)
 
   val codeGenerator =
-    if (generateCCode)
-      new LegoCGenerator(false, outputFile, true)
-    // new LegoCASTGenerator(DSL, false, outputFile, true)
-    else
-      // new LegoScalaGenerator(false, outputFile)
-      new LegoScalaASTGenerator(DSL, false, outputFile)
+    if (generateCCode) {
+      if (settings.noLetBinding)
+        new LegoCASTGenerator(DSL, false, outputFile, true)
+      else
+        new LegoCGenerator(false, outputFile, true)
+    } else {
+      if (settings.noLetBinding)
+        new LegoScalaASTGenerator(DSL, false, outputFile)
+      else
+        new LegoScalaGenerator(false, outputFile)
+    }
 
 }
 
