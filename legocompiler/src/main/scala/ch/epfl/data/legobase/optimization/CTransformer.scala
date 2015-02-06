@@ -183,7 +183,7 @@ class ScalaScannerToCmmapTransformer(override val IR: LoweringLegoBase) extends 
       val fd: Expression[Int] = open(f, O_RDONLY)
       val st = &(__newVar[StructStat](infix_asInstanceOf(unit(0))(typeStat)))
       stat(f, st)
-      val size: Expression[Int] = field(st, "st_size")(typeInt)
+      val size = field(st, "st_size")(typeSize_T)
       NameAlias[Pointer[Char]](None, "mmap", List(List(Constant(null), size, PROT_READ, MAP_PRIVATE, fd, Constant(0))))
     }
   }
