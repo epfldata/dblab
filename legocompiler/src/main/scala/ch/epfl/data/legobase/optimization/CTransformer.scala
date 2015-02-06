@@ -490,6 +490,80 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       })
       optionApplyObject(readVar(result)(elemType.asInstanceOf[TypeRep[Any]]))
   }
+  rewrite += rule {
+    case se @ SetExists(s, f) =>
+      class X
+      class Y
+      implicit val typeX = se.typeA.asInstanceOf[TypeRep[X]]
+      val set = s.asInstanceOf[Rep[Set[X]]]
+      val fun = f.asInstanceOf[Rep[((X) => Boolean)]]
+      val found = set.find(fun)
+      found.nonEmpty
+  }
+  rewrite += rule {
+    case sfl @ SetFoldLeft(s, z, f) =>
+      val elemType = if (sfl.typeA.isRecord) typeLPointer(sfl.typeA) else sfl.typeA
+      val state = __newVar(z)(sfl.typeB)
+      val l = __newVar(CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]]))
+      __whileDo(__readVar(l) __!= CLang.NULL[LGList], {
+        val elem = infix_asInstanceOf(g_list_nth_data(readVar(l), unit(0)))(elemType)
+        val newState = inlineFunction(f, __readVar(state)(sfl.typeB), elem)
+        __assign(state, newState)(sfl.typeB)
+        __assign(l, g_list_next(readVar(l)))
+      })
+      __readVar(state)(sfl.typeB)
+  }
+  rewrite += rule {
+    case SetSize(s) =>
+      val l = CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]])
+      g_list_length(l)
+  }
+  rewrite += rule {
+    case sr @ SetRetain(s, f) =>
+      val elemType = if (sr.typeA.isRecord) typeLPointer(sr.typeA) else sr.typeA
+      val l = __newVar(CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]]))
+      val prevPtr = __newVar(s.asInstanceOf[Rep[LPointer[LPointer[LGList]]]])
+
+      __whileDo(__readVar(l) __!= CLang.NULL[LGList], {
+        val elem = infix_asInstanceOf(g_list_nth_data(readVar(l), unit(0)))(elemType)
+        val keep = inlineFunction(f, elem)
+        __ifThenElse(keep, {
+          //__assign(prevPtr, CLang.&(CLang.->[LGList, LPointer[LGList]](__readVar(l), unit("next"))))
+          __assign(prevPtr, CLang.&(field[LPointer[LGList]](__readVar[LPointer[LGList]](l), "next")))
+        }, {
+          CLang.pointer_assign(readVar(prevPtr), g_list_next(readVar(l)))
+        })
+        __assign(l, g_list_next(readVar(l)))
+      })
+  }
+
+  rewrite += rule {
+    case smb @ SetMinBy(s, f) =>
+      class X
+      class Y
+      implicit val typeX = (if (smb.typeA.isRecord) typeLPointer(smb.typeA) else smb.typeA).asInstanceOf[TypeRep[X]]
+      implicit val typeY = smb.typeB.asInstanceOf[TypeRep[Y]]
+      val set = s.asInstanceOf[Rep[Set[X]]]
+      val fun = f.asInstanceOf[Rep[((X) => Y)]]
+
+      val l = __newVar(CLang.*(set.asInstanceOf[Rep[LPointer[LPointer[LGList]]]]))
+      val first = infix_asInstanceOf[X](g_list_nth_data(__readVar(l), unit(0)))
+      val result = __newVar(first)
+      val min = __newVar(inlineFunction(fun, __readVar(result)))
+
+      val cmp = OrderingRep(smb.typeB)
+
+      __whileDo(__readVar(l) __!= CLang.NULL[LGList], {
+        val elem = infix_asInstanceOf[X](g_list_nth_data(__readVar(l), unit(0)))
+        __assign(l, g_list_next(readVar(l)))
+        val newMin = inlineFunction(fun, elem)
+        __ifThenElse(cmp.lt(newMin, __readVar[Y](min)), {
+          __assign(min, newMin)
+          __assign(result, elem)
+        }, unit(()))
+      })
+      __readVar(result)
+  }
 
   /* TreeSet Operations */
   rewrite += remove { case OrderingNew(o) => () }
