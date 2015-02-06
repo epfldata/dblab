@@ -15,7 +15,7 @@ trait OperatorOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
   val OperatorType = OperatorIRs.OperatorType
   type OperatorType[A] = OperatorIRs.OperatorType[A]
-  implicit def typeOperator[A: TypeRep] = OperatorType(implicitly[TypeRep[A]])
+  implicit def typeOperator[A: TypeRep]: TypeRep[Operator[A]] = OperatorType(implicitly[TypeRep[A]])
   implicit class OperatorRep[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = operatorOpen[A](self)(typeA)
     def next(): Rep[Unit] = operatorNext[A](self)(typeA)
@@ -73,7 +73,7 @@ object OperatorIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[Operator[A]]
   }
-  implicit def typeOperator[A: TypeRep] = OperatorType(implicitly[TypeRep[A]])
+  implicit def typeOperator[A: TypeRep]: TypeRep[Operator[A]] = OperatorType(implicitly[TypeRep[A]])
   // case classes
   case class OperatorOpen[A](self: Rep[Operator[A]])(implicit val typeA: TypeRep[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
     override def curriedConstructor = (copy[A] _)
@@ -146,7 +146,7 @@ trait ScanOpOps extends Base with OperatorOps { this: ch.epfl.data.legobase.deep
   // Type representation
   val ScanOpType = ScanOpIRs.ScanOpType
   type ScanOpType[A] = ScanOpIRs.ScanOpType[A]
-  implicit def typeScanOp[A: TypeRep] = ScanOpType(implicitly[TypeRep[A]])
+  implicit def typeScanOp[A: TypeRep]: TypeRep[ScanOp[A]] = ScanOpType(implicitly[TypeRep[A]])
   implicit class ScanOpRep[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = scanOpOpen[A](self)(typeA)
     def next(): Rep[Unit] = scanOpNext[A](self)(typeA)
@@ -220,7 +220,7 @@ object ScanOpIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[ScanOp[A]]
   }
-  implicit def typeScanOp[A: TypeRep] = ScanOpType(implicitly[TypeRep[A]])
+  implicit def typeScanOp[A: TypeRep]: TypeRep[ScanOp[A]] = ScanOpType(implicitly[TypeRep[A]])
   // case classes
   case class ScanOpNew[A](table: Rep[Array[A]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[ScanOp[A]](List(typeA), "ScanOp", List(List(table))) {
     override def curriedConstructor = (copy[A] _)
@@ -329,7 +329,7 @@ trait PrintOpOps extends Base with OperatorOps { this: ch.epfl.data.legobase.dee
   // Type representation
   val PrintOpType = PrintOpIRs.PrintOpType
   type PrintOpType[A] = PrintOpIRs.PrintOpType[A]
-  implicit def typePrintOp[A: TypeRep] = PrintOpType(implicitly[TypeRep[A]])
+  implicit def typePrintOp[A: TypeRep]: TypeRep[PrintOp[A]] = PrintOpType(implicitly[TypeRep[A]])
   implicit class PrintOpRep[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = printOpOpen[A](self)(typeA)
     def next(): Rep[Unit] = printOpNext[A](self)(typeA)
@@ -415,7 +415,7 @@ object PrintOpIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[PrintOp[A]]
   }
-  implicit def typePrintOp[A: TypeRep] = PrintOpType(implicitly[TypeRep[A]])
+  implicit def typePrintOp[A: TypeRep]: TypeRep[PrintOp[A]] = PrintOpType(implicitly[TypeRep[A]])
   // case classes
   case class PrintOpNew[A](parent: Rep[Operator[A]], printFunc: Rep[((A) => Unit)], limit: Rep[(() => Boolean)])(implicit val typeA: TypeRep[A]) extends ConstructorDef[PrintOp[A]](List(typeA), "PrintOp", List(List(parent), List(printFunc, limit))) {
     override def curriedConstructor = (copy[A] _).curried
@@ -562,7 +562,7 @@ trait SelectOpOps extends Base with OperatorOps { this: ch.epfl.data.legobase.de
   // Type representation
   val SelectOpType = SelectOpIRs.SelectOpType
   type SelectOpType[A] = SelectOpIRs.SelectOpType[A]
-  implicit def typeSelectOp[A: TypeRep] = SelectOpType(implicitly[TypeRep[A]])
+  implicit def typeSelectOp[A: TypeRep]: TypeRep[SelectOp[A]] = SelectOpType(implicitly[TypeRep[A]])
   implicit class SelectOpRep[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = selectOpOpen[A](self)(typeA)
     def next(): Rep[Unit] = selectOpNext[A](self)(typeA)
@@ -632,7 +632,7 @@ object SelectOpIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[SelectOp[A]]
   }
-  implicit def typeSelectOp[A: TypeRep] = SelectOpType(implicitly[TypeRep[A]])
+  implicit def typeSelectOp[A: TypeRep]: TypeRep[SelectOp[A]] = SelectOpType(implicitly[TypeRep[A]])
   // case classes
   case class SelectOpNew[A](parent: Rep[Operator[A]], selectPred: Rep[((A) => Boolean)])(implicit val typeA: TypeRep[A]) extends ConstructorDef[SelectOp[A]](List(typeA), "SelectOp", List(List(parent), List(selectPred))) {
     override def curriedConstructor = (copy[A] _).curried
@@ -743,7 +743,7 @@ trait AggOpOps extends Base with HashMapOps with AGGRecordOps with OperatorOps {
   // Type representation
   val AggOpType = AggOpIRs.AggOpType
   type AggOpType[A, B] = AggOpIRs.AggOpType[A, B]
-  implicit def typeAggOp[A: TypeRep, B: TypeRep] = AggOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
+  implicit def typeAggOp[A: TypeRep, B: TypeRep]: TypeRep[AggOp[A, B]] = AggOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
   implicit class AggOpRep[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]) {
     def open(): Rep[Unit] = aggOpOpen[A, B](self)(typeA, typeB)
     def next(): Rep[Unit] = aggOpNext[A, B](self)(typeA, typeB)
@@ -831,7 +831,7 @@ object AggOpIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[AggOp[A, B]]
   }
-  implicit def typeAggOp[A: TypeRep, B: TypeRep] = AggOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
+  implicit def typeAggOp[A: TypeRep, B: TypeRep]: TypeRep[AggOp[A, B]] = AggOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
   // case classes
   case class AggOpNew[A, B](parent: Rep[Operator[A]], numAggs: Rep[Int], grp: Rep[((A) => B)], aggFuncsOutput: Rep[Seq[((A, Double) => Double)]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[AggOp[A, B]](List(typeA, typeB), "AggOp", List(List(parent, numAggs), List(grp), List(__varArg(aggFuncsOutput)))) {
     override def curriedConstructor = (copy[A, B] _).curried
@@ -1001,7 +1001,7 @@ trait MapOpOps extends Base with OperatorOps { this: ch.epfl.data.legobase.deep.
   // Type representation
   val MapOpType = MapOpIRs.MapOpType
   type MapOpType[A] = MapOpIRs.MapOpType[A]
-  implicit def typeMapOp[A: TypeRep] = MapOpType(implicitly[TypeRep[A]])
+  implicit def typeMapOp[A: TypeRep]: TypeRep[MapOp[A]] = MapOpType(implicitly[TypeRep[A]])
   implicit class MapOpRep[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]) {
     def reset(): Rep[Unit] = mapOpReset[A](self)(typeA)
     def open(): Rep[Unit] = mapOpOpen[A](self)(typeA)
@@ -1074,7 +1074,7 @@ object MapOpIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[MapOp[A]]
   }
-  implicit def typeMapOp[A: TypeRep] = MapOpType(implicitly[TypeRep[A]])
+  implicit def typeMapOp[A: TypeRep]: TypeRep[MapOp[A]] = MapOpType(implicitly[TypeRep[A]])
   // case classes
   case class MapOpNew[A](parent: Rep[Operator[A]], mapFuncsOutput: Rep[Seq[((A) => Unit)]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[MapOp[A]](List(typeA), "MapOp", List(List(parent), List(__varArg(mapFuncsOutput)))) {
     override def curriedConstructor = (copy[A] _).curried
@@ -1188,7 +1188,7 @@ trait SortOpOps extends Base with TreeSetOps with OperatorOps { this: ch.epfl.da
   // Type representation
   val SortOpType = SortOpIRs.SortOpType
   type SortOpType[A] = SortOpIRs.SortOpType[A]
-  implicit def typeSortOp[A: TypeRep] = SortOpType(implicitly[TypeRep[A]])
+  implicit def typeSortOp[A: TypeRep]: TypeRep[SortOp[A]] = SortOpType(implicitly[TypeRep[A]])
   implicit class SortOpRep[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]) {
     def next(): Rep[Unit] = sortOpNext[A](self)(typeA)
     def reset(): Rep[Unit] = sortOpReset[A](self)(typeA)
@@ -1263,7 +1263,7 @@ object SortOpIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[SortOp[A]]
   }
-  implicit def typeSortOp[A: TypeRep] = SortOpType(implicitly[TypeRep[A]])
+  implicit def typeSortOp[A: TypeRep]: TypeRep[SortOp[A]] = SortOpType(implicitly[TypeRep[A]])
   // case classes
   case class SortOpNew[A](parent: Rep[Operator[A]], orderingFunc: Rep[((A, A) => Int)])(implicit val typeA: TypeRep[A]) extends ConstructorDef[SortOp[A]](List(typeA), "SortOp", List(List(parent), List(orderingFunc))) {
     override def curriedConstructor = (copy[A] _).curried
@@ -1399,7 +1399,7 @@ trait HashJoinOpOps extends Base with MultiMapOps with OperatorOps { this: ch.ep
   // Type representation
   val HashJoinOpType = HashJoinOpIRs.HashJoinOpType
   type HashJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = HashJoinOpIRs.HashJoinOpType[A, B, C]
-  implicit def typeHashJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep] = HashJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
+  implicit def typeHashJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep]: TypeRep[HashJoinOp[A, B, C]] = HashJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class HashJoinOpRep[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) {
     def reset(): Rep[Unit] = hashJoinOpReset[A, B, C](self)(typeA, typeB, typeC)
     def open(): Rep[Unit] = hashJoinOpOpen[A, B, C](self)(typeA, typeB, typeC)
@@ -1508,7 +1508,7 @@ object HashJoinOpIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[HashJoinOp[A, B, C]]
   }
-  implicit def typeHashJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep] = HashJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
+  implicit def typeHashJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep]: TypeRep[HashJoinOp[A, B, C]] = HashJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
   case class HashJoinOpNew1[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends ConstructorDef[HashJoinOp[A, B, C]](List(typeA, typeB, typeC), "HashJoinOp", List(List(leftParent, rightParent, leftAlias, rightAlias), List(joinCond), List(leftHash), List(rightHash))) {
     override def curriedConstructor = (copy[A, B, C] _).curried
@@ -1758,7 +1758,7 @@ trait WindowOpOps extends Base with MultiMapOps with SetOps with OperatorOps { t
   // Type representation
   val WindowOpType = WindowOpIRs.WindowOpType
   type WindowOpType[A, B, C] = WindowOpIRs.WindowOpType[A, B, C]
-  implicit def typeWindowOp[A: TypeRep, B: TypeRep, C: TypeRep] = WindowOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
+  implicit def typeWindowOp[A: TypeRep, B: TypeRep, C: TypeRep]: TypeRep[WindowOp[A, B, C]] = WindowOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class WindowOpRep[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) {
     def open(): Rep[Unit] = windowOpOpen[A, B, C](self)(typeA, typeB, typeC)
     def reset(): Rep[Unit] = windowOpReset[A, B, C](self)(typeA, typeB, typeC)
@@ -1840,7 +1840,7 @@ object WindowOpIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[WindowOp[A, B, C]]
   }
-  implicit def typeWindowOp[A: TypeRep, B: TypeRep, C: TypeRep] = WindowOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
+  implicit def typeWindowOp[A: TypeRep, B: TypeRep, C: TypeRep]: TypeRep[WindowOp[A, B, C]] = WindowOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
   case class WindowOpNew[A, B, C](parent: Rep[Operator[A]], grp: Rep[((A) => B)], wndf: Rep[((Set[A]) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends ConstructorDef[WindowOp[A, B, C]](List(typeA, typeB, typeC), "WindowOp", List(List(parent), List(grp), List(wndf))) {
     override def curriedConstructor = (copy[A, B, C] _).curried
@@ -2003,7 +2003,7 @@ trait LeftHashSemiJoinOpOps extends Base with MultiMapOps with OperatorOps { thi
   // Type representation
   val LeftHashSemiJoinOpType = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOpType
   type LeftHashSemiJoinOpType[A, B, C] = LeftHashSemiJoinOpIRs.LeftHashSemiJoinOpType[A, B, C]
-  implicit def typeLeftHashSemiJoinOp[A: TypeRep, B: TypeRep, C: TypeRep] = LeftHashSemiJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
+  implicit def typeLeftHashSemiJoinOp[A: TypeRep, B: TypeRep, C: TypeRep]: TypeRep[LeftHashSemiJoinOp[A, B, C]] = LeftHashSemiJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class LeftHashSemiJoinOpRep[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) {
     def open(): Rep[Unit] = leftHashSemiJoinOpOpen[A, B, C](self)(typeA, typeB, typeC)
     def reset(): Rep[Unit] = leftHashSemiJoinOpReset[A, B, C](self)(typeA, typeB, typeC)
@@ -2100,7 +2100,7 @@ object LeftHashSemiJoinOpIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[LeftHashSemiJoinOp[A, B, C]]
   }
-  implicit def typeLeftHashSemiJoinOp[A: TypeRep, B: TypeRep, C: TypeRep] = LeftHashSemiJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
+  implicit def typeLeftHashSemiJoinOp[A: TypeRep, B: TypeRep, C: TypeRep]: TypeRep[LeftHashSemiJoinOp[A, B, C]] = LeftHashSemiJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
   case class LeftHashSemiJoinOpNew[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C]) extends ConstructorDef[LeftHashSemiJoinOp[A, B, C]](List(typeA, typeB, typeC), "LeftHashSemiJoinOp", List(List(leftParent, rightParent), List(joinCond), List(leftHash), List(rightHash))) {
     override def curriedConstructor = (copy[A, B, C] _).curried
@@ -2287,7 +2287,7 @@ trait NestedLoopsJoinOpOps extends Base with OperatorOps { this: ch.epfl.data.le
   // Type representation
   val NestedLoopsJoinOpType = NestedLoopsJoinOpIRs.NestedLoopsJoinOpType
   type NestedLoopsJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record] = NestedLoopsJoinOpIRs.NestedLoopsJoinOpType[A, B]
-  implicit def typeNestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep] = NestedLoopsJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
+  implicit def typeNestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep]: TypeRep[NestedLoopsJoinOp[A, B]] = NestedLoopsJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
   implicit class NestedLoopsJoinOpRep[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]) {
     def open(): Rep[Unit] = nestedLoopsJoinOpOpen[A, B](self)(typeA, typeB)
     def reset(): Rep[Unit] = nestedLoopsJoinOpReset[A, B](self)(typeA, typeB)
@@ -2386,7 +2386,7 @@ object NestedLoopsJoinOpIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[NestedLoopsJoinOp[A, B]]
   }
-  implicit def typeNestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep] = NestedLoopsJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
+  implicit def typeNestedLoopsJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep]: TypeRep[NestedLoopsJoinOp[A, B]] = NestedLoopsJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
   // case classes
   case class NestedLoopsJoinOpNew[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], leftAlias: Rep[String], rightAlias: Rep[String], joinCond: Rep[((A, B) => Boolean)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[NestedLoopsJoinOp[A, B]](List(typeA, typeB), "NestedLoopsJoinOp", List(List(leftParent, rightParent, leftAlias, rightAlias), List(joinCond))) {
     override def curriedConstructor = (copy[A, B] _).curried
@@ -2562,7 +2562,7 @@ trait SubquerySingleResultOps extends Base with OperatorOps { this: ch.epfl.data
   // Type representation
   val SubquerySingleResultType = SubquerySingleResultIRs.SubquerySingleResultType
   type SubquerySingleResultType[A] = SubquerySingleResultIRs.SubquerySingleResultType[A]
-  implicit def typeSubquerySingleResult[A: TypeRep] = SubquerySingleResultType(implicitly[TypeRep[A]])
+  implicit def typeSubquerySingleResult[A: TypeRep]: TypeRep[SubquerySingleResult[A]] = SubquerySingleResultType(implicitly[TypeRep[A]])
   implicit class SubquerySingleResultRep[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]) {
     def open(): Rep[Unit] = subquerySingleResultOpen[A](self)(typeA)
     def next(): Rep[Unit] = subquerySingleResultNext[A](self)(typeA)
@@ -2640,7 +2640,7 @@ object SubquerySingleResultIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[SubquerySingleResult[A]]
   }
-  implicit def typeSubquerySingleResult[A: TypeRep] = SubquerySingleResultType(implicitly[TypeRep[A]])
+  implicit def typeSubquerySingleResult[A: TypeRep]: TypeRep[SubquerySingleResult[A]] = SubquerySingleResultType(implicitly[TypeRep[A]])
   // case classes
   case class SubquerySingleResultNew[A](parent: Rep[Operator[A]])(implicit val typeA: TypeRep[A]) extends ConstructorDef[SubquerySingleResult[A]](List(typeA), "SubquerySingleResult", List(List(parent))) {
     override def curriedConstructor = (copy[A] _)
@@ -2758,7 +2758,7 @@ trait HashJoinAntiOps extends Base with MultiMapOps with OperatorOps { this: ch.
   // Type representation
   val HashJoinAntiType = HashJoinAntiIRs.HashJoinAntiType
   type HashJoinAntiType[A, B, C] = HashJoinAntiIRs.HashJoinAntiType[A, B, C]
-  implicit def typeHashJoinAnti[A: TypeRep, B: TypeRep, C: TypeRep] = HashJoinAntiType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
+  implicit def typeHashJoinAnti[A: TypeRep, B: TypeRep, C: TypeRep]: TypeRep[HashJoinAnti[A, B, C]] = HashJoinAntiType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class HashJoinAntiRep[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$1: Manifest[A]) {
     def open(): Rep[Unit] = hashJoinAntiOpen[A, B, C](self)(typeA, typeB, typeC, evidence$1)
     def reset(): Rep[Unit] = hashJoinAntiReset[A, B, C](self)(typeA, typeB, typeC, evidence$1)
@@ -2859,7 +2859,7 @@ object HashJoinAntiIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[HashJoinAnti[A, B, C]]
   }
-  implicit def typeHashJoinAnti[A: TypeRep, B: TypeRep, C: TypeRep] = HashJoinAntiType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
+  implicit def typeHashJoinAnti[A: TypeRep, B: TypeRep, C: TypeRep]: TypeRep[HashJoinAnti[A, B, C]] = HashJoinAntiType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
   case class HashJoinAntiNew[A, B, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$1: Manifest[A]) extends ConstructorDef[HashJoinAnti[A, B, C]](List(typeA, typeB, typeC), "HashJoinAnti", List(List(leftParent, rightParent), List(joinCond), List(leftHash), List(rightHash))) {
     override def curriedConstructor = (copy[A, B, C] _).curried
@@ -3058,7 +3058,7 @@ trait ViewOpOps extends Base with ArrayOps with OperatorOps { this: ch.epfl.data
   // Type representation
   val ViewOpType = ViewOpIRs.ViewOpType
   type ViewOpType[A] = ViewOpIRs.ViewOpType[A]
-  implicit def typeViewOp[A: TypeRep] = ViewOpType(implicitly[TypeRep[A]])
+  implicit def typeViewOp[A: TypeRep]: TypeRep[ViewOp[A]] = ViewOpType(implicitly[TypeRep[A]])
   implicit class ViewOpRep[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A], evidence$2: Manifest[A]) {
     def open(): Rep[Unit] = viewOpOpen[A](self)(typeA, evidence$2)
     def reset(): Rep[Unit] = viewOpReset[A](self)(typeA, evidence$2)
@@ -3149,7 +3149,7 @@ object ViewOpIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[ViewOp[A]]
   }
-  implicit def typeViewOp[A: TypeRep] = ViewOpType(implicitly[TypeRep[A]])
+  implicit def typeViewOp[A: TypeRep]: TypeRep[ViewOp[A]] = ViewOpType(implicitly[TypeRep[A]])
   // case classes
   case class ViewOpNew[A](parent: Rep[Operator[A]])(implicit val typeA: TypeRep[A], val evidence$2: Manifest[A]) extends ConstructorDef[ViewOp[A]](List(typeA), "ViewOp", List(List(parent))) {
     override def curriedConstructor = (copy[A] _)
@@ -3305,7 +3305,7 @@ trait LeftOuterJoinOpOps extends Base with MultiMapOps with OperatorOps { this: 
   // Type representation
   val LeftOuterJoinOpType = LeftOuterJoinOpIRs.LeftOuterJoinOpType
   type LeftOuterJoinOpType[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C] = LeftOuterJoinOpIRs.LeftOuterJoinOpType[A, B, C]
-  implicit def typeLeftOuterJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep] = LeftOuterJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
+  implicit def typeLeftOuterJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep]: TypeRep[LeftOuterJoinOp[A, B, C]] = LeftOuterJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class LeftOuterJoinOpRep[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C], evidence$3: Manifest[B]) {
     def open(): Rep[Unit] = leftOuterJoinOpOpen[A, B, C](self)(typeA, typeB, typeC, evidence$3)
     def next(): Rep[Unit] = leftOuterJoinOpNext[A, B, C](self)(typeA, typeB, typeC, evidence$3)
@@ -3410,7 +3410,7 @@ object LeftOuterJoinOpIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[LeftOuterJoinOp[A, B, C]]
   }
-  implicit def typeLeftOuterJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep] = LeftOuterJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
+  implicit def typeLeftOuterJoinOp[A <: ch.epfl.data.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.pardis.shallow.Record: TypeRep, C: TypeRep]: TypeRep[LeftOuterJoinOp[A, B, C]] = LeftOuterJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
   case class LeftOuterJoinOpNew[A <: ch.epfl.data.pardis.shallow.Record, B <: ch.epfl.data.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val typeC: TypeRep[C], val evidence$3: Manifest[B]) extends ConstructorDef[LeftOuterJoinOp[A, B, C]](List(typeA, typeB, typeC), "LeftOuterJoinOp", List(List(leftParent, rightParent), List(joinCond), List(leftHash), List(rightHash))) {
     override def curriedConstructor = (copy[A, B, C] _).curried

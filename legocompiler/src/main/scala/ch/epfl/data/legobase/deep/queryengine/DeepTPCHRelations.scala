@@ -13,7 +13,7 @@ import pardis.deep.scalalib.io._
 trait LINEITEMRecordOps extends Base with OptimalStringOps {
   // Type representation
   val LINEITEMRecordType = LINEITEMRecordIRs.LINEITEMRecordType
-  implicit val typeLINEITEMRecord = LINEITEMRecordType
+  implicit val typeLINEITEMRecord: TypeRep[LINEITEMRecord] = LINEITEMRecordType
   implicit class LINEITEMRecordRep(self: Rep[LINEITEMRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = lINEITEMRecordGetField(self, key)
     def L_COMMENT: Rep[OptimalString] = lINEITEMRecord_Field_L_COMMENT(self)
@@ -106,7 +106,7 @@ object LINEITEMRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[LINEITEMRecord]
   }
-  implicit val typeLINEITEMRecord = LINEITEMRecordType
+  implicit val typeLINEITEMRecord: TypeRep[LINEITEMRecord] = LINEITEMRecordType
   // case classes
   case class LINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Int], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]) extends ConstructorDef[LINEITEMRecord](List(), "LINEITEMRecord", List(List(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT))) {
     override def curriedConstructor = (copy _).curried
@@ -391,7 +391,7 @@ trait LINEITEMRecordComponent extends LINEITEMRecordOps with LINEITEMRecordImpli
 trait ORDERSRecordOps extends Base with OptimalStringOps {
   // Type representation
   val ORDERSRecordType = ORDERSRecordIRs.ORDERSRecordType
-  implicit val typeORDERSRecord = ORDERSRecordType
+  implicit val typeORDERSRecord: TypeRep[ORDERSRecord] = ORDERSRecordType
   implicit class ORDERSRecordRep(self: Rep[ORDERSRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = oRDERSRecordGetField(self, key)
     def O_COMMENT: Rep[OptimalString] = oRDERSRecord_Field_O_COMMENT(self)
@@ -456,7 +456,7 @@ object ORDERSRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[ORDERSRecord]
   }
-  implicit val typeORDERSRecord = ORDERSRecordType
+  implicit val typeORDERSRecord: TypeRep[ORDERSRecord] = ORDERSRecordType
   // case classes
   case class ORDERSRecordNew(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Char], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]) extends ConstructorDef[ORDERSRecord](List(), "ORDERSRecord", List(List(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT))) {
     override def curriedConstructor = (copy _).curried
@@ -629,7 +629,7 @@ trait ORDERSRecordComponent extends ORDERSRecordOps with ORDERSRecordImplicits {
 trait CUSTOMERRecordOps extends Base with OptimalStringOps {
   // Type representation
   val CUSTOMERRecordType = CUSTOMERRecordIRs.CUSTOMERRecordType
-  implicit val typeCUSTOMERRecord = CUSTOMERRecordType
+  implicit val typeCUSTOMERRecord: TypeRep[CUSTOMERRecord] = CUSTOMERRecordType
   implicit class CUSTOMERRecordRep(self: Rep[CUSTOMERRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = cUSTOMERRecordGetField(self, key)
     def C_COMMENT: Rep[OptimalString] = cUSTOMERRecord_Field_C_COMMENT(self)
@@ -690,7 +690,7 @@ object CUSTOMERRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[CUSTOMERRecord]
   }
-  implicit val typeCUSTOMERRecord = CUSTOMERRecordType
+  implicit val typeCUSTOMERRecord: TypeRep[CUSTOMERRecord] = CUSTOMERRecordType
   // case classes
   case class CUSTOMERRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends ConstructorDef[CUSTOMERRecord](List(), "CUSTOMERRecord", List(List(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT))) {
     override def curriedConstructor = (copy _).curried
@@ -847,7 +847,7 @@ trait CUSTOMERRecordComponent extends CUSTOMERRecordOps with CUSTOMERRecordImpli
 trait SUPPLIERRecordOps extends Base with OptimalStringOps {
   // Type representation
   val SUPPLIERRecordType = SUPPLIERRecordIRs.SUPPLIERRecordType
-  implicit val typeSUPPLIERRecord = SUPPLIERRecordType
+  implicit val typeSUPPLIERRecord: TypeRep[SUPPLIERRecord] = SUPPLIERRecordType
   implicit class SUPPLIERRecordRep(self: Rep[SUPPLIERRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = sUPPLIERRecordGetField(self, key)
     def S_COMMENT: Rep[OptimalString] = sUPPLIERRecord_Field_S_COMMENT(self)
@@ -904,7 +904,7 @@ object SUPPLIERRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[SUPPLIERRecord]
   }
-  implicit val typeSUPPLIERRecord = SUPPLIERRecordType
+  implicit val typeSUPPLIERRecord: TypeRep[SUPPLIERRecord] = SUPPLIERRecordType
   // case classes
   case class SUPPLIERRecordNew(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]) extends ConstructorDef[SUPPLIERRecord](List(), "SUPPLIERRecord", List(List(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT))) {
     override def curriedConstructor = (copy _).curried
@@ -1045,7 +1045,7 @@ trait SUPPLIERRecordComponent extends SUPPLIERRecordOps with SUPPLIERRecordImpli
 trait PARTSUPPRecordOps extends Base with OptimalStringOps {
   // Type representation
   val PARTSUPPRecordType = PARTSUPPRecordIRs.PARTSUPPRecordType
-  implicit val typePARTSUPPRecord = PARTSUPPRecordType
+  implicit val typePARTSUPPRecord: TypeRep[PARTSUPPRecord] = PARTSUPPRecordType
   implicit class PARTSUPPRecordRep(self: Rep[PARTSUPPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = pARTSUPPRecordGetField(self, key)
     def PS_COMMENT: Rep[OptimalString] = pARTSUPPRecord_Field_PS_COMMENT(self)
@@ -1094,7 +1094,7 @@ object PARTSUPPRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[PARTSUPPRecord]
   }
-  implicit val typePARTSUPPRecord = PARTSUPPRecordType
+  implicit val typePARTSUPPRecord: TypeRep[PARTSUPPRecord] = PARTSUPPRecordType
   // case classes
   case class PARTSUPPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]) extends ConstructorDef[PARTSUPPRecord](List(), "PARTSUPPRecord", List(List(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT))) {
     override def curriedConstructor = (copy _).curried
@@ -1203,7 +1203,7 @@ trait PARTSUPPRecordComponent extends PARTSUPPRecordOps with PARTSUPPRecordImpli
 trait REGIONRecordOps extends Base with OptimalStringOps {
   // Type representation
   val REGIONRecordType = REGIONRecordIRs.REGIONRecordType
-  implicit val typeREGIONRecord = REGIONRecordType
+  implicit val typeREGIONRecord: TypeRep[REGIONRecord] = REGIONRecordType
   implicit class REGIONRecordRep(self: Rep[REGIONRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = rEGIONRecordGetField(self, key)
     def R_COMMENT: Rep[OptimalString] = rEGIONRecord_Field_R_COMMENT(self)
@@ -1244,7 +1244,7 @@ object REGIONRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[REGIONRecord]
   }
-  implicit val typeREGIONRecord = REGIONRecordType
+  implicit val typeREGIONRecord: TypeRep[REGIONRecord] = REGIONRecordType
   // case classes
   case class REGIONRecordNew(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]) extends ConstructorDef[REGIONRecord](List(), "REGIONRecord", List(List(R_REGIONKEY, R_NAME, R_COMMENT))) {
     override def curriedConstructor = (copy _).curried
@@ -1321,7 +1321,7 @@ trait REGIONRecordComponent extends REGIONRecordOps with REGIONRecordImplicits {
 trait NATIONRecordOps extends Base with OptimalStringOps {
   // Type representation
   val NATIONRecordType = NATIONRecordIRs.NATIONRecordType
-  implicit val typeNATIONRecord = NATIONRecordType
+  implicit val typeNATIONRecord: TypeRep[NATIONRecord] = NATIONRecordType
   implicit class NATIONRecordRep(self: Rep[NATIONRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = nATIONRecordGetField(self, key)
     def N_COMMENT: Rep[OptimalString] = nATIONRecord_Field_N_COMMENT(self)
@@ -1366,7 +1366,7 @@ object NATIONRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[NATIONRecord]
   }
-  implicit val typeNATIONRecord = NATIONRecordType
+  implicit val typeNATIONRecord: TypeRep[NATIONRecord] = NATIONRecordType
   // case classes
   case class NATIONRecordNew(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]) extends ConstructorDef[NATIONRecord](List(), "NATIONRecord", List(List(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT))) {
     override def curriedConstructor = (copy _).curried
@@ -1459,7 +1459,7 @@ trait NATIONRecordComponent extends NATIONRecordOps with NATIONRecordImplicits {
 trait PARTRecordOps extends Base with OptimalStringOps {
   // Type representation
   val PARTRecordType = PARTRecordIRs.PARTRecordType
-  implicit val typePARTRecord = PARTRecordType
+  implicit val typePARTRecord: TypeRep[PARTRecord] = PARTRecordType
   implicit class PARTRecordRep(self: Rep[PARTRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = pARTRecordGetField(self, key)
     def P_COMMENT: Rep[OptimalString] = pARTRecord_Field_P_COMMENT(self)
@@ -1524,7 +1524,7 @@ object PARTRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[PARTRecord]
   }
-  implicit val typePARTRecord = PARTRecordType
+  implicit val typePARTRecord: TypeRep[PARTRecord] = PARTRecordType
   // case classes
   case class PARTRecordNew(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]) extends ConstructorDef[PARTRecord](List(), "PARTRecord", List(List(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT))) {
     override def curriedConstructor = (copy _).curried

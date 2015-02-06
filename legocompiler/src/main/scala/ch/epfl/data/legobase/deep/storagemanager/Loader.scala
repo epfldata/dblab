@@ -15,7 +15,7 @@ import ch.epfl.data.legobase.deep.queryengine._
 trait LoaderOps extends Base with K2DBScannerOps with ArrayOps with REGIONRecordOps with PARTSUPPRecordOps with PARTRecordOps with NATIONRecordOps with SUPPLIERRecordOps with LINEITEMRecordOps with ORDERSRecordOps with CUSTOMERRecordOps with OptimalStringOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
   val LoaderType = LoaderIRs.LoaderType
-  implicit val typeLoader = LoaderType
+  implicit val typeLoader: TypeRep[Loader] = LoaderType
   implicit class LoaderRep(self: Rep[Loader]) {
 
   }
@@ -91,7 +91,7 @@ object LoaderIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[Loader]
   }
-  implicit val typeLoader = LoaderType
+  implicit val typeLoader: TypeRep[Loader] = LoaderType
   // case classes
   case class LoaderGetFullPathObject(fileName: Rep[String]) extends FunctionDef[String](None, "Loader.getFullPath", List(List(fileName))) {
     override def curriedConstructor = (copy _)

@@ -13,7 +13,7 @@ import pardis.deep.scalalib.io._
 trait GenericEngineOps extends Base with OptimalStringOps {
   // Type representation
   val GenericEngineType = GenericEngineIRs.GenericEngineType
-  implicit val typeGenericEngine = GenericEngineType
+  implicit val typeGenericEngine: TypeRep[GenericEngine] = GenericEngineType
   implicit class GenericEngineRep(self: Rep[GenericEngine]) {
 
   }
@@ -58,7 +58,7 @@ object GenericEngineIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[GenericEngine]
   }
-  implicit val typeGenericEngine = GenericEngineType
+  implicit val typeGenericEngine: TypeRep[GenericEngine] = GenericEngineType
   // case classes
   case class GenericEngineRunQueryObject[T](queryOutput: Block[T])(implicit val typeT: TypeRep[T]) extends FunctionDef[T](None, "GenericEngine.runQuery", List(List(queryOutput))) {
     override def curriedConstructor = (copy[T] _)

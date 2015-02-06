@@ -14,7 +14,7 @@ trait AGGRecordOps extends Base {
   // Type representation
   val AGGRecordType = AGGRecordIRs.AGGRecordType
   type AGGRecordType[B] = AGGRecordIRs.AGGRecordType[B]
-  implicit def typeAGGRecord[B: TypeRep] = AGGRecordType(implicitly[TypeRep[B]])
+  implicit def typeAGGRecord[B: TypeRep]: TypeRep[AGGRecord[B]] = AGGRecordType(implicitly[TypeRep[B]])
   implicit class AGGRecordRep[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = aGGRecordGetField[B](self, key)(typeB)
     def aggs: Rep[Array[Double]] = aGGRecord_Field_Aggs[B](self)(typeB)
@@ -51,7 +51,7 @@ object AGGRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[AGGRecord[B]]
   }
-  implicit def typeAGGRecord[B: TypeRep] = AGGRecordType(implicitly[TypeRep[B]])
+  implicit def typeAGGRecord[B: TypeRep]: TypeRep[AGGRecord[B]] = AGGRecordType(implicitly[TypeRep[B]])
   // case classes
   case class AGGRecordNew[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit val typeB: TypeRep[B]) extends ConstructorDef[AGGRecord[B]](List(typeB), "AGGRecord", List(List(key, aggs))) {
     override def curriedConstructor = (copy[B] _).curried
@@ -113,7 +113,7 @@ trait WindowRecordOps extends Base {
   // Type representation
   val WindowRecordType = WindowRecordIRs.WindowRecordType
   type WindowRecordType[B, C] = WindowRecordIRs.WindowRecordType[B, C]
-  implicit def typeWindowRecord[B: TypeRep, C: TypeRep] = WindowRecordType(implicitly[TypeRep[B]], implicitly[TypeRep[C]])
+  implicit def typeWindowRecord[B: TypeRep, C: TypeRep]: TypeRep[WindowRecord[B, C]] = WindowRecordType(implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   implicit class WindowRecordRep[B, C](self: Rep[WindowRecord[B, C]])(implicit typeB: TypeRep[B], typeC: TypeRep[C]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = windowRecordGetField[B, C](self, key)(typeB, typeC)
     def wnd: Rep[C] = windowRecord_Field_Wnd[B, C](self)(typeB, typeC)
@@ -151,7 +151,7 @@ object WindowRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[WindowRecord[B, C]]
   }
-  implicit def typeWindowRecord[B: TypeRep, C: TypeRep] = WindowRecordType(implicitly[TypeRep[B]], implicitly[TypeRep[C]])
+  implicit def typeWindowRecord[B: TypeRep, C: TypeRep]: TypeRep[WindowRecord[B, C]] = WindowRecordType(implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
   case class WindowRecordNew[B, C](key: Rep[B], wnd: Rep[C])(implicit val typeB: TypeRep[B], val typeC: TypeRep[C]) extends ConstructorDef[WindowRecord[B, C]](List(typeB, typeC), "WindowRecord", List(List(key, wnd))) {
     override def curriedConstructor = (copy[B, C] _).curried
@@ -212,7 +212,7 @@ trait WindowRecordComponent extends WindowRecordOps with WindowRecordImplicits {
 trait GroupByClassOps extends Base {
   // Type representation
   val GroupByClassType = GroupByClassIRs.GroupByClassType
-  implicit val typeGroupByClass = GroupByClassType
+  implicit val typeGroupByClass: TypeRep[GroupByClass] = GroupByClassType
   implicit class GroupByClassRep(self: Rep[GroupByClass]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = groupByClassGetField(self, key)
     def L_LINESTATUS: Rep[Char] = groupByClass_Field_L_LINESTATUS(self)
@@ -248,7 +248,7 @@ object GroupByClassIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[GroupByClass]
   }
-  implicit val typeGroupByClass = GroupByClassType
+  implicit val typeGroupByClass: TypeRep[GroupByClass] = GroupByClassType
   // case classes
   case class GroupByClassNew(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]) extends ConstructorDef[GroupByClass](List(), "GroupByClass", List(List(L_RETURNFLAG, L_LINESTATUS))) {
     override def curriedConstructor = (copy _).curried
@@ -309,7 +309,7 @@ trait GroupByClassComponent extends GroupByClassOps with GroupByClassImplicits {
 trait Q3GRPRecordOps extends Base {
   // Type representation
   val Q3GRPRecordType = Q3GRPRecordIRs.Q3GRPRecordType
-  implicit val typeQ3GRPRecord = Q3GRPRecordType
+  implicit val typeQ3GRPRecord: TypeRep[Q3GRPRecord] = Q3GRPRecordType
   implicit class Q3GRPRecordRep(self: Rep[Q3GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q3GRPRecordGetField(self, key)
     def O_SHIPPRIORITY: Rep[Int] = q3GRPRecord_Field_O_SHIPPRIORITY(self)
@@ -349,7 +349,7 @@ object Q3GRPRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q3GRPRecord]
   }
-  implicit val typeQ3GRPRecord = Q3GRPRecordType
+  implicit val typeQ3GRPRecord: TypeRep[Q3GRPRecord] = Q3GRPRecordType
   // case classes
   case class Q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]) extends ConstructorDef[Q3GRPRecord](List(), "Q3GRPRecord", List(List(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY))) {
     override def curriedConstructor = (copy _).curried
@@ -426,7 +426,7 @@ trait Q3GRPRecordComponent extends Q3GRPRecordOps with Q3GRPRecordImplicits {}
 trait Q7GRPRecordOps extends Base with OptimalStringOps {
   // Type representation
   val Q7GRPRecordType = Q7GRPRecordIRs.Q7GRPRecordType
-  implicit val typeQ7GRPRecord = Q7GRPRecordType
+  implicit val typeQ7GRPRecord: TypeRep[Q7GRPRecord] = Q7GRPRecordType
   implicit class Q7GRPRecordRep(self: Rep[Q7GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q7GRPRecordGetField(self, key)
     def L_YEAR: Rep[Int] = q7GRPRecord_Field_L_YEAR(self)
@@ -467,7 +467,7 @@ object Q7GRPRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q7GRPRecord]
   }
-  implicit val typeQ7GRPRecord = Q7GRPRecordType
+  implicit val typeQ7GRPRecord: TypeRep[Q7GRPRecord] = Q7GRPRecordType
   // case classes
   case class Q7GRPRecordNew(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]) extends ConstructorDef[Q7GRPRecord](List(), "Q7GRPRecord", List(List(SUPP_NATION, CUST_NATION, L_YEAR))) {
     override def curriedConstructor = (copy _).curried
@@ -544,7 +544,7 @@ trait Q7GRPRecordComponent extends Q7GRPRecordOps with Q7GRPRecordImplicits {}
 trait Q9GRPRecordOps extends Base with OptimalStringOps {
   // Type representation
   val Q9GRPRecordType = Q9GRPRecordIRs.Q9GRPRecordType
-  implicit val typeQ9GRPRecord = Q9GRPRecordType
+  implicit val typeQ9GRPRecord: TypeRep[Q9GRPRecord] = Q9GRPRecordType
   implicit class Q9GRPRecordRep(self: Rep[Q9GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q9GRPRecordGetField(self, key)
     def O_YEAR: Rep[Int] = q9GRPRecord_Field_O_YEAR(self)
@@ -581,7 +581,7 @@ object Q9GRPRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q9GRPRecord]
   }
-  implicit val typeQ9GRPRecord = Q9GRPRecordType
+  implicit val typeQ9GRPRecord: TypeRep[Q9GRPRecord] = Q9GRPRecordType
   // case classes
   case class Q9GRPRecordNew(NATION: Rep[OptimalString], O_YEAR: Rep[Int]) extends ConstructorDef[Q9GRPRecord](List(), "Q9GRPRecord", List(List(NATION, O_YEAR))) {
     override def curriedConstructor = (copy _).curried
@@ -642,7 +642,7 @@ trait Q9GRPRecordComponent extends Q9GRPRecordOps with Q9GRPRecordImplicits {}
 trait Q10GRPRecordOps extends Base with OptimalStringOps {
   // Type representation
   val Q10GRPRecordType = Q10GRPRecordIRs.Q10GRPRecordType
-  implicit val typeQ10GRPRecord = Q10GRPRecordType
+  implicit val typeQ10GRPRecord: TypeRep[Q10GRPRecord] = Q10GRPRecordType
   implicit class Q10GRPRecordRep(self: Rep[Q10GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q10GRPRecordGetField(self, key)
     def C_COMMENT: Rep[OptimalString] = q10GRPRecord_Field_C_COMMENT(self)
@@ -699,7 +699,7 @@ object Q10GRPRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q10GRPRecord]
   }
-  implicit val typeQ10GRPRecord = Q10GRPRecordType
+  implicit val typeQ10GRPRecord: TypeRep[Q10GRPRecord] = Q10GRPRecordType
   // case classes
   case class Q10GRPRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends ConstructorDef[Q10GRPRecord](List(), "Q10GRPRecord", List(List(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT))) {
     override def curriedConstructor = (copy _).curried
@@ -840,7 +840,7 @@ trait Q10GRPRecordComponent extends Q10GRPRecordOps with Q10GRPRecordImplicits {
 trait Q16GRPRecord1Ops extends Base with OptimalStringOps {
   // Type representation
   val Q16GRPRecord1Type = Q16GRPRecord1IRs.Q16GRPRecord1Type
-  implicit val typeQ16GRPRecord1 = Q16GRPRecord1Type
+  implicit val typeQ16GRPRecord1: TypeRep[Q16GRPRecord1] = Q16GRPRecord1Type
   implicit class Q16GRPRecord1Rep(self: Rep[Q16GRPRecord1]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q16GRPRecord1GetField(self, key)
     def PS_SUPPKEY: Rep[Int] = q16GRPRecord1_Field_PS_SUPPKEY(self)
@@ -885,7 +885,7 @@ object Q16GRPRecord1IRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q16GRPRecord1]
   }
-  implicit val typeQ16GRPRecord1 = Q16GRPRecord1Type
+  implicit val typeQ16GRPRecord1: TypeRep[Q16GRPRecord1] = Q16GRPRecord1Type
   // case classes
   case class Q16GRPRecord1New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]) extends ConstructorDef[Q16GRPRecord1](List(), "Q16GRPRecord1", List(List(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY))) {
     override def curriedConstructor = (copy _).curried
@@ -978,7 +978,7 @@ trait Q16GRPRecord1Component extends Q16GRPRecord1Ops with Q16GRPRecord1Implicit
 trait Q16GRPRecord2Ops extends Base with OptimalStringOps {
   // Type representation
   val Q16GRPRecord2Type = Q16GRPRecord2IRs.Q16GRPRecord2Type
-  implicit val typeQ16GRPRecord2 = Q16GRPRecord2Type
+  implicit val typeQ16GRPRecord2: TypeRep[Q16GRPRecord2] = Q16GRPRecord2Type
   implicit class Q16GRPRecord2Rep(self: Rep[Q16GRPRecord2]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q16GRPRecord2GetField(self, key)
     def P_SIZE: Rep[Int] = q16GRPRecord2_Field_P_SIZE(self)
@@ -1019,7 +1019,7 @@ object Q16GRPRecord2IRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q16GRPRecord2]
   }
-  implicit val typeQ16GRPRecord2 = Q16GRPRecord2Type
+  implicit val typeQ16GRPRecord2: TypeRep[Q16GRPRecord2] = Q16GRPRecord2Type
   // case classes
   case class Q16GRPRecord2New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]) extends ConstructorDef[Q16GRPRecord2](List(), "Q16GRPRecord2", List(List(P_BRAND, P_TYPE, P_SIZE))) {
     override def curriedConstructor = (copy _).curried
@@ -1096,7 +1096,7 @@ trait Q16GRPRecord2Component extends Q16GRPRecord2Ops with Q16GRPRecord2Implicit
 trait Q18GRPRecordOps extends Base with OptimalStringOps {
   // Type representation
   val Q18GRPRecordType = Q18GRPRecordIRs.Q18GRPRecordType
-  implicit val typeQ18GRPRecord = Q18GRPRecordType
+  implicit val typeQ18GRPRecord: TypeRep[Q18GRPRecord] = Q18GRPRecordType
   implicit class Q18GRPRecordRep(self: Rep[Q18GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q18GRPRecordGetField(self, key)
     def O_TOTALPRICE: Rep[Double] = q18GRPRecord_Field_O_TOTALPRICE(self)
@@ -1145,7 +1145,7 @@ object Q18GRPRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q18GRPRecord]
   }
-  implicit val typeQ18GRPRecord = Q18GRPRecordType
+  implicit val typeQ18GRPRecord: TypeRep[Q18GRPRecord] = Q18GRPRecordType
   // case classes
   case class Q18GRPRecordNew(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]) extends ConstructorDef[Q18GRPRecord](List(), "Q18GRPRecord", List(List(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE))) {
     override def curriedConstructor = (copy _).curried
@@ -1254,7 +1254,7 @@ trait Q18GRPRecordComponent extends Q18GRPRecordOps with Q18GRPRecordImplicits {
 trait Q20GRPRecordOps extends Base {
   // Type representation
   val Q20GRPRecordType = Q20GRPRecordIRs.Q20GRPRecordType
-  implicit val typeQ20GRPRecord = Q20GRPRecordType
+  implicit val typeQ20GRPRecord: TypeRep[Q20GRPRecord] = Q20GRPRecordType
   implicit class Q20GRPRecordRep(self: Rep[Q20GRPRecord]) {
     def getField(key: Rep[String]): Rep[Option[Any]] = q20GRPRecordGetField(self, key)
     def PS_AVAILQTY: Rep[Int] = q20GRPRecord_Field_PS_AVAILQTY(self)
@@ -1294,7 +1294,7 @@ object Q20GRPRecordIRs extends Base {
     override val isRecord = true
     val typeTag = scala.reflect.runtime.universe.typeTag[Q20GRPRecord]
   }
-  implicit val typeQ20GRPRecord = Q20GRPRecordType
+  implicit val typeQ20GRPRecord: TypeRep[Q20GRPRecord] = Q20GRPRecordType
   // case classes
   case class Q20GRPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]) extends ConstructorDef[Q20GRPRecord](List(), "Q20GRPRecord", List(List(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY))) {
     override def curriedConstructor = (copy _).curried

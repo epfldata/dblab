@@ -20,9 +20,6 @@ class Settings(val args: List[String]) {
     if (!hashMapLowering && targetIsC) {
       throw new Exception(s"C code generator for HashMap and MultiMap is not supported yet! Consider adding $hm2set.")
     }
-    if (!(setToArray || setToLinkedList) && targetIsC) {
-      throw new Exception(s"C code generator for Set is not supported yet! Consider adding $set2arr or $set2ll.")
-    }
     if (!hashMapLowering && (setToArray || setToLinkedList || containerFlattenning))
       throw new Exception("It's impossible to lower Sets without lowering HashMap and MultiMap!")
     val SUPPORTED_CS = (1 to 22).toList diff (List(13))

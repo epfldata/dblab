@@ -13,7 +13,7 @@ import pardis.deep.scalalib.io._
 trait K2DBScannerOps extends Base {
   // Type representation
   val K2DBScannerType = K2DBScannerIRs.K2DBScannerType
-  implicit val typeK2DBScanner = K2DBScannerType
+  implicit val typeK2DBScanner: TypeRep[K2DBScanner] = K2DBScannerType
   implicit class K2DBScannerRep(self: Rep[K2DBScanner]) {
     def next_int(): Rep[Int] = k2DBScannerNext_int(self)
     def next_double(): Rep[Double] = k2DBScannerNext_double(self)
@@ -69,7 +69,7 @@ object K2DBScannerIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[K2DBScanner]
   }
-  implicit val typeK2DBScanner = K2DBScannerType
+  implicit val typeK2DBScanner: TypeRep[K2DBScanner] = K2DBScannerType
   // case classes
   case class K2DBScannerNew(filename: Rep[String]) extends ConstructorDef[K2DBScanner](List(), "K2DBScanner", List(List(filename))) {
     override def curriedConstructor = (copy _)

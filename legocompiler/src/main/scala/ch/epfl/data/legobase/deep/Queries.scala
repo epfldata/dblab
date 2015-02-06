@@ -13,7 +13,7 @@ import pardis.deep.scalalib.io._
 trait QueriesOps extends Base { this: ch.epfl.data.legobase.deep.DeepDSL =>
   // Type representation
   val QueriesType = QueriesIRs.QueriesType
-  implicit val typeQueries = QueriesType
+  implicit val typeQueries: TypeRep[Queries] = QueriesType
   implicit class QueriesRep(self: Rep[Queries]) {
 
   }
@@ -122,7 +122,7 @@ object QueriesIRs extends Base {
 
     val typeTag = scala.reflect.runtime.universe.typeTag[Queries]
   }
-  implicit val typeQueries = QueriesType
+  implicit val typeQueries: TypeRep[Queries] = QueriesType
   // case classes
   case class QueriesQ1Object(numRuns: Rep[Int]) extends FunctionDef[Unit](None, "Queries.Q1", List(List(numRuns))) {
     override def curriedConstructor = (copy _)

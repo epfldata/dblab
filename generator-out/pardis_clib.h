@@ -81,4 +81,13 @@ char* strntod_unchecked(char *s, double* num)
 	return s;
 }
 
+#define pointer_assign(x, y) (*x = y)
+
+#define pointer_add(x, y) (x + y)
+
+#define str_subtract(x, y) (x - y)
+
+typedef GHashTable LGHashTable;
+typedef GList LGList;
+
 #endif
