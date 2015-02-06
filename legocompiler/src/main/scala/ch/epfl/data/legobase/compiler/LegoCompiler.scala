@@ -121,7 +121,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   if (settings.hashMapLowering) {
     pipeline += MultiMapOptimizations
-    pipeline += HashMapToSetTransformation
+    pipeline += new HashMapToSetTransformation(DSL, number)
     // pipeline += PartiallyEvaluate
     pipeline += DCE
 
@@ -144,9 +144,8 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
       pipeline += new OptionToCTransformer(DSL) | new Tuple2ToCTransformer(DSL)
     }
 
+    pipeline += new BlockFlattening(DSL) // should not be needed!
   }
-
-  // pipeline += TreeDumper(false)
 
   // pipeline += PartiallyEvaluate
   // pipeline += DCE
@@ -156,12 +155,15 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
   // }
 
   if (settings.columnStore) {
+
     pipeline += new ColumnStoreTransformer(DSL, number)
+    pipeline += TreeDumper(false)
     // if (settings.hashMapPartitioning) {
     //   pipeline += new ColumnStore2DTransformer(DSL, number)
     // }
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
+
     pipeline += DCE
     if (settings.partitioning) {
       pipeline += new PartitionTransformer(DSL)
@@ -188,7 +190,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
       new LegoCGenerator(false, outputFile, true)
     // new LegoCASTGenerator(DSL, false, outputFile, true)
     else
-      //new LegoScalaGenerator(false, outputFile)
+      // new LegoScalaGenerator(false, outputFile)
       new LegoScalaASTGenerator(DSL, false, outputFile)
 
 }
