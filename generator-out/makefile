@@ -5,7 +5,7 @@ LIBS=`pkg-config --cflags glib-2.0 --libs glib-2.0`
 # For debugging
 CFLAGS=-g 
 # For testing
-#CFLAGS=-w
+# CFLAGS=-w
 FILES=$(wildcard *.c)
 UNAME := $(shell uname)
 

@@ -52,6 +52,7 @@ object CTransformersPipeline extends TransformerHandler {
     pipeline += new OptimalStringToCTransformer(context)
     pipeline += new RangeToCTransformer(context)
     pipeline += new ScalaConstructsToCTranformer(context)
+    pipeline += new BlockFlattening(context)
     pipeline(context)(b)
   }
 }
@@ -382,11 +383,11 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         else typeArray(typePointer(elemType))
       }).asInstanceOf[PardisType[Any]]
       val arr = field(s, "array")(newTp)
-      if (elemType.isPrimitive) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], i)(newTp.asInstanceOf[PardisType[Any]])
+      if (elemType.isPrimitive) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], apply(i))(newTp.asInstanceOf[PardisType[Any]])
       else {
         i match {
           case Constant(0) => Cast(arr)(arr.tp, typePointer(newTp))
-          case _           => PTRADDRESS(arr.asInstanceOf[Expression[Pointer[Any]]], i)(typePointer(newTp).asInstanceOf[PardisType[Pointer[Any]]])
+          case _           => PTRADDRESS(arr.asInstanceOf[Expression[Pointer[Any]]], apply(i))(typePointer(newTp).asInstanceOf[PardisType[Pointer[Any]]])
         }
       }
     // class T
@@ -404,6 +405,18 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       val s = apply(a)
       val arr = field(s, "length")(IntType)
       arr
+  }
+  rewrite += rule {
+    case ArrayForeach(a, f) =>
+      // TODO if we use recursive rule based, the next line will be cleaner
+      Range(unit(0), toAtom(apply(ArrayLength(a)))(IntType)).foreach {
+        __lambda { index =>
+          System.out.println(s"index: $index, f: ${f.correspondingNode}")
+          val elemNode = apply(ArrayApply(a, index))
+          val elem = toAtom(elemNode)(elemNode.tp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[Any]])
+          inlineFunction(f, elem)
+        }
+      }
   }
   rewrite += rule {
     case s @ PardisStruct(tag, elems, methods) =>
@@ -537,7 +550,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       val elemType = t.tp.typeArguments(0).typeArguments(0)
       val init = infix_asInstanceOf(Constant(null))(elemType)
       nameAlias[Unit](None, "g_tree_foreach", List(List(t, treeHead(elemType, elemType), &(init)(elemType.asInstanceOf[PardisType[Any]]))))
-      ReadVal(init)(init.tp)
+      init
   }
 
   /* ArrayBuffer Operations */
@@ -896,5 +909,16 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends Re
   rewrite += rule { case IntToDouble(x) => x }
   rewrite += rule { case DoubleToInt(x) => infix_asInstanceOf[Double](x) }
   rewrite += rule { case BooleanUnary_$bang(b) => NameAlias[Boolean](None, "!", List(List(b))) }
+}
+
+class BlockFlattening(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+  import IR._
+  import CNodes._
+  import CTypes._
+
+  rewrite += statement {
+    case sym -> (blk @ Block(stmts, res)) =>
+      inlineBlock(blk)
+  }
 }
 

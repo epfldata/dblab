@@ -12,7 +12,7 @@ trait GenericEngine
 object GenericEngine {
   def runQuery[T](query: => T): T = {
     // if (profile) {
-    utils.Utilities.time(query, "finish")
+    utils.Utilities.time(query, "Query")
     // } else {
     //   query
     // }

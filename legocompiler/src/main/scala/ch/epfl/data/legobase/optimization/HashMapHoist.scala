@@ -33,20 +33,30 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
       foundFlag = false
       traverseBlock(node)
     } while (foundFlag)
+    // System.out.println(s"all hoisted stms before: $hoistedStatements")
     scheduleHoistedStatements()
+    // System.out.println(s"all hoisted stms after: $hoistedStatements")
     transformProgram(node)
   }
 
   var startCollecting = false
   var foundFlag = false
+  // specifies the depth level statement with respect to the source anchor
+  var depthLevel = 0
   val hoistedStatements = collection.mutable.ArrayBuffer[Stm[Any]]()
   val currentHoistedStatements = collection.mutable.ArrayBuffer[Stm[Any]]()
   val workList = collection.mutable.Set[Sym[Any]]()
 
   def scheduleHoistedStatements() {
-    val dependenceGraphEdges = for (stm1 <- hoistedStatements; stm2 <- hoistedStatements if (stm1 != stm2 && getDependencies(stm1.rhs).contains(stm2.sym))) yield (stm2 -> stm1)
+    // TODO it's not generic, for the statements with nodes without children it does not work
+    // if (!hoistedStatements.forall(stm => stm.rhs.funArgs.isEmpty)) {
+    //   val dependenceGraphEdges = for (stm1 <- hoistedStatements; stm2 <- hoistedStatements if (stm1 != stm2 && getDependencies(stm1.rhs).contains(stm2.sym))) yield (stm2 -> stm1)
+    //   hoistedStatements.clear()
+    //   hoistedStatements ++= pardis.utils.Graph.tsort(dependenceGraphEdges)
+    // }
+    val result = pardis.utils.Graph.schedule(hoistedStatements.toList, (stm1: Stm[Any], stm2: Stm[Any]) => getDependencies(stm2.rhs).contains(stm1.sym))
     hoistedStatements.clear()
-    hoistedStatements ++= pardis.utils.Graph.tsort(dependenceGraphEdges)
+    hoistedStatements ++= result
   }
 
   def getDependencies(node: Def[_]): List[Sym[Any]] = node.funArgs.filter(_.isInstanceOf[Sym[Any]]).map(_.asInstanceOf[Sym[Any]])
@@ -54,12 +64,19 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
   override def traverseDef(node: Def[_]): Unit = node match {
     case GenericEngineRunQueryObject(b) => {
       startCollecting = enabled
+      depthLevel = 0
       currentHoistedStatements.clear()
       traverseBlock(b)
       hoistedStatements.prependAll(currentHoistedStatements)
       startCollecting = false
     }
     case _ => super.traverseDef(node)
+  }
+
+  override def traverseBlock(block: Block[_]): Unit = {
+    depthLevel += 1
+    super.traverseBlock(block)
+    depthLevel -= 1
   }
 
   override def traverseStm(stm: Stm[_]): Unit = stm match {
@@ -74,6 +91,16 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
           hoistStatement()
         }
         case HashMapNew4(hashFunc, size) if startCollecting && !hoistedStatements.contains(stm) => {
+          hoistStatement()
+        }
+        case HashMapNew() if startCollecting && !hoistedStatements.contains(stm) => {
+          // System.out.println("hm new found!")
+          hoistStatement()
+        }
+        case MultiMapNew() if startCollecting && !hoistedStatements.contains(stm) => {
+          hoistStatement()
+        }
+        case ArrayNew(_) if startCollecting && depthLevel == 1 && !hoistedStatements.contains(stm) => {
           hoistStatement()
         }
         case _ if startCollecting && workList.contains(sym) && !hoistedStatements.contains(stm) => {
@@ -92,6 +119,7 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
     case GenericEngineRunQueryObject(b) =>
       //Console.err.printf(unit("New place for hash maps\n"))
       for (stm <- hoistedStatements) {
+        // System.out.println(s"reflecting $stm!")
         reflectStm(stm)
       }
       startCollecting = enabled

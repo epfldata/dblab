@@ -50,20 +50,23 @@ class SingletonArrayToValueTransformer(override val IR: LoweringLegoBase) extend
     case sym -> (ps @ PardisStruct(tag, elems, methods)) if structHasSingletonArrayAsField(ps) =>
       val newElems = elems.map(e =>
         if (e.init.tp.isArray && isSingletonArray(e.init)) {
-          PardisStructArg(e.name, true, {
-            e.init match {
-              case Constant(null) => getDefaultValue(e.init.tp.typeArguments(0))
-              case _              => apply(e.init)
-            }
-          })
+          val init = e.init match {
+            case Constant(null) => getDefaultValue(e.init.tp.typeArguments(0))
+            case _              => apply(e.init)
+          }
+          // val newInit = if (!e.mutable) readVar(__newVar(init)(init.tp))(init.tp) else init
+          val newInit = readVar(__newVar(init)(init.tp))(init.tp)
+          // val newInit = init
+          PardisStructArg(e.name, true, newInit)
         } else e)
       toAtom(PardisStruct(tag, newElems, methods)(ps.tp))(ps.tp)
   }
 
   rewrite += rule {
     case au @ ArrayUpdate(a @ Def(PardisStructImmutableField(s, f)), i, v) if isSingletonArray(a) =>
-      toAtom(PardisStructFieldSetter(s, f, v))
-    case ArrayApply(a, i) if isSingletonArray(a) => a
+      fieldSetter(s, f, v)
+    case aa @ ArrayApply(a @ Def(PardisStructImmutableField(s, f)), i) if isSingletonArray(a) =>
+      fieldGetter(s, f)(aa.tp)
   }
 
   override def newSym[T: TypeRep](sym: Rep[T]): to.Sym[_] = {
