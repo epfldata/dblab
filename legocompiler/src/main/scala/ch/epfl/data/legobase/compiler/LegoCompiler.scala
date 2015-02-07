@@ -111,7 +111,6 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
   pipeline += SingletonHashMapToValueTransformer
   // pipeline += HashMapToArrayTransformer(generateCCode)
   //pipeline += MemoryManagementTransfomer //NOTE FIX TOPOLOGICAL SORT :-(
-  // pipeline += SingletonArrayToValueTransformer
 
   if (settings.hashMapPartitioning) {
     pipeline += new HashMapPartitioningTransformer(DSL, number)
@@ -154,9 +153,10 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
   // pipeline += PartiallyEvaluate
   // pipeline += DCE
 
-  // if (settings.constArray) {
-  //   pipeline += ConstSizeArrayToLocalVars
-  // }
+  if (settings.constArray) {
+    //   pipeline += ConstSizeArrayToLocalVars
+    pipeline += SingletonArrayToValueTransformer
+  }
 
   if (settings.columnStore) {
 

@@ -973,7 +973,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase, val ifAgg:
   }
 
   rewrite += rule {
-    case and @ Boolean$bar$bar(case1, b) if blockIsPure(b) && !isNullCheck(case1) => {
+    case and @ Boolean$bar$bar(case1, b) if ifAgg && blockIsPure(b) && !isNullCheck(case1) => {
       val resB = inlineBlock[Boolean](b)
       // NameAlias[Boolean](Some(case1), " or ", List(List(resB)))
       case1 | resB
@@ -981,7 +981,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase, val ifAgg:
   }
 
   rewrite += rule {
-    case and @ Boolean$amp$amp(case1, b) if blockIsPure(b) && !isNullCheck(case1) => {
+    case and @ Boolean$amp$amp(case1, b) if ifAgg && blockIsPure(b) && !isNullCheck(case1) => {
       val resB = inlineBlock[Boolean](b)
       // NameAlias[Boolean](Some(case1), " and ", List(List(resB)))
       case1 & resB
