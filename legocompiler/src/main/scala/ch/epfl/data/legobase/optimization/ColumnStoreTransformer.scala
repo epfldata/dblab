@@ -32,7 +32,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
     case 16 => List("PARTSUPPRecord")
     case 17 => List("LINEITEMRecord")
     case 18 => List("LINEITEMRecord")
-    case 19 => List("LINEITEMRecord")
+    case 19 => List("LINEITEMRecord", "PARTRecord")
     case 20 => List("PARTSUPPRecord")
     case 21 => List("SUPPLIERRecord")
     case 22 => List("CUSTOMERRecord")

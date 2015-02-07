@@ -6,6 +6,7 @@ import pardis.utils.Document
 import pardis.ir._
 import pardis.prettyprinter._
 import scala.language.implicitConversions
+import pardis.deep.scalalib._
 
 class LegoScalaASTGenerator(val IR: Base, override val shallow: Boolean = false, override val outputFileName: String = "generatedProgram") extends LegoScalaGenerator(shallow, outputFileName) with ASTCodeGenerator[Base]
 
@@ -59,7 +60,7 @@ object OrderingFactory {
 
 class LegoCASTGenerator(val IR: Base, override val shallow: Boolean = false, override val outputFileName: String = "generatedProgram", override val verbose: Boolean = true) extends LegoCGenerator(shallow, outputFileName, verbose) with CASTCodeGenerator[Base]
 
-class LegoCGenerator(val shallow: Boolean = false, val outputFileName: String = "generatedProgram", override val verbose: Boolean = true) extends CCodeGenerator {
+class LegoCGenerator(val shallow: Boolean = false, val outputFileName: String = "generatedProgram", override val verbose: Boolean = true) extends CCodeGenerator /* with BooleanCCodeGen */ {
   def apply(program: PardisProgram) {
     generate(program, outputFileName)
   }
