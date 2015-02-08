@@ -726,7 +726,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   rewrite += rule {
     case aba @ ArrayBufferApply(a, i) =>
       class X
-      implicit val tp = (if (aba.tp.isPrimitive) aba.tp else typePointer(aba.tp)).asInstanceOf[TypeRep[X]]
+      implicit val tp = (if (aba.tp.isPrimitive || aba.tp.isPointerType || aba.tp == OptimalStringType) aba.tp else typePointer(aba.tp)).asInstanceOf[TypeRep[X]]
       System.out.println(s"tp X: $tp")
       g_array_index[X](a.asInstanceOf[Rep[LPointer[GArray]]], i)
   }
