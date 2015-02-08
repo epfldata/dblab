@@ -36,7 +36,7 @@ trait CTransformer extends TopDownTransformerTraverser[LoweringLegoBase] {
   }
 }
 
-object CTransformersPipeline extends TransformerHandler {
+class CTransformersPipeline(val settings: compiler.Settings) extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
     apply[T](context.asInstanceOf[LoweringLegoBase], block)
   }
@@ -44,15 +44,16 @@ object CTransformersPipeline extends TransformerHandler {
     val pipeline = new TransformerPipeline()
     pipeline += new GenericEngineToCTransformer(context)
     pipeline += new ScalaScannerToCmmapTransformer(context)
-    //pipeline += new ScalaScannerToCFScanfTransformer(context)
+    // pipeline += new ScalaScannerToCFScanfTransformer(context)
     pipeline += new ScalaArrayToCStructTransformer(context)
+    // pipeline += compiler.TreeDumper(false)
     pipeline += new ScalaCollectionsToGLibTransfomer(context)
     pipeline += new Tuple2ToCTransformer(context)
     pipeline += new OptionToCTransformer(context)
     pipeline += new HashEqualsFuncsToCTraansformer(context)
     pipeline += new OptimalStringToCTransformer(context)
     pipeline += new RangeToCTransformer(context)
-    pipeline += new ScalaConstructsToCTranformer(context)
+    pipeline += new ScalaConstructsToCTranformer(context, settings.ifAggressive)
     pipeline += new BlockFlattening(context)
     pipeline(context)(b)
   }
@@ -185,7 +186,7 @@ class ScalaScannerToCmmapTransformer(override val IR: LoweringLegoBase) extends 
       val fd: Expression[Int] = open(f, O_RDONLY)
       val st = &(__newVar[StructStat](infix_asInstanceOf(unit(0))(typeStat)))
       stat(f, st)
-      val size: Expression[Int] = field(st, "st_size")(typeInt)
+      val size = field(st, "st_size")(typeSize_T)
       NameAlias[Pointer[Char]](None, "mmap", List(List(Constant(null), size, PROT_READ, MAP_PRIVATE, fd, Constant(0))))
     }
   }
@@ -284,8 +285,13 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         val array = malloc(x)(elemType)
         // Create wrapper with length
         val am = typeCArray(typeCArray(a.tp.typeArguments(0).typeArguments(0))).asInstanceOf[PardisType[CArray[CArray[Any]]]] //transformType(a.tp)
+        val tagName = structName(am)
+        if (tagName == "ArrayOfArrayOfChar") {
+          System.out.println(s"HERE!!!! for $am")
+          System.out.println(s"HERE2!!!! for ${am.typeArguments(0).typeArguments(0).getClass}=${structName(am.typeArguments(0).typeArguments(0))}!=${structName(CharType)}")
+        }
         val s = toAtom(
-          PardisStruct(StructTags.ClassTag(structName(am)),
+          PardisStruct(StructTags.ClassTag(tagName),
             List(PardisStructArg("array", false, array), PardisStructArg("length", false, x)),
             List())(am))(am)
         val m = malloc(unit(1))(am)
@@ -387,12 +393,18 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         else typeArray(typePointer(elemType))
       }).asInstanceOf[PardisType[Any]]
       val arr = field(s, "array")(newTp)
-      if (elemType.isRecord) {
+      // <<<<<<< HEAD
+      // if (elemType.isRecord) {
+      // =======
+      if (elemType.isPrimitive || elemType == OptimalStringType) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], apply(i))(newTp.asInstanceOf[PardisType[Any]])
+      else {
+        // >>>>>>> merged-ir-str
         i match {
           case Constant(0) => Cast(arr)(arr.tp, typePointer(newTp))
           case _           => PTRADDRESS(arr.asInstanceOf[Expression[Pointer[Any]]], apply(i))(typePointer(newTp).asInstanceOf[PardisType[Pointer[Any]]])
         }
-      } else ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], apply(i))(newTp.asInstanceOf[PardisType[Any]])
+      }
+    // } else ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], apply(i))(newTp.asInstanceOf[PardisType[Any]])
     // class T
     // implicit val typeT = a.tp.typeArguments(0).asInstanceOf[PardisType[T]]
     // val newTp = ({
@@ -403,16 +415,23 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
     // if (elemType.isPrimitive) arrayApply(arr, i)(newTp.asInstanceOf[PardisType[T]])
     // else &(arr, i)(newTp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Array[T]]])
   }
+
+  def __arrayLength[T: TypeRep](arr: Rep[Array[T]]): Rep[Int] = {
+    val s = apply(arr)
+    field[Int](s, "length")
+  }
+
   rewrite += rule {
     case ArrayLength(a) =>
-      val s = apply(a)
-      val arr = field(s, "length")(IntType)
-      arr
+      __arrayLength(a)
   }
   rewrite += rule {
     case ArrayForeach(a, f) =>
+      // val length = toAtom(apply(ArrayLength(a)))(IntType)
+      val length = __arrayLength(a)
+      // System.out.println(s"symbol for length $length")
       // TODO if we use recursive rule based, the next line will be cleaner
-      Range(unit(0), toAtom(apply(ArrayLength(a)))(IntType)).foreach {
+      Range(unit(0), length).foreach {
         __lambda { index =>
           System.out.println(s"index: $index, f: ${f.correspondingNode}")
           val elemNode = apply(ArrayApply(a, index))
@@ -757,7 +776,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
   def arrayBufferIndexOf[T: PardisType](a: Expression[IR.ArrayBuffer[T]], elem: Expression[T]): Expression[Int] = {
     val idx = __newVar[Int](unit(-1))
-    Range(unit(0), fieldGetter[Int](a, "len")).foreach {
+    Range(unit(0), fieldGetter[Int](apply(a), "len")).foreach {
       __lambda { i =>
         val elemNode = apply(ArrayBufferApply(apply(a), i))
         val elem2 = toAtom(elemNode)(elemNode.tp)
@@ -779,6 +798,43 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       val tp = a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]
       val idx = arrayBufferIndexOf(a, elem)(tp)
       idx __!= unit(-1)
+    }
+  }
+
+  def __arrayBufferIndexWhere[T: PardisType](a: Rep[IR.ArrayBuffer[T]], pred: Rep[T => Boolean], lastIndex: Boolean): Rep[Int] = {
+    // printf(unit(s"indexWhere started with $a and ${apply(a)}"))
+    val idx = __newVarNamed[Int](unit(-1), "indexWhere")
+    Range(unit(0), fieldGetter[Int](a, "len")).foreach {
+      __lambda { i =>
+        val elemNode = apply(ArrayBufferApply(a, i))
+        val elem = toAtom(elemNode)(elemNode.tp).asInstanceOf[Rep[T]]
+        __ifThenElse(if (lastIndex) inlineFunction[T, Boolean](pred, elem) else { inlineFunction[T, Boolean](pred, elem) && (readVar(idx) __== unit(-1)) }, {
+          __assign(idx, i)
+        }, unit())
+      }
+    }
+    readVar(idx)
+  }
+
+  rewrite += rule {
+    case ArrayBufferIndexWhere(a, pred) => {
+      val tp = a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]
+      __arrayBufferIndexWhere(a, pred, false)(tp)
+    }
+  }
+
+  rewrite += rule {
+    case ArrayBufferLastIndexWhere(a, pred) => {
+      val tp = a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]
+      __arrayBufferIndexWhere(a, pred, true)(tp)
+    }
+  }
+
+  rewrite += rule {
+    case ArrayBufferSortWith(a, Def(Lambda2(f, i1, i2, o))) => {
+      val tp = a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]
+      nameAlias[Unit](None, "g_array_sort", List(List(apply(a), Lambda2(f, i2, i1, transformBlock(o)))))
+      apply(a)
     }
   }
 }
@@ -866,7 +922,7 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
         __assign(idx, readVar(idx) + unit(1));
       })
       readVar(h)
-    case HashCode(t) if t.tp.isArray => arrayLength(t.asInstanceOf[Rep[Array[Any]]])
+    case HashCode(t) if t.tp.isArray => field[Int](t.asInstanceOf[Rep[Array[Any]]], "length")
     //case HashCode(t)                 => throw new Exception("Unhandled type " + t.tp.toString + " passed to HashCode")
   }
   rewrite += rule {
@@ -981,6 +1037,23 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Rec
         newbuf
       }
   }
+  rewrite += rule {
+    case OptimalStringReverse(x) =>
+      val str = infix_asInstanceOf(apply(x))(typeArray(typePointer(CharType))).asInstanceOf[Rep[Array[Pointer[Char]]]]
+      val i = __newVar[Int](unit(0))
+      val j = __newVar[Int](strlen(str))
+
+      __whileDo((i: Rep[Int]) < (j: Rep[Int]), {
+        val _i = (i: Rep[Int])
+        val _j = (j: Rep[Int])
+        val temp = str(_i)
+        str(_i) = str(_j)
+        str(_j) = temp
+        __assign(i, _i + unit(1))
+        __assign(j, _j - unit(1))
+      })
+      str
+  }
 }
 
 class RangeToCTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
@@ -1044,14 +1117,36 @@ class Tuple2ToCTransformer(override val IR: LoweringLegoBase) extends RecursiveR
 
 }
 
-class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase, val ifAgg: Boolean) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._
 
+  def blockIsPure[T](block: Block[T]): Boolean = {
+    for (stm <- block.stmts) {
+      val isPure = stm.rhs match {
+        case b @ Block(_, _) => blockIsPure(b)
+        case d               => d.isPure
+      }
+      if (!isPure)
+        return false
+    }
+    true
+  }
+
+  def isNullCheck[T](exp: Rep[T]): Boolean = exp match {
+    case Def(NotEqual(_, Constant(null))) => true
+    case Def(Equal(_, Constant(null)))    => true
+    case _                                => false
+  }
+
   rewrite += rule {
-    case PardisIfThenElse(cond, thenp, elsep) if thenp.tp != UnitType =>
-      val res = __newVar(unit(0))(thenp.tp.asInstanceOf[TypeRep[Int]])
+    case IfThenElse(cond, thenp, elsep) if thenp.tp != UnitType =>
+      // val res = __newVar(unit(0))(thenp.tp.asInstanceOf[TypeRep[Int]])
+      val res = __newVarNamed[Int](unit(0), "ite")(thenp.tp.asInstanceOf[TypeRep[Int]])
+      // if (res.e.asInstanceOf[Sym[_]].id == 17398) {
+      //   System.out.println(s"tp is ${thenp.tp}, ${elsep.tp}, ${elsep.correspondingNode.asInstanceOf[Block[Any]].res.tp}, ${elsep.correspondingNode.asInstanceOf[Block[Any]].res}")
+      // }
       __ifThenElse(cond, {
         __assign(res, inlineBlock(thenp))
       }, {
@@ -1059,11 +1154,29 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase) extends Re
       })
       ReadVar(res)(res.tp)
   }
+
+  rewrite += rule {
+    case and @ Boolean$bar$bar(case1, b) if ifAgg && blockIsPure(b) && !isNullCheck(case1) => {
+      val resB = inlineBlock[Boolean](b)
+      // NameAlias[Boolean](Some(case1), " or ", List(List(resB)))
+      case1 | resB
+    }
+  }
+
+  rewrite += rule {
+    case and @ Boolean$amp$amp(case1, b) if ifAgg && blockIsPure(b) && !isNullCheck(case1) => {
+      val resB = inlineBlock[Boolean](b)
+      // NameAlias[Boolean](Some(case1), " and ", List(List(resB)))
+      case1 & resB
+    }
+  }
+
   rewrite += rule {
     case or @ Boolean$bar$bar(case1, b) => {
       __ifThenElse(case1, unit(true), b)
     }
   }
+
   rewrite += rule {
     case and @ Boolean$amp$amp(case1, b) => {
       __ifThenElse(case1, b, unit(false))

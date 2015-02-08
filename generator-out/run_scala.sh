@@ -1,6 +1,6 @@
 #!/bin/bash
 END=22
-START=22
+START=1
 
 if [ $# -ne 2 ]; then
     echo "Invalid number of command line arguments."

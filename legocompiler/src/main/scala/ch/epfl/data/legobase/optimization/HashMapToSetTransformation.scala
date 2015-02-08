@@ -36,6 +36,7 @@ class HashMapToSetTransformation(val LB: LoweringLegoBase, val queryNumber: Int)
 
   override def hashMapBuckets[A, B](self: Rep[HashMap[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = queryNumber match {
     case 12 => unit(16)
+    // case 18 => unit(49000000)
     case _  => unit(1 << 20)
   }
 }

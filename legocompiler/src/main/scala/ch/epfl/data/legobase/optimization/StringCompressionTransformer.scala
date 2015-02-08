@@ -33,6 +33,12 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
   val modifiedExpressions = collection.mutable.Map[Expression[Any], String]()
   case class ConstantStringInfo(val poolName: String, val isStartsWithOperation: Boolean)
   val constantStrings = collection.mutable.Map[Expression[Any], ConstantStringInfo]()
+  val nameAliases = collection.mutable.Map[String, String]()
+
+  def getNameAliasIfAny(str: String) = nameAliases.getOrElse(str, {
+    if (debugEnabled) System.out.println("StringCompressionTransformer: Name alias for string " + str + " not found!")
+    str
+  })
 
   override def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     traverseBlock(node)
@@ -106,8 +112,14 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
       elems.foreach(e => {
         if (e.init.tp == OptimalStringType) modifiedExpressions += sym -> {
           e.init match {
-            case Def(PardisStructImmutableField(s, f)) => f
-            case dflt @ _                              => throw new Exception("StringCompressionTransformer BUG: unknown node type in analysis of structs: " + dflt.correspondingNode)
+            case Def(PardisStructImmutableField(s, f)) => {
+              if (e.name != f) {
+                System.out.println("StringCompressionTransformer: Registering name alias: " + e.name + " -> " + getNameAliasIfAny(f))
+                nameAliases += e.name -> getNameAliasIfAny(f)
+              }
+              f
+            }
+            case dflt @ _ => throw new Exception("StringCompressionTransformer BUG: unknown node type in analysis of structs: " + dflt.correspondingNode)
           }
         }
       })
@@ -199,7 +211,7 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
       System.out.println("StringCompressionTransformer: Generating code for compressing constant string " + csi.poolName)
       val newSym = GenericEngine.parseString(constantString)
       val str2tmp = if (stringReversalNeeded) newSym.reverse else newSym
-      val compressedStringMetaData = compressedStringsMaps(csi.poolName)
+      val compressedStringMetaData = compressedStringsMaps(getNameAliasIfAny(csi.poolName))
       val compressedStringValues = compressedStringMetaData._2
       if (!csi.isStartsWithOperation) compressedStringValues.indexOf(str2tmp)
       else {
@@ -234,23 +246,18 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
         case None =>
           // str1 && str2 are already integers by propagation of compressed string 
           // (e.g. intermediate struct allocated during query execution)
-          str1.asInstanceOf[Expression[Int]] - str2.asInstanceOf[Expression[Int]]
+          apply(str1).asInstanceOf[Expression[Int]] - apply(str2).asInstanceOf[Expression[Int]]
       }
 
     case OptimalStringString(str) => {
       System.out.println("StringCompressionTransformer: Stringification of compressed string: Corresponding node is " + str.correspondingNode)
       val fieldName = modifiedExpressions.get(str) match {
-        case Some(f) => f
+        case Some(f) => getNameAliasIfAny(f)
         case None => str match {
-          case Def(PardisStructImmutableField(s, f)) => f
+          case Def(PardisStructImmutableField(s, f)) => getNameAliasIfAny(f)
           case _                                     => throw new Exception("StringCompressionTransformer BUG: unknown node type in stringification of compressed string. LHS node is " + str.correspondingNode)
         }
       }
-
-      if (!compressedStringsMaps.contains(fieldName))
-        throw new Exception("StringCompressionTransformer: Could not find field name " + fieldName + " registered. This is usually a name alias " +
-          "problem between structs existing during loading phase and intermediate structs of query execution. This can be solved in shallow code " +
-          "by field renaming of intermediate structs. This limitation will go away in future versions. ")
 
       val compressedStringMetaData = compressedStringsMaps(fieldName)
       val compressedStringValues = compressedStringMetaData._2
@@ -281,8 +288,6 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
 
   rewrite += rule {
     case GenericEngineRunQueryObject(b) => {
-      System.out.println(constantStrings.size)
-
       phase = QueryExecutionPhase
       System.out.println("StringCompressionTransformer: twoPhaseStringCompressionNeeded = " + twoPhaseStringCompressionNeeded)
 

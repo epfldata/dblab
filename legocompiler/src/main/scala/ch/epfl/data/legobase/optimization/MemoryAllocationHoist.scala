@@ -112,9 +112,9 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase) extends RuleBased
     //System.out.println("Creating buffers for mallocNodes: " + mallocNodes.mkString("\n"))
     val mallocInstances = mallocNodes.map(m => mallocToInstance(m)) //.sortBy(ll => ll.tp.name.length) //.distinct //.filter(t => !t.tp.name.contains("CArray") /* && !t.tp.name.contains("Pointer")*/ )
     val mallocInstancesTps = mallocInstances.map(mn => mn.tp)
-    System.out.println(mallocInstancesTps.mkString("\n"))
-    System.out.println("\n")
-    System.out.println(s"size: ${mallocInstances.size}, distinct size: ${mallocInstances.distinct.size}")
+    // System.out.println(mallocInstancesTps.mkString("\n"))
+    // System.out.println("\n")
+    // System.out.println(s"size: ${mallocInstances.size}, distinct size: ${mallocInstances.distinct.size}")
     distinctInstances = mallocInstances.foldLeft[List[MallocInfo]](Nil)((prev, curr) => {
       prev.find(p => p.tp == curr.tp) match {
         case Some(elem) => {
@@ -134,7 +134,7 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase) extends RuleBased
     // val depEdges = for (inst1 <- distinctInstances; inst2 <- distinctInstances if (inst1 != inst2 && inst1.isDependent(inst2))) yield (inst2 -> inst1)
     // distinctInstances = pardis.utils.Graph.tsort(depEdges).toList
     distinctInstances = pardis.utils.Graph.schedule(distinctInstances, (x: MallocInfo, y: MallocInfo) => y.isDependent(x))
-    System.out.println(s"distinctInstances: ${distinctInstances.mkString("\n\t")}")
+    // System.out.println(s"distinctInstances: ${distinctInstances.mkString("\n\t")}")
     // now iterate over them
     for (mallocInstance <- distinctInstances) {
       val mallocTp = mallocInstance.tp
@@ -160,14 +160,14 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase) extends RuleBased
             val newElems = mallocNode.elems.map(e => {
               val in = {
                 if ((e.init.tp.isRecord && e.init.tp != mallocInstance.asInstanceOf[StructMallocInfo].tp) || (e.init.tp.isArray)) {
-                  System.out.println("----->" + e.init.tp.name)
+                  // System.out.println("----->" + e.init.tp.name)
                   val other = mallocBuffers.find(mb => mb._1.name == e.init.tp.name).get._2.pool
                   arrayApply(other.asInstanceOf[Expression[Array[Any]]], i)(e.init.tp)
                 } else infix_asInstanceOf(unit(DefaultValue(e.init.tp.name))(e.init.tp))(e.init.tp)
               }
               PardisStructArg(e.name, true, in)
             })
-            System.out.println("Methods for tag " + mallocNode.tag + " ARE " + mallocNode.methods.map(m => m.name))
+            // System.out.println("Methods for tag " + mallocNode.tag + " ARE " + mallocNode.methods.map(m => m.name))
             val newMethods = mallocNode.methods.map(m => m.copy(body =
               transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef]))
             val allocatedSpace = toAtom(PardisStruct(mallocNode.tag, newElems, newMethods)(elemType))(elemType)
@@ -193,6 +193,7 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase) extends RuleBased
       mallocBuffers += mallocInstance.tp -> BufferInfo(pool.asInstanceOf[Sym[Any]], index)
       // printf(unit("Buffer for type %s of size %d initialized!\n"), unit(mallocTp.toString), POOL_SIZE)
     }
+    // System.out.println(s"mallocBuffers: ${mallocBuffers.mkString("\n\t")}")
   }
 
   rewrite += rule {
@@ -223,6 +224,7 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase) extends RuleBased
       System.out.println(s"REPLACING STRUCT ALLOCATION IN MEMORYTRANSFORMER ${ps.tp}")
       // val mallocInstance = mallocToInstance(ps.asInstanceOf[Def[Any]])
       // val bufferInfo = mallocBuffers(mallocInstance)
+      // System.out.println(s"finding tp: ${ps.tp} with class ${ps.tp.asInstanceOf[RecordType[_]].tag} ${mallocBuffers.find(_._1 == ps.tp)}")
       val mallocInstance = distinctInstances.find(_.tp == ps.tp).get.asInstanceOf[StructMallocInfo]
       val bufferInfo = mallocBuffers(ps.tp.asInstanceOf[PardisType[Any]])
       val p = arrayApply(bufferInfo.pool.asInstanceOf[Rep[Array[Any]]], readVar(bufferInfo.index)(IntType))(ps.tp.asInstanceOf[PardisType[Any]])
