@@ -43,8 +43,6 @@ object CTransformersPipeline extends TransformerHandler {
   def apply[A: PardisType](context: LoweringLegoBase, b: PardisBlock[A]) = {
     val pipeline = new TransformerPipeline()
     pipeline += new GenericEngineToCTransformer(context)
-    // pipeline += new OptionToCTransformer(context)
-    // pipeline += new Tuple2ToCTransformer(context)
     pipeline += new ScalaScannerToCmmapTransformer(context)
     //pipeline += new ScalaScannerToCFScanfTransformer(context)
     pipeline += new ScalaArrayToCStructTransformer(context)
@@ -365,12 +363,15 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
           }
           __assign(pointerVar, (&(tArr, i)).asInstanceOf[Rep[Pointer[T]]])(PointerType(typeT))
         })
-      } else
-        pointer_assign_content(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(apply(v).asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
-          case x if v.tp.isArray            => transformType(v.tp).typeArguments(0).asInstanceOf[PardisType[Any]]
-          case x if x.startsWith("Pointer") => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
-          case _                            => v.tp
-        }))
+      } else {
+        pointer_assign_content(arr.asInstanceOf[Expression[Pointer[Any]]], i, apply(v).asInstanceOf[Expression[Pointer[Any]]])
+      }
+    //} else
+    //  pointer_assign_content(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(apply(v).asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
+    //    case x if v.tp.isArray            => transformType(v.tp).typeArguments(0).asInstanceOf[PardisType[Any]]
+    //    case x if x.startsWith("Pointer") => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+    //    case _                            => v.tp
+    //  }))
   }
   rewrite += rule {
     case ArrayFilter(a, op) => field(apply(a), "array")(transformType(a.tp))
@@ -431,7 +432,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
   }
 }
 
-class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._
@@ -534,7 +535,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   rewrite += rule { case SetApplyObject1(s) => s }
   rewrite += rule {
     case nm @ SetApplyObject2() =>
-      val s = CStdLib.malloc[LPointer[GList]](1)
+      val s = CStdLib.malloc[LPointer[GList]](unit(8))
       CLang.pointer_assign(s, CLang.NULL[GList])
       s
   }
