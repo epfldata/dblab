@@ -369,15 +369,15 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
           }
           __assign(pointerVar, (&(tArr, i)).asInstanceOf[Rep[Pointer[T]]])(PointerType(typeT))
         })
-      } else {
-        pointer_assign_content(arr.asInstanceOf[Expression[Pointer[Any]]], i, apply(v).asInstanceOf[Expression[Pointer[Any]]])
-      }
-    //} else
-    //  pointer_assign_content(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(apply(v).asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
-    //    case x if v.tp.isArray            => transformType(v.tp).typeArguments(0).asInstanceOf[PardisType[Any]]
-    //    case x if x.startsWith("Pointer") => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
-    //    case _                            => v.tp
-    //  }))
+        // } else {
+        //   pointer_assign_content(arr.asInstanceOf[Expression[Pointer[Any]]], i, apply(v).asInstanceOf[Expression[Pointer[Any]]])
+        // }
+      } else
+        pointer_assign_content(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(apply(v).asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
+          case x if v.tp.isArray            => transformType(v.tp).typeArguments(0).asInstanceOf[PardisType[Any]]
+          case x if x.startsWith("Pointer") => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+          case _                            => v.tp
+        }))
   }
   rewrite += rule {
     case ArrayFilter(a, op) => field(apply(a), "array")(transformType(a.tp))
@@ -721,12 +721,13 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case abn @ (ArrayBufferNew2() | ArrayBufferNew3()) =>
       class X
       implicit val tpX = abn.tp.typeArguments(0).asInstanceOf[TypeRep[X]]
-      g_array_new(0, 1, CLang.sizeof[X])
+      g_array_new(0, 1, sizeof[X])
   }
   rewrite += rule {
     case aba @ ArrayBufferApply(a, i) =>
       class X
       implicit val tp = (if (aba.tp.isPrimitive) aba.tp else typePointer(aba.tp)).asInstanceOf[TypeRep[X]]
+      System.out.println(s"tp X: $tp")
       g_array_index[X](a.asInstanceOf[Rep[LPointer[GArray]]], i)
   }
   rewrite += rule {
@@ -790,12 +791,15 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
   rewrite += rule {
     case ArrayBufferIndexOf(a, elem) =>
-      val tp = a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]
+      // val tp = a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]
+      val tp = elem.tp.asInstanceOf[PardisType[Any]]
       arrayBufferIndexOf(a, elem)(tp)
   }
   rewrite += rule {
     case ArrayBufferContains(a, elem) => {
-      val tp = a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]
+      // System.out.println(s"tp: ${a.tp}, ${elem.tp}")
+      // val tp = a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]
+      val tp = elem.tp.asInstanceOf[PardisType[Any]]
       val idx = arrayBufferIndexOf(a, elem)(tp)
       idx __!= unit(-1)
     }

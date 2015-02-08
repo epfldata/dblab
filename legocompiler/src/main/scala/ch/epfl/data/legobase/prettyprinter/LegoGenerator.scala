@@ -64,4 +64,11 @@ class LegoCGenerator(val shallow: Boolean = false, val outputFileName: String = 
   def apply(program: PardisProgram) {
     generate(program, outputFileName)
   }
+
+  import cscala.deep.GArrayHeaderIRs._
+
+  override def functionNodeToDocument(fun: FunctionNode[_]) = fun match {
+    case GArrayHeaderG_array_indexObject(array, i) => "g_array_index(" :: expToDocument(array) :: ", " :: CUtils.pardisTypeToString(fun.tp) :: ", " :: expToDocument(i) :: ")"
+    case _                                         => super.functionNodeToDocument(fun)
+  }
 }
