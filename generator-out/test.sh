@@ -8,7 +8,7 @@ if [ $# -ne 2 ]; then
     exit
 fi
 
-declare -a coptions=("+hm2set +set2arr" "+hm2set +set2ll" "+hm2set +set2ll +cont-flat")
+declare -a coptions=("+hm2set" "+hm2set +set2arr" "+hm2set +set2ll" "+hm2set +set2ll +cont-flat")
 declare -a scalaoptions=("" "+hm2set" "+hm2set +set2arr" "+hm2set +set2ll" "+hm2set +set2ll +cont-flat")
 
 echo "Testing C started"

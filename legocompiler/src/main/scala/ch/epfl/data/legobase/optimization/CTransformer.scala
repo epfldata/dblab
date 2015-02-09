@@ -369,9 +369,8 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
           }
           __assign(pointerVar, (&(tArr, i)).asInstanceOf[Rep[Pointer[T]]])(PointerType(typeT))
         })
-        // } else {
-        //   pointer_assign_content(arr.asInstanceOf[Expression[Pointer[Any]]], i, apply(v).asInstanceOf[Expression[Pointer[Any]]])
-        // }
+      } else if (elemType.isInstanceOf[SetType[_]]) {
+        pointer_assign_content(arr.asInstanceOf[Expression[Pointer[Any]]], i, apply(v).asInstanceOf[Expression[Pointer[Any]]])
       } else
         pointer_assign_content(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(apply(v).asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
           case x if v.tp.isArray            => transformType(v.tp).typeArguments(0).asInstanceOf[PardisType[Any]]
@@ -396,7 +395,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       // <<<<<<< HEAD
       // if (elemType.isRecord) {
       // =======
-      if (elemType.isPrimitive || elemType == OptimalStringType) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], apply(i))(newTp.asInstanceOf[PardisType[Any]])
+      if (elemType.isPrimitive || elemType == OptimalStringType || elemType.isInstanceOf[SetType[_]]) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], apply(i))(newTp.asInstanceOf[PardisType[Any]])
       else {
         // >>>>>>> merged-ir-str
         i match {
