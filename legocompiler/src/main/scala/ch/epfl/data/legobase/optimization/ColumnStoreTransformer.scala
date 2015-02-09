@@ -125,7 +125,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
   rewrite += rule {
     case au @ ArrayUpdate(arr, idx, value) if shouldBeColumnarized(arr.tp.typeArguments(0)) =>
       val elemType = arr.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
-      // System.out.println(s"${scala.Console.RED}$value$structArrayUpdates${scala.Console.BLACK}")
+      // System.out.println(s"${scala.Console.RED}$value$structArrayUpdates${scala.Console.RESET}")
       val structDef = getStructDef(elemType).get
       for (el <- structDef.fields) {
         class ColumnType

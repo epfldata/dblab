@@ -15,7 +15,7 @@ class Settings(val args: List[String]) {
   import Settings._
   def validate(targetIsC: Boolean, tpchQuery: Int): Unit = {
     for (arg <- args.filter(arg => !ALL_FLAGS.contains(arg))) {
-      System.out.println(s"${Console.YELLOW}Warning${Console.BLACK}: flag $arg is not defined!")
+      System.out.println(s"${Console.YELLOW}Warning${Console.RESET}: flag $arg is not defined!")
     }
     if (!hashMapLowering && targetIsC) {
       throw new Exception(s"C code generator for HashMap and MultiMap is not supported yet! Consider adding $hm2set.")
