@@ -821,22 +821,25 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
   rewrite += rule {
     case ArrayBufferIndexWhere(a, pred) => {
-      val tp = a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]
+      val tp = pred.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
       __arrayBufferIndexWhere(a, pred, false)(tp)
     }
   }
 
   rewrite += rule {
     case ArrayBufferLastIndexWhere(a, pred) => {
-      val tp = a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]
+      val tp = pred.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
       __arrayBufferIndexWhere(a, pred, true)(tp)
     }
   }
 
   rewrite += rule {
-    case ArrayBufferSortWith(a, Def(Lambda2(f, i1, i2, o))) => {
-      val tp = a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]
-      nameAlias[Unit](None, "g_array_sort", List(List(apply(a), Lambda2(f, i2, i1, transformBlock(o)))))
+    case ArrayBufferSortWith(a, sortFunc @ Def(Lambda2(f, i1, i2, o))) => {
+      // val tp = a.tp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Any]]
+      class T
+      implicit val tp = i1.tp.asInstanceOf[PardisType[T]]
+      val (newI1, newI2) = (fresh(typePointer(tp)), fresh(typePointer(tp)))
+      nameAlias[Unit](None, "g_array_sort", List(List(apply(a), Lambda2(f, newI1, newI2, reifyBlock { inlineFunction[T, T, Boolean](sortFunc, *(newI2), *(newI1)) }))))
       apply(a)
     }
   }
