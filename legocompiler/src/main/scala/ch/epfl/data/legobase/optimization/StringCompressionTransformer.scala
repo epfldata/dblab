@@ -21,8 +21,10 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
   case object LoadingPhase extends Phase
   case object QueryExecutionPhase extends Phase
   var phase: Phase = LoadingPhase
-  // Metadata needed for twoPhaseStringCompression
+  // Metadata needed for different compression algorithms
   var twoPhaseStringCompressionNeeded: Boolean = false
+  var wordTokinizingStringCompressionNeeded: Boolean = false
+  val tokenizedStrings = collection.mutable.Set[String]()
   var stringReversalNeeded: Boolean = false // Used for endsWith
   val scanOperatorArrays = new scala.collection.mutable.ArrayBuffer[(Expression[Array[Any]], Seq[String])]()
 
@@ -34,6 +36,9 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
   case class ConstantStringInfo(val poolName: String, val isStartsWithOperation: Boolean)
   val constantStrings = collection.mutable.Map[Expression[Any], ConstantStringInfo]()
   val nameAliases = collection.mutable.Map[String, String]()
+
+  def shouldTokenize(name: String): Boolean = wordTokinizingStringCompressionNeeded && tokenizedStrings.contains(name)
+  def compressedStringType(name: String): TypeRep[Any] = (if (shouldTokenize(name)) ArrayType(IntType) else IntType).asInstanceOf[TypeRep[Any]]
 
   def getNameAliasIfAny(str: String) = nameAliases.getOrElse(str, {
     if (debugEnabled) System.out.println("StringCompressionTransformer: Name alias for string " + str + " not found!")
@@ -88,6 +93,18 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
       twoPhaseStringCompressionNeeded = true
       if (reverseString) stringReversalNeeded = true
       ()
+    case OptimalStringIndexOfSlice(Def(PardisStructImmutableField(s, name)),
+      str2 @ Def(GenericEngineParseStringObject(constantString)), idx) =>
+      constantStrings += str2 -> ConstantStringInfo(name, false)
+      wordTokinizingStringCompressionNeeded = true
+      tokenizedStrings += name
+      ()
+    case OptimalStringContainsSlice(Def(PardisStructImmutableField(s, name)),
+      str2 @ Def(GenericEngineParseStringObject(constantString))) =>
+      constantStrings += str2 -> ConstantStringInfo(name, false)
+      wordTokinizingStringCompressionNeeded = true
+      tokenizedStrings += name
+      ()
   }
 
   analysis += rule {
@@ -110,16 +127,17 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
   analysis += statement {
     case sym -> Struct(tag, elems, methods) if phase == QueryExecutionPhase =>
       elems.foreach(e => {
-        if (e.init.tp == OptimalStringType) modifiedExpressions += sym -> {
+        if (e.init.tp == OptimalStringType) {
           e.init match {
             case Def(PardisStructImmutableField(s, f)) => {
               if (e.name != f) {
                 System.out.println("StringCompressionTransformer: Registering name alias: " + e.name + " -> " + getNameAliasIfAny(f))
                 nameAliases += e.name -> getNameAliasIfAny(f)
               }
-              f
+              modifiedExpressions += sym -> f
             }
-            case dflt @ _ => throw new Exception("StringCompressionTransformer BUG: unknown node type in analysis of structs: " + dflt.correspondingNode)
+            case _ =>
+            //case dflt @ _ => throw new Exception("StringCompressionTransformer BUG: unknown node type in analysis of structs: " + dflt /* + dflt.correspondingNode*/ )
           }
         }
       })
@@ -158,18 +176,38 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
           val compressedStringMetaData = compressedStringsMaps(e.name)
           val num_unique_strings = compressedStringMetaData._1
           val compressedStringValues = compressedStringMetaData._2
-          // Compress string (if twoPhaseStringCompressionNeeded then the value assigned is wrong and we fix it later)
+
           val uncompressedString = {
             if (stringReversalNeeded) e.init.asInstanceOf[Expression[OptimalString]].reverse
             else e.init.asInstanceOf[Expression[OptimalString]]
           }
+
+          // Compress string according to algorithm (if twoPhaseStringCompressionNeeded then the value assigned 
+          // here is wrong and we fix it later)
           if (twoPhaseStringCompressionNeeded)
             compressedStringMetaData._3.append(uncompressedString)
-          __ifThenElse(!compressedStringValues.contains(uncompressedString), {
-            __assign(num_unique_strings, readVar(num_unique_strings) + unit(1))
-            compressedStringValues.append(uncompressedString)
-          }, unit)
-          PardisStructArg(e.name, true, compressedStringValues.indexOf(uncompressedString))
+
+          if (shouldTokenize(e.name)) {
+            System.out.println("StringCompressionTransformer: tokenizing " + e.name);
+            val delim = __newArray[Char](8)
+            delim(0) = unit(' '); delim(1) = unit('.'); delim(2) = unit('!'); delim(3) = unit(';');
+            delim(4) = unit(','); delim(5) = unit(':'); delim(6) = unit('?'); delim(7) = unit('-');
+            val words = uncompressedString.split(delim)
+            val compressedWords = words.map((w: Expression[OptimalString]) => {
+              __ifThenElse(!compressedStringValues.contains(w), {
+                __assign(num_unique_strings, readVar(num_unique_strings) + unit(1))
+                compressedStringValues.append(w)
+              }, unit)
+              compressedStringValues.indexOf(w)
+            })
+            PardisStructArg(e.name, true, compressedWords)
+          } else {
+            __ifThenElse(!compressedStringValues.contains(uncompressedString), {
+              __assign(num_unique_strings, readVar(num_unique_strings) + unit(1))
+              compressedStringValues.append(uncompressedString)
+            }, unit)
+            PardisStructArg(e.name, true, compressedStringValues.indexOf(uncompressedString))
+          }
         } else e
 
       }), methods)(origStruct.tp)
@@ -178,14 +216,14 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
       System.out.println("StringCompressionTransformer: Rewriting struct during query with tag: " + tag)
       Struct(tag, elems.map(e => {
         if (e.init.tp == OptimalStringType) {
-          PardisStructArg(e.name, e.mutable, infix_asInstanceOf(apply(e.init))(typeInt))
+          PardisStructArg(e.name, e.mutable, infix_asInstanceOf(apply(e.init))(compressedStringType(e.name)))
         } else e
       }), methods)(origStruct.tp)
   }
 
   rewrite += rule {
-    case sf @ StructImmutableField(s, f) if sf.tp == OptimalStringType => field[Int](apply(s), f)
-    case sf @ StructFieldGetter(s, f) if sf.tp == OptimalStringType    => fieldGetter[Int](apply(s), f)
+    case sf @ StructImmutableField(s, f) if sf.tp == OptimalStringType => field(apply(s), f)(compressedStringType(f))
+    case sf @ StructFieldGetter(s, f) if sf.tp == OptimalStringType    => fieldGetter(apply(s), f)(compressedStringType(f))
   }
 
   object OptimalStringComparison {
@@ -290,7 +328,8 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
     case GenericEngineRunQueryObject(b) => {
       phase = QueryExecutionPhase
       System.out.println("StringCompressionTransformer: twoPhaseStringCompressionNeeded = " + twoPhaseStringCompressionNeeded)
-
+      System.out.println("StringCompressionTransformer: wordTokinizingStringCompressionNeeded = " + wordTokinizingStringCompressionNeeded)
+      System.out.println("StringCompressionTransformer: tokenized strings: " + tokenizedStrings.mkString(","))
       if (twoPhaseStringCompressionNeeded) {
         reifyBlock {
           compressedStringsMaps = compressedStringsMaps.map(csm => {
@@ -306,7 +345,7 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
             val fieldNames = soa._2
             val idx = __newVar[Int](0)
             array_foreach(arr, ((ae: Rep[Any]) => {
-              fieldNames.foreach(fn => {
+              fieldNames.filter(fn => !shouldTokenize(fn)).foreach(fn => {
                 val compressedStringMetaData = compressedStringsMaps(fn)
                 val uncompressedString = compressedStringMetaData._3.apply(idx)
                 val compressedString = compressedStringMetaData._2.indexOf(uncompressedString)
@@ -320,5 +359,32 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
         }
       } else GenericEngineRunQueryObject(transformBlock(b))
     }
+  }
+
+  rewrite += rule {
+    case OptimalStringIndexOfSlice(str1, str2, beg) =>
+      val idx = __newVarNamed[Int](unit(-1), "findSlice")
+      val start = __ifThenElse(apply(beg) < unit(0), unit(0), apply(beg))
+      Range(start, apply(str1).length).foreach {
+        __lambda { i =>
+          val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Expression[Array[Int]]], i))(IntType)
+          __ifThenElse(wordI __== apply(str2), {
+            __ifThenElse(readVar(idx) __== unit(-1), __assign(idx, i), unit())
+          }, unit())
+        }
+      }
+      readVar(idx)
+
+    case OptimalStringContainsSlice(str1, str2) =>
+      val idx = __newVarNamed[Int](unit(-1), "findSlice")
+      Range(unit(0), apply(str1).length).foreach {
+        __lambda { i =>
+          val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Expression[Array[Int]]], i))(IntType)
+          __ifThenElse(wordI __== apply(str2), {
+            __assign(idx, i)
+          }, unit())
+        }
+      }
+      __ifThenElse(readVar(idx) __!= unit(-1), unit(true), unit(false))
   }
 }
