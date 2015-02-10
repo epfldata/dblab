@@ -47,6 +47,7 @@ class CTransformersPipeline(val settings: compiler.Settings) extends Transformer
     // pipeline += new ScalaScannerToCFScanfTransformer(context)
     pipeline += new ScalaArrayToCStructTransformer(context)
     // pipeline += compiler.TreeDumper(false)
+    pipeline += new cscala.deep.GLibMultiMapTransformation(context)
     pipeline += new ScalaCollectionsToGLibTransfomer(context)
     pipeline += new Tuple2ToCTransformer(context)
     pipeline += new OptionToCTransformer(context)
@@ -474,11 +475,6 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }).asInstanceOf[PardisType[Any]]
 
   /* HashMap Operations */
-  def getMapKeyType[A: PardisType, B: PardisType](map: Expression[HashMap[A, B]]): PardisType[Any] =
-    map.tp.typeArguments(0).typeArguments(1).asInstanceOf[PardisType[Any]]
-  def getMapValueType[A: PardisType, B: PardisType](map: Expression[HashMap[A, B]]): PardisType[Any] =
-    map.tp.typeArguments(0).typeArguments(1).asInstanceOf[PardisType[Any]]
-
   rewrite += rule {
     case nm @ HashMapNew3(_, _) =>
       apply(HashMapNew()(nm.typeA, ArrayBufferType(nm.typeB)))
@@ -489,8 +485,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case nm @ HashMapNew() =>
       val nA = typePointer(transformType(nm.typeA))
       val nB = typePointer(transformType(nm.typeB))
-      def hashFunc[T: TypeRep] = transformDef(doLambdaDef((s: Rep[T]) => infix_hashCode(s))).asInstanceOf[Rep[GHashFunc]]
-      def equalsFunc[T: TypeRep] = transformDef(doLambda2Def((s1: Rep[T], s2: Rep[T]) => infix_==(s1, s2))).asInstanceOf[Rep[GEqualFunc]]
+      def hashFunc[T: TypeRep] = toAtom(transformDef(doLambdaDef((s: Rep[T]) => infix_hashCode(s)))).asInstanceOf[Rep[GHashFunc]]
+      def equalsFunc[T: TypeRep] = toAtom(transformDef(doLambda2Def((s1: Rep[T], s2: Rep[T]) => infix_==(s1, s2)))).asInstanceOf[Rep[GEqualFunc]]
       if (nm.typeA.isPrimitive || nm.typeA == StringType || nm.typeA == OptimalStringType)
         g_hash_table_new(hashFunc(nm.typeA), equalsFunc(nm.typeA))
       else g_hash_table_new(hashFunc(nA), equalsFunc(nA))
@@ -502,8 +498,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case HashMapKeySet(map) => g_hash_table_get_keys(map.asInstanceOf[Rep[LPointer[GHashTable]]])
   }
   rewrite += rule {
-    case HashMapContains(map, key) =>
-      val z = toAtom(transformDef(HashMapApply(map, key)))(getMapValueType(apply(map)))
+    case hmc @ HashMapContains(map, key) =>
+      val z = toAtom(transformDef(HashMapApply(map, key)))(typePointer(transformType(hmc.typeB)).asInstanceOf[TypeRep[Any]])
       infix_!=(z, unit(null))
   }
   rewrite += rule {
@@ -518,8 +514,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
   rewrite += rule {
     case hmgu @ HashMapGetOrElseUpdate(map, key, value) =>
-      val ktp = getMapKeyType(apply(map))
-      val vtp = getMapValueType(apply(map))
+      val ktp = typePointer(transformType(hmgu.typeA)).asInstanceOf[TypeRep[Any]]
+      val vtp = typePointer(transformType(hmgu.typeB)).asInstanceOf[TypeRep[Any]]
       val v = toAtom(transformDef(HashMapApply(map, key)(ktp, vtp))(vtp))(vtp)
       __ifThenElse(infix_==(v, unit(null)), {
         val res = inlineBlock(apply(value))
@@ -529,7 +525,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
   rewrite += rule {
     case mr @ HashMapRemove(map, key) =>
-      val x = toAtom(transformDef(HashMapApply(map, key)))(getMapValueType(apply(map)))
+      val x = toAtom(transformDef(HashMapApply(map, key)))(typePointer(transformType(mr.typeB)).asInstanceOf[TypeRep[Any]])
       g_hash_table_remove(map.asInstanceOf[Rep[LPointer[GHashTable]]], key.asInstanceOf[Rep[gconstpointer]])
       x
   }
@@ -540,8 +536,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
           __newTuple2(infix_asInstanceOf[K](s1),
             infix_asInstanceOf[V](s2)))
       })
-      val ktp = getMapKeyType(apply(map))
-      val vtp = getMapValueType(apply(map))
+      val ktp = typePointer(transformType(hmfe.typeA))
+      val vtp = typePointer(transformType(hmfe.typeB))
       g_hash_table_foreach(
         map.asInstanceOf[Rep[LPointer[GHashTable]]],
         func(ktp, vtp).asInstanceOf[Rep[GHFunc]],
@@ -868,8 +864,9 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
     case Equals(e1, Constant(null), isEqual) if __isRecord(e1) && !alreadyEquals.contains(e1) =>
       val structDef = if (e1.tp.isRecord)
         getStructDef(e1.tp).get
-      else
+      else {
         getStructDef(e1.tp.typeArguments(0)).get
+      }
       // System.out.println(structDef.fields)
       alreadyEquals += e1
       structDef.fields.filter(_.name != "next").find(f => f.tpe.isPointerType || f.tpe == OptimalStringType || f.tpe == StringType) match {
