@@ -552,7 +552,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   rewrite += rule {
     case hmfe @ HashMapForeach(map, f) =>
       val ktp = typePointer(transformType(hmfe.typeA))
-      val vtp = typePointer(transformType(hmfe.typeB))
+      //val vtp = typePointer(transformType(hmfe.typeB))
+      val vtp = f.tp.typeArguments(0).typeArguments(1).asInstanceOf[TypeRep[Any]]
       val keys = __newVar(g_hash_table_get_keys(map.asInstanceOf[Rep[LPointer[GHashTable]]]))
       val nKeys = g_hash_table_size(map.asInstanceOf[Rep[LPointer[GHashTable]]])
       Range(unit(0), nKeys).foreach {
