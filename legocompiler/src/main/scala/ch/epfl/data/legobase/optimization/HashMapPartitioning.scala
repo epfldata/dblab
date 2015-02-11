@@ -248,6 +248,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     }
   }
 
+  def findBucketFunction(key: Rep[Int], partitionedObject: PartitionObject): Rep[Int] = key % partitionedObject.buckets
+
   def par_array_foreach[T: TypeRep](partitionedObject: PartitionObject, key: Rep[Int], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
     if (partitionedObject.is1D) {
       val parArr = partitionedObject.parArr.asInstanceOf[Rep[Array[T]]]
@@ -258,7 +260,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       val e = parArr(bucket)
       f(e)
     } else {
-      val bucket = key % partitionedObject.buckets
+      val bucket = findBucketFunction(key, partitionedObject)
       val count = partitionedObject.count(bucket)
       val parArrWhole = partitionedObject.parArr.asInstanceOf[Rep[Array[Array[T]]]]
       val parArr = parArrWhole(bucket)
@@ -354,7 +356,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     }
   }
 
-  // The case for HashJoinAnit
+  // The case for HashJoinAnti
   rewrite += rule {
     case MultiMapAddBinding(mm, elem, nodev) if shouldBePartitioned(mm) && getPartitionedObject(mm).isAnti =>
       class ElemType
@@ -481,12 +483,14 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       val leftArray = hmParObj.partitionedObject
       val key = apply(elem).asInstanceOf[Rep[Int]]
       val whileLoop = leftArray.loopSymbol
+      leftOuterJoinExistsVarDefine(mm)
       class InnerType
       implicit val typeInner = leftArray.tpe.asInstanceOf[TypeRep[InnerType]]
       par_array_foreach[InnerType](leftArray, key, (e: Rep[InnerType]) => {
         fillingElem(mm) = e
         fillingFunction(mm) = () => {
           __ifThenElse[Unit](field[Int](e, leftArray.fieldFunc) __== apply(elem), {
+            leftOuterJoinExistsVarSet(mm)
             inlineFunction(f.asInstanceOf[Rep[InnerType => Unit]], e)
           }, {
             unit(())
@@ -500,6 +504,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
         transformedMapsCount += 1
         res1
       })
+      leftOuterJoinDefaultHandling(mm, key, leftArray)
     }
   }
 
@@ -631,5 +636,42 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   rewrite += rule {
     case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) if shouldBePartitioned(mm) && !getPartitionedObject(mm).hasLeft && fillingHole.get(mm).nonEmpty =>
       inlineFunction(f, fillingFunction(mm)())
+  }
+
+  /* The parts dedicated to left outer join handling */
+  def leftOuterJoinDefaultHandling(mm: Rep[MultiMap[Any, Any]], key: Rep[Int], partitionedObject: PartitionObject): Rep[Unit] = queryNumber match {
+    case 13 =>
+      __ifThenElse(!readVar(leftOuterJoinExistsVar(mm)), {
+        inlineBlock[Unit](leftOuterJoinDefault(mm))
+      }, unit(()))
+    // printf(unit("query 13!"))
+    case _ => unit(())
+  }
+
+  def leftOuterJoinExistsVarDefine(mm: Rep[MultiMap[Any, Any]]): Unit = queryNumber match {
+    case 13 =>
+      val exists = __newVarNamed[Boolean](unit(false), "exists")
+      leftOuterJoinExistsVar(mm) = exists
+      ()
+    case _ =>
+  }
+
+  def leftOuterJoinExistsVarSet(mm: Rep[MultiMap[Any, Any]]): Unit = queryNumber match {
+    case 13 =>
+      val exists = leftOuterJoinExistsVar(mm)
+      __assign(exists, unit(true))
+      ()
+    case _ =>
+  }
+
+  val leftOuterJoinDefault = scala.collection.mutable.Map[Rep[Any], Block[Unit]]()
+  val leftOuterJoinExistsVar = scala.collection.mutable.Map[Rep[Any], Var[Boolean]]()
+
+  analysis += rule {
+    case IfThenElse(Def(OptionNonEmpty(Def(MultiMapGet(mm, elem)))), thenp, elsep) if queryNumber == 13 => {
+      // System.out.println(s"elsep: $elsep")
+      leftOuterJoinDefault += mm -> elsep.asInstanceOf[Block[Unit]]
+      ()
+    }
   }
 }
