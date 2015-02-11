@@ -521,7 +521,6 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
   rewrite += rule {
     case ma @ HashMapApply(map, k) =>
-      System.out.println(s"$map: ${ma.typeA}")
       val key = if (ma.typeA == DoubleType || ma.typeA == PointerType(DoubleType)) CLang.&(apply(k)) else apply(k)
       g_hash_table_lookup(map.asInstanceOf[Rep[LPointer[GHashTable]]], key.asInstanceOf[Rep[gconstpointer]])
   }
@@ -554,11 +553,13 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     case hmfe @ HashMapForeach(map, f) =>
       val ktp = typePointer(transformType(hmfe.typeA))
       val vtp = typePointer(transformType(hmfe.typeB))
-      val keys = g_hash_table_get_keys(map.asInstanceOf[Rep[LPointer[GHashTable]]])
+      val keys = __newVar(g_hash_table_get_keys(map.asInstanceOf[Rep[LPointer[GHashTable]]]))
       val nKeys = g_hash_table_size(map.asInstanceOf[Rep[LPointer[GHashTable]]])
       Range(unit(0), nKeys).foreach {
         __lambda { i =>
-          val key = g_list_nth_data(keys, i)
+          val keysRest = __readVar(keys)
+          val key = g_list_nth_data(keysRest, unit(0))
+          __assign(keys, g_list_next(keysRest))
           val value = g_hash_table_lookup(map.asInstanceOf[Rep[LPointer[GHashTable]]], key)
           inlineFunction(f, __newTuple2(infix_asInstanceOf(key)(ktp), infix_asInstanceOf(value)(vtp)))
         }
