@@ -47,6 +47,7 @@ class CTransformersPipeline(val settings: compiler.Settings) extends Transformer
     // pipeline += new ScalaScannerToCFScanfTransformer(context)
     pipeline += new ScalaArrayToCStructTransformer(context)
     // pipeline += compiler.TreeDumper(false)
+    pipeline += new cscala.deep.ManualGLibMultiMapTransformation(context)
     pipeline += new ScalaCollectionsToGLibTransfomer(context)
     pipeline += new Tuple2ToCTransformer(context)
     pipeline += new OptionToCTransformer(context)
@@ -473,12 +474,13 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
     }
   }).asInstanceOf[PardisType[Any]]
 
-  /* HashMap Operations */
-  def getMapKeyType[A: PardisType, B: PardisType](map: Expression[HashMap[A, B]]): PardisType[Any] =
-    map.tp.typeArguments(0).typeArguments(1).asInstanceOf[PardisType[Any]]
-  def getMapValueType[A: PardisType, B: PardisType](map: Expression[HashMap[A, B]]): PardisType[Any] =
-    map.tp.typeArguments(0).typeArguments(1).asInstanceOf[PardisType[Any]]
+  def allocDoubleKey(key: Rep[_]): Rep[LPointer[Double]] = {
+    val ptr = CStdLib.malloc[Double](unit(8))
+    CLang.pointer_assign(ptr, key.asInstanceOf[Rep[Double]])
+    ptr
+  }
 
+  /* HashMap Operations */
   rewrite += rule {
     case nm @ HashMapNew3(_, _) =>
       apply(HashMapNew()(nm.typeA, ArrayBufferType(nm.typeB)))
@@ -487,66 +489,82 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
   rewrite += rule {
     case nm @ HashMapNew() =>
-      val nA = typePointer(transformType(nm.typeA))
-      val nB = typePointer(transformType(nm.typeB))
-      def hashFunc[T: TypeRep] = transformDef(doLambdaDef((s: Rep[T]) => infix_hashCode(s))).asInstanceOf[Rep[GHashFunc]]
-      def equalsFunc[T: TypeRep] = transformDef(doLambda2Def((s1: Rep[T], s2: Rep[T]) => infix_==(s1, s2))).asInstanceOf[Rep[GEqualFunc]]
-      if (nm.typeA.isPrimitive || nm.typeA == StringType || nm.typeA == OptimalStringType)
-        g_hash_table_new(hashFunc(nm.typeA), equalsFunc(nm.typeA))
-      else g_hash_table_new(hashFunc(nA), equalsFunc(nA))
+      if (nm.typeA == DoubleType || nm.typeA == PointerType(DoubleType)) {
+        def hashFunc = toAtom(transformDef(doLambdaDef((s: Rep[gconstpointer]) => g_double_hash(s)))).asInstanceOf[Rep[GHashFunc]]
+        def equalsFunc = toAtom(transformDef(doLambda2Def((s1: Rep[gconstpointer], s2: Rep[gconstpointer]) => g_double_equal(s1, s2)))).asInstanceOf[Rep[GEqualFunc]]
+        g_hash_table_new(hashFunc, equalsFunc)
+      } else if (nm.typeA.isPrimitive || nm.typeA == StringType || nm.typeA == OptimalStringType) {
+        val nA = nm.typeA
+        val nB = nm.typeB
+        def hashFunc[T: TypeRep] = toAtom(transformDef(doLambdaDef((s: Rep[T]) => infix_hashCode(s)))).asInstanceOf[Rep[GHashFunc]]
+        def equalsFunc[T: TypeRep] = toAtom(transformDef(doLambda2Def((s1: Rep[T], s2: Rep[T]) => infix_==(s1, s2)))).asInstanceOf[Rep[GEqualFunc]]
+        g_hash_table_new(hashFunc(nA), equalsFunc(nA))
+      } else {
+        val nA = typePointer(transformType(nm.typeA))
+        val nB = typePointer(transformType(nm.typeB))
+        def hashFunc[T: TypeRep] = toAtom(transformDef(doLambdaDef((s: Rep[T]) => infix_hashCode(s)))).asInstanceOf[Rep[GHashFunc]]
+        def equalsFunc[T: TypeRep] = toAtom(transformDef(doLambda2Def((s1: Rep[T], s2: Rep[T]) => infix_==(s1, s2)))).asInstanceOf[Rep[GEqualFunc]]
+        g_hash_table_new(hashFunc(nA), equalsFunc(nA))
+      }
   }
   rewrite += rule {
     case HashMapSize(map) => g_hash_table_size(map.asInstanceOf[Rep[LPointer[GHashTable]]])
   }
   rewrite += rule {
-    case HashMapKeySet(map) => g_hash_table_get_keys(map.asInstanceOf[Rep[LPointer[GHashTable]]])
+    case hmks @ HashMapKeySet(map) =>
+      &(g_hash_table_get_keys(map.asInstanceOf[Rep[LPointer[GHashTable]]]))
   }
   rewrite += rule {
-    case HashMapContains(map, key) =>
-      val z = toAtom(transformDef(HashMapApply(map, key)))(getMapValueType(apply(map)))
+    case hmc @ HashMapContains(map, key) =>
+      val z = toAtom(transformDef(HashMapApply(map, key)))(typePointer(transformType(hmc.typeB)).asInstanceOf[TypeRep[Any]])
       infix_!=(z, unit(null))
   }
   rewrite += rule {
-    case ma @ HashMapApply(map, key) =>
+    case ma @ HashMapApply(map, k) =>
+      val key = if (ma.typeA == DoubleType || ma.typeA == PointerType(DoubleType)) CLang.&(apply(k)) else apply(k)
       g_hash_table_lookup(map.asInstanceOf[Rep[LPointer[GHashTable]]], key.asInstanceOf[Rep[gconstpointer]])
   }
   rewrite += rule {
-    case mu @ HashMapUpdate(map, key, value) =>
+    case mu @ HashMapUpdate(map, k, value) =>
+      val key = if (mu.typeA == DoubleType || mu.typeA == PointerType(DoubleType)) allocDoubleKey(apply(k)) else apply(k)
       g_hash_table_insert(map.asInstanceOf[Rep[LPointer[GHashTable]]],
         key.asInstanceOf[Rep[gconstpointer]],
         value.asInstanceOf[Rep[gpointer]])
   }
   rewrite += rule {
     case hmgu @ HashMapGetOrElseUpdate(map, key, value) =>
-      val ktp = getMapKeyType(apply(map))
-      val vtp = getMapValueType(apply(map))
+      val ktp = typePointer(transformType(hmgu.typeA)).asInstanceOf[TypeRep[Any]]
+      val vtp = typePointer(transformType(hmgu.typeB)).asInstanceOf[TypeRep[Any]]
       val v = toAtom(transformDef(HashMapApply(map, key)(ktp, vtp))(vtp))(vtp)
       __ifThenElse(infix_==(v, unit(null)), {
         val res = inlineBlock(apply(value))
-        toAtom(HashMapUpdate(map, key, res))
+        toAtom(HashMapUpdate(map, key, res)(ktp, vtp))
         res
       }, v)(v.tp)
   }
   rewrite += rule {
     case mr @ HashMapRemove(map, key) =>
-      val x = toAtom(transformDef(HashMapApply(map, key)))(getMapValueType(apply(map)))
-      g_hash_table_remove(map.asInstanceOf[Rep[LPointer[GHashTable]]], key.asInstanceOf[Rep[gconstpointer]])
+      val x = toAtom(transformDef(HashMapApply(map, key)))(typePointer(transformType(mr.typeB)).asInstanceOf[TypeRep[Any]])
+      val keyptr = if (mr.typeA == DoubleType || mr.typeA == PointerType(DoubleType)) allocDoubleKey(key) else key
+      g_hash_table_remove(map.asInstanceOf[Rep[LPointer[GHashTable]]], keyptr.asInstanceOf[Rep[gconstpointer]])
       x
   }
   rewrite += rule {
-    case hmfe @ HashMapForeach(map, f) => {
-      def func[K: TypeRep, V: TypeRep] = doLambda3((s1: Rep[gpointer], s2: Rep[gpointer], s3: Rep[gpointer]) => {
-        lambdaApply(f,
-          __newTuple2(infix_asInstanceOf[K](s1),
-            infix_asInstanceOf[V](s2)))
-      })
-      val ktp = getMapKeyType(apply(map))
-      val vtp = getMapValueType(apply(map))
-      g_hash_table_foreach(
-        map.asInstanceOf[Rep[LPointer[GHashTable]]],
-        func(ktp, vtp).asInstanceOf[Rep[GHFunc]],
-        CLang.NULL[Any])
-    }
+    case hmfe @ HashMapForeach(map, f) =>
+      val ktp = typePointer(transformType(hmfe.typeA))
+      //val vtp = typePointer(transformType(hmfe.typeB))
+      val vtp = f.tp.typeArguments(0).typeArguments(1).asInstanceOf[TypeRep[Any]]
+      val keys = __newVar(g_hash_table_get_keys(map.asInstanceOf[Rep[LPointer[GHashTable]]]))
+      val nKeys = g_hash_table_size(map.asInstanceOf[Rep[LPointer[GHashTable]]])
+      Range(unit(0), nKeys).foreach {
+        __lambda { i =>
+          val keysRest = __readVar(keys)
+          val key = g_list_nth_data(keysRest, unit(0))
+          __assign(keys, g_list_next(keysRest))
+          val value = g_hash_table_lookup(map.asInstanceOf[Rep[LPointer[GHashTable]]], key)
+          inlineFunction(f, __newTuple2(infix_asInstanceOf(key)(ktp), infix_asInstanceOf(value)(vtp)))
+        }
+      }
   }
 
   /* Set Operations */
@@ -871,8 +889,9 @@ class HashEqualsFuncsToCTraansformer(override val IR: LoweringLegoBase) extends 
     case Equals(e1, Constant(null), isEqual) if __isRecord(e1) && !alreadyEquals.contains(e1) =>
       val structDef = if (e1.tp.isRecord)
         getStructDef(e1.tp).get
-      else
+      else {
         getStructDef(e1.tp.typeArguments(0)).get
+      }
       // System.out.println(structDef.fields)
       alreadyEquals += e1
       structDef.fields.filter(_.name != "next").find(f => f.tpe.isPointerType || f.tpe == OptimalStringType || f.tpe == StringType) match {
