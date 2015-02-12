@@ -76,6 +76,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     def parArr = partitionedObjectsArray(this).asInstanceOf[Rep[Array[Array[Any]]]]
     def is1D: Boolean = if (ONE_D_ENABLED) isPrimaryKey(tpe, fieldFunc) else false
     def reuseOriginal1DArray: Boolean = List("REGIONRecord", "NATIONRecord", "SUPPLIERRecord", "CUSTOMERRecord", "PARTRecord").contains(tpe.name)
+    def arraySize: Rep[Int] = arr match {
+      case Def(ArrayNew(s)) => s
+    }
   }
   val partitionedHashMapObjects = scala.collection.mutable.Set[HashMapPartitionObject]()
   val partitionedObjectsArray = scala.collection.mutable.Map[PartitionObject, Rep[Array[Any]]]()
@@ -214,10 +217,13 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       currentLoopSymbol = node
   }
 
-  def numBuckets(partitionedObject: PartitionObject): Rep[Int] = partitionedObject.arr match {
-    case Def(ArrayNew(l)) => l / unit(4)
-    case sym              => throw new Exception(s"setting default value for $sym")
-  }
+  def numBuckets(partitionedObject: PartitionObject): Rep[Int] =
+    (partitionedObject.tpe.name, partitionedObject.fieldFunc) match {
+      case ("LINEITEMRecord", "L_ORDERKEY")  => partitionedObject.arraySize
+      case ("LINEITEMRecord", "L_SUPPKEY")   => unit(80000)
+      case ("CUSTOMERRecord", "C_NATIONKEY") => unit(25)
+      case _                                 => partitionedObject.arraySize / unit(4)
+    }
   def numBucketsFull(partitionedObject: PartitionObject): Rep[Int] = partitionedObject.arr match {
     case Def(ArrayNew(l)) => partitionedObject.tpe.name match {
       case "ORDERSRecord" => l * unit(5)
@@ -227,7 +233,12 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   }
   def bucketSize(partitionedObject: PartitionObject): Rep[Int] = //unit(100)
     // numBuckets(partitionedObject)
-    unit(1 << 10)
+    (partitionedObject.tpe.name, partitionedObject.fieldFunc) match {
+      case ("LINEITEMRecord", "L_ORDERKEY")  => unit(16)
+      case ("LINEITEMRecord", "L_SUPPKEY")   => unit(1 << 10)
+      case ("CUSTOMERRecord", "C_NATIONKEY") => partitionedObject.arraySize / unit(25 - 5)
+      case _                                 => unit(1 << 10)
+    }
 
   // def numBuckets(partitionedObject: PartitionObject): Rep[Int] = unit(1 << 9)
   // def bucketSize(partitionedObject: PartitionObject): Rep[Int] = partitionedObject.arr match {
@@ -303,26 +314,38 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
         })
       }
     } else {
-      val partitionedArray = __newArray[Array[InnerType]](buckets)
-      val partitionedCount = __newArray[Int](buckets)
-      partitionedObjectsArray += partitionedObject -> partitionedArray.asInstanceOf[Rep[Array[Any]]]
-      partitionedObjectsCount += partitionedObject -> partitionedCount
-      Range(unit(0), buckets).foreach {
-        __lambda { i =>
-          partitionedArray(i) = __newArray[InnerType](bucketSize(partitionedObject))
-        }
+      val partitionedObjectAlreadyExists = {
+        partitionedObjectsArray.find({
+          case (po, _) =>
+            po.fieldFunc == partitionedObject.fieldFunc && po.tpe == partitionedObject.tpe
+        })
       }
-      val index = __newVarNamed[Int](unit(0), "partIndex")
-      array_foreach(originalArray, {
-        (e: Rep[InnerType]) =>
-          // TODO needs a better way of computing the index of each object
-          val pkey = field[Int](e, partitionedObject.fieldFunc) % buckets
-          val currIndex = partitionedCount(pkey)
-          val partitionedArrayBucket = partitionedArray(pkey)
-          partitionedArrayBucket(currIndex) = e
-          partitionedCount(pkey) = currIndex + unit(1)
-          __assign(index, readVar(index) + unit(1))
-      })
+      if (partitionedObjectAlreadyExists.nonEmpty) {
+        System.out.println(s"${scala.Console.BLUE}2D Array already exists!${scala.Console.RESET}")
+        partitionedObjectsArray += partitionedObject -> partitionedObjectAlreadyExists.get._1.parArr.asInstanceOf[Rep[Array[Any]]]
+        partitionedObjectsCount += partitionedObject -> partitionedObjectAlreadyExists.get._1.count
+      } else {
+        val partitionedArray = __newArray[Array[InnerType]](buckets)
+        val partitionedCount = __newArray[Int](buckets)
+        partitionedObjectsArray += partitionedObject -> partitionedArray.asInstanceOf[Rep[Array[Any]]]
+        partitionedObjectsCount += partitionedObject -> partitionedCount
+        Range(unit(0), buckets).foreach {
+          __lambda { i =>
+            partitionedArray(i) = __newArray[InnerType](bucketSize(partitionedObject))
+          }
+        }
+        val index = __newVarNamed[Int](unit(0), "partIndex")
+        array_foreach(originalArray, {
+          (e: Rep[InnerType]) =>
+            // TODO needs a better way of computing the index of each object
+            val pkey = field[Int](e, partitionedObject.fieldFunc) % buckets
+            val currIndex = partitionedCount(pkey)
+            val partitionedArrayBucket = partitionedArray(pkey)
+            partitionedArrayBucket(currIndex) = e
+            partitionedCount(pkey) = currIndex + unit(1)
+            __assign(index, readVar(index) + unit(1))
+        })
+      }
     }
   }
 

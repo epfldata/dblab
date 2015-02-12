@@ -773,6 +773,8 @@ object Queries {
         val ordersScan = new SelectOp(new ScanOp(ordersTable))(x => x.O_ORDERSTATUS == 'F')
         val jo1 = new HashJoinOp(nationScan, supplierScan)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY)
         val jo2 = new HashJoinOp(jo1, lineitemScan1)((x, y) => x.S_SUPPKEY[Int] == y.L_SUPPKEY)(x => x.S_SUPPKEY[Int])(x => x.L_SUPPKEY)
+        // val jo1 = new HashJoinOp(supplierScan, lineitemScan1)((x, y) => x.S_SUPPKEY == y.L_SUPPKEY)(x => x.S_SUPPKEY)(x => x.L_SUPPKEY)
+        // val jo2 = new HashJoinOp(nationScan, jo1)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])
         val jo3 = new LeftHashSemiJoinOp(jo2, lineitemScan2)((x, y) => (x.L_ORDERKEY[Int] == y.L_ORDERKEY) && (x.L_SUPPKEY[Int] != y.L_SUPPKEY))(x => x.L_ORDERKEY[Int])(x => x.L_ORDERKEY)
         val jo4 = new HashJoinAnti(jo3, lineitemScan3)((x, y) => (x.L_ORDERKEY[Int] == y.L_ORDERKEY) && (x.L_SUPPKEY[Int] != y.L_SUPPKEY))(x => x.L_ORDERKEY[Int])(x => x.L_ORDERKEY)
         val jo5 = new HashJoinOp(ordersScan, jo4)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY[Int])(x => x.O_ORDERKEY)(x => x.L_ORDERKEY[Int])
