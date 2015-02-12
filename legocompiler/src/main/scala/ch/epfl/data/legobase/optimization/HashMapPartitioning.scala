@@ -219,10 +219,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
 
   def numBuckets(partitionedObject: PartitionObject): Rep[Int] =
     (partitionedObject.tpe.name, partitionedObject.fieldFunc) match {
-      case ("LINEITEMRecord", "L_ORDERKEY")  => partitionedObject.arraySize
-      case ("LINEITEMRecord", "L_SUPPKEY")   => unit(80000)
-      case ("CUSTOMERRecord", "C_NATIONKEY") => unit(25)
-      case _                                 => partitionedObject.arraySize / unit(4)
+      case ("LINEITEMRecord", "L_ORDERKEY") => partitionedObject.arraySize
+      case ("LINEITEMRecord", "L_SUPPKEY") => unit(80000)
+      case ("CUSTOMERRecord", "C_NATIONKEY") | ("SUPPLIERRecord", "S_NATIONKEY") => unit(25)
+      case _ => partitionedObject.arraySize / unit(4)
     }
   def numBucketsFull(partitionedObject: PartitionObject): Rep[Int] = partitionedObject.arr match {
     case Def(ArrayNew(l)) => partitionedObject.tpe.name match {
@@ -234,10 +234,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   def bucketSize(partitionedObject: PartitionObject): Rep[Int] = //unit(100)
     // numBuckets(partitionedObject)
     (partitionedObject.tpe.name, partitionedObject.fieldFunc) match {
-      case ("LINEITEMRecord", "L_ORDERKEY")  => unit(16)
-      case ("LINEITEMRecord", "L_SUPPKEY")   => unit(1 << 10)
-      case ("CUSTOMERRecord", "C_NATIONKEY") => partitionedObject.arraySize / unit(25 - 5)
-      case _                                 => unit(1 << 10)
+      case ("LINEITEMRecord", "L_ORDERKEY") => unit(16)
+      case ("LINEITEMRecord", "L_SUPPKEY") => unit(1 << 10)
+      case ("CUSTOMERRecord", "C_NATIONKEY") | ("SUPPLIERRecord", "S_NATIONKEY") => partitionedObject.arraySize / unit(25 - 5)
+      case _ => unit(1 << 10)
     }
 
   // def numBuckets(partitionedObject: PartitionObject): Rep[Int] = unit(1 << 9)
