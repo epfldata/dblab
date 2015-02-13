@@ -17,7 +17,12 @@ class CTransformersPipeline(val settings: compiler.Settings) extends Transformer
     pipeline += new GenericEngineToCTransformer(context)
     pipeline += new ScalaScannerToCmmapTransformer(context)
     // pipeline += new ScalaScannerToCFScanfTransformer(context)
-    pipeline += new ScalaArrayToCStructTransformer(context)
+    if (settings.newCArrayHandling) {
+      pipeline += new ScalaArrayToPointerTransformer(context)
+      pipeline += new ScalaStructToMallocTransformer(context)
+    } else {
+      pipeline += new ScalaArrayToCStructTransformer(context)
+    }
     // pipeline += compiler.TreeDumper(false)
     pipeline += new cscala.deep.ManualGLibMultiMapTransformation(context)
     pipeline += new ScalaCollectionsToGLibTransfomer(context)

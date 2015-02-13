@@ -33,6 +33,7 @@ object Main extends LegoRunner {
       $noLet: Removes unnecessary let-bindings from the generated code
       $ifAgg: Rewrites the conditions of if statements into bitwise form instead of the original
         short-circuiting form (May produce incorrect results in some queries)
+      $newCArr: New way of handling arrays and structs for C code generation (Experimental!)
 """)
       System.exit(0)
     }

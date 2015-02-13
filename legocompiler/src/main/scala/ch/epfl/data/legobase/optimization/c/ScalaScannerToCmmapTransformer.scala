@@ -73,7 +73,8 @@ class ScalaScannerToCmmapTransformer(override val IR: LoweringLegoBase) extends 
 
   rewrite += rule {
     case nn @ K2DBScannerNext1(s, buf) =>
-      val array = field(buf, "array")(typePointer(typeChar))
+      // val array = field(buf, "array")(typePointer(typeChar))
+      val array = buf.asInstanceOf[Rep[Pointer[Char]]]
       val begin = __newVar[Pointer[Char]](s)
       __whileDo((*(s) __!= unit('|')) && (*(s) __!= unit('\n')), {
         pointer_increase(s)
