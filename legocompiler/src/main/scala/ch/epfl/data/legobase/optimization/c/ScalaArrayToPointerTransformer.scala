@@ -10,7 +10,7 @@ import pardis.types.PardisTypeImplicits._
 import pardis.types._
 import scala.language.existentials
 
-class ScalaArrayToPointerTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+class ScalaArrayToPointerTransformer(override val IR: LoweringLegoBase, val settings: compiler.Settings) extends RuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._
@@ -23,22 +23,22 @@ class ScalaArrayToPointerTransformer(override val IR: LoweringLegoBase) extends 
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
     tp match {
-      case c if c.isPrimitive    => super.transformType[T]
-      case ArrayBufferType(args) => typePointer(typeGArray)
+      // case c if c.isPrimitive    => super.transformType[T]
+      // case ArrayBufferType(args) => typePointer(typeGArray)
       // case ArrayType(x) if x == ByteType => typePointer(ByteType)
       // case ArrayType(args) => typePointer(typeCArray({
       //   if (args.isArray) typeCArray(args)
       //   else args
       // }))
-      case ArrayType(args)       => typePointer(args)
+      case ArrayType(args) => typePointer(args)
       case c if c.isRecord => tp.typeArguments match {
         case Nil     => typePointer(tp)
         case List(t) => typePointer(transformType(t))
       }
-      case TreeSetType(args) => typePointer(typeGTree)
-      case SetType(args)     => typePointer(typeLPointer(typeGList))
-      case OptionType(args)  => typePointer(transformType(args))
-      case _                 => super.transformType[T]
+      // case TreeSetType(args) => typePointer(typeGTree)
+      case SetType(args) => typePointer(typeLPointer(typeGList))
+      // case OptionType(args)  => typePointer(transformType(args))
+      case _             => super.transformType[T]
     }
   }).asInstanceOf[PardisType[Any]]
 
@@ -135,32 +135,43 @@ class ScalaArrayToPointerTransformer(override val IR: LoweringLegoBase) extends 
       else if (elemType.isRecord) {
         class T
         implicit val typeT = apply(v).tp.typeArguments(0).asInstanceOf[TypeRep[T]]
+        // implicit val typeT = apply(v).tp.asInstanceOf[TypeRep[T]]
+        // System.out.println(s"typeT: $typeT")
         val newV = apply(v).asInstanceOf[Expression[Pointer[T]]]
-        // __ifThenElse(apply(v) __== unit(null), {
-        //   class T1
-        //   // implicit val typeT1 = newTp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[T1]]
-        //   implicit val typeT1 = innerElemType.asInstanceOf[TypeRep[T1]]
-        //   val tArr = arr.asInstanceOf[Expression[Pointer[T1]]]
-        //   pointer_assign_content(tArr, i, unit(null))
-        // }, {
-        val vContent = *(newV)
-        val tArr = arr.asInstanceOf[Expression[Pointer[T]]]
-        pointer_assign_content(tArr, i, vContent)
-        val pointerVar = newV match {
-          case Def(ReadVar(v)) => v.asInstanceOf[Var[Pointer[T]]]
-          case x               => Var(x.asInstanceOf[Rep[Var[Pointer[T]]]])
+        def updateRecord() = {
+          val vContent = *(newV)
+          // System.out.println(s"vContent: ${vContent}:${vContent.tp}")
+          val tArr = arr.asInstanceOf[Expression[Pointer[T]]]
+          pointer_assign_content(tArr, i, vContent)
+          val pointerVar = newV match {
+            case Def(ReadVar(v)) => v.asInstanceOf[Var[Pointer[T]]]
+            case x               => Var(x.asInstanceOf[Rep[Var[Pointer[T]]]])
+          }
+          __assign(pointerVar, (&(tArr.asInstanceOf[Rep[T]], i)) /*.asInstanceOf[Rep[Pointer[T]]]*/ )(PointerType(typeT))
         }
-        __assign(pointerVar, (&(tArr, i)).asInstanceOf[Rep[Pointer[T]]])(PointerType(typeT))
-        // })
-
-      } else if (elemType.isInstanceOf[SetType[_]]) {
+        if (settings.containerFlattenning) {
+          __ifThenElse(newV __== unit(null), {
+            class T1
+            // implicit val typeT1 = newTp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[T1]]
+            implicit val typeT1 = innerElemType.asInstanceOf[TypeRep[T1]]
+            val tArr = arr.asInstanceOf[Expression[Pointer[T1]]]
+            pointer_assign_content(tArr, i, unit(null))
+          }, {
+            updateRecord()
+          })
+        } else {
+          updateRecord()
+        }
+      } else if (elemType.isInstanceOf[SetType[_]] || elemType.isArray) {
         pointer_assign_content(arr.asInstanceOf[Expression[Pointer[Any]]], i, apply(v).asInstanceOf[Expression[Pointer[Any]]])
-      } else
+      } else {
+        System.out.println(s"v: ${apply(v)}: ${apply(v).tp} origTp: ${v.tp} elemTp: $elemType")
         pointer_assign_content(arr.asInstanceOf[Expression[Pointer[Any]]], i, *(apply(v).asInstanceOf[Expression[Pointer[Any]]])(v.tp.name match {
           case x if v.tp.isArray            => transformType(v.tp).typeArguments(0).asInstanceOf[PardisType[Any]]
           case x if x.startsWith("Pointer") => v.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
           case _                            => v.tp
         }))
+      }
   }
   rewrite += rule {
     case ArrayFilter(a, op) => //field(apply(a), "array")(transformType(a.tp))
@@ -185,7 +196,7 @@ class ScalaArrayToPointerTransformer(override val IR: LoweringLegoBase) extends 
       // <<<<<<< HEAD
       // if (elemType.isRecord) {
       // =======
-      if (elemType.isPrimitive || elemType == OptimalStringType || elemType.isInstanceOf[SetType[_]]) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], apply(i))(newTp)
+      if (elemType.isPrimitive || elemType == OptimalStringType || elemType.isInstanceOf[SetType[_]] || elemType.isArray) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], apply(i))(newTp)
       else {
         // >>>>>>> merged-ir-str
         i match {
@@ -231,13 +242,5 @@ class ScalaArrayToPointerTransformer(override val IR: LoweringLegoBase) extends 
         }
       }
   }
-  rewrite += rule {
-    case s @ PardisStruct(tag, elems, methods) =>
-      // TODO if needed method generation should be added
-      val x = toAtom(Malloc(unit(1))(s.tp))(typePointer(s.tp))
-      val newElems = elems.map(el => PardisStructArg(el.name, el.mutable, transformExp(el.init)(el.init.tp, apply(el.init.tp))))
-      structCopy(x, PardisStruct(tag, newElems, methods.map(m => m.copy(body =
-        transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef])))(s.tp))
-      x
-  }
+
 }

@@ -37,7 +37,7 @@ class Settings(val args: List[String]) {
   def stringCompression: Boolean = hasFlag(comprStrings)
   def noLetBinding: Boolean = hasFlag(noLet)
   def ifAggressive: Boolean = hasFlag(ifAgg)
-  def newCArrayHandling: Boolean = hasFlag(newCArr)
+  def oldCArrayHandling: Boolean = hasFlag(oldCArr)
 }
 
 object Settings {
@@ -53,8 +53,8 @@ object Settings {
   val comprStrings = "+comprStrings"
   val noLet = "+no-let"
   val ifAgg = "+if-agg"
-  val newCArr = "+new-carr"
-  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, newCArr)
+  val oldCArr = "+old-carr"
+  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr)
 }
 
 class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, val number: Int, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
