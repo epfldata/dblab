@@ -8,12 +8,16 @@ Installation
 
 LegoBase interpreter requeires Pardis Library (https://github.com/amirsh/pardis) project `pardis-library`.
 
-LegoBase compiler requires Pardis Compiler (https://github.com/amirsh/pardis) project `pardis-compiler`.
+LegoBase compiler requires Pardis Compiler (https://github.com/amirsh/pardis), C.Scala Library and C.Scala Compiler; 
+the projects `pardis-compiler`, `c-scala-lib`, and `c-scala-deep`.
 
 Clone this project and checkout to the desired branch. Then, after going to sbt console, 
 run `project pardis-library` for going to Pardis Library project and run `project pardis-compiler` for 
 going to Pardis Compiler project.
-run `publish-local` on the projects you need.
+Run `publish-local` on the `root` project of Pardis.
+Then run `c-scala-lib/publish-local` and `c-scala-deep/publish-local` in the sbt console
+of Pardis project.
+
 
 Testing
 =======

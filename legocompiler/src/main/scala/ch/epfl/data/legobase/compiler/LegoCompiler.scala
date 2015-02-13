@@ -5,6 +5,7 @@ package compiler
 import deep._
 import prettyprinter._
 import optimization._
+import optimization.c._
 import pardis.optimization._
 import pardis.ir._
 import pardis.types.PardisTypeImplicits._

@@ -61,11 +61,11 @@ object LegoBuild extends Build {
    settings = defaults ++ purgatorySettings ++  Seq(
      name := "lego-core",
      scalacOptions ++= Seq("-optimize"),
-     libraryDependencies ++= Seq("ch.epfl.data" % "pardis-library_2.11" % "0.1-SNAPSHOT", // hack for being able to generate implementations
-     "ch.epfl.data" % "c-scala-lib_2.11" % "0.1-SNAPSHOT")))
+     libraryDependencies += "ch.epfl.data" % "pardis-library_2.11" % "0.1-SNAPSHOT"))
   lazy val legocompiler = Project(id = "legocompiler", base = file("legocompiler"), settings = defaults ++ Seq(name := "legocompiler",
       libraryDependencies ++= Seq(//"ch.epfl.lamp" % "scala-yinyang_2.11" % "0.2.0-SNAPSHOT",
         "ch.epfl.data" % "pardis-compiler_2.11" % "0.1-SNAPSHOT",
+        "ch.epfl.data" % "c-scala-lib_2.11" % "0.1-SNAPSHOT",
         "ch.epfl.data" % "c-scala-deep_2.11" % "0.1-SNAPSHOT"
         ),
       generate_test <<= inputTask { (argTask: TaskKey[Seq[String]]) =>

@@ -1,6 +1,7 @@
 package ch.epfl.data
 package legobase
 package optimization
+package c
 
 import scala.language.implicitConversions
 import pardis.ir._
