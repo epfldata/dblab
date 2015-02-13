@@ -26,8 +26,13 @@ object Main extends LegoRunner {
       $set2ll: Lowering Set to Linked List
       $contFlat: Flattening the next field of a container of a record to the record itself
       $cstore: Column-Store optimization (Not finished yet!)
-      $part: Partitioning optimization which only should be combined with $cstore (Not finished yet!)
+      $part: Partitioning optimization which only should be combined with $cstore (Not finished yet! Works only for Q6)
       $hmPart: Converts HashMaps into partitioned arrays!)
+      $mallocHoist: Hoists malloc statements outside of the critical path
+      $constArr: Transforms arrays with a small constant size into local variables
+      $noLet: Removes unnecessary let-bindings from the generated code
+      $ifAgg: Rewrites the conditions of if statements into bitwise form instead of the original
+        short-circuiting form (May produce incorrect results in some queries)
 """)
       System.exit(0)
     }

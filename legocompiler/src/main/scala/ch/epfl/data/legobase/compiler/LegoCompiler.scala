@@ -96,15 +96,9 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
   pipeline += DCE
   pipeline += PartiallyEvaluate
 
-  // if (generateCCode) {
-  //   //pipeline += ColumnStoreTransformer
-  // }
-
   // pipeline += PartiallyEvaluate
   pipeline += HashMapHoist
   pipeline += SingletonHashMapToValueTransformer
-  // pipeline += HashMapToArrayTransformer(generateCCode)
-  //pipeline += MemoryManagementTransfomer //NOTE FIX TOPOLOGICAL SORT :-(
 
   if (settings.hashMapPartitioning) {
     pipeline += new HashMapPartitioningTransformer(DSL, number)
@@ -112,6 +106,8 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
     pipeline += PartiallyEvaluate
     pipeline += DCE
   }
+
+  pipeline += TreeDumper(true)
 
   if (settings.stringCompression) pipeline += StringCompressionTransformer
   // pipeline += TreeDumper(false)
@@ -139,6 +135,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
       pipeline += DCE
       pipeline += PartiallyEvaluate
       pipeline += new OptionToCTransformer(DSL) | new Tuple2ToCTransformer(DSL)
+      pipeline += ParameterPromotion
     }
 
     pipeline += new BlockFlattening(DSL) // should not be needed!
@@ -155,7 +152,6 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
   if (settings.columnStore) {
 
     pipeline += new ColumnStoreTransformer(DSL, number)
-    pipeline += TreeDumper(false)
     // if (settings.hashMapPartitioning) {
     //   pipeline += new ColumnStore2DTransformer(DSL, number)
     // }
