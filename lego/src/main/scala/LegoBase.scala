@@ -21,33 +21,42 @@ trait LegoRunner {
     val excludedQueries = Nil
 
     val queries: scala.collection.immutable.List[String] =
-      if (args.length == 3 && args(2) == "testsuite-scala") (for (i <- 1 to 22 if !excludedQueries.contains(i)) yield "Q" + i).toList
-      else if (args.length == 3 && args(2) == "testsuite-c") (for (i <- 1 to 22 if !excludedQueries.contains(i)) yield "Q" + i + "_C").toList
-      else args.tail.tail.toList
+      if (args.length >= 3 && args(2) == "testsuite-scala") (for (i <- 1 to 22 if !excludedQueries.contains(i)) yield "Q" + i).toList
+      else if (args.length >= 3 && args(2) == "testsuite-c") (for (i <- 1 to 22 if !excludedQueries.contains(i)) yield "Q" + i + "_C").toList
+      else args.drop(2).filter(x => !x.startsWith("+")).toList
     for (q <- queries) {
       currQuery = q
       Console.withOut(new PrintStream(getOutputName)) {
         executeQuery(currQuery)
         // Check results
         if (Config.checkResults) {
-          val getResultFileName = "results/" + currQuery + ".result_sf" + sf
-          if (new java.io.File(getResultFileName).exists) {
-            val resc = {
-              val str = scala.io.Source.fromFile(getResultFileName).mkString
-              str * Config.numRuns
-            }
+          if (Config.printQueryOutput == false) {
+            System.out.println("LegoBase misconfiguration detected: checkResults = true but " +
+              "printQueryResults = false (Thus no output to check!). Skipping check...")
+          } else {
+            val getResultFileName = "results/" + currQuery + ".result_sf" + sf
             val resq = scala.io.Source.fromFile(getOutputName).mkString
-            if (resq != resc) {
-              System.out.println("-----------------------------------------")
-              System.out.println("QUERY" + q + " DID NOT RETURN CORRECT RESULT!!!")
-              System.out.println("Correct result:")
-              System.out.println(resc)
-              System.out.println("Result obtained from execution:")
+            if (new java.io.File(getResultFileName).exists) {
+              val resc = {
+                val str = scala.io.Source.fromFile(getResultFileName).mkString
+                str * Config.numRuns
+              }
+              if (resq != resc) {
+                System.out.println("-----------------------------------------")
+                System.out.println("QUERY" + q + " DID NOT RETURN CORRECT RESULT!!!")
+                System.out.println("Correct result:")
+                System.out.println(resc)
+                System.out.println("Result obtained from execution:")
+                System.out.println(resq)
+                System.out.println("-----------------------------------------")
+                System.exit(0)
+              } else System.out.println("CHECK RESULT FOR QUERY " + q + ": [OK]")
+            } else {
+              System.out.println("Reference result file not found. Skipping checking of result")
+              System.out.println("Execution results:")
               System.out.println(resq)
-              System.out.println("-----------------------------------------")
-              System.exit(0)
-            } else System.out.println("CHECK RESULT FOR QUERY " + q + ": [OK]")
-          } else System.out.println("Reference result file not found. Skipping checking of result")
+            }
+          }
         }
       }
     }

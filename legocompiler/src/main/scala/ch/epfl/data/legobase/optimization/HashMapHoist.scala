@@ -10,6 +10,12 @@ import deep._
 import pardis.types._
 import pardis.types.PardisTypeImplicits._
 
+object HashMapHoist extends TransformerHandler {
+  def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
+    new HashMapHoist(context.asInstanceOf[LoweringLegoBase]).optimize(block)
+  }
+}
+
 /**
  *  Transforms `new HashMap`s inside the part which runs the query into buffers which are allocated
  *  at the loading time.
@@ -27,40 +33,30 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
       foundFlag = false
       traverseBlock(node)
     } while (foundFlag)
+    // System.out.println(s"all hoisted stms before: $hoistedStatements")
     scheduleHoistedStatements()
+    // System.out.println(s"all hoisted stms after: $hoistedStatements")
     transformProgram(node)
   }
 
   var startCollecting = false
   var foundFlag = false
+  // specifies the depth level statement with respect to the source anchor
+  var depthLevel = 0
   val hoistedStatements = collection.mutable.ArrayBuffer[Stm[Any]]()
   val currentHoistedStatements = collection.mutable.ArrayBuffer[Stm[Any]]()
   val workList = collection.mutable.Set[Sym[Any]]()
 
-  /* Adopted from https://gist.github.com/ThiporKong/4399695 */
-  private def tsort[A](edges: Traversable[(A, A)]): Iterable[A] = {
-    import scala.collection.immutable.Set
-    @scala.annotation.tailrec
-    def tsort(toPreds: Map[A, Set[A]], done: Iterable[A]): Iterable[A] = {
-      val (noPreds, hasPreds) = toPreds.partition { _._2.isEmpty }
-      if (noPreds.isEmpty) {
-        if (hasPreds.isEmpty) done else sys.error(hasPreds.toString)
-      } else {
-        val found = noPreds.map { _._1 }
-        tsort(hasPreds.mapValues { _ -- found }, done ++ found)
-      }
-    }
-
-    val toPred = edges.foldLeft(Map[A, Set[A]]()) { (acc, e) =>
-      acc + (e._1 -> acc.getOrElse(e._1, Set())) + (e._2 -> (acc.getOrElse(e._2, Set()) + e._1))
-    }
-    tsort(toPred, Seq())
-  }
-
   def scheduleHoistedStatements() {
-    val dependenceGraphEdges = for (stm1 <- hoistedStatements; stm2 <- hoistedStatements if (stm1 != stm2 && getDependencies(stm1.rhs).contains(stm2.sym))) yield (stm2 -> stm1)
+    // TODO it's not generic, for the statements with nodes without children it does not work
+    // if (!hoistedStatements.forall(stm => stm.rhs.funArgs.isEmpty)) {
+    //   val dependenceGraphEdges = for (stm1 <- hoistedStatements; stm2 <- hoistedStatements if (stm1 != stm2 && getDependencies(stm1.rhs).contains(stm2.sym))) yield (stm2 -> stm1)
+    //   hoistedStatements.clear()
+    //   hoistedStatements ++= pardis.utils.Graph.tsort(dependenceGraphEdges)
+    // }
+    val result = pardis.utils.Graph.schedule(hoistedStatements.toList, (stm1: Stm[Any], stm2: Stm[Any]) => getDependencies(stm2.rhs).contains(stm1.sym))
     hoistedStatements.clear()
-    hoistedStatements ++= tsort(dependenceGraphEdges)
+    hoistedStatements ++= result
   }
 
   def getDependencies(node: Def[_]): List[Sym[Any]] = node.funArgs.filter(_.isInstanceOf[Sym[Any]]).map(_.asInstanceOf[Sym[Any]])
@@ -68,12 +64,19 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
   override def traverseDef(node: Def[_]): Unit = node match {
     case GenericEngineRunQueryObject(b) => {
       startCollecting = enabled
+      depthLevel = 0
       currentHoistedStatements.clear()
       traverseBlock(b)
       hoistedStatements.prependAll(currentHoistedStatements)
       startCollecting = false
     }
     case _ => super.traverseDef(node)
+  }
+
+  override def traverseBlock(block: Block[_]): Unit = {
+    depthLevel += 1
+    super.traverseBlock(block)
+    depthLevel -= 1
   }
 
   override def traverseStm(stm: Stm[_]): Unit = stm match {
@@ -90,6 +93,16 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
         case HashMapNew4(hashFunc, size) if startCollecting && !hoistedStatements.contains(stm) => {
           hoistStatement()
         }
+        case HashMapNew() if startCollecting && !hoistedStatements.contains(stm) => {
+          // System.out.println("hm new found!")
+          hoistStatement()
+        }
+        case MultiMapNew() if startCollecting && !hoistedStatements.contains(stm) => {
+          hoistStatement()
+        }
+        case ArrayNew(_) if startCollecting && depthLevel == 1 && !hoistedStatements.contains(stm) => {
+          hoistStatement()
+        }
         case _ if startCollecting && workList.contains(sym) && !hoistedStatements.contains(stm) => {
           hoistStatement()
           workList -= sym
@@ -104,8 +117,9 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
     // Profiling and utils functions mapping
     case GenericEngineRunQueryObject(b) =>
-      debugMsg(stderr, unit("New place for hash maps\n"))
+      //Console.err.printf(unit("New place for hash maps\n"))
       for (stm <- hoistedStatements) {
+        // System.out.println(s"reflecting $stm!")
         reflectStm(stm)
       }
       startCollecting = enabled

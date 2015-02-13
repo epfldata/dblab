@@ -1,8 +1,21 @@
 #!/bin/bash
 
-SF=0.1
+SF=8
 NUMRUNS=1
 VERBOSE=true
+
+#rm *.out
+#make
+
+if [ $# -ne 0 ]; then
+    SF=$1
+    echo "SF set to "$SF"!"
+    if [ $# -eq 2 ]; then
+        if [ "$2" == "silent" ]; then
+            VERBOSE=false
+        fi
+    fi
+fi
 
 TMPFILE="tmpfile.txt"
 if [ "`uname`" == "Linux" ]; then
@@ -12,7 +25,7 @@ else
     TMPFILE=`mktemp -q /tmp/tmp.XXXXXX`
 fi
 
-for f in `ls *.out`
+for f in `ls -1v *.out`
 do
     QUERY=`echo $f | cut -d'.' -f1`
     echo "Running query $QUERY..."
