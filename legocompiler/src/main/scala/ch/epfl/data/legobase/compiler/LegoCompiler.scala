@@ -120,7 +120,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
     pipeline += DCE
   }
 
-  if (settings.stringCompression) pipeline += StringCompressionTransformer
+  if (settings.stringCompression) pipeline += new StringCompressionTransformer(DSL, number)
   // pipeline += TreeDumper(false)
 
   if (settings.hashMapLowering) {
