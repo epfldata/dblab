@@ -11,7 +11,7 @@ import pardis.types._
 import scala.language.implicitConversions
 
 // Mapping Scala Scanner operations to C mmap operations
-class ScalaScannerToCmmapTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class ScalaScannerToCmmapTransformer(override val IR: LoweringLegoBase, val settings: compiler.Settings) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
   import CNodes._
   import CTypes._
@@ -74,14 +74,24 @@ class ScalaScannerToCmmapTransformer(override val IR: LoweringLegoBase) extends 
   rewrite += rule {
     case nn @ K2DBScannerNext1(s, buf) =>
       // val array = field(buf, "array")(typePointer(typeChar))
-      val array = buf.asInstanceOf[Rep[Pointer[Char]]]
+      // val array = buf.asInstanceOf[Rep[Pointer[Char]]]
+      val array = if (settings.oldCArrayHandling)
+        field[Pointer[Char]](buf, "array")(typePointer(typeChar))
+      else
+        buf.asInstanceOf[Rep[Pointer[Char]]]
+
       val begin = __newVar[Pointer[Char]](s)
       __whileDo((*(s) __!= unit('|')) && (*(s) __!= unit('\n')), {
         pointer_increase(s)
       })
       val size = pointer_minus(s, readVar(begin))
       strncpy(array, readVar(begin), size)
-      pointer_assign_content(array, size, unit('\u0000'))
+      // pointer_assign_content(array, size, unit('\u0000'))
+      // buf(size) = unit('\u0000')
+      if (settings.oldCArrayHandling)
+        pointer_assign_content(array, size, unit('\u0000'))
+      else
+        buf(size) = unit('\u0000')
       pointer_increase(s) // skip '|'
       size
   }
