@@ -34,6 +34,7 @@ object Main extends LegoRunner {
       $ifAgg: Rewrites the conditions of if statements into bitwise form instead of the original
         short-circuiting form (May produce incorrect results in some queries)
       $oldCArr: Old way of handling arrays and structs for C code generation
+      $strOpt: Some optimizations on string operations (Helpful for Q22)
 """)
       System.exit(0)
     }

@@ -23,6 +23,9 @@ class Settings(val args: List[String]) {
     val SUPPORTED_CS = (1 to 22).toList diff (List(13))
     if ((columnStore || partitioning) && (!SUPPORTED_CS.contains(tpchQuery)))
       throw new Exception(s"$cstore and $part only work for the Queries ${SUPPORTED_CS.mkString(" & ")} for the moment!")
+    if (badRecordHandling && oldCArrayHandling) {
+      throw new Exception(s"$badRec and $oldCArr cannot be chained together.")
+    }
   }
   @inline def hasFlag(flag: String): Boolean = args.exists(_ == flag)
   def hashMapLowering: Boolean = hasFlag(hm2set)
@@ -38,6 +41,8 @@ class Settings(val args: List[String]) {
   def noLetBinding: Boolean = hasFlag(noLet)
   def ifAggressive: Boolean = hasFlag(ifAgg)
   def oldCArrayHandling: Boolean = hasFlag(oldCArr)
+  def badRecordHandling: Boolean = hasFlag(badRec)
+  def stringOptimization: Boolean = hasFlag(strOpt)
 }
 
 object Settings {
@@ -54,7 +59,9 @@ object Settings {
   val noLet = "+no-let"
   val ifAgg = "+if-agg"
   val oldCArr = "+old-carr"
-  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr)
+  val badRec = "+bad-rec"
+  val strOpt = "+str-opt"
+  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr, badRec, strOpt)
 }
 
 class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, val number: Int, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
@@ -174,6 +181,10 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   if (settings.mallocHoisting) {
     pipeline += MemoryAllocationHoist
+  }
+
+  if (settings.stringOptimization) {
+    pipeline += new StringOptimization(DSL)
   }
 
   if (generateCCode) pipeline += new CTransformersPipeline(settings)
