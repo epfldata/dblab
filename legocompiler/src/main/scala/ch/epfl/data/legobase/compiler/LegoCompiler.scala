@@ -110,8 +110,6 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
     pipeline += DCE
   }
 
-  pipeline += TreeDumper(true)
-
   if (settings.stringCompression) pipeline += StringCompressionTransformer
   // pipeline += TreeDumper(false)
 
@@ -151,6 +149,8 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
     // pipeline += ConstSizeArrayToLocalVars
     pipeline += SingletonArrayToValueTransformer
   }
+
+  pipeline += TreeDumper(true)
 
   if (settings.columnStore) {
 
