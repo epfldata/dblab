@@ -8,13 +8,7 @@ import pardis.types.PardisTypeImplicits._
 import pardis.optimization._
 import legobase.deep._
 
-object StringCompressionTransformer extends TransformerHandler {
-  def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    new StringCompressionTransformer(context.asInstanceOf[LoweringLegoBase]).optimize(block)
-  }
-}
-
-class StringCompressionTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class StringCompressionTransformer(override val IR: LoweringLegoBase, val query: Int) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
 
   sealed trait Phase
@@ -27,6 +21,7 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
   val tokenizedStrings = collection.mutable.Set[String]()
   var stringReversalNeeded: Boolean = false // Used for endsWith
   val scanOperatorArrays = new scala.collection.mutable.ArrayBuffer[(Expression[Array[Any]], Seq[String])]()
+  val COMPRESSION_THREASHOLD = unit(4096) // maximum number of unique strings per list possible
 
   val debugEnabled = false
   // The third argument of the following map is used only for the twoPhaseStringCompression
@@ -44,6 +39,21 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
     if (debugEnabled) System.out.println("StringCompressionTransformer: Name alias for string " + str + " not found!")
     str
   })
+
+  // cc stands for cancompress
+  def cc(name: String): Boolean = query match {
+    case 2  => List("N_NAME", "P_MFGR", "P_TYPE", "R_NAME").contains(getNameAliasIfAny(name)) // Disabled: "S_ADDRESS", "S_COMMENT", "S_NAME", "S_PHONE"
+    case 9  => false // Disabled: N_NAME, P_NAME
+    case 10 => List("N_NAME").contains(getNameAliasIfAny(name)) // Disabled: "C_ADDRESS", "C_COMMENT", "C_NAME", "C_PHONE", 
+    case 13 => List("O_COMMENT").contains(getNameAliasIfAny(name))
+    case 15 => false // Disabled: "S_ADDRESS","S_NAME","S_PHONE"
+    case 16 => List("P_BRAND", "P_TYPE").contains(getNameAliasIfAny(name)) //Disabled: "S_COMMENT"
+    case 18 => false // Disabled: "C_NAME"
+    case 20 => List("N_NAME").contains(getNameAliasIfAny(name)) // Disabled:  "P_NAME", "S_ADDRESS","S_NAME"
+    case 21 => List("N_NAME").contains(getNameAliasIfAny(name)) // Disabled "S_NAME"
+    case 22 => false // Disabled: "C_PHONE"
+    case _  => true
+  }
 
   override def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     traverseBlock(node)
@@ -114,7 +124,7 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
     }
     case s @ Struct(tag, elems, methods) if phase == LoadingPhase =>
       elems.foreach(e => {
-        if (e.init.tp == OptimalStringType) hoistedStatements += e.name
+        if (e.init.tp == OptimalStringType && cc(e.name)) hoistedStatements += e.name
       })
   }
 
@@ -169,7 +179,7 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
       if (debugEnabled) System.out.println("StringCompressionTransformer: Struct " + tag + " found with elems " + elems.mkString)
 
       Struct(tag, elems.map(e => {
-        if (e.init.tp == OptimalStringType) {
+        if (e.init.tp == OptimalStringType && cc(e.name)) {
           if (debugEnabled) System.out.println("StringCompressionTransformer: Field " + e.name + " of type " + e.init.tp)
           if (debugEnabled) System.out.println("StringCompressionTransformer: Map now is " + compressedStringsMaps.mkString)
 
@@ -186,6 +196,13 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
           // here is wrong and we fix it later)
           if (twoPhaseStringCompressionNeeded)
             compressedStringMetaData._3.append(uncompressedString)
+
+          // Emit check for large lists -- this is to avoid having compression on strings that have many unique values
+          __ifThenElse(readVar(num_unique_strings) > COMPRESSION_THREASHOLD, {
+            printf(unit("StringCompressionTransformer ERROR: Q%s -- Number of unique strings in list of field %s exceeded the maximum allowed value of %d\n"), unit(query), unit(e.name), COMPRESSION_THREASHOLD)
+            printf(unit("\t\tEither disable StringCompressionTransformer for your query, or disable %s in the transformer.\n"), unit(e.name))
+            // TODO: Lift System.exit so that we can exit, or throw exception in the generated code
+          }, unit())
 
           if (shouldTokenize(e.name)) {
             System.out.println("StringCompressionTransformer: tokenizing " + e.name);
@@ -215,15 +232,15 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
     case origStruct @ Struct(tag, elems, methods) if phase == QueryExecutionPhase =>
       System.out.println("StringCompressionTransformer: Rewriting struct during query with tag: " + tag)
       Struct(tag, elems.map(e => {
-        if (e.init.tp == OptimalStringType) {
+        if (e.init.tp == OptimalStringType && cc(e.name)) {
           PardisStructArg(e.name, e.mutable, infix_asInstanceOf(apply(e.init))(compressedStringType(e.name)))
         } else e
       }), methods)(origStruct.tp)
   }
 
   rewrite += rule {
-    case sf @ StructImmutableField(s, f) if sf.tp == OptimalStringType => field(apply(s), f)(compressedStringType(f))
-    case sf @ StructFieldGetter(s, f) if sf.tp == OptimalStringType    => fieldGetter(apply(s), f)(compressedStringType(f))
+    case sf @ StructImmutableField(s, f) if sf.tp == OptimalStringType && cc(f) => field(apply(s), f)(compressedStringType(f))
+    case sf @ StructFieldGetter(s, f) if sf.tp == OptimalStringType && cc(f)    => fieldGetter(apply(s), f)(compressedStringType(f))
   }
 
   object OptimalStringComparison {
@@ -244,7 +261,7 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
 
   // Overwrite behaviour of string operations
   rewrite += statement {
-    case sym -> GenericEngineParseStringObject(constantString) =>
+    case sym -> GenericEngineParseStringObject(constantString) if cc(constantStrings(sym).poolName) =>
       val csi = constantStrings(sym)
       System.out.println("StringCompressionTransformer: Generating code for compressing constant string " + csi.poolName)
       val newSym = GenericEngine.parseString(constantString)
@@ -265,8 +282,13 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
         if (debugEnabled) System.out.println("StringCompressionTransformer: GenericEngineParseStringObject of " + constantString + " encountered ")
         str1 match {
           case Def(PardisStructImmutableField(s, name)) =>
-            if (equalityCheck) infix_==(apply(str1), apply(str2))
-            else infix_!=(apply(str1), apply(str2))
+            if (cc(name)) {
+              if (equalityCheck) infix_==(apply(str1), apply(str2))
+              else infix_!=(apply(str1), apply(str2))
+            } else {
+              if (equalityCheck) optimalString$eq$eq$eq(str1, str2)
+              else optimalString$eq$bang$eq(str1, str2)
+            }
           case dflt @ _ =>
             throw new Exception("StringCompressionTransformer BUG: unknown node type in LHS of comparison with constant string. LHS node is " + str1.correspondingNode)
         }
@@ -277,14 +299,21 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
     case OptimalStringDiff(str1, str2) =>
       modifiedExpressions.get(str1) match {
         case Some(fieldName) =>
-          val compressedStringValues = compressedStringsMaps(fieldName)._2
-          val uncompressedStr1 = compressedStringValues(apply(str1).asInstanceOf[Expression[Int]])
-          val uncompressedStr2 = compressedStringValues(apply(str2).asInstanceOf[Expression[Int]])
-          optimalStringDiff(uncompressedStr1, uncompressedStr2)
+          if (cc(fieldName)) {
+            val compressedStringValues = compressedStringsMaps(fieldName)._2
+            val uncompressedStr1 = compressedStringValues(apply(str1).asInstanceOf[Expression[Int]])
+            val uncompressedStr2 = compressedStringValues(apply(str2).asInstanceOf[Expression[Int]])
+            optimalStringDiff(uncompressedStr1, uncompressedStr2)
+          } else optimalStringDiff(str1, str2)
         case None =>
-          // str1 && str2 are already integers by propagation of compressed string 
-          // (e.g. intermediate struct allocated during query execution)
-          apply(str1).asInstanceOf[Expression[Int]] - apply(str2).asInstanceOf[Expression[Int]]
+          str1 match {
+            case Def(PardisStructImmutableField(s, f)) => if (cc(f)) {
+              // str1 && str2 are already integers by propagation of compressed string 
+              // (e.g. intermediate struct allocated during query execution)
+              apply(str1).asInstanceOf[Expression[Int]] - apply(str2).asInstanceOf[Expression[Int]]
+            } else optimalStringDiff(str1, str2)
+            case _ => throw new Exception("StringCompressionTransformer BUG: OptimalStringDiff " + str1.correspondingNode)
+          }
       }
 
     case OptimalStringString(str) => {
@@ -296,21 +325,27 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
           case _                                     => throw new Exception("StringCompressionTransformer BUG: unknown node type in stringification of compressed string. LHS node is " + str.correspondingNode)
         }
       }
-
-      val compressedStringMetaData = compressedStringsMaps(fieldName)
-      val compressedStringValues = compressedStringMetaData._2
-      val tmpString = compressedStringValues(apply(str).asInstanceOf[Expression[Int]])
-      if (stringReversalNeeded) tmpString.reverse else tmpString
+      if (cc(fieldName)) {
+        val compressedStringMetaData = compressedStringsMaps(fieldName)
+        val compressedStringValues = compressedStringMetaData._2
+        val tmpString = compressedStringValues(apply(str).asInstanceOf[Expression[Int]])
+        if (stringReversalNeeded) tmpString.reverse else tmpString
+      } else optimalStringString(str)
     }
 
-    case OptimalStringStartsOrEndsWith(str1, str2, _) => str2 match {
+    case OptimalStringStartsOrEndsWith(str1, str2, endsWith) => str2 match {
       case Def(GenericEngineParseStringObject(constantString)) =>
         if (debugEnabled) System.out.println("StringCompressionTransformer: GenericEngineParseStringObject of " + constantString + " encountered ")
         str1 match {
           case Def(PardisStructImmutableField(s, name)) =>
-            val range = apply(str2).asInstanceOf[Expression[Tuple2[Int, Int]]]
-            val index = apply(str1).asInstanceOf[Expression[Int]]
-            index >= range._1 && index <= range._2
+            if (cc(name)) {
+              val range = apply(str2).asInstanceOf[Expression[Tuple2[Int, Int]]]
+              val index = apply(str1).asInstanceOf[Expression[Int]]
+              index >= range._1 && index <= range._2
+            } else {
+              if (endsWith) optimalStringEndsWith(str1, str2)
+              else optimalStringStartsWith(str1, str2)
+            }
           case dflt @ _ =>
             throw new Exception("StringCompressionTransformer BUG: unknown node type in LHS of startsWith node. LHS node is " + str1.correspondingNode)
         }
@@ -345,7 +380,7 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
             val fieldNames = soa._2
             val idx = __newVar[Int](0)
             array_foreach(arr, ((ae: Rep[Any]) => {
-              fieldNames.filter(fn => !shouldTokenize(fn)).foreach(fn => {
+              fieldNames.filter(fn => !shouldTokenize(fn) && cc(fn)).foreach(fn => {
                 val compressedStringMetaData = compressedStringsMaps(fn)
                 val uncompressedString = compressedStringMetaData._3.apply(idx)
                 val compressedString = compressedStringMetaData._2.indexOf(uncompressedString)
@@ -363,28 +398,38 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase) extends Ru
 
   rewrite += rule {
     case OptimalStringIndexOfSlice(str1, str2, beg) =>
-      val idx = __newVarNamed[Int](unit(-1), "findSlice")
-      val start = __ifThenElse(apply(beg) < unit(0), unit(0), apply(beg))
-      Range(start, apply(str1).length).foreach {
-        __lambda { i =>
-          val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Expression[Array[Int]]], i))(IntType)
-          __ifThenElse(wordI __== apply(str2), {
-            __ifThenElse(readVar(idx) __== unit(-1), __assign(idx, i), unit())
-          }, unit())
-        }
+      str1 match {
+        case Def(PardisStructImmutableField(s, name)) if (cc(name)) =>
+          val idx = __newVarNamed[Int](unit(-1), "findSlice")
+          val start = __ifThenElse(apply(beg) < unit(0), unit(0), apply(beg))
+          Range(start, apply(str1).length).foreach {
+            __lambda { i =>
+              val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Expression[Array[Int]]], i))(IntType)
+              __ifThenElse(wordI __== apply(str2), {
+                __ifThenElse(readVar(idx) __== unit(-1), __assign(idx, i), unit())
+              }, unit())
+            }
+          }
+          readVar(idx)
+        case Def(PardisStructImmutableField(s, name)) if (!cc(name)) => optimalStringIndexOfSlice(str1, str2, apply(beg))
+        case _ => throw new Exception("StringCompressionTransformer BUG: OptimalStringIndexOfSlice with a node != PardisStructImmutableField (node is of type " + str1.correspondingNode + ")")
       }
-      readVar(idx)
 
     case OptimalStringContainsSlice(str1, str2) =>
-      val idx = __newVarNamed[Int](unit(-1), "findSlice")
-      Range(unit(0), apply(str1).length).foreach {
-        __lambda { i =>
-          val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Expression[Array[Int]]], i))(IntType)
-          __ifThenElse(wordI __== apply(str2), {
-            __assign(idx, i)
-          }, unit())
-        }
+      str1 match {
+        case Def(PardisStructImmutableField(s, name)) if (cc(name)) =>
+          val idx = __newVarNamed[Int](unit(-1), "containsSlice")
+          Range(unit(0), apply(str1).length).foreach {
+            __lambda { i =>
+              val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Expression[Array[Int]]], i))(IntType)
+              __ifThenElse(wordI __== apply(str2), {
+                __assign(idx, i)
+              }, unit())
+            }
+          }
+          __ifThenElse(readVar(idx) __!= unit(-1), unit(true), unit(false))
+        case Def(PardisStructImmutableField(s, name)) if (!cc(name)) => optimalStringContainsSlice(str1, str2)
+        case _ => throw new Exception("StringCompressionTransformer BUG: OptimalStringContainsSlice with a node != PardisStructImmutableField (node is of type " + str1.correspondingNode + ")")
       }
-      __ifThenElse(readVar(idx) __!= unit(-1), unit(true), unit(false))
   }
 }
