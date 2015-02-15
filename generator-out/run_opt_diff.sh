@@ -3,8 +3,16 @@
 # This script is meant to generate code for different optimization combinations
 # for a specific query, and will generate the statistics in CSV format
 
-#Hard-coded parameters
-DATA_FOLDER="/Users/dashti/Desktop"
+#reading parameters from config file: DATA_FOLDER
+CONFIG_FILE="run_config.cfg"
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "Config file does not exist."
+    echo "You can rename run_config.example.cfg to $CONFIG_FILE and change the parameters inside."
+    exit 1
+fi
+source $CONFIG_FILE
+if [ -z "$DATA_FOLDER" ]; then echo "DATA_FOLDER is not declared in $CONFIG_FILE."; exit 1; fi
+if [ -z "$OPTIMIZATION_COMBINATIONS" ]; then echo "OPTIMIZATION_COMBINATIONS is not declared in $CONFIG_FILE."; exit 1; fi
 
 if [ $# -ne 3 ]; then
     echo "Incorrect number of command line arguments provided (you gave $# and 3 are needed)."
@@ -12,6 +20,9 @@ if [ $# -ne 3 ]; then
     echo "Example ./run_opt_diff.sh Q3 1 3"
     exit
 fi
+
+declare -a optArr=("+hm2set" "+set2arr" "+set2ll" "+cont-flat" "+cstore" "+part" "+hm-part" "+malloc-hoist" "+const-arr" "+comprStrings" "+no-let" "+if-agg" "+old-carr")
+declare -a optArrAcronym=("h2s" "s2a" "s2ll" "cf" "cstor" "part" "hpart" "mhoist" "carr" "cmpstr" "nlet" "ifag" "ocar")
 
 GEN_OUT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
@@ -45,15 +56,11 @@ do
 done 
 eval "echo '' >> $RESULT_CSV"
 
-declare -a optArr=("+hm2set" "+set2arr" "+set2ll" "+cont-flat" "+cstore" "+part" "+hm-part" "+malloc-hoist" "+const-arr" "+comprStrings" "+no-let" "+if-agg" "+old-carr")
-declare -a optArrAcronym=("h2s" "s2a" "s2ll" "cf" "cstor" "part" "hpart" "mhoist" "carr" "cmpstr" "nlet" "ifag" "ocar")
-declare -a optComb=("0" "0:1" "0:2" "0:2:3" "4" "5" "6" "7" "8" "10" "11" "12")
-
-optCombLen=${#optComb[@]}
+optCombLen=${#OPTIMIZATION_COMBINATIONS[@]}
 
 for (( idx = 0; idx < $optCombLen; idx+=1 ))
 do
-    currentOptsIdxs=${optComb[$idx]}
+    currentOptsIdxs=${OPTIMIZATION_COMBINATIONS[$idx]}
     opts=(${currentOptsIdxs//:/ })
     optsLen=${#opts[@]}
     currentOpts=""
