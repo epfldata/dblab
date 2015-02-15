@@ -92,7 +92,8 @@ class ScalaScannerToCmmapTransformer(override val IR: LoweringLegoBase, val sett
         pointer_assign_content(array, size, unit('\u0000'))
       else
         // buf(size - 1) = unit('\u0000')
-        buf(size) = unit('\u0000')
+        // buf(size) = unit('\u0000')
+        ()
       pointer_increase(s) // skip '|'
       size
   }
