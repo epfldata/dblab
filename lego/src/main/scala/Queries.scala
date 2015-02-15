@@ -110,7 +110,8 @@ object Queries {
     for (i <- 0 until numRuns) {
       runQuery {
         val constantDate = parseDate("1995-03-04")
-        val scanCustomer = new SelectOp(new ScanOp(customerTable))(x => x.C_MKTSEGMENT === parseString("HOUSEHOLD"))
+        val houseHold = parseString("HOUSEHOLD")
+        val scanCustomer = new SelectOp(new ScanOp(customerTable))(x => x.C_MKTSEGMENT === houseHold)
         val scanOrders = new SelectOp(new ScanOp(ordersTable))(x => x.O_ORDERDATE < constantDate)
         val scanLineitem = new SelectOp(new ScanOp(lineitemTable))(x => x.L_SHIPDATE > constantDate)
         val jo1 = new HashJoinOp(scanCustomer, scanOrders)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY)
@@ -177,7 +178,8 @@ object Queries {
       runQuery({
         val constantDate1 = parseDate("1996-01-01")
         val constantDate2 = parseDate("1997-01-01")
-        val scanRegion = new SelectOp(new ScanOp(regionTable))(x => x.R_NAME === parseString("ASIA"))
+        val asia = parseString("ASIA")
+        val scanRegion = new SelectOp(new ScanOp(regionTable))(x => x.R_NAME === asia)
         val scanNation = new ScanOp(nationTable)
         val scanLineitem = new ScanOp(lineitemTable)
         val scanOrders = new SelectOp(new ScanOp(ordersTable))(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE < constantDate2)
