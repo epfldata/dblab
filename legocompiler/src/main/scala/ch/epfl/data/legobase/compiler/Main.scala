@@ -35,6 +35,7 @@ object Main extends LegoRunner {
         short-circuiting form (May produce incorrect results in some queries)
       $oldCArr: Old way of handling arrays and structs for C code generation
       $strOpt: Some optimizations on string operations (Helpful for Q22)
+      $hmNoCol: Lowering HashMap without collisions to Array
 """)
       System.exit(0)
     }

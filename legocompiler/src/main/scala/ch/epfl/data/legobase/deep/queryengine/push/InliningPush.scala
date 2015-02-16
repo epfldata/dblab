@@ -19,9 +19,10 @@ trait InliningPush extends DeepDSL with pardis.ir.InlineFunctions with QueriesIm
     // System.out.println(s"asInstanceOf for $exp from ${exp.tp} to ${typeRep[T]}")
     val res = exp match {
       // case _ if exp.tp.isRecord      => exp.asInstanceOf[Rep[T]]
-      case Def(PardisCast(exp2))     => infix_asInstanceOf[T](exp2)
-      case _ if exp.tp == typeRep[T] => exp.asInstanceOf[Rep[T]]
-      case _                         => super.infix_asInstanceOf[T](exp)
+      case Def(PardisCast(exp2))                     => infix_asInstanceOf[T](exp2)
+      case Def(ArrayNew(size)) if typeRep[T].isArray => __newArray(size)(typeRep[T].typeArguments(0)).asInstanceOf[Rep[T]]
+      case _ if exp.tp == typeRep[T]                 => exp.asInstanceOf[Rep[T]]
+      case _                                         => super.infix_asInstanceOf[T](exp)
     }
     // System.out.println(s"res $res")
     res

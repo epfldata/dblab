@@ -85,6 +85,7 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Rec
     case OptimalStringSlice(self, start, end) =>
       {
         val len: Rep[Int] = end.$minus(start).$plus(unit(1));
+        //FIXME CStdLib.malloc should be generated in a proper way
         val newbuf: Rep[ch.epfl.data.cscala.CLangTypes.LPointer[Char]] = CStdLib.malloc[Char](len);
         CString.strncpy(newbuf, CLang.pointer_add[Char](new OptimalStringRep(self).getBaseValue(self), start)(typeRep[Char], CLangTypes.charType), len.$minus(unit(1)));
         newbuf

@@ -139,7 +139,7 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase) extends RuleBased
     for (mallocInstance <- distinctInstances) {
       val mallocTp = mallocInstance.tp
       //	 val elemTp = mallocTp.typeArguments(0)
-      val index = __newVar[Int](unit(0))
+      val index = __newVarNamed[Int](unit(0), "memoryPoolIndex")
       val elemType = mallocTp
       val poolType = elemType //if (mallocTp.isPrimitive) elemType else typePointer(elemType)
       val POOL_SIZE = 1800000 //* (poolType.toString.split("_").length + 1)

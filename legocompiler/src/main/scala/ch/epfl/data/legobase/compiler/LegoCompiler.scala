@@ -20,6 +20,8 @@ class Settings(val args: List[String]) {
     }
     if (!hashMapLowering && (setToArray || setToLinkedList || containerFlattenning))
       throw new Exception("It's impossible to lower Sets without lowering HashMap and MultiMap!")
+    if (hashMapLowering && hashMapNoCollision)
+      throw new Exception(s"$hmNoCol and $hm2set cannot be chained together.")
     val SUPPORTED_CS = (1 to 22).toList diff (List(13))
     if ((columnStore || partitioning) && (!SUPPORTED_CS.contains(tpchQuery)))
       throw new Exception(s"$cstore and $part only work for the Queries ${SUPPORTED_CS.mkString(" & ")} for the moment!")
@@ -43,6 +45,7 @@ class Settings(val args: List[String]) {
   def oldCArrayHandling: Boolean = hasFlag(oldCArr)
   def badRecordHandling: Boolean = hasFlag(badRec)
   def stringOptimization: Boolean = hasFlag(strOpt)
+  def hashMapNoCollision: Boolean = hasFlag(hmNoCol)
 }
 
 object Settings {
@@ -61,7 +64,8 @@ object Settings {
   val oldCArr = "+old-carr"
   val badRec = "+bad-rec"
   val strOpt = "+str-opt"
-  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr, badRec, strOpt)
+  val hmNoCol = "+hm-no-col"
+  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr, badRec, strOpt, hmNoCol)
 }
 
 class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, val number: Int, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
@@ -120,9 +124,15 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
   if (settings.stringCompression) pipeline += new StringCompressionTransformer(DSL, number)
   // pipeline += TreeDumper(false)
 
-  if (settings.hashMapLowering) {
-    pipeline += MultiMapOptimizations
-    pipeline += new HashMapToSetTransformation(DSL, number)
+  if (settings.hashMapLowering || settings.hashMapNoCollision) {
+    if (settings.hashMapLowering) {
+      pipeline += MultiMapOptimizations
+      pipeline += new HashMapToSetTransformation(DSL, number)
+    }
+    if (settings.hashMapNoCollision) {
+      pipeline += new HashMapNoCollisionTransformation(DSL, number)
+      pipeline += TreeDumper(false)
+    }
     // pipeline += PartiallyEvaluate
     pipeline += DCE
 
@@ -137,7 +147,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
     if (settings.setToArray) {
       pipeline += SetArrayTransformation
     }
-    if (settings.setToLinkedList || settings.setToArray) {
+    if (settings.setToLinkedList || settings.setToArray || settings.hashMapNoCollision) {
       pipeline += AssertTransformer(TypeAssertion(t => !t.isInstanceOf[DSL.SetType[_]]))
       //pipeline += ParameterPromotion
       pipeline += DCE
@@ -156,8 +166,6 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
     // pipeline += ConstSizeArrayToLocalVars
     pipeline += SingletonArrayToValueTransformer
   }
-
-  pipeline += TreeDumper(true)
 
   if (settings.columnStore) {
 
