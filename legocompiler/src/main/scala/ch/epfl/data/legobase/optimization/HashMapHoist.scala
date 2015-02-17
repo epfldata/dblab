@@ -125,7 +125,8 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
       startCollecting = enabled
       val newBlock = transformBlock(b)
       startCollecting = false
-      GenericEngineRunQueryObject(newBlock)
+      // System.out.println(newBlock.tp)
+      GenericEngineRunQueryObject(newBlock)(newBlock.tp)
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]
 }

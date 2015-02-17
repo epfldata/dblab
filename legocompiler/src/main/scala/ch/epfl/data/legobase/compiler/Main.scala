@@ -36,6 +36,7 @@ object Main extends LegoRunner {
       $oldCArr: Old way of handling arrays and structs for C code generation
       $strOpt: Some optimizations on string operations (Helpful for Q22)
       $hmNoCol: Lowering HashMap without collisions to Array
+      $largeOut: If the output is so large, this flag ignores the time for printing (Helpful for Q10, Q11, Q16, Q20)
 """)
       System.exit(0)
     }

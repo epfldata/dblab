@@ -25,6 +25,15 @@ class Settings(val args: List[String]) {
     val SUPPORTED_CS = (1 to 22).toList diff (List(13))
     if ((columnStore || partitioning) && (!SUPPORTED_CS.contains(tpchQuery)))
       throw new Exception(s"$cstore and $part only work for the Queries ${SUPPORTED_CS.mkString(" & ")} for the moment!")
+    val LARGE_OUTPUT_QUERIES = List(10, 11, 16, 20)
+    def warningForLargeOut() = System.out.println(s"${Console.YELLOW}Warning${Console.RESET}: The queries ${LARGE_OUTPUT_QUERIES.mkString("Q", ", Q", "")} should have $largeOut flag.")
+    def isLargeOutputQuery = LARGE_OUTPUT_QUERIES.contains(tpchQuery)
+    if (largeOutputHoisting != isLargeOutputQuery) {
+      warningForLargeOut()
+    }
+    if (largeOutputHoisting && !targetIsC) {
+      throw new Exception(s"$largeOut is only available for C Code Generation.")
+    }
     if (badRecordHandling && oldCArrayHandling) {
       throw new Exception(s"$badRec and $oldCArr cannot be chained together.")
     }
@@ -46,6 +55,7 @@ class Settings(val args: List[String]) {
   def badRecordHandling: Boolean = hasFlag(badRec)
   def stringOptimization: Boolean = hasFlag(strOpt)
   def hashMapNoCollision: Boolean = hasFlag(hmNoCol)
+  def largeOutputHoisting: Boolean = hasFlag(largeOut)
 }
 
 object Settings {
@@ -65,7 +75,8 @@ object Settings {
   val badRec = "+bad-rec"
   val strOpt = "+str-opt"
   val hmNoCol = "+hm-no-col"
-  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr, badRec, strOpt, hmNoCol)
+  val largeOut = "+large-out"
+  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr, badRec, strOpt, hmNoCol, largeOut)
 }
 
 class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, val number: Int, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
@@ -193,6 +204,10 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   if (settings.stringOptimization) {
     pipeline += new StringOptimization(DSL)
+  }
+
+  if (settings.largeOutputHoisting) {
+    pipeline += new LargeOutputPrintHoister(DSL)
   }
 
   if (generateCCode) pipeline += new CTransformersPipeline(settings)

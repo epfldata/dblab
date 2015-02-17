@@ -200,9 +200,9 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase) extends RuleBased
     case GenericEngineRunQueryObject(b) =>
       createBuffers()
       startCollecting = enabled
-      val tb = transformBlock(b)
+      val tb = transformBlock(b)(b.tp)
       startCollecting = false
-      GenericEngineRunQueryObject(tb)
+      GenericEngineRunQueryObject(tb)(tb.tp)
   }
 
   rewrite += rule {
