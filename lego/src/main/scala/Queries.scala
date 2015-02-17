@@ -30,7 +30,7 @@ object Queries {
     val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
       runQuery {
-        val constantDate: Int = parseDate("1998-08-11")
+        val constantDate: Int = parseDate("1998-09-02")
         val lineitemScan = new SelectOp(new ScanOp(lineitemTable))(x => x.L_SHIPDATE <= constantDate)
         val aggOp = new AggOp(lineitemScan, 9)(x => new GroupByClass(
           x.L_RETURNFLAG, x.L_LINESTATUS))((t, currAgg) => { t.L_DISCOUNT + currAgg },
@@ -82,9 +82,9 @@ object Queries {
           if (x.wnd.S_ACCTBAL[Double] < y.wnd.S_ACCTBAL[Double]) 1
           else if (x.wnd.S_ACCTBAL[Double] > y.wnd.S_ACCTBAL[Double]) -1
           else {
-            var res = x.wnd.N_NAME[LBString] compare y.wnd.N_NAME[LBString]
+            var res = x.wnd.N_NAME[LBString] diff y.wnd.N_NAME[LBString]
             if (res == 0) {
-              res = x.wnd.S_NAME[LBString] compare y.wnd.S_NAME[LBString]
+              res = x.wnd.S_NAME[LBString] diff y.wnd.S_NAME[LBString]
               if (res == 0) res = x.wnd.P_PARTKEY[Int] - y.wnd.P_PARTKEY[Int]
             }
             res
@@ -313,7 +313,7 @@ object Queries {
           else if (x.key > y.key) 1
           else 0
         })
-        val po = new PrintOp(sortOp)(kv => printf("%d|%.5f\n", kv.key, kv.aggs(2)), () => true)
+        val po = new PrintOp(sortOp)(kv => printf("%d|%.4f\n", kv.key, kv.aggs(2)), () => true)
         po.open
         po.next
         ()

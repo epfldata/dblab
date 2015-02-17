@@ -88,14 +88,20 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Rec
         //FIXME CStdLib.malloc should be generated in a proper way
         val newbuf: Rep[ch.epfl.data.cscala.CLangTypes.LPointer[Char]] = CStdLib.malloc[Char](len);
         CString.strncpy(newbuf, CLang.pointer_add[Char](new OptimalStringRep(self).getBaseValue(self), start)(typeRep[Char], CLangTypes.charType), len.$minus(unit(1)));
+        pointer_assign_content(newbuf.asInstanceOf[Expression[Pointer[Any]]], len - 1, unit('\u0000'))
         newbuf
       }
   }
   rewrite += rule {
     case OptimalStringReverse(x) =>
-      val str = infix_asInstanceOf(apply(x))(typeArray(typePointer(CharType))).asInstanceOf[Rep[Array[Pointer[Char]]]]
+      val len: Rep[Int] = strlen(apply(x)) + 1
+      val newbuf: Rep[ch.epfl.data.cscala.CLangTypes.LPointer[Char]] = CStdLib.malloc[Char](len);
+      CString.strncpy(newbuf, new OptimalStringRep(x).getBaseValue(x), len.$minus(unit(1)));
+      pointer_assign_content(newbuf.asInstanceOf[Expression[Pointer[Any]]], len - 1, unit('\u0000'))
+
+      val str = infix_asInstanceOf(newbuf)(typeArray(typePointer(CharType))).asInstanceOf[Rep[Array[Pointer[Char]]]]
       val i = __newVar[Int](unit(0))
-      val j = __newVar[Int](strlen(str))
+      val j = __newVar[Int](strlen(str) - 1)
 
       __whileDo((i: Rep[Int]) < (j: Rep[Int]), {
         val _i = (i: Rep[Int])
