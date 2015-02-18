@@ -199,7 +199,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   pipeline += DCECLang //NEVER REMOVE!!!!
 
-  // pipeline += TreeDumper(false)
+  pipeline += TreeDumper(false)
 
   val codeGenerator =
     if (generateCCode) {

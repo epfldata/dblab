@@ -90,4 +90,27 @@ char* strntod_unchecked(char *s, double* num)
 typedef GHashTable LGHashTable;
 typedef GList LGList;
 
+#define MAX_NUM_WORDS 15
+#define MAX_WORD_LENGTH 16
+
+char** tokenizeString(char *sentence) {
+  char** words = (char**)malloc(sizeof(char*) * MAX_NUM_WORDS);
+  memset(words, '\0', sizeof(char*) * MAX_NUM_WORDS);
+  for (int i = 0 ; i < MAX_NUM_WORDS; i+=1) {
+    words[i] = (char*)malloc(sizeof(char) * MAX_WORD_LENGTH);
+  	memset(words[i], '\0', sizeof(char) * MAX_WORD_LENGTH);
+  }
+  
+  char *tokenPtr;
+  int j = 0;
+  tokenPtr = strtok(sentence," .!;,:?-");
+  while(tokenPtr != NULL){
+    strcpy(words[j], tokenPtr);
+    tokenPtr = strtok(NULL," .!;,:?-");
+    j++;
+  }
+
+  return words;
+}
+
 #endif

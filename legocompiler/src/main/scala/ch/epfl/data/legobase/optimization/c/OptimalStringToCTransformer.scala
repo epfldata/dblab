@@ -114,4 +114,8 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Rec
       })
       str
   }
+  rewrite += rule {
+    case OptimalStringSplit(str, delim) =>
+      NameAlias[Pointer[Char]](None, "tokenizeString", List(List(str)))
+  }
 }

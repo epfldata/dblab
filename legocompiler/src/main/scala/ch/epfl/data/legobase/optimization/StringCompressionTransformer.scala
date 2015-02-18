@@ -31,6 +31,7 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase, val query:
   case class ConstantStringInfo(val poolName: String, val isStartsWithOperation: Boolean)
   val constantStrings = collection.mutable.Map[Expression[Any], ConstantStringInfo]()
   val nameAliases = collection.mutable.Map[String, String]()
+  val MAX_NUM_WORDS = 15;
 
   def shouldTokenize(name: String): Boolean = wordTokinizingStringCompressionNeeded && tokenizedStrings.contains(name)
   def compressedStringType(name: String): TypeRep[Any] = (if (shouldTokenize(name)) ArrayType(IntType) else IntType).asInstanceOf[TypeRep[Any]]
@@ -206,17 +207,31 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase, val query:
 
           if (shouldTokenize(e.name)) {
             System.out.println("StringCompressionTransformer: tokenizing " + e.name);
-            val delim = __newArray[Char](8)
+            val delim = __newArray[Byte](8)
             delim(0) = unit(' '); delim(1) = unit('.'); delim(2) = unit('!'); delim(3) = unit(';');
             delim(4) = unit(','); delim(5) = unit(':'); delim(6) = unit('?'); delim(7) = unit('-');
-            val words = uncompressedString.split(delim)
-            val compressedWords = words.map((w: Expression[OptimalString]) => {
+
+            val compressedWords = __newArray[Int](MAX_NUM_WORDS)
+            Range(0, MAX_NUM_WORDS).foreach { __lambda { i => compressedWords(i) = unit(-1) } }
+            val words = uncompressedString.split(delim.asInstanceOf[Rep[Array[Char]]])
+            Range(0, MAX_NUM_WORDS).foreach {
+              __lambda { i =>
+                val w = words(i)
+                __ifThenElse(!compressedStringValues.contains(w), {
+                  __assign(num_unique_strings, readVar(num_unique_strings) + unit(1))
+                  compressedStringValues.append(w)
+                }, unit)
+                compressedWords(i) = compressedStringValues.indexOf(w)
+              }
+            }
+
+            /*val compressedWords = words.map((w: Expression[OptimalString]) => {
               __ifThenElse(!compressedStringValues.contains(w), {
                 __assign(num_unique_strings, readVar(num_unique_strings) + unit(1))
                 compressedStringValues.append(w)
               }, unit)
               compressedStringValues.indexOf(w)
-            })
+            })*/
             PardisStructArg(e.name, true, compressedWords)
           } else {
             __ifThenElse(!compressedStringValues.contains(uncompressedString), {
@@ -401,15 +416,18 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase, val query:
       str1 match {
         case Def(PardisStructImmutableField(s, name)) if (cc(name)) =>
           val idx = __newVarNamed[Int](unit(-1), "findSlice")
-          val start = __ifThenElse(apply(beg) < unit(0), unit(0), apply(beg))
-          Range(start, apply(str1).length).foreach {
-            __lambda { i =>
-              val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Expression[Array[Int]]], i))(IntType)
-              __ifThenElse(wordI __== apply(str2), {
-                __ifThenElse(readVar(idx) __== unit(-1), __assign(idx, i), unit())
-              }, unit())
-            }
-          }
+
+          val i = __newVar[Int](__ifThenElse(apply(beg) < unit(0), unit(0), apply(beg)))
+          /*Range(readVar(start), MAX_NUM_WORDS /* apply(str1).length */ ).foreach {
+            __lambda { i =>*/
+          __whileDo(readVar(i) < MAX_NUM_WORDS, {
+            val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Expression[Array[Int]]], i))(IntType)
+            __ifThenElse(wordI __== apply(str2), {
+              __ifThenElse(readVar(idx) __== unit(-1), __assign(idx, i), unit())
+            }, unit())
+            __assign(i, readVar(i) + unit(1))
+          })
+          //}
           readVar(idx)
         case Def(PardisStructImmutableField(s, name)) if (!cc(name)) => optimalStringIndexOfSlice(str1, str2, apply(beg))
         case _ => throw new Exception("StringCompressionTransformer BUG: OptimalStringIndexOfSlice with a node != PardisStructImmutableField (node is of type " + str1.correspondingNode + ")")
