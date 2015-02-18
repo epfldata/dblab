@@ -34,11 +34,7 @@ class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase, val ifAgg:
 
   rewrite += rule {
     case IfThenElse(cond, thenp, elsep) if thenp.tp != UnitType =>
-      // val res = __newVar(unit(0))(thenp.tp.asInstanceOf[TypeRep[Int]])
       val res = __newVarNamed[Int](unit(0), "ite")(thenp.tp.asInstanceOf[TypeRep[Int]])
-      // if (res.e.asInstanceOf[Sym[_]].id == 17398) {
-      //   System.out.println(s"tp is ${thenp.tp}, ${elsep.tp}, ${elsep.correspondingNode.asInstanceOf[Block[Any]].res.tp}, ${elsep.correspondingNode.asInstanceOf[Block[Any]].res}")
-      // }
       __ifThenElse(cond, {
         __assign(res, inlineBlock(thenp))
       }, {

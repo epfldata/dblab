@@ -174,8 +174,8 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
   // pipeline += DCE
 
   if (settings.constArray) {
-    // pipeline += ConstSizeArrayToLocalVars
-    pipeline += SingletonArrayToValueTransformer
+    pipeline += ConstSizeArrayToLocalVars
+    // pipeline += SingletonArrayToValueTransformer
   }
 
   if (settings.columnStore) {
