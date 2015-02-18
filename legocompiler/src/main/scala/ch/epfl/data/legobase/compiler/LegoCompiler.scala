@@ -170,6 +170,10 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
     pipeline += new BlockFlattening(DSL) // should not be needed!
   }
 
+  if (settings.partitioning && number == 3) {
+    pipeline += new WhileToRangeForeachTransformer(DSL)
+  }
+
   // pipeline += PartiallyEvaluate
   // pipeline += DCE
 
@@ -188,7 +192,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
     pipeline += PartiallyEvaluate
 
     pipeline += DCE
-    if (settings.partitioning) {
+    if (settings.partitioning && number == 6) {
       pipeline += new PartitionTransformer(DSL)
     }
     pipeline += ParameterPromotion
