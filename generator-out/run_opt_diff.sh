@@ -60,10 +60,10 @@ done
 if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
     for (( i = 1; i <= $NUMRUNS; i+=1 ))
     do
-        eval "echo -n ',RUN #$i$LAST_CHAR CHECK' >> $RESULT_CSV"
+        eval "echo -n ',RUN #$i$LAST_CHAR CHECK (ms)' >> $RESULT_CSV"
     done 
 fi
-eval "echo '' >> $RESULT_CSV"
+eval "echo ',TOTAL EXECUTION (sec)' >> $RESULT_CSV"
 
 optCombLen=${#OPTIMIZATION_COMBINATIONS[@]}
 
@@ -77,6 +77,8 @@ do
 
     for (( idx = 0; idx < $optCombLen; idx+=1 ))
     do
+        START_TIME=$(date +%s)
+
         currentOptsIdxs=${OPTIMIZATION_COMBINATIONS[$idx]}
         opts=(${currentOptsIdxs//:/ })
         optsLen=${#opts[@]}
@@ -110,34 +112,38 @@ do
         eval "cat $GEN_OUT_DIR/output_$QUERY.txt | sed -e 's/Gen.*/\:/' | awk '/:/{n++}{if(\$1!=\":\") print > (\"$GEN_OUT_DIR/output_$QUERY$UNDERLINE\" n \".txt\") }' n=1"
 
         if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
-            ECHO_COMMAND="echo -n"
-            DELIMITER=","
             for (( i = 1; i <= $NUMRUNS; i+=1 ))
             do
                 REF_RESULT_FILE="$GEN_OUT_DIR/../results/$QUERY.result_sf$SF"
                 if [ "$SF" = "8" ]; then
                     REF_RESULT_FILE="$GEN_OUT_DIR/../results/sf$SF/$QUERY.result"
                 fi
-
-                if [ "$i" = "$NUMRUNS" ]; then
-                    ECHO_COMMAND="echo"
-                    DELIMITER=""
-                fi
                 if [ ! -f "$GEN_OUT_DIR/output_$QUERY$UNDERLINE$i.txt" ]; then
-                    eval "$ECHO_COMMAND 'NOT_FOUND$DELIMITER' >> $RESULT_CSV"
+                    if [ "$i" = "1" ]; then
+                        for (( k = 1; k <= $NUMRUNS; k+=1 ))
+                        do
+                            eval "echo -n ',' >> $RESULT_CSV"
+                        done
+                        eval "echo -n 'NOT_FOUND,' >> $RESULT_CSV"
+                    fi
+                    eval "echo -n 'NOT_FOUND,' >> $RESULT_CSV"
                 else
                     if [ ! -f "$REF_RESULT_FILE" ]; then
-                        eval "$ECHO_COMMAND 'NO_REF$DELIMITER' >> $RESULT_CSV"
+                        eval "echo -n 'NO_REF,' >> $RESULT_CSV"
                     else
                         if `diff $GEN_OUT_DIR/output_$QUERY$UNDERLINE$i.txt $REF_RESULT_FILE >/dev/null` ; then
-                            eval "$ECHO_COMMAND 'OK$DELIMITER' >> $RESULT_CSV"
+                            eval "echo -n 'OK,' >> $RESULT_CSV"
                         else
-                            eval "$ECHO_COMMAND 'WRONG_RESULT$DELIMITER' >> $RESULT_CSV"
+                            eval "echo -n 'WRONG_RESULT,' >> $RESULT_CSV"
                         fi
                     fi
                 fi
             done
         fi
+
+        END_TIME=$(date +%s)
+        EXEC_TIME=$(( $END_TIME - $START_TIME ))
+        eval "echo '$EXEC_TIME' >> $RESULT_CSV"
 
         eval "rm -f $GEN_OUT_DIR/result.csv"
         eval "cp $RESULT_CSV $GEN_OUT_DIR/result.csv"
