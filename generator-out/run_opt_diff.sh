@@ -19,8 +19,8 @@ if [ -z "$OPTIMIZATION_COMBINATIONS" ]; then echo "OPTIMIZATION_COMBINATIONS is 
 
 if [ $# -ne 3 ]; then
     echo "Incorrect number of command line arguments provided (you gave $# and 3 are needed)."
-    echo "Usage ./run_opt_diff.sh <TPCH_QUERY> <SCALING_FACTOR> <NUM_RUNS_PER_QUERY>"
-    echo "Example ./run_opt_diff.sh Q3 1 3"
+    echo "Usage ./run_opt_diff.sh <TPCH_QUERY list> <SCALING_FACTOR> <NUM_RUNS_PER_QUERY>"
+    echo "Example ./run_opt_diff.sh Q3:Q18:Q7 1 3"
     exit
 fi
 
@@ -29,10 +29,9 @@ declare -a optArrAcronym=("h2s" "s2a" "s2ll" "cf" "cstor" "part" "hpart" "mhoist
 
 eval "cd $GEN_OUT_DIR/.."
 
-QUERY=$1
+SELECTED_QUERIES=$1
 SF=$2
 NUMRUNS=$3
-EXECUTABLE="$GEN_OUT_DIR/$QUERY.out"
 VERBOSE=true
 LANG="_C"
 UNDERLINE="_"
@@ -68,75 +67,84 @@ eval "echo '' >> $RESULT_CSV"
 
 optCombLen=${#OPTIMIZATION_COMBINATIONS[@]}
 
-for (( idx = 0; idx < $optCombLen; idx+=1 ))
+
+QUERIES=(${SELECTED_QUERIES//:/ })
+NUM_QUERIES=${#QUERIES[@]}
+for (( qIdx = 0; qIdx < $NUM_QUERIES; qIdx+=1 ))
 do
-    currentOptsIdxs=${OPTIMIZATION_COMBINATIONS[$idx]}
-    opts=(${currentOptsIdxs//:/ })
-    optsLen=${#opts[@]}
-    currentOpts=""
-    currentOptsAcronym=""
-    currentOptsFullName=""
-    for (( opt = 0; opt < $optsLen; opt+=1 ))
+    QUERY=${QUERIES[$qIdx]}
+    EXECUTABLE="$GEN_OUT_DIR/$QUERY.out"
+
+    for (( idx = 0; idx < $optCombLen; idx+=1 ))
     do
-        currentOpts="$currentOpts ${optArr[${opts[opt]}]}"
-        currentOptsAcronym="$currentOptsAcronym-${optArrAcronym[${opts[opt]}]}"
-        currentOptsFullName="$currentOptsFullName ${optArr[${opts[opt]}]}"
-    done
-
-    eval "rm -rf $GEN_OUT_DIR/*.out*"
-    eval "rm -rf $GEN_OUT_DIR/*.c"
-
-    eval "sed -i -e 's/val numRuns: scala.Int = [0-9]*/val numRuns: scala.Int = $NUMRUNS/g' $GEN_OUT_DIR/../lego/src/main/scala/Config.scala"
-    eval "sbt ';project legocompiler ;generate-test $DATA_FOLDER $SF $QUERY$LANG $currentOpts'"
-    eval "sed -i -e 's/val numRuns: scala.Int = [0-9]*/val numRuns: scala.Int = 1/g' $GEN_OUT_DIR/../lego/src/main/scala/Config.scala"
-
-    eval "make -C $GEN_OUT_DIR"
-    eval "rm -rf $GEN_OUT_DIR/output_$QUERY*"
-
-    eval "echo -n '$QUERY,$currentOptsAcronym,$currentOptsFullName,' >> $RESULT_CSV"
-    eval "$EXECUTABLE > $GEN_OUT_DIR/output_$QUERY.txt"
-    if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
-        eval "cat $GEN_OUT_DIR/output_$QUERY.txt | grep Generated | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' | rev | cut -c 2- | rev | tr '\n' ',' >> $RESULT_CSV"
-    else
-        eval "cat $GEN_OUT_DIR/output_$QUERY.txt | grep Generated | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' | rev | cut -c 2- | rev >> $RESULT_CSV"
-    fi
-    eval "cat $GEN_OUT_DIR/output_$QUERY.txt | sed -e 's/Gen.*/\:/' | awk '/:/{n++}{if(\$1!=\":\") print > (\"$GEN_OUT_DIR/output_$QUERY$UNDERLINE\" n \".txt\") }' n=1"
-
-    if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
-        ECHO_COMMAND="echo -n"
-        DELIMITER=","
-        for (( i = 1; i <= $NUMRUNS; i+=1 ))
+        currentOptsIdxs=${OPTIMIZATION_COMBINATIONS[$idx]}
+        opts=(${currentOptsIdxs//:/ })
+        optsLen=${#opts[@]}
+        currentOpts=""
+        currentOptsAcronym=""
+        currentOptsFullName=""
+        for (( opt = 0; opt < $optsLen; opt+=1 ))
         do
-            REF_RESULT_FILE="$GEN_OUT_DIR/../results/$QUERY.result_sf$SF"
-            if [ "$SF" = "8" ]; then
-                REF_RESULT_FILE="$GEN_OUT_DIR/../results/sf$SF/$QUERY.result"
-            fi
+            currentOpts="$currentOpts ${optArr[${opts[opt]}]}"
+            currentOptsAcronym="$currentOptsAcronym-${optArrAcronym[${opts[opt]}]}"
+            currentOptsFullName="$currentOptsFullName ${optArr[${opts[opt]}]}"
+        done
 
-            if [ "$i" = "$NUMRUNS" ]; then
-                ECHO_COMMAND="echo"
-                DELIMITER=""
-            fi
-            if [ ! -f "$GEN_OUT_DIR/output_$QUERY$UNDERLINE$i.txt" ]; then
-                eval "$ECHO_COMMAND 'NOT_FOUND$DELIMITER' >> $RESULT_CSV"
-            else
-                if [ ! -f "$REF_RESULT_FILE" ]; then
-                    eval "$ECHO_COMMAND 'NO_REF$DELIMITER' >> $RESULT_CSV"
+        eval "rm -rf $GEN_OUT_DIR/*.out*"
+        eval "rm -rf $GEN_OUT_DIR/*.c"
+
+        eval "sed -i -e 's/val numRuns: scala.Int = [0-9]*/val numRuns: scala.Int = $NUMRUNS/g' $GEN_OUT_DIR/../lego/src/main/scala/Config.scala"
+        eval "sbt ';project legocompiler ;generate-test $DATA_FOLDER $SF $QUERY$LANG $currentOpts'"
+        eval "sed -i -e 's/val numRuns: scala.Int = [0-9]*/val numRuns: scala.Int = 1/g' $GEN_OUT_DIR/../lego/src/main/scala/Config.scala"
+
+        eval "make -C $GEN_OUT_DIR"
+        eval "rm -rf $GEN_OUT_DIR/output_$QUERY*"
+
+        eval "echo -n '$QUERY,$currentOptsAcronym,$currentOptsFullName,' >> $RESULT_CSV"
+        eval "$EXECUTABLE > $GEN_OUT_DIR/output_$QUERY.txt"
+        if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
+            eval "cat $GEN_OUT_DIR/output_$QUERY.txt | grep Generated | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' | rev | cut -c 2- | rev | tr '\n' ',' >> $RESULT_CSV"
+        else
+            eval "cat $GEN_OUT_DIR/output_$QUERY.txt | grep Generated | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' | rev | cut -c 2- | rev >> $RESULT_CSV"
+        fi
+        eval "cat $GEN_OUT_DIR/output_$QUERY.txt | sed -e 's/Gen.*/\:/' | awk '/:/{n++}{if(\$1!=\":\") print > (\"$GEN_OUT_DIR/output_$QUERY$UNDERLINE\" n \".txt\") }' n=1"
+
+        if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
+            ECHO_COMMAND="echo -n"
+            DELIMITER=","
+            for (( i = 1; i <= $NUMRUNS; i+=1 ))
+            do
+                REF_RESULT_FILE="$GEN_OUT_DIR/../results/$QUERY.result_sf$SF"
+                if [ "$SF" = "8" ]; then
+                    REF_RESULT_FILE="$GEN_OUT_DIR/../results/sf$SF/$QUERY.result"
+                fi
+
+                if [ "$i" = "$NUMRUNS" ]; then
+                    ECHO_COMMAND="echo"
+                    DELIMITER=""
+                fi
+                if [ ! -f "$GEN_OUT_DIR/output_$QUERY$UNDERLINE$i.txt" ]; then
+                    eval "$ECHO_COMMAND 'NOT_FOUND$DELIMITER' >> $RESULT_CSV"
                 else
-                    if `diff $GEN_OUT_DIR/output_$QUERY$UNDERLINE$i.txt $REF_RESULT_FILE >/dev/null` ; then
-                        eval "$ECHO_COMMAND 'OK$DELIMITER' >> $RESULT_CSV"
+                    if [ ! -f "$REF_RESULT_FILE" ]; then
+                        eval "$ECHO_COMMAND 'NO_REF$DELIMITER' >> $RESULT_CSV"
                     else
-                        eval "$ECHO_COMMAND 'WRONG_RESULT$DELIMITER' >> $RESULT_CSV"
+                        if `diff $GEN_OUT_DIR/output_$QUERY$UNDERLINE$i.txt $REF_RESULT_FILE >/dev/null` ; then
+                            eval "$ECHO_COMMAND 'OK$DELIMITER' >> $RESULT_CSV"
+                        else
+                            eval "$ECHO_COMMAND 'WRONG_RESULT$DELIMITER' >> $RESULT_CSV"
+                        fi
                     fi
                 fi
-            fi
-        done
-    fi
+            done
+        fi
 
-    eval "rm -f $GEN_OUT_DIR/result.csv"
-    eval "cp $RESULT_CSV $GEN_OUT_DIR/result.csv"
+        eval "rm -f $GEN_OUT_DIR/result.csv"
+        eval "cp $RESULT_CSV $GEN_OUT_DIR/result.csv"
 
-    eval "rm -rf $GEN_OUT_DIR/output_$QUERY*"
+        eval "rm -rf $GEN_OUT_DIR/output_$QUERY*"
 
-    eval "mv $EXECUTABLE $ARCHIVE_DIR/$QUERY$currentOptsAcronym.out"
-    eval "mv $GEN_OUT_DIR/$QUERY.c $ARCHIVE_DIR/$QUERY$currentOptsAcronym.c"
+        eval "mv $EXECUTABLE $ARCHIVE_DIR/$QUERY$currentOptsAcronym.out"
+        eval "mv $GEN_OUT_DIR/$QUERY.c $ARCHIVE_DIR/$QUERY$currentOptsAcronym.c"
+    done
 done
