@@ -405,9 +405,9 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase, val query:
             }))(arr.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
           })
           // Print generic block of query execution
-          GenericEngineRunQueryObject(transformBlock(b))
+          GenericEngineRunQueryObject(transformBlock(b)(b.tp))(b.tp)
         }
-      } else GenericEngineRunQueryObject(transformBlock(b))
+      } else GenericEngineRunQueryObject(transformBlock(b)(b.tp))(b.tp)
     }
   }
 
