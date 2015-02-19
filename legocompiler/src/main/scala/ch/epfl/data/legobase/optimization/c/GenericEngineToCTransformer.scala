@@ -23,7 +23,7 @@ class GenericEngineToCTransformer(override val IR: LoweringLegoBase) extends Rul
       inlineBlock(apply(b))
       gettimeofday(&(end))
       val tm = timeval_subtract(&(diff), &(end), &(start))
-      printf(unit("Generated code run in %ld milliseconds."), tm)
+      printf(unit("Generated code run in %ld milliseconds.\n"), tm)
   }
   rewrite += rule { case GenericEngineParseStringObject(s) => s }
   rewrite += rule {
