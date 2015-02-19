@@ -172,6 +172,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
 
   if (settings.partitioning && number == 3) {
     pipeline += new WhileToRangeForeachTransformer(DSL)
+    pipeline += new ArrayPartitioning(DSL, number)
   }
 
   // pipeline += PartiallyEvaluate

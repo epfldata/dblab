@@ -11,7 +11,7 @@ import pardis.types._
 import pardis.types.PardisTypeImplicits._
 import pardis.shallow.utils.DefaultValue
 
-class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) {
+class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
 
   object RangeCondition {
@@ -89,7 +89,7 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
   rewrite += statement {
     case sym -> While(cond, body) if shouldBeConverted(sym) =>
       val whileInfo = convertedWhiles.find(_.whileSym == sym).get
-      System.out.println(s"startCond: $startConds")
+      // System.out.println(s"startCond: $startConds")
       // System.out.println(s"whileInfo: $whileInfo")
       val start = startConds(whileInfo.variable)
       // we assume step = 1
