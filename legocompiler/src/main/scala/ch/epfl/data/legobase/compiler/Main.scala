@@ -37,11 +37,13 @@ object Main extends LegoRunner {
       $strOpt: Some optimizations on string operations (Helpful for Q22)
       $hmNoCol: Lowering HashMap without collisions to Array
       $largeOut: If the output is so large, this flag ignores the time for printing (Helpful for Q10, Q11, Q16, Q20)
+  Available options:
+      $nameWithFlag: appends the optimization flags to the name of files
 """)
       System.exit(0)
     }
     Config.checkResults = false
-    settings = new Settings(args.toList.filter(_.startsWith("+")))
+    settings = new Settings(args.toList.filter(a => a.startsWith("+") || a.startsWith("-")))
     run(args)
   }
 

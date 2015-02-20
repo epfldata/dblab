@@ -22,7 +22,7 @@ class Settings(val args: List[String]) {
       throw new Exception("It's impossible to lower Sets without lowering HashMap and MultiMap!")
     if (hashMapLowering && hashMapNoCollision)
       throw new Exception(s"$hmNoCol and $hm2set cannot be chained together.")
-    val SUPPORTED_CS = (1 to 22).toList diff (List(13))
+    val SUPPORTED_CS = (1 to 22).toList
     if ((columnStore || partitioning) && (!SUPPORTED_CS.contains(tpchQuery)))
       throw new Exception(s"$cstore and $part only work for the Queries ${SUPPORTED_CS.mkString(" & ")} for the moment!")
     val LARGE_OUTPUT_QUERIES = List(10, 11, 16, 20)
@@ -56,6 +56,7 @@ class Settings(val args: List[String]) {
   def stringOptimization: Boolean = hasFlag(strOpt)
   def hashMapNoCollision: Boolean = hasFlag(hmNoCol)
   def largeOutputHoisting: Boolean = hasFlag(largeOut)
+  def nameIsWithFlag: Boolean = hasFlag(nameWithFlag)
 }
 
 object Settings {
@@ -76,7 +77,8 @@ object Settings {
   val strOpt = "+str-opt"
   val hmNoCol = "+hm-no-col"
   val largeOut = "+large-out"
-  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr, badRec, strOpt, hmNoCol, largeOut)
+  val nameWithFlag = "-name-with-flag"
+  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr, badRec, strOpt, hmNoCol, largeOut, nameWithFlag)
 }
 
 class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, val number: Int, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
@@ -86,7 +88,10 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
     }
   }
 
-  def outputFile: String = "Q" + number
+  def outputFile: String = if (settings.nameIsWithFlag)
+    settings.args.filter(_.startsWith("+")).map(_.drop(1)).sorted.mkString("_") + "_Q" + number
+  else
+    "Q" + number
 
   val reportCompilationTime: Boolean = true
 
