@@ -118,11 +118,11 @@ do
             eval "echo -n '$QUERY,$currentOptsAcronym,$currentOptsFullName,' >> $RESULT_CSV"
             eval "$EXECUTABLE > $GEN_OUT_DIR/output_$QUERY.txt"
             if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
-                eval "cat $GEN_OUT_DIR/output_$QUERY.txt | grep Generated | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' >> $RESULT_CSV"
+                eval "cat $GEN_OUT_DIR/output_$QUERY.txt | grep 'Generated code run in' | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' >> $RESULT_CSV"
             else
-                eval "cat $GEN_OUT_DIR/output_$QUERY.txt | grep Generated | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' | rev | cut -c 2- | rev >> $RESULT_CSV"
+                eval "cat $GEN_OUT_DIR/output_$QUERY.txt | grep 'Generated code run in' | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' | rev | cut -c 2- | rev >> $RESULT_CSV"
             fi
-            eval "cat $GEN_OUT_DIR/output_$QUERY.txt | sed -e 's/Gen.*/\:/' | awk '/:/{n++}{if(\$1!=\":\") print > (\"$GEN_OUT_DIR/output_$QUERY$UNDERLINE\" n \".txt\") }' n=1"
+            eval "cat $GEN_OUT_DIR/output_$QUERY.txt | sed -e 's/Generated code run in.*/:!~!:/' | awk '/:!~!:/{n++}{if(\$1!=\":!~!:\") print > (\"$GEN_OUT_DIR/output_$QUERY$UNDERLINE\" n \".txt\") }' n=1"
 
             if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
                 for (( i = 1; i <= $NUMRUNS; i+=1 ))
@@ -137,7 +137,6 @@ do
                             do
                                 eval "echo -n ',' >> $RESULT_CSV"
                             done
-                            eval "echo -n 'NOT_FOUND,' >> $RESULT_CSV"
                         fi
                         eval "echo -n 'NOT_FOUND,' >> $RESULT_CSV"
                     else
