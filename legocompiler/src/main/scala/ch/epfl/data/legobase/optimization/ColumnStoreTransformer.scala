@@ -11,10 +11,36 @@ import pardis.types._
 import pardis.types.PardisTypeImplicits._
 import pardis.shallow.utils.DefaultValue
 
-class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber: Int) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber: Int, val settings: compiler.Settings) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
 
-  val typeList = queryNumber match {
+  /** Specifies the list of records that were partitioned into a 1D array in the hashmap partitioning phase */
+  val partitioned1D = queryNumber match {
+    case 1  => Nil
+    case 2  => List("REGIONRecord", "PARTRecord", "NATIONRecord", "SUPPLIERRecord")
+    case 3  => List("CUSTOMERRecord")
+    case 4  => Nil
+    case 5  => List("SUPPLIERRecord", "REGIONRecord")
+    case 6  => Nil
+    case 7  => List("CUSTOMERRecord", "ORDERSRecord")
+    case 8  => List("NATIONRecord", "SUPPLIERRecord", "REGIONRecord", "CUSTOMERRecord", "ORDERSRecord", "PARTRecord")
+    case 9  => List("ORDERSRecord", "PARTRecord", "NATIONRecord")
+    case 10 => List("NATIONRecord")
+    case 11 => List("NATIONRecord")
+    case 12 => List("ORDERSRecord")
+    case 13 => Nil
+    case 14 => List("PARTRecord")
+    case 15 => List("SUPPLIERRecord")
+    case 16 => List("SUPPLIERRecord", "PARTRecord")
+    case 17 => List("PARTRecord")
+    case 18 => List("CUSTOMERRecord", "ORDERSRecord")
+    case 19 => List("PARTRecord")
+    case 20 => List("NATIONRecord", "SUPPLIERRecord", "PARTRecord")
+    case 21 => List("NATIONRecord", "ORDERSRecord")
+    case 22 => Nil
+  }
+
+  val typeList = (queryNumber match {
     case 1  => List("LINEITEMRecord")
     case 2  => List("PARTSUPPRecord")
     case 3  => List("ORDERSRecord")
@@ -26,19 +52,20 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
     case 9  => List("SUPPLIERRecord")
     case 10 => List("CUSTOMERRecord")
     case 11 => List("SUPPLIERRecord")
-    case 12 => List("LINEITEMRecord", "ORDERSRecord", "Set_AGGRecord_OptimalString_")
-    case 13 => List("CUSTOMERRecord") // TODO
-    case 14 => List("LINEITEMRecord", "PARTRecord")
-    case 15 => List("LINEITEMRecord", "SUPPLIERRecord")
+    case 12 => List("LINEITEMRecord")
+    case 13 => List("CUSTOMERRecord")
+    case 14 => List("LINEITEMRecord")
+    case 15 => List("LINEITEMRecord")
     case 16 => List("PARTSUPPRecord")
     case 17 => List("LINEITEMRecord")
     case 18 => List("LINEITEMRecord")
-    case 19 => List("LINEITEMRecord", "PARTRecord", "CUSTOMERRecord")
+    case 19 => List("LINEITEMRecord", "CUSTOMERRecord")
     case 20 => List("PARTSUPPRecord")
     case 21 => List("SUPPLIERRecord")
     case 22 => List("CUSTOMERRecord")
     case _  => throw new Exception(s"Column store not supported yet for $queryNumber")
-  }
+  }) //++ (if (settings.hashMapPartitioning) partitioned1D else Nil)
+  // For some unknown reason, if we apply column store over these fields, the result will get incorrect.
 
   def shouldBeColumnarized[T](tp: PardisType[T]): Boolean = tp.name match {
     case name if typeList.contains(name) => true
@@ -166,8 +193,8 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
             val column = field[Array[ColumnType]](columnStorePointer, el.name.arrayOf)
             val idx = field[Int](apply(value), INDEX)
             column(idx)
-          case s @ Def(node) =>
-            throw new Exception(s"Cannot handle the node $node for column store")
+          // case Some(s @ Def(node)) =>
+          //   throw new Exception(s"Cannot handle the node $node for column store")
         }
 
         // val v = apply(value) match {

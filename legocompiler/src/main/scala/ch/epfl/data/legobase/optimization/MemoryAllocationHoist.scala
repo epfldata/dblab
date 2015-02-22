@@ -11,17 +11,11 @@ import pardis.types._
 import pardis.types.PardisTypeImplicits._
 import pardis.shallow.utils._
 
-object MemoryAllocationHoist extends TransformerHandler {
-  def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    new MemoryAllocationHoist(context.asInstanceOf[LoweringLegoBase]).optimize(block)
-  }
-}
-
 /**
  *  Transforms `malloc`s inside the part which runs the query into buffers which are allocated
  *  at the loading time.
  */
-class MemoryAllocationHoist(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class MemoryAllocationHoist(override val IR: LoweringLegoBase, val queryNumber: Int) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
   //import CNodes._
   //import CTypes._
@@ -108,6 +102,25 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase) extends RuleBased
 
   def mallocToInstance(node: Def[Any]): MallocInstance = MallocInstance(node.tp, node)
 
+  // An appropriate way of scheduling the code, removes the need for this part of the code
+  def regenerateSize(s: Rep[Int]): Rep[Int] = s match {
+    case c @ Constant(_)       => s
+    case Def(Int$div3(x, y))   => regenerateSize(x) / regenerateSize(y)
+    case Def(Int$times3(x, y)) => regenerateSize(x) * regenerateSize(y)
+    case d @ Def(_)            => s
+  }
+
+  def getPoolSize(mallocInfo: MallocInfo): Int = {
+    // val POOL_SIZE = 1800000 //* (poolType.toString.split("_").length + 1)
+    //val POOL_SIZE = 100000
+    //val POOL_SIZE = regenerateSize(mallocNode.numElems) * 200*/
+    queryNumber match {
+      case 1 | 13 | 18 => 50 * 1000 * 1000
+      case 9           => 30 * 1000 * 1000
+      case _           => 1800 * 1000
+    }
+  }
+
   def createBuffers() {
     //System.out.println("Creating buffers for mallocNodes: " + mallocNodes.mkString("\n"))
     val mallocInstances = mallocNodes.map(m => mallocToInstance(m)) //.sortBy(ll => ll.tp.name.length) //.distinct //.filter(t => !t.tp.name.contains("CArray") /* && !t.tp.name.contains("Pointer")*/ )
@@ -142,19 +155,10 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase) extends RuleBased
       val index = __newVarNamed[Int](unit(0), "memoryPoolIndex")
       val elemType = mallocTp
       val poolType = elemType //if (mallocTp.isPrimitive) elemType else typePointer(elemType)
-      val POOL_SIZE = 1800000 //* (poolType.toString.split("_").length + 1)
-      //val POOL_SIZE = 100000
-      /* this one is a hack */
-      def regenerateSize(s: Rep[Int]): Rep[Int] = s match {
-        case c @ Constant(_)       => s
-        case Def(Int$div3(x, y))   => regenerateSize(x) / regenerateSize(y)
-        case Def(Int$times3(x, y)) => regenerateSize(x) * regenerateSize(y)
-        case d @ Def(_)            => s
-      }
-      //val POOL_SIZE = regenerateSize(mallocNode.numElems) * 200*/
-      val pool = arrayNew(POOL_SIZE)(poolType) //malloc(POOL_SIZE)(poolType)
+      val poolSize = getPoolSize(mallocInstance)
+      val pool = arrayNew(poolSize)(poolType) //malloc(poolSize)(poolType)
       if (!mallocTp.isPrimitive) {
-        cForLoop(0, POOL_SIZE, (i: Rep[Int]) => {
+        cForLoop(0, poolSize, (i: Rep[Int]) => {
           if (poolType.isRecord) {
             val mallocNode = mallocInstance.asInstanceOf[StructMallocInfo].node
             val newElems = mallocNode.elems.map(e => {
@@ -192,7 +196,7 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase) extends RuleBased
         })
       }
       mallocBuffers += mallocInstance.tp -> BufferInfo(pool.asInstanceOf[Sym[Any]], index)
-      // printf(unit("Buffer for type %s of size %d initialized!\n"), unit(mallocTp.toString), POOL_SIZE)
+      // printf(unit("Buffer for type %s of size %d initialized!\n"), unit(mallocTp.toString), poolSize)
     }
     // System.out.println(s"mallocBuffers: ${mallocBuffers.mkString("\n\t")}")
   }

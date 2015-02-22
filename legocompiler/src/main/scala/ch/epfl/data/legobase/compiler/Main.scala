@@ -48,8 +48,6 @@ object Main extends LegoRunner {
     run(args)
   }
 
-  val removeUnusedFields = true
-
   def executeQuery(query: String): Unit = {
     System.out.println(s"Running $query!")
 
@@ -113,7 +111,7 @@ object Main extends LegoRunner {
 
     settings.validate(targetCode, queryNumber)
 
-    val compiler = new LegoCompiler(context, removeUnusedFields, queryNumber, targetCode, settings)
+    val compiler = new LegoCompiler(context, queryNumber, targetCode, settings)
     compiler.compile(queryFunction())
   }
 }
