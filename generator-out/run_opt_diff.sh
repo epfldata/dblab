@@ -116,40 +116,64 @@ do
             eval "rm -rf $GEN_OUT_DIR/output_$QUERY*"
 
             eval "echo -n '$QUERY,$currentOptsAcronym,$currentOptsFullName,' >> $RESULT_CSV"
-            eval "$EXECUTABLE > $GEN_OUT_DIR/output_$QUERY.txt"
-            if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
-                eval "cat $GEN_OUT_DIR/output_$QUERY.txt | grep 'Generated code run in' | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' >> $RESULT_CSV"
-            else
-                eval "cat $GEN_OUT_DIR/output_$QUERY.txt | grep 'Generated code run in' | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' | rev | cut -c 2- | rev >> $RESULT_CSV"
-            fi
-            eval "cat $GEN_OUT_DIR/output_$QUERY.txt | sed -e 's/Generated code run in.*/:!~!:/' | awk '/:!~!:/{n++}{if(\$1!=\":!~!:\") print > (\"$GEN_OUT_DIR/output_$QUERY$UNDERLINE\" n \".txt\") }' n=1"
-
-            if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
-                for (( i = 1; i <= $NUMRUNS; i+=1 ))
-                do
-                    REF_RESULT_FILE="$GEN_OUT_DIR/../results/$QUERY.result_sf$SF"
-                    if [ "$SF" = "8" ]; then
-                        REF_RESULT_FILE="$GEN_OUT_DIR/../results/sf$SF/$QUERY.result"
-                    fi
-                    if [ ! -f "$GEN_OUT_DIR/output_$QUERY$UNDERLINE$i.txt" ]; then
-                        if [ "$i" = "1" ]; then
-                            for (( k = 1; k <= $NUMRUNS; k+=1 ))
-                            do
-                                eval "echo -n ',' >> $RESULT_CSV"
-                            done
-                        fi
-                        eval "echo -n 'NOT_FOUND,' >> $RESULT_CSV"
+            #check whether code is generated
+            if [ -f "$GEN_OUT_DIR/$QUERY.c" ]; then
+                #check whether compile correctly
+                if [ -f "$EXECUTABLE" ]; then
+                    eval "$EXECUTABLE $currentOptsAcronym > $GEN_OUT_DIR/output_$QUERY.txt"
+                    if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
+                        eval "cat $GEN_OUT_DIR/output_$QUERY.txt | grep 'Generated code run in' | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' >> $RESULT_CSV"
                     else
-                        if [ ! -f "$REF_RESULT_FILE" ]; then
-                            eval "echo -n 'NO_REF,' >> $RESULT_CSV"
-                        else
-                            if `diff $GEN_OUT_DIR/output_$QUERY$UNDERLINE$i.txt $REF_RESULT_FILE >/dev/null` ; then
-                                eval "echo -n 'OK,' >> $RESULT_CSV"
-                            else
-                                eval "echo -n 'WRONG_RESULT,' >> $RESULT_CSV"
-                            fi
-                        fi
+                        eval "cat $GEN_OUT_DIR/output_$QUERY.txt | grep 'Generated code run in' | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' | rev | cut -c 2- | rev >> $RESULT_CSV"
                     fi
+                    eval "cat $GEN_OUT_DIR/output_$QUERY.txt | sed -e 's/Generated code run in.*/:!~!:/' | awk '/:!~!:/{n++}{if(\$1!=\":!~!:\") print > (\"$GEN_OUT_DIR/output_$QUERY$UNDERLINE\" n \".txt\") }' n=1"
+
+                    if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
+                        for (( i = 1; i <= $NUMRUNS; i+=1 ))
+                        do
+                            REF_RESULT_FILE="$GEN_OUT_DIR/../results/$QUERY.result_sf$SF"
+                            if [ "$SF" = "8" ]; then
+                                REF_RESULT_FILE="$GEN_OUT_DIR/../results/sf$SF/$QUERY.result"
+                            fi
+                            if [ ! -f "$GEN_OUT_DIR/output_$QUERY$UNDERLINE$i.txt" ]; then
+                                if [ "$i" = "1" ]; then
+                                    for (( k = 1; k <= $NUMRUNS; k+=1 ))
+                                    do
+                                        eval "echo -n ',' >> $RESULT_CSV"
+                                    done
+                                fi
+                                eval "echo -n 'NOT_FOUND,' >> $RESULT_CSV"
+                            else
+                                if [ ! -f "$REF_RESULT_FILE" ]; then
+                                    eval "echo -n 'NO_REF,' >> $RESULT_CSV"
+                                else
+                                    if `diff $GEN_OUT_DIR/output_$QUERY$UNDERLINE$i.txt $REF_RESULT_FILE >/dev/null` ; then
+                                        eval "echo -n 'OK,' >> $RESULT_CSV"
+                                    else
+                                        eval "echo -n 'WRONG_RESULT,' >> $RESULT_CSV"
+                                    fi
+                                fi
+                            fi
+                        done
+                    fi
+                else #otherwise, show compilation error in output
+                    for (( k = 1; k <= $NUMRUNS; k+=1 ))
+                    do
+                        eval "echo -n ',' >> $RESULT_CSV"
+                    done
+                    for (( k = 1; k <= $NUMRUNS; k+=1 ))
+                    do
+                        eval "echo -n 'COMPILE_ERROR,' >> $RESULT_CSV"
+                    done
+                fi
+            else #otherwise, show code generation error in output
+                for (( k = 1; k <= $NUMRUNS; k+=1 ))
+                do
+                    eval "echo -n ',' >> $RESULT_CSV"
+                done
+                for (( k = 1; k <= $NUMRUNS; k+=1 ))
+                do
+                    eval "echo -n 'CODE_GEN_ERROR,' >> $RESULT_CSV"
                 done
             fi
 
