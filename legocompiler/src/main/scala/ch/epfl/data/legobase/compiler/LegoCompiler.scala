@@ -56,6 +56,7 @@ class Settings(val args: List[String]) {
   def stringOptimization: Boolean = hasFlag(strOpt)
   def hashMapNoCollision: Boolean = hasFlag(hmNoCol)
   def largeOutputHoisting: Boolean = hasFlag(largeOut)
+  def noFieldRemoval: Boolean = hasFlag(noFieldRem)
   def nameIsWithFlag: Boolean = hasFlag(nameWithFlag)
 }
 
@@ -77,8 +78,9 @@ object Settings {
   val strOpt = "+str-opt"
   val hmNoCol = "+hm-no-col"
   val largeOut = "+large-out"
+  val noFieldRem = "+no-field-rem"
   val nameWithFlag = "-name-with-flag"
-  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr, badRec, strOpt, hmNoCol, largeOut, nameWithFlag)
+  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr, badRec, strOpt, hmNoCol, largeOut, noFieldRem, nameWithFlag)
 }
 
 class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, val number: Int, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
@@ -119,7 +121,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val removeUnusedFields: Boolean, v
    */
   def shouldRemoveUnusedFields = removeUnusedFields && (settings.hashMapPartitioning ||
     (
-      settings.hashMapLowering && (settings.setToArray || settings.setToLinkedList)))
+      settings.hashMapLowering && (settings.setToArray || settings.setToLinkedList))) && !settings.noFieldRemoval
 
   pipeline += LBLowering(shouldRemoveUnusedFields)
   pipeline += ParameterPromotion
