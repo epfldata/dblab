@@ -24,5 +24,5 @@ do
             kill -9 $pid
         fi
     done
-    sleep 5m
+    sleep 3m
 done
