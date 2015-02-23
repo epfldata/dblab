@@ -1,13 +1,16 @@
 #!/bin/bash
 
 # This script is meant to generate code for different optimization combinations
-# for a specific query, and will generate the statistics in CSV format
+# for all queries
+
+echo "Sourcing the bash_profile, in case you are using screen command"
+source ~/.bash_profile
 
 GEN_OUT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 echo "Moving existing archive folders to main_archive (if any exists) ..."
 eval "mkdir -p $GEN_OUT_DIR/main_archive"
-eval "mv $GEN_OUT_DIR/archive-* $GEN_OUT_DIR/main_archive/"
+eval "mv $GEN_OUT_DIR/archive-* $GEN_OUT_DIR/main_archive/ 2>/dev/null"
 
 # echo "Updating and building scala-yinyang ..."
 # eval "cd $GEN_OUT_DIR/../../scala-yinyang && git pull && $GEN_OUT_DIR/../../bin/sbt publish-local"
