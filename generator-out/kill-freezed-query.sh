@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROC_NAME="generator-out/Q[0-9]*.out$"
+PROC_NAME="generator-out/Q[0-9]*.out"
 
 echo "Started"
 while true
