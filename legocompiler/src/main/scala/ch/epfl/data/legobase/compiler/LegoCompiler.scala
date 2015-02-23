@@ -16,6 +16,9 @@ class Settings(val args: List[String]) {
   import Settings._
   val SUPPORTED_CS = (1 to 22).toList
   val LARGE_OUTPUT_QUERIES = List(10, 11, 16, 20)
+
+  def isLargeOutputQuery(tpchQuery: Int) = LARGE_OUTPUT_QUERIES.contains(tpchQuery)
+
   def validate(targetIsC: Boolean, tpchQuery: Int): Unit = {
     for (arg <- args.filter(arg => !ALL_FLAGS.contains(arg))) {
       System.out.println(s"${Console.YELLOW}Warning${Console.RESET}: flag $arg is not defined!")
@@ -26,12 +29,12 @@ class Settings(val args: List[String]) {
       throw new Exception(s"$hmNoCol and $hm2set cannot be chained together.")
     if ((columnStore || partitioning) && (!SUPPORTED_CS.contains(tpchQuery)))
       throw new Exception(s"$cstore and $part only work for the Queries ${SUPPORTED_CS.mkString(" & ")} for the moment!")
-    def warningForLargeOut() = System.out.println(s"${Console.YELLOW}Warning${Console.RESET}: The queries ${LARGE_OUTPUT_QUERIES.mkString("Q", ", Q", "")} should have $largeOut flag.")
-    def isLargeOutputQuery = LARGE_OUTPUT_QUERIES.contains(tpchQuery)
-    if (largeOutputHoisting != isLargeOutputQuery) {
-      warningForLargeOut()
+    if (!hasFlag(largeOut) && isLargeOutputQuery(tpchQuery)) {
+      System.out.println(s"${Console.YELLOW}Warning${Console.RESET}: The queries ${LARGE_OUTPUT_QUERIES.mkString("Q", ", Q", "")} should have $largeOut flag. Automatically enabled!")
+    } else if (hasFlag(largeOut) && !isLargeOutputQuery(tpchQuery)) {
+      System.out.println(s"${Console.YELLOW}Warning${Console.RESET}: Only the queries ${LARGE_OUTPUT_QUERIES.mkString("Q", ", Q", "")} should have $largeOut flag.")
     }
-    if (largeOutputHoisting && !targetIsC) {
+    if (hasFlag(largeOut) && !targetIsC) {
       throw new Exception(s"$largeOut is only available for C Code Generation.")
     }
     if (badRecordHandling && oldCArrayHandling) {
@@ -55,7 +58,7 @@ class Settings(val args: List[String]) {
   def badRecordHandling: Boolean = hasFlag(badRec)
   def stringOptimization: Boolean = hasFlag(strOpt)
   def hashMapNoCollision: Boolean = hasFlag(hmNoCol)
-  def largeOutputHoisting: Boolean = hasFlag(largeOut)
+  def largeOutputHoisting(targetIsC: Boolean, tpchQuery: Int): Boolean = hasFlag(largeOut) || (isLargeOutputQuery(tpchQuery) && targetIsC)
   def noFieldRemoval: Boolean = hasFlag(noFieldRem)
   def nameIsWithFlag: Boolean = hasFlag(nameWithFlag)
 }
@@ -122,8 +125,9 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
   def shouldRemoveUnusedFields = (settings.hashMapPartitioning ||
     (
       settings.hashMapLowering && (settings.setToArray || settings.setToLinkedList))) && !settings.noFieldRemoval
-
+  // pipeline += TreeDumper(false)
   pipeline += LBLowering(shouldRemoveUnusedFields)
+  pipeline += TreeDumper(false)
   pipeline += ParameterPromotion
   pipeline += DCE
   pipeline += PartiallyEvaluate
@@ -149,7 +153,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
     }
     if (settings.hashMapNoCollision) {
       pipeline += new HashMapNoCollisionTransformation(DSL, number)
-      pipeline += TreeDumper(false)
+      // pipeline += TreeDumper(false)
     }
     // pipeline += PartiallyEvaluate
     pipeline += DCE
@@ -219,15 +223,13 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
     pipeline += new StringOptimization(DSL)
   }
 
-  if (settings.largeOutputHoisting) {
+  if (settings.largeOutputHoisting(generateCCode, number)) {
     pipeline += new LargeOutputPrintHoister(DSL)
   }
 
   if (generateCCode) pipeline += new CTransformersPipeline(settings)
 
   pipeline += DCECLang //NEVER REMOVE!!!!
-
-  pipeline += TreeDumper(false)
 
   val codeGenerator =
     if (generateCCode) {

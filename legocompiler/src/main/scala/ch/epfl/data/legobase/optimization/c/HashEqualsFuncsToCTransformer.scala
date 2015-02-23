@@ -37,7 +37,11 @@ class HashEqualsFuncsToCTransformer(override val IR: LoweringLegoBase) extends R
       val structDef = if (e1.tp.isRecord)
         getStructDef(e1.tp).get
       else {
-        getStructDef(e1.tp.typeArguments(0)).get
+        try {
+          getStructDef(e1.tp.typeArguments(0)).get
+        } catch {
+          case ex => throw new Exception(s"${e1.tp} is not a record type in $e1 and the node ${e1.correspondingNode} => ${ex}")
+        }
       }
       // System.out.println(structDef.fields)
       alreadyEquals += e1

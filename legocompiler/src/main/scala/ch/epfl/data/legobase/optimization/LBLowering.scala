@@ -14,7 +14,9 @@ object LBLowering {
   def apply(removeUnusedFields: Boolean) = new TransformerHandler {
     def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
       val lbContext = context.asInstanceOf[LoweringLegoBase]
-      new LBLowering(lbContext, lbContext, removeUnusedFields).lower(block)
+      val lbLowering = new LBLowering(lbContext, lbContext, removeUnusedFields)
+      val newBlock = lbLowering.lower(block)
+      new LBLoweringPostProcess(lbContext, lbLowering).optimize(newBlock)
     }
   }
 }
@@ -457,3 +459,16 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
     }
   }
 }
+
+class LBLoweringPostProcess(override val IR: LoweringLegoBase, val lbLowering: LBLowering) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+  import IR._
+
+  rewrite += statement {
+    case sym -> StructImmutableField(obj, name) if sym.tp.isRecord && !sym.tp.isInstanceOf[RecordType[_]] =>
+      import lbLowering.{ createTag, getType }
+      val tag = createTag(getType(sym.tp))
+      val newTp = new RecordType(tag, Some(sym.tp.asInstanceOf[TypeRep[Any]])).asInstanceOf[TypeRep[Any]]
+      field(obj, name)(newTp)
+  }
+}
+
