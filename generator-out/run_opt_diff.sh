@@ -16,6 +16,7 @@ checkExcluded () {
 }
 
 GEN_OUT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+eval "cd $GEN_OUT_DIR"
 
 #reading parameters from config file: DATA_FOLDER
 CONFIG_FILE="run_config.cfg"
@@ -124,7 +125,9 @@ do
                     #check whether compile correctly
                     if [ -f "$EXECUTABLE" ]; then
                         echo "Executing $QUERY with$currentOptsFullName ..."
-                        eval "$EXECUTABLE $currentOptsAcronym > $GEN_OUT_DIR/output_$QUERY.txt"
+                        eval "sed -i 's/\/data\/lab\/dashti\/\.\*Q\.\*\.out/generator-out\/Q[0-9]\*\.out/g'  $GEN_OUT_DIR/memusg.sh"
+                        eval "perf stat -v -d -o $GEN_OUT_DIR/$QUERY-perf.txt $EXECUTABLE $currentOptsAcronym > $GEN_OUT_DIR/instrumented_output_$QUERY.txt & $GEN_OUT_DIR/memusg.sh > $GEN_OUT_DIR/$QUERY-memory.txt; wait; $EXECUTABLE $currentOptsAcronym > $GEN_OUT_DIR/output_$QUERY.txt;"
+                        eval "sed -i 's/generator-out\/Q\[0-9\]\*\.out/\/data\/lab\/dashti\/\.\*Q\.\*\.out/g'  $GEN_OUT_DIR/memusg.sh"
                         if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
                             eval "cat $GEN_OUT_DIR/output_$QUERY.txt | grep 'Generated code run in' | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' >> $RESULT_CSV"
                         else
@@ -188,6 +191,7 @@ do
                 eval "rm -f $GEN_OUT_DIR/result.csv"
                 eval "cp $RESULT_CSV $GEN_OUT_DIR/result.csv"
                 eval "mv $GEN_OUT_DIR/output_$QUERY* $ARCHIVE_DIR/"
+                eval "mv $GEN_OUT_DIR/instrumented_output_$QUERY* $ARCHIVE_DIR/"
             fi
         fi
         eval "mv $EXECUTABLE $ARCHIVE_DIR/$QUERY$currentOptsAcronym.out"
