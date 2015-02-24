@@ -221,6 +221,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     (partitionedObject.tpe.name, partitionedObject.fieldFunc) match {
       case ("LINEITEMRecord", "L_ORDERKEY") => partitionedObject.arraySize
       case ("LINEITEMRecord", "L_SUPPKEY") => unit(80000)
+      case ("LINEITEMRecord", "L_PARTKEY") => unit(2000000)
       case ("CUSTOMERRecord", "C_NATIONKEY") | ("SUPPLIERRecord", "S_NATIONKEY") => unit(25)
       case _ => partitionedObject.arraySize / unit(4)
     }

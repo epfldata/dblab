@@ -707,7 +707,7 @@ object Queries {
           ((x.L_QUANTITY <= 36 && x.L_QUANTITY >= 26) || (x.L_QUANTITY <= 25 && x.L_QUANTITY >= 15) ||
             (x.L_QUANTITY <= 14 && x.L_QUANTITY >= 4)) && x.L_SHIPINSTRUCT === DELIVERINPERSON &&
             (x.L_SHIPMODE === AIR || x.L_SHIPMODE === AIRREG))
-        val jo = new SelectOp(new HashJoinOp(so1, so2)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY))(
+        val jo = new SelectOp(new HashJoinOp(so2, so1)((x, y) => y.P_PARTKEY == x.L_PARTKEY)(x => x.L_PARTKEY)(x => x.P_PARTKEY))(
           x => x.P_BRAND[LBString] === Brand31 &&
             (x.P_CONTAINER[LBString] === SMBOX || x.P_CONTAINER[LBString] === SMCASE || x.P_CONTAINER[LBString] === SMPACK || x.P_CONTAINER[LBString] === SMPKG) &&
             x.L_QUANTITY[Int] >= 4 && x.L_QUANTITY[Int] <= 14 && x.P_SIZE[Int] <= 5 || x.P_BRAND[LBString] === Brand43 &&
