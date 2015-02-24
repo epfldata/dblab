@@ -81,7 +81,7 @@ do
     eval "C3_USER=yarn cexec $NODES 'mkdir -p /data/lab/dashti/sf$SF-perf'"
 
     run_for_node () {
-      eval "C3_USER=yarn cexec :$1 'cat /data/lab/dashti/qlist.txt | while read query; do echo \"Running \$query ...\"; perf stat -v -d -o /data/lab/dashti/sf$SF-perf/\$query-perf.txt /data/lab/dashti/sf$SF-build/\$query > /data/lab/dashti/sf$SF-output/\$query.txt &;  done; echo \"FINISHED_ON NODE $1\";'"
+      eval "C3_USER=yarn cexec :$1 'cat /data/lab/dashti/qlist.txt | while read query; do echo \"Running \$query ...\"; perf stat -v -d -o /data/lab/dashti/sf$SF-perf/\$query-perf.txt /data/lab/dashti/sf$SF-build/\$query > /data/lab/dashti/sf$SF-output/\$query.txt & /data/lab/dashti/memusg.sh > /data/lab/dashti/sf$SF-perf/\$query-memory.txt;  done; echo \"FINISHED_ON NODE $1\";'"
     }
 
     for (( idx = $FROM_NODE; idx <= $TO_NODE; idx+=1 ))
