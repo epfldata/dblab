@@ -40,7 +40,7 @@ declare -a SF_ARR=("1" "8")
 for SF in "${SF_ARR[@]}"
 do
     echo "Generating and compiling code for SF=$SF ..."
-    eval "./run_opt_diff.sh Q1:Q2:Q3:Q4:Q5:Q6:Q7:Q8:Q9:Q10:Q11:Q12:Q13:Q14:Q15:Q16:Q17:Q18:Q19:Q20:Q21:Q22 1 5"
+    eval "./run_opt_diff.sh Q1:Q2:Q3:Q4:Q5:Q6:Q7:Q8:Q9:Q10:Q11:Q12:Q13:Q14:Q15:Q16:Q17:Q18:Q19:Q20:Q21:Q22 $SF 5"
     eval "rm -rf $GEN_OUT_DIR/sf$SF-build"
     for archivedir in archive-sf$SF-*; do cp -r "$archivedir" "$GEN_OUT_DIR/sf$SF-build"; done;
 
