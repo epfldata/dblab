@@ -191,6 +191,8 @@ do
                 eval "rm -f $GEN_OUT_DIR/result.csv"
                 eval "cp $RESULT_CSV $GEN_OUT_DIR/result.csv"
                 eval "mv $GEN_OUT_DIR/output_$QUERY* $ARCHIVE_DIR/"
+                eval "mv $GEN_OUT_DIR/$QUERY-memory.txt $ARCHIVE_DIR/$QUERY$currentOptsAcronym-memory.txt"
+                eval "mv $GEN_OUT_DIR/$QUERY-perf.txt $ARCHIVE_DIR/$QUERY$currentOptsAcronym-perf.txt"
                 eval "mv $GEN_OUT_DIR/instrumented_output_$QUERY* $ARCHIVE_DIR/"
             fi
         fi
