@@ -11,7 +11,7 @@ import pardis.types._
 import pardis.types.PardisTypeImplicits._
 import pardis.shallow.utils.DefaultValue
 
-class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val queryNumber: Int) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val queryNumber: Int, val scalingFactor: Double) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
   val allMaps = scala.collection.mutable.Set[Rep[Any]]()
   val partitionedMaps = scala.collection.mutable.Set[Rep[Any]]()
@@ -220,8 +220,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   def numBuckets(partitionedObject: PartitionObject): Rep[Int] =
     (partitionedObject.tpe.name, partitionedObject.fieldFunc) match {
       case ("LINEITEMRecord", "L_ORDERKEY") => partitionedObject.arraySize
-      case ("LINEITEMRecord", "L_SUPPKEY") => unit(80000)
-      case ("LINEITEMRecord", "L_PARTKEY") => unit(2000000)
+      case ("LINEITEMRecord", "L_SUPPKEY") => unit((10000 * scalingFactor).toInt)
+      case ("LINEITEMRecord", "L_PARTKEY") => unit((250000 * scalingFactor).toInt)
       case ("CUSTOMERRecord", "C_NATIONKEY") | ("SUPPLIERRecord", "S_NATIONKEY") => unit(25)
       case _ => partitionedObject.arraySize / unit(4)
     }
@@ -236,9 +236,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     // numBuckets(partitionedObject)
     (partitionedObject.tpe.name, partitionedObject.fieldFunc) match {
       case ("LINEITEMRecord", "L_ORDERKEY") => unit(16)
-      case ("LINEITEMRecord", "L_SUPPKEY") => unit(1 << 10)
+      // case ("LINEITEMRecord", "L_SUPPKEY") => unit(1 << 10)
       case ("CUSTOMERRecord", "C_NATIONKEY") | ("SUPPLIERRecord", "S_NATIONKEY") => partitionedObject.arraySize / unit(25 - 5)
-      case _ => unit(1 << 10)
+      case _ => unit(((1 << 7) * scalingFactor).toInt)
     }
 
   // def numBuckets(partitionedObject: PartitionObject): Rep[Int] = unit(1 << 9)

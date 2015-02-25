@@ -10,7 +10,7 @@ trait LegoRunner {
 
   def getOutputName = currQuery + "Output.txt"
 
-  def executeQuery(query: String): Unit
+  def executeQuery(query: String, scalingFactor: Double): Unit
 
   def run(args: Array[String]) {
 
@@ -27,7 +27,7 @@ trait LegoRunner {
     for (q <- queries) {
       currQuery = q
       Console.withOut(new PrintStream(getOutputName)) {
-        executeQuery(currQuery)
+        executeQuery(currQuery, args(1).toDouble)
         // Check results
         if (Config.checkResults) {
           if (Config.printQueryOutput == false) {
@@ -66,7 +66,7 @@ trait LegoRunner {
 object MiniDB extends LegoRunner {
   import Queries._
 
-  def executeQuery(query: String): Unit = query match {
+  def executeQuery(query: String, scalingFactor: Double): Unit = query match {
     case "Q1"     => Q1(Config.numRuns)
     case "Q2"     => Q2(Config.numRuns)
     case "Q3"     => Q3(Config.numRuns)

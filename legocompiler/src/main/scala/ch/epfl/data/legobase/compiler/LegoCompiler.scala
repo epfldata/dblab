@@ -86,7 +86,7 @@ object Settings {
   val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr, badRec, strOpt, hmNoCol, largeOut, noFieldRem, nameWithFlag)
 }
 
-class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
+class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor: Double, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
   object MultiMapOptimizations extends TransformerHandler {
     def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
       new pardis.deep.scalalib.collection.MultiMapOptimalTransformation(context.asInstanceOf[LoweringLegoBase]).optimize(block)
@@ -137,7 +137,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
   pipeline += SingletonHashMapToValueTransformer
 
   if (settings.hashMapPartitioning) {
-    pipeline += new HashMapPartitioningTransformer(DSL, number)
+    pipeline += new HashMapPartitioningTransformer(DSL, number, scalingFactor)
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE
@@ -216,7 +216,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
   }
 
   if (settings.mallocHoisting) {
-    pipeline += new MemoryAllocationHoist(DSL, number)
+    pipeline += new MemoryAllocationHoist(DSL, number, scalingFactor)
   }
 
   if (settings.stringOptimization) {

@@ -15,7 +15,7 @@ import pardis.shallow.utils._
  *  Transforms `malloc`s inside the part which runs the query into buffers which are allocated
  *  at the loading time.
  */
-class MemoryAllocationHoist(override val IR: LoweringLegoBase, val queryNumber: Int) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class MemoryAllocationHoist(override val IR: LoweringLegoBase, val queryNumber: Int, val scalingFactor: Double) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
   //import CNodes._
   //import CTypes._
@@ -114,11 +114,12 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val queryNumber: 
     // val POOL_SIZE = 1800000 //* (poolType.toString.split("_").length + 1)
     //val POOL_SIZE = 100000
     //val POOL_SIZE = regenerateSize(mallocNode.numElems) * 200*/
-    queryNumber match {
+    val estimatedSize = queryNumber match {
       case 1 | 13 | 18 => 50 * 1000 * 1000
       case 9           => 30 * 1000 * 1000
       case _           => 1800 * 1000
     }
+    (estimatedSize / 8 * scalingFactor).toInt
   }
 
   def createBuffers() {

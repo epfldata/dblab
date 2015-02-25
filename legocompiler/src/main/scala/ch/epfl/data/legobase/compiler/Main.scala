@@ -48,7 +48,7 @@ object Main extends LegoRunner {
     run(args)
   }
 
-  def executeQuery(query: String): Unit = {
+  def executeQuery(query: String, scalingFactor: Double): Unit = {
     System.out.println(s"Running $query!")
 
     val context = new LoweringLegoBase {}
@@ -111,7 +111,7 @@ object Main extends LegoRunner {
 
     settings.validate(targetCode, queryNumber)
 
-    val compiler = new LegoCompiler(context, queryNumber, targetCode, settings)
+    val compiler = new LegoCompiler(context, queryNumber, scalingFactor, targetCode, settings)
     compiler.compile(queryFunction())
   }
 }
