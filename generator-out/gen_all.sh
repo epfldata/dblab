@@ -60,8 +60,6 @@ eval "cd $GEN_OUT_DIR/../../pardis && $GEN_OUT_DIR/../../bin/sbt embedAll && $GE
 echo "$(date +"%Y-%m-%d %H:%M:%S") > Updating and compiling NewLegoBase ..."
 eval "cd $GEN_OUT_DIR/../../NewLegoBase && git pull && ~/bin/sbt embedAll && ~/bin/sbt compile"
 
-eval "cd $GEN_OUT_DIR"
-
 NUM_NODES=$(expr $TO_NODE - $FROM_NODE + 1)
 NODES=":$FROM_NODE-$TO_NODE"
 QUERIES=(${SELECTED_QUERIES//:/ })
@@ -71,6 +69,7 @@ optCombLen=${#OPTIMIZATION_COMBINATIONS[@]}
 declare -a SF_ARR=("1" "8")
 for SF in "${SF_ARR[@]}"
 do
+    eval "cd $GEN_OUT_DIR"
     OUTPUT_DIR="$GEN_OUT_DIR/output-archive-sf$SF-$(date +"%Y%m%d-%H%M%S")"
     echo "$(date +"%Y-%m-%d %H:%M:%S") > Generating and compiling code for SF=$SF ..."
     eval "./run_opt_diff.sh $SELECTED_QUERIES $SF $NUMRUNS"
@@ -84,7 +83,6 @@ do
     eval "C3_USER=$USER cexec $NODES 'rm -rf /data/lab/dashti/results'"
     eval "C3_USER=$USER cpush $NODES /data/home/dashti/NewLegoBase/results /data/lab/dashti/"
 
-    eval "cd $GEN_OUT_DIR"
     eval "ls $GEN_OUT_DIR/sf$SF-build/ | grep .out | shuf > qlist-sf$SF.txt"
     eval "split -nl/$NUM_NODES qlist-sf$SF.txt qpart_"
     COUNTER=$(expr $FROM_NODE - 1)
@@ -168,13 +166,13 @@ do
             EXECUTABLE="$GEN_OUT_DIR/sf$SF-build/$QUERY$currentOptsAcronym.out"
             EXCLUDED=`checkExcluded $QUERY$UNDERLINE$currentOptsIdxs`
             if [ "$EXCLUDED" != "TRUE" ]; then
-                if [ -f "$OUTPUT_DIR/final-output-sf$SF/$QUERY$currentOptsAcronym.out.txt" ]; then
-                    eval "echo -n '$QUERY,$currentOptsAcronym,$currentOptsFullName,$COMPILE_TIME,' >> $RESULT_CSV"
-                    #check whether code is generated
-                    if [ -f "$GEN_OUT_DIR/sf$SF-build/$QUERY$currentOptsAcronym.c" ]; then
-                        #check whether compile correctly
-                        if [ -f "$EXECUTABLE" ]; then
-                            echo "Processing information for $QUERY with$currentOptsFullName ..."
+                eval "echo -n '$QUERY,$currentOptsAcronym,$currentOptsFullName,$COMPILE_TIME,' >> $RESULT_CSV"
+                #check whether code is generated
+                if [ -f "$GEN_OUT_DIR/sf$SF-build/$QUERY$currentOptsAcronym.c" ]; then
+                    #check whether compile correctly
+                    if [ -f "$EXECUTABLE" ]; then
+                        echo "Processing information for $QUERY with$currentOptsFullName ..."
+                        if [ -f "$OUTPUT_DIR/final-output-sf$SF/$QUERY$currentOptsAcronym.out.txt" ]; then
                             if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
                                 eval "cat $OUTPUT_DIR/final-output-sf$SF/$QUERY$currentOptsAcronym.out.txt | grep 'Generated code run in' | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' >> $RESULT_CSV"
                             else
@@ -212,39 +210,39 @@ do
                                 done
                                 eval "rm -rf $GEN_OUT_DIR/output_*"
                             fi
-                        else #otherwise, show compilation error in output
+                        else
                             for (( k = 1; k <= $NUMRUNS; k+=1 ))
                             do
                                 eval "echo -n ',' >> $RESULT_CSV"
                             done
                             for (( k = 1; k <= $NUMRUNS; k+=1 ))
                             do
-                                eval "echo -n 'COMPILE_ERROR,' >> $RESULT_CSV"
+                                eval "echo -n 'NO_OUTPUT_FILE,' >> $RESULT_CSV"
                             done
                         fi
-                    else #otherwise, show code generation error in output
+                    else #otherwise, show compilation error in output
                         for (( k = 1; k <= $NUMRUNS; k+=1 ))
                         do
                             eval "echo -n ',' >> $RESULT_CSV"
                         done
                         for (( k = 1; k <= $NUMRUNS; k+=1 ))
                         do
-                            eval "echo -n 'CODE_GEN_ERROR,' >> $RESULT_CSV"
+                            eval "echo -n 'COMPILE_ERROR,' >> $RESULT_CSV"
                         done
                     fi
-
-                    EXEC_TIME="--"
-                    eval "echo '$EXEC_TIME' >> $RESULT_CSV"
-                # else
-                #     for (( k = 1; k <= $NUMRUNS; k+=1 ))
-                #     do
-                #         eval "echo -n ',' >> $RESULT_CSV"
-                #     done
-                #     for (( k = 1; k <= $NUMRUNS; k+=1 ))
-                #     do
-                #         eval "echo -n 'NO_OUTPUT_FILE,' >> $RESULT_CSV"
-                #     done
+                else #otherwise, show code generation error in output
+                    for (( k = 1; k <= $NUMRUNS; k+=1 ))
+                    do
+                        eval "echo -n ',' >> $RESULT_CSV"
+                    done
+                    for (( k = 1; k <= $NUMRUNS; k+=1 ))
+                    do
+                        eval "echo -n 'CODE_GEN_ERROR,' >> $RESULT_CSV"
+                    done
                 fi
+
+                EXEC_TIME="--"
+                eval "echo '$EXEC_TIME' >> $RESULT_CSV"
 
                 eval "rm -f $GEN_OUT_DIR/result.csv"
                 eval "cp $RESULT_CSV $GEN_OUT_DIR/result.csv"
