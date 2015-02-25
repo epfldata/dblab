@@ -30,8 +30,8 @@ if [ ! -f "$GEN_OUT_DIR/$CONFIG_FILE" ]; then
 fi
 source $CONFIG_FILE
 
-declare -a optArr=("+hm2set" "+set2arr" "+set2ll" "+cont-flat" "+cstore" "+part" "+hm-part" "+malloc-hoist" "+const-arr" "+comprStrings" "+no-let" "+if-agg" "+old-carr" "+bad-rec" "+str-opt" "+hm-no-col" "+large-out")
-declare -a optArrAcronym=("h2s" "s2a" "s2ll" "cf" "cstor" "part" "hpart" "mhoist" "carr" "cmpstr" "nlet" "ifag" "ocar" "brec" "stropt" "hnocol" "largeout")
+declare -a optArr=("+hm2set" "+set2arr" "+set2ll" "+cont-flat" "+cstore" "+part" "+hm-part" "+malloc-hoist" "+const-arr" "+comprStrings" "+no-let" "+if-agg" "+old-carr" "+bad-rec" "+str-opt" "+hm-no-col" "+large-out" "+no-field-rem")
+declare -a optArrAcronym=("h2s" "s2a" "s2ll" "cf" "cstor" "part" "hpart" "mhoist" "carr" "cmpstr" "nlet" "ifag" "ocar" "brec" "stropt" "hnocol" "largeout" "nfrem")
 
 # screen -L 'source ~/.bash_profile && ./gen_all_mod.sh'
 
@@ -74,7 +74,7 @@ do
     echo "$(date +"%Y-%m-%d %H:%M:%S") > Generating and compiling code for SF=$SF ..."
     eval "./run_opt_diff.sh $SELECTED_QUERIES $SF $NUMRUNS"
     eval "rm -rf $GEN_OUT_DIR/sf$SF-build"
-    for archivedir in archive-sf$SF-*; do cp -r "$archivedir" "$GEN_OUT_DIR/sf$SF-build"; OUTPUT_DIR="output-$archivedir"; done;
+    for archivedir in archive-sf$SF-*; do cp -r "$archivedir" "$GEN_OUT_DIR/sf$SF-build"; OUTPUT_DIR="$GEN_OUT_DIR/output-$archivedir"; done;
 
     echo "$(date +"%Y-%m-%d %H:%M:%S") > Pushing the generated SF=$SF executables to the worker nodes..."
     eval "C3_USER=$USER cexec $NODES 'rm -rf /data/lab/dashti/sf$SF-build'"
@@ -143,25 +143,35 @@ do
     RESULT_CSV="$OUTPUT_DIR/result.csv"
     eval "rm -f $RESULT_CSV"
 
-    for (( idx = 0; idx < $optCombLen; idx+=1 ))
+    eval "echo -n 'Query,OptimizationCombinationAccronym,OptimizationCombinationFullName,COMPILE TIME (sec)' >> $RESULT_CSV"
+    for (( i = 1; i <= $NUMRUNS; i+=1 ))
     do
-        currentOptsIdxs=${OPTIMIZATION_COMBINATIONS[$idx]}
-        opts=(${currentOptsIdxs//:/ })
-        optsLen=${#opts[@]}
-        currentOpts=""
-        currentOptsAcronym=""
-        currentOptsFullName=""
-        for (( opt = 0; opt < $optsLen; opt+=1 ))
+        eval "echo -n ',RUN #$i (ms)' >> $RESULT_CSV"
+    done
+    if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
+        for (( i = 1; i <= $NUMRUNS; i+=1 ))
         do
-            currentOpts="$currentOpts ${optArr[${opts[opt]}]}"
-            currentOptsAcronym="$currentOptsAcronym-${optArrAcronym[${opts[opt]}]}"
-            currentOptsFullName="$currentOptsFullName ${optArr[${opts[opt]}]}"
-        done
-        
-        COMPILE_TIME="--"
-        
-        for (( qIdx = 0; qIdx < $NUM_QUERIES; qIdx+=1 ))
+            eval "echo -n ',RUN #$i CHECK' >> $RESULT_CSV"
+        done 
+    fi
+    eval "echo ',TOTAL EXECUTION (sec), Peak Memory (KB), TASK CLOCK, CTX SWITCHES' >> $RESULT_CSV"
+
+    for (( qIdx = 0; qIdx < $NUM_QUERIES; qIdx+=1 ))
+    do
+        for (( idx = 0; idx < $optCombLen; idx+=1 ))
         do
+            currentOptsIdxs=${OPTIMIZATION_COMBINATIONS[$idx]}
+            opts=(${currentOptsIdxs//:/ })
+            optsLen=${#opts[@]}
+            currentOpts=""
+            currentOptsAcronym=""
+            currentOptsFullName=""
+            for (( opt = 0; opt < $optsLen; opt+=1 ))
+            do
+                currentOpts="$currentOpts ${optArr[${opts[opt]}]}"
+                currentOptsAcronym="$currentOptsAcronym-${optArrAcronym[${opts[opt]}]}"
+                currentOptsFullName="$currentOptsFullName ${optArr[${opts[opt]}]}"
+            done
             QUERY=${QUERIES[$qIdx]}
             EXECUTABLE="$GEN_OUT_DIR/sf$SF-build/$QUERY$currentOptsAcronym.out"
             EXCLUDED=`checkExcluded $QUERY$UNDERLINE$currentOptsIdxs`
@@ -174,6 +184,7 @@ do
                         echo "Processing information for $QUERY with$currentOptsFullName ..."
                         if [ -f "$OUTPUT_DIR/final-output-sf$SF/$QUERY$currentOptsAcronym.out.txt" ]; then
                             if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
+                                NUM_COMMAS=$(cat $OUTPUT_DIR/final-output-sf$SF/$QUERY$currentOptsAcronym.out.txt | grep 'Generated code run in' | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' | grep -o "," | wc -l)
                                 eval "cat $OUTPUT_DIR/final-output-sf$SF/$QUERY$currentOptsAcronym.out.txt | grep 'Generated code run in' | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' >> $RESULT_CSV"
                             else
                                 eval "cat $OUTPUT_DIR/final-output-sf$SF/$QUERY$currentOptsAcronym.out.txt | grep 'Generated code run in' | sed 's/Generated code run in //g' | sed 's/ milliseconds.//g' | tr '\n' ',' | rev | cut -c 2- | rev >> $RESULT_CSV"
@@ -182,6 +193,10 @@ do
                             if [ "$CHECK_CORRECTNESS" = "TRUE" ]; then
                                 eval "rm -rf $GEN_OUT_DIR/output_*"
                                 eval "cat $OUTPUT_DIR/final-output-sf$SF/$QUERY$currentOptsAcronym.out.txt | sed -e 's/Generated code run in.*/:!~!:/' | awk '/:!~!:/{n++}{if(\$1!=\":!~!:\") print > (\"$GEN_OUT_DIR/output_$QUERY$UNDERLINE\" n \".txt\") }' n=1"
+                                for (( i = $NUM_COMMAS; i < $NUMRUNS; i+=1 ))
+                                do
+                                    eval "echo -n ',' >> $RESULT_CSV"
+                                done
                                 for (( i = 1; i <= $NUMRUNS; i+=1 ))
                                 do
                                     REF_RESULT_FILE="$GEN_OUT_DIR/../results/$QUERY.result_sf$SF"
@@ -199,12 +214,6 @@ do
                                             eval "echo -n 'NO_REF,' >> $RESULT_CSV"
                                         fi
                                     else
-                                        if [ "$i" = "1" ]; then
-                                            for (( k = 1; k <= $NUMRUNS; k+=1 ))
-                                            do
-                                                eval "echo -n ',' >> $RESULT_CSV"
-                                            done
-                                        fi
                                         eval "echo -n 'NOT_FOUND,' >> $RESULT_CSV"
                                     fi
                                 done
@@ -242,8 +251,24 @@ do
                 fi
 
                 EXEC_TIME="--"
-                eval "echo '$EXEC_TIME' >> $RESULT_CSV"
+                eval "echo -n '$EXEC_TIME,' >> $RESULT_CSV"
 
+                if [ -f "$OUTPUT_DIR/final-perf-sf$SF/$QUERY$currentOptsAcronym.out-memory.txt" ]; then
+                    MEM_USAGE=$(cat $OUTPUT_DIR/final-perf-sf$SF/$QUERY$currentOptsAcronym.out-memory.txt)
+                    eval "echo -n '${MEM_USAGE//Peak Memory: /},' >> $RESULT_CSV"
+                else
+                    eval "echo -n '--,' >> $RESULT_CSV"
+                fi
+                if [ -f "$OUTPUT_DIR/final-perf-sf$SF/$QUERY$currentOptsAcronym.out-perf.txt" ]; then
+                    TASK_CLOCK=$(cat $OUTPUT_DIR/final-perf-sf$SF/$QUERY$currentOptsAcronym.out-perf.txt | grep task-clock.*# | sed 's/ task-clock.*//g' | sed -e 's/[[:space:]]*//' | sed 's/,//')
+                    CTX_SWITCHES=$(cat $OUTPUT_DIR/final-perf-sf$SF/$QUERY$currentOptsAcronym.out-perf.txt | grep context-switches.*# | sed 's/ context-switches.*//g' | sed -e 's/[[:space:]]*//' | sed 's/,//')
+                    CTX_SWITCHES=$(cat $OUTPUT_DIR/final-perf-sf$SF/$QUERY$currentOptsAcronym.out-perf.txt | grep cpu-migrations.*# | sed 's/ cpu-migrations.*//g' | sed -e 's/[[:space:]]*//' | sed 's/,//')
+                    eval "echo -n '$TASK_CLOCK,' >> $RESULT_CSV"
+                    eval "echo '$CTX_SWITCHES,' >> $RESULT_CSV"
+                else
+                    eval "echo -n '--,' >> $RESULT_CSV"
+                    eval "echo '--,' >> $RESULT_CSV"
+                fi
                 eval "rm -f $GEN_OUT_DIR/result.csv"
                 eval "cp $RESULT_CSV $GEN_OUT_DIR/result.csv"
             fi
