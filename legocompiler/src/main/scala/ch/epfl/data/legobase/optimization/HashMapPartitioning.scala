@@ -238,7 +238,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       case ("LINEITEMRecord", "L_ORDERKEY") => unit(16)
       // case ("LINEITEMRecord", "L_SUPPKEY") => unit(1 << 10)
       case ("CUSTOMERRecord", "C_NATIONKEY") | ("SUPPLIERRecord", "S_NATIONKEY") => partitionedObject.arraySize / unit(25 - 5)
-      case _ => unit(((1 << 7) * scalingFactor).toInt)
+      case _ => unit(1 << 10)
     }
 
   // def numBuckets(partitionedObject: PartitionObject): Rep[Int] = unit(1 << 9)
