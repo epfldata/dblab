@@ -20,7 +20,7 @@ class Settings(val args: List[String]) {
   def isLargeOutputQuery(tpchQuery: Int) = LARGE_OUTPUT_QUERIES.contains(tpchQuery)
 
   def validate(targetIsC: Boolean, tpchQuery: Int): Unit = {
-    for (arg <- args.filter(arg => !ALL_FLAGS.contains(arg))) {
+    for (arg <- args.filter(a => a.startsWith("+") || a.startsWith("-")).filter(arg => !ALL_FLAGS.contains(arg))) {
       System.out.println(s"${Console.YELLOW}Warning${Console.RESET}: flag $arg is not defined!")
     }
     if (!hashMapLowering && (setToArray || setToLinkedList || containerFlattenning))
@@ -62,6 +62,13 @@ class Settings(val args: List[String]) {
   def noFieldRemoval: Boolean = hasFlag(noFieldRem)
   def noSingletonHashMap: Boolean = hasFlag(noSingHm)
   def nameIsWithFlag: Boolean = hasFlag(nameWithFlag)
+
+  import Main.Q12SynthesizedExtract
+  def isSynthesized: Boolean = args(2) match {
+    case Q12SynthesizedExtract(_, _) => true
+    case _                           => false
+  }
+  def queryName: String = args(2)
 }
 
 object Settings {
@@ -95,10 +102,18 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
     }
   }
 
-  def outputFile: String = if (settings.nameIsWithFlag)
-    settings.args.filter(_.startsWith("+")).map(_.drop(1)).sorted.mkString("_") + "_Q" + number
-  else
-    "Q" + number
+  def outputFile: String = {
+    def queryWithNumber =
+      if (settings.isSynthesized)
+        settings.queryName
+      else
+        "Q" + number
+    def argsString = settings.args.filter(_.startsWith("+")).map(_.drop(1)).sorted.mkString("_")
+    if (settings.nameIsWithFlag)
+      argsString + "_" + queryWithNumber
+    else
+      queryWithNumber
+  }
 
   val reportCompilationTime: Boolean = true
 

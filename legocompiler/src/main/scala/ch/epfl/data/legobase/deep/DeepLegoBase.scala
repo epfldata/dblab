@@ -57,4 +57,5 @@ trait DeepDSL extends queryengine.push.OperatorsComponent
   with Tuple2Component
   with MultiMapComponent
   with OptionComponent
+  with SynthesizedQueriesComponent
 

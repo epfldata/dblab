@@ -12,6 +12,17 @@ import pardis.types._
 
 object Main extends LegoRunner {
 
+  object Q12SynthesizedExtract {
+    val Pat = "Q12S(_\\w)?_(\\d*)".r
+    def unapply(str: String): Option[(Boolean, Int)] = str match {
+      case Pat(target, numFieldsStr) =>
+        val isCCode = if (target == null) false else true
+        val numFields = numFieldsStr.toInt
+        Some(isCCode -> numFields)
+      case _ => None
+    }
+  }
+
   var settings: Settings = _
 
   def main(args: Array[String]) {
@@ -45,7 +56,7 @@ object Main extends LegoRunner {
       System.exit(0)
     }
     Config.checkResults = false
-    settings = new Settings(args.toList.filter(a => a.startsWith("+") || a.startsWith("-")))
+    settings = new Settings(args.toList /*.filter(a => a.startsWith("+") || a.startsWith("-"))*/ )
     run(args)
   }
 
@@ -108,6 +119,9 @@ object Main extends LegoRunner {
         case "Q21_C" => (21, cCode, () => Q21(unit(Config.numRuns)))
         case "Q22"   => (22, scalaCode, () => Q22(unit(Config.numRuns)))
         case "Q22_C" => (22, cCode, () => Q22(unit(Config.numRuns)))
+        case Q12SynthesizedExtract(targetCode, numFields) => {
+          (12, targetCode, () => context.Q12Synthesized(unit(Config.numRuns), numFields))
+        }
       }
 
     settings.validate(targetCode, queryNumber)
