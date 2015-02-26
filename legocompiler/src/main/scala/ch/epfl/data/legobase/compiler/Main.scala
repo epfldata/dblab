@@ -37,7 +37,8 @@ object Main extends LegoRunner {
       $strOpt: Some optimizations on string operations (Helpful for Q22)
       $hmNoCol: Lowering HashMap without collisions to Array
       $largeOut: If the output is so large, this flag ignores the time for printing (Helpful for Q10, Q11, Q16, Q20)
-      $noFieldRem: Does not apply the unnecessary field removal optimization
+      $noFieldRem: Disables the unnecessary field removal optimization
+      $noSingHm: Disables the singleton hashmap optimization
   Available options:
       $nameWithFlag: appends the optimization flags to the name of files
 """)

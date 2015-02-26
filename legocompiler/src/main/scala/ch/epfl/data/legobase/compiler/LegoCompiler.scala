@@ -60,6 +60,7 @@ class Settings(val args: List[String]) {
   def hashMapNoCollision: Boolean = hasFlag(hmNoCol)
   def largeOutputHoisting(targetIsC: Boolean, tpchQuery: Int): Boolean = hasFlag(largeOut) || (isLargeOutputQuery(tpchQuery) && targetIsC)
   def noFieldRemoval: Boolean = hasFlag(noFieldRem)
+  def noSingletonHashMap: Boolean = hasFlag(noSingHm)
   def nameIsWithFlag: Boolean = hasFlag(nameWithFlag)
 }
 
@@ -82,8 +83,9 @@ object Settings {
   val hmNoCol = "+hm-no-col"
   val largeOut = "+large-out"
   val noFieldRem = "+no-field-rem"
+  val noSingHm = "+no-sing-hm"
   val nameWithFlag = "-name-with-flag"
-  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr, badRec, strOpt, hmNoCol, largeOut, noFieldRem, nameWithFlag)
+  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr, badRec, strOpt, hmNoCol, largeOut, noFieldRem, noSingHm, nameWithFlag)
 }
 
 class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor: Double, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
@@ -134,7 +136,8 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
 
   // pipeline += PartiallyEvaluate
   pipeline += HashMapHoist
-  pipeline += SingletonHashMapToValueTransformer
+  if (!settings.noSingletonHashMap)
+    pipeline += SingletonHashMapToValueTransformer
 
   if (settings.hashMapPartitioning) {
     pipeline += new HashMapPartitioningTransformer(DSL, number, scalingFactor)
