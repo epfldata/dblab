@@ -52,6 +52,8 @@ object Main extends LegoRunner {
       $noSingHm: Disables the singleton hashmap optimization
   Available options:
       $nameWithFlag: appends the optimization flags to the name of files
+  Synthesized queries:
+      Q12S[_C]_N: N is the number of fields of the Lineitem table which should be used.
 """)
       System.exit(0)
     }
