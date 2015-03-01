@@ -58,7 +58,7 @@ class Settings(val args: List[String]) {
   def badRecordHandling: Boolean = hasFlag(badRec)
   def stringOptimization: Boolean = hasFlag(strOpt)
   def hashMapNoCollision: Boolean = hasFlag(hmNoCol)
-  def largeOutputHoisting(targetIsC: Boolean, tpchQuery: Int): Boolean = hasFlag(largeOut) || (isLargeOutputQuery(tpchQuery) && targetIsC)
+  def largeOutputHoisting(targetIsC: Boolean, tpchQuery: Int): Boolean = !onlyLoading && (hasFlag(largeOut) || (isLargeOutputQuery(tpchQuery) && targetIsC))
   def noFieldRemoval: Boolean = hasFlag(noFieldRem)
   def noSingletonHashMap: Boolean = hasFlag(noSingHm)
   def nameIsWithFlag: Boolean = hasFlag(nameWithFlag)
