@@ -51,7 +51,8 @@ object Main extends LegoRunner {
       $noFieldRem: Disables the unnecessary field removal optimization
       $noSingHm: Disables the singleton hashmap optimization
   Available options:
-      $nameWithFlag: appends the optimization flags to the name of files
+      $nameWithFlag: Appends the optimization flags to the name of files
+      $onlyLoad: Only generates the loading part
   Synthesized queries:
       Q12S[_C]_N: N is the number of fields of the Lineitem table which should be used.
 """)

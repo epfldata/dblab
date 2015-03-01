@@ -14,7 +14,7 @@ class CTransformersPipeline(val settings: compiler.Settings) extends Transformer
   }
   def apply[A: PardisType](context: LoweringLegoBase, b: PardisBlock[A]) = {
     val pipeline = new TransformerPipeline()
-    pipeline += new GenericEngineToCTransformer(context)
+    pipeline += new GenericEngineToCTransformer(context, settings)
     pipeline += new ScalaScannerToCmmapTransformer(context, settings)
     // pipeline += new ScalaScannerToCFScanfTransformer(context)
     if (settings.oldCArrayHandling) {

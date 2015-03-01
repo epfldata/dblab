@@ -62,6 +62,7 @@ class Settings(val args: List[String]) {
   def noFieldRemoval: Boolean = hasFlag(noFieldRem)
   def noSingletonHashMap: Boolean = hasFlag(noSingHm)
   def nameIsWithFlag: Boolean = hasFlag(nameWithFlag)
+  def onlyLoading: Boolean = hasFlag(onlyLoad)
 
   import Main.Q12SynthesizedExtract
   def isSynthesized: Boolean = args(2) match {
@@ -92,7 +93,8 @@ object Settings {
   val noFieldRem = "+no-field-rem"
   val noSingHm = "+no-sing-hm"
   val nameWithFlag = "-name-with-flag"
-  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr, badRec, strOpt, hmNoCol, largeOut, noFieldRem, noSingHm, nameWithFlag)
+  val onlyLoad = "-only-load"
+  val ALL_FLAGS = List(hm2set, set2arr, set2ll, contFlat, cstore, part, hmPart, mallocHoist, constArr, comprStrings, noLet, ifAgg, oldCArr, badRec, strOpt, hmNoCol, largeOut, noFieldRem, noSingHm, nameWithFlag, onlyLoad)
 }
 
 class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor: Double, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
