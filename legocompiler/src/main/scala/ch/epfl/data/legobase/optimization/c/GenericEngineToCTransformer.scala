@@ -41,7 +41,7 @@ class GenericEngineToCTransformer(override val IR: LoweringLegoBase, val setting
         // Don't put the query processing!
         gettimeofday(&(end))
         val tm = timeval_subtract(&(diff), &(end), &(start))
-        printf(unit("Generated code run in %ld milliseconds.\n"), tm)
+        printf(unit("*****ONLY LOADING*****\nGenerated code run in %ld milliseconds.\n"), tm)
       } else {
         val Timer(diff, start, end) = createTimer
         gettimeofday(&(start))
