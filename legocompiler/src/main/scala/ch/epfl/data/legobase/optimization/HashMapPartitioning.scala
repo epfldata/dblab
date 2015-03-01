@@ -270,6 +270,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
         case _ => key
       }
       val e = parArr(bucket)
+      System.out.println(s"part foreach for val $e=$parArr($bucket) ")
       f(e)
     } else {
       val bucket = findBucketFunction(key, partitionedObject)
@@ -353,7 +354,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   val seenArrays = scala.collection.mutable.Set[Rep[Any]]()
 
   rewrite += statement {
-    case sym -> (node @ ArrayNew(size)) if !seenArrays.contains(sym) =>
+    case sym -> (node @ ArrayNew(size)) /*if !seenArrays.contains(sym)*/ =>
       seenArrays += sym
       reflectStm(Stm(sym, node))
       sym
@@ -478,7 +479,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     case ArrayApply(arr, _) if partitionedHashMapObjects.exists(obj => shouldBePartitioned(obj.mapSymbol) && !obj.isWindow && obj.partitionedObject.arr == arr && fillingHole.get(obj.mapSymbol).nonEmpty) =>
       val allObjs = partitionedHashMapObjects.filter(obj => shouldBePartitioned(obj.mapSymbol) && !obj.isWindow && obj.partitionedObject.arr == arr && fillingHole.get(obj.mapSymbol).nonEmpty)
       val sortedObjs = allObjs.toList.sortBy(obj => fillingHole(obj.mapSymbol))
-      fillingElem(sortedObjs.last.mapSymbol)
+      val hmPartitionedObject = sortedObjs.last
+      // System.out.println(s"filling array apply hole with ${fillingElem(hmPartitionedObject.mapSymbol)}: ${hmPartitionedObject.partitionedObject.tpe}, all: ${partitionedHashMapObjects.map(x => x.mapSymbol -> fillingHole.get(x.mapSymbol) -> x.partitionedObject.tpe).mkString("\n")}")
+      fillingElem(hmPartitionedObject.mapSymbol)
   }
 
   rewrite += remove {
@@ -520,6 +523,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
             unit(())
           })
         }
+        System.out.println(s"setforeach for the key $key $e.${leftArray.fieldFunc} mm: $mm")
         fillingHole(mm) = loopDepth
         loopDepth += 1
         val res1 = inlineBlock2(whileLoop.body)

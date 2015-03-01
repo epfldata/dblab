@@ -294,7 +294,7 @@ object Queries {
         val scanSupplier = new ScanOp(supplierTable)
         val scanNation2 = new ScanOp(nationTable)
 
-        val jo1 = new HashJoinOp(scanPart, scanLineitem)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY)
+        val jo1 = new HashJoinOp(scanLineitem, scanPart)((x, y) => x.L_PARTKEY == y.P_PARTKEY)(x => x.L_PARTKEY)(x => x.P_PARTKEY)
         val jo2 = new HashJoinOp(jo1, scanOrders)((x, y) => x.L_ORDERKEY[Int] == y.O_ORDERKEY)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)
         val jo3 = new HashJoinOp(jo2, scanCustomer)((x, y) => x.O_CUSTKEY[Int] == y.C_CUSTKEY)(x => x.O_CUSTKEY[Int])(x => x.C_CUSTKEY)
         val jo4 = new HashJoinOp(scanNation1, jo3)((x, y) => x.N_NATIONKEY == y.C_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.C_NATIONKEY[Int])
