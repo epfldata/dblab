@@ -146,7 +146,6 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
       settings.hashMapLowering && (settings.setToArray || settings.setToLinkedList))) && !settings.noFieldRemoval
   // pipeline += TreeDumper(false)
   pipeline += LBLowering(shouldRemoveUnusedFields)
-  pipeline += TreeDumper(false)
   pipeline += ParameterPromotion
   pipeline += DCE
   pipeline += PartiallyEvaluate
@@ -157,7 +156,9 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
     pipeline += SingletonHashMapToValueTransformer
 
   if (settings.hashMapPartitioning) {
+    pipeline += TreeDumper(true)
     pipeline += new HashMapPartitioningTransformer(DSL, number, scalingFactor)
+
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE

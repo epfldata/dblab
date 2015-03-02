@@ -25,11 +25,11 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   val hashJoinAntiForeachLambda = scala.collection.mutable.Map[Rep[Any], Lambda[Any, Unit]]()
   var hashJoinAntiRetainVar = scala.collection.mutable.Map[Rep[Any], Var[Boolean]]()
   // TODO when WindowOp is supported will be removed
-  val windowOpMaps = scala.collection.mutable.Set[Rep[Any]]()
+  // val windowOpMaps = scala.collection.mutable.Set[Rep[Any]]()
 
-  case class WindowOpMetaInfo[T <: Def[_]](arr: Rep[Array[Any]], node: T)
-  val windowOpFoldLefts = scala.collection.mutable.Map[Rep[Any], scala.collection.mutable.Set[WindowOpMetaInfo[SetFoldLeft[_, _]]]]()
-  val windowOpMins = scala.collection.mutable.Map[Rep[Any], scala.collection.mutable.Set[WindowOpMetaInfo[SetMinBy[_, _]]]]()
+  // case class WindowOpMetaInfo[T <: Def[_]](arr: Rep[Array[Any]], node: T)
+  // val windowOpFoldLefts = scala.collection.mutable.Map[Rep[Any], scala.collection.mutable.Set[WindowOpMetaInfo[SetFoldLeft[_, _]]]]()
+  // val windowOpMins = scala.collection.mutable.Map[Rep[Any], scala.collection.mutable.Set[WindowOpMetaInfo[SetMinBy[_, _]]]]()
 
   val SIZE_ORDER = List("REGIONRecord", "NATIONRecord", "SUPPLIERRecord", "CUSTOMERRecord", "PARTRecord", "PARTSUPPRecord", "ORDERSRecord", "LINEITEMRecord")
 
@@ -67,7 +67,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       left.nonEmpty
     def isAnti: Boolean = hashJoinAntiMaps.contains(mapSymbol)
     def antiLambda: Lambda[Any, Unit] = hashJoinAntiForeachLambda(mapSymbol)
-    def isWindow: Boolean = windowOpMaps.contains(mapSymbol)
+    // def isWindow: Boolean = windowOpMaps.contains(mapSymbol)
   }
   case class PartitionObject(arr: Rep[Array[Any]], fieldFunc: String, loopSymbol: While) {
     def tpe = arr.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
@@ -85,73 +85,73 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   val partitionedObjectsCount = scala.collection.mutable.Map[PartitionObject, Rep[Array[Int]]]()
 
   // TODO uncomment
-  def supportsWindowOp(): Boolean = //(queryNumber == 2) || (queryNumber == 11)
-    false
+  // def supportsWindowOp(): Boolean = //(queryNumber == 2) || (queryNumber == 11)
+  //   false
 
   // TODO should be `|| ?.right.nonEmpty`
   def shouldBePartitioned[T: TypeRep](hm: Rep[T]): Boolean = {
-    val isWindowOp = windowOpMaps.exists(x => x == hm)
+    // val isWindowOp = windowOpMaps.exists(x => x == hm)
     val isMultiMap = partitionedMaps.exists(x => x == hm)
     isMultiMap && {
-      if (isWindowOp)
-        supportsWindowOp()
-      else
-        (getPartitionedObject(hm).left.nonEmpty || getPartitionedObject(hm).right.nonEmpty)
+      // if (isWindowOp)
+      //   supportsWindowOp()
+      // else
+      (getPartitionedObject(hm).left.nonEmpty || getPartitionedObject(hm).right.nonEmpty)
     }
   }
   def getPartitionedObject[T: TypeRep](hm: Rep[T]): HashMapPartitionObject = partitionedHashMapObjects.find(x => x.mapSymbol == hm).get
 
   override def optimize[T: TypeRep](node: Block[T]): Block[T] = {
     traverseBlock(node)
-    val realHashJoinAntiMaps = hashJoinAntiMaps intersect windowOpMaps
-    windowOpMaps --= realHashJoinAntiMaps // TODO should be uncommented
+    val realHashJoinAntiMaps = hashJoinAntiMaps //intersect windowOpMaps
+    // windowOpMaps --= realHashJoinAntiMaps // TODO should be uncommented
     hashJoinAntiMaps.clear()
     hashJoinAntiMaps ++= realHashJoinAntiMaps
-    val supportedMaps = partitionedMaps diff windowOpMaps
+    // val supportedMaps = partitionedMaps diff windowOpMaps
     partitionedHashMapObjects ++= partitionedMaps.map({ hm =>
       val left = leftPartArr.get(hm).map(v => PartitionObject(v, leftPartFunc(hm), leftLoopSymbol(hm)))
       val right = rightPartArr.get(hm).map(v => PartitionObject(v, rightPartFunc(hm), rightLoopSymbol(hm)))
       HashMapPartitionObject(hm, left, right)
     })
     val res = {
-      if (supportsWindowOp()) {
-        val windowOpMap = partitionedHashMapObjects.find(_.isWindow).get
-        reifyBlock {
-          analyseWindowLambda(windowOpMap)
+      // if (supportsWindowOp()) {
+      //   val windowOpMap = partitionedHashMapObjects.find(_.isWindow).get
+      //   reifyBlock {
+      //     analyseWindowLambda(windowOpMap)
 
-          transformProgram(node)
-        }
-      } else {
-        transformProgram(node)
-      }
+      //     transformProgram(node)
+      //   }
+      // } else {
+      transformProgram(node)
+      // }
     }
     System.out.println(s"[${scala.Console.BLUE}$transformedMapsCount${scala.Console.RESET}] MultiMaps partitioned!")
     res
   }
 
-  def analyseWindowLambda(windowOpMap: HashMapPartitionObject) {
-    val mm = windowOpMap.mapSymbol
-    val foldLefts = windowOpMap.antiLambda.body.stmts.collect({
-      case Statement(sym, s @ SetFoldLeft(_, _, _)) => sym.asInstanceOf[Rep[Any]] -> s
-    })
-    val mins = windowOpMap.antiLambda.body.stmts.collect({
-      case Statement(sym, s @ SetMinBy(_, _)) => sym.asInstanceOf[Rep[Any]] -> s
-    })
+  // def analyseWindowLambda(windowOpMap: HashMapPartitionObject) {
+  //   val mm = windowOpMap.mapSymbol
+  //   val foldLefts = windowOpMap.antiLambda.body.stmts.collect({
+  //     case Statement(sym, s @ SetFoldLeft(_, _, _)) => sym.asInstanceOf[Rep[Any]] -> s
+  //   })
+  //   val mins = windowOpMap.antiLambda.body.stmts.collect({
+  //     case Statement(sym, s @ SetMinBy(_, _)) => sym.asInstanceOf[Rep[Any]] -> s
+  //   })
 
-    windowOpFoldLefts(mm) = scala.collection.mutable.Set()
-    for (fl <- foldLefts) {
-      val arr = __newArray(NUM_AGGS)(fl._1.tp)
-      windowOpFoldLefts(mm) += WindowOpMetaInfo(arr, fl._2)
-    }
+  //   windowOpFoldLefts(mm) = scala.collection.mutable.Set()
+  //   for (fl <- foldLefts) {
+  //     val arr = __newArray(NUM_AGGS)(fl._1.tp)
+  //     windowOpFoldLefts(mm) += WindowOpMetaInfo(arr, fl._2)
+  //   }
 
-    windowOpMins(mm) = scala.collection.mutable.Set()
-    for (m <- mins) {
-      val arr = __newArray(NUM_AGGS)(m._1.tp)
-      windowOpMins(mm) += WindowOpMetaInfo(arr, m._2)
-    }
-  }
+  //   windowOpMins(mm) = scala.collection.mutable.Set()
+  //   for (m <- mins) {
+  //     val arr = __newArray(NUM_AGGS)(m._1.tp)
+  //     windowOpMins(mm) += WindowOpMetaInfo(arr, m._2)
+  //   }
+  // }
 
-  val NUM_AGGS = unit(160000)
+  // val NUM_AGGS = unit(160000)
 
   analysis += statement {
     case sym -> (node @ MultiMapNew()) if node.typeB.isRecord =>
@@ -195,7 +195,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   // TODO when WindowOp is supported, this case should be removed
   analysis += rule {
     case node @ MultiMapForeach(nodeself, f) if allMaps.contains(nodeself) =>
-      windowOpMaps += nodeself
+      // windowOpMaps += nodeself
       f match {
         case Def(fun @ Lambda(_, _, _)) => hashJoinAntiForeachLambda += nodeself -> fun.asInstanceOf[Lambda[Any, Unit]]
         case _                          => ()
@@ -361,7 +361,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   }
 
   rewrite += statement {
-    case sym -> (node @ MultiMapNew()) if shouldBePartitioned(sym) && !windowOpMaps.contains(sym) => {
+    case sym -> (node @ MultiMapNew()) if shouldBePartitioned(sym) /* && !windowOpMaps.contains(sym)*/ => {
       val hmParObj = getPartitionedObject(sym)(sym.tp)
 
       createPartitionArray(hmParObj.partitionedObject)
@@ -370,10 +370,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     }
   }
 
-  rewrite += removeStatement {
-    case sym -> (node @ MultiMapNew()) if shouldBePartitioned(sym) && windowOpMaps.contains(sym) =>
-      ()
-  }
+  // rewrite += removeStatement {
+  //   case sym -> (node @ MultiMapNew()) if shouldBePartitioned(sym) && windowOpMaps.contains(sym) =>
+  //     ()
+  // }
 
   rewrite += remove {
     case MultiMapGet(mm, elem) if shouldBePartitioned(mm) => {
@@ -423,39 +423,39 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   }
 
   // The case for WindowOp
-  rewrite += rule {
-    case MultiMapAddBinding(mm, nodekey, nodev) if shouldBePartitioned(mm) && getPartitionedObject(mm).isWindow =>
-      class ElemType
-      implicit val elemType = nodev.tp.asInstanceOf[TypeRep[ElemType]]
-      val key = nodekey.asInstanceOf[Rep[Int]]
-      val value = nodev.asInstanceOf[Rep[ElemType]]
-      windowOpFoldLefts(mm).toList match {
-        case List(WindowOpMetaInfo(arr, node)) => {
-          val tArr = apply(arr).asInstanceOf[Rep[Array[Double]]]
-          val oldValue = tArr(key)
-          val newValue = inlineFunction(node.op.asInstanceOf[Rep[(Double, ElemType) => Double]], oldValue, value)
-          tArr(key) = newValue
-        }
-        case _ =>
-      }
-      windowOpMins(mm).toList match {
-        case List(WindowOpMetaInfo(arr, node)) => {
-          val fun = node.f.asInstanceOf[Rep[ElemType => Double]]
-          val newValue = inlineFunction(fun, value)
-          val tArr = arr.asInstanceOf[Rep[Array[ElemType]]]
-          val elem = tArr(key)
-          __ifThenElse[Unit]((elem __== unit(null)) || (newValue < inlineFunction(fun, elem)), {
-            tArr(key) = value
-          }, unit())
-          ()
-        }
-        case _ =>
-      }
-      unit()
-  }
+  // rewrite += rule {
+  //   case MultiMapAddBinding(mm, nodekey, nodev) if shouldBePartitioned(mm) && getPartitionedObject(mm).isWindow =>
+  //     class ElemType
+  //     implicit val elemType = nodev.tp.asInstanceOf[TypeRep[ElemType]]
+  //     val key = nodekey.asInstanceOf[Rep[Int]]
+  //     val value = nodev.asInstanceOf[Rep[ElemType]]
+  //     windowOpFoldLefts(mm).toList match {
+  //       case List(WindowOpMetaInfo(arr, node)) => {
+  //         val tArr = apply(arr).asInstanceOf[Rep[Array[Double]]]
+  //         val oldValue = tArr(key)
+  //         val newValue = inlineFunction(node.op.asInstanceOf[Rep[(Double, ElemType) => Double]], oldValue, value)
+  //         tArr(key) = newValue
+  //       }
+  //       case _ =>
+  //     }
+  //     windowOpMins(mm).toList match {
+  //       case List(WindowOpMetaInfo(arr, node)) => {
+  //         val fun = node.f.asInstanceOf[Rep[ElemType => Double]]
+  //         val newValue = inlineFunction(fun, value)
+  //         val tArr = arr.asInstanceOf[Rep[Array[ElemType]]]
+  //         val elem = tArr(key)
+  //         __ifThenElse[Unit]((elem __== unit(null)) || (newValue < inlineFunction(fun, elem)), {
+  //           tArr(key) = value
+  //         }, unit())
+  //         ()
+  //       }
+  //       case _ =>
+  //     }
+  //     unit()
+  // }
 
   rewrite += rule {
-    case MultiMapAddBinding(mm, elem, nodev) if shouldBePartitioned(mm) && !getPartitionedObject(mm).isWindow && !getPartitionedObject(mm).hasLeft =>
+    case MultiMapAddBinding(mm, elem, nodev) if shouldBePartitioned(mm) && /*!getPartitionedObject(mm).isWindow &&*/ !getPartitionedObject(mm).hasLeft =>
       val hmParObj = getPartitionedObject(mm)
       val leftArray = hmParObj.partitionedObject
       val key = apply(elem).asInstanceOf[Rep[Int]]
@@ -476,8 +476,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   }
 
   rewrite += rule {
-    case ArrayApply(arr, _) if partitionedHashMapObjects.exists(obj => shouldBePartitioned(obj.mapSymbol) && !obj.isWindow && obj.partitionedObject.arr == arr && fillingHole.get(obj.mapSymbol).nonEmpty) =>
-      val allObjs = partitionedHashMapObjects.filter(obj => shouldBePartitioned(obj.mapSymbol) && !obj.isWindow && obj.partitionedObject.arr == arr && fillingHole.get(obj.mapSymbol).nonEmpty)
+    case ArrayApply(arr, _) if partitionedHashMapObjects.exists(obj => shouldBePartitioned(obj.mapSymbol) && /*!obj.isWindow &&*/ obj.partitionedObject.arr == arr && fillingHole.get(obj.mapSymbol).nonEmpty) =>
+      val allObjs = partitionedHashMapObjects.filter(obj => shouldBePartitioned(obj.mapSymbol) && /*!obj.isWindow &&*/ obj.partitionedObject.arr == arr && fillingHole.get(obj.mapSymbol).nonEmpty)
       val sortedObjs = allObjs.toList.sortBy(obj => fillingHole(obj.mapSymbol))
       val hmPartitionedObject = sortedObjs.last
       // System.out.println(s"filling array apply hole with ${fillingElem(hmPartitionedObject.mapSymbol)}: ${hmPartitionedObject.partitionedObject.tpe}, all: ${partitionedHashMapObjects.map(x => x.mapSymbol -> fillingHole.get(x.mapSymbol) -> x.partitionedObject.tpe).mkString("\n")}")
@@ -485,7 +485,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   }
 
   rewrite += remove {
-    case node @ While(_, _) if partitionedHashMapObjects.exists(obj => shouldBePartitioned(obj.mapSymbol) && !obj.isWindow && obj.partitionedObject.loopSymbol == node) =>
+    case node @ While(_, _) if partitionedHashMapObjects.exists(obj => shouldBePartitioned(obj.mapSymbol) && /*!obj.isWindow &&*/ obj.partitionedObject.loopSymbol == node) =>
       ()
   }
 
@@ -579,73 +579,73 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   var windowOpForeachMode = false
 
   // The case for WindowOp
-  rewrite += rule {
-    case MultiMapForeach(mm, f) if shouldBePartitioned(mm) && getPartitionedObject(mm).isWindow =>
-      class ElemType
-      windowOpForeachMode = true
-      windowOpFoldLefts(mm).toList match {
-        case List(WindowOpMetaInfo(arr, node)) => {
-          Range(unit(0), NUM_AGGS).foreach {
-            __lambda { i =>
-              implicit val elemType = arr.tp.typeArguments(0).asInstanceOf[TypeRep[ElemType]]
-              val value = arr.asInstanceOf[Rep[Array[Double]]](i)
-              val fun = f.asInstanceOf[Rep[((Double, Set[Any])) => Unit]]
-              val res = __ifThenElse[Unit](value __!= unit(0.0), {
-                inlineFunction(fun, Tuple2(value, i.asInstanceOf[Rep[Set[Any]]]))
-              }, unit())
-              res
-            }
-          }
-          ()
-        }
-        case _ =>
-      }
+  // rewrite += rule {
+  //   case MultiMapForeach(mm, f) if shouldBePartitioned(mm) && getPartitionedObject(mm).isWindow =>
+  //     class ElemType
+  //     windowOpForeachMode = true
+  //     windowOpFoldLefts(mm).toList match {
+  //       case List(WindowOpMetaInfo(arr, node)) => {
+  //         Range(unit(0), NUM_AGGS).foreach {
+  //           __lambda { i =>
+  //             implicit val elemType = arr.tp.typeArguments(0).asInstanceOf[TypeRep[ElemType]]
+  //             val value = arr.asInstanceOf[Rep[Array[Double]]](i)
+  //             val fun = f.asInstanceOf[Rep[((Double, Set[Any])) => Unit]]
+  //             val res = __ifThenElse[Unit](value __!= unit(0.0), {
+  //               inlineFunction(fun, Tuple2(value, i.asInstanceOf[Rep[Set[Any]]]))
+  //             }, unit())
+  //             res
+  //           }
+  //         }
+  //         ()
+  //       }
+  //       case _ =>
+  //     }
 
-      windowOpMins(mm).toList match {
-        case List(WindowOpMetaInfo(arr: Rep[Array[ElemType]], node: SetMinBy[Any, Double])) => {
-          Range(unit(0), NUM_AGGS).foreach {
-            __lambda { i =>
-              implicit val elemType = arr.tp.typeArguments(0).asInstanceOf[TypeRep[ElemType]]
-              val elem = arr.asInstanceOf[Rep[Array[ElemType]]](i)
-              System.out.println(s"elem tp: ${elem}:${elem.tp}!${elemType}")
-              val fun = f.asInstanceOf[Rep[((ElemType, Set[Any])) => Unit]]
-              val res = __ifThenElse[Unit](elem __!= unit(null), {
-                inlineFunction(fun, Tuple2(elem, i.asInstanceOf[Rep[Set[Any]]]))
-              }, unit())
-              res
-            }
-          }
-          ()
-        }
-        case _ =>
-      }
-      windowOpForeachMode = false
-      unit()
-  }
+  //     windowOpMins(mm).toList match {
+  //       case List(WindowOpMetaInfo(arr: Rep[Array[ElemType]], node: SetMinBy[Any, Double])) => {
+  //         Range(unit(0), NUM_AGGS).foreach {
+  //           __lambda { i =>
+  //             implicit val elemType = arr.tp.typeArguments(0).asInstanceOf[TypeRep[ElemType]]
+  //             val elem = arr.asInstanceOf[Rep[Array[ElemType]]](i)
+  //             System.out.println(s"elem tp: ${elem}:${elem.tp}!${elemType}")
+  //             val fun = f.asInstanceOf[Rep[((ElemType, Set[Any])) => Unit]]
+  //             val res = __ifThenElse[Unit](elem __!= unit(null), {
+  //               inlineFunction(fun, Tuple2(elem, i.asInstanceOf[Rep[Set[Any]]]))
+  //             }, unit())
+  //             res
+  //           }
+  //         }
+  //         ()
+  //       }
+  //       case _ =>
+  //     }
+  //     windowOpForeachMode = false
+  //     unit()
+  // }
 
-  rewrite += rule {
-    case SetMinBy(TDef(Tuple2_Field__2(tup @ TDef(Tuple2ApplyObject(_1, _2)))), _) if windowOpForeachMode => {
-      _1
-    }
-  }
+  // rewrite += rule {
+  //   case SetMinBy(TDef(Tuple2_Field__2(tup @ TDef(Tuple2ApplyObject(_1, _2)))), _) if windowOpForeachMode => {
+  //     _1
+  //   }
+  // }
 
-  rewrite += rule {
-    case SetFoldLeft(TDef(Tuple2_Field__2(tup @ TDef(Tuple2ApplyObject(_1, _2)))), _, _) if windowOpForeachMode => {
-      _1
-    }
-  }
+  // rewrite += rule {
+  //   case SetFoldLeft(TDef(Tuple2_Field__2(tup @ TDef(Tuple2ApplyObject(_1, _2)))), _, _) if windowOpForeachMode => {
+  //     _1
+  //   }
+  // }
 
-  rewrite += rule {
-    case SetHead(TDef(Tuple2_Field__2(tup @ TDef(Tuple2ApplyObject(_1, _2))))) if windowOpForeachMode => {
-      _2
-    }
-  }
+  // rewrite += rule {
+  //   case SetHead(TDef(Tuple2_Field__2(tup @ TDef(Tuple2ApplyObject(_1, _2))))) if windowOpForeachMode => {
+  //     _2
+  //   }
+  // }
 
-  rewrite += rule {
-    case StructImmutableField(s, _) if windowOpForeachMode => {
-      s
-    }
-  }
+  // rewrite += rule {
+  //   case StructImmutableField(s, _) if windowOpForeachMode => {
+  //     s
+  //   }
+  // }
 
   rewrite += rule {
     case IfThenElse(Def(OptionNonEmpty(Def(MultiMapGet(mm, elem)))), thenp, elsep) if shouldBePartitioned(mm) && getPartitionedObject(mm).isAnti && fillingHole.get(mm).nonEmpty =>
