@@ -24,6 +24,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   val hashJoinAntiMaps = scala.collection.mutable.Set[Rep[Any]]()
   val hashJoinAntiForeachLambda = scala.collection.mutable.Map[Rep[Any], Lambda[Any, Unit]]()
   var hashJoinAntiRetainVar = scala.collection.mutable.Map[Rep[Any], Var[Boolean]]()
+  val setForeachLambda = scala.collection.mutable.Map[Rep[Any], Rep[Any => Unit]]()
 
   val windowOpMaps = scala.collection.mutable.Set[Rep[Any]]()
 
@@ -168,6 +169,12 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   analysis += statement {
     case sym -> (node @ While(_, _)) =>
       currentLoopSymbol = node
+  }
+
+  analysis += rule {
+    case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) => {
+      setForeachLambda(mm) = f.asInstanceOf[Rep[Any => Unit]]
+    }
   }
 
   def numBuckets(partitionedObject: PartitionObject): Rep[Int] =
@@ -425,6 +432,11 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   var fillingFunction = scala.collection.mutable.Map[Rep[Any], () => Rep[Any]]()
   var fillingElem = scala.collection.mutable.Map[Rep[Any], Rep[Any]]()
 
+  rewrite += removeStatement {
+    case sym -> Lambda(_, _, _) if setForeachLambda.exists(_._2 == sym) =>
+      ()
+  }
+
   rewrite += rule {
     case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) if shouldBePartitioned(mm) && getPartitionedObject(mm).hasLeft => {
       val hmParObj = getPartitionedObject(mm)
@@ -444,10 +456,11 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
             unit(())
           })
         }
-        System.out.println(s"setforeach for the key $key $e.${leftArray.fieldFunc} mm: $mm")
+        System.out.println(s"STARTED setforeach for the key $key $e.${leftArray.fieldFunc} mm: $mm")
         fillingHole(mm) = loopDepth
         loopDepth += 1
         val res1 = inlineBlock2(whileLoop.body)
+        System.out.println(s"FINISH setforeach for the key $key")
         fillingHole.remove(mm)
         loopDepth -= 1
         transformedMapsCount += 1
