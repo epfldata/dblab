@@ -21,8 +21,17 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
   class A
   class B
 
+  analysis += rule {
+    case node @ HashMapGetOrElseUpdate(nodeself, nodekey, nodeopOutput) if nodeopOutput.tp.name == "AGGRecord_Int" =>
+      loweredHashMaps += nodeself
+      ()
+  }
+
+  val loweredHashMaps = scala.collection.mutable.Set[Rep[Any]]()
+
   def mustBeLowered[T](sym: Rep[T]): Boolean =
-    sym.asInstanceOf[Sym[T]].id == 649
+    // sym.asInstanceOf[Sym[T]].id == 649
+    loweredHashMaps.contains(sym)
 
   val lastIndexMap = scala.collection.mutable.Map[Rep[Any], Var[Any]]()
   val tableMap = scala.collection.mutable.Map[Rep[Any], Rep[Any]]()
@@ -64,7 +73,7 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
       unit(null.asInstanceOf[HashMap[A, B]])(node.tp.asInstanceOf[TypeRep[HashMap[A, B]]])
   }
 
-  def __newHashMapOptimalNoCollision[A, B]()(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, B]] = HashMapNew[A, B]()
+  // def __newHashMapOptimalNoCollision[A, B]()(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, B]] = HashMapNew[A, B]()
 
   rewrite += rule {
     case node @ HashMapGetOrElseUpdate(nodeself, nodekey, nodeopOutput) if mustBeLowered(nodeself) =>
@@ -87,23 +96,23 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
       }
   }
 
-  rewrite += rule {
-    case node @ HashMapRemove(nodeself, nodekey) if mustBeLowered(nodeself) =>
+  // rewrite += rule {
+  //   case node @ HashMapRemove(nodeself, nodekey) if mustBeLowered(nodeself) =>
 
-      val self = nodeself.asInstanceOf[Rep[HashMap[A, B]]]
-      val key = nodekey.asInstanceOf[Rep[A]]
-      implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-      implicit val typeB = transformType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[B]]
+  //     val self = nodeself.asInstanceOf[Rep[HashMap[A, B]]]
+  //     val key = nodekey.asInstanceOf[Rep[A]]
+  //     implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
+  //     implicit val typeB = transformType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[B]]
 
-      {
-        val h: this.Rep[Int] = self.hash(key);
-        val list: this.Rep[B] = self.table.apply(h);
-        __ifThenElse(infix_$bang$eq(list, unit(null)), {
-          self.table.update(h, infix_asInstanceOf[B](unit(null)));
-          Option.apply[B](list)
-        }, Option.apply[B](infix_asInstanceOf[B](unit(null))))
-      }
-  }
+  //     {
+  //       val h: this.Rep[Int] = self.hash(key);
+  //       val list: this.Rep[B] = self.table.apply(h);
+  //       __ifThenElse(infix_$bang$eq(list, unit(null)), {
+  //         self.table.update(h, infix_asInstanceOf[B](unit(null)));
+  //         Option.apply[B](list)
+  //       }, Option.apply[B](infix_asInstanceOf[B](unit(null))))
+  //     }
+  // }
 
   rewrite += rule {
     case node @ HashMapForeach(nodeself, nodef) if mustBeLowered(nodeself) =>
