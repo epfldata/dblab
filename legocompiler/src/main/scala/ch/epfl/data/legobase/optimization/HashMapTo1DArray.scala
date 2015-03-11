@@ -27,8 +27,9 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
 
   def changeType[T](implicit tp: TypeRep[T]): TypeRep[Any] = {
     tp match {
-      case t if t.isLoweredRecordType => ArrayType(DoubleType)
-      case _                          => tp
+      case t if t.isLoweredRecordType => //ArrayType(DoubleType)
+        DoubleType
+      case _ => tp
     }
   }.asInstanceOf[TypeRep[Any]]
 
@@ -46,6 +47,18 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
       ()
   }
 
+  analysis += rule {
+    case StructFieldGetter(s, _) if s.tp.isLoweredRecordType =>
+      flattennedStructs += s
+      ()
+  }
+
+  analysis += rule {
+    case StructFieldSetter(s, _, _) if s.tp.isLoweredRecordType =>
+      flattennedStructs += s
+      ()
+  }
+
   analysis += statement {
     case sym -> Struct(_, _, _) if sym.tp.isLoweredRecordType =>
       flattennedStructs += sym
@@ -54,7 +67,7 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
 
   val loweredHashMaps = scala.collection.mutable.Set[Rep[Any]]()
   val flattennedStructs = scala.collection.mutable.Set[Rep[Any]]()
-  val hashMapElemValue = scala.collection.mutable.Map[Rep[Any], Rep[Any]]()
+  val hashMapElemValue = scala.collection.mutable.Map[Rep[Any], Block[Any]]()
 
   def mustBeLowered[T](sym: Rep[T]): Boolean =
     // sym.asInstanceOf[Sym[T]].id == 649
@@ -100,6 +113,10 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
       // tableMap(sym) = infix_asInstanceOf[Array[B]](__newArray[Any](self.buckets))
       tableMap(sym) = __newArray[B](self.buckets)
 
+      Range.apply(unit(0), self.buckets).foreach[Unit](__lambda(((i: this.Rep[Int]) =>
+        // self.table.update(i, Set.apply[B]())
+        self.table(i) = inlineBlock(hashMapElemValue(sym).asInstanceOf[Block[B]]))))
+
       unit(null.asInstanceOf[HashMap[A, B]])(node.tp.asInstanceOf[TypeRep[HashMap[A, B]]])
   }
 
@@ -137,6 +154,14 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
   rewrite += rule {
     case node @ StructImmutableField(s, "aggs") if isFlattennedStruct(s) =>
       apply(s)
+  }
+  rewrite += rule {
+    case node @ StructFieldGetter(s, "aggs") if isFlattennedStruct(s) =>
+      apply(s)
+  }
+  rewrite += rule {
+    case node @ StructFieldSetter(s @ TDef(ArrayApply(arr, i)), "aggs", v) if isFlattennedStruct(s) =>
+      arr(i) = v
   }
   rewrite += rule {
     case node @ StructImmutableField(s, "key") if isFlattennedStruct(s) && keyIndex != null =>
@@ -177,18 +202,18 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
         //   __app[Tuple2[A, B], C](f).apply(Tuple2.apply[A, B](infix_asInstanceOf[A](unit(null)), list));
         //   unit(())
         // }, unit(()))
-        __ifThenElse(infix_$bang$eq(list, unit(null)), {
-          f match {
-            case Def(Lambda(_, i, body)) => {
-              val input = body.stmts.head.sym
-              substitutionContext(input -> list) {
-                body.stmts.tail.foreach(transformStm)
-              }
-              unit(())
+        // __ifThenElse(infix_$bang$eq(list, unit(null)), {
+        f match {
+          case Def(Lambda(_, i, body)) => {
+            val input = body.stmts.head.sym
+            substitutionContext(input -> list) {
+              body.stmts.tail.foreach(transformStm)
             }
+            unit(())
           }
-          unit(())
-        }, unit(()))
+        }
+        //   unit(())
+        // }, unit(()))
       })))
   }
 

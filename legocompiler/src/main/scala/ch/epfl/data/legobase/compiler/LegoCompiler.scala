@@ -156,7 +156,13 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
     pipeline += SingletonHashMapToValueTransformer
 
   if (settings.hashMapPartitioning) {
-    pipeline += TreeDumper(true)
+
+    if (number == 18) {
+      pipeline += ConstSizeArrayToLocalVars
+      pipeline += DCE
+      pipeline += TreeDumper(true)
+      pipeline += new HashMapTo1DArray(DSL)
+    }
     pipeline += new HashMapPartitioningTransformer(DSL, number, scalingFactor)
 
     pipeline += ParameterPromotion
