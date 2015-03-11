@@ -21,17 +21,47 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
   class A
   class B
 
+  implicit class TypeRepOps[T](tp: TypeRep[T]) {
+    def isLoweredRecordType: Boolean = tp.name == "AGGRecord_Int"
+  }
+
+  def changeType[T](implicit tp: TypeRep[T]): TypeRep[Any] = {
+    tp match {
+      case t if t.isLoweredRecordType => ArrayType(DoubleType)
+      case _                          => tp
+    }
+  }.asInstanceOf[TypeRep[Any]]
+
   analysis += rule {
-    case node @ HashMapGetOrElseUpdate(nodeself, nodekey, nodeopOutput) if nodeopOutput.tp.name == "AGGRecord_Int" =>
+    case node @ HashMapGetOrElseUpdate(nodeself, nodekey, nodeopOutput) if nodeopOutput.tp.isLoweredRecordType =>
       loweredHashMaps += nodeself
+      hashMapElemValue(nodeself) = nodeopOutput
+      System.out.println(s"lowered: $nodeself")
+      ()
+  }
+
+  analysis += rule {
+    case StructImmutableField(s, _) if s.tp.isLoweredRecordType =>
+      flattennedStructs += s
+      ()
+  }
+
+  analysis += statement {
+    case sym -> Struct(_, _, _) if sym.tp.isLoweredRecordType =>
+      flattennedStructs += sym
       ()
   }
 
   val loweredHashMaps = scala.collection.mutable.Set[Rep[Any]]()
+  val flattennedStructs = scala.collection.mutable.Set[Rep[Any]]()
+  val hashMapElemValue = scala.collection.mutable.Map[Rep[Any], Rep[Any]]()
 
   def mustBeLowered[T](sym: Rep[T]): Boolean =
     // sym.asInstanceOf[Sym[T]].id == 649
     loweredHashMaps.contains(sym)
+
+  def isFlattennedStruct[T](sym: Rep[T]): Boolean =
+    flattennedStructs.contains(sym)
 
   val lastIndexMap = scala.collection.mutable.Map[Rep[Any], Var[Any]]()
   val tableMap = scala.collection.mutable.Map[Rep[Any], Rep[Any]]()
@@ -63,7 +93,7 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
     case sym -> (node @ HashMapNew()) if mustBeLowered(sym) =>
 
       implicit val typeA = transformType(node.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-      implicit val typeB = transformType(node.tp.typeArguments(1)).asInstanceOf[TypeRep[B]]
+      implicit val typeB = changeType(node.tp.typeArguments(1)).asInstanceOf[TypeRep[B]]
       val self = sym.asInstanceOf[Rep[HashMap[A, B]]]
 
       lastIndexMap(sym) = __newVar[Int](unit(0))
@@ -75,6 +105,8 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
 
   // def __newHashMapOptimalNoCollision[A, B]()(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, B]] = HashMapNew[A, B]()
 
+  var keyIndex: Rep[Int] = _
+
   rewrite += rule {
     case node @ HashMapGetOrElseUpdate(nodeself, nodekey, nodeopOutput) if mustBeLowered(nodeself) =>
 
@@ -82,18 +114,33 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
       val key = nodekey.asInstanceOf[Rep[A]]
       val op = nodeopOutput.asInstanceOf[Block[B]]
       implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-      implicit val typeB = transformType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[B]]
+      implicit val typeB = changeType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[B]]
 
       {
         val h: this.Rep[Int] = self.hash(key);
         val list: this.Rep[B] = self.table.apply(h);
         __ifThenElse(h.$greater(self.lastIndex), self.lastIndex_$eq(h), unit(()));
-        __ifThenElse(infix_$bang$eq(list, unit(null)), list, {
-          val v: this.Rep[B] = op;
-          self.table.update(h, v);
-          v
-        })
+        // __ifThenElse(infix_$bang$eq(list, unit(null)), list, {
+        //   val v: this.Rep[B] = inlineBlock(op);
+        //   self.table.update(h, v);
+        //   v
+        // })
+        list
       }
+  }
+
+  rewrite += statement {
+    case sym -> Struct(_, fields, _) if isFlattennedStruct(sym) =>
+      fields.find(f => f.name == "aggs").get.init
+  }
+
+  rewrite += rule {
+    case node @ StructImmutableField(s, "aggs") if isFlattennedStruct(s) =>
+      apply(s)
+  }
+  rewrite += rule {
+    case node @ StructImmutableField(s, "key") if isFlattennedStruct(s) && keyIndex != null =>
+      keyIndex
   }
 
   // rewrite += rule {
@@ -120,13 +167,26 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
       val self = nodeself.asInstanceOf[Rep[HashMap[A, B]]]
       val f = nodef.asInstanceOf[Rep[((Tuple2[A, B]) => C)]]
       implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-      implicit val typeB = transformType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[B]]
+      implicit val typeB = changeType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[B]]
       implicit val typeC = transformType(f.tp.typeArguments(1)).asInstanceOf[TypeRep[C]]
 
       Range.apply(unit(0), self.lastIndex.$plus(unit(1))).foreach[Unit](__lambda(((i: this.Rep[Int]) => {
         val list: this.Rep[B] = self.table.apply(i);
+        keyIndex = i
+        // __ifThenElse(infix_$bang$eq(list, unit(null)), {
+        //   __app[Tuple2[A, B], C](f).apply(Tuple2.apply[A, B](infix_asInstanceOf[A](unit(null)), list));
+        //   unit(())
+        // }, unit(()))
         __ifThenElse(infix_$bang$eq(list, unit(null)), {
-          __app[Tuple2[A, B], C](f).apply(Tuple2.apply[A, B](infix_asInstanceOf[A](unit(null)), list));
+          f match {
+            case Def(Lambda(_, i, body)) => {
+              val input = body.stmts.head.sym
+              substitutionContext(input -> list) {
+                body.stmts.tail.foreach(transformStm)
+              }
+              unit(())
+            }
+          }
           unit(())
         }, unit(()))
       })))
