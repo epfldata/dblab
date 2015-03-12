@@ -195,7 +195,10 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
       implicit val typeB = changeType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[B]]
       implicit val typeC = transformType(f.tp.typeArguments(1)).asInstanceOf[TypeRep[C]]
 
-      Range.apply(unit(0), self.lastIndex.$plus(unit(1))).foreach[Unit](__lambda(((i: this.Rep[Int]) => {
+      // Range.apply(unit(0), self.lastIndex.$plus(unit(1))).foreach[Unit](__lambda(((i: this.Rep[Int]) => {
+      val index = __newVarNamed[Int](unit(0), "hashmapIndex")
+      __whileDo((index: Rep[Int]) < (self.lastIndex + unit(1)), {
+        val i = (index: Rep[Int])
         val list: this.Rep[B] = self.table.apply(i);
         keyIndex = i
         // __ifThenElse(infix_$bang$eq(list, unit(null)), {
@@ -214,7 +217,9 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
         }
         //   unit(())
         // }, unit(()))
-      })))
+        // })))
+        __assign(index, i + unit(1))
+      })
   }
 
 }
