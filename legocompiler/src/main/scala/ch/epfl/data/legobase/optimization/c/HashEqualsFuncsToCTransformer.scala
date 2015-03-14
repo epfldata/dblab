@@ -86,7 +86,12 @@ class HashEqualsFuncsToCTransformer(override val IR: LoweringLegoBase) extends R
     case HashCode(e) if __isRecord(e) =>
       val ttp = (if (e.tp.isRecord) e.tp else e.tp.typeArguments(0))
       val structDef = getStructDef(ttp).get
-      structDef.fields.map(f => infix_hashCode(field(e, f.name)(f.tpe))).reduce(_ + _)
+      if (ttp.name == "Q9GRPRecord" && structDef.fields.forall(_.tpe == IntType)) {
+        field[Int](e, "N_NAME") * unit(10000) + field[Int](e, "O_YEAR")
+      } else {
+        structDef.fields.map(f => infix_hashCode(field(e, f.name)(f.tpe))).reduce(_ + _)
+      }
+
     case HashCode(t) if t.tp.isPrimitive      => infix_asInstanceOf[Int](t)
     case HashCode(t) if t.tp == CharacterType => infix_asInstanceOf[Int](t)
     case HashCode(t) if t.tp == OptimalStringType =>
