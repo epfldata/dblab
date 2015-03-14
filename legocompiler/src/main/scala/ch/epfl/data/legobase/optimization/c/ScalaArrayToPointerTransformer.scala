@@ -181,7 +181,11 @@ class ScalaArrayToPointerTransformer(override val IR: LoweringLegoBase, val sett
     case ArrayApply(a, i) =>
       val s = apply(a)
       // Get type of elements stored in array
-      val elemType = a.tp.typeArguments(0)
+      val elemType = try {
+        a.tp.typeArguments(0)
+      } catch {
+        case ex => throw new Exception(s"A problem with array $a:${a.tp}", ex)
+      }
       // Get type of internal array
       // val newTp = ({
       //   if (elemType.isArray) typePointer(typeCArray(elemType.typeArguments(0)))
