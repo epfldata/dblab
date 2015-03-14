@@ -44,11 +44,12 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase, val query:
   // cc stands for cancompress
   def cc(name: String): Boolean = query match {
     case 2  => List("N_NAME", "P_MFGR", "P_TYPE", "R_NAME").contains(getNameAliasIfAny(name)) // Disabled: "S_ADDRESS", "S_COMMENT", "S_NAME", "S_PHONE"
-    case 9  => false // Disabled: N_NAME, P_NAME
+    case 9  => List("N_NAME").contains(getNameAliasIfAny(name)) // Disabled: P_NAME
     case 10 => List("N_NAME").contains(getNameAliasIfAny(name)) // Disabled: "C_ADDRESS", "C_COMMENT", "C_NAME", "C_PHONE", 
     case 13 => List("O_COMMENT").contains(getNameAliasIfAny(name))
     case 15 => false // Disabled: "S_ADDRESS","S_NAME","S_PHONE"
     case 16 => List("P_BRAND", "P_TYPE").contains(getNameAliasIfAny(name)) //Disabled: "S_COMMENT"
+    case 17 => List("P_BRAND").contains(getNameAliasIfAny(name))
     case 18 => false // Disabled: "C_NAME"
     case 20 => List("N_NAME").contains(getNameAliasIfAny(name)) // Disabled:  "P_NAME", "S_ADDRESS","S_NAME"
     case 21 => List("N_NAME").contains(getNameAliasIfAny(name)) // Disabled "S_NAME"
@@ -59,6 +60,8 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase, val query:
   override def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     traverseBlock(node)
     //System.out.println("StringCompressionTransformer: Modified symbols are:\n" + modifiedExpressions.mkString("\n"))
+    // TODO HACK
+    if (query == 9) twoPhaseStringCompressionNeeded = true
     phase = LoadingPhase
     reifyBlock {
       // Generate and hoist needed maps for string compression
@@ -437,7 +440,7 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase, val query:
       str1 match {
         case Def(PardisStructImmutableField(s, name)) if (cc(name)) =>
           val idx = __newVarNamed[Int](unit(-1), "containsSlice")
-          Range(unit(0), apply(str1).length).foreach {
+          Range(unit(0), /*apply(str1).length*/ unit(15)).foreach {
             __lambda { i =>
               val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Expression[Array[Int]]], i))(IntType)
               __ifThenElse(wordI __== apply(str2), {
