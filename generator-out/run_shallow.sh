@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCALA_PATH="/sdata/home/dashti/scala-2.11.5/bin"
+SCALA_PATH="/data/home/dashti/scala-2.11.5/bin"
 HOME="/data/home/dashti"
 
 GEN_OUT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
