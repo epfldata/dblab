@@ -11,7 +11,7 @@ START=1
 
 if [ $# -ne 2 ]; then
     echo "Invalid number of command line arguments."
-    echo "USAGE: ./run_scala.sh <DATA_FOLDER> <SF>"
+    echo "USAGE: ./run_shallow.sh <DATA_FOLDER> <SF>"
     exit
 fi
 

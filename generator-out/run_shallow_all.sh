@@ -12,6 +12,9 @@ if [ ! -f "$GEN_OUT_DIR/$CONFIG_FILE" ]; then
 fi
 source $CONFIG_FILE
 
+#DATA_FOLDER points to the data directory on the workers
+DATA_FOLDER="/data/home/dashti/data"
+
 for SF in "${SF_ARR[@]}"
 do
 	echo "Started running shallow for SF=$SF"
