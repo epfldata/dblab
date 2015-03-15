@@ -145,7 +145,7 @@ trait LoaderImplicits extends LoaderOps { this: ch.epfl.data.legobase.deep.DeepD
 trait LoaderImplementations extends LoaderOps { this: ch.epfl.data.legobase.deep.DeepDSL =>
   override def loaderLoadStringObject(size: Rep[Int], s: Rep[K2DBScanner]): Rep[OptimalString] = {
     {
-      val NAME: this.Rep[Array[Byte]] = __newArray[Byte](size);
+      val NAME: this.Rep[Array[Byte]] = __newArray[Byte](size.$plus(unit(1)));
       s.next(NAME);
       __newOptimalString(byteArrayOps(NAME).filter(__lambda(((y: this.Rep[Byte]) => infix_$bang$eq(y, unit(0))))))
     }

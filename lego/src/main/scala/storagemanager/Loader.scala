@@ -23,7 +23,7 @@ object Loader {
   @dontInline
   def getFullPath(fileName: String): String = Config.datapath + fileName
   def loadString(size: Int, s: K2DBScanner) = {
-    val NAME = new Array[Byte](size)
+    val NAME = new Array[Byte](size + 1)
     s.next(NAME)
     new OptimalString(NAME.filter(y => y != 0))
   }
