@@ -30,8 +30,9 @@ class HashMapNoCollisionTransformation(val LB: LoweringLegoBase, val queryNumber
   override def hashMapHash[A, B](self: Rep[HashMap[A, B]], k: Rep[A])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = infix_hashCode(k) //.$amp(self.table.length.$minus(unit(1)))
 
   override def hashMapBuckets[A, B](self: Rep[HashMap[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = queryNumber match {
-    case 12 => unit(16)
+    case 12      => unit(16)
+    case 10 | 13 => unit(1 << 21)
     // case 18 => unit(49000000)
-    case _  => unit(1 << 20)
+    case _       => unit(1 << 20)
   }
 }
