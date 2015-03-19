@@ -419,18 +419,24 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase, val query:
       str1 match {
         case Def(PardisStructImmutableField(s, name)) if (cc(name)) =>
           val idx = __newVarNamed[Int](unit(-1), "findSlice")
-
-          val i = __newVar[Int](__ifThenElse(apply(beg) < unit(0), unit(0), apply(beg)))
-          /*Range(readVar(start), MAX_NUM_WORDS /* apply(str1).length */ ).foreach {
-            __lambda { i =>*/
-          __whileDo(readVar(i) < MAX_NUM_WORDS, {
-            val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Expression[Array[Int]]], i))(IntType)
-            __ifThenElse(wordI __== apply(str2), {
-              __ifThenElse(readVar(idx) __== unit(-1), __assign(idx, i), unit())
-            }, unit())
-            __assign(i, readVar(i) + unit(1))
-          })
-          //}
+          val start = apply(beg) match {
+            case Constant(v: Int) => unit(v)
+            case value            => __ifThenElse(value __== unit(-1), MAX_NUM_WORDS, value)
+          }
+          // val i = __newVar[Int](__ifThenElse(apply(beg) < unit(0), unit(0), apply(beg)))
+          Range(start, MAX_NUM_WORDS /* apply(str1).length */ ).foreach {
+            __lambda { i =>
+              // __whileDo(readVar(i) < MAX_NUM_WORDS, {
+              val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Expression[Array[Int]]], i))(IntType)
+              __ifThenElse(wordI __== apply(str2), {
+                // __ifThenElse(readVar(idx) __== unit(-1), __assign(idx, i), unit())
+                __assign(idx, i)
+                break
+              }, unit())
+              //   __assign(i, readVar(i) + unit(1))
+              // })
+            }
+          }
           readVar(idx)
         case Def(PardisStructImmutableField(s, name)) if (!cc(name)) => optimalStringIndexOfSlice(str1, str2, apply(beg))
         case _ => throw new Exception("StringCompressionTransformer BUG: OptimalStringIndexOfSlice with a node != PardisStructImmutableField (node is of type " + str1.correspondingNode + ")")
