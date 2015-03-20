@@ -361,6 +361,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         val elem2 = toAtom(elemNode)(elemNode.tp)
         __ifThenElse(elem2 __== elem, {
           __assign(idx, i)
+          break
         }, unit())
       }
     }
@@ -391,7 +392,12 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         val elemNode = apply(ArrayBufferApply(a, i))
         val elem = toAtom(elemNode)(elemNode.tp).asInstanceOf[Rep[T]]
         __ifThenElse(if (lastIndex) inlineFunction[T, Boolean](pred, elem) else { inlineFunction[T, Boolean](pred, elem) && (readVar(idx) __== unit(-1)) }, {
-          __assign(idx, i)
+          if (lastIndex)
+            __assign(idx, i)
+          else {
+            __assign(idx, i)
+            break
+          }
         }, unit())
       }
     }
