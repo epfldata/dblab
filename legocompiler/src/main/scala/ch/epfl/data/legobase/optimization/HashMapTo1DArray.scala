@@ -22,7 +22,7 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
   class B
 
   implicit class TypeRepOps[T](tp: TypeRep[T]) {
-    def isLoweredRecordType: Boolean = tp.name == "AGGRecord_Int"
+    def isLoweredRecordType: Boolean = tp.name == "AGGRecord_Int" // || tp.name == "AGGRecord_Double"
   }
 
   def changeType[T](implicit tp: TypeRep[T]): TypeRep[Any] = {
@@ -81,7 +81,7 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
 
   private implicit class HashMapRep1[A, B](self: Rep[HashMap[A, B]]) {
     implicit val typeA = transformType(self.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-    implicit val typeB = transformType(self.tp.typeArguments(1)).asInstanceOf[TypeRep[B]]
+    implicit val typeB = changeType(self.tp.typeArguments(1)).asInstanceOf[TypeRep[B]]
     def buckets: Rep[Int] = hashMapBuckets[A, B](self)(typeA, typeB)
     def hash(k: Rep[A]): Rep[Int] = hashMapHash[A, B](self, k)(typeA, typeB)
     def extractKey(value: Rep[B]): Rep[A] = hashMapExtractKey[A, B](self, value)(typeA, typeB)
