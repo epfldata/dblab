@@ -97,6 +97,10 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
         // System.out.println(s"< $upperBound")
         val rangeForeach = rangeElemField.find(_._2 == elemField).get._1
         Some((rangeForeach, LessThan(elemField, upperBound)))
+      case Int$greater$eq3(elemField, upperBound) if rangeElemField.exists(_._2 == elemField) =>
+        // System.out.println(s"< $upperBound")
+        val rangeForeach = rangeElemField.find(_._2 == elemField).get._1
+        Some((rangeForeach, GreaterThan(elemField, upperBound)))
       case Int$greater3(elemField, lowerBound) if rangeElemFieldConstraints.exists(_._2.exists(c => c.bound == lowerBound)) =>
         // System.out.println(s"> $lowerBound")
         val rangeForeach = rangeElemFieldConstraints.find(_._2.exists(c => c.bound == lowerBound)).get._1
@@ -126,18 +130,18 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
   }
 
   def shouldBePartitioned[T](arrayInfo: ArrayInfo[T]): Boolean = arrayInfo.tpe.name match {
-    case "ORDERSRecord" if queryNumber == 3 => true
-    case _                                  => false
+    case "ORDERSRecord" if queryNumber == 3 || queryNumber == 10 => true
+    case _ => false
   }
 
   def partitioningField[T](tpe: TypeRep[T]): Option[String] = tpe.name match {
-    case "ORDERSRecord" if queryNumber == 3 => Some("O_ORDERDATE")
-    case _                                  => None
+    case "ORDERSRecord" if queryNumber == 3 || queryNumber == 10 => Some("O_ORDERDATE")
+    case _ => None
   }
 
   def bucketSize[T](arrayInfo: ArrayInfo[T]): Rep[Int] = arrayInfo.tpe.name match {
-    case "ORDERSRecord" if queryNumber == 3 => (arrayInfo.arraySize / arrayInfo.buckets) * unit(4)
-    case _                                  => unit(1 << 10)
+    case "ORDERSRecord" if queryNumber == 3 || queryNumber == 10 => (arrayInfo.arraySize / arrayInfo.buckets) * unit(4)
+    case _ => unit(1 << 10)
   }
 
   case class MyDate(year: Int, month: Int, day: Int) {
@@ -162,7 +166,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
   }
 
   def partitioningFunction[T](arrayInfo: ArrayInfo[T]): (Rep[Int] => Rep[Int]) = arrayInfo.tpe.name match {
-    case "ORDERSRecord" if queryNumber == 3 => (x: Rep[Int]) => {
+    case "ORDERSRecord" if queryNumber == 3 || queryNumber == 10 => (x: Rep[Int]) => {
       convertDateToIndex(x)
     }
     case _ => ???
@@ -309,7 +313,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
         // printf(unit(s"arrInfo $arrayInfo"))
         createPartitionArray(arrayInfo)
       }
-      val newBlock = transformBlock(b)
+      val newBlock = transformBlock(b)(b.tp)
       GenericEngineRunQueryObject(newBlock)(newBlock.tp)
   }
 
