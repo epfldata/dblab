@@ -1,7 +1,6 @@
 package ch.epfl.data
 package legobase
 
-
 import scala.collection.mutable.Set
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.TreeSet
@@ -11,6 +10,7 @@ import storagemanager.Loader
 import queryengine.GenericEngine
 import pardis.shallow.OptimalString
 import pardis.shallow.scalalib.collection.Cont
+import ch.epfl.data.UnsafeArray
 
 class MultiMap[T, S] extends HashMap[T, Set[S]] with scala.collection.mutable.MultiMap[T, S]
 
@@ -20,8 +20,7 @@ object OrderingFactory {
   }
 }
 
-
-case class LINEITEMRecord(val L_ORDERKEY: Int, val L_PARTKEY: Int, val L_SUPPKEY: Int, val L_LINENUMBER: Int, val L_QUANTITY: Int, val L_EXTENDEDPRICE: Double, val L_DISCOUNT: Double, val L_TAX: Double, val L_RETURNFLAG: Char, val L_LINESTATUS: Char, val L_SHIPDATE: Int, val L_COMMITDATE: Int, val L_RECEIPTDATE: Int, val L_SHIPINSTRUCT: OptimalString, val L_SHIPMODE: OptimalString, val L_COMMENT: OptimalString)
+class LINEITEMRecord(val L_ORDERKEY: Int, val L_PARTKEY: Int, val L_SUPPKEY: Int, val L_LINENUMBER: Int, val L_QUANTITY: Int, val L_EXTENDEDPRICE: Double, val L_DISCOUNT: Double, val L_TAX: Double, val L_RETURNFLAG: Char, val L_LINESTATUS: Char, val L_SHIPDATE: Int, val L_COMMITDATE: Int, val L_RECEIPTDATE: Int, val L_SHIPINSTRUCT: OptimalString, val L_SHIPMODE: OptimalString, val L_COMMENT: OptimalString)
 case class GroupByClass(val L_RETURNFLAG: Char, val L_LINESTATUS: Char)
 case class AGGRecord_GroupByClass(val key: GroupByClass, val aggs: Array[Double])
 object Q1 extends LegoRunner {
@@ -33,7 +32,7 @@ object Q1 extends LegoRunner {
   {
     val x1 = Loader.fileLineCount("/home/florian/Documents/tpch_testdata/sf0.1/lineitem.tbl")
     val x2 = new K2DBScanner("/home/florian/Documents/tpch_testdata/sf0.1/lineitem.tbl")
-    val x3 = new Array[LINEITEMRecord](x1)
+    val x3 = new UnsafeArray[LINEITEMRecord](classOf[LINEITEMRecord], x1)
     var i4: Int = 0
     val x49 = while({
       val x5 = x2.hasNext()
@@ -80,9 +79,9 @@ object Q1 extends LegoRunner {
       }
       val x41 = x36.filter(x40)
       val x42 = new OptimalString(x41)
-      val x43 = LINEITEMRecord(x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x26, x34, x42)
+      val x43 = new LINEITEMRecord(x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x26, x34, x42)
       val x44 = i4
-      val x45 = x3.update(x44, x43)
+      val x45 = x3.copyAndSet(x43, x44)
       val x46 = i4
       val x47 = x46.+(1)
       val x48 = i4 = x47
@@ -133,7 +132,7 @@ object Q1 extends LegoRunner {
           })
           {
             val x1185 = x373
-            val x169 = x3.apply(x1185)
+            val x169 = x3.get(x1185)
             val x171 = x169.L_SHIPDATE
             val x172 = x171.<=(x52)
             val x255 = if(x172) 
