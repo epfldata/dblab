@@ -34,29 +34,41 @@ class HashEqualsFuncsToCTransformer(override val IR: LoweringLegoBase) extends R
     case Equals(e1, e2, isEqual) if (e1.tp == OptimalStringType || e1.tp == StringType) && !alreadyEquals.contains(e1) =>
       if (isEqual) !strcmp(e1, e2) else strcmp(e1, e2)
     case Equals(e1, Constant(null), isEqual) if __isRecord(e1) && !alreadyEquals.contains(e1) =>
+      val ttp = (if (e1.tp.isRecord) e1.tp else e1.tp.typeArguments(0))
       val structDef = if (e1.tp.isRecord)
-        getStructDef(e1.tp).get
+        getStructDef(ttp).get
       else {
         try {
-          getStructDef(e1.tp.typeArguments(0)).get
+          getStructDef(ttp).get
         } catch {
           case ex => throw new Exception(s"${e1.tp} is not a record type in $e1 and the node ${e1.correspondingNode} => ${ex}")
         }
       }
       // System.out.println(structDef.fields)
+      // System.out.println(s"HERE for $e1:${e1.tp}")
       alreadyEquals += e1
-      structDef.fields.filter(_.name != "next").find(f => f.tpe.isPointerType || f.tpe == OptimalStringType || f.tpe == StringType) match {
-        case Some(firstField) =>
-          def fieldExp = field(e1, firstField.name)(firstField.tpe)
-          if (isEqual)
-            (e1 __== unit(null)) || (fieldExp __== unit(null))
-          else
-            (e1 __!= unit(null)) && (fieldExp __!= unit(null))
-        case None => {
-          if (isEqual)
-            (e1 __== unit(null))
-          else
-            (e1 __!= unit(null))
+      // FIMXE HACK for Q13
+      if (ttp.name == "AGGRecord_Double" && structDef.fields.exists(f => f.name == "aggs" && f.tpe == DoubleType)) {
+        // System.out.println(s"here for $e1")
+        def fieldExp = field[Double](e1, "aggs")
+        if (isEqual)
+          (e1 __== unit(null)) || (fieldExp __== unit(0))
+        else
+          (e1 __!= unit(null)) && (fieldExp __!= unit(0))
+      } else {
+        structDef.fields.filter(_.name != "next").find(f => f.tpe.isPointerType || f.tpe == OptimalStringType || f.tpe == StringType) match {
+          case Some(firstField) =>
+            def fieldExp = field(e1, firstField.name)(firstField.tpe)
+            if (isEqual)
+              (e1 __== unit(null)) || (fieldExp __== unit(null))
+            else
+              (e1 __!= unit(null)) && (fieldExp __!= unit(null))
+          case None => {
+            if (isEqual)
+              (e1 __== unit(null))
+            else
+              (e1 __!= unit(null))
+          }
         }
       }
     // case Equals(e1, e2, isEqual) if __isRecord(e1) && __isRecord(e2) =>
