@@ -586,19 +586,16 @@ trait QueriesImplementations extends QueriesOps { this: ch.epfl.data.legobase.de
   }
   override def queriesQ13Object(numRuns: Rep[Int]): Rep[Unit] = {
     {
-      val customerTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.CUSTOMERRecord]] = Loader.loadCustomer();
       val ordersTable: this.Rep[Array[ch.epfl.data.legobase.queryengine.ORDERSRecord]] = Loader.loadOrders();
       intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val unusual: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("unusual"));
         val packages: this.Rep[ch.epfl.data.legobase.LBString] = GenericEngine.parseString(unit("packages"));
-        val scanCustomer: this.Rep[ch.epfl.data.legobase.queryengine.push.ScanOp[ch.epfl.data.legobase.queryengine.CUSTOMERRecord]] = __newScanOp(customerTable);
         val scanOrders: this.Rep[ch.epfl.data.legobase.queryengine.push.SelectOp[ch.epfl.data.legobase.queryengine.ORDERSRecord]] = __newSelectOp(__newScanOp(ordersTable))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.ORDERSRecord]) => {
           val idxu: this.Rep[Int] = x.O_COMMENT.indexOfSlice(unusual, unit(0));
           val idxp: this.Rep[Int] = x.O_COMMENT.indexOfSlice(packages, idxu);
           infix_$bang$eq(idxu, unit(-1)).$amp$amp(infix_$bang$eq(idxp, unit(-1))).unary_$bang
         })));
-        val jo: this.Rep[ch.epfl.data.legobase.queryengine.push.LeftOuterJoinOp[ch.epfl.data.legobase.queryengine.CUSTOMERRecord, ch.epfl.data.legobase.queryengine.ORDERSRecord, Int]] = __newLeftOuterJoinOp(scanCustomer, scanOrders)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.CUSTOMERRecord], y: this.Rep[ch.epfl.data.legobase.queryengine.ORDERSRecord]) => infix_$eq$eq(x.C_CUSTKEY, y.O_CUSTKEY))))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.CUSTOMERRecord]) => x.C_CUSTKEY)))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.ORDERSRecord]) => x.O_CUSTKEY)));
-        val aggOp1: this.Rep[ch.epfl.data.legobase.queryengine.push.AggOp[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.CUSTOMERRecord, ch.epfl.data.legobase.queryengine.ORDERSRecord], Int]] = __newAggOp(jo, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.CUSTOMERRecord, ch.epfl.data.legobase.queryengine.ORDERSRecord]]) => x.selectDynamic[Int](unit("C_CUSTKEY")))))(__lambda(((t: this.Rep[ch.epfl.data.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.legobase.queryengine.CUSTOMERRecord, ch.epfl.data.legobase.queryengine.ORDERSRecord]], currAgg: this.Rep[Double]) => __ifThenElse(infix_$bang$eq(t.selectDynamic[Int](unit("O_ORDERKEY")), unit(0.0)), currAgg.$plus(unit(1)), currAgg))));
+        val aggOp1: this.Rep[ch.epfl.data.legobase.queryengine.push.AggOp[ch.epfl.data.legobase.queryengine.ORDERSRecord, Int]] = __newAggOp(scanOrders, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.ORDERSRecord]) => x.O_CUSTKEY)))(__lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.ORDERSRecord], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
         val aggOp2: this.Rep[ch.epfl.data.legobase.queryengine.push.AggOp[ch.epfl.data.legobase.queryengine.AGGRecord[Int], Double]] = __newAggOp(aggOp1, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[Int]]) => {
           x.key;
           x.aggs.apply(unit(0))

@@ -171,7 +171,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
   }
 
   if (settings.stringCompression) pipeline += new StringCompressionTransformer(DSL, number)
-  // pipeline += TreeDumper(false)
+  pipeline += TreeDumper(false)
 
   if (settings.hashMapLowering || settings.hashMapNoCollision) {
     if (settings.hashMapLowering) {

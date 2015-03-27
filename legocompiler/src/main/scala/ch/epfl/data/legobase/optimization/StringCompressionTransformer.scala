@@ -32,6 +32,7 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase, val query:
   val constantStrings = collection.mutable.Map[Expression[Any], ConstantStringInfo]()
   val nameAliases = collection.mutable.Map[String, String]()
   val MAX_NUM_WORDS = 15;
+  val max_num_words_map = scala.collection.mutable.Map[String, (Var[Int], Expression[Array[Int]])]()
 
   def shouldTokenize(name: String): Boolean = wordTokinizingStringCompressionNeeded && tokenizedStrings.contains(name)
   def compressedStringType(name: String): TypeRep[Any] = (if (shouldTokenize(name)) ArrayType(IntType) else IntType).asInstanceOf[TypeRep[Any]]
@@ -71,6 +72,12 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase, val query:
           (__newVar[Int](unit(0)), __newArrayBuffer[OptimalString](), {
             if (twoPhaseStringCompressionNeeded) __newArrayBuffer[OptimalString]() else unit(null)
           })
+        })
+      })
+      // Generate maps needed for tokenizing
+      tokenizedStrings.foreach(ts => {
+        max_num_words_map.getOrElseUpdate(ts, {
+          (__newVar[Int](unit(0)), __newArray[Int](12000000)) // todo: fix with proper value
         })
       })
       // Now generate rest of program
@@ -203,12 +210,13 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase, val query:
 
           // Emit check for large lists -- this is to avoid having compression on strings that have many unique values
           __ifThenElse(readVar(num_unique_strings) > COMPRESSION_THREASHOLD, {
-            printf(unit("StringCompressionTransformer ERROR: Q%s -- Number of unique strings in list of field %s exceeded the maximum allowed value of %d\n"), unit(query), unit(e.name), COMPRESSION_THREASHOLD)
+            printf(unit("StringCompressionTransformer ERROR: Q%d -- Number of unique strings in list of field %s exceeded the maximum allowed value of %d\n"), unit(query), unit(e.name), COMPRESSION_THREASHOLD)
             printf(unit("\t\tEither disable StringCompressionTransformer for your query, or disable %s in the transformer.\n"), unit(e.name))
             // TODO: Lift System.exit so that we can exit, or throw exception in the generated code
           }, unit())
 
           if (shouldTokenize(e.name)) {
+            val tokenizedStringInfo = max_num_words_map(e.name)
             System.out.println("StringCompressionTransformer: tokenizing " + e.name);
             val delim = __newArray[Byte](8)
             delim(0) = unit(' '); delim(1) = unit('.'); delim(2) = unit('!'); delim(3) = unit(';');
@@ -217,16 +225,22 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase, val query:
             val compressedWords = __newArray[Int](MAX_NUM_WORDS)
             Range(0, MAX_NUM_WORDS).foreach { __lambda { i => compressedWords(i) = unit(-1) } }
             val words = uncompressedString.split(delim.asInstanceOf[Rep[Array[Char]]])
-            Range(0, MAX_NUM_WORDS).foreach {
-              __lambda { i =>
-                val w = words(i)
-                __ifThenElse(!compressedStringValues.contains(w), {
-                  __assign(num_unique_strings, readVar(num_unique_strings) + unit(1))
-                  compressedStringValues.append(w)
-                }, unit)
-                compressedWords(i) = compressedStringValues.indexOf(w)
+            val stringIdx =
+              Range(0, MAX_NUM_WORDS).foreach {
+                __lambda { i =>
+                  val w = words(i)
+                  __ifThenElse(w __!= unit(null), {
+                    __ifThenElse(!compressedStringValues.contains(w), {
+                      __assign(num_unique_strings, readVar(num_unique_strings) + unit(1))
+                      compressedStringValues.append(w)
+                    }, unit)
+                    compressedWords(i) = compressedStringValues.indexOf(w)
+                    arrayUpdate(tokenizedStringInfo._2, tokenizedStringInfo._1, tokenizedStringInfo._2(tokenizedStringInfo._1) + unit(1))
+                  }, unit())
+                }
               }
-            }
+            //printf(unit("%d\n"), tokenizedStringInfo._2(tokenizedStringInfo._1))
+            __assign(tokenizedStringInfo._1, readVar(tokenizedStringInfo._1) + unit(1))
 
             /*val compressedWords = words.map((w: Expression[OptimalString]) => {
               __ifThenElse(!compressedStringValues.contains(w), {
@@ -383,6 +397,10 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase, val query:
       System.out.println("StringCompressionTransformer: twoPhaseStringCompressionNeeded = " + twoPhaseStringCompressionNeeded)
       System.out.println("StringCompressionTransformer: wordTokinizingStringCompressionNeeded = " + wordTokinizingStringCompressionNeeded)
       System.out.println("StringCompressionTransformer: tokenized strings: " + tokenizedStrings.mkString(","))
+      max_num_words_map.foreach(ts => {
+        //printf(unit("%d"), readVar(ts._2._1)(IntType))
+        __assign(ts._2._1, unit(-1))
+      })
       if (twoPhaseStringCompressionNeeded) {
         reifyBlock {
           compressedStringsMaps = compressedStringsMaps.map(csm => {
@@ -415,28 +433,42 @@ class StringCompressionTransformer(override val IR: LoweringLegoBase, val query:
   }
 
   rewrite += rule {
+    case NotEqual(elem, value) => {
+      elem match {
+        case Def(OptimalStringIndexOfSlice(str1, str2, beg)) => NotEqual(apply(elem), unit(MAX_NUM_WORDS))
+        case _ => NotEqual(apply(elem), apply(value))
+      }
+    }
+  }
+
+  rewrite += rule {
     case OptimalStringIndexOfSlice(str1, str2, beg) =>
       str1 match {
         case Def(PardisStructImmutableField(s, name)) if (cc(name)) =>
-          val idx = __newVarNamed[Int](unit(-1), "findSlice")
-          val start = apply(beg) match {
-            case Constant(v: Int) => unit(v)
-            case value            => __ifThenElse(value __== unit(-1), MAX_NUM_WORDS, value)
-          }
-          // val i = __newVar[Int](__ifThenElse(apply(beg) < unit(0), unit(0), apply(beg)))
-          Range(start, MAX_NUM_WORDS /* apply(str1).length */ ).foreach {
-            __lambda { i =>
-              // __whileDo(readVar(i) < MAX_NUM_WORDS, {
-              val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Expression[Array[Int]]], i))(IntType)
-              __ifThenElse(wordI __== apply(str2), {
-                // __ifThenElse(readVar(idx) __== unit(-1), __assign(idx, i), unit())
-                __assign(idx, i)
-                break
-              }, unit())
-              //   __assign(i, readVar(i) + unit(1))
-              // })
+          val tokenizedStringInfo = max_num_words_map(name)
+          val idx = __newVarNamed[Int](MAX_NUM_WORDS, "findSlice")
+          val start = __newVar[Int](apply(beg) match {
+            case Constant(v: Int) => {
+              __assign(tokenizedStringInfo._1, readVar(tokenizedStringInfo._1) + unit(1))
+              unit(v)
             }
-          }
+            case value => value //__ifThenElse(value __== unit(-1), MAX_NUM_WORDS, value)
+          })
+          val num_words = tokenizedStringInfo._2(tokenizedStringInfo._1)
+          //val i = __newVar[Int](__ifThenElse(apply(beg) __== unit(-1), MAX_NUM_WORDS, apply(beg)))
+          //Range(apply(beg), MAX_NUM_WORDS /* apply(str1).length */ ).foreach {
+          //__lambda { i =>
+          __whileDo(readVar(start) < num_words /*MAX_NUM_WORDS*/ , {
+            val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Expression[Array[Int]]], readVar(start)))(IntType)
+            __ifThenElse(wordI __== apply(str2), {
+              // __ifThenElse(readVar(idx) __== unit(-1), __assign(idx, i), unit())
+              __assign(idx, readVar(start))
+              break
+            }, unit())
+            __assign(start, readVar(start) + unit(1))
+          })
+          //}
+          //}
           readVar(idx)
         case Def(PardisStructImmutableField(s, name)) if (!cc(name)) => optimalStringIndexOfSlice(str1, str2, apply(beg))
         case _ => throw new Exception("StringCompressionTransformer BUG: OptimalStringIndexOfSlice with a node != PardisStructImmutableField (node is of type " + str1.correspondingNode + ")")
