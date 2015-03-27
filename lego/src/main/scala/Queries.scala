@@ -469,21 +469,18 @@ object Queries {
   }
 
   def Q13(numRuns: Int) {
-    val customerTable = loadCustomer()
     val ordersTable = loadOrders()
     for (i <- 0 until numRuns) {
       runQuery({
         val unusual = parseString("unusual")
         val packages = parseString("packages")
-        val scanCustomer = new ScanOp(customerTable)
         val scanOrders = new SelectOp(new ScanOp(ordersTable))(x => {
           val idxu = x.O_COMMENT.indexOfSlice(unusual, 0)
           val idxp = x.O_COMMENT.indexOfSlice(packages, idxu)
           !(idxu != -1 && idxp != -1)
         })
-        val jo = new LeftOuterJoinOp(scanCustomer, scanOrders)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY)
-        val aggOp1 = new AggOp(jo, 1)(x => x.C_CUSTKEY[Int])(
-          (t, currAgg) => { if (t.O_ORDERKEY[Int] != 0.0) currAgg + 1 else currAgg })
+        val aggOp1 = new AggOp(scanOrders, 1)(x => x.O_CUSTKEY)(
+          (t, currAgg) => { currAgg + 1 })
         val aggOp2 = new AggOp(aggOp1, 1)(x => { x.key; x.aggs(0) })(
           (t, currAgg) => { currAgg + 1 })
         val sortOp = new SortOp(aggOp2)((x, y) => {
