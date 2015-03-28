@@ -596,10 +596,7 @@ trait QueriesImplementations extends QueriesOps { this: ch.epfl.data.legobase.de
           infix_$bang$eq(idxu, unit(-1)).$amp$amp(infix_$bang$eq(idxp, unit(-1))).unary_$bang
         })));
         val aggOp1: this.Rep[ch.epfl.data.legobase.queryengine.push.AggOp[ch.epfl.data.legobase.queryengine.ORDERSRecord, Int]] = __newAggOp(scanOrders, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.ORDERSRecord]) => x.O_CUSTKEY)))(__lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.ORDERSRecord], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
-        val aggOp2: this.Rep[ch.epfl.data.legobase.queryengine.push.AggOp[ch.epfl.data.legobase.queryengine.AGGRecord[Int], Double]] = __newAggOp(aggOp1, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[Int]]) => {
-          x.key;
-          x.aggs.apply(unit(0))
-        })))(__lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[Int]], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
+        val aggOp2: this.Rep[ch.epfl.data.legobase.queryengine.push.AggOp[ch.epfl.data.legobase.queryengine.AGGRecord[Int], Double]] = __newAggOp(aggOp1, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[Int]]) => x.aggs.apply(unit(0)))))(__lambda(((t: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[Int]], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
         val sortOp: this.Rep[ch.epfl.data.legobase.queryengine.push.SortOp[ch.epfl.data.legobase.queryengine.AGGRecord[Double]]] = __newSortOp(aggOp2)(__lambda(((x: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[Double]], y: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[Double]]) => __ifThenElse(x.aggs.apply(unit(0)).$less(y.aggs.apply(unit(0))), unit(1), __ifThenElse(x.aggs.apply(unit(0)).$greater(y.aggs.apply(unit(0))), unit(-1), __ifThenElse(x.key.$less(y.key), unit(1), __ifThenElse(x.key.$greater(y.key), unit(-1), unit(0))))))));
         val po: this.Rep[ch.epfl.data.legobase.queryengine.push.PrintOp[ch.epfl.data.legobase.queryengine.AGGRecord[Double]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.legobase.queryengine.AGGRecord[Double]]) => printf(unit("%.0f|%.0f\n"), kv.key, kv.aggs.apply(unit(0))))), __lambda((() => unit(true))));
         po.open();
