@@ -30,6 +30,17 @@ object Q1 extends LegoRunner {
   }
   def main() = 
   {
+    // println("Davor")
+    val bytearr : Array[Byte] = Array(123.toByte, 456.toByte, 789.toByte);
+    val optStr : OptimalString = new OptimalString(bytearr)
+    // val arr = new UnsafeArray[LINEITEMRecord](classOf[LINEITEMRecord], 600)
+    val meinLinerec = new LINEITEMRecord(1, 6, 4, 1, 1, 3d, 5d, 4d, 'c', '2', 77, 88, 99, optStr, optStr, optStr)
+    // arr.copyAndSet(x1, 9)
+    // val retrieved = arr.get(9)
+    // println(retrieved.L_LINESTATUS)
+    // println(retrieved.L_SHIPDATE)
+    
+    // println("Danach")
     val x1 = Loader.fileLineCount("/home/florian/Documents/tpch_testdata/sf0.1/lineitem.tbl")
     val x2 = new K2DBScanner("/home/florian/Documents/tpch_testdata/sf0.1/lineitem.tbl")
     val x3 = new UnsafeArray[LINEITEMRecord](classOf[LINEITEMRecord], x1)
@@ -81,12 +92,14 @@ object Q1 extends LegoRunner {
       val x42 = new OptimalString(x41)
       val x43 = new LINEITEMRecord(x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x26, x34, x42)
       val x44 = i4
-      val x45 = x3.copyAndSet(x43, x44)
+      val x45 = x3.copyAndSet(meinLinerec, x44)
       val x46 = i4
       val x47 = x46.+(1)
       val x48 = i4 = x47
       x48
     }
+    println(meinLinerec)
+    println(x3.get(0))
     val x50 = new Range(0, 1, 1)
     val x316 = { x51: Int => {
         val x431 = new HashMap[GroupByClass, AGGRecord_GroupByClass]()
@@ -122,18 +135,25 @@ object Q1 extends LegoRunner {
           val x478 = OrderingFactory(x144)
           val x479 = new TreeSet()(x478)
           var x500: Int = 0
+          // val elementZero = x3.get(0)
+          // println("Accessing element 0 and printing its L_SHIPDATE: ")
+          // println(elementZero.L_SHIPDATE)
+          var NullPointCounter = 0
           val x259 = while({
             val x167 = true.&&({
               val x1183 = x373
               val x166 = x1183.<(x1)
+              
               x166
             })
             x167
           })
           {
+            try {
             val x1185 = x373
-            val x169 = x3.get(x1185)
-            val x171 = x169.L_SHIPDATE
+            val x169 = x3.get(0)
+            var x171:Int = x169.L_SHIPDATE
+            
             val x172 = x171.<=(x52)
             val x255 = if(x172) 
             {
@@ -179,12 +199,22 @@ object Q1 extends LegoRunner {
             {
               ()
             }
+            } catch {
+              
+              case ex: NullPointerException => {
+                printf("Nullp ")
+                println(x373)
+                NullPointCounter += 1
+              }
+            }
             
             val x1272 = x373
             val x257 = x1272.+(1)
             val x1274 = x373 = x257
             x1274
           }
+          println("Encountered NullPointCounter: ")
+          println(NullPointCounter.toString)
           val x284 = { x261: Tuple2[GroupByClass, AGGRecord_GroupByClass] => {
               val x262 = x261._2
               val x266 = x262.aggs

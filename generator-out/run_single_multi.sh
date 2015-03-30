@@ -1,4 +1,5 @@
 #!/bin/bash
+JAVA_HOME=/usr/local/java/jdk1.7.0_75_x86
 SCALA_PATH=/home/florian/Downloads/scala-2.11.6/bin
 QUERY=1
 NUM=1
@@ -19,5 +20,6 @@ CPATH=$HOME/.ivy2/local/lego-core/lego-core_2.11/0.1-SNAPSHOT/jars/lego-core_2.1
 cd ..
 echo "Now running them"
 for (( i = 1; i <= $NUM; i+=1 )); do
+    env JAVA_OPTS="-XX:-UseCompressedOops" $SCALA_PATH/scala -classpath generator-out/bin/Q$QUERY:$CPATH ch.epfl.data.legobase.Q$QUERY $1 $2 "Q"$QUERY
     $SCALA_PATH/scala -classpath generator-out/bin/Q$QUERY:$CPATH ch.epfl.data.legobase.Q$QUERY $1 $2 "Q"$QUERY
 done
