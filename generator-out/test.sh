@@ -18,7 +18,7 @@ do
 	echo "*** Optimization arguments: "$option" ***"
 	rm *.out *.c
 	cd ..
-	sbt "legocompiler/run "$1" "$2" testsuite-c $option"
+	sbt "lego-compiler/run "$1" "$2" testsuite-c $option"
 	cd generator-out
 	make
 	./run_c.sh "$2" "silent"
@@ -35,7 +35,7 @@ for option in "${scalaoptions[@]}"
 do
 	echo "*** Optimization arguments: "$option" ***"
 	cd ..
-	sbt "legocompiler/run "$1" "$2" testsuite-scala $option"
+	sbt "lego-compiler/run "$1" "$2" testsuite-scala $option"
 	cd generator-out
 	./run_scala.sh "$1" "$2"
 done
