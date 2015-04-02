@@ -11,6 +11,7 @@ import storagemanager.Loader
 import queryengine.GenericEngine
 import pardis.shallow.OptimalString
 import pardis.shallow.scalalib.collection.Cont
+import ch.epfl.data.UnsafeArray
 
 class MultiMap[T, S] extends HashMap[T, Set[S]] with scala.collection.mutable.MultiMap[T, S]
 
@@ -37,7 +38,7 @@ object Q2 extends LegoRunner {
   {
     val x1 = Loader.fileLineCount("/home/florian/Documents/tpch_testdata/sf0.1/part.tbl")
     val x2 = new K2DBScanner("/home/florian/Documents/tpch_testdata/sf0.1/part.tbl")
-    val x3 = new Array[PARTRecord](x1)
+    val x3 = new UnsafeArray[PARTRecord](classOf[PARTRecord], x1)
     var i4: Int = 0
     val x61 = while({
       val x5 = x2.hasNext()
@@ -103,7 +104,7 @@ object Q2 extends LegoRunner {
       val x54 = new OptimalString(x53)
       val x55 = PARTRecord(x6, x14, x22, x30, x37, x38, x45, x46, x54)
       val x56 = i4
-      val x57 = x3.update(x56, x55)
+      val x57 = x3.copyAndSet(x55, x56)
       val x58 = i4
       val x59 = x58.+(1)
       val x60 = i4 = x59
@@ -111,7 +112,7 @@ object Q2 extends LegoRunner {
     }
     val x62 = Loader.fileLineCount("/home/florian/Documents/tpch_testdata/sf0.1/partsupp.tbl")
     val x63 = new K2DBScanner("/home/florian/Documents/tpch_testdata/sf0.1/partsupp.tbl")
-    val x64 = new Array[PARTSUPPRecord](x62)
+    val x64 = new UnsafeArray[PARTSUPPRecord](classOf[PARTSUPPRecord], x62)
     var i65: Int = 0
     val x85 = while({
       val x66 = x63.hasNext()
@@ -133,7 +134,7 @@ object Q2 extends LegoRunner {
       val x78 = new OptimalString(x77)
       val x79 = PARTSUPPRecord(x67, x68, x69, x70, x78)
       val x80 = i65
-      val x81 = x64.update(x80, x79)
+      val x81 = x64.copyAndSet(x79, x80)
       val x82 = i65
       val x83 = x82.+(1)
       val x84 = i65 = x83
@@ -141,7 +142,7 @@ object Q2 extends LegoRunner {
     }
     val x86 = Loader.fileLineCount("/home/florian/Documents/tpch_testdata/sf0.1/nation.tbl")
     val x87 = new K2DBScanner("/home/florian/Documents/tpch_testdata/sf0.1/nation.tbl")
-    val x88 = new Array[NATIONRecord](x86)
+    val x88 = new UnsafeArray[NATIONRecord](classOf[NATIONRecord], x86)
     var i89: Int = 0
     val x115 = while({
       val x90 = x87.hasNext()
@@ -170,7 +171,7 @@ object Q2 extends LegoRunner {
       val x108 = new OptimalString(x107)
       val x109 = NATIONRecord(x91, x99, x100, x108)
       val x110 = i89
-      val x111 = x88.update(x110, x109)
+      val x111 = x88.copyAndSet(x109, x110)
       val x112 = i89
       val x113 = x112.+(1)
       val x114 = i89 = x113
@@ -178,7 +179,7 @@ object Q2 extends LegoRunner {
     }
     val x116 = Loader.fileLineCount("/home/florian/Documents/tpch_testdata/sf0.1/region.tbl")
     val x117 = new K2DBScanner("/home/florian/Documents/tpch_testdata/sf0.1/region.tbl")
-    val x118 = new Array[REGIONRecord](x116)
+    val x118 = new UnsafeArray[REGIONRecord](classOf[REGIONRecord], x116)
     var i119: Int = 0
     val x144 = while({
       val x120 = x117.hasNext()
@@ -206,7 +207,7 @@ object Q2 extends LegoRunner {
       val x137 = new OptimalString(x136)
       val x138 = REGIONRecord(x121, x129, x137)
       val x139 = i119
-      val x140 = x118.update(x139, x138)
+      val x140 = x118.copyAndSet(x138, x139)
       val x141 = i119
       val x142 = x141.+(1)
       val x143 = i119 = x142
@@ -214,7 +215,7 @@ object Q2 extends LegoRunner {
     }
     val x145 = Loader.fileLineCount("/home/florian/Documents/tpch_testdata/sf0.1/supplier.tbl")
     val x146 = new K2DBScanner("/home/florian/Documents/tpch_testdata/sf0.1/supplier.tbl")
-    val x147 = new Array[SUPPLIERRecord](x145)
+    val x147 = new UnsafeArray[SUPPLIERRecord](classOf[SUPPLIERRecord], x145)
     var i148: Int = 0
     val x191 = while({
       val x149 = x146.hasNext()
@@ -262,7 +263,7 @@ object Q2 extends LegoRunner {
       val x184 = new OptimalString(x183)
       val x185 = SUPPLIERRecord(x150, x158, x166, x167, x175, x176, x184)
       val x186 = i148
-      val x187 = x147.update(x186, x185)
+      val x187 = x147.copyAndSet(x185, x186)
       val x188 = i148
       val x189 = x188.+(1)
       val x190 = i148 = x189
@@ -360,8 +361,8 @@ object Q2 extends LegoRunner {
             x337
           })
           {
-            val x4412 = x1133
-            val x339 = x118.apply(x4412)
+            val x4412 = x1133 
+            val x339 = x118.get(x4412)
             val x341 = x339.R_NAME
             val x342 = x341.===(x194)
             val x346 = if(x342) 
@@ -390,7 +391,7 @@ object Q2 extends LegoRunner {
           })
           {
             val x4429 = x1099
-            val x357 = x3.apply(x4429)
+            val x357 = x3.get(x4429)
             val x359 = x357.P_SIZE
             val x360 = x359.==(43)
             val x363 = x360.&&({
@@ -424,7 +425,7 @@ object Q2 extends LegoRunner {
           })
           {
             val x4449 = x1076
-            val x378 = x88.apply(x4449)
+            val x378 = x88.get(x4449)
             val x380 = x378.N_NATIONKEY
             val x382 = x1094.addBinding(x380, x378)
             val x4454 = x1076
@@ -442,7 +443,7 @@ object Q2 extends LegoRunner {
           })
           {
             val x4463 = x1053
-            val x393 = x147.apply(x4463)
+            val x393 = x147.get(x4463)
             val x395 = x393.S_SUPPKEY
             val x397 = x1071.addBinding(x395, x393)
             val x4468 = x1053
@@ -460,7 +461,7 @@ object Q2 extends LegoRunner {
           })
           {
             val x4477 = x1048
-            val x408 = x64.apply(x4477)
+            val x408 = x64.get(x4477)
             val x410 = x408.PS_SUPPKEY
             val x412 = x1071.get(x410)
             val x600 = x412.nonEmpty
