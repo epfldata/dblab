@@ -104,7 +104,7 @@ do
     eval "rm -rf $GEN_OUT_DIR/*.c"
 
     eval "sed -i -e 's/val numRuns: scala.Int = [0-9]*/val numRuns: scala.Int = $NUMRUNS/g' $GEN_OUT_DIR/../lego/src/main/scala/Config.scala"
-    eval "sbt ';project legocompiler ;run $DATA_FOLDER $SF $ALL_SELECTED_QUERIES $currentOpts'"
+    eval "sbt ';project lego-compiler ;run $DATA_FOLDER $SF $ALL_SELECTED_QUERIES $currentOpts'"
     eval "sed -i -e 's/val numRuns: scala.Int = [0-9]*/val numRuns: scala.Int = 1/g' $GEN_OUT_DIR/../lego/src/main/scala/Config.scala"
 
     eval "make -C $GEN_OUT_DIR"
