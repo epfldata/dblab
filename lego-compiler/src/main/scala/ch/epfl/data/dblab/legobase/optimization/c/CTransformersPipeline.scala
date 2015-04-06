@@ -20,7 +20,7 @@ class CTransformersPipeline(val settings: compiler.Settings) extends Transformer
     if (settings.oldCArrayHandling) {
       pipeline += new ScalaArrayToCStructTransformer(context)
     } else {
-      if (settings.badRecordHandling) {
+      if (settings.pointerStore) {
         pipeline += new ScalaArrayToPointerBadRecordTransformer(context, settings)
       } else {
         pipeline += new ScalaArrayToPointerTransformer(context, settings)

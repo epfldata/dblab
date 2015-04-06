@@ -10,6 +10,9 @@ import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
 
+/**
+ * The starting point of the LegoBase compiler.
+ */
 object Main extends LegoRunner {
 
   object Q12SynthesizedExtract {
@@ -45,6 +48,18 @@ object Main extends LegoRunner {
     run(args)
   }
 
+  /**
+   * Generates a program for the given TPCH query with the given scaling factor.
+   *
+   * First, the target language and the TPCH query number is extracted from the
+   * input string. Second, the corresponding query generator in the polymorphic embedding
+   * traits is specified and is put into a thunk. Then, the setting arugments are validated
+   * and parsed using [[Settings]] class. Finally, a [[LegoCompiler]] object is created and
+   * its `compile` method is invoked by passing an appropriate query generator.
+   *
+   * @param query the input TPCH query together with the target language
+   * @param scalingFactor the input scaling factor
+   */
   def executeQuery(query: String, scalingFactor: Double): Unit = {
     System.out.println(s"Running $query!")
 

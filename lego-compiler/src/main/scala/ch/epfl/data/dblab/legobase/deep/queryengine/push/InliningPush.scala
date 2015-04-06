@@ -9,6 +9,9 @@ import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
 import scala.reflect._
 
+/**
+ * A polymorphic embedding cake responsible for applying further partial evaluation.
+ */
 trait InliningPush extends DeepDSL with sc.pardis.ir.InlineFunctions with tpch.QueriesImplementations with OperatorImplementations with ScanOpImplementations with SelectOpImplementations with AggOpImplementations with SortOpImplementations with MapOpImplementations with PrintOpImplementations with WindowOpImplementations with HashJoinOpImplementations with LeftHashSemiJoinOpImplementations with NestedLoopsJoinOpImplementations with SubquerySingleResultImplementations with ViewOpImplementations with HashJoinAntiImplementations with LeftOuterJoinOpImplementations
   with OperatorPartialEvaluation with ScanOpPartialEvaluation with SelectOpPartialEvaluation with AggOpPartialEvaluation with SortOpPartialEvaluation with MapOpPartialEvaluation with PrintOpPartialEvaluation with WindowOpPartialEvaluation with HashJoinOpPartialEvaluation with LeftHashSemiJoinOpPartialEvaluation with NestedLoopsJoinOpPartialEvaluation with SubquerySingleResultPartialEvaluation with ViewOpPartialEvaluation with HashJoinAntiPartialEvaluation with LeftOuterJoinOpPartialEvaluation
   with sc.pardis.deep.scalalib.Tuple2PartialEvaluation
@@ -28,17 +31,20 @@ trait InliningPush extends DeepDSL with sc.pardis.ir.InlineFunctions with tpch.Q
     res
   }
 
+  // TODO move to SC
   override def arrayLength[T](self: Rep[Array[T]])(implicit typeT: TypeRep[T]): Rep[Int] = self match {
     case Def(ArrayNew(length)) => length
     case _                     => super.arrayLength(self)
   }
 
+  // TODO move to SC
   override def __ifThenElse[T: TypeRep](cond: Rep[Boolean], thenp: => Rep[T], elsep: => Rep[T]): Rep[T] = cond match {
     case Constant(true)  => thenp
     case Constant(false) => elsep
     case _               => super.__ifThenElse(cond, thenp, elsep)
   }
 
+  // TODO move to SC
   override def infix_==[A: TypeRep, B: TypeRep](a: Rep[A], b: Rep[B]): Rep[Boolean] = (a, b) match {
     case (Constant(v1), Constant(v2)) => unit(v1 == v2)
     case _                            => super.infix_==(a, b)

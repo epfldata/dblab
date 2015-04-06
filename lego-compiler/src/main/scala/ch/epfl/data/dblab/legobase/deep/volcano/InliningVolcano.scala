@@ -1,11 +1,12 @@
-package ch.epfl.data
-package dblab.legobase
-package deep
-package volcano
+// TODO should be uncommented whenever we have support for both push engines and pull engines.
+// package ch.epfl.data
+// package dblab.legobase
+// package deep
+// package volcano
 
-import scala.language.implicitConversions
-import sc.pardis.ir._
-import sc.pardis.types.PardisTypeImplicits._
+// import scala.language.implicitConversions
+// import sc.pardis.ir._
+// import sc.pardis.types.PardisTypeImplicits._
 
 // trait InliningVolcano extends DeepDSL with sc.pardis.ir.InlineFunctions with QueriesImplementations with OperatorImplementations with ScanOpImplementations with SelectOpImplementations with AggOpImplementations with SortOpImplementations with MapOpImplementations with PrintOpImplementations with WindowOpImplementations with HashJoinOpImplementations with LeftHashSemiJoinOpImplementations with NestedLoopsJoinOpImplementations with SubquerySingleResultImplementations with ViewOpImplementations with HashJoinAntiImplementations with LeftOuterJoinOpImplementations { this: InliningLegoBase =>
 //   override def operatorOpen[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = self match {

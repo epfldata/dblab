@@ -6,6 +6,9 @@ import sc.pardis.ir._
 import sc.pardis.types._
 import dblab.legobase.deep._
 
+/**
+ * A polymorphic embedding cake containing information related to C language
+ */
 trait LegoBaseCLang extends DeepDSL with CFunctions { this: Base =>
   import CNodes._
   import CTypes._

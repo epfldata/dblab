@@ -12,13 +12,18 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
 import sc.pardis.compiler._
 
+/**
+ * The class which is responsible for wiring together different parts of the compilation pipeline
+ * such as program reification, optimization pipeline, and code generation.
+ *
+ * @param DSL the polymorphic trait which contains the reified program.
+ * This object takes care of online partial evaluation
+ * @param number specifies the TPCH query number (TODO should be removed)
+ * @param scalingFactor specifies the scaling factor used for TPCH queries (TODO should be removed)
+ * @param generateCCode specifies the target code.
+ * If this value is true the target code is C otherwise the target is Scala.
+ */
 class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor: Double, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
-  object MultiMapOptimizations extends TransformerHandler {
-    def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-      new sc.pardis.deep.scalalib.collection.MultiMapOptimalTransformation(context.asInstanceOf[LoweringLegoBase]).optimize(block)
-    }
-  }
-
   def outputFile: String = {
     def queryWithNumber =
       if (settings.isSynthesized)
@@ -90,7 +95,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
 
   if (settings.hashMapLowering || settings.hashMapNoCollision) {
     if (settings.hashMapLowering) {
-      pipeline += MultiMapOptimizations
+      pipeline += new sc.pardis.deep.scalalib.collection.MultiMapOptimalTransformation(DSL)
       pipeline += new HashMapToSetTransformation(DSL, number)
     }
     if (settings.hashMapNoCollision) {
@@ -186,24 +191,4 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
         new LegoScalaGenerator(false, outputFile)
     }
 
-}
-
-object TreeDumper {
-  def apply(pretty: Boolean) = new TransformerHandler {
-    def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-      if (pretty) {
-        val cg = new LegoScalaGenerator(false, "tree_debug_dump.txt")
-        val pw = new java.io.PrintWriter("tree_debug_dump.txt")
-        val doc = cg.blockToDocument(block)
-        doc.format(40, pw)
-        pw.flush()
-      } else {
-        val pw = new java.io.PrintWriter(new java.io.File("tree_debug_dump.txt"))
-        pw.println(block.toString)
-        pw.flush()
-      }
-
-      block
-    }
-  }
 }

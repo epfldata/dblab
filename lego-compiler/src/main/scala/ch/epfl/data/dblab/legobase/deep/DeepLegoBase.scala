@@ -12,6 +12,7 @@ import dblab.legobase.deep.queryengine._
 import dblab.legobase.deep.storagemanager._
 import dblab.legobase.deep.tpch._
 
+/** A polymorphic embedding cake which chains all components needed for TPCH queries */
 trait DeepDSL extends queryengine.push.OperatorsComponent
   with AGGRecordComponent
   with WindowRecordComponent

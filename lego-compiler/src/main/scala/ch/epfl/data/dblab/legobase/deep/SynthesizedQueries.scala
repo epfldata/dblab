@@ -8,6 +8,7 @@ import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
 
+/** A polymophic embedding cake which creates a synthesized version of TPCH query 12 */
 trait SynthesizedQueriesComponent extends tpch.QueriesImplementations { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =>
 
   def Q12Synthesized(numRuns: Rep[Int], fields: Int): Rep[Unit] = {

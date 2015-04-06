@@ -296,7 +296,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
   /* ArrayBuffer Operations */
   rewrite += rule {
-    case abn @ (ArrayBufferNew2() | ArrayBufferNew3()) =>
+    case abn @ (ArrayBufferNew2()) =>
       class X
       implicit val tpX = abn.tp.typeArguments(0).asInstanceOf[TypeRep[X]]
       g_array_new(0, 1, sizeof[X])

@@ -3,7 +3,7 @@ package dblab.legobase
 package compiler
 
 /**
- *  Handles the setting parameters which are passed as the main arguments of the program.
+ * Handles the setting parameters which are passed as the main arguments of the program.
  */
 class Settings(val args: List[String]) {
   val SUPPORTED_CS = (1 to 22).toList
@@ -29,7 +29,7 @@ class Settings(val args: List[String]) {
     if (hasSetting(LargeOutputHoistingSetting) && !targetIsC) {
       throw new Exception(s"${LargeOutputHoistingSetting.flagName} is only available for C Code Generation.")
     }
-    if (badRecordHandling && oldCArrayHandling) {
+    if (pointerStore && oldCArrayHandling) {
       throw new Exception(s"${PointerStoreSetting.flagName} and ${CArrayAsStructSetting.flagName} cannot be chained together.")
     }
   }
@@ -48,7 +48,7 @@ class Settings(val args: List[String]) {
   def noLetBinding: Boolean = hasSetting(NoLetBindingSetting)
   def ifAggressive: Boolean = hasSetting(IfAggressiveSetting)
   def oldCArrayHandling: Boolean = hasSetting(CArrayAsStructSetting)
-  def badRecordHandling: Boolean = hasSetting(PointerStoreSetting)
+  def pointerStore: Boolean = hasSetting(PointerStoreSetting)
   def stringOptimization: Boolean = hasSetting(StringOptimizationSetting)
   def hashMapNoCollision: Boolean = hasSetting(HashMapToArraySetting)
   def largeOutputHoisting(targetIsC: Boolean, tpchQuery: Int): Boolean = !onlyLoading && (hasSetting(LargeOutputHoistingSetting) || (isLargeOutputQuery(tpchQuery) && targetIsC))
@@ -65,6 +65,9 @@ class Settings(val args: List[String]) {
   def queryName: String = args(2)
 }
 
+/**
+ * Contains list of available settings
+ */
 object Settings {
   val ALL_SETTINGS = List(HashMapToSetSetting,
     SetToArraySetting,
@@ -89,6 +92,13 @@ object Settings {
     OnlyLoaderSetting)
 }
 
+/**
+ * The main trait for every setting
+ *
+ * @field prefix the prefix used for a setting used in command line
+ * @field flagName the name of a setting flag
+ * @field description the description for a setting
+ */
 sealed trait Setting {
   val prefix: String
   val flagName: String
@@ -96,6 +106,12 @@ sealed trait Setting {
   def fullFlagName: String = prefix + flagName
 }
 
+/**
+ * The super class of optimization settings
+ * @param flagName the name of the optimization setting
+ * @param mainDescription the main part of the description for the optimization setting
+ * @param extraDescription the additional description about the optimization setting
+ */
 abstract class OptimizationSetting(val flagName: String,
                                    val mainDescription: String,
                                    val extraDescription: String = "") extends Setting {
@@ -108,12 +124,17 @@ abstract class OptimizationSetting(val flagName: String,
   }
 }
 
+/**
+ * The super class of option settings, which are not related to optimization
+ * @param flagName the name of the option setting
+ * @param desciprtion the description for the option setting
+ */
 abstract class OptionSetting(val flagName: String, val description: String) extends Setting {
   val prefix: String = "-"
 }
 
 /*
- * List of available optimization flags
+ * Available optimization settings
  */
 case object HashMapToSetSetting extends OptimizationSetting("hm2set",
   "Lowering HashMap and MultiMap to Array of Set")
@@ -163,7 +184,7 @@ case object NoSingletonHashMapSetting extends OptimizationSetting("no-sing-hm",
   "Deoptimization!")
 
 /* 
- * List of available option flags
+ * Available option settings
  */
 case object OutputNameWithFlagSetting extends OptionSetting("name-with-flag",
   "Appends the optimization flags to the name of files")
