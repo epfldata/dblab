@@ -29,37 +29,19 @@ object Main extends LegoRunner {
     if (args.length < 3) {
       import Settings._
       System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
-      System.out.println("USAGE: run <data_folder> <scaling_factor_number> <list of queries to run> <copy>? <+optimizations>")
+      System.out.println("USAGE: run <data_folder> <scaling_factor_number> <list of queries to run> <copy>? <+optimizations> <-options>")
       System.out.println("     : data_folder_name should contain folders named sf0.1 sf1 sf2 sf4 etc")
-      System.out.println(s""" Available optimizations:
-      $hm2set: Lowering HashMap and MultiMap to Array of Set
-      $set2arr: Lowering Set to Array
-      $set2ll: Lowering Set to Linked List
-      $contFlat: Flattening the next field of a container of a record to the record itself
-      $cstore: Column-Store optimization (Not finished yet!)
-      $part: Partitioning optimization which only should be combined with $cstore (Not finished yet! Works only for Q3 and Q6)
-      $hmPart: Converts HashMaps into partitioned arrays!)
-      $mallocHoist: Hoists malloc statements outside of the critical path
-      $constArr: Transforms arrays with a small constant size into local variables
-      $noLet: Removes unnecessary let-bindings from the generated code
-      $ifAgg: Rewrites the conditions of if statements into bitwise form instead of the original
-        short-circuiting form (May produce incorrect results in some queries)
-      $oldCArr: Old way of handling arrays and structs for C code generation
-      $strOpt: Some optimizations on string operations (Helpful for Q22)
-      $hmNoCol: Lowering HashMap without collisions to Array
-      $largeOut: If the output is so large, this flag ignores the time for printing (Helpful for Q10, Q11, Q16, Q20)
-      $noFieldRem: Disables the unnecessary field removal optimization
-      $noSingHm: Disables the singleton hashmap optimization
-  Available options:
-      $nameWithFlag: Appends the optimization flags to the name of files
-      $onlyLoad: Only generates the loading part
-  Synthesized queries:
-      Q12S[_C]_N: N is the number of fields of the Lineitem table which should be used.
-""")
+      System.out.println("  Available optimizations:")
+      System.out.println(Settings.ALL_SETTINGS.collect({ case opt: OptimizationSetting => opt.fullFlagName + ": " + opt.description }).mkString(" " * 6, "\n" + " " * 6, ""))
+      System.out.println("  Available options:")
+      System.out.println(Settings.ALL_SETTINGS.collect({ case opt: OptionSetting => opt.fullFlagName + ": " + opt.description }).mkString(" " * 6, "\n" + " " * 6, ""))
+      // System.out.println("""  Synthesized queries:
+      //       Q12S[_C]_N: N is the number of fields of the Lineitem table which should be used.
+      // """)
       System.exit(0)
     }
     Config.checkResults = false
-    settings = new Settings(args.toList /*.filter(a => a.startsWith("+") || a.startsWith("-"))*/ )
+    settings = new Settings(args.toList)
     run(args)
   }
 
