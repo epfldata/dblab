@@ -51,13 +51,13 @@ object Parser extends StandardTokenParsers {
         | "BETWEEN" ~ parseAddition ~ "AND" ~ parseAddition ^^ {
           case op ~ a ~ _ ~ b => (op, a, b)
         }
-        | "NOT IN" ~ "(" ~ (parseSelectStatement | rep1sep(parseExpression, ",")) ~ ")" ^^ {
-          case op ~ _ ~ a ~ _ => ("IN", a, true)
+        | "NOT" ~> "IN" ~ "(" ~ (parseSelectStatement | rep1sep(parseExpression, ",")) ~ ")" ^^ {
+          case op ~ _ ~ a ~ _ => (op, a, true)
         }
         | "IN" ~ "(" ~ (parseSelectStatement | rep1sep(parseExpression, ",")) ~ ")" ^^ {
           case op ~ _ ~ a ~ _ => (op, a, false)
         }
-        | "NOT LIKE" ~ parseAddition ^^ { case op ~ a => ("LIKE", a, true) }
+        | "NOT" ~> "LIKE" ~ parseAddition ^^ { case op ~ a => (op, a, true) }
         | "LIKE" ~ parseAddition ^^ { case op ~ a => (op, a, false) }) ^^ {
         case left ~ elems =>
           elems.foldLeft(left) {
@@ -99,18 +99,18 @@ object Parser extends StandardTokenParsers {
     | "-" ~> parsePrimaryExpression ^^ (UnaryMinus(_)))
 
   def parseKnownFunction: Parser[Expression] = (
-    "COUNT(" ~> ("*" ^^^ CountAll() | parseExpression ^^ { case expr => CountExpr(expr) }) <~ ")"
-    | "MIN(" ~> parseExpression <~ ")" ^^ (Min(_))
-    | "MAX(" ~> parseExpression <~ ")" ^^ (Max(_))
-    | "SUM(" ~> parseExpression <~ ")" ^^ { Sum(_) }
-    | "AVG(" ~> parseExpression <~ ")" ^^ { Avg(_) })
+    "COUNT" ~> "(" ~> ("*" ^^^ CountAll() | parseExpression ^^ { case expr => CountExpr(expr) }) <~ ")"
+    | "MIN" ~> "(" ~> parseExpression <~ ")" ^^ (Min(_))
+    | "MAX" ~> "(" ~> parseExpression <~ ")" ^^ (Max(_))
+    | "SUM" ~> "(" ~> parseExpression <~ ")" ^^ (Sum(_))
+    | "AVG" ~> "(" ~> parseExpression <~ ")" ^^ (Avg(_)))
 
   def parseLiteral: Parser[Expression] = (
-    numericLit ^^ { case i => IntLiteral(i.toInt) } |
-    floatLit ^^ { case f => FloatLiteral(f.toDouble) } |
-    stringLit ^^ { case s => StringLiteral(s) } |
-    "NULL" ^^ (_ => NullLiteral()) |
-    "DATE" ~> stringLit ^^ (DateLiteral(_)))
+    numericLit ^^ { case i => IntLiteral(i.toInt) }
+    | floatLit ^^ { case f => FloatLiteral(f.toDouble) }
+    | stringLit ^^ { case s => StringLiteral(s) }
+    | "NULL" ^^ { case _ => NullLiteral() }
+    | "DATE" ~> stringLit ^^ { case s => DateLiteral(s) })
 
   def parseRelations: Parser[Seq[Relation]] = rep1sep(parseRelation, ",")
 
@@ -129,10 +129,10 @@ object Parser extends StandardTokenParsers {
     })
 
   def parseJoinType: Parser[JoinType] = (
-    ("LEFT" <~ "OUTER".? | "RIGHT" <~ "OUTER".? | "FULL OUTER") ^^ {
-      case "LEFT"       => LeftOuterJoin
-      case "RIGHT"      => RightOuterJoin
-      case "FULL OUTER" => FullOuterJoin
+    ("LEFT" <~ "OUTER".? | "RIGHT" <~ "OUTER".? | "FULL" ~ "OUTER") ^^ {
+      case "LEFT"           => LeftOuterJoin
+      case "RIGHT"          => RightOuterJoin
+      case "FULL" ~ "OUTER" => FullOuterJoin
     }
     | "INNER" ^^^ InnerJoin)
 
@@ -140,11 +140,11 @@ object Parser extends StandardTokenParsers {
     "WHERE" ~> parseExpression)
 
   def parseGroupBy: Parser[GroupBy] = (
-    "GROUP BY" ~> rep1sep(parseExpression, ",") ~ ("HAVING" ~> parseExpression).? ^^
+    "GROUP" ~> "BY" ~> rep1sep(parseExpression, ",") ~ ("HAVING" ~> parseExpression).? ^^
     { case exp ~ hav => GroupBy(exp, hav) })
 
   def parseOrderBy: Parser[OrderBy] = (
-    "ORDER BY" ~> rep1sep(parseOrderKey, ",") ^^ { case keys => OrderBy(keys) })
+    "ORDER" ~> "BY" ~> rep1sep(parseOrderKey, ",") ^^ { case keys => OrderBy(keys) })
 
   def parseOrderKey: Parser[(Expression, OrderType)] = (
     parseExpression <~ "ASC".? ^^ { case v => (v, ASC) }
@@ -191,7 +191,7 @@ object Parser extends StandardTokenParsers {
     "SELECT", "AS", "OR", "AND", "GROUP", "ORDER", "BY", "WHERE",
     "JOIN", "ASC", "DESC", "FROM", "ON", "NOT", "HAVING",
     "EXISTS", "BETWEEN", "LIKE", "IN", "NULL", "LEFT", "RIGHT",
-    "FULL", "OUTER", "INNER", "COUNT", "SUM", "AVG", "MIN", "MAX")
+    "FULL", "OUTER", "INNER", "COUNT", "SUM", "AVG", "MIN", "MAX", "DATE")
 
   lexical.delimiters += (
     "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "/", "(", ")", ",", ".", ";")
