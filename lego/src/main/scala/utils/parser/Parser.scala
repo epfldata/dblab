@@ -187,4 +187,13 @@ object Parser extends StandardTokenParsers {
   def floatLit: Parser[String] =
     elem("decimal", _.isInstanceOf[lexical.FloatLit]) ^^ (_.chars)
 
+  lexical.reserved += (
+    "SELECT", "AS", "OR", "AND", "GROUP", "ORDER", "BY", "WHERE",
+    "JOIN", "ASC", "DESC", "FROM", "ON", "NOT", "HAVING",
+    "EXISTS", "BETWEEN", "LIKE", "IN", "NULL", "LEFT", "RIGHT",
+    "FULL", "OUTER", "INNER", "COUNT", "SUM", "AVG", "MIN", "MAX")
+
+  lexical.delimiters += (
+    "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "/", "(", ")", ",", ".", ";")
+
 }
