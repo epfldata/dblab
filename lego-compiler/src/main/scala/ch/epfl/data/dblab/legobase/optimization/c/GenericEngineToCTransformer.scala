@@ -8,6 +8,14 @@ import sc.pardis.optimization._
 import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
 
+/**
+ * Transforms the generic engine methods to the corresponding C implementations.
+ *
+ * This transformation inserts the profiling statements into the given program.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ * @param settings the compiler settings provided as command line arguments (TODO should be removed)
+ */
 class GenericEngineToCTransformer(override val IR: LoweringLegoBase, val settings: compiler.Settings) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
   import CNodes._

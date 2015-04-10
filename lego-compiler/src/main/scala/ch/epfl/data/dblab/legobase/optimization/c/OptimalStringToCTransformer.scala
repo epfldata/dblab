@@ -10,6 +10,11 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
 import scala.language.implicitConversions
 
+/**
+ * Transforms (Optimal)String objects to their corresponding C implementation.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ */
 class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._
@@ -114,6 +119,7 @@ class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends Rec
       })
       str
   }
+  // FIXME should not use NameAlias
   rewrite += rule {
     case OptimalStringSplit(str, delim) =>
       NameAlias[Pointer[Char]](None, "tokenizeString", List(List(str)))

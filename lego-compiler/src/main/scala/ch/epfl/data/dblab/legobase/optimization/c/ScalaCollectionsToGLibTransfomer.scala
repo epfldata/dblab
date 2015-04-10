@@ -12,6 +12,16 @@ import scala.language.implicitConversions
 import sc.cscala.CLangTypesDeep._
 import sc.cscala.GLibTypes._
 
+/**
+ * Transforms Scala collection classes into a C GLib types.
+ *
+ * HashMap is converted to g_hash_table.
+ * Set is converted to g_list
+ * TreeSet is converted to g_tree
+ * ArrayBuffer is converted to g_array
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ */
 class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._
@@ -20,6 +30,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   import GListHeader._
   import GTreeHeader._
   import GArrayHeader._
+
+  // FIXME needs to be rewritten
 
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]

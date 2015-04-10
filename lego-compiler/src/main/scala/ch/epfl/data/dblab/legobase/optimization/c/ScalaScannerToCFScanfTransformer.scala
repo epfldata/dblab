@@ -11,7 +11,11 @@ import sc.pardis.types._
 import sc.cscala.CLangTypesDeep._
 import sc.cscala.GLibTypes._
 
-// Mapping Scala Scanner operations to C FILE operations
+/**
+ * Transforms Scala Scanner operations to C FILE operations.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ */
 class ScalaScannerToCFScanfTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
   import CNodes._

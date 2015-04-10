@@ -10,10 +10,35 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
 import scala.language.existentials
 
+/**
+ * Transforms Scala Arrays into C structs with a pointer of pointer as its field.
+ *
+ * More specifically:
+ * {{{
+ *     val x: Array[Foo]
+ * }}}
+ * is converted into:
+ * {{{
+ *     struct ArrayFoo {
+ *       Foo** array;
+ *       int length;
+ *     };
+ *     ArrayFoo* x;
+ * }}}
+ *
+ * This one has performance overhead in comparison with the one which was using a
+ * pointer as its field.
+ *
+ * This one is Pointer-Store representation.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ */
 class ScalaArrayToPointerBadRecordTransformer(override val IR: LoweringLegoBase, val settings: compiler.Settings) extends RuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._
+
+  // TODO needs to be rewritten
 
   analysis += statement {
     case sym -> ArrayLength(arr) =>

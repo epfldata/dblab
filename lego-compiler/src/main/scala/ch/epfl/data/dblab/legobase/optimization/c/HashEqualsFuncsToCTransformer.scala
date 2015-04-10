@@ -10,6 +10,13 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
 import scala.language.existentials
 
+/**
+ * Transforms the object methods into their corresponding C implementation.
+ *
+ * The supported object operations (for now) are `hashCode`, `equals`, and `toString`
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ */
 class HashEqualsFuncsToCTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer with StructCollector[LoweringLegoBase] {
   import IR._
   import CNodes._

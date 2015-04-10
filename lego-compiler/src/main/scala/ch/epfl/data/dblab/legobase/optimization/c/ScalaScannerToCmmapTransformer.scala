@@ -10,7 +10,12 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
 import scala.language.implicitConversions
 
-// Mapping Scala Scanner operations to C mmap operations
+/**
+ * Transforms Scala Scanner operations to C mmap operations.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ * @param settings the compiler settings provided as command line arguments (TODO should be removed)
+ */
 class ScalaScannerToCmmapTransformer(override val IR: LoweringLegoBase, val settings: compiler.Settings) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
   import CNodes._

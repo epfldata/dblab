@@ -10,6 +10,11 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
 import scala.language.existentials
 
+/**
+ * Transforms `new Struct` in Scala to `malloc(..)` in C.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ */
 class ScalaStructToMallocTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._

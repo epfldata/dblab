@@ -9,11 +9,32 @@ import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
 import scala.language.existentials
-
+/**
+ * Transforms Scala Arrays into C structs.
+ *
+ * More specifically:
+ * {{{
+ *     val x: Array[Foo]
+ * }}}
+ * is converted into:
+ * {{{
+ *     struct ArrayFoo {
+ *       Foo* array;
+ *       int length;
+ *     };
+ *     ArrayFoo* x;
+ * }}}
+ * This one is Row-Store representation.
+ *
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ */
 class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._
+
+  // TODO needs to be rewritten
 
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]

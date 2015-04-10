@@ -9,6 +9,27 @@ import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
 
+/**
+ * Converts core constructs of Scala into C.
+ *
+ * For example a block in Scala can have an arbitrary return type whereas in C
+ * it should have a void (Unit) type. The following program:
+ * {{{
+ *     val x: Foo = if(cond) y else z
+ * }}}
+ * is converted into:
+ * {{{
+ *     Foo x;
+ *     if(cond) {
+ *       x = y;
+ *     } else {
+ *       x = z;
+ *     }
+ * }}}
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ * @param ifAgg specifies whether aggressive if rewriting optimization should be applied or not
+ */
 class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase, val ifAgg: Boolean) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._

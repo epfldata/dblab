@@ -7,6 +7,11 @@ import deep._
 import sc.pardis.optimization._
 import sc.pardis.ir._
 
+/**
+ * Removes the abstraction overhead of Tuple2.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ */
 class Tuple2ToCTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._

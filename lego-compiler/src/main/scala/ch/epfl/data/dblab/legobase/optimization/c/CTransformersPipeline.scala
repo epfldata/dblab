@@ -8,6 +8,12 @@ import sc.pardis.types._
 import sc.pardis.ir._
 import sc.pardis.optimization._
 
+/**
+ * A pipeline of transformations necessary to lower the program into an
+ * equivalent program in C programming language.
+ *
+ * @param settings the compiler settings provided as command line arguments (TODO should be removed)
+ */
 class CTransformersPipeline(val settings: compiler.Settings) extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
     apply[T](context.asInstanceOf[LoweringLegoBase], block)

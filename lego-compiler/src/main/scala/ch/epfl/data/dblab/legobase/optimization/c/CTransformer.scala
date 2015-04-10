@@ -19,6 +19,9 @@ import sc.pardis.ir.StructTags._
 import sc.cscala.CLangTypesDeep._
 import sc.cscala.GLibTypes._
 
+/**
+ * Common trait for all C transformers.
+ */
 trait CTransformer extends TopDownTransformerTraverser[LoweringLegoBase] {
   val IR: LoweringLegoBase
   import IR._

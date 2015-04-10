@@ -8,6 +8,24 @@ import sc.pardis.optimization._
 import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
 
+/**
+ * Transforms Range operations into their C implementation.
+ *
+ * One of the concrete cases is the following:
+ * {{{
+ *      for(i <- 0 until n by j) {
+ *        foo(i)
+ *      }
+ * }}}
+ * ->
+ * {{{
+ *      for(int i=0; i<n; i+=j) {
+ *        foo(i);
+ *      }
+ * }}}
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ */
 class RangeToCTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._

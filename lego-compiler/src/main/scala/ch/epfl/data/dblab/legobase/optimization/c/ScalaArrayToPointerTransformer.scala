@@ -10,10 +10,31 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
 import scala.language.existentials
 
+/**
+ * Transforms Scala Arrays into C pointers.
+ *
+ * More specifically:
+ * {{{
+ *     val x: Array[Foo]
+ * }}}
+ * is converted into:
+ * {{{
+ *     Foo* x;
+ * }}}
+ *
+ * We assume that the length field of an array is partially evaluated before.
+ *
+ * This one is Row-Store representation.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ * @param settings the compiler settings provided as command line arguments (TODO should be removed)
+ */
 class ScalaArrayToPointerTransformer(override val IR: LoweringLegoBase, val settings: compiler.Settings) extends RuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._
+
+  // TODO needs to be rewritten
 
   analysis += statement {
     case sym -> ArrayLength(arr) =>
