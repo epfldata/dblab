@@ -8,6 +8,11 @@ import java.text.SimpleDateFormat
 
 import sc.pardis.annotations._
 
+/**
+ * A Scanner defined for reading from files.
+ *
+ * @param filename the input file name
+ */
 @noImplementation
 @deep
 class K2DBScanner(filename: String) {

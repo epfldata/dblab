@@ -23,6 +23,11 @@ class MetaInfo
 @deep
 trait Loader
 
+/**
+ * A module that defines loaders for relations.
+ *
+ * (TODO for now it's specific to TPCH, but should be generalized)
+ */
 object Loader {
   @dontInline
   def getFullPath(fileName: String): String = Config.datapath + fileName

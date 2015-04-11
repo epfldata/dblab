@@ -20,6 +20,9 @@ import scala.reflect.ClassTag
   thisComponent = "ch.epfl.data.dblab.legobase.deep.DeepDSL")
 class MetaInfo
 
+/**
+ * The common class for all query operators in push-engine.
+ */
 @deep abstract class Operator[+A] {
   def open()
   def next()
@@ -30,16 +33,20 @@ class MetaInfo
   val expectedSize: Int
 }
 
+/**
+ * Factory for creating MultiMap instances.
+ */
 object MultiMap {
-  def apply[K, V] = {
+  def apply[K, V] =
     sc.pardis.shallow.scalalib.collection.MultiMap[K, V]
-    // new sc.pardis.shallow.scalalib.collection.MultiMapOptimal[K, V]()
-  }
-  // type Set[T] = scala.collection.mutable.Set[T]
-  // type Set[T] = sc.pardis.shallow.scalalib.collection.SetLinkedList[T]
-  // type Set[T] = sc.pardis.shallow.scalalib.collection.SetArray[T]
 }
 
+/**
+ * Scan Operator
+ *
+ * @param table an array of records which the scan operator receives
+ * as input
+ */
 @deep class ScanOp[A](table: Array[A]) extends Operator[A] {
   var i = 0
   val expectedSize = table.length
@@ -60,9 +67,17 @@ object MultiMap {
   def consume(tuple: Record) { throw new Exception("PUSH ENGINE BUG:: Consume function in ScanOp should never be called!!!!\n") }
 }
 
-/** Amir: the following line removes the need for stop */
+/* Amir (TODO): the following line removes the need for stop */
 // class PrintOpStop extends Exception("STOP!")
 
+/**
+ * Print Operator
+ *
+ * @param parent the parent operator of this operator
+ * @param printFunc the function that should be invoked whenever the output is printed
+ * @param limit a thunk value which specifes if there is not longer any need to print more
+ * results. It has the same effect as LIMIT clause in SQL.
+ */
 @deep class PrintOp[A](parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean) extends Operator[A] { self =>
   var numRows = (0)
   val expectedSize = parent.expectedSize
@@ -72,7 +87,7 @@ object MultiMap {
   }
   def next() = {
     parent.next;
-    /** Amir: the following line removes the need for stop */
+    /* Amir (TODO): the following line removes the need for stop */
     // try {
     //   parent.next
     // } catch {
@@ -92,6 +107,13 @@ object MultiMap {
   def reset() { parent.reset }
 }
 
+/**
+ * Select Operator
+ *
+ * @param parent the parent operator of this operator
+ * @param selectPred the predicate which is used for filtering elements. It has
+ * the same effect as WHERE clause in SQL.
+ */
 @deep class SelectOp[A](parent: Operator[A])(selectPred: A => Boolean) extends Operator[A] {
   val expectedSize = parent.expectedSize // Assume 100% selectivity
   def open() {
@@ -104,6 +126,15 @@ object MultiMap {
   }
 }
 
+/**
+ * Aggregate Operator
+ *
+ * @param parent the parent operator of this operator
+ * @param numAggs the number of aggregate functions
+ * @param grp the function for converting a record to a key which will be used in the
+ * HashMap of the aggregate operator
+ * @param aggFuncs the aggregate functions used in the aggregate operator
+ */
 @needs[(HashMap[Any, Any], AGGRecord[_])]
 @deep class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B])(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
   val hm = HashMap[B, AGGRecord[B]]() //Array[Double]]()
@@ -147,6 +178,12 @@ object MultiMap {
   }
 }
 
+/**
+ * Map Operator
+ *
+ * @param parent the parent operator of this operator
+ * @param mapFuncs the mapping functions used in the map operator
+ */
 @deep class MapOp[A](parent: Operator[A])(mapFuncs: Function1[A, Unit]*) extends Operator[A] {
   val expectedSize = parent.expectedSize
   def reset { parent.reset }
@@ -158,6 +195,12 @@ object MultiMap {
   }
 }
 
+/**
+ * Sort Operator
+ *
+ * @param parent the parent operator of this operator
+ * @param orderingFunc the function which specifies the total ordering between to elements
+ */
 @needs[TreeSet[Any]]
 @deep class SortOp[A](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends Operator[A] {
   val expectedSize = parent.expectedSize
@@ -178,6 +221,21 @@ object MultiMap {
   def consume(tuple: Record) { sortedTree += tuple.asInstanceOf[A] }
 }
 
+/**
+ * Hash Join Operator
+ *
+ * @param leftParent the left parent operator of this operator
+ * @param rightParent the right parent operator of this operator
+ * @param leftAlias the String that should be prepended to the field names of the records
+ * of the left operator
+ * @param leftAlias the String that should be prepended to the field names of the records
+ * of the right operator
+ * @param joinCond the join condition
+ * @param leftHash the hashing function used to convert the values of the records of the
+ * left operator to the key that is used by the MultiMap of hash-join operator
+ * @param rightHash the hashing function used to convert the values of the records of the
+ * right operator to the key that is used by the MultiMap of hash-join operator
+ */
 @needs[scala.collection.mutable.MultiMap[Any, Any]]
 @deep
 class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String, rightAlias: String)(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
@@ -219,6 +277,14 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
     }
   }
 }
+
+/**
+ * Window Operator
+ *
+ * @param parent the parent operator of this operator
+ * @param grp the function which converts the values to a key that is used
+ * in the MultiMap of the window operator.
+ */
 // @deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: MultiMap.Set[A] => C) extends Operator[WindowRecord[B, C]] {
 @needs[(scala.collection.mutable.MultiMap[Any, Any], Set[_])]
 @deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: Set[A] => C) extends Operator[WindowRecord[B, C]] {
@@ -246,6 +312,17 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
   }
 }
 
+/**
+ * Left Hash Semi Join Operator
+ *
+ * @param leftParent the left parent operator of this operator
+ * @param rightParent the right parent operator of this operator
+ * @param joinCond the join condition
+ * @param leftHash the hashing function used to convert the values of the records of the
+ * left operator to the key that is used by the MultiMap of left-hash-semi-join operator
+ * @param rightHash the hashing function used to convert the values of the records of the
+ * right operator to the key that is used by the MultiMap of left-hash-semi-join operator
+ */
 @needs[scala.collection.mutable.MultiMap[Any, Any]]
 @deep
 class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
@@ -279,6 +356,17 @@ class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator
   }
 }
 
+/**
+ * Nested Loop Join Operator
+ *
+ * @param leftParent the left parent operator of this operator
+ * @param rightParent the right parent operator of this operator
+ * @param leftAlias the String that should be prepended to the field names of the records
+ * of the left operator
+ * @param leftAlias the String that should be prepended to the field names of the records
+ * of the right operator
+ * @param joinCond the join condition
+ */
 @deep
 class NestedLoopsJoinOp[A <: Record, B <: Record](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
   @inline var mode: scala.Int = 0
@@ -307,6 +395,11 @@ class NestedLoopsJoinOp[A <: Record, B <: Record](leftParent: Operator[A], right
   }
 }
 
+/**
+ * Subquery Result Operator
+ *
+ * @param parent the parent operator of this operator
+ */
 @deep
 class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   var result = null.asInstanceOf[A]
@@ -331,6 +424,17 @@ class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   }
 }
 
+/**
+ * Anti Hash Join Operator
+ *
+ * @param leftParent the left parent operator of this operator
+ * @param rightParent the right parent operator of this operator
+ * @param joinCond the join condition
+ * @param leftHash the hashing function used to convert the values of the records of the
+ * left operator to the key that is used by the MultiMap of anti-hash-join operator
+ * @param rightHash the hashing function used to convert the values of the records of the
+ * right operator to the key that is used by the MultiMap of anti-hash-join operator
+ */
 @needs[scala.collection.mutable.MultiMap[Any, Any]]
 @deep // class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
 class HashJoinAnti[A: Manifest, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
@@ -372,6 +476,11 @@ class HashJoinAnti[A: Manifest, B, C](leftParent: Operator[A], rightParent: Oper
   }
 }
 
+/**
+ * View Operator
+ *
+ * @param parent the parent operator of this operator
+ */
 @needs[Array[Any]]
 @deep
 class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
@@ -403,6 +512,17 @@ class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
   }
 }
 
+/**
+ * Left Outer Join Operator
+ *
+ * @param leftParent the left parent operator of this operator
+ * @param rightParent the right parent operator of this operator
+ * @param joinCond the join condition
+ * @param leftHash the hashing function used to convert the values of the records of the
+ * left operator to the key that is used by the MultiMap of left-outer-join operator
+ * @param rightHash the hashing function used to convert the values of the records of the
+ * right operator to the key that is used by the MultiMap of left-outer-join operator
+ */
 @needs[scala.collection.mutable.MultiMap[Any, Any]]
 @deep
 class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {

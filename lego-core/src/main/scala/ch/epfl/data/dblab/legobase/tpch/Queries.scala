@@ -25,6 +25,9 @@ class MetaInfo
 @deep
 trait Queries
 
+/**
+ * A module containing 22 TPCH queries
+ */
 object Queries {
 
   def Q1(numRuns: Int) {

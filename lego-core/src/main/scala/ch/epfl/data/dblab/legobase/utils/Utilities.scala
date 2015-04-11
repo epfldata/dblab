@@ -2,6 +2,9 @@ package ch.epfl.data
 package dblab.legobase
 package utils
 
+/**
+ * A module containing useful utilities.
+ */
 object Utilities {
   def time[A](a: => A, msg: String) = {
     val start = System.nanoTime

@@ -9,6 +9,9 @@ import sc.pardis.annotations._
 @needs[sc.pardis.shallow.OptimalString]
 trait GenericEngine
 
+/**
+ * A module which provides some core functionaly for query processing.
+ */
 object GenericEngine {
   def runQuery[T](query: => T): T = {
     // if (profile) {
