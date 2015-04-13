@@ -11,6 +11,20 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 
+/**
+ * A transformer for partitioning and indexing the arrays whenever possible.
+ *
+ * Given an input program first it identify all arrays and the iterations over those arrays.
+ * Then it looks for the filters over the elements of all those arrays. If it identifies
+ * that there is filter based on a range of values, then it partitions the array into different
+ * chuncks in the loading time. Then, it iterates only over the relavant partitions of the arrays
+ * in the query processing time.
+ *
+ * TODO maybe add an example
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ * @param queryNumber specifies the TPCH query number (TODO should be removed)
+ */
 class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
 

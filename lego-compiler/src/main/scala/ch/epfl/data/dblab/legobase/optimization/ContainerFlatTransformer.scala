@@ -11,12 +11,23 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.deep.scalalib.collection._
 
+/**
+ * Factory for creating instances of [[ContainerFlatTransformer]]
+ */
 object ContainerFlatTransformer extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
     new ContainerFlatTransformer(context.asInstanceOf[LoweringLegoBase]).optimize(block)
   }
 }
 
+// FIXME check if EscapeLowering can be used here
+/**
+ * A transformer which flattens the next field of a container of a record to the record itself
+ *
+ * This transformer is useful when a linked-list is used.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ */
 class ContainerFlatTransformer[Lang <: sc.pardis.deep.scalalib.ArrayComponent with sc.pardis.deep.scalalib.Tuple2Component with ContOps](override val IR: Lang) extends sc.pardis.optimization.RecursiveRuleBasedTransformer[Lang](IR) with StructCollector[Lang] {
   import IR._
   type Rep[T] = IR.Rep[T]

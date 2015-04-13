@@ -12,8 +12,12 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils._
 
 /**
- *  Transforms `malloc`s inside the part which runs the query into buffers which are allocated
- *  at the loading time.
+ * Transforms `malloc`s inside the part which runs the query into buffers which are allocated
+ * at the loading time.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ * @param queryNumber specifies the TPCH query number (TODO should be removed)
+ * @param scalingFactor specifies the scaling factor used for TPCH queries (TODO should be removed)
  */
 class MemoryAllocationHoist(override val IR: LoweringLegoBase, val queryNumber: Int, val scalingFactor: Double) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._

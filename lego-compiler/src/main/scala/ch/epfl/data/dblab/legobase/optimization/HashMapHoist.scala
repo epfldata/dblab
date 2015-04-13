@@ -10,6 +10,9 @@ import deep._
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 
+/**
+ * Factory for creating instances of [[HashMapHoist]]
+ */
 object HashMapHoist extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
     new HashMapHoist(context.asInstanceOf[LoweringLegoBase]).optimize(block)
@@ -17,8 +20,10 @@ object HashMapHoist extends TransformerHandler {
 }
 
 /**
- *  Transforms `new HashMap`s inside the part which runs the query into buffers which are allocated
- *  at the loading time.
+ * Transforms `new HashMap`s inside the part which runs the query into buffers which are allocated
+ * at the loading time.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
  */
 class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) {
   import IR._

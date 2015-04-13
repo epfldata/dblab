@@ -11,13 +11,12 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.deep.scalalib.collection._
 
-// object HashMapToSetTransformation extends TransformerHandler {
-//   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-//     new HashMapToSetTransformation(context.asInstanceOf[LoweringLegoBase]).optimize(block)
-//   }
-// }
-
-// class HashMapToSetTransformation(val LB: LoweringLegoBase) extends HashMapOptimalTransformation(LB) {
+/**
+ * A lowering transformation which transforms a HashMap to an Array[Set[_]].
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ * @param queryNumber specifies the TPCH query number (TODO should be removed)
+ */
 class HashMapToSetTransformation(val LB: LoweringLegoBase, val queryNumber: Int) extends HashMapOptimalNoMallocTransformation(LB) with StructCollector[ch.epfl.data.sc.pardis.deep.scalalib.collection.HashMapOps with ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps with ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps with ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps with ch.epfl.data.sc.pardis.deep.scalalib.OptionOps with ch.epfl.data.sc.pardis.deep.scalalib.IntOps with ch.epfl.data.sc.pardis.deep.scalalib.Tuple2Ops] {
   import LB._
   override def hashMapExtractKey[A, B](self: Rep[HashMap[A, B]], value: Rep[B])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[A] = typeB match {

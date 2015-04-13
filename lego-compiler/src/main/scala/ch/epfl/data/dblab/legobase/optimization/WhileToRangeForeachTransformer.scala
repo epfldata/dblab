@@ -11,6 +11,11 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 
+/**
+ * A transformer which rewrites while loops whenever possible to for expressions.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ */
 class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
 

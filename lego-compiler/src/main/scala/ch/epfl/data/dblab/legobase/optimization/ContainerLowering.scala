@@ -11,12 +11,20 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.deep.scalalib.collection._
 
+/**
+ * Factory for creating instances of [[ContainerLowering]]
+ */
 object ContainerLowering extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
     new ContainerLowering(context.asInstanceOf[LoweringLegoBase]).optimize(block)
   }
 }
 
+/**
+ * A lowering transformation for converting container objects into records.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ */
 class ContainerLowering[Lang <: sc.pardis.deep.scalalib.ArrayComponent with sc.pardis.deep.scalalib.Tuple2Component with ContOps](override val IR: Lang) extends sc.pardis.optimization.RecursiveRuleBasedTransformer[Lang](IR)
   with ArrayEscapeLowering[Lang]
   with VarEscapeLowering[Lang]

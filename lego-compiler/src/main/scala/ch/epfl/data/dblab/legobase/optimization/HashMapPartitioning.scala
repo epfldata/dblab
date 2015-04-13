@@ -11,6 +11,17 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 
+/**
+ * A transformer for partitioning and indexing the MultiMaps. As a result, this transformation
+ * converts a MultiMap and the corresponding operations into an Array (either one dimensional or
+ * two dimensional).
+ *
+ * TODO maybe add an example
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ * @param queryNumber specifies the TPCH query number (TODO should be removed)
+ * @param scalingFactor specifies the scaling factor used for TPCH queries (TODO should be removed)
+ */
 class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val queryNumber: Int, val scalingFactor: Double) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
   val allMaps = scala.collection.mutable.Set[Rep[Any]]()

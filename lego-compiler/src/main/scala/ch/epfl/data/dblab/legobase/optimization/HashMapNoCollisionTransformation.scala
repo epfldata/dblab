@@ -11,6 +11,13 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 // import sc.pardis.deep.scalalib.collection._
 
+/**
+ * Transforms HashMaps which have no collision in the hash function computation and also
+ * in the case that the key has a continuous value into a one dimensional Array.
+ *
+ * @param LB the polymorphic embedding trait which contains the reified program.
+ * @param queryNumber specifies the TPCH query number (TODO should be removed)
+ */
 class HashMapNoCollisionTransformation(val LB: LoweringLegoBase, val queryNumber: Int) extends sc.pardis.deep.scalalib.collection.HashMapOptimalNoCollisionTransformation(LB) with StructCollector[ch.epfl.data.sc.pardis.deep.scalalib.collection.HashMapOps with ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps with ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps with ch.epfl.data.sc.pardis.deep.scalalib.OptionOps with ch.epfl.data.sc.pardis.deep.scalalib.IntOps with ch.epfl.data.sc.pardis.deep.scalalib.Tuple2Ops] {
   import LB._
   override def hashMapExtractKey[A, B](self: Rep[HashMap[A, B]], value: Rep[B])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[A] = typeB match {
@@ -29,6 +36,7 @@ class HashMapNoCollisionTransformation(val LB: LoweringLegoBase, val queryNumber
 
   override def hashMapHash[A, B](self: Rep[HashMap[A, B]], k: Rep[A])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = infix_hashCode(k) //.$amp(self.table.length.$minus(unit(1)))
 
+  // FIXME should not be computed based on the query number
   override def hashMapBuckets[A, B](self: Rep[HashMap[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = queryNumber match {
     case 12      => unit(16)
     case 10 | 13 => unit(1 << 21)

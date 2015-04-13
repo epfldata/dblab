@@ -11,12 +11,25 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 
+/**
+ * Factory for creating instances of [[ConstSizeArrayToLocalVars]]
+ */
 object ConstSizeArrayToLocalVars extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
     new ConstSizeArrayToLocalVars(context.asInstanceOf[LoweringLegoBase]).optimize(block)
   }
 }
 
+/**
+ * Transforms the elements of an array of a constant and small size into local variables.
+ *
+ * The interesting case is when a desired array is a field of a struct. Then, that array field
+ * is converted to several fields representing the elements of that array.
+ *
+ * TODO maybe add an example
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ */
 class ConstSizeArrayToLocalVars(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
 

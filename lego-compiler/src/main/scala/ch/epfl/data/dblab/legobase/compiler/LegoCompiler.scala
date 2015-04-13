@@ -16,12 +16,13 @@ import sc.pardis.compiler._
  * The class which is responsible for wiring together different parts of the compilation pipeline
  * such as program reification, optimization pipeline, and code generation.
  *
- * @param DSL the polymorphic trait which contains the reified program.
+ * @param DSL the polymorphic embedding trait which contains the reified program.
  * This object takes care of online partial evaluation
  * @param number specifies the TPCH query number (TODO should be removed)
  * @param scalingFactor specifies the scaling factor used for TPCH queries (TODO should be removed)
  * @param generateCCode specifies the target code.
  * If this value is true the target code is C otherwise the target is Scala.
+ * @param settings the compiler settings provided as command line arguments
  */
 class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor: Double, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
   def outputFile: String = {

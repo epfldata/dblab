@@ -11,12 +11,37 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.deep.scalalib.collection._
 
+/**
+ * Common interface for assertions
+ */
 sealed trait Assertion
-case class TypeAssertion(p: PardisType[Any] => Boolean) extends Assertion {
-  def satisfies[T2](tp: PardisType[T2]): Boolean = p(tp.asInstanceOf[PardisType[Any]])
+
+/**
+ * An assertion for checking a predicate on types
+ *
+ * @param predicate the predicate function on a type
+ */
+case class TypeAssertion(predicate: PardisType[Any] => Boolean) extends Assertion {
+  /**
+   * Checks if the given type satisifes the predicate function or not
+   *
+   * @param tp the given type which the predicate should be checked for that
+   * @returns whether the predicate is true for the given input type or not
+   */
+  def satisfies[T2](tp: PardisType[T2]): Boolean = predicate(tp.asInstanceOf[PardisType[Any]])
 }
 
+/**
+ * Factory for [[AssertTransformer]] class.
+ */
 object AssertTransformer {
+  /**
+   * Given several assertions creates a transforming to check if an input program satisfies
+   * these assertions or not.
+   *
+   * @param assertions list of input assertions
+   * @returns a new instance of [[AssertTransformer]].
+   */
   def apply(assertions: Assertion*) = new TransformerHandler {
     def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
       new AssertTransformer(context, assertions.toList).optimize(block)
@@ -24,6 +49,13 @@ object AssertTransformer {
   }
 }
 
+/**
+ * A transformer which checks the input program to satisfy all the given assertions. This transformer
+ * does not change the input program.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ * @param assertions the list of assertions which should be checked
+ */
 class AssertTransformer[Lang <: Base](override val IR: Lang, val assertions: List[Assertion]) extends sc.pardis.optimization.RecursiveRuleBasedTransformer[Lang](IR) {
   import IR._
 

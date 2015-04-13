@@ -13,6 +13,18 @@ import sc.pardis.deep._
 import sc.pardis.deep.scalalib._
 import sc.pardis.deep.scalalib.collection._
 import sc.pardis.deep.scalalib.io._
+
+/**
+ * Transforms HashMaps which have no collision in the hash function computation and also
+ * in the case that the key has a continuous value into a one dimensional Array.
+ *
+ * The main difference with [[HashMapNoCollisionTransformation]] is that this transformer,
+ * goes one step further and transforms also the values (which are records which duplicate the key)
+ * into other values which do not contain the key anymore. As a result, they save more computation
+ * and space.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ */
 class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops) extends sc.pardis.optimization.RecursiveRuleBasedTransformer[HashMapOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops](IR) {
   import IR._
   type Rep[T] = IR.Rep[T]

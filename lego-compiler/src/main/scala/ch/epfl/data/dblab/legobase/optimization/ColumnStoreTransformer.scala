@@ -11,9 +11,17 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 
+/**
+ * Transforms row layout representation to columnar layout representation.
+ *
+ * @param IR the polymorphic embedding trait which contains the reified program.
+ * @param queryNumber specifies the TPCH query number (TODO should be removed)
+ * @param settings the compiler settings provided as command line arguments (TODO should be removed)
+ */
 class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber: Int, val settings: compiler.Settings) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
 
+  // TODO should be removed
   /** Specifies the list of records that were partitioned into a 1D array in the hashmap partitioning phase */
   val partitioned1D = queryNumber match {
     case 1  => Nil
@@ -40,6 +48,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
     case 22 => Nil
   }
 
+  // TODO should be removed
   val typeList = (queryNumber match {
     case 1  => List("LINEITEMRecord")
     case 2  => List("PARTSUPPRecord")
