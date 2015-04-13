@@ -26,7 +26,7 @@ object Parser extends StandardTokenParsers {
   }
 
   def parseSelectStatement: Parser[SelectStatement] = (
-    "SELECT" ~> parseProjections ~ "FROM" ~ parseRelations ~ parseWhere.? ~ parseGroupBy.? ~ parseOrderBy.? <~ ";".? ^^ { case pro ~ _ ~ tab ~ whe ~ grp ~ ord => SelectStatement(pro, tab, whe, grp, ord) })
+    "SELECT" ~> parseProjections ~ "FROM" ~ parseRelations ~ parseWhere.? ~ parseGroupBy.? ~ parseOrderBy.? ~ parseLimit.? <~ ";".? ^^ { case pro ~ _ ~ tab ~ whe ~ grp ~ ord ~ lim => SelectStatement(pro, tab, whe, grp, ord, lim) })
 
   def parseProjections: Parser[Projections] = (
     "*" ^^^ AllColumns()
@@ -147,8 +147,14 @@ object Parser extends StandardTokenParsers {
     "ORDER" ~> "BY" ~> rep1sep(parseOrderKey, ",") ^^ { case keys => OrderBy(keys) })
 
   def parseOrderKey: Parser[(Expression, OrderType)] = (
-    parseExpression <~ "ASC".? ^^ { case v => (v, ASC) }
-    | parseExpression <~ "DESC" ^^ { case v => (v, DESC) })
+    parseExpression ~ ("ASC" | "DESC").? ^^ {
+      case v ~ Some("DESC") => (v, DESC)
+      case v ~ Some("ASC")  => (v, ASC)
+      case v ~ None         => (v, ASC)
+    })
+
+  def parseLimit: Parser[Limit] = (
+    "LIMIT" ~> numericLit ^^ { case lim => Limit(lim.toInt) })
 
   class SqlLexical extends StdLexical {
     case class FloatLit(chars: String) extends Token {
@@ -191,7 +197,8 @@ object Parser extends StandardTokenParsers {
     "SELECT", "AS", "OR", "AND", "GROUP", "ORDER", "BY", "WHERE",
     "JOIN", "ASC", "DESC", "FROM", "ON", "NOT", "HAVING",
     "EXISTS", "BETWEEN", "LIKE", "IN", "NULL", "LEFT", "RIGHT",
-    "FULL", "OUTER", "INNER", "COUNT", "SUM", "AVG", "MIN", "MAX", "DATE")
+    "FULL", "OUTER", "INNER", "COUNT", "SUM", "AVG", "MIN", "MAX",
+    "DATE", "TOP", "LIMIT")
 
   lexical.delimiters += (
     "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "/", "(", ")", ",", ".", ";")

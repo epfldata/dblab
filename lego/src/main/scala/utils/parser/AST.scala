@@ -13,7 +13,8 @@ case class SelectStatement(projections: Projections,
                            relations: Seq[Relation],
                            where: Option[Expression],
                            groupBy: Option[GroupBy],
-                           orderBy: Option[OrderBy]) extends Node with Expression {
+                           orderBy: Option[OrderBy],
+                           limit: Option[Limit]) extends Node with Expression {
   def gatherFields = Seq.empty // TODO: not sure about that
 }
 
@@ -128,3 +129,4 @@ case object DESC extends OrderType
 
 case class GroupBy(keys: Seq[Expression], having: Option[Expression]) extends Node
 case class OrderBy(keys: Seq[(Expression, OrderType)]) extends Node
+case class Limit(rows: Long) extends Node
