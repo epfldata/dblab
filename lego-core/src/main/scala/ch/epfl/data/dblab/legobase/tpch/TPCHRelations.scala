@@ -86,28 +86,30 @@ import sc.pardis.shallow.{ CaseClassRecord, OptimalString }
 object TPCHSchema {
   import sc.pardis.types._
   import schema._
-  val lineItemTable = {
-    val ok: Attribute = "L_ORDERKEY" -> IntType
-    val ln: Attribute = "L_LINENUMBER" -> IntType
-    // TODO set apprpriate value for resourceLocator, rowCount, and estimatedMemorySizeInBytes
-    new Table(List(
-      ok,
-      "L_PARTKEY" -> IntType,
-      "L_SUPPKEY" -> IntType,
-      ln,
-      "L_QUANTITY" -> IntType,
-      "L_EXTENDEDPRICE" -> DoubleType,
-      "L_DISCOUNT" -> DoubleType,
-      "L_TAX" -> DoubleType,
-      "L_RETURNFLAG" -> CharType,
-      "L_LINESTATUS" -> CharType,
-      "L_SHIPDATE" -> IntType,
-      "L_COMMITDATE" -> IntType,
-      "L_RECEIPTDATE" -> IntType,
-      "L_SHIPINSTRUCT" -> StringType,
-      "L_SHIPMODE" -> StringType,
-      "L_COMMENT" -> StringType), List(PrimaryKey(List(ok, ln))), "", 0, 0)
+  def getSchema(folderLocation: String, scalingFactor: Double): Schema = {
+    val lineItemTable = {
+      val ok: Attribute = "L_ORDERKEY" -> IntType
+      val ln: Attribute = "L_LINENUMBER" -> IntType
+      // TODO add other contraints
+      new Table(List(
+        ok,
+        "L_PARTKEY" -> IntType,
+        "L_SUPPKEY" -> IntType,
+        ln,
+        "L_QUANTITY" -> IntType,
+        "L_EXTENDEDPRICE" -> DoubleType,
+        "L_DISCOUNT" -> DoubleType,
+        "L_TAX" -> DoubleType,
+        "L_RETURNFLAG" -> CharType,
+        "L_LINESTATUS" -> CharType,
+        "L_SHIPDATE" -> IntType,
+        "L_COMMITDATE" -> IntType,
+        "L_RECEIPTDATE" -> IntType,
+        "L_SHIPINSTRUCT" -> StringType,
+        "L_SHIPMODE" -> StringType,
+        "L_COMMENT" -> StringType), List(PrimaryKey(List(ok, ln))), folderLocation + "/lineitem.tbl", (scalingFactor * 6000000).toLong, 0)
+    }
+    // TODO add other tables
+    new Schema(List(lineItemTable))
   }
-  val tpchSchema = new Schema(List(lineItemTable))
-  val catalog = new Catalog(Map("tpch" -> tpchSchema))
 }

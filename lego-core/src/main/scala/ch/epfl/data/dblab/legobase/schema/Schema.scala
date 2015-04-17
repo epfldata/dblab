@@ -7,6 +7,8 @@ import scala.language.implicitConversions
 
 class Catalog(schemata: Map[String, Schema])
 class Schema(tables: List[Table])
+// TODO if we know the size of each attribute, can we compute `estimatedMemorySizeInBytes` from `rowCount`? 
+// If yes, then it makes sense to make this field a method.
 class Table(attributes: List[Attribute], constraints: List[Constraint], resourceLocator: String, rowCount: Long, estimatedMemorySizeInBytes: Long)
 // TODO what's the default value for distinctValuesCount and nullValuesCount
 class Attribute(name: String, dataType: Tpe, distinctValuesCount: Int, nullValuesCount: Long)
