@@ -1,5 +1,5 @@
 package ch.epfl.data
-package legobase
+package dblab.legobase
 package schema
 
 import scala.reflect.api.Types

@@ -1,6 +1,5 @@
 package ch.epfl.data
-package legobase
-package utils
+package dblab.legobase
 package parser
 
 import scala.util.matching.Regex
@@ -16,7 +15,7 @@ import scala.util.parsing.input.CharArrayReader.EofCh
  * A simple SQL parser.
  * Based on: https://github.com/stephentu/scala-sql-parser
  */
-object Parser extends StandardTokenParsers {
+object SQLParser extends StandardTokenParsers {
 
   def parse(statement: String): Option[SelectStatement] = {
     phrase(parseSelectStatement)(new lexical.Scanner(statement)) match {

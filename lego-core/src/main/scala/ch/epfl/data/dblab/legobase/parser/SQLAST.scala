@@ -1,6 +1,5 @@
 package ch.epfl.data
-package legobase
-package utils
+package dblab.legobase
 package parser
 
 /**
