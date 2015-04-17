@@ -167,4 +167,10 @@ object Loader {
     }
     hm
   }
+
+  // TODO this is what we want from a generic loader
+  // by using (run-time or compile-time) reflection 
+  // def loadTable[R](table: Table): Array[R] = ,,,
+  // or
+  // def loadTable[R](implicit catalog: Catalog): Array[R] = ...
 }
