@@ -6,16 +6,16 @@ An efficient query engine in Scala programming language
 Installation
 ============
 
-LegoBase interpreter requeires Pardis Library (https://github.com/amirsh/pardis) project `pardis-library`.
+LegoBase interpreter requeires SC Pardis Library (https://github.com/epfldata/sc) project `sc-pardis-library`.
 
-LegoBase compiler requires Pardis Compiler (https://github.com/amirsh/pardis), C.Scala Library and C.Scala Compiler; 
-the projects `pardis-compiler`, `c-scala-lib`, and `c-scala-deep`.
+LegoBase compiler requires SC Pardis Compiler (https://github.com/epfldata/sc), C.Scala Library and C.Scala Compiler; 
+the projects `sc-pardis-compiler`, `sc-c-scala-lib`, and `sc-c-scala-deep`.
 
 Clone this project and checkout to the desired branch. Then, after going to sbt console, 
-run `project pardis-library` for going to Pardis Library project and run `project pardis-compiler` for 
+run `project sc-pardis-library` for going to Pardis Library project and run `project sc-pardis-compiler` for 
 going to Pardis Compiler project.
 Run `publish-local` on the `root` project of Pardis.
-Then run `c-scala-lib/publish-local` and `c-scala-deep/publish-local` in the sbt console
+Then run `sc-c-scala-lib/publish-local` and `sc-c-scala-deep/publish-local` in the sbt console
 of Pardis project.
 
 
@@ -26,14 +26,14 @@ Then for running query X with scaling factor N you have to run the following com
 `run DATA_FOLDER N QX`
 
 For testing the compiler (Scala generated code), first you have to generate the code. 
-For that purpose you have to go to `legocompiler` project using `project legocompiler`.
+For that purpose you have to go to `lego-compiler` project using `project lego-compiler`.
 Then for generating query X with scaling factor N you have to run the following command:
 `generate-test DATA_FOLDER N QX`
-Then for testing the correctness you have copy the generated file into `test` folder of `legocompiler` project.
+Then for testing the correctness you have copy the generated file into `test` folder of `lego-compiler` project.
 Then you have to run the following command:
 `test:run DATA_FOLDER N QX`
 
-For testing all TPCH queries with Scala code generator, in `legocompiler` project, 
+For testing all TPCH queries with Scala code generator, in `lego-compiler` project, 
 you should run `generate-test DATA_FOLDER N testsuite`.
 Then you should publish `lego-core` project using `lego-core/publish-local`.
 Afterwards, you have set your the environment `SCALA_PATH` to the folder which contains `scalac`.

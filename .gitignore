@@ -21,7 +21,7 @@ project/plugins/project/
 
 .DS_Store
 
-legocompiler/src/test/scala/generated/
+lego-compiler/src/test/scala/generated/
 
 *Output.txt
 tree_debug_dump.txt

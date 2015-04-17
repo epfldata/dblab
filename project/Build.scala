@@ -4,7 +4,7 @@ import Keys._
 import Process._
 import com.typesafe.sbt.SbtScalariform
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
-import ch.epfl.data.purgatory.plugin.PurgatoryPlugin._
+import ch.epfl.data.sc.purgatory.plugin.PurgatoryPlugin._
 
 object LegoBuild extends Build {
 
@@ -52,28 +52,28 @@ object LegoBuild extends Build {
   // val test_run = InputKey[Unit]("test-run")
 
   def purgatorySettings = Seq(
-    outputFolder := "legocompiler/src/main/scala/ch/epfl/data/legobase/deep",
-    inputPackage := "ch.epfl.data.legobase",
-    outputPackage := "ch.epfl.data.legobase.deep") ++ generatorSettings
+    outputFolder := "lego-compiler/src/main/scala/ch/epfl/data/dblab/legobase/deep",
+    inputPackage := "ch.epfl.data.dblab.legobase",
+    outputPackage := "ch.epfl.data.dblab.legobase.deep") ++ generatorSettings
 
   lazy val lego            = Project(id = "root",             base = file("."), settings = defaults) aggregate (lego_core, legocompiler)
-  lazy val lego_core       = Project(id = "lego-core",        base = file("lego"),
+  lazy val lego_core       = Project(id = "lego-core",        base = file("lego-core"),
    settings = defaults ++ purgatorySettings ++  Seq(
      name := "lego-core",
      scalacOptions ++= Seq("-optimize"),
-     libraryDependencies += "ch.epfl.data" % "pardis-library_2.11" % "0.1-SNAPSHOT"))
-  lazy val legocompiler = Project(id = "legocompiler", base = file("legocompiler"), settings = defaults ++ Seq(name := "legocompiler",
+     libraryDependencies += "ch.epfl.data" % "sc-pardis-library_2.11" % "0.1-SNAPSHOT"))
+  lazy val legocompiler = Project(id = "lego-compiler", base = file("lego-compiler"), settings = defaults ++ Seq(name := "lego-compiler",
       libraryDependencies ++= Seq(//"ch.epfl.lamp" % "scala-yinyang_2.11" % "0.2.0-SNAPSHOT",
-        "ch.epfl.data" % "pardis-compiler_2.11" % "0.1-SNAPSHOT",
-        "ch.epfl.data" % "c-scala-lib_2.11" % "0.1-SNAPSHOT",
-        "ch.epfl.data" % "c-scala-deep_2.11" % "0.1-SNAPSHOT"
+        "ch.epfl.data" % "sc-pardis-compiler_2.11" % "0.1-SNAPSHOT",
+        "ch.epfl.data" % "sc-c-scala-lib_2.11" % "0.1-SNAPSHOT",
+        "ch.epfl.data" % "sc-c-scala-deep_2.11" % "0.1-SNAPSHOT"
         ),
       generate_test <<= inputTask { (argTask: TaskKey[Seq[String]]) =>
         (argTask, sourceDirectory in Test, fullClasspath in Compile, runner in Compile, streams) map { (args, srcDir, cp, r, s) =>
           if(args(2).startsWith("Q")) {
             val cgDir = srcDir / "scala" / "generated"
             IO.delete(cgDir ** "*.scala" get)
-            toError(r.run("ch.epfl.data.legobase.compiler.Main", cp.files, args, s.log))
+            toError(r.run("ch.epfl.data.dblab.legobase.compiler.Main", cp.files, args, s.log))
             val fileName = args(2) + "_Generated.scala"
             val filePath = cgDir / fileName
             println("Generated " + fileName)
@@ -82,7 +82,7 @@ object LegoBuild extends Build {
           } else if (args(2) == "testsuite-scala") {
             for(i <- 1 to 22) {
               val newArgs = args.dropRight(1) :+ s"Q$i"
-              toError(r.run("ch.epfl.data.legobase.compiler.Main", cp.files, newArgs, s.log))  
+              toError(r.run("ch.epfl.data.dblab.legobase.compiler.Main", cp.files, newArgs, s.log))  
             }
           }
           // println("classpath:" + (cp.files :+ filePath).mkString("\n"))
