@@ -6,7 +6,11 @@ import utils.Utilities._
 import sc.pardis.annotations.{ deep, metadeep, dontLift, dontInline, needs }
 import queryengine._
 import tpch._
+import schema._
 import sc.pardis.shallow.OptimalString
+import sc.pardis.types._
+import scala.reflect.runtime.universe._
+import scala.reflect.runtime.currentMirror
 
 // TODO it should be generalized to not be only TPCH-specific
 
@@ -36,6 +40,11 @@ object Loader {
     s.next(NAME)
     new OptimalString(NAME.filter(y => y != 0))
   }
+
+  def constructorArgs[T](implicit tt: TypeTag[T]) =
+    tt.tpe.member(nme.CONSTRUCTOR).asMethod.paramss.head map {
+      p => (p.name.decoded, p.typeSignature)
+    }
 
   @dontInline
   def fileLineCount(file: String) = {
@@ -168,9 +177,42 @@ object Loader {
     hm
   }
 
-  // TODO this is what we want from a generic loader
-  // by using (run-time or compile-time) reflection 
-  // def loadTable[R](table: Table): Array[R] = ,,,
-  // or
-  // def loadTable[R](implicit catalog: Catalog): Array[R] = ...
+  def loadTable[R: TypeTag](table: Table)(implicit m: reflect.ClassTag[R]): Array[R] = {
+    val size = fileLineCount(table.resourceLocator)
+    val arr = new Array[R](size)
+    val ldr = new K2DBScanner(table.resourceLocator)
+    val recordType = typeOf[R]
+    val classMirror = currentMirror.reflectClass(recordType.typeSymbol.asClass)
+    val constr = recordType.declaration(nme.CONSTRUCTOR).asMethod
+    val recordArguments = constructorArgs[R]
+    val arguments = recordArguments.map {
+      case (name, tpe) =>
+        (name, tpe, table.attributes.find(a => a.name == name) match {
+          case Some(a) => a
+          case None    => throw new IllegalArgumentException
+        })
+    }
+
+    var i = 0
+    while (i < size && ldr.hasNext()) {
+      var values = List()
+      arguments.foreach {
+        case (_, _, arg) =>
+          values :+ (arg.dataType match {
+            case IntType    => ldr.next_int
+            case DoubleType => ldr.next_double
+            case CharType   => ldr.next_char
+            //TODO how to recognize dates?
+            case StringType => arg.maxLength match {
+              case Some(len) => loadString(len, ldr)
+              case None      => throw new IllegalArgumentException
+            }
+          })
+      }
+
+      classMirror.reflectConstructor(constr).apply(values: _*)
+      i += 1
+    }
+    arr
+  }
 }
