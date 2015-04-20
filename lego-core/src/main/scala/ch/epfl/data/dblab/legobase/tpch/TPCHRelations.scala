@@ -91,7 +91,7 @@ object TPCHSchema {
       val ok: Attribute = "L_ORDERKEY" -> IntType
       val ln: Attribute = "L_LINENUMBER" -> IntType
       // TODO add other contraints
-      new Table(List(
+      new Table("lineitem", List(
         ok,
         "L_PARTKEY" -> IntType,
         "L_SUPPKEY" -> IntType,
@@ -107,7 +107,7 @@ object TPCHSchema {
         "L_RECEIPTDATE" -> IntType,
         "L_SHIPINSTRUCT" -> StringType,
         "L_SHIPMODE" -> StringType,
-        "L_COMMENT" -> StringType), List(PrimaryKey(List(ok, ln))), folderLocation + "/lineitem.tbl", (scalingFactor * 6000000).toLong, 0)
+        "L_COMMENT" -> StringType), List(PrimaryKey(List(ok, ln))), folderLocation + "/lineitem.tbl", (scalingFactor * 6000000).toLong)
     }
     // TODO add other tables
     new Schema(List(lineItemTable))

@@ -5,21 +5,27 @@ package schema
 import sc.pardis.types._
 import scala.language.implicitConversions
 
-class Catalog(schemata: Map[String, Schema])
-class Schema(tables: List[Table])
-// TODO if we know the size of each attribute, can we compute `estimatedMemorySizeInBytes` from `rowCount`? 
-// If yes, then it makes sense to make this field a method.
-class Table(attributes: List[Attribute], constraints: List[Constraint], resourceLocator: String, rowCount: Long, estimatedMemorySizeInBytes: Long)
-// TODO what's the default value for distinctValuesCount and nullValuesCount
-class Attribute(name: String, dataType: Tpe, distinctValuesCount: Int, nullValuesCount: Long)
+case class Catalog(schemata: Map[String, Schema])
+case class Schema(tables: List[Table])
+case class Table(name: String, attributes: List[Attribute], constraints: List[Constraint], resourceLocator: String, var rowCount: Long) {
+  def primaryKey: Option[PrimaryKey] = constraints.collectFirst { case pk: PrimaryKey => pk }
+  def foreignKeys: List[ForeignKey] = constraints.collect { case fk: ForeignKey => fk }
+  def notNulls: List[NotNull] = constraints.collect { case nn: NotNull => nn }
+  def uniques: List[Unique] = constraints.collect { case unq: Unique => unq }
+  def autoIncrement: Option[AutoIncrement] = constraints.collectFirst { case ainc: AutoIncrement => ainc }
+}
+case class Attribute(name: String, dataType: Tpe, val maxLength: Option[Int] = None, var distinctValuesCount: Int = 0, var nullValuesCount: Long = 0)
 object Attribute {
-  implicit def tuple2ToAttribute(nameAndType: (String, Tpe)): Attribute = new Attribute(nameAndType._1, nameAndType._2, 0, 0)
+  implicit def tuple2ToAttribute(nameAndType: (String, Tpe)): Attribute = new Attribute(nameAndType._1, nameAndType._2)
 }
 
 sealed trait Constraint
 case class PrimaryKey(attributes: List[Attribute]) extends Constraint
-// TODO chicken-egg problem
-case class ForeignKey(referencedTable: Table, attributes: List[(Attribute, Attribute)], selectivity: Double) extends Constraint
+case class ForeignKey(ownTable: String, referencedTable: String, attributes: List[(String, String)], selectivity: Double) extends Constraint {
+  def foreignTable(implicit s: Schema): Option[Table] = s.tables.find(t => t.name == referencedTable)
+  def thisTable(implicit s: Schema): Option[Table] = s.tables.find(t => t.name == ownTable)
+  def matchingAttributes(implicit s: Schema): List[(Attribute, Attribute)] = attributes.map { case (localAttr, foreignAttr) => thisTable.get.attributes.find(a => a.name == localAttr).get -> foreignTable.get.attributes.find(a => a.name == foreignAttr).get }
+}
 case class NotNull(attribute: Attribute) extends Constraint
 case class Unique(attribute: Attribute) extends Constraint
 case class AutoIncrement(attribute: Attribute) extends Constraint
