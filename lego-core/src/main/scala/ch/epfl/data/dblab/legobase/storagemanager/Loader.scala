@@ -177,14 +177,17 @@ object Loader {
     hm
   }
 
-  def loadTable[R: TypeTag](table: Table)(implicit m: reflect.ClassTag[R]): Array[R] = {
+  def loadTable[R](table: Table)(implicit t: TypeTag[R]): Array[R] = {
+    implicit val c: reflect.ClassTag[R] = reflect.ClassTag[R](t.mirror.runtimeClass(t.tpe))
     val size = fileLineCount(table.resourceLocator)
     val arr = new Array[R](size)
     val ldr = new K2DBScanner(table.resourceLocator)
     val recordType = typeOf[R]
+
     val classMirror = currentMirror.reflectClass(recordType.typeSymbol.asClass)
     val constr = recordType.declaration(nme.CONSTRUCTOR).asMethod
     val recordArguments = constructorArgs[R]
+    
     val arguments = recordArguments.map {
       case (name, tpe) =>
         (name, tpe, table.attributes.find(a => a.name == name) match {
@@ -195,10 +198,10 @@ object Loader {
 
     var i = 0
     while (i < size && ldr.hasNext()) {
-      var values = List()
+      var values = List[Any]()
       arguments.foreach {
         case (_, _, arg) =>
-          values :+ (arg.dataType match {
+          values = values :+ (arg.dataType match {
             case IntType    => ldr.next_int
             case DoubleType => ldr.next_double
             case CharType   => ldr.next_char
@@ -217,5 +220,7 @@ object Loader {
       i += 1
     }
     arr
+
+    //TODO update statistics
   }
 }
