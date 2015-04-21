@@ -202,7 +202,7 @@ object Loader {
             case IntType    => ldr.next_int
             case DoubleType => ldr.next_double
             case CharType   => ldr.next_char
-            //TODO how to recognize dates?
+            case DateType   => ldr.next_date
             case StringType => arg.maxLength match {
               case Some(len) => loadString(len, ldr)
               case None      => throw new IllegalArgumentException
@@ -210,7 +210,10 @@ object Loader {
           })
       }
 
-      classMirror.reflectConstructor(constr).apply(values: _*)
+      classMirror.reflectConstructor(constr).apply(values: _*) match {
+        case rec: R => arr(i) = rec
+        case _      => throw new ClassCastException
+      }
       i += 1
     }
     arr

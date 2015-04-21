@@ -90,26 +90,145 @@ object TPCHSchema {
     val lineItemTable = {
       val ok: Attribute = "L_ORDERKEY" -> IntType
       val ln: Attribute = "L_LINENUMBER" -> IntType
-      // TODO add other contraints
+
       new Table("lineitem", List(
         ok,
         "L_PARTKEY" -> IntType,
         "L_SUPPKEY" -> IntType,
         ln,
-        "L_QUANTITY" -> IntType,
+        "L_QUANTITY" -> DoubleType,
         "L_EXTENDEDPRICE" -> DoubleType,
         "L_DISCOUNT" -> DoubleType,
         "L_TAX" -> DoubleType,
         "L_RETURNFLAG" -> CharType,
         "L_LINESTATUS" -> CharType,
-        "L_SHIPDATE" -> IntType,
-        "L_COMMITDATE" -> IntType,
-        "L_RECEIPTDATE" -> IntType,
-        "L_SHIPINSTRUCT" -> StringType,
-        "L_SHIPMODE" -> StringType,
-        "L_COMMENT" -> StringType), List(PrimaryKey(List(ok, ln))), folderLocation + "/lineitem.tbl", (scalingFactor * 6000000).toLong)
+        "L_SHIPDATE" -> DateType,
+        "L_COMMITDATE" -> DateType,
+        "L_RECEIPTDATE" -> DateType,
+        ("L_SHIPINSTRUCT", StringType, 25),
+        ("L_SHIPMODE", StringType, 10),
+        ("L_COMMENT", StringType, 44)),
+        List(
+          PrimaryKey(List(ok, ln)),
+          ForeignKey("lineitem", "orders", List(("L_ORDERKEY", "O_ORDERKEY"))),
+          ForeignKey("lineitem", "partsupp", List(("L_PARTKEY", "PS_PARTKEY"), ("L_SUPPKEY", "PS_SUPPKEY")))),
+        folderLocation + "/lineitem.tbl", (scalingFactor * 6000000).toLong)
     }
-    // TODO add other tables
-    new Schema(List(lineItemTable))
+
+    val regionTable = {
+      val rk: Attribute = "R_REGIONKEY" -> IntType
+
+      new Table("region", List(
+        rk,
+        ("R_NAME", StringType, 25),
+        ("R_COMMENT", StringType, 152)),
+        List(PrimaryKey(List(rk))),
+        folderLocation + "/region.tbl", 5)
+    }
+
+    val nationTable = {
+      val nk: Attribute = "N_NATIONKEY" -> IntType
+
+      new Table("nation", List(
+        nk,
+        ("N_NAME", StringType, 25),
+        "N_REGIONKEY" -> IntType,
+        ("N_COMMENT", StringType, 152)),
+        List(
+          PrimaryKey(List(nk)),
+          ForeignKey("nation", "region", List(("N_REGIONKEY", "R_REGIONKEY")))),
+        folderLocation + "/nation.tbl", 25)
+    }
+
+    val supplierTable = {
+      val sk: Attribute = "S_SUPPKEY" -> IntType
+
+      new Table("supplier", List(
+        sk,
+        ("S_NAME", StringType, 25),
+        ("S_ADDRESS", StringType, 40),
+        "S_NATIONKEY" -> IntType,
+        ("S_PHONE", StringType, 15),
+        "S_ACCTBAL" -> DoubleType,
+        ("S_COMMENT", StringType, 101)),
+        List(
+          PrimaryKey(List(sk)),
+          ForeignKey("supplier", "nation", List(("S_NATIONKEY", "N_NATIONKEY")))),
+        folderLocation + "/supplier.tbl", (scalingFactor * 10000).toLong)
+    }
+
+    val partTable = {
+      val pk: Attribute = "P_PARTKEY" -> IntType
+
+      new Table("part", List(
+        pk,
+        ("P_NAME", StringType, 55),
+        ("P_MFGR", StringType, 25),
+        ("P_BRAND", StringType, 10),
+        ("P_TYPE", StringType, 25),
+        "P_SIZE" -> IntType,
+        ("P_CONTAINER", StringType, 10),
+        "P_RETAILPRICE" -> DoubleType,
+        ("P_COMMENT", StringType, 23)),
+        List(
+          PrimaryKey(List(pk))),
+        folderLocation + "/part.tbl", (scalingFactor * 200000).toLong)
+    }
+
+    val partsuppTable = {
+      val pk: Attribute = "PS_PARTKEY" -> IntType
+      val sk: Attribute = "PS_SUPPKEY" -> IntType
+
+      new Table("partsupp", List(
+        pk,
+        sk,
+        "PS_AVAILQTY" -> IntType,
+        "PS_SUPPLYCOST" -> DoubleType,
+        ("PS_COMMENT", StringType, 199)),
+        List(
+          PrimaryKey(List(pk, sk)),
+          ForeignKey("partsupp", "part", List(("PS_PARTKEY", "P_PARTKEY"))),
+          ForeignKey("partsupp", "supplier", List(("PS_SUPPKEY", "S_SUPPKEY")))),
+        folderLocation + "/partsupp.tbl", (scalingFactor * 800000).toLong)
+    }
+
+    val customerTable = {
+      val ck: Attribute = "C_CUSTKEY" -> IntType
+
+      new Table("customer", List(
+        ck,
+        ("C_NAME", StringType, 25),
+        ("C_ADDRESS", StringType, 40),
+        "C_NATIONKEY" -> IntType,
+        ("C_PHONE", StringType, 15),
+        "C_ACCTBAL" -> DoubleType,
+        ("C_MKTSEGMENT", StringType, 10),
+        ("C_COMMENT", StringType, 117)),
+        List(
+          PrimaryKey(List(ck)),
+          ForeignKey("customer", "nation", List(("C_NATIONKEY", "N_NATIONKEY")))),
+        folderLocation + "/customer.tbl", (scalingFactor * 150000).toLong)
+    }
+
+    val ordersTable = {
+      val ok: Attribute = "O_ORDERKEY" -> IntType
+
+      new Table("orders", List(
+        ok,
+        "O_CUSTKEY" -> IntType,
+        "O_ORDERSTATUS" -> CharType,
+        "O_TOTALPRICE" -> DoubleType,
+        "O_ORDERDATE" -> DateType,
+        ("O_ORDERPRIORITY", StringType, 15),
+        ("O_CLERK", StringType, 15),
+        "O_SHIPPRIORITY" -> IntType,
+        ("O_COMMENT", StringType, 79)),
+        List(
+          PrimaryKey(List(ok)),
+          ForeignKey("orders", "customer", List(("O_CUSTKEY", "C_CUSTKEY")))),
+        folderLocation + "/orders.tbl", (scalingFactor * 1500000).toLong)
+    }
+
+    new Schema(List(lineItemTable, regionTable, nationTable, supplierTable, partTable, partsuppTable, customerTable, ordersTable))
   }
 }
