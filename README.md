@@ -11,12 +11,16 @@ LegoBase interpreter requeires SC Pardis Library (https://github.com/epfldata/sc
 LegoBase compiler requires SC Pardis Compiler (https://github.com/epfldata/sc), C.Scala Library and C.Scala Compiler; 
 the projects `sc-pardis-compiler`, `sc-c-scala-lib`, and `sc-c-scala-deep`.
 
-Clone this project and checkout to the desired branch. Then, after going to sbt console, 
+If you have access to the sc repository follow these steps:
+1. Clone this project and checkout to the desired branch. Then, after going to sbt console, 
 run `project sc-pardis-library` for going to Pardis Library project and run `project sc-pardis-compiler` for 
 going to Pardis Compiler project.
-Run `publish-local` on the `root` project of Pardis.
+2. Run `publish-local` on the `root` project of Pardis.
 Then run `sc-c-scala-lib/publish-local` and `sc-c-scala-deep/publish-local` in the sbt console
 of Pardis project.
+
+Otherwise, sbt takes care of fetching the necessary dependencies (except yin-yang https://github.com/scala-yinyang/scala-yinyang 
+that should be published locally). 
 
 
 Testing
