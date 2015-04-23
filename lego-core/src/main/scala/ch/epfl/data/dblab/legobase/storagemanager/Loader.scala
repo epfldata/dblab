@@ -183,6 +183,9 @@ object Loader {
   //   2. Invokes the other method
   // def loadTable[R](implicit t: TypeTag[R]): Array[R]
 
+  // TODO
+  // def loadTable[R](schema: Schema)(implicit t: TypeTag[R]): Array[R] = {
+
   def loadTable[R](table: Table)(implicit t: TypeTag[R]): Array[R] = {
     implicit val c: reflect.ClassTag[R] = reflect.ClassTag[R](t.mirror.runtimeClass(t.tpe))
     val size = fileLineCount(table.resourceLocator)
