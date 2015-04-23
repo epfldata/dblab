@@ -177,6 +177,12 @@ object Loader {
     hm
   }
 
+  // TODO implement the loader method with the following signature.
+  // This method works as follows:
+  //   1. Converts typeTag[R] into a table
+  //   2. Invokes the other method
+  // def loadTable[R](implicit t: TypeTag[R]): Array[R]
+
   def loadTable[R](table: Table)(implicit t: TypeTag[R]): Array[R] = {
     implicit val c: reflect.ClassTag[R] = reflect.ClassTag[R](t.mirror.runtimeClass(t.tpe))
     val size = fileLineCount(table.resourceLocator)
@@ -187,7 +193,7 @@ object Loader {
     val classMirror = currentMirror.reflectClass(recordType.typeSymbol.asClass)
     val constr = recordType.declaration(nme.CONSTRUCTOR).asMethod
     val recordArguments = constructorArgs[R]
-    
+
     val arguments = recordArguments.map {
       case (name, tpe) =>
         (name, tpe, table.attributes.find(a => a.name == name) match {
@@ -202,14 +208,11 @@ object Loader {
       arguments.foreach {
         case (_, _, arg) =>
           values = values :+ (arg.dataType match {
-            case IntType    => ldr.next_int
-            case DoubleType => ldr.next_double
-            case CharType   => ldr.next_char
-            case DateType   => ldr.next_date
-            case StringType => arg.maxLength match {
-              case Some(len) => loadString(len, ldr)
-              case None      => throw new IllegalArgumentException
-            }
+            case IntType          => ldr.next_int
+            case DoubleType       => ldr.next_double
+            case CharType         => ldr.next_char
+            case DateType         => ldr.next_date
+            case VarCharType(len) => loadString(len, ldr)
           })
       }
 

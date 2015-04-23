@@ -14,10 +14,9 @@ case class Table(name: String, attributes: List[Attribute], constraints: List[Co
   def uniques: List[Unique] = constraints.collect { case unq: Unique => unq }
   def autoIncrement: Option[AutoIncrement] = constraints.collectFirst { case ainc: AutoIncrement => ainc }
 }
-case class Attribute(name: String, dataType: Tpe, val maxLength: Option[Int] = None, var distinctValuesCount: Int = 0, var nullValuesCount: Long = 0)
+case class Attribute(name: String, dataType: Tpe, var distinctValuesCount: Int = 0, var nullValuesCount: Long = 0)
 object Attribute {
-  implicit def tuple2ToAttribute(nameAndType: (String, Tpe)): Attribute = new Attribute(nameAndType._1, nameAndType._2)
-  implicit def tuple3ToAttribute(nameTypeMaxLength: (String, Tpe, Int)): Attribute = new Attribute(nameTypeMaxLength._1, nameTypeMaxLength._2, Some(nameTypeMaxLength._3))
+  implicit def tuple2ToAttribute(nameAndType: (String, Tpe)): Attribute = Attribute(nameAndType._1, nameAndType._2)
 }
 
 sealed trait Constraint

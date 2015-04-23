@@ -11,3 +11,10 @@ case object DateType extends PardisType[java.util.Date] {
   val typeArguments = Nil
   val typeTag = tag[java.util.Date]
 }
+
+case class VarCharType(maxLength: Int) extends PardisType[String] {
+  def rebuild(newArguments: PardisType[_]*) = VarCharType(maxLength)
+  val name = "String"
+  val typeArguments = Nil
+  val typeTag = tag[String]
+}

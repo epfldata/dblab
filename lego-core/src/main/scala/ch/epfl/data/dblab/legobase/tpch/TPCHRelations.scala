@@ -105,9 +105,9 @@ object TPCHSchema {
         "L_SHIPDATE" -> DateType,
         "L_COMMITDATE" -> DateType,
         "L_RECEIPTDATE" -> DateType,
-        ("L_SHIPINSTRUCT", StringType, 25),
-        ("L_SHIPMODE", StringType, 10),
-        ("L_COMMENT", StringType, 44)),
+        ("L_SHIPINSTRUCT" -> VarCharType(25)),
+        ("L_SHIPMODE" -> VarCharType(10)),
+        ("L_COMMENT" -> VarCharType(44))),
         List(
           PrimaryKey(List(ok, ln)),
           ForeignKey("LINEITEM", "ORDERS", List(("L_ORDERKEY", "O_ORDERKEY"))),
@@ -120,8 +120,8 @@ object TPCHSchema {
 
       new Table("REGION", List(
         rk,
-        ("R_NAME", StringType, 25),
-        ("R_COMMENT", StringType, 152)),
+        ("R_NAME" -> VarCharType(25)),
+        ("R_COMMENT" -> VarCharType(152))),
         List(PrimaryKey(List(rk))),
         folderLocation + "/region.tbl", 5)
     }
@@ -131,9 +131,9 @@ object TPCHSchema {
 
       new Table("NATION", List(
         nk,
-        ("N_NAME", StringType, 25),
+        ("N_NAME" -> VarCharType(25)),
         "N_REGIONKEY" -> IntType,
-        ("N_COMMENT", StringType, 152)),
+        ("N_COMMENT" -> VarCharType(152))),
         List(
           PrimaryKey(List(nk)),
           ForeignKey("NATION", "REGION", List(("N_REGIONKEY", "R_REGIONKEY")))),
@@ -145,12 +145,12 @@ object TPCHSchema {
 
       new Table("SUPPLIER", List(
         sk,
-        ("S_NAME", StringType, 25),
-        ("S_ADDRESS", StringType, 40),
+        ("S_NAME" -> VarCharType(25)),
+        ("S_ADDRESS" -> VarCharType(40)),
         "S_NATIONKEY" -> IntType,
-        ("S_PHONE", StringType, 15),
+        ("S_PHONE" -> VarCharType(15)),
         "S_ACCTBAL" -> DoubleType,
-        ("S_COMMENT", StringType, 101)),
+        ("S_COMMENT" -> VarCharType(101))),
         List(
           PrimaryKey(List(sk)),
           ForeignKey("SUPPLIER", "NATION", List(("S_NATIONKEY", "N_NATIONKEY")))),
@@ -162,14 +162,14 @@ object TPCHSchema {
 
       new Table("PART", List(
         pk,
-        ("P_NAME", StringType, 55),
-        ("P_MFGR", StringType, 25),
-        ("P_BRAND", StringType, 10),
-        ("P_TYPE", StringType, 25),
+        ("P_NAME" -> VarCharType(55)),
+        ("P_MFGR" -> VarCharType(25)),
+        ("P_BRAND" -> VarCharType(10)),
+        ("P_TYPE" -> VarCharType(25)),
         "P_SIZE" -> IntType,
-        ("P_CONTAINER", StringType, 10),
+        ("P_CONTAINER" -> VarCharType(10)),
         "P_RETAILPRICE" -> DoubleType,
-        ("P_COMMENT", StringType, 23)),
+        ("P_COMMENT" -> VarCharType(23))),
         List(
           PrimaryKey(List(pk))),
         folderLocation + "/part.tbl", (scalingFactor * 200000).toLong)
@@ -184,7 +184,7 @@ object TPCHSchema {
         sk,
         "PS_AVAILQTY" -> IntType,
         "PS_SUPPLYCOST" -> DoubleType,
-        ("PS_COMMENT", StringType, 199)),
+        ("PS_COMMENT" -> VarCharType(199))),
         List(
           PrimaryKey(List(pk, sk)),
           ForeignKey("PARTSUPP", "PART", List(("PS_PARTKEY", "P_PARTKEY"))),
@@ -197,13 +197,13 @@ object TPCHSchema {
 
       new Table("CUSTOMER", List(
         ck,
-        ("C_NAME", StringType, 25),
-        ("C_ADDRESS", StringType, 40),
+        ("C_NAME" -> VarCharType(25)),
+        ("C_ADDRESS" -> VarCharType(40)),
         "C_NATIONKEY" -> IntType,
-        ("C_PHONE", StringType, 15),
+        ("C_PHONE" -> VarCharType(15)),
         "C_ACCTBAL" -> DoubleType,
-        ("C_MKTSEGMENT", StringType, 10),
-        ("C_COMMENT", StringType, 117)),
+        ("C_MKTSEGMENT" -> VarCharType(10)),
+        ("C_COMMENT" -> VarCharType(117))),
         List(
           PrimaryKey(List(ck)),
           ForeignKey("CUSTOMER", "NATION", List(("C_NATIONKEY", "N_NATIONKEY")))),
@@ -219,10 +219,10 @@ object TPCHSchema {
         "O_ORDERSTATUS" -> CharType,
         "O_TOTALPRICE" -> DoubleType,
         "O_ORDERDATE" -> DateType,
-        ("O_ORDERPRIORITY", StringType, 15),
-        ("O_CLERK", StringType, 15),
+        ("O_ORDERPRIORITY" -> VarCharType(15)),
+        ("O_CLERK" -> VarCharType(15)),
         "O_SHIPPRIORITY" -> IntType,
-        ("O_COMMENT", StringType, 79)),
+        ("O_COMMENT" -> VarCharType(79))),
         List(
           PrimaryKey(List(ok)),
           ForeignKey("ORDERS", "CUSTOMER", List(("O_CUSTKEY", "C_CUSTKEY")))),
