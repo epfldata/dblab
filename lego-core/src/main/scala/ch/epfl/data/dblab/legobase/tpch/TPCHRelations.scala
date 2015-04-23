@@ -112,7 +112,7 @@ object TPCHSchema {
           PrimaryKey(List(ok, ln)),
           ForeignKey("LINEITEM", "ORDERS", List(("L_ORDERKEY", "O_ORDERKEY"))),
           ForeignKey("LINEITEM", "PARTSUPP", List(("L_PARTKEY", "PS_PARTKEY"), ("L_SUPPKEY", "PS_SUPPKEY")))),
-        folderLocation + "/lineitem.tbl", (scalingFactor * 6000000).toLong)
+        folderLocation + "lineitem.tbl", (scalingFactor * 6000000).toLong)
     }
 
     val regionTable = {
@@ -123,7 +123,7 @@ object TPCHSchema {
         ("R_NAME" -> VarCharType(25)),
         ("R_COMMENT" -> VarCharType(152))),
         List(PrimaryKey(List(rk))),
-        folderLocation + "/region.tbl", 5)
+        folderLocation + "region.tbl", 5)
     }
 
     val nationTable = {
@@ -137,7 +137,7 @@ object TPCHSchema {
         List(
           PrimaryKey(List(nk)),
           ForeignKey("NATION", "REGION", List(("N_REGIONKEY", "R_REGIONKEY")))),
-        folderLocation + "/nation.tbl", 25)
+        folderLocation + "nation.tbl", 25)
     }
 
     val supplierTable = {
@@ -154,7 +154,7 @@ object TPCHSchema {
         List(
           PrimaryKey(List(sk)),
           ForeignKey("SUPPLIER", "NATION", List(("S_NATIONKEY", "N_NATIONKEY")))),
-        folderLocation + "/supplier.tbl", (scalingFactor * 10000).toLong)
+        folderLocation + "supplier.tbl", (scalingFactor * 10000).toLong)
     }
 
     val partTable = {
@@ -172,7 +172,7 @@ object TPCHSchema {
         ("P_COMMENT" -> VarCharType(23))),
         List(
           PrimaryKey(List(pk))),
-        folderLocation + "/part.tbl", (scalingFactor * 200000).toLong)
+        folderLocation + "part.tbl", (scalingFactor * 200000).toLong)
     }
 
     val partsuppTable = {
@@ -189,7 +189,7 @@ object TPCHSchema {
           PrimaryKey(List(pk, sk)),
           ForeignKey("PARTSUPP", "PART", List(("PS_PARTKEY", "P_PARTKEY"))),
           ForeignKey("PARTSUPP", "SUPPLIER", List(("PS_SUPPKEY", "S_SUPPKEY")))),
-        folderLocation + "/partsupp.tbl", (scalingFactor * 800000).toLong)
+        folderLocation + "partsupp.tbl", (scalingFactor * 800000).toLong)
     }
 
     val customerTable = {
@@ -207,7 +207,7 @@ object TPCHSchema {
         List(
           PrimaryKey(List(ck)),
           ForeignKey("CUSTOMER", "NATION", List(("C_NATIONKEY", "N_NATIONKEY")))),
-        folderLocation + "/customer.tbl", (scalingFactor * 150000).toLong)
+        folderLocation + "customer.tbl", (scalingFactor * 150000).toLong)
     }
 
     val ordersTable = {
@@ -226,7 +226,7 @@ object TPCHSchema {
         List(
           PrimaryKey(List(ok)),
           ForeignKey("ORDERS", "CUSTOMER", List(("O_CUSTKEY", "C_CUSTKEY")))),
-        folderLocation + "/orders.tbl", (scalingFactor * 1500000).toLong)
+        folderLocation + "orders.tbl", (scalingFactor * 1500000).toLong)
     }
 
     new Schema(List(lineItemTable, regionTable, nationTable, supplierTable, partTable, partsuppTable, customerTable, ordersTable))
