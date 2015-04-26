@@ -19,8 +19,7 @@ going to Pardis Compiler project.
 Then run `sc-c-scala-lib/publish-local` and `sc-c-scala-deep/publish-local` in the sbt console
 of Pardis project.
 
-Otherwise, sbt takes care of fetching the necessary dependencies (except yin-yang https://github.com/scala-yinyang/scala-yinyang 
-that should be published locally). 
+Otherwise, sbt takes care of fetching the necessary dependencies. 
 
 
 Testing
