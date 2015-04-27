@@ -33,7 +33,7 @@ class Settings(val args: List[String]) {
       throw new Exception(s"${PointerStoreSetting.flagName} and ${CArrayAsStructSetting.flagName} cannot be chained together.")
     }
   }
-  @inline def hasSetting(setting: Setting): Boolean = args.exists(_ == setting.flagName)
+  @inline def hasSetting(setting: Setting): Boolean = args.exists(_ == setting.fullFlagName)
   // TODO the following methods are not needed
   def hashMapLowering: Boolean = hasSetting(HashMapToSetSetting)
   def setToArray: Boolean = hasSetting(SetToArraySetting)
