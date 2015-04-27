@@ -145,16 +145,19 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
 
   def shouldBePartitioned[T](arrayInfo: ArrayInfo[T]): Boolean = arrayInfo.tpe.name match {
     case "ORDERSRecord" if queryNumber == 3 || queryNumber == 10 => true
+    case "LINEITEMRecord" if queryNumber == 6 => true
     case _ => false
   }
 
   def partitioningField[T](tpe: TypeRep[T]): Option[String] = tpe.name match {
     case "ORDERSRecord" if queryNumber == 3 || queryNumber == 10 => Some("O_ORDERDATE")
+    case "LINEITEMRecord" if queryNumber == 6 => Some("L_SHIPDATE")
     case _ => None
   }
 
   def bucketSize[T](arrayInfo: ArrayInfo[T]): Rep[Int] = arrayInfo.tpe.name match {
     case "ORDERSRecord" if queryNumber == 3 || queryNumber == 10 => (arrayInfo.arraySize / arrayInfo.buckets) * unit(4)
+    case "LINEITEMRecord" if queryNumber == 6 => (arrayInfo.arraySize / arrayInfo.buckets) * unit(4)
     case _ => unit(1 << 10)
   }
 
@@ -181,6 +184,9 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
 
   def partitioningFunction[T](arrayInfo: ArrayInfo[T]): (Rep[Int] => Rep[Int]) = arrayInfo.tpe.name match {
     case "ORDERSRecord" if queryNumber == 3 || queryNumber == 10 => (x: Rep[Int]) => {
+      convertDateToIndex(x)
+    }
+    case "LINEITEMRecord" if queryNumber == 6 => (x: Rep[Int]) => {
       convertDateToIndex(x)
     }
     case _ => ???

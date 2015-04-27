@@ -129,7 +129,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
     pipeline += new BlockFlattening(DSL) // should not be needed!
   }
 
-  if (settings.partitioning && (number == 3 || number == 10)) {
+  if (settings.partitioning && (number == 3 || number == 10 || number == 6)) {
     pipeline += new WhileToRangeForeachTransformer(DSL)
     pipeline += new ArrayPartitioning(DSL, number)
     pipeline += DCE
@@ -153,9 +153,6 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
     pipeline += PartiallyEvaluate
 
     pipeline += DCE
-    if (settings.partitioning && number == 6) {
-      pipeline += new PartitionTransformer(DSL)
-    }
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE
