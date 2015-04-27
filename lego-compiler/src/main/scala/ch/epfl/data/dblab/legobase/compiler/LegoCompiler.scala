@@ -91,7 +91,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
     pipeline += DCE
   }
 
-  if (settings.stringCompression) pipeline += new StringCompressionTransformer(DSL, number)
+  if (settings.stringCompression) pipeline += new StringDictionaryTransformer(DSL, number)
   pipeline += TreeDumper(false)
 
   if (settings.hashMapLowering || settings.hashMapNoCollision) {
@@ -129,7 +129,8 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
     pipeline += new BlockFlattening(DSL) // should not be needed!
   }
 
-  if (settings.partitioning && (number == 3 || number == 10 || number == 6)) {
+  val partitionedQueries = List(3, 6, 10, 14)
+  if (settings.partitioning && partitionedQueries.contains(number)) {
     pipeline += new WhileToRangeForeachTransformer(DSL)
     pipeline += new ArrayPartitioning(DSL, number)
     pipeline += DCE
