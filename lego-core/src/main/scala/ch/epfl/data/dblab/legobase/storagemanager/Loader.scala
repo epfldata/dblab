@@ -48,8 +48,8 @@ object Loader {
   }
 
   def constructorArgs[T](implicit tt: TypeTag[T]) =
-    tt.tpe.member(nme.CONSTRUCTOR).asMethod.paramss.head map {
-      p => (p.name.decoded, p.typeSignature)
+    tt.tpe.member(termNames.CONSTRUCTOR).asMethod.paramLists.head map {
+      p => (p.name.decodedName.toString, p.typeSignature)
     }
 
   @dontInline
@@ -91,30 +91,27 @@ object Loader {
     val recordType = typeOf[R]
 
     val classMirror = currentMirror.reflectClass(recordType.typeSymbol.asClass)
-    val constr = recordType.declaration(nme.CONSTRUCTOR).asMethod
+    val constr = recordType.decl(termNames.CONSTRUCTOR).asMethod
     val recordArguments = constructorArgs[R]
 
     val arguments = recordArguments.map {
       case (name, tpe) =>
         (name, tpe, table.attributes.find(a => a.name == name) match {
           case Some(a) => a
-          case None    => throw new IllegalArgumentException
+          case None    => throw new Exception(s"No attribute found with the name `$name` in the table ${table.name}")
         })
     }
 
     var i = 0
     while (i < size && ldr.hasNext()) {
-      var values = List[Any]()
-      arguments.foreach {
-        case (_, _, arg) =>
-          values = values :+ (arg.dataType match {
-            case IntType          => ldr.next_int
-            case DoubleType       => ldr.next_double
-            case CharType         => ldr.next_char
-            case DateType         => ldr.next_date
-            case VarCharType(len) => loadString(len, ldr)
-          })
-      }
+      val values = arguments.map(arg =>
+        arg._3.dataType match {
+          case IntType          => ldr.next_int
+          case DoubleType       => ldr.next_double
+          case CharType         => ldr.next_char
+          case DateType         => ldr.next_date
+          case VarCharType(len) => loadString(len, ldr)
+        })
 
       classMirror.reflectConstructor(constr).apply(values: _*) match {
         case rec: R => arr(i) = rec

@@ -11,7 +11,7 @@ import sc.pardis.shallow.{ CaseClassRecord, OptimalString }
   val L_PARTKEY: Int,
   val L_SUPPKEY: Int,
   val L_LINENUMBER: Int,
-  val L_QUANTITY: Int,
+  val L_QUANTITY: Double,
   val L_EXTENDEDPRICE: Double,
   val L_DISCOUNT: Double,
   val L_TAX: Double,
