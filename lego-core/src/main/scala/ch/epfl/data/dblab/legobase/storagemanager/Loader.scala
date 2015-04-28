@@ -9,18 +9,22 @@ import tpch._
 import schema._
 import sc.pardis.shallow.OptimalString
 import sc.pardis.types._
+import scala.reflect._
 import scala.reflect.runtime.universe._
 import scala.reflect.runtime.currentMirror
 
 @metadeep(
   folder = "",
   header = """import ch.epfl.data.dblab.legobase.deep._
-import ch.epfl.data.dblab.legobase.deep.queryengine._""",
+import ch.epfl.data.dblab.legobase.deep.queryengine._
+import ch.epfl.data.dblab.legobase.schema._
+import scala.reflect._
+""",
   component = "",
   thisComponent = "ch.epfl.data.dblab.legobase.deep.DeepDSL")
 class MetaInfo
 
-@needs[(K2DBScanner, Array[_])]
+@needs[(K2DBScanner, Array[_], OptimalString)]
 @deep
 trait Loader
 
@@ -38,11 +42,6 @@ object Loader {
     new OptimalString(NAME.filter(y => y != 0))
   }
 
-  def constructorArgs[T](implicit tt: TypeTag[T]) =
-    tt.tpe.member(termNames.CONSTRUCTOR).asMethod.paramLists.head map {
-      p => (p.name.decodedName.toString, p.typeSignature)
-    }
-
   @dontInline
   def fileLineCount(file: String) = {
     import scala.sys.process._;
@@ -58,16 +57,18 @@ object Loader {
   // TODO
   // def loadTable[R](schema: Schema)(implicit t: TypeTag[R]): Array[R] = {
 
-  def loadTable[R](table: Table)(implicit t: TypeTag[R]): Array[R] = {
-    implicit val c: reflect.ClassTag[R] = reflect.ClassTag[R](t.mirror.runtimeClass(t.tpe))
+  @dontInline
+  def loadTable[R](table: Table)(implicit c: ClassTag[R]): Array[R] = {
     val size = fileLineCount(table.resourceLocator)
     val arr = new Array[R](size)
     val ldr = new K2DBScanner(table.resourceLocator)
-    val recordType = typeOf[R]
+    val recordType = currentMirror.staticClass(c.runtimeClass.getName).asType.toTypeConstructor
 
     val classMirror = currentMirror.reflectClass(recordType.typeSymbol.asClass)
     val constr = recordType.decl(termNames.CONSTRUCTOR).asMethod
-    val recordArguments = constructorArgs[R]
+    val recordArguments = recordType.member(termNames.CONSTRUCTOR).asMethod.paramLists.head map {
+      p => (p.name.decodedName.toString, p.typeSignature)
+    }
 
     val arguments = recordArguments.map {
       case (name, tpe) =>
