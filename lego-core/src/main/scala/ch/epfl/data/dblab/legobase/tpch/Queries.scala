@@ -10,7 +10,7 @@ import queryengine._
 // import queryengine.volcano._
 import queryengine.push._
 import sc.pardis.annotations.{ deep, metadeep, dontLift }
-import storagemanager.Loader._
+import tpch.TPCHLoader._
 import GenericEngine._
 // import queryengine.TPCHRelations._
 import storagemanager._

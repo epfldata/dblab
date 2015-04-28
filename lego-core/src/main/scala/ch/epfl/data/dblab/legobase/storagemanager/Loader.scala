@@ -12,31 +12,22 @@ import sc.pardis.types._
 import scala.reflect.runtime.universe._
 import scala.reflect.runtime.currentMirror
 
-// TODO it should be generalized to not be only TPCH-specific
-
 @metadeep(
   folder = "",
   header = """import ch.epfl.data.dblab.legobase.deep._
-import ch.epfl.data.dblab.legobase.deep.queryengine._
-import ch.epfl.data.dblab.legobase.deep.tpch._""",
+import ch.epfl.data.dblab.legobase.deep.queryengine._""",
   component = "",
   thisComponent = "ch.epfl.data.dblab.legobase.deep.DeepDSL")
 class MetaInfo
 
-@needs[(K2DBScanner, Array[_], REGIONRecord, PARTSUPPRecord, PARTRecord, NATIONRecord, SUPPLIERRecord, LINEITEMRecord, ORDERSRecord, CUSTOMERRecord, OptimalString)]
+@needs[(K2DBScanner, Array[_])]
 @deep
 trait Loader
 
 /**
  * A module that defines loaders for relations.
- *
- * (TODO for now it's specific to TPCH, but should be generalized)
  */
 object Loader {
-
-  val tpchSchema = TPCHSchema.getSchema(Config.datapath, getScalingFactor)
-  def getTable(name: String) = tpchSchema.tables.find(t => t.name == name)
-  def getScalingFactor = Config.datapath.slice(Config.datapath.lastIndexOfSlice("sf") + 2, Config.datapath.length - 1).toDouble //TODO Pass SF to Config
 
   @dontInline
   def getFullPath(fileName: String): String = Config.datapath + fileName
@@ -57,22 +48,6 @@ object Loader {
     import scala.sys.process._;
     Integer.parseInt(((("wc -l " + file) #| "awk {print($1)}").!!).replaceAll("\\s+$", ""))
   }
-
-  def loadRegion() = loadTable[REGIONRecord](getTable("REGION").get)
-
-  def loadPartsupp() = loadTable[PARTSUPPRecord](getTable("PARTSUPP").get)
-
-  def loadPart() = loadTable[PARTRecord](getTable("PART").get)
-
-  def loadNation() = loadTable[NATIONRecord](getTable("NATION").get)
-
-  def loadSupplier() = loadTable[SUPPLIERRecord](getTable("SUPPLIER").get)
-
-  def loadLineitem() = loadTable[LINEITEMRecord](getTable("LINEITEM").get)
-
-  def loadOrders() = loadTable[ORDERSRecord](getTable("ORDERS").get)
-
-  def loadCustomer() = loadTable[CUSTOMERRecord](getTable("CUSTOMER").get)
 
   // TODO implement the loader method with the following signature.
   // This method works as follows:
