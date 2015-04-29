@@ -15,7 +15,7 @@ import scala.reflect._
 trait InliningPush extends DeepDSL with sc.pardis.ir.InlineFunctions with tpch.QueriesImplementations with OperatorImplementations with ScanOpImplementations with SelectOpImplementations with AggOpImplementations with SortOpImplementations with MapOpImplementations with PrintOpImplementations with WindowOpImplementations with HashJoinOpImplementations with LeftHashSemiJoinOpImplementations with NestedLoopsJoinOpImplementations with SubquerySingleResultImplementations with ViewOpImplementations with HashJoinAntiImplementations with LeftOuterJoinOpImplementations
   with OperatorPartialEvaluation with ScanOpPartialEvaluation with SelectOpPartialEvaluation with AggOpPartialEvaluation with SortOpPartialEvaluation with MapOpPartialEvaluation with PrintOpPartialEvaluation with WindowOpPartialEvaluation with HashJoinOpPartialEvaluation with LeftHashSemiJoinOpPartialEvaluation with NestedLoopsJoinOpPartialEvaluation with SubquerySingleResultPartialEvaluation with ViewOpPartialEvaluation with HashJoinAntiPartialEvaluation with LeftOuterJoinOpPartialEvaluation
   with sc.pardis.deep.scalalib.Tuple2PartialEvaluation
-  with OperatorDynamicDispatch { this: InliningLegoBase =>
+  with OperatorDynamicDispatch with BaseOptimization with sc.pardis.deep.scalalib.ArrayOptimization { this: InliningLegoBase =>
   override def findSymbol[T: TypeRep](d: Def[T]): Option[Sym[T]] =
     scopeDefs.find(x => x.rhs == d && x.rhs.tp == d.tp).map(x => x.sym.asInstanceOf[Sym[T]])
   override def infix_asInstanceOf[T: TypeRep](exp: Rep[Any]): Rep[T] = {
@@ -29,19 +29,6 @@ trait InliningPush extends DeepDSL with sc.pardis.ir.InlineFunctions with tpch.Q
     }
     // System.out.println(s"res $res")
     res
-  }
-
-  // TODO move to SC
-  override def arrayLength[T](self: Rep[Array[T]])(implicit typeT: TypeRep[T]): Rep[Int] = self match {
-    case Def(ArrayNew(length)) => length
-    case _                     => super.arrayLength(self)
-  }
-
-  // TODO move to SC
-  override def __ifThenElse[T: TypeRep](cond: Rep[Boolean], thenp: => Rep[T], elsep: => Rep[T]): Rep[T] = cond match {
-    case Constant(true)  => thenp
-    case Constant(false) => elsep
-    case _               => super.__ifThenElse(cond, thenp, elsep)
   }
 
   // TODO move to SC
