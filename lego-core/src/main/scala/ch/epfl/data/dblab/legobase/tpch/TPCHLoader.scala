@@ -19,13 +19,13 @@ import scala.reflect.runtime.currentMirror
   header = """import ch.epfl.data.dblab.legobase.deep._
 import ch.epfl.data.dblab.legobase.deep.queryengine._
 import ch.epfl.data.dblab.legobase.deep.storagemanager._
-import ch.epfl.data.dblab.legobase.schema._
+import ch.epfl.data.dblab.legobase.deep.schema._
 import scala.reflect._""",
   component = "",
   thisComponent = "ch.epfl.data.dblab.legobase.deep.DeepDSL")
 class MetaInfoLoader
 
-@needs[(K2DBScanner, Array[_], REGIONRecord, PARTSUPPRecord, PARTRecord, NATIONRecord, SUPPLIERRecord, LINEITEMRecord, ORDERSRecord, CUSTOMERRecord, OptimalString, Loader)]
+@needs[(K2DBScanner, Array[_], REGIONRecord, PARTSUPPRecord, PARTRecord, NATIONRecord, SUPPLIERRecord, LINEITEMRecord, ORDERSRecord, CUSTOMERRecord, OptimalString, Loader, Table)]
 @deep
 trait TPCHLoader
 
@@ -37,7 +37,7 @@ object TPCHLoader {
   @dontLift
   val tpchSchema: Schema = TPCHSchema.getSchema(Config.datapath, getScalingFactor)
   @dontInline
-  def getTable(name: String): Table = tpchSchema.tables.find(t => t.name == name).get
+  def getTable(tableName: String): Table = tpchSchema.tables.find(t => t.name == tableName).get
   @dontLift
   def getScalingFactor: Double = Config.datapath.slice(Config.datapath.lastIndexOfSlice("sf") + 2, Config.datapath.length - 1).toDouble //TODO Pass SF to Config
 
