@@ -27,7 +27,7 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
     def L_TAX: Rep[Double] = lINEITEMRecord_Field_L_TAX(self)
     def L_DISCOUNT: Rep[Double] = lINEITEMRecord_Field_L_DISCOUNT(self)
     def L_EXTENDEDPRICE: Rep[Double] = lINEITEMRecord_Field_L_EXTENDEDPRICE(self)
-    def L_QUANTITY: Rep[Int] = lINEITEMRecord_Field_L_QUANTITY(self)
+    def L_QUANTITY: Rep[Double] = lINEITEMRecord_Field_L_QUANTITY(self)
     def L_LINENUMBER: Rep[Int] = lINEITEMRecord_Field_L_LINENUMBER(self)
     def L_SUPPKEY: Rep[Int] = lINEITEMRecord_Field_L_SUPPKEY(self)
     def L_PARTKEY: Rep[Int] = lINEITEMRecord_Field_L_PARTKEY(self)
@@ -37,7 +37,7 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
 
   }
   // constructors
-  def __newLINEITEMRecord(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Int], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = lINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
+  def __newLINEITEMRecord(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = lINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
   // IR defs
   val LINEITEMRecordNew = LINEITEMRecordIRs.LINEITEMRecordNew
   type LINEITEMRecordNew = LINEITEMRecordIRs.LINEITEMRecordNew
@@ -76,7 +76,7 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
   val LINEITEMRecord_Field_L_ORDERKEY = LINEITEMRecordIRs.LINEITEMRecord_Field_L_ORDERKEY
   type LINEITEMRecord_Field_L_ORDERKEY = LINEITEMRecordIRs.LINEITEMRecord_Field_L_ORDERKEY
   // method definitions
-  def lINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Int], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = LINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
+  def lINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = LINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
   def lINEITEMRecordGetField(self: Rep[LINEITEMRecord], key: Rep[String]): Rep[Option[Any]] = LINEITEMRecordGetField(self, key)
   def lINEITEMRecord_Field_L_COMMENT(self: Rep[LINEITEMRecord]): Rep[OptimalString] = LINEITEMRecord_Field_L_COMMENT(self)
   def lINEITEMRecord_Field_L_SHIPMODE(self: Rep[LINEITEMRecord]): Rep[OptimalString] = LINEITEMRecord_Field_L_SHIPMODE(self)
@@ -89,7 +89,7 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
   def lINEITEMRecord_Field_L_TAX(self: Rep[LINEITEMRecord]): Rep[Double] = LINEITEMRecord_Field_L_TAX(self)
   def lINEITEMRecord_Field_L_DISCOUNT(self: Rep[LINEITEMRecord]): Rep[Double] = LINEITEMRecord_Field_L_DISCOUNT(self)
   def lINEITEMRecord_Field_L_EXTENDEDPRICE(self: Rep[LINEITEMRecord]): Rep[Double] = LINEITEMRecord_Field_L_EXTENDEDPRICE(self)
-  def lINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_QUANTITY(self)
+  def lINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]): Rep[Double] = LINEITEMRecord_Field_L_QUANTITY(self)
   def lINEITEMRecord_Field_L_LINENUMBER(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_LINENUMBER(self)
   def lINEITEMRecord_Field_L_SUPPKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_SUPPKEY(self)
   def lINEITEMRecord_Field_L_PARTKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_PARTKEY(self)
@@ -108,7 +108,7 @@ object LINEITEMRecordIRs extends Base {
   }
   implicit val typeLINEITEMRecord: TypeRep[LINEITEMRecord] = LINEITEMRecordType
   // case classes
-  case class LINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Int], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]) extends ConstructorDef[LINEITEMRecord](List(), "LINEITEMRecord", List(List(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT))) {
+  case class LINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]) extends ConstructorDef[LINEITEMRecord](List(), "LINEITEMRecord", List(List(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT))) {
     override def curriedConstructor = (copy _).curried
   }
 
@@ -248,11 +248,11 @@ object LINEITEMRecordIRs extends Base {
 
   }
 
-  case class LINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]) extends FieldDef[Int](self, "L_QUANTITY") {
+  case class LINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]) extends FieldDef[Double](self, "L_QUANTITY") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partialEvaluate(children: Any*): Double = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_QUANTITY
     }
@@ -363,7 +363,7 @@ trait LINEITEMRecordPartialEvaluation extends LINEITEMRecordComponent with BaseP
     case Def(node: LINEITEMRecordNew) => node.L_EXTENDEDPRICE
     case _                            => super.lINEITEMRecord_Field_L_EXTENDEDPRICE(self)
   }
-  override def lINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]): Rep[Int] = self match {
+  override def lINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]): Rep[Double] = self match {
     case Def(node: LINEITEMRecordNew) => node.L_QUANTITY
     case _                            => super.lINEITEMRecord_Field_L_QUANTITY(self)
   }
