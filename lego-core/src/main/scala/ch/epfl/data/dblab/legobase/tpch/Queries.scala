@@ -379,11 +379,15 @@ object Queries {
         val constantDate2 = parseDate("1995-02-01")
         val so1 = new SelectOp(new ScanOp(ordersTable))(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE < constantDate2)
         val so2 = new ScanOp(customerTable)
-        val hj1 = new HashJoinOp(so1, so2)((x, y) => x.O_CUSTKEY == y.C_CUSTKEY)(x => x.O_CUSTKEY)(x => x.C_CUSTKEY)
+        // val hj1 = new HashJoinOp(so1, so2)((x, y) => x.O_CUSTKEY == y.C_CUSTKEY)(x => x.O_CUSTKEY)(x => x.C_CUSTKEY)
+        // val hj1 = new HashJoinOp(so2, so1)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY)
         val so3 = new ScanOp(nationTable)
-        val hj2 = new HashJoinOp(so3, hj1)((x, y) => x.N_NATIONKEY == y.C_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.C_NATIONKEY[Int])
+        // val hj2 = new HashJoinOp(so3, hj1)((x, y) => x.N_NATIONKEY == y.C_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.C_NATIONKEY[Int])
         val so4 = new SelectOp(new ScanOp(lineitemTable))(x => x.L_RETURNFLAG == 'R')
-        val hj3 = new HashJoinOp(hj2, so4)((x, y) => x.O_ORDERKEY[Int] == y.L_ORDERKEY)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY)
+        // val hj3 = new HashJoinOp(hj2, so4)((x, y) => x.O_ORDERKEY[Int] == y.L_ORDERKEY)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY)
+        val hj1 = new HashJoinOp(so4, so1)((x, y) => x.L_ORDERKEY == y.O_ORDERKEY)(x => x.L_ORDERKEY)(x => x.O_ORDERKEY)
+        val hj2 = new HashJoinOp(so2, hj1)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY[Int])(x => x.C_CUSTKEY)(x => x.O_CUSTKEY[Int])
+        val hj3 = new HashJoinOp(so3, hj2)((x, y) => x.N_NATIONKEY == y.C_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.C_NATIONKEY[Int])
         val aggOp = new AggOp(hj3, 1)(x => new Q10GRPRecord(x.C_CUSTKEY[Int],
           x.C_NAME[LBString], x.C_ACCTBAL[Double],
           x.C_PHONE[LBString], x.N_NAME[LBString],
