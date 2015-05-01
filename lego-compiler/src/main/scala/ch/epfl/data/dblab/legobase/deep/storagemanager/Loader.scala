@@ -12,8 +12,10 @@ import pardis.deep.scalalib.io._
 
 import ch.epfl.data.dblab.legobase.deep._
 import ch.epfl.data.dblab.legobase.deep.queryengine._
-import ch.epfl.data.dblab.legobase.deep.tpch._
-trait LoaderOps extends Base with K2DBScannerOps with ArrayOps with REGIONRecordOps with PARTSUPPRecordOps with PARTRecordOps with NATIONRecordOps with SUPPLIERRecordOps with LINEITEMRecordOps with ORDERSRecordOps with CUSTOMERRecordOps with OptimalStringOps { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =>
+import ch.epfl.data.dblab.legobase.schema._
+import scala.reflect._
+
+trait LoaderOps extends Base with K2DBScannerOps with ArrayOps with OptimalStringOps { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =>
   // Type representation
   val LoaderType = LoaderIRs.LoaderType
   implicit val typeLoader: TypeRep[Loader] = LoaderType
@@ -24,14 +26,7 @@ trait LoaderOps extends Base with K2DBScannerOps with ArrayOps with REGIONRecord
     def getFullPath(fileName: Rep[String]): Rep[String] = loaderGetFullPathObject(fileName)
     def loadString(size: Rep[Int], s: Rep[K2DBScanner]): Rep[OptimalString] = loaderLoadStringObject(size, s)
     def fileLineCount(file: Rep[String]): Rep[Int] = loaderFileLineCountObject(file)
-    def loadRegion(): Rep[Array[REGIONRecord]] = loaderLoadRegionObject()
-    def loadPartsupp(): Rep[Array[PARTSUPPRecord]] = loaderLoadPartsuppObject()
-    def loadPart(): Rep[Array[PARTRecord]] = loaderLoadPartObject()
-    def loadNation(): Rep[Array[NATIONRecord]] = loaderLoadNationObject()
-    def loadSupplier(): Rep[Array[SUPPLIERRecord]] = loaderLoadSupplierObject()
-    def loadLineitem(): Rep[Array[LINEITEMRecord]] = loaderLoadLineitemObject()
-    def loadOrders(): Rep[Array[ORDERSRecord]] = loaderLoadOrdersObject()
-    def loadCustomer(): Rep[Array[CUSTOMERRecord]] = loaderLoadCustomerObject()
+    def loadTable[R](table: Rep[Table])(implicit typeR: TypeRep[R], c: ClassTag[R]): Rep[Array[R]] = loaderLoadTableObject[R](table)(typeR, c)
   }
   // constructors
 
@@ -42,47 +37,18 @@ trait LoaderOps extends Base with K2DBScannerOps with ArrayOps with REGIONRecord
   type LoaderLoadStringObject = LoaderIRs.LoaderLoadStringObject
   val LoaderFileLineCountObject = LoaderIRs.LoaderFileLineCountObject
   type LoaderFileLineCountObject = LoaderIRs.LoaderFileLineCountObject
-  val LoaderLoadRegionObject = LoaderIRs.LoaderLoadRegionObject
-  type LoaderLoadRegionObject = LoaderIRs.LoaderLoadRegionObject
-  val LoaderLoadPartsuppObject = LoaderIRs.LoaderLoadPartsuppObject
-  type LoaderLoadPartsuppObject = LoaderIRs.LoaderLoadPartsuppObject
-  val LoaderLoadPartObject = LoaderIRs.LoaderLoadPartObject
-  type LoaderLoadPartObject = LoaderIRs.LoaderLoadPartObject
-  val LoaderLoadNationObject = LoaderIRs.LoaderLoadNationObject
-  type LoaderLoadNationObject = LoaderIRs.LoaderLoadNationObject
-  val LoaderLoadSupplierObject = LoaderIRs.LoaderLoadSupplierObject
-  type LoaderLoadSupplierObject = LoaderIRs.LoaderLoadSupplierObject
-  val LoaderLoadLineitemObject = LoaderIRs.LoaderLoadLineitemObject
-  type LoaderLoadLineitemObject = LoaderIRs.LoaderLoadLineitemObject
-  val LoaderLoadOrdersObject = LoaderIRs.LoaderLoadOrdersObject
-  type LoaderLoadOrdersObject = LoaderIRs.LoaderLoadOrdersObject
-  val LoaderLoadCustomerObject = LoaderIRs.LoaderLoadCustomerObject
-  type LoaderLoadCustomerObject = LoaderIRs.LoaderLoadCustomerObject
+  val LoaderLoadTableObject = LoaderIRs.LoaderLoadTableObject
+  type LoaderLoadTableObject[R] = LoaderIRs.LoaderLoadTableObject[R]
   // method definitions
   def loaderGetFullPathObject(fileName: Rep[String]): Rep[String] = LoaderGetFullPathObject(fileName)
   def loaderLoadStringObject(size: Rep[Int], s: Rep[K2DBScanner]): Rep[OptimalString] = LoaderLoadStringObject(size, s)
   def loaderFileLineCountObject(file: Rep[String]): Rep[Int] = LoaderFileLineCountObject(file)
-  def loaderLoadRegionObject(): Rep[Array[REGIONRecord]] = LoaderLoadRegionObject()
-  def loaderLoadPartsuppObject(): Rep[Array[PARTSUPPRecord]] = LoaderLoadPartsuppObject()
-  def loaderLoadPartObject(): Rep[Array[PARTRecord]] = LoaderLoadPartObject()
-  def loaderLoadNationObject(): Rep[Array[NATIONRecord]] = LoaderLoadNationObject()
-  def loaderLoadSupplierObject(): Rep[Array[SUPPLIERRecord]] = LoaderLoadSupplierObject()
-  def loaderLoadLineitemObject(): Rep[Array[LINEITEMRecord]] = LoaderLoadLineitemObject()
-  def loaderLoadOrdersObject(): Rep[Array[ORDERSRecord]] = LoaderLoadOrdersObject()
-  def loaderLoadCustomerObject(): Rep[Array[CUSTOMERRecord]] = LoaderLoadCustomerObject()
+  def loaderLoadTableObject[R](table: Rep[Table])(implicit typeR: TypeRep[R], c: ClassTag[R]): Rep[Array[R]] = LoaderLoadTableObject[R](table)
   type Loader = ch.epfl.data.dblab.legobase.storagemanager.Loader
 }
 object LoaderIRs extends Base {
   import K2DBScannerIRs._
   import ArrayIRs._
-  import REGIONRecordIRs._
-  import PARTSUPPRecordIRs._
-  import PARTRecordIRs._
-  import NATIONRecordIRs._
-  import SUPPLIERRecordIRs._
-  import LINEITEMRecordIRs._
-  import ORDERSRecordIRs._
-  import CUSTOMERRecordIRs._
   import OptimalStringIRs._
   // Type representation
   case object LoaderType extends TypeRep[Loader] {
@@ -106,36 +72,8 @@ object LoaderIRs extends Base {
     override def curriedConstructor = (copy _)
   }
 
-  case class LoaderLoadRegionObject() extends FunctionDef[Array[REGIONRecord]](None, "Loader.loadRegion", List(List())) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
-
-  case class LoaderLoadPartsuppObject() extends FunctionDef[Array[PARTSUPPRecord]](None, "Loader.loadPartsupp", List(List())) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
-
-  case class LoaderLoadPartObject() extends FunctionDef[Array[PARTRecord]](None, "Loader.loadPart", List(List())) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
-
-  case class LoaderLoadNationObject() extends FunctionDef[Array[NATIONRecord]](None, "Loader.loadNation", List(List())) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
-
-  case class LoaderLoadSupplierObject() extends FunctionDef[Array[SUPPLIERRecord]](None, "Loader.loadSupplier", List(List())) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
-
-  case class LoaderLoadLineitemObject() extends FunctionDef[Array[LINEITEMRecord]](None, "Loader.loadLineitem", List(List())) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
-
-  case class LoaderLoadOrdersObject() extends FunctionDef[Array[ORDERSRecord]](None, "Loader.loadOrders", List(List())) {
-    override def curriedConstructor = (x: Any) => copy()
-  }
-
-  case class LoaderLoadCustomerObject() extends FunctionDef[Array[CUSTOMERRecord]](None, "Loader.loadCustomer", List(List())) {
-    override def curriedConstructor = (x: Any) => copy()
+  case class LoaderLoadTableObject[R](table: Rep[Table])(implicit val typeR: TypeRep[R], val c: ClassTag[R]) extends FunctionDef[Array[R]](None, "Loader.loadTable", List(List(table)), List(typeR)) {
+    override def curriedConstructor = (copy[R] _)
   }
 
   type Loader = ch.epfl.data.dblab.legobase.storagemanager.Loader
@@ -149,126 +87,6 @@ trait LoaderImplementations extends LoaderOps { this: ch.epfl.data.dblab.legobas
       val NAME: this.Rep[Array[Byte]] = __newArray[Byte](size.$plus(unit(1)));
       s.next(NAME);
       __newOptimalString(byteArrayOps(NAME).filter(__lambda(((y: this.Rep[Byte]) => infix_$bang$eq(y, unit(0))))))
-    }
-  }
-  override def loaderLoadRegionObject(): Rep[Array[REGIONRecord]] = {
-    {
-      val file: this.Rep[String] = Loader.getFullPath(unit("region.tbl"));
-      val size: this.Rep[Int] = Loader.fileLineCount(file);
-      val s: this.Rep[ch.epfl.data.dblab.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
-      val hm: this.Rep[Array[ch.epfl.data.dblab.legobase.tpch.REGIONRecord]] = __newArray[ch.epfl.data.dblab.legobase.tpch.REGIONRecord](size);
-      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
-      __whileDo(s.hasNext(), {
-        val newEntry: this.Rep[ch.epfl.data.dblab.legobase.tpch.REGIONRecord] = __newREGIONRecord(s.next_int(), Loader.loadString(unit(25), s), Loader.loadString(unit(152), s));
-        hm.update(__readVar(i), newEntry);
-        __assign(i, __readVar(i).$plus(unit(1)))
-      });
-      hm
-    }
-  }
-  override def loaderLoadPartsuppObject(): Rep[Array[PARTSUPPRecord]] = {
-    {
-      val file: this.Rep[String] = Loader.getFullPath(unit("partsupp.tbl"));
-      val size: this.Rep[Int] = Loader.fileLineCount(file);
-      val s: this.Rep[ch.epfl.data.dblab.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
-      val hm: this.Rep[Array[ch.epfl.data.dblab.legobase.tpch.PARTSUPPRecord]] = __newArray[ch.epfl.data.dblab.legobase.tpch.PARTSUPPRecord](size);
-      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
-      __whileDo(s.hasNext(), {
-        val newEntry: this.Rep[ch.epfl.data.dblab.legobase.tpch.PARTSUPPRecord] = __newPARTSUPPRecord(s.next_int(), s.next_int(), s.next_int(), s.next_double(), Loader.loadString(unit(199), s));
-        hm.update(__readVar(i), newEntry);
-        __assign(i, __readVar(i).$plus(unit(1)))
-      });
-      hm
-    }
-  }
-  override def loaderLoadPartObject(): Rep[Array[PARTRecord]] = {
-    {
-      val file: this.Rep[String] = Loader.getFullPath(unit("part.tbl"));
-      val size: this.Rep[Int] = Loader.fileLineCount(file);
-      val s: this.Rep[ch.epfl.data.dblab.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
-      val hm: this.Rep[Array[ch.epfl.data.dblab.legobase.tpch.PARTRecord]] = __newArray[ch.epfl.data.dblab.legobase.tpch.PARTRecord](size);
-      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
-      __whileDo(s.hasNext(), {
-        val newEntry: this.Rep[ch.epfl.data.dblab.legobase.tpch.PARTRecord] = __newPARTRecord(s.next_int(), Loader.loadString(unit(55), s), Loader.loadString(unit(25), s), Loader.loadString(unit(10), s), Loader.loadString(unit(25), s), s.next_int(), Loader.loadString(unit(10), s), s.next_double(), Loader.loadString(unit(23), s));
-        hm.update(__readVar(i), newEntry);
-        __assign(i, __readVar(i).$plus(unit(1)))
-      });
-      hm
-    }
-  }
-  override def loaderLoadNationObject(): Rep[Array[NATIONRecord]] = {
-    {
-      val file: this.Rep[String] = Loader.getFullPath(unit("nation.tbl"));
-      val size: this.Rep[Int] = Loader.fileLineCount(file);
-      val s: this.Rep[ch.epfl.data.dblab.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
-      val hm: this.Rep[Array[ch.epfl.data.dblab.legobase.tpch.NATIONRecord]] = __newArray[ch.epfl.data.dblab.legobase.tpch.NATIONRecord](size);
-      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
-      __whileDo(s.hasNext(), {
-        val newEntry: this.Rep[ch.epfl.data.dblab.legobase.tpch.NATIONRecord] = __newNATIONRecord(s.next_int(), Loader.loadString(unit(25), s), s.next_int(), Loader.loadString(unit(152), s));
-        hm.update(__readVar(i), newEntry);
-        __assign(i, __readVar(i).$plus(unit(1)))
-      });
-      hm
-    }
-  }
-  override def loaderLoadSupplierObject(): Rep[Array[SUPPLIERRecord]] = {
-    {
-      val file: this.Rep[String] = Loader.getFullPath(unit("supplier.tbl"));
-      val size: this.Rep[Int] = Loader.fileLineCount(file);
-      val s: this.Rep[ch.epfl.data.dblab.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
-      val hm: this.Rep[Array[ch.epfl.data.dblab.legobase.tpch.SUPPLIERRecord]] = __newArray[ch.epfl.data.dblab.legobase.tpch.SUPPLIERRecord](size);
-      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
-      __whileDo(s.hasNext(), {
-        val newEntry: this.Rep[ch.epfl.data.dblab.legobase.tpch.SUPPLIERRecord] = __newSUPPLIERRecord(s.next_int(), Loader.loadString(unit(25), s), Loader.loadString(unit(40), s), s.next_int(), Loader.loadString(unit(15), s), s.next_double(), Loader.loadString(unit(101), s));
-        hm.update(__readVar(i), newEntry);
-        __assign(i, __readVar(i).$plus(unit(1)))
-      });
-      hm
-    }
-  }
-  override def loaderLoadLineitemObject(): Rep[Array[LINEITEMRecord]] = {
-    {
-      val file: this.Rep[String] = Loader.getFullPath(unit("lineitem.tbl"));
-      val size: this.Rep[Int] = Loader.fileLineCount(file);
-      val s: this.Rep[ch.epfl.data.dblab.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
-      val hm: this.Rep[Array[ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord]] = __newArray[ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord](size);
-      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
-      __whileDo(s.hasNext(), {
-        val newEntry: this.Rep[ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord] = __newLINEITEMRecord(s.next_int(), s.next_int(), s.next_int(), s.next_int(), s.next_int(), s.next_double(), s.next_double(), s.next_double(), s.next_char(), s.next_char(), s.next_date, s.next_date, s.next_date, Loader.loadString(unit(25), s), Loader.loadString(unit(10), s), Loader.loadString(unit(44), s));
-        hm.update(__readVar(i), newEntry);
-        __assign(i, __readVar(i).$plus(unit(1)))
-      });
-      hm
-    }
-  }
-  override def loaderLoadOrdersObject(): Rep[Array[ORDERSRecord]] = {
-    {
-      val file: this.Rep[String] = Loader.getFullPath(unit("orders.tbl"));
-      val size: this.Rep[Int] = Loader.fileLineCount(file);
-      val s: this.Rep[ch.epfl.data.dblab.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
-      val hm: this.Rep[Array[ch.epfl.data.dblab.legobase.tpch.ORDERSRecord]] = __newArray[ch.epfl.data.dblab.legobase.tpch.ORDERSRecord](size);
-      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
-      __whileDo(s.hasNext(), {
-        val newEntry: this.Rep[ch.epfl.data.dblab.legobase.tpch.ORDERSRecord] = __newORDERSRecord(s.next_int(), s.next_int(), s.next_char(), s.next_double(), s.next_date, Loader.loadString(unit(15), s), Loader.loadString(unit(15), s), s.next_int(), Loader.loadString(unit(79), s));
-        hm.update(__readVar(i), newEntry);
-        __assign(i, __readVar(i).$plus(unit(1)))
-      });
-      hm
-    }
-  }
-  override def loaderLoadCustomerObject(): Rep[Array[CUSTOMERRecord]] = {
-    {
-      val file: this.Rep[String] = Loader.getFullPath(unit("customer.tbl"));
-      val size: this.Rep[Int] = Loader.fileLineCount(file);
-      val s: this.Rep[ch.epfl.data.dblab.legobase.storagemanager.K2DBScanner] = __newK2DBScanner(file);
-      val hm: this.Rep[Array[ch.epfl.data.dblab.legobase.tpch.CUSTOMERRecord]] = __newArray[ch.epfl.data.dblab.legobase.tpch.CUSTOMERRecord](size);
-      var i: this.Var[Int] = __newVarNamed(unit(0), unit("i"));
-      __whileDo(s.hasNext(), {
-        val newEntry: this.Rep[ch.epfl.data.dblab.legobase.tpch.CUSTOMERRecord] = __newCUSTOMERRecord(s.next_int(), Loader.loadString(unit(25), s), Loader.loadString(unit(40), s), s.next_int(), Loader.loadString(unit(15), s), s.next_double(), Loader.loadString(unit(10), s), Loader.loadString(unit(117), s));
-        hm.update(__readVar(i), newEntry);
-        __assign(i, __readVar(i).$plus(unit(1)))
-      });
-      hm
     }
   }
 }
