@@ -107,15 +107,15 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
 
   object ConstraintExtract {
     def unapply[T](node: Def[T]): Option[(Rep[Unit], Constraint)] = node match {
-      case Int$less3(elemField, upperBound) if rangeElemField.exists(_._2 == elemField) =>
+      case Int$less1(elemField, upperBound) if rangeElemField.exists(_._2 == elemField) =>
         // System.out.println(s"< $upperBound")
         val rangeForeach = rangeElemField.find(_._2 == elemField).get._1
         Some((rangeForeach, LessThan(elemField, upperBound)))
-      case Int$greater$eq3(elemField, upperBound) if rangeElemField.exists(_._2 == elemField) =>
+      case Int$greater$eq1(elemField, upperBound) if rangeElemField.exists(_._2 == elemField) =>
         // System.out.println(s"< $upperBound")
         val rangeForeach = rangeElemField.find(_._2 == elemField).get._1
         Some((rangeForeach, GreaterThan(elemField, upperBound)))
-      case Int$greater3(elemField, lowerBound) if rangeElemFieldConstraints.exists(_._2.exists(c => c.bound == lowerBound)) =>
+      case Int$greater1(elemField, lowerBound) if rangeElemFieldConstraints.exists(_._2.exists(c => c.bound == lowerBound)) =>
         // System.out.println(s"> $lowerBound")
         val rangeForeach = rangeElemFieldConstraints.find(_._2.exists(c => c.bound == lowerBound)).get._1
         Some((rangeForeach, GreaterThan(elemField, lowerBound)))
