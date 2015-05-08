@@ -12,7 +12,7 @@ import scala.reflect.runtime.currentMirror
 import dblab.legobase.schema._
 
 /** A polymorphic embedding cake for manually inlining some methods of [[ch.epfl.data.dblab.legobase.storagemanager.Loader]] */
-trait InliningLoader extends storagemanager.LoaderImplementations { this: InliningLegoBase =>
+trait InliningLoader extends storagemanager.LoaderImplementations with schema.SchemaOps { this: InliningLegoBase =>
   override def loaderGetFullPathObject(fileName: Rep[String]): Rep[String] = fileName match {
     case Constant(name: String) => unit(Config.datapath + name)
     case _                      => throw new Exception(s"file name should be constant but here it is $fileName")
@@ -25,6 +25,8 @@ trait InliningLoader extends storagemanager.LoaderImplementations { this: Inlini
     val arr = __newArray[R](size)
     val ldr = __newK2DBScanner(unit(table.resourceLocator))
     val recordType = currentMirror.staticClass(c.runtimeClass.getName).asType.toTypeConstructor
+
+    allTables += table
 
     val classMirror = currentMirror.reflectClass(recordType.typeSymbol.asClass)
     val recordArguments = recordType.member(termNames.CONSTRUCTOR).asMethod.paramLists.head map {
