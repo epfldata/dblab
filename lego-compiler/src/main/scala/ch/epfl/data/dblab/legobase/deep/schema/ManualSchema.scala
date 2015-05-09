@@ -15,6 +15,9 @@ trait SchemaOps extends Base with TableOps {
   implicit val typeSchema: TypeRep[Schema] = SchemaIRs.SchemaType
 
   val allTables = scala.collection.mutable.Set[Table]()
+
+  // FIXME should not have Record postfix
+  def getTable(tableName: String): Option[Table] = allTables.find(table => table.name + "Record" == tableName)
 }
 
 object SchemaIRs extends Base {

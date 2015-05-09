@@ -39,26 +39,27 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
 
   val windowOpMaps = scala.collection.mutable.Set[Rep[Any]]()
 
-  val SIZE_ORDER = List("REGIONRecord", "NATIONRecord", "SUPPLIERRecord", "CUSTOMERRecord", "PARTRecord", "PARTSUPPRecord", "ORDERSRecord", "LINEITEMRecord")
+  // val SIZE_ORDER = List("REGIONRecord", "NATIONRecord", "SUPPLIERRecord", "CUSTOMERRecord", "PARTRecord", "PARTSUPPRecord", "ORDERSRecord", "LINEITEMRecord")
 
-  def getSizeOrder[T](tp: TypeRep[T]): Int = {
-    val name = tp.name
-    SIZE_ORDER.zipWithIndex.find(x => x._1 == name).get._2
-  }
+  // def getSizeOrder[T](tp: TypeRep[T]): Int = {
+  //   val name = tp.name
+  //   SIZE_ORDER.zipWithIndex.find(x => x._1 == name).get._2
+  // }
 
   val ONE_D_ENABLED = true
 
   val QUERY_18_DUMMY_FIELD = "DUM"
 
   def isPrimaryKey[T](tp: TypeRep[T], field: String): Boolean = (tp.name, field) match {
-    case ("REGIONRecord", "R_REGIONKEY") => true
-    case ("NATIONRecord", "N_NATIONKEY") => true
-    case ("SUPPLIERRecord", "S_SUPPKEY") => true
-    case ("CUSTOMERRecord", "C_CUSTKEY") => true
-    case ("PARTRecord", "P_PARTKEY") => true
-    // case ("PARTSUPPRecord", _) => false
-    case ("ORDERSRecord", "O_ORDERKEY") => true
-    // case ("LINEITEMRecord", "L_ORDERKEY") => true
+    // case ("REGIONRecord", "R_REGIONKEY") => true
+    // case ("NATIONRecord", "N_NATIONKEY") => true
+    // case ("SUPPLIERRecord", "S_SUPPKEY") => true
+    // case ("CUSTOMERRecord", "C_CUSTKEY") => true
+    // case ("PARTRecord", "P_PARTKEY") => true
+    // // case ("PARTSUPPRecord", _) => false
+    // case ("ORDERSRecord", "O_ORDERKEY") => true
+    // // case ("LINEITEMRecord", "L_ORDERKEY") => true
+    case (tableName, _) if getTable(tableName).exists(table => table.primaryKey.exists(pk => pk.attributes.forall(att => att.name == field))) => true
     case ("Double", QUERY_18_DUMMY_FIELD) if queryNumber == 18 => true
     case _ => false
   }
@@ -117,6 +118,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     })
     val res =
       transformProgram(node)
+    // System.out.println(s"[${scala.Console.BLUE}DEBUG${scala.Console.RESET}]${allTables.map(t => t.name -> t.primaryKey).mkString("\n")}")
+    // System.out.println(s"[${scala.Console.BLUE}DEBUG${scala.Console.RESET}]$allTables")
     System.out.println(s"[${scala.Console.BLUE}$transformedMapsCount${scala.Console.RESET}] MultiMaps partitioned!")
     res
   }
@@ -229,6 +232,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     }
   }
 
+  // TODO use Schema instead of manual cases for TPCH
   def numBuckets(partitionedObject: PartitionObject): Rep[Int] =
     (partitionedObject.tpe.name, partitionedObject.fieldFunc) match {
       case ("LINEITEMRecord", "L_ORDERKEY") => partitionedObject.arraySize
@@ -237,6 +241,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       case ("CUSTOMERRecord", "C_NATIONKEY") | ("SUPPLIERRecord", "S_NATIONKEY") => unit(25)
       case _ => partitionedObject.arraySize / unit(4)
     }
+
+  // TODO use Schema instead of manual cases for TPCH
   def numBucketsFull(partitionedObject: PartitionObject): Rep[Int] = partitionedObject.arr match {
     case Def(ArrayNew(l)) => partitionedObject.tpe.name match {
       case "ORDERSRecord" => l * unit(5)
@@ -244,6 +250,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     }
     case sym => throw new Exception(s"setting default value for $sym")
   }
+
+  // TODO use Schema instead of manual cases for TPCH
   def bucketSize(partitionedObject: PartitionObject): Rep[Int] = //unit(100)
     // numBuckets(partitionedObject)
     (partitionedObject.tpe.name, partitionedObject.fieldFunc) match {
@@ -274,6 +282,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
 
   def findBucketFunction(key: Rep[Int], partitionedObject: PartitionObject): Rep[Int] = key % partitionedObject.buckets
 
+  // TODO use Schema instead of manual cases for TPCH
   def par_array_foreach[T: TypeRep](partitionedObject: PartitionObject, key: Rep[Int], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
     if (partitionedObject.is1D) {
       val parArr = partitionedObject.parArr.asInstanceOf[Rep[Array[T]]]
