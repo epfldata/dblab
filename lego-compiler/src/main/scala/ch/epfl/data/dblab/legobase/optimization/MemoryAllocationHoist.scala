@@ -109,8 +109,8 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val queryNumber: 
   // An appropriate way of scheduling the code, removes the need for this part of the code
   def regenerateSize(s: Rep[Int]): Rep[Int] = s match {
     case c @ Constant(_)       => s
-    case Def(Int$div3(x, y))   => regenerateSize(x) / regenerateSize(y)
-    case Def(Int$times3(x, y)) => regenerateSize(x) * regenerateSize(y)
+    case Def(Int$div1(x, y))   => regenerateSize(x) / regenerateSize(y)
+    case Def(Int$times1(x, y)) => regenerateSize(x) * regenerateSize(y)
     case d @ Def(_)            => s
   }
 

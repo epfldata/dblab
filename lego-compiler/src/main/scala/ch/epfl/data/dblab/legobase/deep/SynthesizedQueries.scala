@@ -13,8 +13,8 @@ trait SynthesizedQueriesComponent extends tpch.QueriesImplementations { this: ch
 
   def Q12Synthesized(numRuns: Rep[Int], fields: Int): Rep[Unit] = {
     {
-      val lineitemTable: this.Rep[Array[ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord]] = Loader.loadLineitem();
-      val ordersTable: this.Rep[Array[ch.epfl.data.dblab.legobase.tpch.ORDERSRecord]] = Loader.loadOrders();
+      val lineitemTable: this.Rep[Array[ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord]] = TPCHLoader.loadLineitem();
+      val ordersTable: this.Rep[Array[ch.epfl.data.dblab.legobase.tpch.ORDERSRecord]] = TPCHLoader.loadOrders();
       intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val mail: this.Rep[ch.epfl.data.dblab.legobase.LBString] = GenericEngine.parseString(unit("MAIL"));
         val ship: this.Rep[ch.epfl.data.dblab.legobase.LBString] = GenericEngine.parseString(unit("SHIP"));

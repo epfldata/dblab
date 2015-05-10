@@ -65,7 +65,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
   def shouldRemoveUnusedFields = (settings.hashMapPartitioning ||
     (
       settings.hashMapLowering && (settings.setToArray || settings.setToLinkedList))) && !settings.noFieldRemoval
-  // pipeline += TreeDumper(false)
+  pipeline += TreeDumper(true)
   pipeline += LBLowering(shouldRemoveUnusedFields)
   pipeline += ParameterPromotion
   pipeline += DCE

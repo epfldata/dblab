@@ -24,7 +24,7 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
       val resultNode = block.stmts.find(stm => stm.sym == block.res).get.rhs
       resultNode match {
         case Boolean$amp$amp(Constant(true), block2) => RangeCondition.unapply(block2)
-        case Int$less3(Def(ReadVar(v)), size)        => Some(v -> size)
+        case Int$less1(Def(ReadVar(v)), size)        => Some(v -> size)
         case _                                       => None
       }
     }
@@ -32,7 +32,7 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
 
   object RangeStep {
     def unapply(block: Block[Unit]): Option[(Var[Int], Rep[Int])] = block.stmts.last.rhs match {
-      case Assign(v, Def(Int$plus4(Def(ReadVar(v2)), step))) if v == v2 => Some(v2 -> step)
+      case Assign(v, Def(Int$plus2(Def(ReadVar(v2)), step))) if v == v2 => Some(v2 -> step)
       case _ => None
     }
   }

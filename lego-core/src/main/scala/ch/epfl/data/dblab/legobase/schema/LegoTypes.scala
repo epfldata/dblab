@@ -18,3 +18,11 @@ case class VarCharType(maxLength: Int) extends PardisType[String] {
   val typeArguments = Nil
   val typeTag = tag[String]
 }
+
+case class TableType(schema: Schema, table: Table) extends PardisType[Table] {
+  def rebuild(newArguments: PardisType[_]*): PardisType[_] = new TableType(schema, table)
+  val name = table.name
+  val typeArguments = Nil
+  override val isRecord = true
+  val typeTag = throw new Exception("No type tag available for a TableType type representation.")
+}

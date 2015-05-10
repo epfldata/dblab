@@ -87,7 +87,12 @@ class HashEqualsFuncsToCTransformer(override val IR: LoweringLegoBase) extends R
     case Equals(e1, e2, isEqual) if __isRecord(e1) && __isRecord(e2) =>
       val ttp = (if (e1.tp.isRecord) e1.tp else e1.tp.typeArguments(0))
       val structDef = getStructDef(ttp).get
-      val res = structDef.fields.filter(_.name != "next").map(f => field(e1, f.name)(f.tpe) __== field(e2, f.name)(f.tpe)).reduce(_ && _)
+      val res = if (ttp.name == "Q10GRPRecord") {
+        field[Int](e1, "C_CUSTKEY") __== field[Int](e2, "C_CUSTKEY")
+      } else {
+        structDef.fields.filter(_.name != "next").map(f => field(e1, f.name)(f.tpe) __== field(e2, f.name)(f.tpe)).reduce(_ && _)
+      }
+      // val res = structDef.fields.filter(_.name != "next").map(f => field(e1, f.name)(f.tpe) __== field(e2, f.name)(f.tpe)).reduce(_ && _)
       // val eq = getStructEqualsFunc[T]()
       // val res = inlineFunction(eq, e1.asInstanceOf[Rep[T]], e2.asInstanceOf[Rep[T]])
       if (isEqual) res else !res
@@ -107,6 +112,8 @@ class HashEqualsFuncsToCTransformer(override val IR: LoweringLegoBase) extends R
       val structDef = getStructDef(ttp).get
       if (ttp.name == "Q9GRPRecord" && structDef.fields.forall(_.tpe == IntType)) {
         field[Int](e, "NATION") * unit(10000) + field[Int](e, "O_YEAR")
+      } else if (ttp.name == "Q10GRPRecord") {
+        field[Int](e, "C_CUSTKEY")
       } else {
         structDef.fields.map(f => infix_hashCode(field(e, f.name)(f.tpe))).reduce(_ + _)
       }
