@@ -16,27 +16,6 @@ trait InliningPush extends DeepDSL with sc.pardis.ir.InlineFunctions with tpch.Q
   with OperatorPartialEvaluation with ScanOpPartialEvaluation with SelectOpPartialEvaluation with AggOpPartialEvaluation with SortOpPartialEvaluation with MapOpPartialEvaluation with PrintOpPartialEvaluation with WindowOpPartialEvaluation with HashJoinOpPartialEvaluation with LeftHashSemiJoinOpPartialEvaluation with NestedLoopsJoinOpPartialEvaluation with SubquerySingleResultPartialEvaluation with ViewOpPartialEvaluation with HashJoinAntiPartialEvaluation with LeftOuterJoinOpPartialEvaluation
   with sc.pardis.deep.scalalib.Tuple2PartialEvaluation
   with OperatorDynamicDispatch with BaseOptimization with sc.pardis.deep.scalalib.ArrayOptimization { this: InliningLegoBase =>
-  override def findSymbol[T: TypeRep](d: Def[T]): Option[Sym[T]] =
-    scopeDefs.find(x => x.rhs == d && x.rhs.tp == d.tp).map(x => x.sym.asInstanceOf[Sym[T]])
-  override def infix_asInstanceOf[T: TypeRep](exp: Rep[Any]): Rep[T] = {
-    // System.out.println(s"asInstanceOf for $exp from ${exp.tp} to ${typeRep[T]}")
-    val res = exp match {
-      // case _ if exp.tp.isRecord      => exp.asInstanceOf[Rep[T]]
-      case Def(PardisCast(exp2))                     => infix_asInstanceOf[T](exp2)
-      case Def(ArrayNew(size)) if typeRep[T].isArray => __newArray(size)(typeRep[T].typeArguments(0)).asInstanceOf[Rep[T]]
-      case _ if exp.tp == typeRep[T]                 => exp.asInstanceOf[Rep[T]]
-      case _                                         => super.infix_asInstanceOf[T](exp)
-    }
-    // System.out.println(s"res $res")
-    res
-  }
-
-  // TODO move to SC
-  override def infix_==[A: TypeRep, B: TypeRep](a: Rep[A], b: Rep[B]): Rep[Boolean] = (a, b) match {
-    case (Constant(v1), Constant(v2)) => unit(v1 == v2)
-    case _                            => super.infix_==(a, b)
-  }
-
   override def printOp_Field_PrintQueryOutput[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = unit(Config.printQueryOutput)
   override def hashJoinOpNew2[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = hashJoinOpNew1[A, B, C](leftParent, rightParent, unit(""), unit(""), joinCond, leftHash, rightHash)
 }
