@@ -479,8 +479,8 @@ object Queries {
   def Q13(numRuns: Int) {
     val customerTable = loadCustomer()
     val ordersTable = loadOrders()
-    val aggArray = new Array[Q13IntRecord](customerTable.size)
-    for (i <- 0 until aggArray.size) {
+    val aggArray = new Array[Q13IntRecord](customerTable.length)
+    for (i <- 0 until customerTable.length) {
       aggArray(i) = new Q13IntRecord(0)
     }
     for (i <- 0 until numRuns) {
