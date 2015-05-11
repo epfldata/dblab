@@ -52,3 +52,6 @@ import sc.pardis.shallow.{ CaseClassRecord, OptimalString }
   val PS_PARTKEY: Int,
   val PS_SUPPKEY: Int,
   val PS_AVAILQTY: Int) extends CaseClassRecord
+
+@deep case class Q13IntRecord(
+  var count: Int) extends CaseClassRecord
