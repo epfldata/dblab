@@ -88,6 +88,14 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
       super.traverseDef(node)
       registerField(self.tp, f)
     }
+    case FieldGetter(self, f) if phase == FieldUsagePhase => {
+      super.traverseDef(node)
+      registerField(self.tp, f)
+    }
+    case FieldSetter(self, f, _) if phase == FieldUsagePhase => {
+      super.traverseDef(node)
+      registerField(self.tp, f)
+    }
     case ConcatDynamic(self, record2, leftAlias, rightAlias) if phase == FieldUsagePhase => {
       val Constant(la: String) = leftAlias
       val Constant(ra: String) = rightAlias

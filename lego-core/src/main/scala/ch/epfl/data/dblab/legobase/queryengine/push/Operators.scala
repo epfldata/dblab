@@ -191,7 +191,7 @@ object MultiMap {
   def next() { parent.next }
   def consume(tuple: Record) {
     mapFuncs foreach (mf => mf(tuple.asInstanceOf[A]))
-    child.consume(tuple)
+    if (child != null) child.consume(tuple)
   }
 }
 

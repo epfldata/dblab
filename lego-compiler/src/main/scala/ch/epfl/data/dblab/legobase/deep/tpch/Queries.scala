@@ -586,7 +586,10 @@ trait QueriesImplementations extends QueriesOps { this: ch.epfl.data.dblab.legob
   }
   override def queriesQ13Object(numRuns: Rep[Int]): Rep[Unit] = {
     {
+      val customerTable: this.Rep[Array[ch.epfl.data.dblab.legobase.tpch.CUSTOMERRecord]] = TPCHLoader.loadCustomer();
       val ordersTable: this.Rep[Array[ch.epfl.data.dblab.legobase.tpch.ORDERSRecord]] = TPCHLoader.loadOrders();
+      val aggArray: this.Rep[Array[ch.epfl.data.dblab.legobase.tpch.Q13IntRecord]] = __newArray[ch.epfl.data.dblab.legobase.tpch.Q13IntRecord](customerTable.length);
+      intWrapper(unit(0)).until(customerTable.length).foreach[Unit](__lambda(((i: this.Rep[Int]) => aggArray.update(i, __newQ13IntRecord(unit(0))))));
       intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
         val unusual: this.Rep[ch.epfl.data.dblab.legobase.LBString] = GenericEngine.parseString(unit("unusual"));
         val packages: this.Rep[ch.epfl.data.dblab.legobase.LBString] = GenericEngine.parseString(unit("packages"));
@@ -595,10 +598,16 @@ trait QueriesImplementations extends QueriesOps { this: ch.epfl.data.dblab.legob
           val idxp: this.Rep[Int] = x.O_COMMENT.indexOfSlice(packages, idxu);
           infix_$bang$eq(idxu, unit(-1)).$amp$amp(infix_$bang$eq(idxp, unit(-1))).unary_$bang
         })));
-        val aggOp1: this.Rep[ch.epfl.data.dblab.legobase.queryengine.push.AggOp[ch.epfl.data.dblab.legobase.tpch.ORDERSRecord, Int]] = __newAggOp(scanOrders, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.dblab.legobase.tpch.ORDERSRecord]) => x.O_CUSTKEY)))(__lambda(((t: this.Rep[ch.epfl.data.dblab.legobase.tpch.ORDERSRecord], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
-        val aggOp2: this.Rep[ch.epfl.data.dblab.legobase.queryengine.push.AggOp[ch.epfl.data.dblab.legobase.queryengine.AGGRecord[Int], Double]] = __newAggOp(aggOp1, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.dblab.legobase.queryengine.AGGRecord[Int]]) => x.aggs.apply(unit(0)))))(__lambda(((t: this.Rep[ch.epfl.data.dblab.legobase.queryengine.AGGRecord[Int]], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
-        val sortOp: this.Rep[ch.epfl.data.dblab.legobase.queryengine.push.SortOp[ch.epfl.data.dblab.legobase.queryengine.AGGRecord[Double]]] = __newSortOp(aggOp2)(__lambda(((x: this.Rep[ch.epfl.data.dblab.legobase.queryengine.AGGRecord[Double]], y: this.Rep[ch.epfl.data.dblab.legobase.queryengine.AGGRecord[Double]]) => __ifThenElse(x.aggs.apply(unit(0)).$less(y.aggs.apply(unit(0))), unit(1), __ifThenElse(x.aggs.apply(unit(0)).$greater(y.aggs.apply(unit(0))), unit(-1), __ifThenElse(x.key.$less(y.key), unit(1), __ifThenElse(x.key.$greater(y.key), unit(-1), unit(0))))))));
-        val po: this.Rep[ch.epfl.data.dblab.legobase.queryengine.push.PrintOp[ch.epfl.data.dblab.legobase.queryengine.AGGRecord[Double]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.dblab.legobase.queryengine.AGGRecord[Double]]) => printf(unit("%.0f|%.0f\n"), kv.key, kv.aggs.apply(unit(0))))), __lambda((() => unit(true))));
+        val aggOp1: this.Rep[ch.epfl.data.dblab.legobase.queryengine.push.MapOp[ch.epfl.data.dblab.legobase.tpch.ORDERSRecord]] = __newMapOp(scanOrders)(__lambda(((t: this.Rep[ch.epfl.data.dblab.legobase.tpch.ORDERSRecord]) => {
+          val ev$1: this.Rep[ch.epfl.data.dblab.legobase.tpch.Q13IntRecord] = aggArray.apply(t.O_CUSTKEY);
+          ev$1.count_$eq(ev$1.count.$plus(unit(1)))
+        })));
+        aggOp1.open();
+        aggOp1.next();
+        val aggScan: this.Rep[ch.epfl.data.dblab.legobase.queryengine.push.ScanOp[ch.epfl.data.dblab.legobase.tpch.Q13IntRecord]] = __newScanOp(aggArray);
+        val aggOp2: this.Rep[ch.epfl.data.dblab.legobase.queryengine.push.AggOp[ch.epfl.data.dblab.legobase.tpch.Q13IntRecord, Int]] = __newAggOp(aggScan, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.dblab.legobase.tpch.Q13IntRecord]) => x.count)))(__lambda(((t: this.Rep[ch.epfl.data.dblab.legobase.tpch.Q13IntRecord], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
+        val sortOp: this.Rep[ch.epfl.data.dblab.legobase.queryengine.push.SortOp[ch.epfl.data.dblab.legobase.queryengine.AGGRecord[Int]]] = __newSortOp(aggOp2)(__lambda(((x: this.Rep[ch.epfl.data.dblab.legobase.queryengine.AGGRecord[Int]], y: this.Rep[ch.epfl.data.dblab.legobase.queryengine.AGGRecord[Int]]) => __ifThenElse(x.aggs.apply(unit(0)).$less(y.aggs.apply(unit(0))), unit(1), __ifThenElse(x.aggs.apply(unit(0)).$greater(y.aggs.apply(unit(0))), unit(-1), __ifThenElse(x.key.$less(y.key), unit(1), __ifThenElse(x.key.$greater(y.key), unit(-1), unit(0))))))));
+        val po: this.Rep[ch.epfl.data.dblab.legobase.queryengine.push.PrintOp[ch.epfl.data.dblab.legobase.queryengine.AGGRecord[Int]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.dblab.legobase.queryengine.AGGRecord[Int]]) => printf(unit("%d|%.0f\n"), kv.key, kv.aggs.apply(unit(0))))), __lambda((() => unit(true))));
         po.open();
         po.next();
         unit(())

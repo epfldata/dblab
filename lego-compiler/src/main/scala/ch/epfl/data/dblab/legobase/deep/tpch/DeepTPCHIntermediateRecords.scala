@@ -1169,3 +1169,76 @@ trait Q20GRPRecordPartialEvaluation extends Q20GRPRecordComponent with BaseParti
   // Pure function partial evaluation
 }
 trait Q20GRPRecordComponent extends Q20GRPRecordOps with Q20GRPRecordImplicits {}
+trait Q13IntRecordOps extends Base {
+  // Type representation
+  val Q13IntRecordType = Q13IntRecordIRs.Q13IntRecordType
+  implicit val typeQ13IntRecord: TypeRep[Q13IntRecord] = Q13IntRecordType
+  implicit class Q13IntRecordRep(self: Rep[Q13IntRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q13IntRecordGetField(self, key)
+    def count_=(x$1: Rep[Int]): Rep[Unit] = q13IntRecord_Field_Count_$eq(self, x$1)
+    def count: Rep[Int] = q13IntRecord_Field_Count(self)
+  }
+  object Q13IntRecord {
+
+  }
+  // constructors
+  def __newQ13IntRecord(count: Rep[Int]): Rep[Q13IntRecord] = q13IntRecordNew(count)
+  // IR defs
+  val Q13IntRecordNew = Q13IntRecordIRs.Q13IntRecordNew
+  type Q13IntRecordNew = Q13IntRecordIRs.Q13IntRecordNew
+  val Q13IntRecordGetField = Q13IntRecordIRs.Q13IntRecordGetField
+  type Q13IntRecordGetField = Q13IntRecordIRs.Q13IntRecordGetField
+  val Q13IntRecord_Field_Count__eq = Q13IntRecordIRs.Q13IntRecord_Field_Count__eq
+  type Q13IntRecord_Field_Count__eq = Q13IntRecordIRs.Q13IntRecord_Field_Count__eq
+  val Q13IntRecord_Field_Count = Q13IntRecordIRs.Q13IntRecord_Field_Count
+  type Q13IntRecord_Field_Count = Q13IntRecordIRs.Q13IntRecord_Field_Count
+  // method definitions
+  def q13IntRecordNew(count: Rep[Int]): Rep[Q13IntRecord] = Q13IntRecordNew(count)
+  def q13IntRecordGetField(self: Rep[Q13IntRecord], key: Rep[String]): Rep[Option[Any]] = Q13IntRecordGetField(self, key)
+  def q13IntRecord_Field_Count_$eq(self: Rep[Q13IntRecord], x$1: Rep[Int]): Rep[Unit] = Q13IntRecord_Field_Count__eq(self, x$1)
+  def q13IntRecord_Field_Count(self: Rep[Q13IntRecord]): Rep[Int] = Q13IntRecord_Field_Count(self)
+  type Q13IntRecord = ch.epfl.data.dblab.legobase.tpch.Q13IntRecord
+}
+object Q13IntRecordIRs extends Base {
+  // Type representation
+  case object Q13IntRecordType extends TypeRep[Q13IntRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q13IntRecordType
+    val name = "Q13IntRecord"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q13IntRecord]
+  }
+  implicit val typeQ13IntRecord: TypeRep[Q13IntRecord] = Q13IntRecordType
+  // case classes
+  case class Q13IntRecordNew(count: Rep[Int]) extends ConstructorDef[Q13IntRecord](List(), "Q13IntRecord", List(List(count))) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class Q13IntRecordGetField(self: Rep[Q13IntRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q13IntRecord_Field_Count__eq(self: Rep[Q13IntRecord], x$1: Rep[Int]) extends FieldSetter[Int](self, "count", x$1) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q13IntRecord_Field_Count(self: Rep[Q13IntRecord]) extends FieldGetter[Int](self, "count") {
+    override def curriedConstructor = (copy _)
+  }
+
+  type Q13IntRecord = ch.epfl.data.dblab.legobase.tpch.Q13IntRecord
+}
+trait Q13IntRecordImplicits extends Q13IntRecordOps {
+  // Add implicit conversions here!
+}
+trait Q13IntRecordImplementations extends Q13IntRecordOps {
+
+}
+
+trait Q13IntRecordPartialEvaluation extends Q13IntRecordComponent with BasePartialEvaluation {
+  // Immutable field inlining 
+
+  // Mutable field inlining 
+  // Pure function partial evaluation
+}
+trait Q13IntRecordComponent extends Q13IntRecordOps with Q13IntRecordImplicits {}

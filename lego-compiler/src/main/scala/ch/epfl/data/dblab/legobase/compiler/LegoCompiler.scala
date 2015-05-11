@@ -65,8 +65,8 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
   def shouldRemoveUnusedFields = (settings.hashMapPartitioning ||
     (
       settings.hashMapLowering && (settings.setToArray || settings.setToLinkedList))) && !settings.noFieldRemoval
-  pipeline += TreeDumper(true)
   pipeline += LBLowering(shouldRemoveUnusedFields)
+  pipeline += TreeDumper(false)
   pipeline += ParameterPromotion
   pipeline += DCE
   pipeline += PartiallyEvaluate
@@ -92,7 +92,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
   }
 
   if (settings.stringCompression) pipeline += new StringDictionaryTransformer(DSL, number)
-  pipeline += TreeDumper(false)
+  // pipeline += TreeDumper(false)
 
   if (settings.hashMapLowering || settings.hashMapNoCollision) {
     if (settings.hashMapLowering) {
