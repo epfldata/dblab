@@ -161,8 +161,21 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
       ()
   }
 
+  /**
+   * Restricts the types that should be converted to columnar layout
+   * based on the pattern of the write accesses on their arrays.
+   * Maybe these contraints should be relaxed.
+   */
+  object UnacceptableUpdateValue {
+    def unapply[T](exp: Rep[T]): Option[Rep[T]] = exp match {
+      case Constant(null)  => Some(exp)
+      case Def(ReadVar(v)) => Some(exp)
+      case _               => None
+    }
+  }
+
   analysis += rule {
-    case ArrayUpdate(arr, idx, Constant(null)) =>
+    case ArrayUpdate(arr, _, UnacceptableUpdateValue(_)) =>
       val innerType = arr.tp.typeArguments(0)
       if (innerType.isRecord)
         forbiddenTypes += innerType
@@ -179,8 +192,8 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
 
   override def optimize[T: TypeRep](node: Block[T]): Block[T] = {
     traverseBlock(node)
-    System.out.println(s"CStore potentialTypes: ${potentialTypes}")
-    System.out.println(s"CStore forbiddenTypes: ${forbiddenTypes}")
+    // System.out.println(s"CStore potentialTypes: ${potentialTypes}")
+    // System.out.println(s"CStore forbiddenTypes: ${forbiddenTypes}")
     computeColumnarTypes()
     System.out.println(s">>>CStore columnarTypes: ${columnarTypes}<<<")
     transformProgram(node)
@@ -237,7 +250,11 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
         val struct = apply(value) match {
           case Def(s: Struct[Any]) => s
           case v =>
-            throw new Exception(s"Cannot handle column-store for `$arr($idx) = $v` with the element type of $elemType")
+            val nodeType = v match {
+              case Def(node) => s", node of type $node,"
+              case _         => ""
+            }
+            throw new Exception(s"Cannot handle column-store for `$arr($idx) = $v: $nodeType` with the element type of $elemType")
         }
         val v = struct.elems.find(e => e.name == el.name) match {
           case Some(e) => e.init.asInstanceOf[Rep[ColumnType]]
