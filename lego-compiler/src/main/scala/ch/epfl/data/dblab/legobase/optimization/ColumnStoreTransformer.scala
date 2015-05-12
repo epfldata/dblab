@@ -161,6 +161,14 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
       ()
   }
 
+  analysis += rule {
+    case ArrayUpdate(arr, idx, Constant(null)) =>
+      val innerType = arr.tp.typeArguments(0)
+      if (innerType.isRecord)
+        forbiddenTypes += innerType
+      ()
+  }
+
   def computeColumnarTypes(): Unit = {
     for (
       tpe <- (potentialTypes diff forbiddenTypes) if getTable(tpe.name).nonEmpty
@@ -226,8 +234,11 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
         //   case s @ Def(node) =>
         //     throw new Exception(s"Cannot handle the node $node for column store")
         // }
-        val Def(s) = apply(value)
-        val struct = s.asInstanceOf[PardisStruct[Any]]
+        val struct = apply(value) match {
+          case Def(s: Struct[Any]) => s
+          case v =>
+            throw new Exception(s"Cannot handle column-store for `$arr($idx) = $v` with the element type of $elemType")
+        }
         val v = struct.elems.find(e => e.name == el.name) match {
           case Some(e) => e.init.asInstanceOf[Rep[ColumnType]]
           case None if struct.tag.typeName.startsWith(ROW_OF_PREFIX) =>
