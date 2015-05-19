@@ -6,7 +6,7 @@ An efficient query engine in Scala programming language
 Installation
 ============
 
-LegoBase interpreter requeires SC Pardis Library (https://github.com/epfldata/sc) project `sc-pardis-library`.
+LegoBase interpreter requires SC Pardis Library (https://github.com/epfldata/sc) project `sc-pardis-library`.
 
 LegoBase compiler requires SC Pardis Compiler (https://github.com/epfldata/sc), C.Scala Library and C.Scala Compiler; 
 the projects `sc-pardis-compiler`, `sc-c-scala-lib`, and `sc-c-scala-deep`.
