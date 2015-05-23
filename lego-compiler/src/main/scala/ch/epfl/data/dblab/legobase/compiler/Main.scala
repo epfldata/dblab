@@ -2,6 +2,7 @@ package ch.epfl.data
 package dblab.legobase
 package compiler
 
+import schema._
 import deep._
 import prettyprinter._
 import optimization._
@@ -60,7 +61,7 @@ object Main extends LegoRunner {
    * @param query the input TPCH query together with the target language
    * @param scalingFactor the input scaling factor
    */
-  def executeQuery(query: String, scalingFactor: Double): Unit = {
+  def executeQuery(query: String, scalingFactor: Double, schema: Schema): Unit = {
     System.out.println(s"Running $query!")
 
     val context = new LoweringLegoBase {}
@@ -126,7 +127,7 @@ object Main extends LegoRunner {
 
     settings.validate(targetCode, queryNumber)
 
-    val compiler = new LegoCompiler(context, queryNumber, scalingFactor, targetCode, settings)
+    val compiler = new LegoCompiler(context, queryNumber, scalingFactor, targetCode, settings, schema)
     compiler.compile(queryFunction())
   }
 }

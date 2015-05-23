@@ -1,6 +1,8 @@
 package ch.epfl.data
 package dblab.legobase
 
+import tpch._
+import schema._
 import utils.Utilities._
 import java.io.PrintStream
 
@@ -22,7 +24,7 @@ trait LegoRunner {
    * @param query the input TPCH query (TODO should be generalized)
    * @param scalingFactor the scaling factor for TPCH queries (TODO should be generalize)
    */
-  def executeQuery(query: String, scalingFactor: Double): Unit
+  def executeQuery(query: String, scalingFactor: Double, schema: Schema): Unit
 
   /**
    * The starting point of a query runner which uses the arguments as its setting.
@@ -37,6 +39,8 @@ trait LegoRunner {
 
     val excludedQueries = Nil
 
+    val schema: Schema = TPCHSchema.getSchema(Config.datapath, Config.sf) // TODO-GEN : This should be given as argument
+
     val queries: scala.collection.immutable.List[String] =
       if (args.length >= 3 && args(2) == "testsuite-scala") (for (i <- 1 to 22 if !excludedQueries.contains(i)) yield "Q" + i).toList
       else if (args.length >= 3 && args(2) == "testsuite-c") (for (i <- 1 to 22 if !excludedQueries.contains(i)) yield "Q" + i + "_C").toList
@@ -44,7 +48,7 @@ trait LegoRunner {
     for (q <- queries) {
       currQuery = q
       Console.withOut(new PrintStream(getOutputName)) {
-        executeQuery(currQuery, args(1).toDouble)
+        executeQuery(currQuery, args(1).toDouble, schema)
         // Check results
         if (Config.checkResults) {
           if (Config.printQueryOutput == false) {

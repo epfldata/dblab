@@ -11,6 +11,8 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 
+// TODO there should be no need for queryNumber thanks to Schema information
+
 /**
  * A transformer for partitioning and indexing the arrays whenever possible.
  *

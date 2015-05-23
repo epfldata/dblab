@@ -1,6 +1,7 @@
 package ch.epfl.data
 package dblab.legobase
 
+import schema._
 import utils.Utilities._
 import java.io.PrintStream
 
@@ -16,7 +17,7 @@ object LegoInterpreter extends LegoRunner {
    * @param query the input TPCH query (TODO should be generalized)
    * @param scalingFactor the scaling factor for TPCH queries (TODO should be generalize)
    */
-  def executeQuery(query: String, scalingFactor: Double): Unit = query match {
+  def executeQuery(query: String, scalingFactor: Double, schema: Schema): Unit = query match {
     case "Q1"     => Q1(Config.numRuns)
     case "Q2"     => Q2(Config.numRuns)
     case "Q3"     => Q3(Config.numRuns)

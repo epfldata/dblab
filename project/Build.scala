@@ -15,7 +15,7 @@ object LegoBuild extends Build {
 
   lazy val defaults = Project.defaultSettings ++ formatSettings ++ Seq(
     resolvers +=  "OSSH" at "https://oss.sonatype.org/content/groups/public",
-    resolvers += Resolver.sonatypeRepo("snapshots"),
+    // resolvers += Resolver.sonatypeRepo("snapshots"),
 
     // add the library, reflect and the compiler as libraries
     libraryDependencies ++= Seq(

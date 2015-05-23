@@ -11,6 +11,8 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils._
 
+// TODO there should be no need to queryNumber and scalingFactor thanks to Schema
+
 /**
  * Transforms `malloc`s inside the part which runs the query into buffers which are allocated
  * at the loading time.

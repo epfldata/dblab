@@ -2,7 +2,7 @@ package ch.epfl.data
 package dblab.legobase
 package prettyprinter
 
-import sc.pardis.utils.Document
+import sc.pardis.utils.document._
 import sc.pardis.ir._
 import sc.pardis.prettyprinter._
 import scala.language.implicitConversions
@@ -35,7 +35,7 @@ import sc.pardis.shallow._
   /**
    * Returns the generated code that is put in the header
    */
-  override def getHeader: Document = s"""package ch.epfl.data
+  override def getHeader: Document = doc"""package ch.epfl.data
 package dblab.legobase
 
 $getShallowHeader
@@ -61,8 +61,8 @@ object OrderingFactory {
   /**
    * Returns the class/module signature code that the generated query is put inside that.
    */
-  override def getTraitSignature(): Document = s"""object $outputFileName extends LegoRunner {
-  def executeQuery(query: String, sf: Double): Unit = main()
+  override def getTraitSignature(): Document = doc"""object $outputFileName extends LegoRunner {
+  def executeQuery(query: String, sf: Double, schema: ch.epfl.data.dblab.legobase.schema.Schema): Unit = main()
   def main(args: Array[String]) {
     run(args)
   }

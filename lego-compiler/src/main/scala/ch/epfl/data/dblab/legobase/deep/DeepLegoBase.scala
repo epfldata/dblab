@@ -33,6 +33,7 @@ trait DeepDSL extends queryengine.push.OperatorsComponent
   with Q7GRPRecordComponent
   with Q9GRPRecordComponent
   with Q10GRPRecordComponent
+  with Q13IntRecordComponent
   with Q16GRPRecord1Component
   with Q16GRPRecord2Component
   with Q18GRPRecordComponent

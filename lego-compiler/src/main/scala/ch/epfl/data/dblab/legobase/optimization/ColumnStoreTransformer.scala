@@ -11,6 +11,8 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 
+// TODO there should be no need for queryNumber thanks to Schema information
+
 /**
  * Transforms row layout representation to columnar layout representation.
  *
@@ -59,7 +61,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
     case 7  => List("NATIONRecord")
     case 8  => List("LINEITEMRecord")
     case 9  => List("PARTRecord") //List("SUPPLIERRecord")
-    case 10 => List("CUSTOMERRecord")
+    case 10 => List("CUSTOMERRecord", "NATIONRecord")
     case 11 => List("SUPPLIERRecord")
     case 12 => List("LINEITEMRecord")
     case 13 => List("CUSTOMERRecord")
@@ -70,16 +72,19 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
     case 18 => List("LINEITEMRecord")
     case 19 => List("PARTRecord")
     case 20 => List("PARTSUPPRecord")
-    case 21 => List("SUPPLIERRecord")
+    case 21 => List("SUPPLIERRecord", "NATIONRecord")
     case 22 => List("CUSTOMERRecord")
     case _  => throw new Exception(s"Column store not supported yet for $queryNumber")
   }) //++ (if (settings.hashMapPartitioning) partitioned1D else Nil)
   // For some unknown reason, if we apply column store over these fields, the result will get incorrect.
 
-  def shouldBeColumnarized[T](tp: PardisType[T]): Boolean = tp.name match {
-    case name if typeList.contains(name) => true
-    case _                               => false
-  }
+  // def shouldBeColumnarized[T](tp: PardisType[T]): Boolean = tp.name match {
+  //   case name if typeList.contains(name) => true
+  //   case _                               => false
+  // }
+
+  def shouldBeColumnarized[T](tp: PardisType[T]): Boolean =
+    columnarTypes.contains(tp)
 
   def tableColumnStoreTag(oldTag: StructTags.StructTag[_]) =
     StructTags.ClassTag[Any](oldTag.typeName.columnStoreOf)
@@ -142,6 +147,58 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
   //     struct[Any](newElems: _*)(rTpe)
   // }
 
+  val potentialTypes = scala.collection.mutable.Set[TypeRep[_]]()
+  val forbiddenTypes = scala.collection.mutable.Set[TypeRep[_]]()
+  val columnarTypes = scala.collection.mutable.Set[TypeRep[_]]()
+
+  analysis += statement {
+    case sym -> ArrayNew(_) =>
+      val innerType = sym.tp.typeArguments(0)
+      if (innerType.isRecord)
+        potentialTypes += innerType
+      if (innerType.isArray && innerType.typeArguments(0).isRecord)
+        forbiddenTypes += innerType.typeArguments(0)
+      ()
+  }
+
+  /**
+   * Restricts the types that should be converted to columnar layout
+   * based on the pattern of the write accesses on their arrays.
+   * Maybe these contraints should be relaxed.
+   */
+  object UnacceptableUpdateValue {
+    def unapply[T](exp: Rep[T]): Option[Rep[T]] = exp match {
+      case Constant(null)  => Some(exp)
+      case Def(ReadVar(v)) => Some(exp)
+      case _               => None
+    }
+  }
+
+  analysis += rule {
+    case ArrayUpdate(arr, _, UnacceptableUpdateValue(_)) =>
+      val innerType = arr.tp.typeArguments(0)
+      if (innerType.isRecord)
+        forbiddenTypes += innerType
+      ()
+  }
+
+  def computeColumnarTypes(): Unit = {
+    for (
+      tpe <- (potentialTypes diff forbiddenTypes) if getTable(tpe.name).nonEmpty
+    ) {
+      columnarTypes += tpe
+    }
+  }
+
+  override def optimize[T: TypeRep](node: Block[T]): Block[T] = {
+    traverseBlock(node)
+    // System.out.println(s"CStore potentialTypes: ${potentialTypes}")
+    // System.out.println(s"CStore forbiddenTypes: ${forbiddenTypes}")
+    computeColumnarTypes()
+    System.out.println(s">>>CStore columnarTypes: ${columnarTypes}<<<")
+    transformProgram(node)
+  }
+
   rewrite += remove {
     case (ps @ PardisStruct(_, _, _)) if shouldBeColumnarized(ps.tp) =>
       ()
@@ -190,8 +247,15 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
         //   case s @ Def(node) =>
         //     throw new Exception(s"Cannot handle the node $node for column store")
         // }
-        val Def(s) = apply(value)
-        val struct = s.asInstanceOf[PardisStruct[Any]]
+        val struct = apply(value) match {
+          case Def(s: Struct[Any]) => s
+          case v =>
+            val nodeType = v match {
+              case Def(node) => s", node of type $node,"
+              case _         => ""
+            }
+            throw new Exception(s"Cannot handle column-store for `$arr($idx) = $v: $nodeType` with the element type of $elemType")
+        }
         val v = struct.elems.find(e => e.name == el.name) match {
           case Some(e) => e.init.asInstanceOf[Rep[ColumnType]]
           case None if struct.tag.typeName.startsWith(ROW_OF_PREFIX) =>
@@ -225,7 +289,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
     /* Nodes returning struct nodes -- convert them to a reference to column store */
     case sym -> (aa @ ArrayApply(arr, idx)) if shouldBeColumnarized(sym.tp) =>
       val tpe = sym.tp.asInstanceOf[RecordType[Any]]
-      val newElems = List(PardisStructArg(COLUMN_STORE_POINTER, false, apply(arr)), PardisStructArg(INDEX, false, idx))
+      val newElems = List(PardisStructArg(COLUMN_STORE_POINTER, false, apply(arr)), PardisStructArg(INDEX, false, apply(idx)))
       val rTpe = elemColumnStoreType(tpe.tag)
       struct[Any](newElems: _*)(rTpe)
   }

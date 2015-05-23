@@ -138,7 +138,7 @@ trait OperatorPartialEvaluation extends OperatorComponent with BasePartialEvalua
   }
 
   override def operator_Field_Child[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
-    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+    mutableFieldValues.get(self -> "child").getOrElse(unit(null)).asInstanceOf[Rep[Operator[Any]]]
   // Pure function partial evaluation
 }
 trait OperatorComponent extends OperatorOps with OperatorImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
@@ -321,7 +321,7 @@ trait ScanOpPartialEvaluation extends ScanOpComponent with BasePartialEvaluation
   }
 
   override def scanOp_Field_Child[A](self: Rep[ScanOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
-    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+    mutableFieldValues.get(self -> "child").getOrElse(unit(null)).asInstanceOf[Rep[Operator[Any]]]
   // Pure function partial evaluation
 }
 trait ScanOpComponent extends ScanOpOps with ScanOpImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
@@ -554,7 +554,7 @@ trait PrintOpPartialEvaluation extends PrintOpComponent with BasePartialEvaluati
   }
 
   override def printOp_Field_Child[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
-    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+    mutableFieldValues.get(self -> "child").getOrElse(unit(null)).asInstanceOf[Rep[Operator[Any]]]
   // Pure function partial evaluation
 }
 trait PrintOpComponent extends PrintOpOps with PrintOpImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
@@ -735,7 +735,7 @@ trait SelectOpPartialEvaluation extends SelectOpComponent with BasePartialEvalua
   }
 
   override def selectOp_Field_Child[A](self: Rep[SelectOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
-    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+    mutableFieldValues.get(self -> "child").getOrElse(unit(null)).asInstanceOf[Rep[Operator[Any]]]
   // Pure function partial evaluation
 }
 trait SelectOpComponent extends SelectOpOps with SelectOpImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
@@ -993,7 +993,7 @@ trait AggOpPartialEvaluation extends AggOpComponent with BasePartialEvaluation {
   }
 
   override def aggOp_Field_Child[A, B](self: Rep[AggOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[Any]] =
-    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+    mutableFieldValues.get(self -> "child").getOrElse(unit(null)).asInstanceOf[Rep[Operator[Any]]]
   // Pure function partial evaluation
 }
 trait AggOpComponent extends AggOpOps with AggOpImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
@@ -1157,7 +1157,7 @@ trait MapOpImplementations extends MapOpOps { this: ch.epfl.data.dblab.legobase.
   override def mapOpConsume[A](self: Rep[MapOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     {
       self.mapFuncs.foreach[Unit](__lambda(((mf: this.Rep[A => Unit]) => __app[A, Unit](mf).apply(infix_asInstanceOf[A](tuple)))));
-      self.child.consume(tuple)
+      __ifThenElse(infix_$bang$eq(self.child, unit(null)), self.child.consume(tuple), unit(()))
     }
   }
 }
@@ -1180,7 +1180,7 @@ trait MapOpPartialEvaluation extends MapOpComponent with BasePartialEvaluation {
   }
 
   override def mapOp_Field_Child[A](self: Rep[MapOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
-    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+    mutableFieldValues.get(self -> "child").getOrElse(unit(null)).asInstanceOf[Rep[Operator[Any]]]
   // Pure function partial evaluation
 }
 trait MapOpComponent extends MapOpOps with MapOpImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
@@ -1391,7 +1391,7 @@ trait SortOpPartialEvaluation extends SortOpComponent with BasePartialEvaluation
   }
 
   override def sortOp_Field_Child[A](self: Rep[SortOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
-    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+    mutableFieldValues.get(self -> "child").getOrElse(unit(null)).asInstanceOf[Rep[Operator[Any]]]
   // Pure function partial evaluation
 }
 trait SortOpComponent extends SortOpOps with SortOpImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
@@ -1750,7 +1750,7 @@ trait HashJoinOpPartialEvaluation extends HashJoinOpComponent with BasePartialEv
   }
 
   override def hashJoinOp_Field_Child[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record, C](self: Rep[HashJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] =
-    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+    mutableFieldValues.get(self -> "child").getOrElse(unit(null)).asInstanceOf[Rep[Operator[Any]]]
   // Pure function partial evaluation
 }
 trait HashJoinOpComponent extends HashJoinOpOps with HashJoinOpImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
@@ -1995,7 +1995,7 @@ trait WindowOpPartialEvaluation extends WindowOpComponent with BasePartialEvalua
   }
 
   override def windowOp_Field_Child[A, B, C](self: Rep[WindowOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] =
-    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+    mutableFieldValues.get(self -> "child").getOrElse(unit(null)).asInstanceOf[Rep[Operator[Any]]]
   // Pure function partial evaluation
 }
 trait WindowOpComponent extends WindowOpOps with WindowOpImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
@@ -2279,7 +2279,7 @@ trait LeftHashSemiJoinOpPartialEvaluation extends LeftHashSemiJoinOpComponent wi
   }
 
   override def leftHashSemiJoinOp_Field_Child[A, B, C](self: Rep[LeftHashSemiJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] =
-    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+    mutableFieldValues.get(self -> "child").getOrElse(unit(null)).asInstanceOf[Rep[Operator[Any]]]
   // Pure function partial evaluation
 }
 trait LeftHashSemiJoinOpComponent extends LeftHashSemiJoinOpOps with LeftHashSemiJoinOpImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
@@ -2554,7 +2554,7 @@ trait NestedLoopsJoinOpPartialEvaluation extends NestedLoopsJoinOpComponent with
   }
 
   override def nestedLoopsJoinOp_Field_Child[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[NestedLoopsJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[Any]] =
-    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+    mutableFieldValues.get(self -> "child").getOrElse(unit(null)).asInstanceOf[Rep[Operator[Any]]]
   // Pure function partial evaluation
 }
 trait NestedLoopsJoinOpComponent extends NestedLoopsJoinOpOps with NestedLoopsJoinOpImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
@@ -2750,7 +2750,7 @@ trait SubquerySingleResultPartialEvaluation extends SubquerySingleResultComponen
   }
 
   override def subquerySingleResult_Field_Child[A](self: Rep[SubquerySingleResult[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
-    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+    mutableFieldValues.get(self -> "child").getOrElse(unit(null)).asInstanceOf[Rep[Operator[Any]]]
   // Pure function partial evaluation
 }
 trait SubquerySingleResultComponent extends SubquerySingleResultOps with SubquerySingleResultImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
@@ -3050,7 +3050,7 @@ trait HashJoinAntiPartialEvaluation extends HashJoinAntiComponent with BaseParti
   }
 
   override def hashJoinAnti_Field_Child[A, B, C](self: Rep[HashJoinAnti[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] =
-    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+    mutableFieldValues.get(self -> "child").getOrElse(unit(null)).asInstanceOf[Rep[Operator[Any]]]
   // Pure function partial evaluation
 }
 trait HashJoinAntiComponent extends HashJoinAntiOps with HashJoinAntiImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
@@ -3297,7 +3297,7 @@ trait ViewOpPartialEvaluation extends ViewOpComponent with BasePartialEvaluation
   }
 
   override def viewOp_Field_Child[A](self: Rep[ViewOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[Any]] =
-    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+    mutableFieldValues.get(self -> "child").getOrElse(unit(null)).asInstanceOf[Rep[Operator[Any]]]
   // Pure function partial evaluation
 }
 trait ViewOpComponent extends ViewOpOps with ViewOpImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
@@ -3644,7 +3644,7 @@ trait LeftOuterJoinOpPartialEvaluation extends LeftOuterJoinOpComponent with Bas
   }
 
   override def leftOuterJoinOp_Field_Child[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record, C](self: Rep[LeftOuterJoinOp[A, B, C]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Operator[Any]] =
-    mutableFieldValues(self -> "child").asInstanceOf[Rep[Operator[Any]]]
+    mutableFieldValues.get(self -> "child").getOrElse(unit(null)).asInstanceOf[Rep[Operator[Any]]]
   // Pure function partial evaluation
 }
 trait LeftOuterJoinOpComponent extends LeftOuterJoinOpOps with LeftOuterJoinOpImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }

@@ -2,6 +2,7 @@ package ch.epfl.data
 package dblab.legobase
 package compiler
 
+import schema._
 import deep._
 import prettyprinter._
 import optimization._
@@ -24,7 +25,7 @@ import sc.pardis.compiler._
  * If this value is true the target code is C otherwise the target is Scala.
  * @param settings the compiler settings provided as command line arguments
  */
-class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor: Double, val generateCCode: Boolean, val settings: Settings) extends Compiler[LoweringLegoBase] {
+class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor: Double, val generateCCode: Boolean, val settings: Settings, val schema: Schema) extends Compiler[LoweringLegoBase] {
   def outputFile: String = {
     def queryWithNumber =
       if (settings.isSynthesized)
@@ -62,11 +63,11 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
    * If MultiMap is remaining without being converted to something which doesn't have set,
    * the field removal causes the program to be wrong
    */
-  def shouldRemoveUnusedFields = (settings.hashMapPartitioning ||
+  def shouldRemoveUnusedFields = true || (settings.hashMapPartitioning ||
     (
       settings.hashMapLowering && (settings.setToArray || settings.setToLinkedList))) && !settings.noFieldRemoval
-  pipeline += TreeDumper(true)
   pipeline += LBLowering(shouldRemoveUnusedFields)
+  pipeline += TreeDumper(false)
   pipeline += ParameterPromotion
   pipeline += DCE
   pipeline += PartiallyEvaluate
@@ -91,8 +92,8 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
     pipeline += DCE
   }
 
-  if (settings.stringCompression) pipeline += new StringDictionaryTransformer(DSL, number)
-  pipeline += TreeDumper(false)
+  if (settings.stringCompression) pipeline += new StringDictionaryTransformer(DSL, schema)
+  // pipeline += TreeDumper(false)
 
   if (settings.hashMapLowering || settings.hashMapNoCollision) {
     if (settings.hashMapLowering) {
