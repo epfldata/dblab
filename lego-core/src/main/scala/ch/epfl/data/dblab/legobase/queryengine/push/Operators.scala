@@ -30,7 +30,6 @@ class MetaInfo
   def consume(tuple: Record)
   @inline var child: Operator[Any] = null
   var stop = false
-  val expectedSize: Int
 }
 
 /**
@@ -49,7 +48,6 @@ object MultiMap {
  */
 @deep class ScanOp[A](table: Array[A]) extends Operator[A] {
   var i = 0
-  val expectedSize = table.length
   def open() {
     //printf("Scan operator commencing...\n")
   }
@@ -80,7 +78,6 @@ object MultiMap {
  */
 @deep class PrintOp[A](parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean) extends Operator[A] { self =>
   var numRows = (0)
-  val expectedSize = parent.expectedSize
   val printQueryOutput = Config.printQueryOutput // TODO: This should be moved to the config
   def open() {
     parent.child = self; parent.open;
@@ -115,7 +112,6 @@ object MultiMap {
  * the same effect as WHERE clause in SQL.
  */
 @deep class SelectOp[A](parent: Operator[A])(selectPred: A => Boolean) extends Operator[A] {
-  val expectedSize = parent.expectedSize // Assume 100% selectivity
   def open() {
     parent.child = this; parent.open
   }
@@ -142,7 +138,6 @@ object MultiMap {
   //   override def extractKey(value: AGGRecord[B]): B = value.key
   // }
 
-  val expectedSize = 33554432 // Assume a huge aggregation number just to be sure
   def open() {
     parent.child = this; parent.open
   }
@@ -185,7 +180,6 @@ object MultiMap {
  * @param mapFuncs the mapping functions used in the map operator
  */
 @deep class MapOp[A](parent: Operator[A])(mapFuncs: Function1[A, Unit]*) extends Operator[A] {
-  val expectedSize = parent.expectedSize
   def reset { parent.reset }
   def open() { parent.child = this; parent.open }
   def next() { parent.next }
@@ -203,7 +197,6 @@ object MultiMap {
  */
 @needs[TreeSet[Any]]
 @deep class SortOp[A](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends Operator[A] {
-  val expectedSize = parent.expectedSize
   val sortedTree = new TreeSet()(
     new Ordering[A] {
       def compare(o1: A, o2: A) = orderingFunc(o1, o2)
@@ -242,7 +235,6 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
   def this(leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) = this(leftParent, rightParent, "", "")(joinCond)(leftHash)(rightHash)
   @inline var mode: scala.Int = 0
 
-  val expectedSize = leftParent.expectedSize * 100 // Assume 1 tuple from the left side joins with 100 from the right
   val hm = MultiMap[C, A]
 
   def reset() {
@@ -290,8 +282,6 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
 @deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: Set[A] => C) extends Operator[WindowRecord[B, C]] {
   val hm = MultiMap[B, A]
 
-  val expectedSize = parent.expectedSize
-
   def open() {
     parent.child = this
     parent.open
@@ -328,7 +318,6 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
 class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   @inline var mode: scala.Int = 0
   val hm = MultiMap[C, B]
-  val expectedSize = leftParent.expectedSize
 
   def open() {
     leftParent.child = this
@@ -371,7 +360,6 @@ class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator
 class NestedLoopsJoinOp[A <: Record, B <: Record](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
   @inline var mode: scala.Int = 0
   var leftTuple = null.asInstanceOf[A]
-  val expectedSize = leftParent.expectedSize
 
   def open() {
     rightParent.child = this
@@ -403,7 +391,6 @@ class NestedLoopsJoinOp[A <: Record, B <: Record](leftParent: Operator[A], right
 @deep
 class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   var result = null.asInstanceOf[A]
-  val expectedSize = 1
   def open() {
     throw new Exception("PUSH ENGINE BUG:: Open function in SubqueryResult should never be called!!!!\n")
   }
@@ -440,7 +427,6 @@ class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
 class HashJoinAnti[A: Manifest, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   @inline var mode: scala.Int = 0
   val hm = MultiMap[C, A]
-  val expectedSize = leftParent.expectedSize * 100
 
   def open() {
     leftParent.child = this
@@ -485,8 +471,7 @@ class HashJoinAnti[A: Manifest, B, C](leftParent: Operator[A], rightParent: Oper
 @deep
 class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
   var size = 0
-  val table = new Array[A](parent.expectedSize)
-  val expectedSize = parent.expectedSize
+  val table = new Array[A](48000000) // TODO-GEN: make this from statistics
   @inline var initialized = false
 
   def open() {
@@ -529,7 +514,6 @@ class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Ope
   @inline var mode: scala.Int = 0
   val hm = MultiMap[C, B]
   val defaultB = Record.getDefaultRecord[B]()
-  val expectedSize = leftParent.expectedSize
   def open() = {
     leftParent.child = this
     leftParent.open

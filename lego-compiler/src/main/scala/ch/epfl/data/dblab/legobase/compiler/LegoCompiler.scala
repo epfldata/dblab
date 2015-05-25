@@ -63,9 +63,13 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
    * If MultiMap is remaining without being converted to something which doesn't have set,
    * the field removal causes the program to be wrong
    */
+  //TODO-GEN Remove gen and make string compression transformer dependant on removing unnecessary fields.
   def shouldRemoveUnusedFields = true || (settings.hashMapPartitioning ||
     (
       settings.hashMapLowering && (settings.setToArray || settings.setToLinkedList))) && !settings.noFieldRemoval
+
+  pipeline += new StatisticsEstimator(DSL, schema)
+
   pipeline += LBLowering(shouldRemoveUnusedFields)
   pipeline += TreeDumper(false)
   pipeline += ParameterPromotion
@@ -163,7 +167,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
   }
 
   if (settings.mallocHoisting) {
-    pipeline += new MemoryAllocationHoist(DSL, number, scalingFactor)
+    pipeline += new MemoryAllocationHoist(DSL, schema)
   }
 
   if (settings.stringOptimization) {

@@ -161,6 +161,26 @@ object TPCHSchema {
         folderLocation + "orders.tbl", (scalingFactor * 1500000).toLong)
     }
 
-    new Schema(List(lineItemTable, regionTable, nationTable, supplierTable, partTable, partsuppTable, customerTable, ordersTable))
+    val tpchSchema = new Schema(List(lineItemTable, regionTable, nationTable, supplierTable, partTable, partsuppTable, customerTable, ordersTable))
+
+    // Register all statistics here
+    tpchSchema.stats += "CARDINALITY_ORDERS" -> ordersTable.rowCount
+    tpchSchema.stats += "CARDINALITY_CUSTOMER" -> customerTable.rowCount
+    tpchSchema.stats += "CARDINALITY_LINEITEM" -> lineItemTable.rowCount
+    tpchSchema.stats += "CARDINALITY_SUPPLIER" -> supplierTable.rowCount
+    tpchSchema.stats += "CARDINALITY_PARTSUPP" -> partsuppTable.rowCount
+    tpchSchema.stats += "CARDINALITY_PART" -> partTable.rowCount
+    tpchSchema.stats += "CARDINALITY_NATION" -> nationTable.rowCount
+    tpchSchema.stats += "CARDINALITY_REGION" -> regionTable.rowCount
+    tpchSchema.stats += "SELECTIVITY_LINEITEM_ORDERS" -> 0.000006
+
+    tpchSchema.stats += "DISTINCT_L_SHIPMODE" -> 7
+    tpchSchema.stats += "DISTINCT_L_RETURNFLAG" -> 3
+    tpchSchema.stats += "DISTINCT_L_LINESTATUS" -> 2
+    tpchSchema.stats += "DISTINCT_N_NAME" -> 25
+    tpchSchema.stats += "DISTINCT_O_SHIPPRIORITY" -> 1
+    tpchSchema.stats += "DISTINCT_O_ORDERDATE" -> 365 * 7 // 7-whole years
+
+    tpchSchema
   }
 }

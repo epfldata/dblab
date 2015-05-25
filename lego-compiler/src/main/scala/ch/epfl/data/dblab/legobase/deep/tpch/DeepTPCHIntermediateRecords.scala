@@ -10,103 +10,103 @@ import pardis.deep._
 import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
-trait GroupByClassOps extends Base {
+trait Q1GRPRecordOps extends Base {
   // Type representation
-  val GroupByClassType = GroupByClassIRs.GroupByClassType
-  implicit val typeGroupByClass: TypeRep[GroupByClass] = GroupByClassType
-  implicit class GroupByClassRep(self: Rep[GroupByClass]) {
-    def getField(key: Rep[String]): Rep[Option[Any]] = groupByClassGetField(self, key)
-    def L_LINESTATUS: Rep[Char] = groupByClass_Field_L_LINESTATUS(self)
-    def L_RETURNFLAG: Rep[Char] = groupByClass_Field_L_RETURNFLAG(self)
+  val Q1GRPRecordType = Q1GRPRecordIRs.Q1GRPRecordType
+  implicit val typeQ1GRPRecord: TypeRep[Q1GRPRecord] = Q1GRPRecordType
+  implicit class Q1GRPRecordRep(self: Rep[Q1GRPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q1GRPRecordGetField(self, key)
+    def L_LINESTATUS: Rep[Char] = q1GRPRecord_Field_L_LINESTATUS(self)
+    def L_RETURNFLAG: Rep[Char] = q1GRPRecord_Field_L_RETURNFLAG(self)
   }
-  object GroupByClass {
+  object Q1GRPRecord {
 
   }
   // constructors
-  def __newGroupByClass(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]): Rep[GroupByClass] = groupByClassNew(L_RETURNFLAG, L_LINESTATUS)
+  def __newQ1GRPRecord(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]): Rep[Q1GRPRecord] = q1GRPRecordNew(L_RETURNFLAG, L_LINESTATUS)
   // IR defs
-  val GroupByClassNew = GroupByClassIRs.GroupByClassNew
-  type GroupByClassNew = GroupByClassIRs.GroupByClassNew
-  val GroupByClassGetField = GroupByClassIRs.GroupByClassGetField
-  type GroupByClassGetField = GroupByClassIRs.GroupByClassGetField
-  val GroupByClass_Field_L_LINESTATUS = GroupByClassIRs.GroupByClass_Field_L_LINESTATUS
-  type GroupByClass_Field_L_LINESTATUS = GroupByClassIRs.GroupByClass_Field_L_LINESTATUS
-  val GroupByClass_Field_L_RETURNFLAG = GroupByClassIRs.GroupByClass_Field_L_RETURNFLAG
-  type GroupByClass_Field_L_RETURNFLAG = GroupByClassIRs.GroupByClass_Field_L_RETURNFLAG
+  val Q1GRPRecordNew = Q1GRPRecordIRs.Q1GRPRecordNew
+  type Q1GRPRecordNew = Q1GRPRecordIRs.Q1GRPRecordNew
+  val Q1GRPRecordGetField = Q1GRPRecordIRs.Q1GRPRecordGetField
+  type Q1GRPRecordGetField = Q1GRPRecordIRs.Q1GRPRecordGetField
+  val Q1GRPRecord_Field_L_LINESTATUS = Q1GRPRecordIRs.Q1GRPRecord_Field_L_LINESTATUS
+  type Q1GRPRecord_Field_L_LINESTATUS = Q1GRPRecordIRs.Q1GRPRecord_Field_L_LINESTATUS
+  val Q1GRPRecord_Field_L_RETURNFLAG = Q1GRPRecordIRs.Q1GRPRecord_Field_L_RETURNFLAG
+  type Q1GRPRecord_Field_L_RETURNFLAG = Q1GRPRecordIRs.Q1GRPRecord_Field_L_RETURNFLAG
   // method definitions
-  def groupByClassNew(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]): Rep[GroupByClass] = GroupByClassNew(L_RETURNFLAG, L_LINESTATUS)
-  def groupByClassGetField(self: Rep[GroupByClass], key: Rep[String]): Rep[Option[Any]] = GroupByClassGetField(self, key)
-  def groupByClass_Field_L_LINESTATUS(self: Rep[GroupByClass]): Rep[Char] = GroupByClass_Field_L_LINESTATUS(self)
-  def groupByClass_Field_L_RETURNFLAG(self: Rep[GroupByClass]): Rep[Char] = GroupByClass_Field_L_RETURNFLAG(self)
-  type GroupByClass = ch.epfl.data.dblab.legobase.tpch.GroupByClass
+  def q1GRPRecordNew(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]): Rep[Q1GRPRecord] = Q1GRPRecordNew(L_RETURNFLAG, L_LINESTATUS)
+  def q1GRPRecordGetField(self: Rep[Q1GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q1GRPRecordGetField(self, key)
+  def q1GRPRecord_Field_L_LINESTATUS(self: Rep[Q1GRPRecord]): Rep[Char] = Q1GRPRecord_Field_L_LINESTATUS(self)
+  def q1GRPRecord_Field_L_RETURNFLAG(self: Rep[Q1GRPRecord]): Rep[Char] = Q1GRPRecord_Field_L_RETURNFLAG(self)
+  type Q1GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q1GRPRecord
 }
-object GroupByClassIRs extends Base {
+object Q1GRPRecordIRs extends Base {
   // Type representation
-  case object GroupByClassType extends TypeRep[GroupByClass] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GroupByClassType
-    val name = "GroupByClass"
+  case object Q1GRPRecordType extends TypeRep[Q1GRPRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q1GRPRecordType
+    val name = "Q1GRPRecord"
     val typeArguments = Nil
     override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[GroupByClass]
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q1GRPRecord]
   }
-  implicit val typeGroupByClass: TypeRep[GroupByClass] = GroupByClassType
+  implicit val typeQ1GRPRecord: TypeRep[Q1GRPRecord] = Q1GRPRecordType
   // case classes
-  case class GroupByClassNew(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]) extends ConstructorDef[GroupByClass](List(), "GroupByClass", List(List(L_RETURNFLAG, L_LINESTATUS))) {
+  case class Q1GRPRecordNew(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]) extends ConstructorDef[Q1GRPRecord](List(), "Q1GRPRecord", List(List(L_RETURNFLAG, L_LINESTATUS))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GroupByClassGetField(self: Rep[GroupByClass], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+  case class Q1GRPRecordGetField(self: Rep[Q1GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
     override def curriedConstructor = (copy _).curried
   }
 
-  case class GroupByClass_Field_L_LINESTATUS(self: Rep[GroupByClass]) extends FieldDef[Char](self, "L_LINESTATUS") {
+  case class Q1GRPRecord_Field_L_LINESTATUS(self: Rep[Q1GRPRecord]) extends FieldDef[Char](self, "L_LINESTATUS") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
     override def partialEvaluate(children: Any*): Char = {
-      val self = children(0).asInstanceOf[GroupByClass]
+      val self = children(0).asInstanceOf[Q1GRPRecord]
       self.L_LINESTATUS
     }
     override def partialEvaluable: Boolean = true
 
   }
 
-  case class GroupByClass_Field_L_RETURNFLAG(self: Rep[GroupByClass]) extends FieldDef[Char](self, "L_RETURNFLAG") {
+  case class Q1GRPRecord_Field_L_RETURNFLAG(self: Rep[Q1GRPRecord]) extends FieldDef[Char](self, "L_RETURNFLAG") {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
     override def partialEvaluate(children: Any*): Char = {
-      val self = children(0).asInstanceOf[GroupByClass]
+      val self = children(0).asInstanceOf[Q1GRPRecord]
       self.L_RETURNFLAG
     }
     override def partialEvaluable: Boolean = true
 
   }
 
-  type GroupByClass = ch.epfl.data.dblab.legobase.tpch.GroupByClass
+  type Q1GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q1GRPRecord
 }
-trait GroupByClassImplicits extends GroupByClassOps {
+trait Q1GRPRecordImplicits extends Q1GRPRecordOps {
   // Add implicit conversions here!
 }
-trait GroupByClassImplementations extends GroupByClassOps {
+trait Q1GRPRecordImplementations extends Q1GRPRecordOps {
 
 }
 
-trait GroupByClassPartialEvaluation extends GroupByClassComponent with BasePartialEvaluation {
+trait Q1GRPRecordPartialEvaluation extends Q1GRPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
-  override def groupByClass_Field_L_LINESTATUS(self: Rep[GroupByClass]): Rep[Char] = self match {
-    case Def(node: GroupByClassNew) => node.L_LINESTATUS
-    case _                          => super.groupByClass_Field_L_LINESTATUS(self)
+  override def q1GRPRecord_Field_L_LINESTATUS(self: Rep[Q1GRPRecord]): Rep[Char] = self match {
+    case Def(node: Q1GRPRecordNew) => node.L_LINESTATUS
+    case _                         => super.q1GRPRecord_Field_L_LINESTATUS(self)
   }
-  override def groupByClass_Field_L_RETURNFLAG(self: Rep[GroupByClass]): Rep[Char] = self match {
-    case Def(node: GroupByClassNew) => node.L_RETURNFLAG
-    case _                          => super.groupByClass_Field_L_RETURNFLAG(self)
+  override def q1GRPRecord_Field_L_RETURNFLAG(self: Rep[Q1GRPRecord]): Rep[Char] = self match {
+    case Def(node: Q1GRPRecordNew) => node.L_RETURNFLAG
+    case _                         => super.q1GRPRecord_Field_L_RETURNFLAG(self)
   }
 
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait GroupByClassComponent extends GroupByClassOps with GroupByClassImplicits {}
+trait Q1GRPRecordComponent extends Q1GRPRecordOps with Q1GRPRecordImplicits {}
 trait Q3GRPRecordOps extends Base {
   // Type representation
   val Q3GRPRecordType = Q3GRPRecordIRs.Q3GRPRecordType
@@ -638,6 +638,79 @@ trait Q10GRPRecordPartialEvaluation extends Q10GRPRecordComponent with BaseParti
   // Pure function partial evaluation
 }
 trait Q10GRPRecordComponent extends Q10GRPRecordOps with Q10GRPRecordImplicits {}
+trait Q13IntRecordOps extends Base {
+  // Type representation
+  val Q13IntRecordType = Q13IntRecordIRs.Q13IntRecordType
+  implicit val typeQ13IntRecord: TypeRep[Q13IntRecord] = Q13IntRecordType
+  implicit class Q13IntRecordRep(self: Rep[Q13IntRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q13IntRecordGetField(self, key)
+    def count_=(x$1: Rep[Int]): Rep[Unit] = q13IntRecord_Field_Count_$eq(self, x$1)
+    def count: Rep[Int] = q13IntRecord_Field_Count(self)
+  }
+  object Q13IntRecord {
+
+  }
+  // constructors
+  def __newQ13IntRecord(count: Rep[Int]): Rep[Q13IntRecord] = q13IntRecordNew(count)
+  // IR defs
+  val Q13IntRecordNew = Q13IntRecordIRs.Q13IntRecordNew
+  type Q13IntRecordNew = Q13IntRecordIRs.Q13IntRecordNew
+  val Q13IntRecordGetField = Q13IntRecordIRs.Q13IntRecordGetField
+  type Q13IntRecordGetField = Q13IntRecordIRs.Q13IntRecordGetField
+  val Q13IntRecord_Field_Count__eq = Q13IntRecordIRs.Q13IntRecord_Field_Count__eq
+  type Q13IntRecord_Field_Count__eq = Q13IntRecordIRs.Q13IntRecord_Field_Count__eq
+  val Q13IntRecord_Field_Count = Q13IntRecordIRs.Q13IntRecord_Field_Count
+  type Q13IntRecord_Field_Count = Q13IntRecordIRs.Q13IntRecord_Field_Count
+  // method definitions
+  def q13IntRecordNew(count: Rep[Int]): Rep[Q13IntRecord] = Q13IntRecordNew(count)
+  def q13IntRecordGetField(self: Rep[Q13IntRecord], key: Rep[String]): Rep[Option[Any]] = Q13IntRecordGetField(self, key)
+  def q13IntRecord_Field_Count_$eq(self: Rep[Q13IntRecord], x$1: Rep[Int]): Rep[Unit] = Q13IntRecord_Field_Count__eq(self, x$1)
+  def q13IntRecord_Field_Count(self: Rep[Q13IntRecord]): Rep[Int] = Q13IntRecord_Field_Count(self)
+  type Q13IntRecord = ch.epfl.data.dblab.legobase.tpch.Q13IntRecord
+}
+object Q13IntRecordIRs extends Base {
+  // Type representation
+  case object Q13IntRecordType extends TypeRep[Q13IntRecord] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q13IntRecordType
+    val name = "Q13IntRecord"
+    val typeArguments = Nil
+    override val isRecord = true
+    val typeTag = scala.reflect.runtime.universe.typeTag[Q13IntRecord]
+  }
+  implicit val typeQ13IntRecord: TypeRep[Q13IntRecord] = Q13IntRecordType
+  // case classes
+  case class Q13IntRecordNew(count: Rep[Int]) extends ConstructorDef[Q13IntRecord](List(), "Q13IntRecord", List(List(count))) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class Q13IntRecordGetField(self: Rep[Q13IntRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q13IntRecord_Field_Count__eq(self: Rep[Q13IntRecord], x$1: Rep[Int]) extends FieldSetter[Int](self, "count", x$1) {
+    override def curriedConstructor = (copy _).curried
+  }
+
+  case class Q13IntRecord_Field_Count(self: Rep[Q13IntRecord]) extends FieldGetter[Int](self, "count") {
+    override def curriedConstructor = (copy _)
+  }
+
+  type Q13IntRecord = ch.epfl.data.dblab.legobase.tpch.Q13IntRecord
+}
+trait Q13IntRecordImplicits extends Q13IntRecordOps {
+  // Add implicit conversions here!
+}
+trait Q13IntRecordImplementations extends Q13IntRecordOps {
+
+}
+
+trait Q13IntRecordPartialEvaluation extends Q13IntRecordComponent with BasePartialEvaluation {
+  // Immutable field inlining 
+
+  // Mutable field inlining 
+  // Pure function partial evaluation
+}
+trait Q13IntRecordComponent extends Q13IntRecordOps with Q13IntRecordImplicits {}
 trait Q16GRPRecord1Ops extends Base with OptimalStringOps {
   // Type representation
   val Q16GRPRecord1Type = Q16GRPRecord1IRs.Q16GRPRecord1Type
@@ -1169,76 +1242,3 @@ trait Q20GRPRecordPartialEvaluation extends Q20GRPRecordComponent with BaseParti
   // Pure function partial evaluation
 }
 trait Q20GRPRecordComponent extends Q20GRPRecordOps with Q20GRPRecordImplicits {}
-trait Q13IntRecordOps extends Base {
-  // Type representation
-  val Q13IntRecordType = Q13IntRecordIRs.Q13IntRecordType
-  implicit val typeQ13IntRecord: TypeRep[Q13IntRecord] = Q13IntRecordType
-  implicit class Q13IntRecordRep(self: Rep[Q13IntRecord]) {
-    def getField(key: Rep[String]): Rep[Option[Any]] = q13IntRecordGetField(self, key)
-    def count_=(x$1: Rep[Int]): Rep[Unit] = q13IntRecord_Field_Count_$eq(self, x$1)
-    def count: Rep[Int] = q13IntRecord_Field_Count(self)
-  }
-  object Q13IntRecord {
-
-  }
-  // constructors
-  def __newQ13IntRecord(count: Rep[Int]): Rep[Q13IntRecord] = q13IntRecordNew(count)
-  // IR defs
-  val Q13IntRecordNew = Q13IntRecordIRs.Q13IntRecordNew
-  type Q13IntRecordNew = Q13IntRecordIRs.Q13IntRecordNew
-  val Q13IntRecordGetField = Q13IntRecordIRs.Q13IntRecordGetField
-  type Q13IntRecordGetField = Q13IntRecordIRs.Q13IntRecordGetField
-  val Q13IntRecord_Field_Count__eq = Q13IntRecordIRs.Q13IntRecord_Field_Count__eq
-  type Q13IntRecord_Field_Count__eq = Q13IntRecordIRs.Q13IntRecord_Field_Count__eq
-  val Q13IntRecord_Field_Count = Q13IntRecordIRs.Q13IntRecord_Field_Count
-  type Q13IntRecord_Field_Count = Q13IntRecordIRs.Q13IntRecord_Field_Count
-  // method definitions
-  def q13IntRecordNew(count: Rep[Int]): Rep[Q13IntRecord] = Q13IntRecordNew(count)
-  def q13IntRecordGetField(self: Rep[Q13IntRecord], key: Rep[String]): Rep[Option[Any]] = Q13IntRecordGetField(self, key)
-  def q13IntRecord_Field_Count_$eq(self: Rep[Q13IntRecord], x$1: Rep[Int]): Rep[Unit] = Q13IntRecord_Field_Count__eq(self, x$1)
-  def q13IntRecord_Field_Count(self: Rep[Q13IntRecord]): Rep[Int] = Q13IntRecord_Field_Count(self)
-  type Q13IntRecord = ch.epfl.data.dblab.legobase.tpch.Q13IntRecord
-}
-object Q13IntRecordIRs extends Base {
-  // Type representation
-  case object Q13IntRecordType extends TypeRep[Q13IntRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q13IntRecordType
-    val name = "Q13IntRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q13IntRecord]
-  }
-  implicit val typeQ13IntRecord: TypeRep[Q13IntRecord] = Q13IntRecordType
-  // case classes
-  case class Q13IntRecordNew(count: Rep[Int]) extends ConstructorDef[Q13IntRecord](List(), "Q13IntRecord", List(List(count))) {
-    override def curriedConstructor = (copy _)
-  }
-
-  case class Q13IntRecordGetField(self: Rep[Q13IntRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
-    override def curriedConstructor = (copy _).curried
-  }
-
-  case class Q13IntRecord_Field_Count__eq(self: Rep[Q13IntRecord], x$1: Rep[Int]) extends FieldSetter[Int](self, "count", x$1) {
-    override def curriedConstructor = (copy _).curried
-  }
-
-  case class Q13IntRecord_Field_Count(self: Rep[Q13IntRecord]) extends FieldGetter[Int](self, "count") {
-    override def curriedConstructor = (copy _)
-  }
-
-  type Q13IntRecord = ch.epfl.data.dblab.legobase.tpch.Q13IntRecord
-}
-trait Q13IntRecordImplicits extends Q13IntRecordOps {
-  // Add implicit conversions here!
-}
-trait Q13IntRecordImplementations extends Q13IntRecordOps {
-
-}
-
-trait Q13IntRecordPartialEvaluation extends Q13IntRecordComponent with BasePartialEvaluation {
-  // Immutable field inlining 
-
-  // Mutable field inlining 
-  // Pure function partial evaluation
-}
-trait Q13IntRecordComponent extends Q13IntRecordOps with Q13IntRecordImplicits {}

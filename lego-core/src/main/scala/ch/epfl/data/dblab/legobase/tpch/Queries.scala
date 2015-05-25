@@ -9,7 +9,7 @@ import queryengine._
  */
 // import queryengine.volcano._
 import queryengine.push._
-import sc.pardis.annotations.{ deep, metadeep, dontLift }
+import sc.pardis.annotations.{ deep, metadeep, dontLift, dontInline }
 import tpch.TPCHLoader._
 import GenericEngine._
 // import queryengine.TPCHRelations._
@@ -36,7 +36,7 @@ object Queries {
       runQuery {
         val constantDate: Int = parseDate("1998-09-02")
         val lineitemScan = new SelectOp(new ScanOp(lineitemTable))(x => x.L_SHIPDATE <= constantDate)
-        val aggOp = new AggOp(lineitemScan, 9)(x => new GroupByClass(
+        val aggOp = new AggOp(lineitemScan, 9)(x => new Q1GRPRecord(
           x.L_RETURNFLAG, x.L_LINESTATUS))((t, currAgg) => { t.L_DISCOUNT + currAgg },
           (t, currAgg) => { t.L_QUANTITY + currAgg },
           (t, currAgg) => { t.L_EXTENDEDPRICE + currAgg },
