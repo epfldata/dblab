@@ -39,15 +39,22 @@ object Compressed extends Constraint
 // TODO-GEN: Move this to its own file
 case class Statistics() {
   private val statsMap = new scala.collection.mutable.HashMap[String, Double]()
-  private def format(name: String) = name.replaceAll("Record", "").replaceAll("Type", "").replaceAll("\\(", "_").replaceAll("\\)", "").toUpperCase()
+  private def format(name: String) = name.replaceAll("Record", "").replaceAll("Type", "").replaceAll("\\(", "_").replaceAll("\\)", "").replaceAll(",", "_").toUpperCase()
 
   def +=(nameAndValue: (String, Double)) = statsMap += (format(nameAndValue._1) -> nameAndValue._2)
   def +=(name: String, value: Double) = statsMap += (format(name) -> value)
   def mkString(delim: String) = statsMap.mkString(delim)
   def apply(statName: String): Double = statsMap(statName)
 
-  def getCardinality(tableName: String) = {
-    statsMap("CARDINALITY_" + format(tableName))
+  def getCardinality(tableName: String) = statsMap.get("CARDINALITY_" + format(tableName)) match {
+    case Some(stat) => stat
+    case None =>
+      // This means that the statistics module has been asked for either a) a table that does not exist
+      // in this schema or b) cardinality of an intermediate table that is being scanned over (see TPCH 
+      // Q13 for an example about how this may happen). In both cases, we throw a warning message and
+      // return the biggest cardinality
+      System.out.println(s"${scala.Console.YELLOW}Warning${scala.Console.RESET}: Statistics do not include cardinality information for table " + tableName + ". Returning largest cardinality to compensate. This may lead to degraded performance due to unnecessarily large memory pool allocations.")
+      getLargestCardinality()
   }
 
   def getLargestCardinality() = {
@@ -84,6 +91,10 @@ case class Statistics() {
   }
 
   def getEstimatedNumObjectsForType(typeName: String) = statsMap("QS_MEM_" + format(typeName))
+
+  def removeQuerySpecificStats() {
+    statsMap.retain((k, v) => k.startsWith("QS") == false)
+  }
 }
 
 // TODO add a type representation for fixed-size string

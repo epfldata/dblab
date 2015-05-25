@@ -116,6 +116,7 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val schema: Schem
     case d @ Def(_)            => s
   }
 
+  // TODO-GEN: Maybe this should be moved somewhere else ? (looks generic enough!)
   def getStructSizeEstimationFromStatistics[T](tag: StructTag[T]): Double = {
     tag match {
       case CompositeTag(_, _, ClassTag(a), ClassTag(b)) =>
@@ -138,13 +139,6 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val schema: Schem
       case r if r.isArray =>
         schema.stats.getEstimatedNumObjectsForType(r.toString)
     }).toInt
-
-    /*val estimatedSize = queryNumber match {
-      case 1 | 13 | 18 => 50 * 1000 * 1000
-      case 9           => 30 * 1000 * 1000
-      case _           => 1800 * 1000
-    }
-    (estimatedSize / 8 * scalingFactor).toInt*/
   }
 
   def createBuffers() {

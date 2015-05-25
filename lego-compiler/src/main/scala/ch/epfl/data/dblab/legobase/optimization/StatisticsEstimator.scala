@@ -24,8 +24,9 @@ class StatisticsEstimator(override val IR: LoweringLegoBase, val schema: Schema)
   import IR._
 
   override def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
+    schema.stats.removeQuerySpecificStats()
     // QS stands for Query specific
-    schema.stats += "QS_MEM_ARRAY_DOUBLE" -> 0
+    schema.stats += "QS_MEM_ARRAY_DOUBLE" -> 48000000 // TODO-GEN: Fix for Q18 (for now)
     traverseBlock(node)
     System.out.println(schema.stats.mkString("\n"))
     node
@@ -70,6 +71,9 @@ class StatisticsEstimator(override val IR: LoweringLegoBase, val schema: Schema)
             val structArgs = res.correspondingNode.asInstanceOf[ConstructorDef[_]].argss.flatten
             val structArgsCombinations = structArgs.foldLeft(1.0)((cnt, attr) => attr match {
               case Def(ifa: ImmutableFieldAccess[_]) => cnt * schema.stats.getDistinctAttrValues(ifa.field) // all possible combinations
+              case _ =>
+                System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics for Aggregate Operator not accurate in case where grp returns a struct (field causing this is " + attr + "). This may lead to degraded performance due to unnecessarily large memory pool allocations. ")
+                cnt * 10 // TODO-GEN That's obvious not enough -- see Q7
             }).toInt
             // If parent sends less tuples that the estimated possible combinations, then choose the estimation of parent
             val numDistinctVals = Math.min(parentES, structArgsCombinations)
@@ -83,6 +87,7 @@ class StatisticsEstimator(override val IR: LoweringLegoBase, val schema: Schema)
           case Def(PardisLambda(_, _, Block(b, res))) =>
             System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics for Aggregate Operator (grp = " + grp.correspondingNode + ") not accurate. This may lead to degraded performance due to unnecessarily large memory pool allocations. ")
             schema.stats += ("QS_MEM_AGG_" + ao.typeB) -> parentES // TODO-GEN: Make message better
+            schema.stats += "QS_MEM_ARRAY_DOUBLE" -> (schema.stats("QS_MEM_ARRAY_DOUBLE") + parentES)
             parentES
         }
         System.out.println("QUERY ANALYZER: AGGOP Estimated Size = " + estimatedSize)
@@ -113,6 +118,16 @@ class StatisticsEstimator(override val IR: LoweringLegoBase, val schema: Schema)
         estimatedSize = leftParentES //Assume that no tuple is being matched
         System.out.print("QUERY ANALYZER: HASHJOINANTI Estimated Size = " + estimatedSize)
         System.out.println(" (Left/Right parent sizes are: " + leftParentES + "," + rightParentES + ")")
+      case wo @ WindowOpNew(parent, _, _) =>
+        //TODO-GEN FIX ESTIMATION SIMILARLY TO AGGOP
+        estimatedSize = analyzeQuery(parent)
+        // TODO-GEN Isn't there a better way to get the return type of window op that the next line?
+        schema.stats += ("QS_MEM_WINDOW_" + wo.typeB + "_" + wo.typeC) -> estimatedSize
+        System.out.print("QUERY ANALYZER: WINDOWOP Estimated Size = " + estimatedSize)
+      case vo @ ViewOpNew(parent) =>
+        //TODO-GEN FIX ESTIMATION SIMILARLY TO AGGOP
+        estimatedSize = analyzeQuery(parent)
+        System.out.print("QUERY ANALYZER: VIEWOP Estimated Size = " + estimatedSize)
       //case other @ _ => System.out.println(other.asInstanceOf[Rep[Any]].correspondingNode)
     }
     estimatedSize;
