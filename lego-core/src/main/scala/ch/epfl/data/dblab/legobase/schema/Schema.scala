@@ -4,6 +4,7 @@ package schema
 
 import sc.pardis.types._
 import scala.language.implicitConversions
+import scala.collection.immutable.ListMap
 
 case class Catalog(schemata: Map[String, Schema])
 case class Schema(tables: List[Table], stats: Statistics = Statistics()) {
@@ -43,8 +44,9 @@ case class Statistics() {
 
   def +=(nameAndValue: (String, Double)) = statsMap += (format(nameAndValue._1) -> nameAndValue._2)
   def +=(name: String, value: Double) = statsMap += (format(name) -> value)
-  def mkString(delim: String) = statsMap.mkString(delim)
-  def apply(statName: String): Double = statsMap(statName)
+  def mkString(delim: String) = ListMap(statsMap.toSeq.sortBy(_._1): _*).mkString("\n========= STATISTICS =========\n", delim, "\n==============================\n")
+  def increase(nameAndValue: (String, Double)) = statsMap += format(nameAndValue._1) -> (statsMap.getOrElse(format(nameAndValue._1), 0.0) + nameAndValue._2)
+  def apply(statName: String): Double = statsMap(statName) // TODO-GEN: will die
 
   def getCardinality(tableName: String) = statsMap.get("CARDINALITY_" + format(tableName)) match {
     case Some(stat) => stat
@@ -64,19 +66,11 @@ case class Statistics() {
     })
   }
 
-  def getJoinSelectivity(tableName1: String, tableName2: String) =
-    statsMap.get("SELECTIVITY_" + format(tableName1) + "_" + format(tableName2)) match {
-      case Some(stat) => stat
-      case None       => statsMap("SELECTIVITY_" + format(tableName2) + "_" + format(tableName1))
-    }
-
   def getJoinOutputEstimation(tableName1: String, tableName2: String): Int = {
     48000000 // TODO-GEN OBVIOUS
-    //((getCardinality(tableName1) * getCardinality(tableName2)) * getJoinSelectivity(tableName1, tableName2)).toInt
   }
   def getJoinOutputEstimation(intermediateCardinality: Double, tableName2: String): Double = {
     Math.max(intermediateCardinality, getCardinality(tableName2)) // TODO-GEN IS THIS OK?
-    //((getCardinality(tableName1) * getCardinality(tableName2)) * getJoinSelectivity(tableName1, tableName2)).toInt
   }
   def getJoinOutputEstimation(tableName2: String, intermediateCardinality: Double): Double = {
     Math.max(intermediateCardinality, getCardinality(tableName2)) // TODO-GEN IS THIS OK?
@@ -93,6 +87,7 @@ case class Statistics() {
   def getEstimatedNumObjectsForType(typeName: String) = statsMap("QS_MEM_" + format(typeName))
 
   def removeQuerySpecificStats() {
+    // QS stands for Query specific
     statsMap.retain((k, v) => k.startsWith("QS") == false)
   }
 }

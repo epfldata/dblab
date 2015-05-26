@@ -142,6 +142,7 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val schema: Schem
   }
 
   def createBuffers() {
+    //printf(unit("------------CREATING BUFFERS---------------\n"))
     //System.out.println("Creating buffers for mallocNodes: " + mallocNodes.mkString("\n"))
     val mallocInstances = mallocNodes.map(m => mallocToInstance(m)) //.sortBy(ll => ll.tp.name.length) //.distinct //.filter(t => !t.tp.name.contains("CArray") /* && !t.tp.name.contains("Pointer")*/ )
     val mallocInstancesTps = mallocInstances.map(mn => mn.tp)
@@ -214,6 +215,7 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val schema: Schem
       mallocBuffers += mallocInstance.tp -> BufferInfo(pool.asInstanceOf[Sym[Any]], index)
       // printf(unit("Buffer for type %s of size %d initialized!\n"), unit(mallocTp.toString), poolSize)
     }
+    //printf(unit("------------ALL BUFFERS CREATED---------------\n"))
     // System.out.println(s"mallocBuffers: ${mallocBuffers.mkString("\n\t")}")
   }
 

@@ -172,7 +172,6 @@ object TPCHSchema {
     tpchSchema.stats += "CARDINALITY_PART" -> partTable.rowCount
     tpchSchema.stats += "CARDINALITY_NATION" -> nationTable.rowCount
     tpchSchema.stats += "CARDINALITY_REGION" -> regionTable.rowCount
-    tpchSchema.stats += "SELECTIVITY_LINEITEM_ORDERS" -> 0.000006
 
     tpchSchema.stats += "DISTINCT_L_SHIPMODE" -> 7
     tpchSchema.stats += "DISTINCT_L_RETURNFLAG" -> 3
@@ -180,6 +179,8 @@ object TPCHSchema {
     tpchSchema.stats += "DISTINCT_N_NAME" -> 25
     tpchSchema.stats += "DISTINCT_O_SHIPPRIORITY" -> 1
     tpchSchema.stats += "DISTINCT_O_ORDERDATE" -> 365 * 7 // 7-whole years
+    tpchSchema.stats += "DISTINCT_O_ORDERPRIORITY" -> 5
+    tpchSchema.stats += "DISTINCT_L_PARTKEY" -> scalingFactor * partTable.rowCount
 
     tpchSchema
   }
