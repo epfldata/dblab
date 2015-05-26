@@ -77,6 +77,7 @@ class StatisticsEstimator(override val IR: LoweringLegoBase, val schema: Schema)
       case MapOpNew(parent, _)      => analyzeQuery(parent)
       case SortOpNew(parent, _)     => analyzeQuery(parent)
       case PrintOpNew(parent, _, _) => analyzeQuery(parent)
+      case ViewOpNew(parent)        => analyzeQuery(parent)
 
       case ao @ AggOpNew(parent, _, grp, _) =>
         val parentES = analyzeQuery(parent)
@@ -113,10 +114,8 @@ class StatisticsEstimator(override val IR: LoweringLegoBase, val schema: Schema)
       case NestedLoopsJoinOpNew(leftParent, rightParent, _, _, _) =>
         val leftParentES = analyzeQuery(leftParent)
         val rightParentES = analyzeQuery(rightParent)
-        val es = Math.max(leftParentES, rightParentES)
-        System.out.print("QUERY ANALYZER: NESTEDLOOPSJOINOP Estimated Size = " + es)
-        System.out.println(" (Left/Right parent sizes are: " + leftParentES + "," + rightParentES + ")")
-        es
+        msg = s"${scala.Console.YELLOW} Assumes 1-N join for now: ${scala.Console.RESET}Max(leftParentSize,rightParentSize) = Max(" + leftParentES + "," + rightParentES + ") "
+        Math.max(leftParentES, rightParentES)
       case HashJoinOpNew1(leftParent, rightParent, _, _, _, _, _) =>
         val leftParentES = analyzeQuery(leftParent)
         val rightParentES = analyzeQuery(rightParent)
@@ -125,13 +124,8 @@ class StatisticsEstimator(override val IR: LoweringLegoBase, val schema: Schema)
       case HashJoinAntiNew(leftParent, rightParent, _, _, _) =>
         val leftParentES = analyzeQuery(leftParent)
         val rightParentES = analyzeQuery(rightParent)
-        val es = leftParentES //Assume that no tuple is being matched
-        System.out.print("QUERY ANALYZER: HASHJOINANTI Estimated Size = " + es)
-        System.out.println(" (Left/Right parent sizes are: " + leftParentES + "," + rightParentES + ")")
-        es
-      case vo @ ViewOpNew(parent) =>
-        //TODO-GEN FIX ESTIMATION SIMILARLY TO AGGOP
-        analyzeQuery(parent)
+        msg = s"${scala.Console.YELLOW}Assumes 100% selectivity for now (i.e. that all tuples of leftParent are returned).${scala.Console.RESET}"
+        leftParentES
       //case other @ _ => System.out.println(other.asInstanceOf[Rep[Any]].correspondingNode)
     }
 

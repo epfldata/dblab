@@ -66,15 +66,17 @@ case class Statistics() {
     })
   }
 
+  // TODO-GEN: The three following functions assume 1-N schemas. We have to make this explicit
   def getJoinOutputEstimation(tableName1: String, tableName2: String): Int = {
-    48000000 // TODO-GEN OBVIOUS
+    val cardinality1 = getCardinality(tableName1)
+    val cardinality2 = getCardinality(tableName2)
+    Math.max(cardinality1, cardinality2).toInt
   }
   def getJoinOutputEstimation(intermediateCardinality: Double, tableName2: String): Double = {
-    Math.max(intermediateCardinality, getCardinality(tableName2)) // TODO-GEN IS THIS OK?
+    Math.max(intermediateCardinality, getCardinality(tableName2))
   }
   def getJoinOutputEstimation(tableName2: String, intermediateCardinality: Double): Double = {
-    Math.max(intermediateCardinality, getCardinality(tableName2)) // TODO-GEN IS THIS OK?
-    //((getCardinality(tableName1) * getCardinality(tableName2)) * getJoinSelectivity(tableName1, tableName2)).toInt
+    Math.max(intermediateCardinality, getCardinality(tableName2))
   }
 
   def getDistinctAttrValues(attrName: String) = statsMap.get("DISTINCT_" + attrName) match {
