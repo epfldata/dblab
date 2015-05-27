@@ -25,14 +25,26 @@ class StatisticsEstimator(override val IR: LoweringLegoBase, val schema: Schema)
 
   override def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     schema.stats.removeQuerySpecificStats()
-    // QS stands for Query specific
-    schema.stats += "QS_MEM_ARRAY_DOUBLE" -> 0 // TODO-GEN: Fix for Q18 (for now is to set this to 48000000) // TODO-GEN: Will die
     traverseBlock(node)
     System.out.println(schema.stats.mkString("\n"))
     node
   }
 
   var analyzed: Boolean = false
+  val aliasesList = new scala.collection.mutable.ListBuffer[String]()
+
+  def getUnaliasedStructFieldName(fieldName: String) = {
+    aliasesList.foldLeft(fieldName)((fn, alias) => {
+      fn.replaceAll(alias, "")
+    })
+  }
+
+  def estimateCardinalityFromExpression(expr: Rep[Any], defaultEstimation: Int): Int = expr match {
+    case Def(GenericEngineDateToYearObject(_)) => schema.stats.getNumYearsAllDates()
+    case _ =>
+      System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics Estimator cannot accurately estimate cardinality for node " + expr.correspondingNode + ". Returning default estimation. This may lead to degraded performance due to unnecessarily large memory pool allocations. ")
+      defaultEstimation
+  }
 
   def estimateCardinalityFromFunction(fun: Rep[Any], defaultEstimation: Int): Int = {
     fun match {
@@ -47,18 +59,15 @@ class StatisticsEstimator(override val IR: LoweringLegoBase, val schema: Schema)
       case Def(PardisLambda(_, _, Block(b, res))) if res.correspondingNode.isInstanceOf[ConstructorDef[_]] =>
         val structArgs = res.correspondingNode.asInstanceOf[ConstructorDef[_]].argss.flatten
         val structArgsCombinations = structArgs.foldLeft(1.0)((cnt, attr) => attr match {
-          case Def(ifa: ImmutableFieldAccess[_]) => cnt * schema.stats.getDistinctAttrValues(ifa.field) // all possible combinations
-          //case _ =>
-          //System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics for Aggregate Operator not accurate in case where grp returns a struct (field causing this is " + attr + "). This may lead to degraded performance due to unnecessarily large memory pool allocations. ")
-          //cnt * 10 // TODO-GEN That's obvious not enough -- see Q7
+          // basically estimate all possible combinations
+          case Def(ifa: ImmutableFieldAccess[_]) => cnt * schema.stats.getDistinctAttrValues(getUnaliasedStructFieldName(ifa.field))
+          case _                                 => cnt * estimateCardinalityFromExpression(attr.asInstanceOf[Expression[_]], defaultEstimation) // account for an expression
         }).toInt
 
         // If parent sends less tuples that the estimated possible combinations, then choose the estimation of parent
         Math.min(defaultEstimation, structArgsCombinations).toInt
       case Def(PardisLambda(_, _, Block(b, res))) =>
-        // TODO-GEN: Make message better
-        System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics for Aggregate Operator (grp = " + fun.correspondingNode + ") not accurate. This may lead to degraded performance due to unnecessarily large memory pool allocations. ")
-        defaultEstimation
+        estimateCardinalityFromExpression(res, defaultEstimation)
     }
   }
 
@@ -106,21 +115,25 @@ class StatisticsEstimator(override val IR: LoweringLegoBase, val schema: Schema)
         schema.stats increase ("QS_MEM_WINDOW_" + wo.typeB + "_" + wo.typeC) -> numDistinctVals
         numDistinctVals
 
+      case NestedLoopsJoinOpNew(leftParent, rightParent, Constant(leftAlias), Constant(rightAlias), _) =>
+        val leftParentES = analyzeQuery(leftParent)
+        val rightParentES = analyzeQuery(rightParent)
+        aliasesList += leftAlias
+        aliasesList += rightAlias
+        msg = s"${scala.Console.YELLOW} Assumes 1-N join for now: ${scala.Console.RESET}Max(leftParentSize,rightParentSize) = Max(" + leftParentES + "," + rightParentES + ") "
+        Math.max(leftParentES, rightParentES)
+      case HashJoinOpNew1(leftParent, rightParent, Constant(leftAlias), Constant(rightAlias), _, _, _) =>
+        val leftParentES = analyzeQuery(leftParent)
+        val rightParentES = analyzeQuery(rightParent)
+        aliasesList += leftAlias
+        aliasesList += rightAlias
+        msg = s"${scala.Console.YELLOW} Assumes 1-N join for now: ${scala.Console.RESET}Max(leftParentSize,rightParentSize) = Max(" + leftParentES + "," + rightParentES + ") "
+        Math.max(leftParentES, rightParentES) // TODO-GEN: Assumes 1-N: Make this explicit somehow
       case LeftHashSemiJoinOpNew(leftParent, rightParent, _, _, _) =>
         val leftParentES = analyzeQuery(leftParent)
         val rightParentES = analyzeQuery(rightParent)
         msg = s"${scala.Console.YELLOW}Assumes 100% selectivity for now (i.e. that all tuples of leftParent are returned).${scala.Console.RESET}"
         leftParentES
-      case NestedLoopsJoinOpNew(leftParent, rightParent, _, _, _) =>
-        val leftParentES = analyzeQuery(leftParent)
-        val rightParentES = analyzeQuery(rightParent)
-        msg = s"${scala.Console.YELLOW} Assumes 1-N join for now: ${scala.Console.RESET}Max(leftParentSize,rightParentSize) = Max(" + leftParentES + "," + rightParentES + ") "
-        Math.max(leftParentES, rightParentES)
-      case HashJoinOpNew1(leftParent, rightParent, _, _, _, _, _) =>
-        val leftParentES = analyzeQuery(leftParent)
-        val rightParentES = analyzeQuery(rightParent)
-        msg = s"${scala.Console.YELLOW} Assumes 1-N join for now: ${scala.Console.RESET}Max(leftParentSize,rightParentSize) = Max(" + leftParentES + "," + rightParentES + ") "
-        Math.max(leftParentES, rightParentES) // TODO-GEN: Assumes 1-N: Make this explicit somehow
       case HashJoinAntiNew(leftParent, rightParent, _, _, _) =>
         val leftParentES = analyzeQuery(leftParent)
         val rightParentES = analyzeQuery(rightParent)

@@ -55,7 +55,7 @@ case class Statistics() {
       // in this schema or b) cardinality of an intermediate table that is being scanned over (see TPCH 
       // Q13 for an example about how this may happen). In both cases, we throw a warning message and
       // return the biggest cardinality
-      System.out.println(s"${scala.Console.YELLOW}Warning${scala.Console.RESET}: Statistics do not include cardinality information for table " + tableName + ". Returning largest cardinality to compensate. This may lead to degraded performance due to unnecessarily large memory pool allocations.")
+      System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics do not include cardinality information for table " + tableName + ". Returning largest cardinality to compensate. This may lead to degraded performance due to unnecessarily large memory pool allocations.")
       getLargestCardinality()
   }
 
@@ -91,6 +91,13 @@ case class Statistics() {
   def removeQuerySpecificStats() {
     // QS stands for Query specific
     statsMap.retain((k, v) => k.startsWith("QS") == false)
+  }
+
+  def getNumYearsAllDates(): Int = statsMap.get("NUM_YEARS_ALL_DATES") match {
+    case Some(stat) => stat.toInt
+    case None =>
+      System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics value for NUM_YEARS_ALL_DATES not found. Returning 128 years to compensate.")
+      128
   }
 }
 
