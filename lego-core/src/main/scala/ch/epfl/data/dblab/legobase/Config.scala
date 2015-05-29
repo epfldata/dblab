@@ -7,11 +7,11 @@ package dblab.legobase
 object Config {
   /** Specifies if the correctness of the results should be checked or not. */
   var checkResults = true
-  /** Specifies to location of data files. */
+  /** Specifies the location of data files. */
   var datapath: java.lang.String = null
   /** Specifies the scaling factor for TPCH queries (TODO should be removed) */
   var sf: Double = _
-  /** Number of the repititions of running a query */
+  /** Number of the repetitions of running a query */
   val numRuns: scala.Int = 1
   /** Specifies if the output result of a query should be printed */
   val printQueryOutput: scala.Boolean = true
