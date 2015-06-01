@@ -303,10 +303,9 @@ trait PrintOpOps extends Base with OperatorOps { this: ch.epfl.data.dblab.legoba
     def next(): Rep[Unit] = printOpNext[A](self)(typeA)
     def consume(tuple: Rep[Record]): Rep[Unit] = printOpConsume[A](self, tuple)(typeA)
     def reset(): Rep[Unit] = printOpReset[A](self)(typeA)
-    def printQueryOutput: Rep[Boolean] = printOp_Field_PrintQueryOutput[A](self)(typeA)
     def numRows_=(x$1: Rep[Int]): Rep[Unit] = printOp_Field_NumRows_$eq[A](self, x$1)(typeA)
     def numRows: Rep[Int] = printOp_Field_NumRows[A](self)(typeA)
-    def limit: Rep[(() => Boolean)] = printOp_Field_Limit[A](self)(typeA)
+    def limit: Rep[Int] = printOp_Field_Limit[A](self)(typeA)
     def printFunc: Rep[(A => Unit)] = printOp_Field_PrintFunc[A](self)(typeA)
     def parent: Rep[Operator[A]] = printOp_Field_Parent[A](self)(typeA)
     def stop_=(x$1: Rep[Boolean]): Rep[Unit] = printOp_Field_Stop_$eq[A](self, x$1)(typeA)
@@ -318,7 +317,7 @@ trait PrintOpOps extends Base with OperatorOps { this: ch.epfl.data.dblab.legoba
 
   }
   // constructors
-  def __newPrintOp[A](parent: Rep[Operator[A]])(printFunc: Rep[(A => Unit)], limit: Rep[(() => Boolean)])(implicit typeA: TypeRep[A]): Rep[PrintOp[A]] = printOpNew[A](parent, printFunc, limit)(typeA)
+  def __newPrintOp[A](parent: Rep[Operator[A]])(printFunc: Rep[(A => Unit)], limit: Rep[Int])(implicit typeA: TypeRep[A]): Rep[PrintOp[A]] = printOpNew[A](parent, printFunc, limit)(typeA)
   // IR defs
   val PrintOpNew = PrintOpIRs.PrintOpNew
   type PrintOpNew[A] = PrintOpIRs.PrintOpNew[A]
@@ -330,8 +329,6 @@ trait PrintOpOps extends Base with OperatorOps { this: ch.epfl.data.dblab.legoba
   type PrintOpConsume[A] = PrintOpIRs.PrintOpConsume[A]
   val PrintOpReset = PrintOpIRs.PrintOpReset
   type PrintOpReset[A] = PrintOpIRs.PrintOpReset[A]
-  val PrintOp_Field_PrintQueryOutput = PrintOpIRs.PrintOp_Field_PrintQueryOutput
-  type PrintOp_Field_PrintQueryOutput[A] = PrintOpIRs.PrintOp_Field_PrintQueryOutput[A]
   val PrintOp_Field_NumRows__eq = PrintOpIRs.PrintOp_Field_NumRows__eq
   type PrintOp_Field_NumRows__eq[A] = PrintOpIRs.PrintOp_Field_NumRows__eq[A]
   val PrintOp_Field_NumRows = PrintOpIRs.PrintOp_Field_NumRows
@@ -351,15 +348,14 @@ trait PrintOpOps extends Base with OperatorOps { this: ch.epfl.data.dblab.legoba
   val PrintOp_Field_Child = PrintOpIRs.PrintOp_Field_Child
   type PrintOp_Field_Child[A] = PrintOpIRs.PrintOp_Field_Child[A]
   // method definitions
-  def printOpNew[A](parent: Rep[Operator[A]], printFunc: Rep[((A) => Unit)], limit: Rep[(() => Boolean)])(implicit typeA: TypeRep[A]): Rep[PrintOp[A]] = PrintOpNew[A](parent, printFunc, limit)
+  def printOpNew[A](parent: Rep[Operator[A]], printFunc: Rep[((A) => Unit)], limit: Rep[Int])(implicit typeA: TypeRep[A]): Rep[PrintOp[A]] = PrintOpNew[A](parent, printFunc, limit)
   def printOpOpen[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpOpen[A](self)
   def printOpNext[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpNext[A](self)
   def printOpConsume[A](self: Rep[PrintOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpConsume[A](self, tuple)
   def printOpReset[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOpReset[A](self)
-  def printOp_Field_PrintQueryOutput[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Boolean] = PrintOp_Field_PrintQueryOutput[A](self)
   def printOp_Field_NumRows_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Int])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOp_Field_NumRows__eq[A](self, x$1)
   def printOp_Field_NumRows[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = PrintOp_Field_NumRows[A](self)
-  def printOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[(() => Boolean)] = PrintOp_Field_Limit[A](self)
+  def printOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = PrintOp_Field_Limit[A](self)
   def printOp_Field_PrintFunc[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[(A => Unit)] = PrintOp_Field_PrintFunc[A](self)
   def printOp_Field_Parent[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Operator[A]] = PrintOp_Field_Parent[A](self)
   def printOp_Field_Stop_$eq[A](self: Rep[PrintOp[A]], x$1: Rep[Boolean])(implicit typeA: TypeRep[A]): Rep[Unit] = PrintOp_Field_Stop__eq[A](self, x$1)
@@ -381,7 +377,7 @@ object PrintOpIRs extends Base {
   }
   implicit def typePrintOp[A: TypeRep]: TypeRep[PrintOp[A]] = PrintOpType(implicitly[TypeRep[A]])
   // case classes
-  case class PrintOpNew[A](parent: Rep[Operator[A]], printFunc: Rep[((A) => Unit)], limit: Rep[(() => Boolean)])(implicit val typeA: TypeRep[A]) extends ConstructorDef[PrintOp[A]](List(typeA), "PrintOp", List(List(parent), List(printFunc, limit))) {
+  case class PrintOpNew[A](parent: Rep[Operator[A]], printFunc: Rep[((A) => Unit)], limit: Rep[Int])(implicit val typeA: TypeRep[A]) extends ConstructorDef[PrintOp[A]](List(typeA), "PrintOp", List(List(parent), List(printFunc, limit))) {
     override def curriedConstructor = (copy[A] _).curried
   }
 
@@ -401,18 +397,6 @@ object PrintOpIRs extends Base {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class PrintOp_Field_PrintQueryOutput[A](self: Rep[PrintOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Boolean](self, "printQueryOutput") {
-    override def curriedConstructor = (copy[A] _)
-    override def isPure = true
-
-    override def partialEvaluate(children: Any*): Boolean = {
-      val self = children(0).asInstanceOf[PrintOp[A]]
-      self.printQueryOutput
-    }
-    override def partialEvaluable: Boolean = true
-
-  }
-
   case class PrintOp_Field_NumRows__eq[A](self: Rep[PrintOp[A]], x$1: Rep[Int])(implicit val typeA: TypeRep[A]) extends FieldSetter[Int](self, "numRows", x$1) {
     override def curriedConstructor = (copy[A] _).curried
   }
@@ -421,7 +405,7 @@ object PrintOpIRs extends Base {
     override def curriedConstructor = (copy[A] _)
   }
 
-  case class PrintOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[(() => Boolean)](self, "limit") {
+  case class PrintOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit val typeA: TypeRep[A]) extends FieldDef[Int](self, "limit") {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
 
@@ -470,12 +454,12 @@ trait PrintOpImplementations extends PrintOpOps { this: ch.epfl.data.dblab.legob
   override def printOpNext[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     {
       self.parent.next();
-      __ifThenElse(self.printQueryOutput, printf(unit("(%d rows)\n"), self.numRows), unit(()))
+      printf(unit("(%d rows)\n"), self.numRows)
     }
   }
   override def printOpConsume[A](self: Rep[PrintOp[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = {
-    __ifThenElse(infix_$eq$eq(__app[Boolean](self.limit).apply(), unit(false)), self.parent.stop_$eq(unit(true)), {
-      __ifThenElse(self.printQueryOutput, __app[A, Unit](self.printFunc).apply(infix_asInstanceOf[A](tuple)), unit(()));
+    __ifThenElse(infix_$bang$eq(self.limit, unit(-1)).$amp$amp(self.numRows.$greater$eq(self.limit)), self.parent.stop_$eq(unit(true)), {
+      __app[A, Unit](self.printFunc).apply(infix_asInstanceOf[A](tuple));
       self.numRows_$eq(self.numRows.$plus(unit(1)))
     })
   }
@@ -486,7 +470,7 @@ trait PrintOpImplementations extends PrintOpOps { this: ch.epfl.data.dblab.legob
 
 trait PrintOpPartialEvaluation extends PrintOpComponent with BasePartialEvaluation { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =>
   // Immutable field inlining 
-  override def printOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[(() => Boolean)] = self match {
+  override def printOp_Field_Limit[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Int] = self match {
     case Def(node: PrintOpNew[_]) => node.limit
     case _                        => super.printOp_Field_Limit[A](self)(typeA)
   }

@@ -76,11 +76,11 @@ object MultiMap {
  * @param limit a thunk value which specifes if there is not longer any need to print more
  * results. It has the same effect as LIMIT clause in SQL.
  */
-@deep class PrintOp[A](parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean) extends Operator[A] { self =>
+@deep class PrintOp[A](parent: Operator[A])(printFunc: A => Unit, limit: Int) extends Operator[A] { self =>
   var numRows = (0)
-  val printQueryOutput = Config.printQueryOutput // TODO: This should be moved to the config
   def open() {
-    parent.child = self; parent.open;
+    parent.child = self;
+    parent.open;
   }
   def next() = {
     parent.next;
@@ -90,14 +90,14 @@ object MultiMap {
     // } catch {
     //   case ex: PrintOpStop =>
     // }
-    if (printQueryOutput) printf("(%d rows)\n", numRows)
+    printf("(%d rows)\n", numRows)
   }
   def consume(tuple: Record) {
-    if (limit() == false) parent.stop = (true)
+    if (limit != -1 && numRows >= limit) parent.stop = (true)
     /** Amir: the following line removes the need for stop */
     // if (limit() == false) throw new PrintOpStop
     else {
-      if (printQueryOutput) printFunc(tuple.asInstanceOf[A]);
+      printFunc(tuple.asInstanceOf[A]);
       numRows += 1
     }
   }

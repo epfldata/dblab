@@ -79,11 +79,11 @@ case class Statistics() {
     Math.max(intermediateCardinality, getCardinality(tableName2))
   }
 
-  def getDistinctAttrValues(attrName: String) = statsMap.get("DISTINCT_" + attrName) match {
-    case Some(stat) => stat
+  def getDistinctAttrValues(attrName: String): Int = statsMap.get("DISTINCT_" + attrName) match {
+    case Some(stat) => stat.toInt
     case None =>
       System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics value for DISTINCT_" + attrName + " not found. Returning largest cardinality to compensate. This may lead to degraded performance due to unnecessarily large memory pool allocations.")
-      getLargestCardinality() // TODO-GEN: Make this return the cardinality of the corresponding table
+      getLargestCardinality().toInt // TODO-GEN: Make this return the cardinality of the corresponding table
   }
 
   def getEstimatedNumObjectsForType(typeName: String) = statsMap("QS_MEM_" + format(typeName))
@@ -98,6 +98,13 @@ case class Statistics() {
     case None =>
       System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics value for NUM_YEARS_ALL_DATES not found. Returning 128 years to compensate.")
       128
+  }
+
+  def getOutputSizeEstimation(): Int = statsMap.get("QS_OUTPUT_SIZE_ESTIMATION") match {
+    case Some(stat) => stat.toInt
+    case None =>
+      System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics value for QS_OUTPUT_SIZE_ESTIMATION not found. Returning largest cardinality to compensate.")
+      getLargestCardinality().toInt // This is more than enough for all practical cases encountered so far
   }
 }
 

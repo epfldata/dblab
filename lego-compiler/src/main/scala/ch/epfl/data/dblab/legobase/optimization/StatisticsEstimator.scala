@@ -83,10 +83,15 @@ class StatisticsEstimator(override val IR: LoweringLegoBase, val schema: Schema)
         // TODO-GEN: Calculate selectivities for SelectOP rather than blindly assuming 100%
         msg = s"${scala.Console.YELLOW}Selectivity of SelectOp is estimated as 100% for now${scala.Console.RESET}"
         analyzeQuery(parent)
-      case MapOpNew(parent, _)      => analyzeQuery(parent)
-      case SortOpNew(parent, _)     => analyzeQuery(parent)
-      case PrintOpNew(parent, _, _) => analyzeQuery(parent)
-      case ViewOpNew(parent)        => analyzeQuery(parent)
+      case MapOpNew(parent, _)  => analyzeQuery(parent)
+      case SortOpNew(parent, _) => analyzeQuery(parent)
+      case ViewOpNew(parent)    => analyzeQuery(parent)
+
+      case PrintOpNew(parent, _, Constant(limit)) =>
+        val parentES = analyzeQuery(parent)
+        val es = if (limit != -1) limit else parentES
+        schema.stats += "QS_OUTPUT_SIZE_ESTIMATION" -> es
+        es
 
       case ao @ AggOpNew(parent, _, grp, _) =>
         val parentES = analyzeQuery(parent)

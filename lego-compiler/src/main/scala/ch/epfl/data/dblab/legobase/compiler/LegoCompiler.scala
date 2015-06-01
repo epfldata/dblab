@@ -2,6 +2,7 @@ package ch.epfl.data
 package dblab.legobase
 package compiler
 
+import Config._
 import schema._
 import deep._
 import prettyprinter._
@@ -20,12 +21,10 @@ import sc.pardis.compiler._
  * @param DSL the polymorphic embedding trait which contains the reified program.
  * This object takes care of online partial evaluation
  * @param number specifies the TPCH query number (TODO should be removed)
- * @param scalingFactor specifies the scaling factor used for TPCH queries (TODO should be removed)
- * @param generateCCode specifies the target code.
- * If this value is true the target code is C otherwise the target is Scala.
+ * @param generateCCode specifies the target code language.
  * @param settings the compiler settings provided as command line arguments
  */
-class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor: Double, val generateCCode: Boolean, val settings: Settings, val schema: Schema) extends Compiler[LoweringLegoBase] {
+class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode: CodeGenerationLang, val settings: Settings, val schema: Schema) extends Compiler[LoweringLegoBase] {
   def outputFile: String = {
     def queryWithNumber =
       if (settings.isSynthesized)
@@ -52,7 +51,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
     }
   }
 
-  override def irToPorgram = if (generateCCode) {
+  override def irToPorgram = if (generateCCode == CCodeGeneration) {
     IRToCProgram(DSL)
   } else {
     IRToProgram(DSL)
@@ -64,7 +63,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
    * the field removal causes the program to be wrong
    */
   //TODO-GEN Remove gen and make string compression transformer dependant on removing unnecessary fields.
-  def shouldRemoveUnusedFields = true || (settings.hashMapPartitioning ||
+  def shouldRemoveUnusedFields = settings.stringCompression || (settings.hashMapPartitioning ||
     (
       settings.hashMapLowering && (settings.setToArray || settings.setToLinkedList))) && !settings.noFieldRemoval
 
@@ -89,7 +88,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
       pipeline += TreeDumper(true)
       pipeline += new HashMapTo1DArray(DSL)
     }
-    pipeline += new HashMapPartitioningTransformer(DSL, number, scalingFactor)
+    pipeline += new HashMapPartitioningTransformer(DSL, number, schema)
 
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
@@ -151,7 +150,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
 
   if (settings.columnStore) {
 
-    pipeline += new ColumnStoreTransformer(DSL, number, settings)
+    pipeline += new ColumnStoreTransformer(DSL, settings)
     // if (settings.hashMapPartitioning) {
     //   pipeline += new ColumnStore2DTransformer(DSL, number)
     // }
@@ -174,16 +173,16 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val scalingFactor
     pipeline += new StringOptimization(DSL)
   }
 
-  if (settings.largeOutputHoisting(generateCCode, number)) {
-    pipeline += new LargeOutputPrintHoister(DSL)
+  if (settings.largeOutputHoisting && !settings.onlyLoading) {
+    pipeline += new LargeOutputPrintHoister(DSL, schema)
   }
 
-  if (generateCCode) pipeline += new CTransformersPipeline(settings)
+  if (generateCCode == CCodeGeneration) pipeline += new CTransformersPipeline(settings)
 
   pipeline += DCECLang //NEVER REMOVE!!!!
 
   val codeGenerator =
-    if (generateCCode) {
+    if (generateCCode == CCodeGeneration) {
       if (settings.noLetBinding)
         new LegoCASTGenerator(DSL, false, outputFile, true)
       else
