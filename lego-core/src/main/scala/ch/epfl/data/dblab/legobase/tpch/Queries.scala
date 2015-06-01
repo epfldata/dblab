@@ -625,7 +625,7 @@ object Queries {
         val brand15 = parseString("Brand#15")
         val scanLineitem = new ScanOp(lineitemTable)
         val scanPart = new SelectOp(new ScanOp(partTable))(x => x.P_CONTAINER === medbag && x.P_BRAND === brand15)
-        val jo = new HashJoinOp(scanPart, scanLineitem)((x, y) => x.P_PARTKEY == y.L_PARTKEY)(x => x.P_PARTKEY)(x => x.L_PARTKEY)
+        val jo = new HashJoinOp(scanLineitem, scanPart)((x, y) => x.L_PARTKEY == y.P_PARTKEY)(x => x.L_PARTKEY)(x => x.P_PARTKEY)
         val wo = new WindowOp(jo)(x => x.L_PARTKEY[Int])(x => {
           val sum = x.foldLeft(0.0)((cnt, e) => cnt + e.L_QUANTITY[Double])
           val count = x.size
