@@ -15,9 +15,8 @@ object LegoInterpreter extends LegoRunner {
    * Interprets the given TPCH query with the given scaling factor.
    *
    * @param query the input TPCH query (TODO should be generalized)
-   * @param scalingFactor the scaling factor for TPCH queries (TODO should be generalize)
    */
-  def executeQuery(query: String, scalingFactor: Double, schema: Schema): Unit = query match {
+  def executeQuery(query: String, schema: Schema): Unit = query match {
     case "Q1"     => Q1(Config.numRuns)
     case "Q2"     => Q2(Config.numRuns)
     case "Q3"     => Q3(Config.numRuns)

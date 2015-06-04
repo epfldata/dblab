@@ -2,6 +2,7 @@ package ch.epfl.data
 package dblab.legobase
 package optimization
 
+import schema._
 import scala.language.implicitConversions
 import sc.pardis.ir._
 import reflect.runtime.universe.{ TypeTag, Type }
@@ -10,18 +11,15 @@ import deep._
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils._
-
-// TODO there should be no need to queryNumber and scalingFactor thanks to Schema
+import sc.pardis.ir.StructTags._
 
 /**
  * Transforms `malloc`s inside the part which runs the query into buffers which are allocated
  * at the loading time.
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
- * @param queryNumber specifies the TPCH query number (TODO should be removed)
- * @param scalingFactor specifies the scaling factor used for TPCH queries (TODO should be removed)
  */
-class MemoryAllocationHoist(override val IR: LoweringLegoBase, val queryNumber: Int, val scalingFactor: Double) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class MemoryAllocationHoist(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
   //import CNodes._
   //import CTypes._
@@ -46,6 +44,7 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val queryNumber: 
   var startCollecting = false
   //val mallocNodes = collection.mutable.ArrayBuffer[PardisStruct[Any]]()
   val mallocNodes = collection.mutable.ArrayBuffer[Def[Any]]()
+
   var distinctInstances = List[MallocInfo]()
   case class BufferInfo(pool: Sym[Any], index: Var[Int])
   case class MallocInstance(tp: PardisType[Any], node: Def[Any])
@@ -72,6 +71,7 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val queryNumber: 
       startCollecting = false
     }
   }
+
   analysis += rule {
     case m @ PardisStruct(tag, elems, methods) if startCollecting && phase == FindMallocs => {
       /*System.out.println("---------------------")
@@ -116,19 +116,33 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val queryNumber: 
     case d @ Def(_)            => s
   }
 
-  def getPoolSize(mallocInfo: MallocInfo): Int = {
-    // val POOL_SIZE = 1800000 //* (poolType.toString.split("_").length + 1)
-    //val POOL_SIZE = 100000
-    //val POOL_SIZE = regenerateSize(mallocNode.numElems) * 200*/
-    val estimatedSize = queryNumber match {
-      case 1 | 13 | 18 => 50 * 1000 * 1000
-      case 9           => 30 * 1000 * 1000
-      case _           => 1800 * 1000
+  // TODO-GEN: Maybe this should be moved somewhere else ? (looks generic enough!)
+  def getStructSizeEstimationFromStatistics[T](tag: StructTag[T]): Double = {
+    tag match {
+      case CompositeTag(_, _, ClassTag(a), ClassTag(b)) =>
+        schema.stats.getJoinOutputEstimation(a, b)
+      // Left deep plan
+      case CompositeTag(_, _, ct @ CompositeTag(_, _, _, _), ClassTag(b)) =>
+        schema.stats.getJoinOutputEstimation(getStructSizeEstimationFromStatistics(ct), b)
+      // Right deep plan
+      case CompositeTag(_, _, ClassTag(a), ct @ CompositeTag(_, _, _, _)) =>
+        schema.stats.getJoinOutputEstimation(a, getStructSizeEstimationFromStatistics(ct))
+      case ClassTag(tag) =>
+        schema.stats.getEstimatedNumObjectsForType(tag)
     }
-    (estimatedSize / 8 * scalingFactor).toInt
+  }
+
+  def getPoolSize(mallocInfo: MallocInfo): Int = {
+    (mallocInfo.tp match {
+      case r if r.isRecord =>
+        getStructSizeEstimationFromStatistics(mallocInfo.asInstanceOf[StructMallocInfo].node.tag)
+      case r if r.isArray =>
+        schema.stats.getEstimatedNumObjectsForType(r.toString)
+    }).toInt
   }
 
   def createBuffers() {
+    //printf(unit("------------CREATING BUFFERS---------------\n"))
     //System.out.println("Creating buffers for mallocNodes: " + mallocNodes.mkString("\n"))
     val mallocInstances = mallocNodes.map(m => mallocToInstance(m)) //.sortBy(ll => ll.tp.name.length) //.distinct //.filter(t => !t.tp.name.contains("CArray") /* && !t.tp.name.contains("Pointer")*/ )
     val mallocInstancesTps = mallocInstances.map(mn => mn.tp)
@@ -158,15 +172,13 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val queryNumber: 
     // now iterate over them
     for (mallocInstance <- distinctInstances) {
       val mallocTp = mallocInstance.tp
-      //	 val elemTp = mallocTp.typeArguments(0)
       val index = __newVarNamed[Int](unit(0), "memoryPoolIndex")
-      val elemType = mallocTp
-      val poolType = elemType //if (mallocTp.isPrimitive) elemType else typePointer(elemType)
       val poolSize = getPoolSize(mallocInstance)
-      val pool = arrayNew(poolSize)(poolType) //malloc(poolSize)(poolType)
+      val pool = arrayNew(poolSize)(mallocTp)
+      // Allocate individual elements if element type is not primitive (e.g. is an record or array)
       if (!mallocTp.isPrimitive) {
         cForLoop(0, poolSize, (i: Rep[Int]) => {
-          if (poolType.isRecord) {
+          if (mallocTp.isRecord) {
             val mallocNode = mallocInstance.asInstanceOf[StructMallocInfo].node
             val newElems = mallocNode.elems.map(e => {
               val in = {
@@ -182,29 +194,28 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val queryNumber: 
             // System.out.println("Methods for tag " + mallocNode.tag + " ARE " + mallocNode.methods.map(m => m.name))
             val newMethods = mallocNode.methods.map(m => m.copy(body =
               transformDef(m.body.asInstanceOf[Def[Any]]).asInstanceOf[PardisLambdaDef]))
-            val allocatedSpace = toAtom(PardisStruct(mallocNode.tag, newElems, newMethods)(elemType))(elemType)
+            val allocatedSpace = toAtom(PardisStruct(mallocNode.tag, newElems, newMethods)(mallocTp))(mallocTp)
             arrayUpdate(pool, i, allocatedSpace)
-          } else if (poolType.isArray) {
+          } else if (mallocTp.isArray) {
             // mallocInstance.node match {
             //   case an @ ArrayNew(size) => {
             // TODO compute the sum of all additions
             val size = mallocInstance.asInstanceOf[ArrayMallocInfo].size.head
-            val newType = poolType.typeArguments(0)
+            val newType = mallocTp.typeArguments(0)
             val newSize = regenerateSize(size)
             //printf(unit("%d\n"), newSize)
-            val allocatedSpace = toAtom(ArrayNew(newSize)(newType.asInstanceOf[PardisType[Any]]))(poolType.asInstanceOf[PardisType[Array[Any]]])
+            val allocatedSpace = toAtom(ArrayNew(newSize)(newType.asInstanceOf[PardisType[Any]]))(mallocTp.asInstanceOf[PardisType[Array[Any]]])
             arrayUpdate(pool, i, allocatedSpace)
             //   }
             // }
           }
-          //malloc(unit(1))(elemType)
-          //pointer_assign(pool.asInstanceOf[Expression[Pointer[Any]]], i, allocatedSpace)
           unit(())
         })
       }
       mallocBuffers += mallocInstance.tp -> BufferInfo(pool.asInstanceOf[Sym[Any]], index)
       // printf(unit("Buffer for type %s of size %d initialized!\n"), unit(mallocTp.toString), poolSize)
     }
+    //printf(unit("------------ALL BUFFERS CREATED---------------\n"))
     // System.out.println(s"mallocBuffers: ${mallocBuffers.mkString("\n\t")}")
   }
 
