@@ -136,7 +136,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
   // val partitionedQueries = List(3, 6, 10, 14)
   if (settings.partitioning /* && partitionedQueries.contains(number)*/ ) {
     pipeline += new WhileToRangeForeachTransformer(DSL)
-    pipeline += new ArrayPartitioning(DSL, number, schema)
+    pipeline += new ArrayPartitioning(DSL, schema)
     pipeline += DCE
   }
 

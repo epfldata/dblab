@@ -26,9 +26,9 @@ import sc.pardis.shallow.utils.DefaultValue
  * TODO maybe add an example
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
- * @param queryNumber specifies the TPCH query number (TODO should be removed)
+ * @param schema the schema information
  */
-class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
 
   import scala.collection.mutable
@@ -215,7 +215,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int, val
       else
         tpeName
     }
-    System.out.println(s"shouldBePartitioned for $arrayInfo: ${polishedTableName}: ${schema.findTable(polishedTableName).get} \n \t ${arrayInfo.constraints}")
+    System.out.println(s"shouldBePartitioned for $arrayInfo: ${polishedTableName}: ${schema.findTable(polishedTableName)} \n \t ${arrayInfo.constraints}")
     schema.findTable(polishedTableName) match {
       case Some(table) =>
         val constraints = rangeElemFieldConstraints.find(x => x._1 == arrayInfo.rangeForeachSymbol).map(_._2).getOrElse(Nil)
@@ -235,11 +235,12 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int, val
   //   case _ => None
   // }
 
-  def bucketSize[T](arrayInfo: ArrayInfo[T]): Rep[Int] = arrayInfo.tpe.name match {
-    case "ORDERSRecord" if queryNumber == 3 || queryNumber == 10 => (arrayInfo.arraySize / arrayInfo.buckets) * unit(4)
-    case "LINEITEMRecord" if queryNumber == 6 || queryNumber == 14 => (arrayInfo.arraySize / arrayInfo.buckets) * unit(4)
-    case _ => unit(1 << 10)
-  }
+  // def bucketSize[T](arrayInfo: ArrayInfo[T]): Rep[Int] = arrayInfo.tpe.name match {
+  //   case "ORDERSRecord" if queryNumber == 3 || queryNumber == 10 => (arrayInfo.arraySize / arrayInfo.buckets) * unit(4)
+  //   case "LINEITEMRecord" if queryNumber == 6 || queryNumber == 14 => (arrayInfo.arraySize / arrayInfo.buckets) * unit(4)
+  //   case _ => unit(1 << 10)
+  // }
+  def bucketSize[T](arrayInfo: ArrayInfo[T]): Rep[Int] = (arrayInfo.arraySize / arrayInfo.buckets) * unit(4)
 
   case class MyDate(year: Int, month: Int, day: Int) {
     def toInt: Int = year * 10000 + month * 100 + day
