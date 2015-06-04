@@ -133,10 +133,10 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
     pipeline += new BlockFlattening(DSL) // should not be needed!
   }
 
-  val partitionedQueries = List(3, 6, 10, 14)
-  if (settings.partitioning && partitionedQueries.contains(number)) {
+  // val partitionedQueries = List(3, 6, 10, 14)
+  if (settings.partitioning /* && partitionedQueries.contains(number)*/ ) {
     pipeline += new WhileToRangeForeachTransformer(DSL)
-    pipeline += new ArrayPartitioning(DSL, number)
+    pipeline += new ArrayPartitioning(DSL, number, schema)
     pipeline += DCE
   }
 

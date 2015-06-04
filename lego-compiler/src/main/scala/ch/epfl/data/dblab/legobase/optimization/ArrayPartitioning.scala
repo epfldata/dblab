@@ -2,6 +2,7 @@ package ch.epfl.data
 package dblab.legobase
 package optimization
 
+import schema._
 import scala.language.implicitConversions
 import sc.pardis.ir._
 import reflect.runtime.universe.{ TypeTag, Type }
@@ -27,7 +28,7 @@ import sc.pardis.shallow.utils.DefaultValue
  * @param IR the polymorphic embedding trait which contains the reified program.
  * @param queryNumber specifies the TPCH query number (TODO should be removed)
  */
-class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
 
   import scala.collection.mutable
@@ -47,6 +48,12 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
   val arraysInfoArray = mutable.Map[ArrayInfo[Any], Rep[Array[Any]]]()
   val arraysInfoCount = mutable.Map[ArrayInfo[Any], Rep[Array[Int]]]()
   val arraysInfoElem = mutable.Map[ArrayInfo[Any], Rep[Any]]()
+
+  sealed trait Phase
+  case object CheckApplicablePhase extends Phase
+  case object ConstraintCollectionPhase extends Phase
+
+  var phase: Phase = _
 
   implicit def arrayInfoToArrayInfoAny[T](arrayInfo: ArrayInfo[T]): ArrayInfo[Any] = arrayInfo.asInstanceOf[ArrayInfo[Any]]
 
@@ -74,6 +81,12 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
       unit((data(0) * 10000) + (data(1) * 100) + data(2))
     case _ => exp
   }
+
+  sealed trait Predicate
+  case object LE extends Predicate
+  case object LEq extends Predicate
+  case object GE extends Predicate
+  case object GEq extends Predicate
 
   case class LessThan(elemField: Rep[Any], upperBound: Rep[Int]) extends Constraint {
     def bound = upperBound.asInstanceOf[Rep[Any]]
@@ -107,6 +120,21 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
     }
   }
 
+  object Comparison {
+    def unapply[T](node: Def[T]): Option[(Rep[Any], Rep[Any], Predicate)] = node match {
+      case Int$less1(a, b) =>
+        Some(a, b, LE)
+      case Int$less$eq1(a, b) =>
+        Some(a, b, LEq)
+      case Int$greater1(a, b) =>
+        Some(a, b, GE)
+      case Int$greater$eq1(a, b) =>
+        Some(a, b, GEq)
+      case _ =>
+        None
+    }
+  }
+
   object ConstraintExtract {
     def unapply[T](node: Def[T]): Option[(Rep[Unit], Constraint)] = node match {
       case Int$less1(elemField, upperBound) if rangeElemField.exists(_._2 == elemField) =>
@@ -129,7 +157,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
 
   case class ArrayInfo[T](rangeForeachSymbol: Rep[Unit], arrayApplyIndex: Rep[Int], array: Rep[Array[T]]) {
     def tpe: TypeRep[T] = array.tp.typeArguments(0).asInstanceOf[TypeRep[T]]
-    def constraints: List[Constraint] = arraysInfoConstraints(this)
+    def constraints: List[Constraint] = arraysInfoConstraints.get(this).getOrElse(Nil)
     def field: String = partitioningField(tpe).get
     def lowerBound: Option[Int] = arraysInfoLowerBound.get(this)
     def upperBound: Option[Int] = arraysInfoUpperBound.get(this)
@@ -227,7 +255,9 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
     })
     arraysInfoConstraints ++= newConstraints
     for (arrayInfo <- arraysInfo) {
-      if (arrayInfo.constraints.forall(c => c.isForDate)) {
+      if (arrayInfo.constraints.isEmpty) {
+        // TODO do we need to do anything?
+      } else if (arrayInfo.constraints.forall(c => c.isForDate)) {
         for (constraint <- arrayInfo.constraints) {
           constraint match {
             case LessThan(_, Constant(upperBound))    => arraysInfoUpperBound += arrayInfo -> upperBound
@@ -250,8 +280,15 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
     computeConstraints()
   }
 
+  override def analyseProgram[T: TypeRep](node: Block[T]): Unit = {
+    phase = CheckApplicablePhase
+    traverseBlock(node)
+    phase = ConstraintCollectionPhase
+    traverseBlock(node)
+  }
+
   analysis += statement {
-    case sym -> RangeForeach(Def(RangeApplyObject(start, end)), Def(Lambda(_, i, body))) => {
+    case sym -> RangeForeach(Def(RangeApplyObject(start, end)), Def(Lambda(_, i, body))) if phase == CheckApplicablePhase => {
       val unitSym = sym.asInstanceOf[Rep[Unit]]
       possibleRangeFors += unitSym
       rangeForIndex += unitSym -> i.asInstanceOf[Rep[Int]]
@@ -262,7 +299,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
   }
 
   analysis += statement {
-    case sym -> ArrayApply(arr, index) if rangeForIndex.exists(_._2 == index) => {
+    case sym -> ArrayApply(arr, index) if phase == CheckApplicablePhase && rangeForIndex.exists(_._2 == index) => {
       val rangeForeach = rangeForIndex.find(_._2 == index).get._1
       rangeArray += rangeForeach -> arr
       rangeArrayApply += rangeForeach -> sym
@@ -271,22 +308,35 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
     }
   }
 
+  // analysis += statement {
+  //   case sym -> Comparison(fieldAccess @ Def(StructImmutableField(elem, field)), Def(GenericEngineParseDateObject(Constant(date))), pred) if phase == CheckApplicablePhase && rangeArrayApply.exists(_._2 == elem) =>
+  //     System.out.println(s"${scala.Console.BLINK}>>>> $sym: ${elem.tp} --- ($elem.$field)==$fieldAccess: ${fieldAccess.tp} --->> $date, `$pred` ${scala.Console.RESET}")
+
+  // }
+
+  // analysis += statement {
+  //   case sym -> StructImmutableField(elem, field) if phase == ConstraintCollectionPhase =>
+  //     if (rangeArrayApply.exists(_._2 == elem)) {
+  //       partitioningField(elem.tp) match {
+  //         case Some(field2) if field == field2 =>
+  //           val rangeForeach = rangeArrayApply.find(_._2 == elem).get._1
+  //           rangeElemField += rangeForeach -> sym
+  //           System.out.println(s"sym field $field")
+  //         case _ => ()
+  //       }
+  //     }
+  //     ()
+  // }
+
   analysis += statement {
-    case sym -> StructImmutableField(elem, field) =>
-      if (rangeArrayApply.exists(_._2 == elem)) {
-        partitioningField(elem.tp) match {
-          case Some(field2) if field == field2 =>
-            val rangeForeach = rangeArrayApply.find(_._2 == elem).get._1
-            rangeElemField += rangeForeach -> sym
-            System.out.println(s"sym field $field")
-          case _ => ()
-        }
-      }
-      ()
+    case sym -> StructImmutableField(elem, field) if phase == CheckApplicablePhase && (rangeArrayApply.exists(_._2 == elem)) =>
+      val rangeForeach = rangeArrayApply.find(_._2 == elem).get._1
+      rangeElemField += rangeForeach -> sym
+      System.out.println(s"sym field $field")
   }
 
   analysis += statement {
-    case sym -> ConstraintExtract(rangeForeach, constraint) =>
+    case sym -> ConstraintExtract(rangeForeach, constraint) if phase == ConstraintCollectionPhase =>
       rangeElemFieldConstraints.getOrElseUpdate(rangeForeach, mutable.ArrayBuffer()) += constraint
       System.out.println(s"$rangeForeach -> $constraint")
   }
