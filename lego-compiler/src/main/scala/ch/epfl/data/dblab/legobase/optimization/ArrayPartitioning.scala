@@ -243,13 +243,11 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
     System.out.println(s"new: $arraysInfoConstraints, $arraysInfoBuckets")
   }
 
-  override def optimize[T: TypeRep](node: Block[T]): Block[T] = {
-    traverseBlock(node)
+  override def postAnalyseProgram[T: TypeRep](node: Block[T]): Unit = {
     arraysInfo ++= possibleRangeFors.filter(rf => rangeForIndex.contains(rf) && rangeArray.contains(rf)).map(rf =>
       ArrayInfo(rf, rangeForIndex(rf), rangeArray(rf))).filter(shouldBePartitioned)
     System.out.println(s"arraysInfo: ${arraysInfo.map(x => x.toString -> x.tpe)}")
     computeConstraints()
-    transformProgram(node)
   }
 
   analysis += statement {
@@ -302,10 +300,9 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
     }
   }
 
-  def createPartitionArray[InnerType](arrayInfo: ArrayInfo[InnerType]): Unit = {
+  def createPartitionArray[InnerType: TypeRep](arrayInfo: ArrayInfo[InnerType]): Unit = {
     System.out.println(scala.Console.RED + arrayInfo.tpe + " Partitioned on field " + arrayInfo.field + " with constraints: " + arrayInfo.constraints + scala.Console.RESET)
 
-    implicit val typeInner = arrayInfo.tpe.asInstanceOf[TypeRep[InnerType]]
     val buckets = arrayInfo.buckets
     val partitionedArray = __newArray[Array[InnerType]](buckets)
     val partitionedCount = __newArray[Int](buckets)
@@ -333,7 +330,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, queryNumber: Int) ext
     case GenericEngineRunQueryObject(b) =>
       for (arrayInfo <- arraysInfo) {
         // printf(unit(s"arrInfo $arrayInfo"))
-        createPartitionArray(arrayInfo)
+        createPartitionArray(arrayInfo)(arrayInfo.tpe)
       }
       val newBlock = transformBlock(b)(b.tp)
       GenericEngineRunQueryObject(newBlock)(newBlock.tp)

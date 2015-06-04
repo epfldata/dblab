@@ -105,7 +105,12 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   def getPartitionedObject[T: TypeRep](hm: Rep[T]): HashMapPartitionObject = partitionedHashMapObjects.find(x => x.mapSymbol == hm).get
 
   override def optimize[T: TypeRep](node: Block[T]): Block[T] = {
-    traverseBlock(node)
+    val res = super.optimize(node)
+    System.out.println(s"${scala.Console.GREEN}[$transformedMapsCount] MultiMaps partitioned!${scala.Console.RESET}")
+    res
+  }
+
+  override def postAnalyseProgram[T: TypeRep](node: Block[T]): Unit = {
     val realHashJoinAntiMaps = hashJoinAntiMaps intersect windowOpMaps
     windowOpMaps --= realHashJoinAntiMaps // TODO should be uncommented
     hashJoinAntiMaps.clear()
@@ -116,12 +121,6 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       val right = rightPartArr.get(hm).map(v => PartitionObject(v, rightPartFunc(hm), rightLoopSymbol(hm)))
       HashMapPartitionObject(hm, left, right)
     })
-    val res =
-      transformProgram(node)
-    // System.out.println(s"[${scala.Console.BLUE}DEBUG${scala.Console.RESET}]${allTables.map(t => t.name -> t.primaryKey).mkString("\n")}")
-    // System.out.println(s"[${scala.Console.BLUE}DEBUG${scala.Console.RESET}]$allTables")
-    System.out.println(s"${scala.Console.GREEN}[$transformedMapsCount] MultiMaps partitioned!${scala.Console.RESET}")
-    res
   }
 
   analysis += statement {

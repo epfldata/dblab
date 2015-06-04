@@ -129,13 +129,9 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val settings: co
     }
   }
 
-  override def optimize[T: TypeRep](node: Block[T]): Block[T] = {
-    traverseBlock(node)
-    // System.out.println(s"CStore potentialTypes: ${potentialTypes}")
-    // System.out.println(s"CStore forbiddenTypes: ${forbiddenTypes}")
+  override def postAnalyseProgram[T: TypeRep](node: Block[T]): Unit = {
     computeColumnarTypes()
     System.out.println(s">>>CStore columnarTypes: ${columnarTypes}<<<")
-    transformProgram(node)
   }
 
   rewrite += remove {
