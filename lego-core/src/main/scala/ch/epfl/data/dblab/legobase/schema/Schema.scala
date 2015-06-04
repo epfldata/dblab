@@ -17,6 +17,7 @@ case class Table(name: String, attributes: List[Attribute], constraints: List[Co
   def notNulls: List[NotNull] = constraints.collect { case nn: NotNull => nn }
   def uniques: List[Unique] = constraints.collect { case unq: Unique => unq }
   def autoIncrement: Option[AutoIncrement] = constraints.collectFirst { case ainc: AutoIncrement => ainc }
+  def findAttribute(attrName: String): Option[Attribute] = attributes.find(attr => attr.name == attrName)
 }
 case class Attribute(name: String, dataType: Tpe, constraints: List[Constraint] = List(), var distinctValuesCount: Int = 0, var nullValuesCount: Long = 0) {
   def hasConstraint(con: Constraint) = constraints.contains(con)
