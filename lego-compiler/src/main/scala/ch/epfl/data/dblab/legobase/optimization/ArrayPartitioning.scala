@@ -286,35 +286,52 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
     def applies2(pred: PredefinedConstraint, const: Constraint): Boolean = pred.field2 == const.field.get
     System.out.println(s"old: $rangeElemFieldConstraints")
     // TODO should be rewritten
-    val newConstraints = rangeElemFieldConstraints.filter(x => getArrayInfo(x._1).nonEmpty).map({
-      case (key, set) => {
-        getArrayInfo(key) match {
-          case Some(arrayInfo) =>
-            arrayInfo -> set.distinct.foldLeft(List[Constraint]())((acc, curr) => {
-              def convertConstraintCondition(c: Constraint): Boolean =
-                applies1(c).exists(pc => applies2(pc, curr))
-              if (curr.elemTpe == arrayInfo.tpe)
-                acc :+ curr
-              else if (acc.exists(convertConstraintCondition)) {
-                val const = acc.find(convertConstraintCondition).get
+    // val newConstraints = rangeElemFieldConstraints.filter(x => getArrayInfo(x._1).nonEmpty).map({
+    //   case (key, set) => {
+    //     getArrayInfo(key) match {
+    //       case Some(arrayInfo) =>
+    //         arrayInfo -> set.distinct.foldLeft(List[Constraint]())((acc, curr) => {
+    //           def convertConstraintCondition(c: Constraint): Boolean =
+    //             applies1(c).exists(pc => applies2(pc, curr))
+    //           if (curr.elemTpe == arrayInfo.tpe)
+    //             acc :+ curr
+    //           else if (acc.exists(convertConstraintCondition)) {
+    //             val const = acc.find(convertConstraintCondition).get
 
-                val newConst = (const, curr) match {
-                  case (LessThan(e1, b1), GreaterThan(e2, b2)) if b1 == b2 => Some(GreaterThanOffset(e1, b1, applies1(const).get.offset))
-                  case _ => None
-                }
-                // System.out.println(s"1: ${curr.elemTpe} 2: ${getArrayInfo(key).tpe} -> $newConst")
-                acc ++ newConst
-              } else {
-                // System.out.println(s"XXX 1: ${curr.elemTpe} 2: ${getArrayInfo(key).tpe} -> const")
-                acc
-              }
-            }).map(_.simplify)
-          case None => ???
+    //             val newConst = (const, curr) match {
+    //               case (LessThan(e1, b1), GreaterThan(e2, b2)) if b1 == b2 => Some(GreaterThanOffset(e1, b1, applies1(const).get.offset))
+    //               case _ => None
+    //             }
+    //             System.out.println(s"1: ${curr.elemTpe} 2: ${getArrayInfo(key).get.tpe} -> $newConst")
+    //             acc ++ newConst
+    //           } else {
+    //             System.out.println(s"XXX 1: ${curr.elemTpe} 2: ${getArrayInfo(key).get.tpe} -> const")
+    //             acc
+    //           }
+    //         }).map(_.simplify)
+    //       case None => ???
+    //     }
+
+    //   }
+    // })
+    // arraysInfoConstraints ++= newConstraints
+    val filteredRangeElemConstraints = rangeElemFieldConstraints.filter(x => getArrayInfo(x._1).nonEmpty)
+    for ((k1, s1) <- filteredRangeElemConstraints) {
+      val arrayInfo1 = getArrayInfo(k1).get
+      arraysInfoConstraints.getOrElseUpdate(arrayInfo1, s1.toList)
+      for ((k2, s2) <- filteredRangeElemConstraints if k1 != k2) {
+        val arrayInfo2 = getArrayInfo(k2).get
+        for (c1 <- s1.distinct; c2 <- s2.distinct if applies1(c1).exists(pc => applies2(pc, c2))) {
+          val newConst = (c1, c2) match {
+            case (LessThan(e1, b1), GreaterThan(e2, b2)) if b1 == b2 => Some(GreaterThanOffset(e1, b1, applies1(c1).get.offset))
+            case _ => None
+          }
+          System.out.println(s"1: ${c1.elemTpe} 2: ${getArrayInfo(k1).get.tpe} -> $newConst")
+          arraysInfoConstraints(arrayInfo1) = newConst.get :: arraysInfoConstraints(arrayInfo1)
         }
-
       }
-    })
-    arraysInfoConstraints ++= newConstraints
+      arraysInfoConstraints(arrayInfo1) = arraysInfoConstraints(arrayInfo1).map(_.simplify)
+    }
     for (arrayInfo <- arraysInfo) {
       if (arrayInfo.constraints.isEmpty) {
         // TODO do we need to do anything?
@@ -324,17 +341,23 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
         arraysInfoConstraints += arrayInfo -> filteredConstraints
         System.out.println(s"filteredConstraints: $filteredConstraints")
         assert(filteredConstraints.size == 2 || filteredConstraints.size == 0)
-        for (constraint <- filteredConstraints) {
-          constraint match {
-            case LessThan(_, Constant(upperBound))    => arraysInfoUpperBound += arrayInfo -> upperBound
-            case GreaterThan(_, Constant(lowerBound)) => arraysInfoLowerBound += arrayInfo -> lowerBound
-            case _                                    =>
+        if (filteredConstraints.size == 2) {
+          for (constraint <- filteredConstraints) {
+            constraint match {
+              case LessThan(_, Constant(upperBound))    => arraysInfoUpperBound += arrayInfo -> upperBound
+              case GreaterThan(_, Constant(lowerBound)) => arraysInfoLowerBound += arrayInfo -> lowerBound
+              case _                                    =>
+            }
+            arraysInfoPartitioningField += arrayInfo -> constraint.field.get
           }
-          arraysInfoPartitioningField += arrayInfo -> constraint.field.get
+          val buckets = convertDateToIndex(MAX_DATE.toInt) - convertDateToIndex(MIN_DATE.toInt) + 1
+          System.out.println(s"added bucket for: $arrayInfo")
+          arraysInfoBuckets += arrayInfo -> buckets
+        } else {
+          // we should not consider those arrayInfos
+          arraysInfo.remove(arrayInfo)
+          arraysInfoConstraints.remove(arrayInfo)
         }
-        val buckets = convertDateToIndex(MAX_DATE.toInt) - convertDateToIndex(MIN_DATE.toInt) + 1
-        System.out.println(s"added bucket for: $arrayInfo")
-        arraysInfoBuckets += arrayInfo -> buckets
       }
     }
 
