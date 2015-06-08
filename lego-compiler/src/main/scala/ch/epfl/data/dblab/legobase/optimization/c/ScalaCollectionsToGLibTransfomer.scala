@@ -277,7 +277,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
 
   rewrite += rule {
     case ts @ TreeSetNew2(Def(OrderingNew(Def(Lambda2(f, i1, i2, o))))) =>
-      val compare = Lambda2(f, i2.asInstanceOf[Rep[LPointer[Any]]], i1.asInstanceOf[Rep[LPointer[Any]]], transformBlock(o))
+      val compare = Lambda2(f, i1.asInstanceOf[Rep[LPointer[Any]]], i2.asInstanceOf[Rep[LPointer[Any]]], transformBlock(o))
       g_tree_new(CLang.&(compare))
   }
   rewrite += rule {
@@ -296,7 +296,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       //   pointer_assign_content(s3.asInstanceOf[Expression[Pointer[Any]]], s2)
       def treeHead[T: TypeRep] = doLambda3((s1: Rep[gpointer], s2: Rep[gpointer], s3: Rep[gpointer]) => {
         CLang.pointer_assign(infix_asInstanceOf[LPointer[T]](s3), infix_asInstanceOf[T](s2))
-        unit(0)
+        unit(1)
       })
       class X
       implicit val elemType = transformType(if (op.typeA.isRecord) typeLPointer(op.typeA) else op.typeA).asInstanceOf[TypeRep[X]]

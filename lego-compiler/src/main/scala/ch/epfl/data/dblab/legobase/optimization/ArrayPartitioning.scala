@@ -314,11 +314,13 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
     case sym -> StructImmutableField(elem, field) if phase == CheckApplicablePhase && (rangeArrayApply.exists(_._2 == elem)) =>
       val rangeForeach = rangeArrayApply.find(_._2 == elem).get._1
       rangeElemField += rangeForeach -> sym
+      ()
   }
 
   analysis += statement {
     case sym -> ConstraintExtract(rangeForeach, constraint) if phase == CheckApplicablePhase =>
       rangeElemFieldConstraints.getOrElseUpdate(rangeForeach, mutable.ArrayBuffer()) += constraint
+      ()
   }
 
   def array_foreach[T: TypeRep](arr: Rep[Array[T]], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
