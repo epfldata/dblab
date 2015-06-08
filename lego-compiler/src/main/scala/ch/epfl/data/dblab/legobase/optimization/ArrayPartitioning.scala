@@ -12,8 +12,6 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 
-// TODO there should be no need for queryNumber thanks to Schema information
-
 /**
  * A transformer for partitioning and indexing the arrays whenever possible.
  *
@@ -136,26 +134,6 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
     }
   }
 
-  // object ConstraintExtract {
-  //   def unapply[T](node: Def[T]): Option[(Rep[Unit], Constraint)] = node match {
-  //     case Int$less1(elemField, upperBound) if rangeElemField.exists(_._2 == elemField) =>
-  //       // System.out.println(s"< $upperBound")
-  //       val rangeForeach = rangeElemField.find(_._2 == elemField).get._1
-  //       Some((rangeForeach, LessThan(elemField, upperBound)))
-  //     case Int$greater$eq1(elemField, upperBound) if rangeElemField.exists(_._2 == elemField) =>
-  //       // System.out.println(s"< $upperBound")
-  //       val rangeForeach = rangeElemField.find(_._2 == elemField).get._1
-  //       Some((rangeForeach, GreaterThan(elemField, upperBound)))
-  //     case Int$greater1(elemField, lowerBound) if rangeElemFieldConstraints.exists(_._2.exists(c => c.bound == lowerBound)) =>
-  //       // System.out.println(s"> $lowerBound")
-  //       val rangeForeach = rangeElemFieldConstraints.find(_._2.exists(c => c.bound == lowerBound)).get._1
-  //       Some((rangeForeach, GreaterThan(elemField, lowerBound)))
-  //     case _ =>
-  //       None
-
-  //   }
-  // }
-
   object ConstraintExtract {
     def unapply[T](node: Def[T]): Option[(Rep[Unit], Constraint)] = node match {
       case Comparison(elemField, bound, pred) if rangeElemField.exists(_._2 == elemField) =>
@@ -165,14 +143,6 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
           case GE | GEq => GreaterThan(elemField, bound)
         }
         Some((rangeForeach, constraint))
-      // case Comparison(elemField, bound, pred) if rangeElemFieldConstraints.exists(_._2.exists(c => c.bound == bound)) =>
-      //   // System.out.println(s"> $lowerBound")
-      //   val rangeForeach = rangeElemFieldConstraints.find(_._2.exists(c => c.bound == bound)).get._1
-      //   val constraint = pred match {
-      //     case LE | LEq => LessThan(elemField, bound)
-      //     case GE | GEq => GreaterThan(elemField, bound)
-      //   }
-      //   Some((rangeForeach, constraint))
       case _ =>
         None
 
@@ -199,12 +169,6 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
     arraysInfo.find(_.rangeForeachSymbol == rangeForeachSymbol)
   }
 
-  // def shouldBePartitioned[T](arrayInfo: ArrayInfo[T]): Boolean = arrayInfo.tpe.name match {
-  //   case "ORDERSRecord" if queryNumber == 3 || queryNumber == 10 => true
-  //   case "LINEITEMRecord" if queryNumber == 6 || queryNumber == 14 => true
-  //   case _ => false
-  // }
-
   def shouldBePartitioned[T](arrayInfo: ArrayInfo[T]): Boolean = {
     // System.out.println(s"tablee: ${schema.tables.find(table => table.name + "Record" == arrayInfo.tpe.name)}")
     val polishedTableName = {
@@ -215,11 +179,11 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
       else
         tpeName
     }
-    System.out.println(s"shouldBePartitioned for $arrayInfo: ${polishedTableName}: ${schema.findTable(polishedTableName)} \n \t ${arrayInfo.constraints}")
+    // System.out.println(s"shouldBePartitioned for $arrayInfo: ${polishedTableName}: ${schema.findTable(polishedTableName)} \n \t ${arrayInfo.constraints}")
     schema.findTable(polishedTableName) match {
       case Some(table) =>
         val constraints = rangeElemFieldConstraints.find(x => x._1 == arrayInfo.rangeForeachSymbol).map(_._2).getOrElse(Nil)
-        System.out.println(s"constraints: $constraints")
+        // System.out.println(s"constraints: $constraints")
         constraints.flatMap(_.field).exists(field => table.findAttribute(field) match {
           case Some(attr) => attr.dataType == DateType
           case None       => false
@@ -229,17 +193,6 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
     }
   }
 
-  // def partitioningField[T](tpe: TypeRep[T]): Option[String] = tpe.name match {
-  //   case "ORDERSRecord" if queryNumber == 3 || queryNumber == 10 => Some("O_ORDERDATE")
-  //   case "LINEITEMRecord" if queryNumber == 6 || queryNumber == 14 => Some("L_SHIPDATE")
-  //   case _ => None
-  // }
-
-  // def bucketSize[T](arrayInfo: ArrayInfo[T]): Rep[Int] = arrayInfo.tpe.name match {
-  //   case "ORDERSRecord" if queryNumber == 3 || queryNumber == 10 => (arrayInfo.arraySize / arrayInfo.buckets) * unit(4)
-  //   case "LINEITEMRecord" if queryNumber == 6 || queryNumber == 14 => (arrayInfo.arraySize / arrayInfo.buckets) * unit(4)
-  //   case _ => unit(1 << 10)
-  // }
   def bucketSize[T](arrayInfo: ArrayInfo[T]): Rep[Int] = (arrayInfo.arraySize / arrayInfo.buckets) * unit(4)
 
   case class MyDate(year: Int, month: Int, day: Int) {
@@ -268,13 +221,6 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
       convertDateToIndex(x)
     }
     case _ => ???
-    // case "ORDERSRecord" if queryNumber == 3 || queryNumber == 10 => (x: Rep[Int]) => {
-    //   convertDateToIndex(x)
-    // }
-    // case "LINEITEMRecord" if queryNumber == 6 || queryNumber == 14 => (x: Rep[Int]) => {
-    //   convertDateToIndex(x)
-    // }
-    // case _ => ???
   }
 
   case class PredefinedConstraint(field1: String, field2: String, offset: Rep[Int])
@@ -284,37 +230,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
   def computeConstraints(): Unit = {
     def applies1(const: Constraint): Option[PredefinedConstraint] = predefinedConstraints.find(_.field1 == const.field.get)
     def applies2(pred: PredefinedConstraint, const: Constraint): Boolean = pred.field2 == const.field.get
-    System.out.println(s"old: $rangeElemFieldConstraints")
-    // TODO should be rewritten
-    // val newConstraints = rangeElemFieldConstraints.filter(x => getArrayInfo(x._1).nonEmpty).map({
-    //   case (key, set) => {
-    //     getArrayInfo(key) match {
-    //       case Some(arrayInfo) =>
-    //         arrayInfo -> set.distinct.foldLeft(List[Constraint]())((acc, curr) => {
-    //           def convertConstraintCondition(c: Constraint): Boolean =
-    //             applies1(c).exists(pc => applies2(pc, curr))
-    //           if (curr.elemTpe == arrayInfo.tpe)
-    //             acc :+ curr
-    //           else if (acc.exists(convertConstraintCondition)) {
-    //             val const = acc.find(convertConstraintCondition).get
-
-    //             val newConst = (const, curr) match {
-    //               case (LessThan(e1, b1), GreaterThan(e2, b2)) if b1 == b2 => Some(GreaterThanOffset(e1, b1, applies1(const).get.offset))
-    //               case _ => None
-    //             }
-    //             System.out.println(s"1: ${curr.elemTpe} 2: ${getArrayInfo(key).get.tpe} -> $newConst")
-    //             acc ++ newConst
-    //           } else {
-    //             System.out.println(s"XXX 1: ${curr.elemTpe} 2: ${getArrayInfo(key).get.tpe} -> const")
-    //             acc
-    //           }
-    //         }).map(_.simplify)
-    //       case None => ???
-    //     }
-
-    //   }
-    // })
-    // arraysInfoConstraints ++= newConstraints
+    // System.out.println(s"old: $rangeElemFieldConstraints")
     val filteredRangeElemConstraints = rangeElemFieldConstraints.filter(x => getArrayInfo(x._1).nonEmpty)
     for ((k1, s1) <- filteredRangeElemConstraints) {
       val arrayInfo1 = getArrayInfo(k1).get
@@ -326,7 +242,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
             case (LessThan(e1, b1), GreaterThan(e2, b2)) if b1 == b2 => Some(GreaterThanOffset(e1, b1, applies1(c1).get.offset))
             case _ => None
           }
-          System.out.println(s"1: ${c1.elemTpe} 2: ${getArrayInfo(k1).get.tpe} -> $newConst")
+          // System.out.println(s"1: ${c1.elemTpe} 2: ${getArrayInfo(k1).get.tpe} -> $newConst")
           arraysInfoConstraints(arrayInfo1) = newConst.get :: arraysInfoConstraints(arrayInfo1)
         }
       }
@@ -339,7 +255,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
         // Taking the constraints which are defining upperbound and lowerbound for a single symbol
         val filteredConstraints = for (x <- arrayInfo.constraints; y <- arrayInfo.constraints if x != y && x.elemField == y.elemField && x.field.nonEmpty) yield x
         arraysInfoConstraints += arrayInfo -> filteredConstraints
-        System.out.println(s"filteredConstraints: $filteredConstraints")
+        // System.out.println(s"filteredConstraints: $filteredConstraints")
         assert(filteredConstraints.size == 2 || filteredConstraints.size == 0)
         if (filteredConstraints.size == 2) {
           for (constraint <- filteredConstraints) {
@@ -351,7 +267,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
             arraysInfoPartitioningField += arrayInfo -> constraint.field.get
           }
           val buckets = convertDateToIndex(MAX_DATE.toInt) - convertDateToIndex(MIN_DATE.toInt) + 1
-          System.out.println(s"added bucket for: $arrayInfo")
+          // System.out.println(s"added bucket for: $arrayInfo")
           arraysInfoBuckets += arrayInfo -> buckets
         } else {
           // we should not consider those arrayInfos
@@ -360,14 +276,11 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
         }
       }
     }
-
-    System.out.println(s"new: $arraysInfoConstraints, $arraysInfoBuckets")
   }
 
   override def postAnalyseProgram[T: TypeRep](node: Block[T]): Unit = {
     arraysInfo ++= possibleRangeFors.filter(rf => rangeForIndex.contains(rf) && rangeArray.contains(rf)).map(rf =>
       ArrayInfo(rf, rangeForIndex(rf), rangeArray(rf))).filter(shouldBePartitioned)
-    System.out.println(s"arraysInfo: ${arraysInfo.map(x => x.toString -> x.tpe)}")
     computeConstraints()
   }
 
@@ -375,7 +288,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
     phase = CheckApplicablePhase
     traverseBlock(node)
     phase = ConstraintCollectionPhase
-    traverseBlock(node)
+    // traverseBlock(node)
   }
 
   analysis += statement {
@@ -383,7 +296,6 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
       val unitSym = sym.asInstanceOf[Rep[Unit]]
       possibleRangeFors += unitSym
       rangeForIndex += unitSym -> i.asInstanceOf[Rep[Int]]
-      // System.out.println(s"range foreach: $rangeForIndex")
       traverseBlock(body)
       ()
     }
@@ -394,42 +306,19 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
       val rangeForeach = rangeForIndex.find(_._2 == index).get._1
       rangeArray += rangeForeach -> arr
       rangeArrayApply += rangeForeach -> sym
-      // System.out.println(s"arr app: $sym $index $rangeForeach")
       ()
     }
   }
-
-  // analysis += statement {
-  //   case sym -> Comparison(fieldAccess @ Def(StructImmutableField(elem, field)), Def(GenericEngineParseDateObject(Constant(date))), pred) if phase == CheckApplicablePhase && rangeArrayApply.exists(_._2 == elem) =>
-  //     System.out.println(s"${scala.Console.BLINK}>>>> $sym: ${elem.tp} --- ($elem.$field)==$fieldAccess: ${fieldAccess.tp} --->> $date, `$pred` ${scala.Console.RESET}")
-
-  // }
-
-  // analysis += statement {
-  //   case sym -> StructImmutableField(elem, field) if phase == ConstraintCollectionPhase =>
-  //     if (rangeArrayApply.exists(_._2 == elem)) {
-  //       partitioningField(elem.tp) match {
-  //         case Some(field2) if field == field2 =>
-  //           val rangeForeach = rangeArrayApply.find(_._2 == elem).get._1
-  //           rangeElemField += rangeForeach -> sym
-  //           System.out.println(s"sym field $field")
-  //         case _ => ()
-  //       }
-  //     }
-  //     ()
-  // }
 
   analysis += statement {
     case sym -> StructImmutableField(elem, field) if phase == CheckApplicablePhase && (rangeArrayApply.exists(_._2 == elem)) =>
       val rangeForeach = rangeArrayApply.find(_._2 == elem).get._1
       rangeElemField += rangeForeach -> sym
-      System.out.println(s"sym field $field")
   }
 
   analysis += statement {
     case sym -> ConstraintExtract(rangeForeach, constraint) if phase == CheckApplicablePhase =>
       rangeElemFieldConstraints.getOrElseUpdate(rangeForeach, mutable.ArrayBuffer()) += constraint
-      System.out.println(s"$rangeForeach -> $constraint")
   }
 
   def array_foreach[T: TypeRep](arr: Rep[Array[T]], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
@@ -442,8 +331,6 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
   }
 
   def createPartitionArray[InnerType: TypeRep](arrayInfo: ArrayInfo[InnerType]): Unit = {
-    System.out.println(scala.Console.RED + arrayInfo.tpe + " Partitioned on field " + arrayInfo.field + " with constraints: " + arrayInfo.constraints + scala.Console.RESET)
-
     val buckets = arrayInfo.buckets
     val partitionedArray = __newArray[Array[InnerType]](buckets)
     val partitionedCount = __newArray[Int](buckets)
@@ -470,7 +357,6 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
   rewrite += rule {
     case GenericEngineRunQueryObject(b) =>
       for (arrayInfo <- arraysInfo) {
-        // printf(unit(s"arrInfo $arrayInfo"))
         createPartitionArray(arrayInfo)(arrayInfo.tpe)
       }
       val newBlock = transformBlock(b)(b.tp)
@@ -485,7 +371,6 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
       val arrayInfo = arraysInfo.find(_.rangeForeachSymbol == sym).get.asInstanceOf[ArrayInfo[ElemType]]
 
       implicit val elemType = arrayInfo.tpe.asInstanceOf[TypeRep[ElemType]]
-      System.out.println(s"range foreach rewriting: $range -> $arrayInfo")
       Range(unit(convertDateToIndex(arrayInfo.lowerBound.get)), unit(convertDateToIndex(arrayInfo.upperBound.get) + 1)).foreach {
         __lambda { bucketIndex =>
           val size = arrayInfo.count(bucketIndex)
