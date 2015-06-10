@@ -580,12 +580,12 @@ object Queries {
           (x.P_SIZE == 23 || x.P_SIZE == 3 || x.P_SIZE == 33 || x.P_SIZE == 29 ||
             x.P_SIZE == 40 || x.P_SIZE == 27 || x.P_SIZE == 22 || x.P_SIZE == 4))
         val partsuppScan = new ScanOp(partsuppTable)
-        val jo1 = new HashJoinOp(partScan, partsuppScan)((x, y) => x.P_PARTKEY == y.PS_PARTKEY)(x => x.P_PARTKEY)(x => x.PS_PARTKEY)
         val supplierScan = new SelectOp(new ScanOp(supplierTable))(x => {
           val idxu = x.S_COMMENT.indexOfSlice(str1, 0)
           val idxp = x.S_COMMENT.indexOfSlice(str2, idxu)
           idxu != -1 && idxp != -1
         })
+        val jo1 = new HashJoinOp(partScan, partsuppScan)((x, y) => x.P_PARTKEY == y.PS_PARTKEY)(x => x.P_PARTKEY)(x => x.PS_PARTKEY)
         val jo2 = new HashJoinAnti(jo1, supplierScan)((x, y) => x.PS_SUPPKEY[Int] == y.S_SUPPKEY)(x => x.PS_SUPPKEY[Int])(x => x.S_SUPPKEY)
         val aggOp = new AggOp(jo2, 1)(x => { x.PS_SUPPKEY[Int]; new Q16GRPRecord1(x.P_BRAND[LBString], x.P_TYPE[LBString], x.P_SIZE[Int], x.PS_SUPPKEY[Int]) })((t, currAgg) => currAgg)
         val aggOp2 = new AggOp(aggOp, 1)(x => { x.key.PS_SUPPKEY; new Q16GRPRecord2(x.key.P_BRAND, x.key.P_TYPE, x.key.P_SIZE) })(
