@@ -2,16 +2,15 @@ package ch.epfl.data
 package dblab.legobase
 package compiler
 
+import Config._
+
 /**
  * Handles the setting parameters which are passed as the main arguments of the program.
  */
 class Settings(val args: List[String]) {
   val SUPPORTED_CS = (1 to 22).toList
-  val LARGE_OUTPUT_QUERIES = List(10, 11, 16, 20)
 
-  def isLargeOutputQuery(tpchQuery: Int) = LARGE_OUTPUT_QUERIES.contains(tpchQuery)
-
-  def validate(targetIsC: Boolean, tpchQuery: Int): Unit = {
+  def validate(codeGenLang: CodeGenerationLang, tpchQuery: Int): Settings = {
     for (arg <- args.filter(a => a.startsWith("+") || a.startsWith("-")).filter(arg => !Settings.ALL_SETTINGS.exists(_.fullFlagName == arg))) {
       System.out.println(s"${Console.YELLOW}Warning${Console.RESET}: flag $arg is not defined!")
     }
@@ -21,16 +20,30 @@ class Settings(val args: List[String]) {
       throw new Exception(s"${HashMapToArraySetting.flagName} and ${HashMapToSetSetting.flagName} cannot be chained together.")
     if ((columnStore || partitioning) && (!SUPPORTED_CS.contains(tpchQuery)))
       throw new Exception(s"${ColumnStoreSetting.flagName} and ${ArrayPartitioningSetting.flagName} only work for the Queries ${SUPPORTED_CS.mkString(" & ")} for the moment!")
-    if (!hasSetting(LargeOutputHoistingSetting) && isLargeOutputQuery(tpchQuery)) {
-      System.out.println(s"${Console.YELLOW}Warning${Console.RESET}: The queries ${LARGE_OUTPUT_QUERIES.mkString("Q", ", Q", "")} should have ${LargeOutputHoistingSetting.flagName} flag. Automatically enabled!")
-    } else if (hasSetting(LargeOutputHoistingSetting) && !isLargeOutputQuery(tpchQuery)) {
-      System.out.println(s"${Console.YELLOW}Warning${Console.RESET}: Only the queries ${LARGE_OUTPUT_QUERIES.mkString("Q", ", Q", "")} should have ${LargeOutputHoistingSetting.flagName} flag.")
-    }
-    if (hasSetting(LargeOutputHoistingSetting) && !targetIsC) {
+    if (hasSetting(LargeOutputHoistingSetting) && codeGenLang != CCodeGeneration) {
       throw new Exception(s"${LargeOutputHoistingSetting.flagName} is only available for C Code Generation.")
     }
     if (pointerStore && oldCArrayHandling) {
       throw new Exception(s"${PointerStoreSetting.flagName} and ${CArrayAsStructSetting.flagName} cannot be chained together.")
+    }
+    if (chooseOptimal) {
+      val prop_ = new java.util.Properties
+      val propName = "config/optimal.properties"
+      try {
+        prop_.load(new java.io.FileInputStream(propName))
+      } catch {
+        case _: Throwable => System.err.println(s"Config file `$propName` does not exist!")
+      }
+      def config(name: String, d: String = "") = prop_.getProperty("tpch." + name, d)
+      val argsString = prop_.getProperty(s"tpch.Q$tpchQuery")
+      if (argsString == null) {
+        throw new Exception(s"${OptimalSetting.flagName} cannot be used for query $tpchQuery, because there is no optimal combiniation defined for it=.")
+      }
+      val newArgs = prop_.getProperty(s"tpch.Q$tpchQuery").split(" ")
+      System.out.println(s"${Console.GREEN}Info${Console.RESET}: the arguments `${newArgs.mkString(" ")}` used!")
+      new Settings(args.take(2) ++ newArgs.toList).validate(codeGenLang, tpchQuery)
+    } else {
+      this
     }
   }
   @inline def hasSetting(setting: Setting): Boolean = args.exists(_ == setting.fullFlagName)
@@ -51,11 +64,12 @@ class Settings(val args: List[String]) {
   def pointerStore: Boolean = hasSetting(PointerStoreSetting)
   def stringOptimization: Boolean = hasSetting(StringOptimizationSetting)
   def hashMapNoCollision: Boolean = hasSetting(HashMapToArraySetting)
-  def largeOutputHoisting(targetIsC: Boolean, tpchQuery: Int): Boolean = !onlyLoading && (hasSetting(LargeOutputHoistingSetting) || (isLargeOutputQuery(tpchQuery) && targetIsC))
+  def largeOutputHoisting: Boolean = hasSetting(LargeOutputHoistingSetting)
   def noFieldRemoval: Boolean = hasSetting(NoFieldRemovalSetting)
   def noSingletonHashMap: Boolean = hasSetting(NoSingletonHashMapSetting)
   def nameIsWithFlag: Boolean = hasSetting(OutputNameWithFlagSetting)
   def onlyLoading: Boolean = hasSetting(OnlyLoaderSetting)
+  def chooseOptimal: Boolean = hasSetting(OptimalSetting)
 
   import Main.Q12SynthesizedExtract
   def isSynthesized: Boolean = args(2) match {
@@ -89,7 +103,8 @@ object Settings {
     NoFieldRemovalSetting,
     NoSingletonHashMapSetting,
     OutputNameWithFlagSetting,
-    OnlyLoaderSetting)
+    OnlyLoaderSetting,
+    OptimalSetting)
 }
 
 /**
@@ -173,9 +188,8 @@ case object StringOptimizationSetting extends OptimizationSetting("str-opt",
   "Helpful for Q22")
 case object HashMapToArraySetting extends OptimizationSetting("hm-no-col",
   "Transforming HashMap without collisions to Array")
-case object LargeOutputHoistingSetting extends OptimizationSetting("large-out",
-  "If the output is so large, this flag ignores the time for printing",
-  "Helpful for Q10, Q11, Q16, Q20")
+case object LargeOutputHoistingSetting extends OptimizationSetting("ignore-printing-output",
+  "If the output is so large, this flag ignores the time for printing")
 case object NoFieldRemovalSetting extends OptimizationSetting("no-field-rem",
   "Disables the unnecessary field removal optimization",
   "Deoptimization!")
@@ -190,3 +204,5 @@ case object OutputNameWithFlagSetting extends OptionSetting("name-with-flag",
   "Appends the optimization flags to the name of files")
 case object OnlyLoaderSetting extends OptionSetting("only-load",
   "Generates only the loader of a query")
+case object OptimalSetting extends OptionSetting("optimal",
+  "Considers an optimal combiniation of optimization flags")

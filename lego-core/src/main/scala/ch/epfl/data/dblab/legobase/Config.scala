@@ -13,6 +13,10 @@ object Config {
   var sf: Double = _
   /** Number of the repititions of running a query */
   val numRuns: scala.Int = 1
-  /** Specifies if the output result of a query should be printed */
-  val printQueryOutput: scala.Boolean = true
+
+  /* Code generation info */
+  sealed trait CodeGenerationLang
+  case object CCodeGeneration extends CodeGenerationLang
+  case object ScalaCodeGeneration extends CodeGenerationLang
+  var codeGenLang: CodeGenerationLang = CCodeGeneration
 }

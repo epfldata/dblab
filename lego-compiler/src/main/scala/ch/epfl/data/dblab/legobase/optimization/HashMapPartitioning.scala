@@ -2,6 +2,7 @@ package ch.epfl.data
 package dblab.legobase
 package optimization
 
+import schema._
 import scala.language.implicitConversions
 import sc.pardis.ir._
 import reflect.runtime.universe.{ TypeTag, Type }
@@ -20,9 +21,8 @@ import sc.pardis.shallow.utils.DefaultValue
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  * @param queryNumber specifies the TPCH query number (TODO should be removed)
- * @param scalingFactor specifies the scaling factor used for TPCH queries (TODO should be removed)
  */
-class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val queryNumber: Int, val scalingFactor: Double) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val queryNumber: Int, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
   val allMaps = scala.collection.mutable.Set[Rep[Any]]()
   val partitionedMaps = scala.collection.mutable.Set[Rep[Any]]()
@@ -105,7 +105,12 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   def getPartitionedObject[T: TypeRep](hm: Rep[T]): HashMapPartitionObject = partitionedHashMapObjects.find(x => x.mapSymbol == hm).get
 
   override def optimize[T: TypeRep](node: Block[T]): Block[T] = {
-    traverseBlock(node)
+    val res = super.optimize(node)
+    System.out.println(s"${scala.Console.GREEN}[$transformedMapsCount] MultiMaps partitioned!${scala.Console.RESET}")
+    res
+  }
+
+  override def postAnalyseProgram[T: TypeRep](node: Block[T]): Unit = {
     val realHashJoinAntiMaps = hashJoinAntiMaps intersect windowOpMaps
     windowOpMaps --= realHashJoinAntiMaps // TODO should be uncommented
     hashJoinAntiMaps.clear()
@@ -116,12 +121,6 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       val right = rightPartArr.get(hm).map(v => PartitionObject(v, rightPartFunc(hm), rightLoopSymbol(hm)))
       HashMapPartitionObject(hm, left, right)
     })
-    val res =
-      transformProgram(node)
-    // System.out.println(s"[${scala.Console.BLUE}DEBUG${scala.Console.RESET}]${allTables.map(t => t.name -> t.primaryKey).mkString("\n")}")
-    // System.out.println(s"[${scala.Console.BLUE}DEBUG${scala.Console.RESET}]$allTables")
-    System.out.println(s"[${scala.Console.BLUE}$transformedMapsCount${scala.Console.RESET}] MultiMaps partitioned!")
-    res
   }
 
   analysis += statement {
@@ -232,15 +231,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     }
   }
 
-  // TODO use Schema instead of manual cases for TPCH
-  def numBuckets(partitionedObject: PartitionObject): Rep[Int] =
-    (partitionedObject.tpe.name, partitionedObject.fieldFunc) match {
-      case ("LINEITEMRecord", "L_ORDERKEY") => partitionedObject.arraySize
-      case ("LINEITEMRecord", "L_SUPPKEY") => unit((10000 * scalingFactor).toInt)
-      case ("LINEITEMRecord", "L_PARTKEY") => unit((250000 * scalingFactor).toInt)
-      case ("CUSTOMERRecord", "C_NATIONKEY") | ("SUPPLIERRecord", "S_NATIONKEY") => unit(25)
-      case _ => partitionedObject.arraySize / unit(4)
-    }
+  def numBuckets(partitionedObject: PartitionObject): Rep[Int] = unit(schema.stats.getDistinctAttrValues(partitionedObject.fieldFunc))
 
   // TODO use Schema instead of manual cases for TPCH
   def numBucketsFull(partitionedObject: PartitionObject): Rep[Int] = partitionedObject.arr match {
@@ -308,7 +299,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   }
 
   def createPartitionArray(partitionedObject: PartitionObject): Unit = {
-    System.out.println(scala.Console.RED + partitionedObject.arr.tp.typeArguments(0) + " Partitioned on field " + partitionedObject.fieldFunc + scala.Console.RESET)
+    System.out.println(scala.Console.GREEN + "Table " + partitionedObject.arr.tp.typeArguments(0) + " was partitioned on field " + partitionedObject.fieldFunc + scala.Console.RESET)
 
     class InnerType
     implicit val typeInner = partitionedObject.arr.tp.typeArguments(0).asInstanceOf[TypeRep[InnerType]]
@@ -324,7 +315,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     }
     val buckets = partitionedObject.buckets
     if (partitionedObject.is1D) {
-      System.out.println(s"${scala.Console.BLUE}1D Array!!!${scala.Console.RESET}")
+      //System.out.println(s"${scala.Console.BLUE}1D Array!!!${scala.Console.RESET}")
       if (partitionedObject.reuseOriginal1DArray) {
         partitionedObjectsArray += partitionedObject -> originalArray.asInstanceOf[Rep[Array[Any]]]
       } else {

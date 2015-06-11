@@ -3,7 +3,7 @@ OPTFLAG=-O3
 PKG_CONFIG=$(shell locate pkg-config | head -n 1)
 LIBS=`pkg-config --cflags glib-2.0 --libs glib-2.0`
 # For debugging
-CFLAGS=-g -Wno-parentheses-equality
+#CFLAGS=-g -Wno-parentheses-equality
 # For testing
 # CFLAGS=-w
 FILES=$(wildcard *.c)

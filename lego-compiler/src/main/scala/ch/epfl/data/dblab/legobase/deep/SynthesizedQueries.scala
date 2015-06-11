@@ -76,7 +76,7 @@ trait SynthesizedQueriesComponent extends tpch.QueriesImplementations { this: ch
             case 5 => printf(unit("%d, %d, %d, %d, %f"), ex1, ex2, ex3, ex4, ex5)
             case 6 => printf(unit("%d, %d, %d, %d, %f, %f"), ex1, ex2, ex3, ex4, ex5, ex6)
           }
-        }, __lambda { () => unit(true) })
+        }, -1)
         po.open();
         po.next();
         unit(())

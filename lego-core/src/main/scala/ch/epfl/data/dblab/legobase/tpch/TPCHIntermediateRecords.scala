@@ -5,7 +5,9 @@ package tpch
 import sc.pardis.annotations.{ deep, needs }
 import sc.pardis.shallow.{ CaseClassRecord, OptimalString }
 
-@deep case class GroupByClass(val L_RETURNFLAG: Char, val L_LINESTATUS: Char) extends CaseClassRecord
+@deep case class Q1GRPRecord(
+  val L_RETURNFLAG: Char,
+  val L_LINESTATUS: Char) extends CaseClassRecord
 
 @deep case class Q3GRPRecord(
   val L_ORDERKEY: Int,
@@ -30,6 +32,9 @@ import sc.pardis.shallow.{ CaseClassRecord, OptimalString }
   val C_ADDRESS: LBString,
   val C_COMMENT: LBString) extends CaseClassRecord
 
+@deep case class Q13IntRecord(
+  var count: Int) extends CaseClassRecord
+
 @needs[OptimalString] @deep case class Q16GRPRecord1(
   val P_BRAND: LBString,
   val P_TYPE: LBString,
@@ -52,6 +57,3 @@ import sc.pardis.shallow.{ CaseClassRecord, OptimalString }
   val PS_PARTKEY: Int,
   val PS_SUPPKEY: Int,
   val PS_AVAILQTY: Int) extends CaseClassRecord
-
-@deep case class Q13IntRecord(
-  var count: Int) extends CaseClassRecord

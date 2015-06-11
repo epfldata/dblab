@@ -3,6 +3,7 @@ package dblab.legobase
 package queryengine
 
 import sc.pardis.annotations._
+import queryengine.push._
 
 @noImplementation
 @deep

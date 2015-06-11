@@ -11,6 +11,7 @@ import ch.epfl.data.sc.pardis
 import pardis.ir._
 import pardis.types.PardisTypeImplicits._
 import pardis.effects._
+import ch.epfl.data.dblab.legobase.queryengine.push._
 
 /** A polymorphic embedding cake containing manually lifted methods and classes */
 trait ManualLiftedLegoBase extends OrderingOps with ManifestOps with sc.pardis.deep.scalalib.collection.RichIntOps with sc.pardis.deep.scalalib.ByteComponent with LegoHashMap with sc.pardis.deep.scalalib.collection.ContOps with sc.pardis.deep.scalalib.ScalaPredef { this: DeepDSL =>
@@ -118,4 +119,3 @@ trait LegoHashMap { this: DeepDSL =>
     override def funArgs = List(extract, size)
   }
 }
-

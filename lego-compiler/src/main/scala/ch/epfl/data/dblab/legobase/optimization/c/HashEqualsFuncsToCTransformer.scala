@@ -112,6 +112,8 @@ class HashEqualsFuncsToCTransformer(override val IR: LoweringLegoBase) extends R
       val structDef = getStructDef(ttp).get
       if (ttp.name == "Q9GRPRecord" && structDef.fields.forall(_.tpe == IntType)) {
         field[Int](e, "NATION") * unit(10000) + field[Int](e, "O_YEAR")
+      } else if (ttp.name == "Q16GRPRecord2" && structDef.fields.forall(_.tpe == IntType)) {
+        field[Int](e, "P_BRAND") * unit(10000) + field[Int](e, "P_TYPE") * unit(100) + field[Int](e, "P_SIZE")
       } else if (ttp.name == "Q10GRPRecord") {
         field[Int](e, "C_CUSTKEY")
       } else {

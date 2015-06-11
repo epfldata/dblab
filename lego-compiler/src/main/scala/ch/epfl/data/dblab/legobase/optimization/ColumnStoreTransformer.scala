@@ -17,71 +17,10 @@ import sc.pardis.shallow.utils.DefaultValue
  * Transforms row layout representation to columnar layout representation.
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
- * @param queryNumber specifies the TPCH query number (TODO should be removed)
  * @param settings the compiler settings provided as command line arguments (TODO should be removed)
  */
-class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber: Int, val settings: compiler.Settings) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class ColumnStoreTransformer(override val IR: LoweringLegoBase, val settings: compiler.Settings) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
-
-  // TODO should be removed
-  /** Specifies the list of records that were partitioned into a 1D array in the hashmap partitioning phase */
-  val partitioned1D = queryNumber match {
-    case 1  => Nil
-    case 2  => List("REGIONRecord", "PARTRecord", "NATIONRecord", "SUPPLIERRecord")
-    case 3  => List("CUSTOMERRecord")
-    case 4  => Nil
-    case 5  => List("SUPPLIERRecord", "REGIONRecord")
-    case 6  => Nil
-    case 7  => List("CUSTOMERRecord", "ORDERSRecord")
-    case 8  => List("NATIONRecord", "SUPPLIERRecord", "REGIONRecord", "CUSTOMERRecord", "ORDERSRecord", "PARTRecord")
-    case 9  => List("ORDERSRecord", "PARTRecord", "NATIONRecord")
-    case 10 => List("NATIONRecord")
-    case 11 => List("NATIONRecord")
-    case 12 => List("ORDERSRecord")
-    case 13 => Nil
-    case 14 => List("PARTRecord")
-    case 15 => List("SUPPLIERRecord")
-    case 16 => List("SUPPLIERRecord", "PARTRecord")
-    case 17 => Nil
-    case 18 => List("CUSTOMERRecord", "ORDERSRecord")
-    case 19 => Nil
-    case 20 => List("NATIONRecord", "SUPPLIERRecord", "PARTRecord")
-    case 21 => List("NATIONRecord", "ORDERSRecord")
-    case 22 => Nil
-  }
-
-  // TODO should be removed
-  val typeList = (queryNumber match {
-    case 1  => List("LINEITEMRecord")
-    case 2  => List("PARTSUPPRecord")
-    case 3  => List("ORDERSRecord")
-    case 4  => List("ORDERSRecord")
-    case 5  => List("NATIONRecord")
-    case 6  => List("LINEITEMRecord")
-    case 7  => List("NATIONRecord")
-    case 8  => List("LINEITEMRecord")
-    case 9  => List("PARTRecord") //List("SUPPLIERRecord")
-    case 10 => List("CUSTOMERRecord", "NATIONRecord")
-    case 11 => List("SUPPLIERRecord")
-    case 12 => List("LINEITEMRecord")
-    case 13 => List("CUSTOMERRecord")
-    case 14 => List("LINEITEMRecord")
-    case 15 => List("LINEITEMRecord")
-    case 16 => List("PARTSUPPRecord")
-    case 17 => List("PARTRecord")
-    case 18 => List("LINEITEMRecord")
-    case 19 => List("PARTRecord")
-    case 20 => List("PARTSUPPRecord")
-    case 21 => List("SUPPLIERRecord", "NATIONRecord")
-    case 22 => List("CUSTOMERRecord")
-    case _  => throw new Exception(s"Column store not supported yet for $queryNumber")
-  }) //++ (if (settings.hashMapPartitioning) partitioned1D else Nil)
-  // For some unknown reason, if we apply column store over these fields, the result will get incorrect.
-
-  // def shouldBeColumnarized[T](tp: PardisType[T]): Boolean = tp.name match {
-  //   case name if typeList.contains(name) => true
-  //   case _                               => false
-  // }
 
   def shouldBeColumnarized[T](tp: PardisType[T]): Boolean =
     columnarTypes.contains(tp)
@@ -190,13 +129,9 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val queryNumber:
     }
   }
 
-  override def optimize[T: TypeRep](node: Block[T]): Block[T] = {
-    traverseBlock(node)
-    // System.out.println(s"CStore potentialTypes: ${potentialTypes}")
-    // System.out.println(s"CStore forbiddenTypes: ${forbiddenTypes}")
+  override def postAnalyseProgram[T: TypeRep](node: Block[T]): Unit = {
     computeColumnarTypes()
     System.out.println(s">>>CStore columnarTypes: ${columnarTypes}<<<")
-    transformProgram(node)
   }
 
   rewrite += remove {

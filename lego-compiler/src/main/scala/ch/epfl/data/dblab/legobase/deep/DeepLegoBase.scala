@@ -28,7 +28,7 @@ trait DeepDSL extends queryengine.push.OperatorsComponent
   with ArrayComponent
   with SeqComponent
   with PrintStreamComponent
-  with GroupByClassComponent
+  with Q1GRPRecordComponent
   with Q3GRPRecordComponent
   with Q7GRPRecordComponent
   with Q9GRPRecordComponent
