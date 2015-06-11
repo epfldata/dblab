@@ -2,6 +2,7 @@ package ch.epfl.data
 package dblab.legobase
 package optimization
 
+import schema._
 import scala.language.implicitConversions
 import sc.pardis.ir._
 import reflect.runtime.universe.{ TypeTag, Type }
@@ -11,14 +12,8 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.deep.scalalib.collection._
 
-object SetArrayTransformation extends TransformerHandler {
-  def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    new SetArrayTransformation(context.asInstanceOf[LoweringLegoBase]).optimize(block)
-  }
-}
-
 class SetArrayTransformation[Lang <: SetComponent with sc.pardis.deep.scalalib.OptionComponent with sc.pardis.deep.scalalib.Tuple2Component with sc.pardis.deep.scalalib.ArrayComponent with sc.pardis.deep.scalalib.IntComponent with sc.pardis.deep.scalalib.BooleanComponent with ContOps with ManualLiftedLegoBase](
-  override val IR: Lang) extends sc.pardis.optimization.RecursiveRuleBasedTransformer[Lang](IR)
+  override val IR: Lang, val schema: Schema) extends sc.pardis.optimization.RecursiveRuleBasedTransformer[Lang](IR)
   with ArrayEscapeLowering[Lang]
   with VarEscapeLowering[Lang]
   with Tuple2EscapeLowering[Lang]
@@ -66,6 +61,16 @@ class SetArrayTransformation[Lang <: SetComponent with sc.pardis.deep.scalalib.O
     case sym -> (node @ SetApplyObject2()) => {
       loweredSets += sym
       ()
+    }
+  }
+
+  override def postAnalyseProgram[T: TypeRep](node: Block[T]): Unit = {
+    for (sym <- loweredSets) {
+      val originalType = sym.tp.typeArguments(0).name
+      val loweredType = lowerType(sym.tp).name
+      val arrayType = "Array_" + originalType
+      schema.stats.addDependency(loweredType, originalType, x => x)
+      schema.stats.addDependency(arrayType, originalType, x => x)
     }
   }
 

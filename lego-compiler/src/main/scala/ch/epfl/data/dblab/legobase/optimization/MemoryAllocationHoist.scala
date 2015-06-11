@@ -116,19 +116,30 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val schema: Schem
     case d @ Def(_)            => s
   }
 
+  def tagToTableNames[T](tag: StructTag[T]): List[String] = {
+    tag match {
+      case CompositeTag(_, _, a, b) =>
+        tagToTableNames(a) ++ tagToTableNames(b)
+      case ClassTag(name) =>
+        List(name)
+    }
+  }
+
   // TODO-GEN: Maybe this should be moved somewhere else ? (looks generic enough!)
   def getStructSizeEstimationFromStatistics[T](tag: StructTag[T]): Double = {
-    tag match {
-      case CompositeTag(_, _, ClassTag(a), ClassTag(b)) =>
-        schema.stats.getJoinOutputEstimation(a, b)
-      // Left deep plan
-      case CompositeTag(_, _, ct @ CompositeTag(_, _, _, _), ClassTag(b)) =>
-        schema.stats.getJoinOutputEstimation(getStructSizeEstimationFromStatistics(ct), b)
-      // Right deep plan
-      case CompositeTag(_, _, ClassTag(a), ct @ CompositeTag(_, _, _, _)) =>
-        schema.stats.getJoinOutputEstimation(a, getStructSizeEstimationFromStatistics(ct))
-      case ClassTag(tag) =>
-        schema.stats.getEstimatedNumObjectsForType(tag)
+    tagToTableNames(tag) match {
+      case List(name) => schema.stats.getEstimatedNumObjectsForType(name)
+      case names      => schema.stats.getJoinOutputEstimation(names)
+      // case CompositeTag(_, _, ClassTag(a), ClassTag(b)) =>
+      //   schema.stats.getJoinOutputEstimation(a, b)
+      // // Left deep plan
+      // case CompositeTag(_, _, ct @ CompositeTag(_, _, _, _), ClassTag(b)) =>
+      //   schema.stats.getJoinOutputEstimation(getStructSizeEstimationFromStatistics(ct), b)
+      // // Right deep plan
+      // case CompositeTag(_, _, ClassTag(a), ct @ CompositeTag(_, _, _, _)) =>
+      //   schema.stats.getJoinOutputEstimation(a, getStructSizeEstimationFromStatistics(ct))
+      // case ClassTag(tag) =>
+      //   schema.stats.getEstimatedNumObjectsForType(tag)
     }
   }
 
@@ -137,7 +148,11 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val schema: Schem
       case r if r.isRecord =>
         getStructSizeEstimationFromStatistics(mallocInfo.asInstanceOf[StructMallocInfo].node.tag)
       case r if r.isArray =>
-        schema.stats.getEstimatedNumObjectsForType(r.toString)
+        val tpeString = r.typeArguments(0) match {
+          case tp if tp.isRecord => s"ArrayType(${tp.name})"
+          case tp                => r.toString
+        }
+        schema.stats.getEstimatedNumObjectsForType(tpeString)
     }).toInt
   }
 

@@ -119,7 +119,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
     }
 
     if (settings.setToArray) {
-      pipeline += SetArrayTransformation
+      pipeline += new SetArrayTransformation(DSL, schema)
     }
     if (settings.setToLinkedList || settings.setToArray || settings.hashMapNoCollision) {
       pipeline += AssertTransformer(TypeAssertion(t => !t.isInstanceOf[DSL.SetType[_]]))
