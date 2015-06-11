@@ -70,7 +70,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
   pipeline += new StatisticsEstimator(DSL, schema)
 
   pipeline += LBLowering(shouldRemoveUnusedFields)
-  pipeline += TreeDumper(false)
+  // pipeline += TreeDumper(false)
   pipeline += ParameterPromotion
   pipeline += DCE
   pipeline += PartiallyEvaluate
@@ -85,7 +85,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
     if (number == 18) {
       pipeline += ConstSizeArrayToLocalVars
       pipeline += DCE
-      pipeline += TreeDumper(true)
+      // pipeline += TreeDumper(true)
       pipeline += new HashMapTo1DArray(DSL)
     }
     pipeline += new HashMapPartitioningTransformer(DSL, number, schema)
@@ -135,6 +135,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
 
   // val partitionedQueries = List(3, 6, 10, 14)
   if (settings.partitioning /* && partitionedQueries.contains(number)*/ ) {
+    pipeline += TreeDumper(false)
     pipeline += new WhileToRangeForeachTransformer(DSL)
     pipeline += new ArrayPartitioning(DSL, schema)
     pipeline += DCE

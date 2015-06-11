@@ -35,7 +35,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
   val rangeForIndex = mutable.Map[Rep[Unit], Rep[Int]]()
   val rangeArray = mutable.Map[Rep[Unit], Rep[Array[Any]]]()
   val rangeArrayApply = mutable.Map[Rep[Unit], Rep[Any]]()
-  val rangeElemField = mutable.Map[Rep[Unit], Rep[Any]]()
+  val rangeElemFields = mutable.Map[Rep[Unit], mutable.ArrayBuffer[Rep[Any]]]()
   val rangeElemFieldConstraints = mutable.Map[Rep[Unit], mutable.ArrayBuffer[Constraint]]()
 
   val arraysInfo = mutable.Set[ArrayInfo[Any]]()
@@ -136,8 +136,8 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
 
   object ConstraintExtract {
     def unapply[T](node: Def[T]): Option[(Rep[Unit], Constraint)] = node match {
-      case Comparison(elemField, bound, pred) if rangeElemField.exists(_._2 == elemField) =>
-        val rangeForeach = rangeElemField.find(_._2 == elemField).get._1
+      case Comparison(elemField, bound, pred) if rangeElemFields.exists(_._2.contains(elemField)) =>
+        val rangeForeach = rangeElemFields.find(_._2.contains(elemField)).get._1
         val constraint = pred match {
           case LE | LEq => LessThan(elemField, bound)
           case GE | GEq => GreaterThan(elemField, bound)
@@ -248,6 +248,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
       }
       arraysInfoConstraints(arrayInfo1) = arraysInfoConstraints(arrayInfo1).map(_.simplify)
     }
+    // System.out.println(arraysInfo.map(x => x -> x.constraints).mkString("\n"))
     for (arrayInfo <- arraysInfo) {
       if (arrayInfo.constraints.isEmpty) {
         // TODO do we need to do anything?
@@ -255,7 +256,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
         // Taking the constraints which are defining upperbound and lowerbound for a single symbol
         val filteredConstraints = for (x <- arrayInfo.constraints; y <- arrayInfo.constraints if x != y && x.elemField == y.elemField && x.field.nonEmpty) yield x
         arraysInfoConstraints += arrayInfo -> filteredConstraints
-        // System.out.println(s"filteredConstraints: $filteredConstraints")
+        // System.out.println(s"filteredConstraints: $filteredConstraints, not filtered: ${arrayInfo.constraints}")
         assert(filteredConstraints.size == 2 || filteredConstraints.size == 0)
         if (filteredConstraints.size == 2) {
           for (constraint <- filteredConstraints) {
@@ -313,7 +314,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
   analysis += statement {
     case sym -> StructImmutableField(elem, field) if phase == CheckApplicablePhase && (rangeArrayApply.exists(_._2 == elem)) =>
       val rangeForeach = rangeArrayApply.find(_._2 == elem).get._1
-      rangeElemField += rangeForeach -> sym
+      rangeElemFields.getOrElseUpdate(rangeForeach, mutable.ArrayBuffer()) += sym
       ()
   }
 
