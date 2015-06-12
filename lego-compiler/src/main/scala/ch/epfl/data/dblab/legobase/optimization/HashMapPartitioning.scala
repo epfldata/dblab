@@ -39,26 +39,16 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
 
   val windowOpMaps = scala.collection.mutable.Set[Rep[Any]]()
 
-  // val SIZE_ORDER = List("REGIONRecord", "NATIONRecord", "SUPPLIERRecord", "CUSTOMERRecord", "PARTRecord", "PARTSUPPRecord", "ORDERSRecord", "LINEITEMRecord")
-
-  // def getSizeOrder[T](tp: TypeRep[T]): Int = {
-  //   val name = tp.name
-  //   SIZE_ORDER.zipWithIndex.find(x => x._1 == name).get._2
-  // }
+  def multiMapHasDefaultHandling[T](mm: Rep[T]): Boolean = getLoweredSymbolOriginalDef(mm) match {
+    case Some(loj: LeftOuterJoinOpNew[_, _, _]) => true
+    case _                                      => false
+  }
 
   val ONE_D_ENABLED = true
 
   val QUERY_18_DUMMY_FIELD = "DUM"
 
   def isPrimaryKey[T](tp: TypeRep[T], field: String): Boolean = (tp.name, field) match {
-    // case ("REGIONRecord", "R_REGIONKEY") => true
-    // case ("NATIONRecord", "N_NATIONKEY") => true
-    // case ("SUPPLIERRecord", "S_SUPPKEY") => true
-    // case ("CUSTOMERRecord", "C_CUSTKEY") => true
-    // case ("PARTRecord", "P_PARTKEY") => true
-    // // case ("PARTSUPPRecord", _) => false
-    // case ("ORDERSRecord", "O_ORDERKEY") => true
-    // // case ("LINEITEMRecord", "L_ORDERKEY") => true
     case (tableName, _) if getTable(tableName).exists(table => table.primaryKey.exists(pk => pk.attributes.forall(att => att.name == field))) => true
     case ("Double", QUERY_18_DUMMY_FIELD) if queryNumber == 18 => true
     case _ => false
@@ -589,36 +579,29 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   }
 
   /* The parts dedicated to left outer join handling */
-  def leftOuterJoinDefaultHandling(mm: Rep[MultiMap[Any, Any]], key: Rep[Int], partitionedObject: PartitionObject): Rep[Unit] = queryNumber match {
-    case 13 =>
-      __ifThenElse(!readVar(leftOuterJoinExistsVar(mm)), {
-        inlineBlock[Unit](leftOuterJoinDefault(mm))
-      }, unit(()))
-    // printf(unit("query 13!"))
-    case _ => unit(())
-  }
+  def leftOuterJoinDefaultHandling(mm: Rep[MultiMap[Any, Any]], key: Rep[Int], partitionedObject: PartitionObject): Rep[Unit] = if (multiMapHasDefaultHandling(mm)) {
+    __ifThenElse(!readVar(leftOuterJoinExistsVar(mm)), {
+      inlineBlock[Unit](leftOuterJoinDefault(mm))
+    }, unit(()))
+  } else unit(())
 
-  def leftOuterJoinExistsVarDefine(mm: Rep[MultiMap[Any, Any]]): Unit = queryNumber match {
-    case 13 =>
-      val exists = __newVarNamed[Boolean](unit(false), "exists")
-      leftOuterJoinExistsVar(mm) = exists
-      ()
-    case _ =>
-  }
+  def leftOuterJoinExistsVarDefine(mm: Rep[MultiMap[Any, Any]]): Unit = if (multiMapHasDefaultHandling(mm)) {
+    val exists = __newVarNamed[Boolean](unit(false), "exists")
+    leftOuterJoinExistsVar(mm) = exists
+    ()
+  } else ()
 
-  def leftOuterJoinExistsVarSet(mm: Rep[MultiMap[Any, Any]]): Unit = queryNumber match {
-    case 13 =>
-      val exists = leftOuterJoinExistsVar(mm)
-      __assign(exists, unit(true))
-      ()
-    case _ =>
-  }
+  def leftOuterJoinExistsVarSet(mm: Rep[MultiMap[Any, Any]]): Unit = if (multiMapHasDefaultHandling(mm)) {
+    val exists = leftOuterJoinExistsVar(mm)
+    __assign(exists, unit(true))
+    ()
+  } else ()
 
   val leftOuterJoinDefault = scala.collection.mutable.Map[Rep[Any], Block[Unit]]()
   val leftOuterJoinExistsVar = scala.collection.mutable.Map[Rep[Any], Var[Boolean]]()
 
   analysis += rule {
-    case IfThenElse(Def(OptionNonEmpty(Def(MultiMapGet(mm, elem)))), thenp, elsep) if queryNumber == 13 => {
+    case IfThenElse(Def(OptionNonEmpty(Def(MultiMapGet(mm, elem)))), thenp, elsep) if multiMapHasDefaultHandling(mm) => {
       // System.out.println(s"elsep: $elsep")
       leftOuterJoinDefault += mm -> elsep.asInstanceOf[Block[Unit]]
       ()
