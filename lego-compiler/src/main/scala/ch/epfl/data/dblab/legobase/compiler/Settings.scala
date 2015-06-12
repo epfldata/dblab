@@ -16,7 +16,7 @@ class Settings(val args: List[String]) {
     if (!hashMapLowering && (setToArray || setToLinkedList || containerFlattenning))
       throw new Exception("It's impossible to lower Sets without lowering HashMap and MultiMap!")
     if (hashMapLowering && hashMapNoCollision)
-      throw new Exception(s"${HashMapToArraySetting.flagName} and ${HashMapToSetSetting.flagName} cannot be chained together.")
+      throw new Exception(s"${HashMapNoCollisionSetting.flagName} and ${HashMapToSetSetting.flagName} cannot be chained together.")
     if (hasSetting(LargeOutputHoistingSetting) && targetLanguage != CCodeGeneration) {
       throw new Exception(s"${LargeOutputHoistingSetting.flagName} is only available for C Code Generation.")
     }
@@ -49,6 +49,7 @@ class Settings(val args: List[String]) {
   def setToArray: Boolean = hasSetting(SetToArraySetting)
   def setToLinkedList: Boolean = hasSetting(SetToLinkedListSetting)
   def containerFlattenning: Boolean = hasSetting(ContainerFlattenningSetting)
+  def hashMapToArray: Boolean = hasSetting(HashMapToArraySetting)
   def columnStore: Boolean = hasSetting(ColumnStoreSetting)
   def partitioning: Boolean = hasSetting(ArrayPartitioningSetting)
   def hashMapPartitioning: Boolean = hasSetting(HashMapPartitioningSetting)
@@ -60,7 +61,7 @@ class Settings(val args: List[String]) {
   def oldCArrayHandling: Boolean = hasSetting(CArrayAsStructSetting)
   def pointerStore: Boolean = hasSetting(PointerStoreSetting)
   def stringOptimization: Boolean = hasSetting(StringOptimizationSetting)
-  def hashMapNoCollision: Boolean = hasSetting(HashMapToArraySetting)
+  def hashMapNoCollision: Boolean = hasSetting(HashMapNoCollisionSetting)
   def largeOutputHoisting: Boolean = hasSetting(LargeOutputHoistingSetting)
   def noFieldRemoval: Boolean = hasSetting(NoFieldRemovalSetting)
   def noSingletonHashMap: Boolean = hasSetting(NoSingletonHashMapSetting)
@@ -88,6 +89,7 @@ object Settings {
     SetToArraySetting,
     SetToLinkedListSetting,
     ContainerFlattenningSetting,
+    HashMapToArraySetting,
     ColumnStoreSetting,
     PointerStoreSetting,
     ArrayPartitioningSetting,
@@ -99,7 +101,7 @@ object Settings {
     IfAggressiveSetting,
     CArrayAsStructSetting,
     StringOptimizationSetting,
-    HashMapToArraySetting,
+    HashMapNoCollisionSetting,
     LargeOutputHoistingSetting,
     NoFieldRemovalSetting,
     NoSingletonHashMapSetting,
@@ -159,6 +161,8 @@ case object SetToArraySetting extends OptimizationSetting("set2arr",
   "Lowering Set to Array")
 case object SetToLinkedListSetting extends OptimizationSetting("set2ll",
   "Lowering Set to LinkedList")
+case object HashMapToArraySetting extends OptimizationSetting("hm2arr",
+  "Lowering HashMap to 1D Array without key inside its value")
 case object ContainerFlattenningSetting extends OptimizationSetting("cont-flat",
   "Flattening the next field of a container of a record to the record itself")
 case object ColumnStoreSetting extends OptimizationSetting("cstore",
@@ -188,7 +192,7 @@ case object CArrayAsStructSetting extends OptimizationSetting("old-carr",
 case object StringOptimizationSetting extends OptimizationSetting("str-opt",
   "Some optimizations on string operations",
   "Helpful for Q22")
-case object HashMapToArraySetting extends OptimizationSetting("hm-no-col",
+case object HashMapNoCollisionSetting extends OptimizationSetting("hm-no-col",
   "Transforming HashMap without collisions to Array")
 case object LargeOutputHoistingSetting extends OptimizationSetting("ignore-printing-output",
   "If the output is so large, this flag ignores the time for printing")

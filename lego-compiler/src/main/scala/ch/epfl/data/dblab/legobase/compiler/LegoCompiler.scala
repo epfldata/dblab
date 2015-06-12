@@ -79,17 +79,17 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val settings: Set
   if (!settings.noSingletonHashMap)
     pipeline += SingletonHashMapToValueTransformer
 
+  if (settings.hashMapToArray) {
+    // for now it only works for Q18 (number == 18)
+    pipeline += ConstSizeArrayToLocalVars
+    pipeline += DCE
+    // pipeline += TreeDumper(true)
+    pipeline += new HashMapTo1DArray(DSL)
+    // pipeline += new HashMapNoCollisionTransformation(DSL, number)
+  }
+
   if (settings.hashMapPartitioning) {
-
-    if (number == 18) {
-      pipeline += ConstSizeArrayToLocalVars
-      pipeline += DCE
-      // pipeline += TreeDumper(true)
-      pipeline += new HashMapTo1DArray(DSL)
-      // pipeline += new HashMapNoCollisionTransformation(DSL, number)
-    }
     pipeline += new HashMapPartitioningTransformer(DSL, schema)
-
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE
