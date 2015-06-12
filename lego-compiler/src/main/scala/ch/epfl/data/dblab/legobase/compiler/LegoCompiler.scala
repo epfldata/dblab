@@ -88,7 +88,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
       // pipeline += TreeDumper(true)
       pipeline += new HashMapTo1DArray(DSL)
     }
-    pipeline += new HashMapPartitioningTransformer(DSL, number, schema)
+    pipeline += new HashMapPartitioningTransformer(DSL, schema)
 
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
