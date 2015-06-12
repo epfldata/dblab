@@ -96,9 +96,9 @@ object Main extends LegoRunner {
         }
       }
 
-    val validatedSettings = settings.validate(Config.codeGenLang, queryNumber)
+    val validatedSettings = settings.validate(queryNumber)
 
-    val compiler = new LegoCompiler(context, queryNumber, Config.codeGenLang, validatedSettings, schema)
+    val compiler = new LegoCompiler(context, queryNumber, validatedSettings, schema)
     compiler.compile(queryFunction())
   }
 }

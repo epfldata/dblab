@@ -8,9 +8,8 @@ import Config._
  * Handles the setting parameters which are passed as the main arguments of the program.
  */
 class Settings(val args: List[String]) {
-  val SUPPORTED_CS = (1 to 22).toList
 
-  def validate(codeGenLang: CodeGenerationLang, tpchQuery: Int): Settings = {
+  def validate(tpchQuery: Int): Settings = {
     for (arg <- args.filter(a => a.startsWith("+") || a.startsWith("-")).filter(arg => !Settings.ALL_SETTINGS.exists(_.fullFlagName == arg))) {
       System.out.println(s"${Console.YELLOW}Warning${Console.RESET}: flag $arg is not defined!")
     }
@@ -18,9 +17,7 @@ class Settings(val args: List[String]) {
       throw new Exception("It's impossible to lower Sets without lowering HashMap and MultiMap!")
     if (hashMapLowering && hashMapNoCollision)
       throw new Exception(s"${HashMapToArraySetting.flagName} and ${HashMapToSetSetting.flagName} cannot be chained together.")
-    if ((columnStore || partitioning) && (!SUPPORTED_CS.contains(tpchQuery)))
-      throw new Exception(s"${ColumnStoreSetting.flagName} and ${ArrayPartitioningSetting.flagName} only work for the Queries ${SUPPORTED_CS.mkString(" & ")} for the moment!")
-    if (hasSetting(LargeOutputHoistingSetting) && codeGenLang != CCodeGeneration) {
+    if (hasSetting(LargeOutputHoistingSetting) && targetLanguage != CCodeGeneration) {
       throw new Exception(s"${LargeOutputHoistingSetting.flagName} is only available for C Code Generation.")
     }
     if (pointerStore && oldCArrayHandling) {
@@ -41,7 +38,7 @@ class Settings(val args: List[String]) {
       }
       val newArgs = prop_.getProperty(s"tpch.Q$tpchQuery").split(" ")
       System.out.println(s"${Console.GREEN}Info${Console.RESET}: the arguments `${newArgs.mkString(" ")}` used!")
-      new Settings(args.take(2) ++ newArgs.toList).validate(codeGenLang, tpchQuery)
+      new Settings(args.filter(_ != OptimalSetting.fullFlagName) ++ newArgs.toList).validate(tpchQuery)
     } else {
       this
     }
@@ -70,6 +67,10 @@ class Settings(val args: List[String]) {
   def nameIsWithFlag: Boolean = hasSetting(OutputNameWithFlagSetting)
   def onlyLoading: Boolean = hasSetting(OnlyLoaderSetting)
   def chooseOptimal: Boolean = hasSetting(OptimalSetting)
+  def targetLanguage: CodeGenerationLang = if (hasSetting(ScalaCGSetting))
+    ScalaCodeGeneration
+  else
+    CCodeGeneration
 
   import Main.Q12SynthesizedExtract
   def isSynthesized: Boolean = args(2) match {
@@ -104,7 +105,8 @@ object Settings {
     NoSingletonHashMapSetting,
     OutputNameWithFlagSetting,
     OnlyLoaderSetting,
-    OptimalSetting)
+    OptimalSetting,
+    ScalaCGSetting)
 }
 
 /**
@@ -206,3 +208,5 @@ case object OnlyLoaderSetting extends OptionSetting("only-load",
   "Generates only the loader of a query")
 case object OptimalSetting extends OptionSetting("optimal",
   "Considers an optimal combiniation of optimization flags")
+case object ScalaCGSetting extends OptionSetting("scala",
+  "Generates Scala code instead of C code")

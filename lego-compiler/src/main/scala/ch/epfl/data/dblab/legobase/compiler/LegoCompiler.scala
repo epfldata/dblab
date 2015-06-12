@@ -21,10 +21,9 @@ import sc.pardis.compiler._
  * @param DSL the polymorphic embedding trait which contains the reified program.
  * This object takes care of online partial evaluation
  * @param number specifies the TPCH query number (TODO should be removed)
- * @param generateCCode specifies the target code language.
  * @param settings the compiler settings provided as command line arguments
  */
-class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode: CodeGenerationLang, val settings: Settings, val schema: Schema) extends Compiler[LoweringLegoBase] {
+class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val settings: Settings, val schema: Schema) extends Compiler[LoweringLegoBase] {
   def outputFile: String = {
     def queryWithNumber =
       if (settings.isSynthesized)
@@ -51,7 +50,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
     }
   }
 
-  override def irToPorgram = if (generateCCode == CCodeGeneration) {
+  override def irToPorgram = if (settings.targetLanguage == CCodeGeneration) {
     IRToCProgram(DSL)
   } else {
     IRToProgram(DSL)
@@ -87,6 +86,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
       pipeline += DCE
       // pipeline += TreeDumper(true)
       pipeline += new HashMapTo1DArray(DSL)
+      // pipeline += new HashMapNoCollisionTransformation(DSL, number)
     }
     pipeline += new HashMapPartitioningTransformer(DSL, schema)
 
@@ -178,12 +178,12 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
     pipeline += new LargeOutputPrintHoister(DSL, schema)
   }
 
-  if (generateCCode == CCodeGeneration) pipeline += new CTransformersPipeline(settings)
+  if (settings.targetLanguage == CCodeGeneration) pipeline += new CTransformersPipeline(settings)
 
   pipeline += DCECLang //NEVER REMOVE!!!!
 
   val codeGenerator =
-    if (generateCCode == CCodeGeneration) {
+    if (settings.targetLanguage == CCodeGeneration) {
       if (settings.noLetBinding)
         new LegoCASTGenerator(DSL, false, outputFile, true)
       else

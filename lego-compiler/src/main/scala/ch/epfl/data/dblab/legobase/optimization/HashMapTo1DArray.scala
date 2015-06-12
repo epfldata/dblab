@@ -14,6 +14,7 @@ import sc.pardis.deep.scalalib._
 import sc.pardis.deep.scalalib.collection._
 import sc.pardis.deep.scalalib.io._
 
+// TODO should be generalized to work on queries except TPCH Q18
 /**
  * Transforms HashMaps which have no collision in the hash function computation and also
  * in the case that the key has a continuous value into a one dimensional Array.
@@ -25,7 +26,7 @@ import sc.pardis.deep.scalalib.io._
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops) extends sc.pardis.optimization.RecursiveRuleBasedTransformer[HashMapOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops](IR) {
+class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops](override val IR: Lang) extends sc.pardis.optimization.RecursiveRuleBasedTransformer[Lang](IR) {
   import IR._
   type Rep[T] = IR.Rep[T]
   type Var[T] = IR.Var[T]

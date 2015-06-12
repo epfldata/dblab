@@ -15,8 +15,10 @@ object Config {
   val numRuns: scala.Int = 1
 
   /* Code generation info */
-  sealed trait CodeGenerationLang
-  case object CCodeGeneration extends CodeGenerationLang
-  case object ScalaCodeGeneration extends CodeGenerationLang
   var codeGenLang: CodeGenerationLang = CCodeGeneration
 }
+
+// TODO move to sc
+sealed trait CodeGenerationLang
+case object CCodeGeneration extends CodeGenerationLang
+case object ScalaCodeGeneration extends CodeGenerationLang
