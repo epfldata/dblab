@@ -26,10 +26,7 @@ import sc.pardis.compiler._
 class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val settings: Settings, val schema: Schema) extends Compiler[LoweringLegoBase] {
   def outputFile: String = {
     def queryWithNumber =
-      if (settings.isSynthesized)
-        settings.queryName
-      else
-        "Q" + number
+      settings.queryName
     def argsString = settings.args.filter(_.startsWith("+")).map(_.drop(1)).sorted.mkString("_")
     if (settings.nameIsWithFlag)
       argsString + "_" + queryWithNumber
