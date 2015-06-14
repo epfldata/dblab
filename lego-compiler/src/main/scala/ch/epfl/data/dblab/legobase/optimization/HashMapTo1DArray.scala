@@ -26,7 +26,7 @@ import sc.pardis.deep.scalalib.io._
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops](override val IR: Lang) extends sc.pardis.optimization.RecursiveRuleBasedTransformer[Lang](IR) {
+class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops](override val IR: Lang) extends sc.pardis.optimization.RuleBasedTransformer[Lang](IR) {
   import IR._
   type Rep[T] = IR.Rep[T]
   type Var[T] = IR.Var[T]
@@ -35,7 +35,8 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
   class B
 
   implicit class TypeRepOps[T](tp: TypeRep[T]) {
-    def isLoweredRecordType: Boolean = tp.name == "AGGRecord_Int" // || tp.name == "AGGRecord_Double"
+    def isLoweredRecordType: Boolean = //tp.name == "AGGRecord_Int" // || tp.name == "AGGRecord_Double"
+      potentiallyLoweredHashMaps.exists(_.tp.typeArguments(1) == tp)
   }
 
   def changeType[T](implicit tp: TypeRep[T]): TypeRep[Any] = {
@@ -46,34 +47,87 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
     }
   }.asInstanceOf[TypeRep[Any]]
 
+  var phase: Phase = _
+  sealed trait Phase
+  case object FindLoweredRecordType extends Phase
+  case object GatherLoweredSymbols extends Phase
+
+  override def analyseProgram[T: TypeRep](node: Block[T]): Unit = {
+    phase = FindLoweredRecordType
+    traverseBlock(node)
+    loweredHashMaps ++= (potentiallyLoweredHashMaps diff invalidLoweredHashMaps)
+    phase = GatherLoweredSymbols
+    traverseBlock(node)
+  }
+
+  val potentiallyLoweredHashMaps = scala.collection.mutable.Set[Rep[Any]]()
+  val invalidLoweredHashMaps = scala.collection.mutable.Set[Rep[Any]]()
+
+  /* Phase I: Identifying the types and hashmaps that have the potential to be lowered */
+
   analysis += rule {
-    case node @ HashMapGetOrElseUpdate(nodeself, nodekey, nodeopOutput) if nodeopOutput.tp.isLoweredRecordType =>
-      loweredHashMaps += nodeself
+    case node @ HashMapGetOrElseUpdate(nodeself, nodekey, Block(_, struct @ Def(Struct(_, fields, _)))) if phase == FindLoweredRecordType =>
+      // TODO maybe can be generalized
+      if (nodekey.tp == IntType && fields.exists(_.init == nodekey) && fields.size == 2) {
+        potentiallyLoweredHashMaps += nodeself
+        // System.out.println(s"potential: ${fields.find(_.init == nodekey)}: ${struct.tp}, ${nodeself.tp.typeArguments(1)}")
+      }
+      ()
+  }
+
+  val analysingInputForeach = scala.collection.mutable.Map[Rep[Any], Rep[Any]]()
+
+  analysis += rule {
+    case node @ HashMapForeach(nodeself, Def(Lambda(_, i, o))) if phase == FindLoweredRecordType =>
+      analysingInputForeach(i) = nodeself
+      traverseBlock(o)
+      analysingInputForeach.remove(i)
+      // System.out.println(s"$nodeself.foreach($i => ...)")
+      ()
+  }
+
+  analysis += rule {
+    case Tuple2_Field__1(i) if phase == FindLoweredRecordType && analysingInputForeach.contains(i) =>
+      invalidLoweredHashMaps += analysingInputForeach(i)
+      // System.out.println(s"accessed _1 for $i and ${analysingInputForeach(i)}")
+      ()
+  }
+
+  // analysis += rule {
+  //   case Tuple2_Field__2(i) if phase == FindLoweredRecordType && analysingInputForeach.contains(i) =>
+  //     System.out.println(s"accessed _2 for $i and ${analysingInputForeach(i)}")
+  //     ()
+  // }
+
+  /* Phase II: Gathering the symbols that should be lowered */
+
+  analysis += rule {
+    case node @ HashMapGetOrElseUpdate(nodeself, nodekey, nodeopOutput) if phase == GatherLoweredSymbols && loweredHashMaps.contains(nodeself) =>
       hashMapElemValue(nodeself) = nodeopOutput
       System.out.println(s"lowered: $nodeself")
       ()
   }
 
   analysis += rule {
-    case StructImmutableField(s, _) if s.tp.isLoweredRecordType =>
+    case StructImmutableField(s, _) if phase == GatherLoweredSymbols && s.tp.isLoweredRecordType =>
       flattennedStructs += s
       ()
   }
 
   analysis += rule {
-    case StructFieldGetter(s, _) if s.tp.isLoweredRecordType =>
+    case StructFieldGetter(s, _) if phase == GatherLoweredSymbols && s.tp.isLoweredRecordType =>
       flattennedStructs += s
       ()
   }
 
   analysis += rule {
-    case StructFieldSetter(s, _, _) if s.tp.isLoweredRecordType =>
+    case StructFieldSetter(s, _, _) if phase == GatherLoweredSymbols && s.tp.isLoweredRecordType =>
       flattennedStructs += s
       ()
   }
 
   analysis += statement {
-    case sym -> Struct(_, _, _) if sym.tp.isLoweredRecordType =>
+    case sym -> Struct(_, _, _) if phase == GatherLoweredSymbols && sym.tp.isLoweredRecordType =>
       flattennedStructs += sym
       ()
   }
