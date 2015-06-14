@@ -77,12 +77,10 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val settings: Set
     pipeline += SingletonHashMapToValueTransformer
 
   if (settings.hashMapToArray) {
-    // for now it only works for Q18 (number == 18)
     pipeline += ConstSizeArrayToLocalVars
     pipeline += DCE
     // pipeline += TreeDumper(true)
     pipeline += new HashMapTo1DArray(DSL)
-    // pipeline += new HashMapNoCollisionTransformation(DSL, number)
   }
 
   if (settings.hashMapPartitioning) {
@@ -130,8 +128,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val settings: Set
     pipeline += new BlockFlattening(DSL) // should not be needed!
   }
 
-  // val partitionedQueries = List(3, 6, 10, 14)
-  if (settings.partitioning /* && partitionedQueries.contains(number)*/ ) {
+  if (settings.partitioning) {
     pipeline += TreeDumper(false)
     pipeline += new WhileToRangeForeachTransformer(DSL)
     pipeline += new ArrayPartitioning(DSL, schema)
@@ -149,9 +146,6 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val settings: Set
   if (settings.columnStore) {
 
     pipeline += new ColumnStoreTransformer(DSL, settings)
-    // if (settings.hashMapPartitioning) {
-    //   pipeline += new ColumnStore2DTransformer(DSL, number)
-    // }
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
 

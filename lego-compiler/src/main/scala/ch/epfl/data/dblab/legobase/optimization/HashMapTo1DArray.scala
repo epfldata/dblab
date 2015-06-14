@@ -14,7 +14,6 @@ import sc.pardis.deep.scalalib._
 import sc.pardis.deep.scalalib.collection._
 import sc.pardis.deep.scalalib.io._
 
-// TODO should be generalized to work on queries except TPCH Q18
 /**
  * Transforms HashMaps which have no collision in the hash function computation and also
  * in the case that the key has a continuous value into a one dimensional Array.
@@ -35,7 +34,7 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
   class B
 
   implicit class TypeRepOps[T](tp: TypeRep[T]) {
-    def isLoweredRecordType: Boolean = //tp.name == "AGGRecord_Int" // || tp.name == "AGGRecord_Double"
+    def isLoweredRecordType: Boolean =
       potentiallyLoweredHashMaps.exists(_.tp.typeArguments(1) == tp)
   }
 
@@ -72,7 +71,6 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
       // TODO maybe can be generalized
       if (nodekey.tp == IntType && fields.exists(_.init == nodekey) && fields.size == 2) {
         potentiallyLoweredHashMaps += nodeself
-        // System.out.println(s"potential: ${fields.find(_.init == nodekey)}: ${struct.tp}, ${nodeself.tp.typeArguments(1)}")
       }
       ()
   }
@@ -82,7 +80,6 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
       analysingInputForeach(i) = nodeself
       traverseBlock(o)
       analysingInputForeach.remove(i)
-      // System.out.println(s"$nodeself.foreach($i => ...)")
       ()
   }
 
@@ -95,15 +92,8 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
   analysis += rule {
     case Tuple2_Field__1(i) if phase == FindLoweredRecordType && analysingInputForeach.contains(i) =>
       invalidLoweredHashMaps += analysingInputForeach(i)
-      // System.out.println(s"accessed _1 for $i and ${analysingInputForeach(i)}")
       ()
   }
-
-  // analysis += rule {
-  //   case Tuple2_Field__2(i) if phase == FindLoweredRecordType && analysingInputForeach.contains(i) =>
-  //     System.out.println(s"accessed _2 for $i and ${analysingInputForeach(i)}")
-  //     ()
-  // }
 
   /* Phase II: Gathering the symbols that should be lowered */
 
@@ -117,7 +107,6 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
     case node @ HashMapGetOrElseUpdate(nodeself, nodekey, nodeopOutput) if phase == GatherLoweredSymbols && loweredHashMaps.contains(nodeself) =>
       hashMapElemValue(nodeself) = nodeopOutput
       traverseBlock(nodeopOutput)
-      System.out.println(s"lowered: $nodeself")
       ()
   }
 
@@ -148,7 +137,6 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
   }
 
   def mustBeLowered[T](sym: Rep[T]): Boolean =
-    // sym.asInstanceOf[Sym[T]].id == 649
     loweredHashMaps.contains(sym)
 
   def isFlattennedStruct[T](sym: Rep[T]): Boolean =
@@ -194,17 +182,13 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
       val self = sym.asInstanceOf[Rep[HashMap[A, B]]]
 
       lastIndexMap(sym) = __newVar[Int](unit(0))
-      // tableMap(sym) = infix_asInstanceOf[Array[B]](__newArray[Any](self.buckets))
       tableMap(sym) = __newArray[B](self.buckets)
 
       Range.apply(unit(0), self.buckets).foreach[Unit](__lambda(((i: this.Rep[Int]) =>
-        // self.table.update(i, Set.apply[B]())
         self.table(i) = inlineBlock(hashMapElemValue(sym).asInstanceOf[Block[B]]))))
 
       unit(null.asInstanceOf[HashMap[A, B]])(node.tp.asInstanceOf[TypeRep[HashMap[A, B]]])
   }
-
-  // def __newHashMapOptimalNoCollision[A, B]()(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, B]] = HashMapNew[A, B]()
 
   rewrite += rule {
     case node @ HashMapGetOrElseUpdate(nodeself, nodekey, nodeopOutput) if mustBeLowered(nodeself) =>
@@ -219,11 +203,6 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
         val h: this.Rep[Int] = self.hash(key);
         val list: this.Rep[B] = self.table.apply(h);
         __ifThenElse(h.$greater(self.lastIndex), self.lastIndex_$eq(h), unit(()));
-        // __ifThenElse(infix_$bang$eq(list, unit(null)), list, {
-        //   val v: this.Rep[B] = inlineBlock(op);
-        //   self.table.update(h, v);
-        //   v
-        // })
         list
       }
   }
@@ -248,28 +227,9 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
       arr(i) = v
   }
   rewrite += rule {
-    case node @ StructImmutableField(s, field) if isFlattennedStruct(s) && \hashmapForeachKeyIndex.exists(_._1.tp.typeArguments(1) == s.tp) && isKeyFieldOfFlattennedStruct(s, field) =>
-      // System.out.println(s"rewritten: $s.key");
+    case node @ StructImmutableField(s, field) if isFlattennedStruct(s) && hashmapForeachKeyIndex.exists(_._1.tp.typeArguments(1) == s.tp) && isKeyFieldOfFlattennedStruct(s, field) =>
       hashmapForeachKeyIndex.find(_._1.tp.typeArguments(1) == s.tp).get._2
   }
-
-  // rewrite += rule {
-  //   case node @ HashMapRemove(nodeself, nodekey) if mustBeLowered(nodeself) =>
-
-  //     val self = nodeself.asInstanceOf[Rep[HashMap[A, B]]]
-  //     val key = nodekey.asInstanceOf[Rep[A]]
-  //     implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-  //     implicit val typeB = transformType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[B]]
-
-  //     {
-  //       val h: this.Rep[Int] = self.hash(key);
-  //       val list: this.Rep[B] = self.table.apply(h);
-  //       __ifThenElse(infix_$bang$eq(list, unit(null)), {
-  //         self.table.update(h, infix_asInstanceOf[B](unit(null)));
-  //         Option.apply[B](list)
-  //       }, Option.apply[B](infix_asInstanceOf[B](unit(null))))
-  //     }
-  // }
 
   rewrite += rule {
     case node @ HashMapForeach(nodeself, nodef) if mustBeLowered(nodeself) =>
@@ -280,17 +240,11 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
       implicit val typeB = changeType(nodeself.tp.typeArguments(1)).asInstanceOf[TypeRep[B]]
       implicit val typeC = transformType(f.tp.typeArguments(1)).asInstanceOf[TypeRep[C]]
 
-      // Range.apply(unit(0), self.lastIndex.$plus(unit(1))).foreach[Unit](__lambda(((i: this.Rep[Int]) => {
       val index = __newVarNamed[Int](unit(0), "hashmapIndex")
       __whileDo((index: Rep[Int]) < (self.lastIndex + unit(1)), {
         val i = (index: Rep[Int])
         val list: this.Rep[B] = self.table.apply(i);
         hashmapForeachKeyIndex(nodeself) = i
-        // __ifThenElse(infix_$bang$eq(list, unit(null)), {
-        //   __app[Tuple2[A, B], C](f).apply(Tuple2.apply[A, B](infix_asInstanceOf[A](unit(null)), list));
-        //   unit(())
-        // }, unit(()))
-        // __ifThenElse(infix_$bang$eq(list, unit(null)), {
         // TODO rewrite it in a better way
         f match {
           case Def(Lambda(_, i, body)) => {
@@ -302,9 +256,6 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
           }
         }
         // hashmapForeachKeyIndex.remove(nodeself)
-        //   unit(())
-        // }, unit(()))
-        // })))
         __assign(index, i + unit(1))
       })
   }
