@@ -10,6 +10,7 @@ import sc.pardis.optimization._
 import deep._
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
+import sc.pardis.deep.scalalib._
 import sc.pardis.deep.scalalib.collection._
 
 /**
@@ -18,8 +19,8 @@ import sc.pardis.deep.scalalib.collection._
  * @param IR the polymorphic embedding trait which contains the reified program.
  * @param schema the schema information which will be used to estimate the number of buckets
  */
-class HashMapToSetTransformation(val LB: LoweringLegoBase, val schema: Schema) extends HashMapOptimalNoMallocTransformation(LB) with StructCollector[ch.epfl.data.sc.pardis.deep.scalalib.collection.HashMapOps with ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps with ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps with ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps with ch.epfl.data.sc.pardis.deep.scalalib.OptionOps with ch.epfl.data.sc.pardis.deep.scalalib.IntOps with ch.epfl.data.sc.pardis.deep.scalalib.Tuple2Ops] {
-  import LB._
+class HashMapToSetTransformation(override val IR: LoweringLegoBase, val schema: Schema) extends HashMapOptimalNoMallocTransformation(IR) with StructCollector[HashMapOps with SetOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops] with HashMapBucketAnalyser[HashMapOps with SetOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops] {
+  import IR._
   override def hashMapExtractKey[A, B](self: Rep[HashMap[A, B]], value: Rep[B])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[A] = typeB match {
     case t if t.isRecord && t.name.startsWith("AGGRecord") => {
       // class C
@@ -32,17 +33,6 @@ class HashMapToSetTransformation(val LB: LoweringLegoBase, val schema: Schema) e
       // field[A](value, "key")(value.tp.typeArguments(0).asInstanceOf[TypeRep[A]])
     }
     case t => throw new Exception(s"does not know how to extract key for type $t")
-  }
-
-  case class StructFieldInfo(structType: TypeRep[Any], field: String)
-
-  val hashMapsStructFieldInfo = scala.collection.mutable.Map[Rep[Any], StructFieldInfo]()
-
-  analysis += rule {
-    case HashMapGetOrElseUpdate(hm, Def(StructImmutableField(s, field)), _) => {
-      hashMapsStructFieldInfo += hm -> StructFieldInfo(s.tp, field)
-      ()
-    }
   }
 
   override def hashMapBuckets[A, B](self: Rep[HashMap[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = hashMapsStructFieldInfo.get(self) match {

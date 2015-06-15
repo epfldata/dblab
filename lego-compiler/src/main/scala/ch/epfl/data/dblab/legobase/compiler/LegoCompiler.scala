@@ -99,7 +99,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val settings: Set
       pipeline += new HashMapToSetTransformation(DSL, schema)
     }
     if (settings.hashMapNoCollision) {
-      pipeline += new HashMapNoCollisionTransformation(DSL, number)
+      pipeline += new HashMapNoCollisionTransformation(DSL, schema)
       // pipeline += TreeDumper(false)
     }
     // pipeline += PartiallyEvaluate
