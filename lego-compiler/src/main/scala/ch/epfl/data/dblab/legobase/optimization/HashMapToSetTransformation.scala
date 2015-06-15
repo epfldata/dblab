@@ -16,9 +16,9 @@ import sc.pardis.deep.scalalib.collection._
  * A lowering transformation which transforms a HashMap to an Array[Set[_]].
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
- * @param queryNumber specifies the TPCH query number (TODO should be removed)
+ * @param schema the schema information which will be used to estimate the number of buckets
  */
-class HashMapToSetTransformation(val LB: LoweringLegoBase, val queryNumber: Int, val schema: Schema) extends HashMapOptimalNoMallocTransformation(LB) with StructCollector[ch.epfl.data.sc.pardis.deep.scalalib.collection.HashMapOps with ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps with ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps with ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps with ch.epfl.data.sc.pardis.deep.scalalib.OptionOps with ch.epfl.data.sc.pardis.deep.scalalib.IntOps with ch.epfl.data.sc.pardis.deep.scalalib.Tuple2Ops] {
+class HashMapToSetTransformation(val LB: LoweringLegoBase, val schema: Schema) extends HashMapOptimalNoMallocTransformation(LB) with StructCollector[ch.epfl.data.sc.pardis.deep.scalalib.collection.HashMapOps with ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps with ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps with ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps with ch.epfl.data.sc.pardis.deep.scalalib.OptionOps with ch.epfl.data.sc.pardis.deep.scalalib.IntOps with ch.epfl.data.sc.pardis.deep.scalalib.Tuple2Ops] {
   import LB._
   override def hashMapExtractKey[A, B](self: Rep[HashMap[A, B]], value: Rep[B])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[A] = typeB match {
     case t if t.isRecord && t.name.startsWith("AGGRecord") => {
@@ -34,17 +34,24 @@ class HashMapToSetTransformation(val LB: LoweringLegoBase, val queryNumber: Int,
     case t => throw new Exception(s"does not know how to extract key for type $t")
   }
 
+  case class StructFieldInfo(structType: TypeRep[Any], field: String)
+
+  val hashMapsStructFieldInfo = scala.collection.mutable.Map[Rep[Any], StructFieldInfo]()
+
   analysis += rule {
     case HashMapGetOrElseUpdate(hm, Def(StructImmutableField(s, field)), _) => {
-      System.out.println(s"$hm.getOrElseUpdate($s.$field, _)")
-      System.out.println(s"${schema.stats.getDistinctAttrValues(field)}")
+      hashMapsStructFieldInfo += hm -> StructFieldInfo(s.tp, field)
       ()
     }
   }
 
-  override def hashMapBuckets[A, B](self: Rep[HashMap[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = queryNumber match {
-    case 12 => { System.out.println(s"type: ${self.tp}, typeA: $typeA, typeB: $typeB"); unit(16) }
-    // case 18 => unit(49000000)
-    case _  => unit(1 << 20)
+  override def hashMapBuckets[A, B](self: Rep[HashMap[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = hashMapsStructFieldInfo.get(self) match {
+    case Some(fieldInfo) =>
+      val numBuckets = schema.stats.getDistinctAttrValues(fieldInfo.field) * 2
+      // System.out.println(s"for hashmap type: ${self.tp}, buckets = ${numBuckets}")
+      numBuckets
+    case _ =>
+      // System.out.println(s"for hashmap type: ${self.tp}, couldn't find key")
+      unit(1 << 20)
   }
 }
