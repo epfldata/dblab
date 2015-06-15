@@ -96,7 +96,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val settings: Set
   if (settings.hashMapLowering || settings.hashMapNoCollision) {
     if (settings.hashMapLowering) {
       pipeline += new sc.pardis.deep.scalalib.collection.MultiMapOptimalTransformation(DSL)
-      pipeline += new HashMapToSetTransformation(DSL, number)
+      pipeline += new HashMapToSetTransformation(DSL, number, schema)
     }
     if (settings.hashMapNoCollision) {
       pipeline += new HashMapNoCollisionTransformation(DSL, number)

@@ -2,6 +2,7 @@ package ch.epfl.data
 package dblab.legobase
 package optimization
 
+import schema._
 import scala.language.implicitConversions
 import sc.pardis.ir._
 import reflect.runtime.universe.{ TypeTag, Type }
@@ -17,7 +18,7 @@ import sc.pardis.deep.scalalib.collection._
  * @param IR the polymorphic embedding trait which contains the reified program.
  * @param queryNumber specifies the TPCH query number (TODO should be removed)
  */
-class HashMapToSetTransformation(val LB: LoweringLegoBase, val queryNumber: Int) extends HashMapOptimalNoMallocTransformation(LB) with StructCollector[ch.epfl.data.sc.pardis.deep.scalalib.collection.HashMapOps with ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps with ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps with ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps with ch.epfl.data.sc.pardis.deep.scalalib.OptionOps with ch.epfl.data.sc.pardis.deep.scalalib.IntOps with ch.epfl.data.sc.pardis.deep.scalalib.Tuple2Ops] {
+class HashMapToSetTransformation(val LB: LoweringLegoBase, val queryNumber: Int, val schema: Schema) extends HashMapOptimalNoMallocTransformation(LB) with StructCollector[ch.epfl.data.sc.pardis.deep.scalalib.collection.HashMapOps with ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps with ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps with ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps with ch.epfl.data.sc.pardis.deep.scalalib.OptionOps with ch.epfl.data.sc.pardis.deep.scalalib.IntOps with ch.epfl.data.sc.pardis.deep.scalalib.Tuple2Ops] {
   import LB._
   override def hashMapExtractKey[A, B](self: Rep[HashMap[A, B]], value: Rep[B])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[A] = typeB match {
     case t if t.isRecord && t.name.startsWith("AGGRecord") => {
@@ -33,8 +34,16 @@ class HashMapToSetTransformation(val LB: LoweringLegoBase, val queryNumber: Int)
     case t => throw new Exception(s"does not know how to extract key for type $t")
   }
 
+  analysis += rule {
+    case HashMapGetOrElseUpdate(hm, Def(StructImmutableField(s, field)), _) => {
+      System.out.println(s"$hm.getOrElseUpdate($s.$field, _)")
+      System.out.println(s"${schema.stats.getDistinctAttrValues(field)}")
+      ()
+    }
+  }
+
   override def hashMapBuckets[A, B](self: Rep[HashMap[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = queryNumber match {
-    case 12 => unit(16)
+    case 12 => { System.out.println(s"type: ${self.tp}, typeA: $typeA, typeB: $typeB"); unit(16) }
     // case 18 => unit(49000000)
     case _  => unit(1 << 20)
   }
