@@ -103,7 +103,21 @@ object TPCHCompiler extends TPCHRunner {
         }
       }
 
-    val validatedSettings = settings.validate(queryNumber)
+    settings.optimalArgsHandler = () => {
+      val prop_ = new java.util.Properties
+      val propName = "config/optimal.properties"
+      try {
+        prop_.load(new java.io.FileInputStream(propName))
+      } catch {
+        case _: Throwable => System.err.println(s"Config file `$propName` does not exist!")
+      }
+      val argsString = prop_.getProperty(s"tpch.Q$queryNumber")
+      if (argsString == null) {
+        throw new Exception(s"${OptimalSetting.flagName} cannot be used for query $queryNumber, because there is no optimal combiniation defined for it=.")
+      }
+      prop_.getProperty(s"tpch.Q$queryNumber").split(" ").toList
+    }
+    val validatedSettings = settings.validate()
 
     val compiler = new LegoCompiler(context, validatedSettings, schema, "ch.epfl.data.dblab.legobase.tpch.TPCHRunner")
     compiler.compile(queryFunction())

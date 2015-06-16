@@ -9,7 +9,12 @@ import Config._
  */
 class Settings(val args: List[String]) {
 
-  def validate(tpchQuery: Int): Settings = {
+  /**
+   * Produces an optimal combination of optimization flags
+   */
+  var optimalArgsHandler: (() => List[String]) = _
+
+  def validate(): Settings = {
     for (arg <- args.filter(a => a.startsWith("+") || a.startsWith("-")).filter(arg => !Settings.ALL_SETTINGS.exists(_.fullFlagName == arg))) {
       System.out.println(s"${Console.YELLOW}Warning${Console.RESET}: flag $arg is not defined!")
     }
@@ -24,21 +29,11 @@ class Settings(val args: List[String]) {
       throw new Exception(s"${PointerStoreSetting.flagName} and ${CArrayAsStructSetting.flagName} cannot be chained together.")
     }
     if (chooseOptimal) {
-      val prop_ = new java.util.Properties
-      val propName = "config/optimal.properties"
-      try {
-        prop_.load(new java.io.FileInputStream(propName))
-      } catch {
-        case _: Throwable => System.err.println(s"Config file `$propName` does not exist!")
-      }
-      def config(name: String, d: String = "") = prop_.getProperty("tpch." + name, d)
-      val argsString = prop_.getProperty(s"tpch.Q$tpchQuery")
-      if (argsString == null) {
-        throw new Exception(s"${OptimalSetting.flagName} cannot be used for query $tpchQuery, because there is no optimal combiniation defined for it=.")
-      }
-      val newArgs = prop_.getProperty(s"tpch.Q$tpchQuery").split(" ")
+      if (optimalArgsHandler == null)
+        throw new Exception(s"${OptimalSetting.flagName} cannot be used for it, because there is no optimal handler defined for it.")
+      val newArgs = optimalArgsHandler()
       System.out.println(s"${Console.GREEN}Info${Console.RESET}: the arguments `${newArgs.mkString(" ")}` used!")
-      new Settings(args.filter(_ != OptimalSetting.fullFlagName) ++ newArgs.toList).validate(tpchQuery)
+      new Settings(args.filter(_ != OptimalSetting.fullFlagName) ++ newArgs).validate()
     } else {
       this
     }
@@ -73,11 +68,6 @@ class Settings(val args: List[String]) {
   else
     CCodeGeneration
 
-  import tpch.TPCHCompiler.Q12SynthesizedExtract
-  def isSynthesized: Boolean = args(2) match {
-    case Q12SynthesizedExtract(_, _) => true
-    case _                           => false
-  }
   def queryName: String = args(2)
 }
 
