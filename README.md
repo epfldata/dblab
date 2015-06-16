@@ -12,7 +12,7 @@ and an open-source release after publication.  We ask you for your patience.
 
 DBLAB currently only contains the implementation of a single-core main-memory analytical database engine. While the names in the code base suggest that
 this is LegoBase (published at VLDB 2014), the code in this repository 
-is an entirely new development based on the lessons learned from the VLDB 2014,
+is an entirely new development based on the lessons learned from VLDB 2014,
 sharing no common code with the previous system.
 
 The roadmap for DBLAB includes the open-source release of a second DBMS, a 

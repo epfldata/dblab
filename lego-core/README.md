@@ -11,7 +11,7 @@ The LegoBase interpreter requires the SC Pardis Library (https://github.com/epfl
 
 If you have access to the sc repository, follow these steps:
 
-1. Clone this project and checkout to the desired branch. Then, after going to sbt console, 
+1. Clone this project and checkout to the desired branch. Then, after entering sbt interactive mode, 
 run `project sc-pardis-library` for going to Pardis Library project.
 
 2. Run `publish-local`.

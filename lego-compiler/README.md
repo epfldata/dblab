@@ -27,11 +27,11 @@ For testing the compiler (Scala generated code), first you have to generate the 
 For that purpose you have to go to the `lego-compiler` project using `project lego-compiler`.
 Then, for generating query X with scaling factor N, you have to run the following command:
 `generate-test DATA_FOLDER N QX`
-For testing the correctness you have to copy the generated file into `test` folder of `lego-compiler` project.
+For testing the correctness you have to copy the generated file into the `test` folder of the `lego-compiler` project.
 Then you have to run the following command:
 `test:run DATA_FOLDER N QX`
 
-For testing all TPCH queries with the Scala code generator, in the `lego-compiler` project, 
+For testing all TPCH queries with the Scala code generator, in the `lego-compiler` project,
 you should run `generate-test DATA_FOLDER N testsuite`.
 Then you should publish the `lego-core` project using `lego-core/publish-local`.
 Afterwards, you have to set your environment variable `SCALA_PATH` to the folder which contains `scalac`.
