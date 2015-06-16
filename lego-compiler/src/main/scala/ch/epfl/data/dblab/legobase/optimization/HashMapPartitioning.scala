@@ -65,8 +65,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   }
   case class PartitionObject(arr: Rep[Array[Any]], fieldFunc: String, loopSymbol: While) {
     def tpe = arr.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
-    def buckets = //if (is1D) numBucketsFull(this) else numBuckets(this)
-      numBuckets(this)
+    def buckets = numBuckets(this)
     def count = partitionedObjectsCount(this)
     def parArr = partitionedObjectsArray(this).asInstanceOf[Rep[Array[Array[Any]]]]
     def is1D: Boolean = if (ONE_D_ENABLED) isPrimaryKey(tpe, fieldFunc) else false
@@ -97,7 +96,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
 
   override def postAnalyseProgram[T: TypeRep](node: Block[T]): Unit = {
     val realHashJoinAntiMaps = hashJoinAntiMaps intersect windowOpMaps
-    windowOpMaps --= realHashJoinAntiMaps // TODO should be uncommented
+    windowOpMaps --= realHashJoinAntiMaps
     hashJoinAntiMaps.clear()
     hashJoinAntiMaps ++= realHashJoinAntiMaps
     // val supportedMaps = partitionedMaps diff windowOpMaps
@@ -175,21 +174,12 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   def numBuckets(partitionedObject: PartitionObject): Rep[Int] =
     unit(schema.stats.getDistinctAttrValues(partitionedObject.fieldFunc))
 
-  // TODO use Schema instead of manual cases for TPCH
-  def bucketSize(partitionedObject: PartitionObject): Rep[Int] = //unit(100)
-    // numBuckets(partitionedObject)
-    (partitionedObject.tpe.name, partitionedObject.fieldFunc) match {
-      case ("LINEITEMRecord", "L_ORDERKEY") => unit(16)
-      // case ("LINEITEMRecord", "L_SUPPKEY") => unit(1 << 10)
-      case ("CUSTOMERRecord", "C_NATIONKEY") | ("SUPPLIERRecord", "S_NATIONKEY") => partitionedObject.arraySize / unit(25 - 5)
-      case _ => unit(1 << 10)
+  def bucketSize(partitionedObject: PartitionObject): Rep[Int] =
+    schema.stats.getConflictsAttr(partitionedObject.fieldFunc) match {
+      case Some(v) => unit(v)
+      case None    => unit(1 << 10)
     }
 
-  // def numBuckets(partitionedObject: PartitionObject): Rep[Int] = unit(1 << 9)
-  // def bucketSize(partitionedObject: PartitionObject): Rep[Int] = partitionedObject.arr match {
-  //   case Def(ArrayNew(l)) => l / unit(4)
-  //   case sym              => System.out.println(s"setting default value for $sym"); numBuckets(sym.tp.typeArguments(0))
-  // }
   def recreateNode[T: TypeRep](exp: Rep[T]): Rep[T] = exp match {
     case Def(node) => toAtom(node)(exp.tp)
     case _         => ???
@@ -206,14 +196,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
 
   def findBucketFunction(key: Rep[Int], partitionedObject: PartitionObject): Rep[Int] = key % partitionedObject.buckets
 
-  // TODO use Schema instead of manual cases for TPCH
   def par_array_foreach[T: TypeRep](partitionedObject: PartitionObject, key: Rep[Int], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
     if (partitionedObject.is1D) {
       val parArr = partitionedObject.parArr.asInstanceOf[Rep[Array[T]]]
-      // val bucket = partitionedObject.tpe.name match {
-      //   case "CUSTOMERRecord" | "PARTRecord" | "SUPPLIERRecord" => key - unit(1)
-      //   case _ => key
-      // }
       val bucket = partitionedObject.table.continuous match {
         case Some(continuous) => key - unit(continuous.offset)
         case None             => key

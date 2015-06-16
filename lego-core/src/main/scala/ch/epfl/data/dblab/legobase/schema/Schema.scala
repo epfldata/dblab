@@ -92,17 +92,6 @@ case class Statistics() {
     statsMap(statKey) = value
     value
   }
-  // def getJoinOutputEstimation(tableName1: String, tableName2: String): Int = {
-  //   val cardinality1 = getCardinality(tableName1)
-  //   val cardinality2 = getCardinality(tableName2)
-  //   Math.max(cardinality1, cardinality2).toInt
-  // }
-  // def getJoinOutputEstimation(intermediateCardinality: Double, tableName2: String): Double = {
-  //   Math.max(intermediateCardinality, getCardinality(tableName2))
-  // }
-  // def getJoinOutputEstimation(tableName2: String, intermediateCardinality: Double): Double = {
-  //   Math.max(intermediateCardinality, getCardinality(tableName2))
-  // }
 
   def warningPerformance(key: String): Unit = {
     System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics value for $key not found.")
@@ -115,6 +104,10 @@ case class Statistics() {
       warningPerformance("DISTINCT_" + attrName)
       getLargestCardinality().toInt // TODO-GEN: Make this return the cardinality of the corresponding table
   }
+
+  val CONFLICT_PREFIX = "CONFLICT_"
+
+  def getConflictsAttr(attrName: String): Option[Int] = statsMap.get(CONFLICT_PREFIX + attrName).map(_.toInt)
 
   def getEstimatedNumObjectsForType(typeName: String): Double = statsMap.get(QS_MEM_PREFIX + format(typeName)) match {
     case Some(v) => v

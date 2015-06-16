@@ -181,15 +181,15 @@ object TPCHSchema {
     tpchSchema.stats += "DISTINCT_L_SHIPMODE" -> 7
     tpchSchema.stats += "DISTINCT_L_RETURNFLAG" -> 3
     tpchSchema.stats += "DISTINCT_L_LINESTATUS" -> 2
-    tpchSchema.stats += "DISTINCT_L_ORDERKEY" -> lineItemTable.rowCount
+    tpchSchema.stats += "DISTINCT_L_ORDERKEY" -> ordersTable.rowCount * 5
     tpchSchema.stats += "DISTINCT_L_PARTKEY" -> partTable.rowCount
     tpchSchema.stats += "DISTINCT_L_SUPPKEY" -> supplierTable.rowCount
-    tpchSchema.stats += "DISTINCT_N_NAME" -> 25
-    tpchSchema.stats += "DISTINCT_N_NATIONKEY" -> 25
+    tpchSchema.stats += "DISTINCT_N_NAME" -> nationTable.rowCount
+    tpchSchema.stats += "DISTINCT_N_NATIONKEY" -> nationTable.rowCount
     tpchSchema.stats += "DISTINCT_O_SHIPPRIORITY" -> 1
     tpchSchema.stats += "DISTINCT_O_ORDERDATE" -> 365 * 7 // 7-whole years
     tpchSchema.stats += "DISTINCT_O_ORDERPRIORITY" -> 5
-    tpchSchema.stats += "DISTINCT_O_ORDERKEY" -> lineItemTable.rowCount
+    tpchSchema.stats += "DISTINCT_O_ORDERKEY" -> ordersTable.rowCount * 5
     tpchSchema.stats += "DISTINCT_O_CUSTKEY" -> customerTable.rowCount
     tpchSchema.stats += "DISTINCT_P_PARTKEY" -> partTable.rowCount
     tpchSchema.stats += "DISTINCT_P_BRAND" -> 25
@@ -199,12 +199,16 @@ object TPCHSchema {
     tpchSchema.stats += "DISTINCT_PS_SUPPKEY" -> supplierTable.rowCount
     tpchSchema.stats += "DISTINCT_PS_AVAILQTY" -> 9999
     tpchSchema.stats += "DISTINCT_S_NAME" -> supplierTable.rowCount
-    tpchSchema.stats += "DISTINCT_S_NATIONKEY" -> 25
+    tpchSchema.stats += "DISTINCT_S_NATIONKEY" -> nationTable.rowCount
     tpchSchema.stats += "DISTINCT_S_SUPPKEY" -> supplierTable.rowCount
     tpchSchema.stats += "DISTINCT_C_CUSTKEY" -> customerTable.rowCount
     tpchSchema.stats += "DISTINCT_C_NAME" -> customerTable.rowCount
-    tpchSchema.stats += "DISTINCT_C_NATIONKEY" -> 25
+    tpchSchema.stats += "DISTINCT_C_NATIONKEY" -> nationTable.rowCount
     tpchSchema.stats += "DISTINCT_R_REGIONKEY" -> 5
+
+    tpchSchema.stats += "CONFLICT_L_ORDERKEY" -> 16
+    tpchSchema.stats += "CONFLICT_C_NATIONKEY" -> customerTable.rowCount / 20
+    tpchSchema.stats += "CONFLICT_S_NATIONKEY" -> supplierTable.rowCount / 20
 
     tpchSchema.stats += "NUM_YEARS_ALL_DATES" -> 7
 
