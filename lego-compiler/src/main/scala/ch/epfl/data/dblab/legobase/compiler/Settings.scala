@@ -8,40 +8,32 @@ import Config._
  * Handles the setting parameters which are passed as the main arguments of the program.
  */
 class Settings(val args: List[String]) {
-  val SUPPORTED_CS = (1 to 22).toList
 
-  def validate(codeGenLang: CodeGenerationLang, tpchQuery: Int): Settings = {
+  /**
+   * Produces an optimal combination of optimization flags
+   */
+  var optimalArgsHandler: (() => List[String]) = _
+
+  def validate(): Settings = {
     for (arg <- args.filter(a => a.startsWith("+") || a.startsWith("-")).filter(arg => !Settings.ALL_SETTINGS.exists(_.fullFlagName == arg))) {
       System.out.println(s"${Console.YELLOW}Warning${Console.RESET}: flag $arg is not defined!")
     }
     if (!hashMapLowering && (setToArray || setToLinkedList || containerFlattenning))
       throw new Exception("It's impossible to lower Sets without lowering HashMap and MultiMap!")
     if (hashMapLowering && hashMapNoCollision)
-      throw new Exception(s"${HashMapToArraySetting.flagName} and ${HashMapToSetSetting.flagName} cannot be chained together.")
-    if ((columnStore || partitioning) && (!SUPPORTED_CS.contains(tpchQuery)))
-      throw new Exception(s"${ColumnStoreSetting.flagName} and ${ArrayPartitioningSetting.flagName} only work for the Queries ${SUPPORTED_CS.mkString(" & ")} for the moment!")
-    if (hasSetting(LargeOutputHoistingSetting) && codeGenLang != CCodeGeneration) {
+      throw new Exception(s"${HashMapNoCollisionSetting.flagName} and ${HashMapToSetSetting.flagName} cannot be chained together.")
+    if (hasSetting(LargeOutputHoistingSetting) && targetLanguage != CCodeGeneration) {
       throw new Exception(s"${LargeOutputHoistingSetting.flagName} is only available for C Code Generation.")
     }
     if (pointerStore && oldCArrayHandling) {
       throw new Exception(s"${PointerStoreSetting.flagName} and ${CArrayAsStructSetting.flagName} cannot be chained together.")
     }
     if (chooseOptimal) {
-      val prop_ = new java.util.Properties
-      val propName = "config/optimal.properties"
-      try {
-        prop_.load(new java.io.FileInputStream(propName))
-      } catch {
-        case _: Throwable => System.err.println(s"Config file `$propName` does not exist!")
-      }
-      def config(name: String, d: String = "") = prop_.getProperty("tpch." + name, d)
-      val argsString = prop_.getProperty(s"tpch.Q$tpchQuery")
-      if (argsString == null) {
-        throw new Exception(s"${OptimalSetting.flagName} cannot be used for query $tpchQuery, because there is no optimal combiniation defined for it=.")
-      }
-      val newArgs = prop_.getProperty(s"tpch.Q$tpchQuery").split(" ")
+      if (optimalArgsHandler == null)
+        throw new Exception(s"${OptimalSetting.flagName} cannot be used for it, because there is no optimal handler defined for it.")
+      val newArgs = optimalArgsHandler()
       System.out.println(s"${Console.GREEN}Info${Console.RESET}: the arguments `${newArgs.mkString(" ")}` used!")
-      new Settings(args.take(2) ++ newArgs.toList).validate(codeGenLang, tpchQuery)
+      new Settings(args.filter(_ != OptimalSetting.fullFlagName) ++ newArgs).validate()
     } else {
       this
     }
@@ -52,6 +44,7 @@ class Settings(val args: List[String]) {
   def setToArray: Boolean = hasSetting(SetToArraySetting)
   def setToLinkedList: Boolean = hasSetting(SetToLinkedListSetting)
   def containerFlattenning: Boolean = hasSetting(ContainerFlattenningSetting)
+  def hashMapToArray: Boolean = hasSetting(HashMapToArraySetting)
   def columnStore: Boolean = hasSetting(ColumnStoreSetting)
   def partitioning: Boolean = hasSetting(ArrayPartitioningSetting)
   def hashMapPartitioning: Boolean = hasSetting(HashMapPartitioningSetting)
@@ -63,19 +56,18 @@ class Settings(val args: List[String]) {
   def oldCArrayHandling: Boolean = hasSetting(CArrayAsStructSetting)
   def pointerStore: Boolean = hasSetting(PointerStoreSetting)
   def stringOptimization: Boolean = hasSetting(StringOptimizationSetting)
-  def hashMapNoCollision: Boolean = hasSetting(HashMapToArraySetting)
+  def hashMapNoCollision: Boolean = hasSetting(HashMapNoCollisionSetting)
   def largeOutputHoisting: Boolean = hasSetting(LargeOutputHoistingSetting)
   def noFieldRemoval: Boolean = hasSetting(NoFieldRemovalSetting)
   def noSingletonHashMap: Boolean = hasSetting(NoSingletonHashMapSetting)
   def nameIsWithFlag: Boolean = hasSetting(OutputNameWithFlagSetting)
   def onlyLoading: Boolean = hasSetting(OnlyLoaderSetting)
   def chooseOptimal: Boolean = hasSetting(OptimalSetting)
+  def targetLanguage: CodeGenerationLang = if (hasSetting(ScalaCGSetting))
+    ScalaCodeGeneration
+  else
+    CCodeGeneration
 
-  import Main.Q12SynthesizedExtract
-  def isSynthesized: Boolean = args(2) match {
-    case Q12SynthesizedExtract(_, _) => true
-    case _                           => false
-  }
   def queryName: String = args(2)
 }
 
@@ -87,6 +79,7 @@ object Settings {
     SetToArraySetting,
     SetToLinkedListSetting,
     ContainerFlattenningSetting,
+    HashMapToArraySetting,
     ColumnStoreSetting,
     PointerStoreSetting,
     ArrayPartitioningSetting,
@@ -98,13 +91,14 @@ object Settings {
     IfAggressiveSetting,
     CArrayAsStructSetting,
     StringOptimizationSetting,
-    HashMapToArraySetting,
+    HashMapNoCollisionSetting,
     LargeOutputHoistingSetting,
     NoFieldRemovalSetting,
     NoSingletonHashMapSetting,
     OutputNameWithFlagSetting,
     OnlyLoaderSetting,
-    OptimalSetting)
+    OptimalSetting,
+    ScalaCGSetting)
 }
 
 /**
@@ -157,6 +151,8 @@ case object SetToArraySetting extends OptimizationSetting("set2arr",
   "Lowering Set to Array")
 case object SetToLinkedListSetting extends OptimizationSetting("set2ll",
   "Lowering Set to LinkedList")
+case object HashMapToArraySetting extends OptimizationSetting("hm2arr",
+  "Lowering HashMap to 1D Array without key inside its value")
 case object ContainerFlattenningSetting extends OptimizationSetting("cont-flat",
   "Flattening the next field of a container of a record to the record itself")
 case object ColumnStoreSetting extends OptimizationSetting("cstore",
@@ -186,7 +182,7 @@ case object CArrayAsStructSetting extends OptimizationSetting("old-carr",
 case object StringOptimizationSetting extends OptimizationSetting("str-opt",
   "Some optimizations on string operations",
   "Helpful for Q22")
-case object HashMapToArraySetting extends OptimizationSetting("hm-no-col",
+case object HashMapNoCollisionSetting extends OptimizationSetting("hm-no-col",
   "Transforming HashMap without collisions to Array")
 case object LargeOutputHoistingSetting extends OptimizationSetting("ignore-printing-output",
   "If the output is so large, this flag ignores the time for printing")
@@ -206,3 +202,5 @@ case object OnlyLoaderSetting extends OptionSetting("only-load",
   "Generates only the loader of a query")
 case object OptimalSetting extends OptionSetting("optimal",
   "Considers an optimal combiniation of optimization flags")
+case object ScalaCGSetting extends OptionSetting("scala",
+  "Generates Scala code instead of C code")

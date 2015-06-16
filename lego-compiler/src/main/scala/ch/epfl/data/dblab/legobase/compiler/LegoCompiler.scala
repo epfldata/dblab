@@ -20,23 +20,19 @@ import sc.pardis.compiler._
  *
  * @param DSL the polymorphic embedding trait which contains the reified program.
  * This object takes care of online partial evaluation
- * @param number specifies the TPCH query number (TODO should be removed)
- * @param generateCCode specifies the target code language.
  * @param settings the compiler settings provided as command line arguments
+ * @param schema the given schema information
+ * @param runnerClassName the name of the runner class which is used in Scala code generation
  */
-class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode: CodeGenerationLang, val settings: Settings, val schema: Schema) extends Compiler[LoweringLegoBase] {
-  def outputFile: String = {
-    def queryWithNumber =
-      if (settings.isSynthesized)
-        settings.queryName
-      else
-        "Q" + number
-    def argsString = settings.args.filter(_.startsWith("+")).map(_.drop(1)).sorted.mkString("_")
+class LegoCompiler(val DSL: LoweringLegoBase,
+                   val settings: Settings,
+                   val schema: Schema,
+                   val runnerClassName: String) extends Compiler[LoweringLegoBase] {
+  def outputFile: String =
     if (settings.nameIsWithFlag)
-      argsString + "_" + queryWithNumber
+      settings.args.filter(_.startsWith("+")).map(_.drop(1)).sorted.mkString("_") + "_" + settings.queryName
     else
-      queryWithNumber
-  }
+      settings.queryName
 
   val reportCompilationTime: Boolean = true
 
@@ -51,7 +47,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
     }
   }
 
-  override def irToPorgram = if (generateCCode == CCodeGeneration) {
+  override def irToPorgram = if (settings.targetLanguage == CCodeGeneration) {
     IRToCProgram(DSL)
   } else {
     IRToProgram(DSL)
@@ -80,16 +76,15 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
   if (!settings.noSingletonHashMap)
     pipeline += SingletonHashMapToValueTransformer
 
+  if (settings.hashMapToArray) {
+    pipeline += ConstSizeArrayToLocalVars
+    pipeline += DCE
+    // pipeline += TreeDumper(true)
+    pipeline += new HashMapTo1DArray(DSL)
+  }
+
   if (settings.hashMapPartitioning) {
-
-    if (number == 18) {
-      pipeline += ConstSizeArrayToLocalVars
-      pipeline += DCE
-      // pipeline += TreeDumper(true)
-      pipeline += new HashMapTo1DArray(DSL)
-    }
-    pipeline += new HashMapPartitioningTransformer(DSL, number, schema)
-
+    pipeline += new HashMapPartitioningTransformer(DSL, schema)
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE
@@ -101,10 +96,10 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
   if (settings.hashMapLowering || settings.hashMapNoCollision) {
     if (settings.hashMapLowering) {
       pipeline += new sc.pardis.deep.scalalib.collection.MultiMapOptimalTransformation(DSL)
-      pipeline += new HashMapToSetTransformation(DSL, number)
+      pipeline += new HashMapToSetTransformation(DSL, schema)
     }
     if (settings.hashMapNoCollision) {
-      pipeline += new HashMapNoCollisionTransformation(DSL, number)
+      pipeline += new HashMapNoCollisionTransformation(DSL, schema)
       // pipeline += TreeDumper(false)
     }
     // pipeline += PartiallyEvaluate
@@ -133,8 +128,7 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
     pipeline += new BlockFlattening(DSL) // should not be needed!
   }
 
-  // val partitionedQueries = List(3, 6, 10, 14)
-  if (settings.partitioning /* && partitionedQueries.contains(number)*/ ) {
+  if (settings.partitioning) {
     pipeline += TreeDumper(false)
     pipeline += new WhileToRangeForeachTransformer(DSL)
     pipeline += new ArrayPartitioning(DSL, schema)
@@ -152,9 +146,6 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
   if (settings.columnStore) {
 
     pipeline += new ColumnStoreTransformer(DSL, settings)
-    // if (settings.hashMapPartitioning) {
-    //   pipeline += new ColumnStore2DTransformer(DSL, number)
-    // }
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
 
@@ -178,21 +169,21 @@ class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val generateCCode
     pipeline += new LargeOutputPrintHoister(DSL, schema)
   }
 
-  if (generateCCode == CCodeGeneration) pipeline += new CTransformersPipeline(settings)
+  if (settings.targetLanguage == CCodeGeneration) pipeline += new CTransformersPipeline(settings)
 
   pipeline += DCECLang //NEVER REMOVE!!!!
 
   val codeGenerator =
-    if (generateCCode == CCodeGeneration) {
+    if (settings.targetLanguage == CCodeGeneration) {
       if (settings.noLetBinding)
-        new LegoCASTGenerator(DSL, false, outputFile, true)
+        new LegoCASTGenerator(DSL, outputFile, true)
       else
-        new LegoCGenerator(false, outputFile, true)
+        new LegoCGenerator(outputFile, true)
     } else {
       if (settings.noLetBinding)
-        new LegoScalaASTGenerator(DSL, false, outputFile)
+        new LegoScalaASTGenerator(DSL, false, outputFile, runnerClassName)
       else
-        new LegoScalaGenerator(false, outputFile)
+        new LegoScalaGenerator(false, outputFile, runnerClassName)
     }
 
 }

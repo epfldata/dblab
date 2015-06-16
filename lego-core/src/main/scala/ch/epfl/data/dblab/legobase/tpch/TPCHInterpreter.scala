@@ -1,15 +1,16 @@
 package ch.epfl.data
 package dblab.legobase
+package tpch
 
 import schema._
 import utils.Utilities._
 import java.io.PrintStream
 
 /**
- * The main object for interpreting queries.
+ * The main object for interpreting TPCH queries.
  */
-object LegoInterpreter extends LegoRunner {
-  import tpch.Queries._
+object TPCHInterpreter extends TPCHRunner {
+  import Queries._
 
   /**
    * Interprets the given TPCH query with the given scaling factor.

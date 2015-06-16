@@ -20,9 +20,8 @@ import sc.pardis.shallow.utils.DefaultValue
  * TODO maybe add an example
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
- * @param queryNumber specifies the TPCH query number (TODO should be removed)
  */
-class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val queryNumber: Int, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
   val allMaps = scala.collection.mutable.Set[Rep[Any]]()
   val partitionedMaps = scala.collection.mutable.Set[Rep[Any]]()
@@ -39,30 +38,15 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
 
   val windowOpMaps = scala.collection.mutable.Set[Rep[Any]]()
 
-  // val SIZE_ORDER = List("REGIONRecord", "NATIONRecord", "SUPPLIERRecord", "CUSTOMERRecord", "PARTRecord", "PARTSUPPRecord", "ORDERSRecord", "LINEITEMRecord")
-
-  // def getSizeOrder[T](tp: TypeRep[T]): Int = {
-  //   val name = tp.name
-  //   SIZE_ORDER.zipWithIndex.find(x => x._1 == name).get._2
-  // }
+  def multiMapHasDefaultHandling[T](mm: Rep[T]): Boolean = getLoweredSymbolOriginalDef(mm) match {
+    case Some(loj: LeftOuterJoinOpNew[_, _, _]) => true
+    case _                                      => false
+  }
 
   val ONE_D_ENABLED = true
 
-  val QUERY_18_DUMMY_FIELD = "DUM"
-
-  def isPrimaryKey[T](tp: TypeRep[T], field: String): Boolean = (tp.name, field) match {
-    // case ("REGIONRecord", "R_REGIONKEY") => true
-    // case ("NATIONRecord", "N_NATIONKEY") => true
-    // case ("SUPPLIERRecord", "S_SUPPKEY") => true
-    // case ("CUSTOMERRecord", "C_CUSTKEY") => true
-    // case ("PARTRecord", "P_PARTKEY") => true
-    // // case ("PARTSUPPRecord", _) => false
-    // case ("ORDERSRecord", "O_ORDERKEY") => true
-    // // case ("LINEITEMRecord", "L_ORDERKEY") => true
-    case (tableName, _) if getTable(tableName).exists(table => table.primaryKey.exists(pk => pk.attributes.forall(att => att.name == field))) => true
-    case ("Double", QUERY_18_DUMMY_FIELD) if queryNumber == 18 => true
-    case _ => false
-  }
+  def isPrimaryKey[T](tp: TypeRep[T], field: String): Boolean =
+    schema.findTableByType(tp).exists(table => table.primaryKey.exists(pk => pk.attributes.forall(att => att.name == field)))
 
   var transformedMapsCount = 0
 
@@ -71,22 +55,22 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       case _ if isAnti        => right.get
       case (Some(v), None)    => v
       case (None, Some(v))    => v
-      // case (Some(l), Some(r)) => if (getSizeOrder(l.tpe) < getSizeOrder(r.tpe)) l else r
       case (Some(l), Some(r)) => l
       case _                  => throw new Exception(s"$this doesn't have partitioned object")
     }
-    def hasLeft: Boolean = //left.exists(l => l == partitionedObject)
+    def hasLeft: Boolean =
       left.nonEmpty
     def isAnti: Boolean = hashJoinAntiMaps.contains(mapSymbol)
     def antiLambda: Lambda[Any, Unit] = hashJoinAntiForeachLambda(mapSymbol)
   }
   case class PartitionObject(arr: Rep[Array[Any]], fieldFunc: String, loopSymbol: While) {
     def tpe = arr.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
-    def buckets = if (is1D) numBucketsFull(this) else numBuckets(this)
+    def buckets = numBuckets(this)
     def count = partitionedObjectsCount(this)
     def parArr = partitionedObjectsArray(this).asInstanceOf[Rep[Array[Array[Any]]]]
     def is1D: Boolean = if (ONE_D_ENABLED) isPrimaryKey(tpe, fieldFunc) else false
-    def reuseOriginal1DArray: Boolean = List("REGIONRecord", "NATIONRecord", "SUPPLIERRecord", "CUSTOMERRecord", "PARTRecord").contains(tpe.name) || (queryNumber == 18 && tpe == DoubleType)
+    def table: Table = schema.findTableByType(tpe).get
+    def reuseOriginal1DArray: Boolean = table.continuous.nonEmpty
     def arraySize: Rep[Int] = arr match {
       case Def(ArrayNew(s)) => s
     }
@@ -112,7 +96,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
 
   override def postAnalyseProgram[T: TypeRep](node: Block[T]): Unit = {
     val realHashJoinAntiMaps = hashJoinAntiMaps intersect windowOpMaps
-    windowOpMaps --= realHashJoinAntiMaps // TODO should be uncommented
+    windowOpMaps --= realHashJoinAntiMaps
     hashJoinAntiMaps.clear()
     hashJoinAntiMaps ++= realHashJoinAntiMaps
     // val supportedMaps = partitionedMaps diff windowOpMaps
@@ -137,56 +121,12 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
       def addPartArray(exp: Rep[Any]): Unit =
         exp match {
           case Def(ArrayApply(arr, ind)) => leftPartArr += nodeself -> arr
-          // case Def(Struct(_, elems, _)) if elems.exists(e => e.name == field) =>
-          //   val init = elems.find(_.name == field).get.init
-          //   init match {
-          //     case Def(StructImmutableField(struct, field)) =>
-          //       System.out.println(s"${scala.Console.RED}WINDOWOP ${struct.tp}${scala.Console.RESET}")
-          //       addPartArray(struct)
-          //     case _ =>
-          //   }
-          // case Def(node)                 => System.out.println(s"leftPartArr (ArrayApply) couldn't be found for $nodeself, instead $node found")
           case _                         =>
         }
       addPartArray(struct)
   }
 
   val leftPartKey = scala.collection.mutable.Map[Rep[Any], Var[Any]]()
-
-  analysis += rule {
-    case node @ MultiMapAddBinding(nodeself, nodekey, nodev) if allMaps.contains(nodeself) && queryNumber == 18 =>
-      partitionedMaps += nodeself
-      leftPartFunc += nodeself -> QUERY_18_DUMMY_FIELD
-      leftLoopSymbol += nodeself -> currentLoopSymbol
-      globalDefs.values.collect({
-        case Stm(_, ArrayApply(arr, ind)) if ind == nodekey => arr
-      }).headOption.foreach(arr => {
-        // System.out.println(s"addbinding 18: ${arr}, $nodekey")
-        nodekey match {
-          case Def(ReadVar(v)) => leftPartKey += nodeself -> v
-          case _               => ()
-        }
-        leftPartArr += nodeself -> arr
-      })
-
-    // System.out.println(s"addbinding 18: ${nodekey.correspondingNode}")
-    // def addPartArray(exp: Rep[Any]): Unit =
-    //   exp match {
-    //     case Def(ArrayApply(arr, ind)) =>
-    //       System.out.println(s"leftPartArr (ArrayApply) FOUND for $nodeself, instead $node found"); leftPartArr += nodeself -> arr
-    //     // case Def(Struct(_, elems, _)) if elems.exists(e => e.name == field) =>
-    //     //   val init = elems.find(_.name == field).get.init
-    //     //   init match {
-    //     //     case Def(StructImmutableField(struct, field)) =>
-    //     //       System.out.println(s"${scala.Console.RED}WINDOWOP ${struct.tp}${scala.Console.RESET}")
-    //     //       addPartArray(struct)
-    //     //     case _ =>
-    //     //   }
-    //     // case Def(node)                 => System.out.println(s"leftPartArr (ArrayApply) couldn't be found for $nodeself, instead $node found")
-    //     case _ =>
-    //   }
-    // addPartArray(nodekey)
-  }
 
   analysis += rule {
     case node @ MultiMapGet(nodeself, Def(StructImmutableField(struct, field))) if allMaps.contains(nodeself) =>
@@ -231,32 +171,15 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     }
   }
 
-  def numBuckets(partitionedObject: PartitionObject): Rep[Int] = unit(schema.stats.getDistinctAttrValues(partitionedObject.fieldFunc))
+  def numBuckets(partitionedObject: PartitionObject): Rep[Int] =
+    unit(schema.stats.getDistinctAttrValues(partitionedObject.fieldFunc))
 
-  // TODO use Schema instead of manual cases for TPCH
-  def numBucketsFull(partitionedObject: PartitionObject): Rep[Int] = partitionedObject.arr match {
-    case Def(ArrayNew(l)) => partitionedObject.tpe.name match {
-      case "ORDERSRecord" => l * unit(5)
-      case _              => l
-    }
-    case sym => throw new Exception(s"setting default value for $sym")
-  }
-
-  // TODO use Schema instead of manual cases for TPCH
-  def bucketSize(partitionedObject: PartitionObject): Rep[Int] = //unit(100)
-    // numBuckets(partitionedObject)
-    (partitionedObject.tpe.name, partitionedObject.fieldFunc) match {
-      case ("LINEITEMRecord", "L_ORDERKEY") => unit(16)
-      // case ("LINEITEMRecord", "L_SUPPKEY") => unit(1 << 10)
-      case ("CUSTOMERRecord", "C_NATIONKEY") | ("SUPPLIERRecord", "S_NATIONKEY") => partitionedObject.arraySize / unit(25 - 5)
-      case _ => unit(1 << 10)
+  def bucketSize(partitionedObject: PartitionObject): Rep[Int] =
+    schema.stats.getConflictsAttr(partitionedObject.fieldFunc) match {
+      case Some(v) => unit(v)
+      case None    => unit(1 << 10)
     }
 
-  // def numBuckets(partitionedObject: PartitionObject): Rep[Int] = unit(1 << 9)
-  // def bucketSize(partitionedObject: PartitionObject): Rep[Int] = partitionedObject.arr match {
-  //   case Def(ArrayNew(l)) => l / unit(4)
-  //   case sym              => System.out.println(s"setting default value for $sym"); numBuckets(sym.tp.typeArguments(0))
-  // }
   def recreateNode[T: TypeRep](exp: Rep[T]): Rep[T] = exp match {
     case Def(node) => toAtom(node)(exp.tp)
     case _         => ???
@@ -273,13 +196,12 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
 
   def findBucketFunction(key: Rep[Int], partitionedObject: PartitionObject): Rep[Int] = key % partitionedObject.buckets
 
-  // TODO use Schema instead of manual cases for TPCH
   def par_array_foreach[T: TypeRep](partitionedObject: PartitionObject, key: Rep[Int], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
     if (partitionedObject.is1D) {
       val parArr = partitionedObject.parArr.asInstanceOf[Rep[Array[T]]]
-      val bucket = partitionedObject.tpe.name match {
-        case "CUSTOMERRecord" | "PARTRecord" | "SUPPLIERRecord" => key - unit(1)
-        case _ => key
+      val bucket = partitionedObject.table.continuous match {
+        case Some(continuous) => key - unit(continuous.offset)
+        case None             => key
       }
       val e = parArr(bucket)
       // System.out.println(s"part foreach for val $e=$parArr($bucket) ")
@@ -305,7 +227,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
     implicit val typeInner = partitionedObject.arr.tp.typeArguments(0).asInstanceOf[TypeRep[InnerType]]
     val originalArray = {
       val origArray =
-        if (!seenArrays.contains(partitionedObject.arr) && queryNumber != 18) {
+        if (!seenArrays.contains(partitionedObject.arr)) {
           seenArrays += partitionedObject.arr
           recreateNode(partitionedObject.arr)
         } else {
@@ -505,15 +427,11 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
             leftOuterJoinExistsVarSet(mm)
             inlineFunction(f.asInstanceOf[Rep[InnerType => Unit]], e)
           }
-          if (queryNumber == 18 && leftArray.fieldFunc == QUERY_18_DUMMY_FIELD) {
+          __ifThenElse[Unit](field[Int](e, leftArray.fieldFunc) __== apply(elem), {
             ifThenBody
-          } else {
-            __ifThenElse[Unit](field[Int](e, leftArray.fieldFunc) __== apply(elem), {
-              ifThenBody
-            }, {
-              unit(())
-            })
-          }
+          }, {
+            unit(())
+          })
         }
         // System.out.println(s"STARTED setforeach for the key $key $e.${leftArray.fieldFunc} mm: $mm")
         fillingHole(mm) = loopDepth
@@ -589,43 +507,32 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val quer
   }
 
   /* The parts dedicated to left outer join handling */
-  def leftOuterJoinDefaultHandling(mm: Rep[MultiMap[Any, Any]], key: Rep[Int], partitionedObject: PartitionObject): Rep[Unit] = queryNumber match {
-    case 13 =>
-      __ifThenElse(!readVar(leftOuterJoinExistsVar(mm)), {
-        inlineBlock[Unit](leftOuterJoinDefault(mm))
-      }, unit(()))
-    // printf(unit("query 13!"))
-    case _ => unit(())
-  }
+  def leftOuterJoinDefaultHandling(mm: Rep[MultiMap[Any, Any]], key: Rep[Int], partitionedObject: PartitionObject): Rep[Unit] = if (multiMapHasDefaultHandling(mm)) {
+    __ifThenElse(!readVar(leftOuterJoinExistsVar(mm)), {
+      inlineBlock[Unit](leftOuterJoinDefault(mm))
+    }, unit(()))
+  } else unit(())
 
-  def leftOuterJoinExistsVarDefine(mm: Rep[MultiMap[Any, Any]]): Unit = queryNumber match {
-    case 13 =>
-      val exists = __newVarNamed[Boolean](unit(false), "exists")
-      leftOuterJoinExistsVar(mm) = exists
-      ()
-    case _ =>
-  }
+  def leftOuterJoinExistsVarDefine(mm: Rep[MultiMap[Any, Any]]): Unit = if (multiMapHasDefaultHandling(mm)) {
+    val exists = __newVarNamed[Boolean](unit(false), "exists")
+    leftOuterJoinExistsVar(mm) = exists
+    ()
+  } else ()
 
-  def leftOuterJoinExistsVarSet(mm: Rep[MultiMap[Any, Any]]): Unit = queryNumber match {
-    case 13 =>
-      val exists = leftOuterJoinExistsVar(mm)
-      __assign(exists, unit(true))
-      ()
-    case _ =>
-  }
+  def leftOuterJoinExistsVarSet(mm: Rep[MultiMap[Any, Any]]): Unit = if (multiMapHasDefaultHandling(mm)) {
+    val exists = leftOuterJoinExistsVar(mm)
+    __assign(exists, unit(true))
+    ()
+  } else ()
 
   val leftOuterJoinDefault = scala.collection.mutable.Map[Rep[Any], Block[Unit]]()
   val leftOuterJoinExistsVar = scala.collection.mutable.Map[Rep[Any], Var[Boolean]]()
 
   analysis += rule {
-    case IfThenElse(Def(OptionNonEmpty(Def(MultiMapGet(mm, elem)))), thenp, elsep) if queryNumber == 13 => {
+    case IfThenElse(Def(OptionNonEmpty(Def(MultiMapGet(mm, elem)))), thenp, elsep) if multiMapHasDefaultHandling(mm) => {
       // System.out.println(s"elsep: $elsep")
       leftOuterJoinDefault += mm -> elsep.asInstanceOf[Block[Unit]]
       ()
     }
-  }
-
-  rewrite += rule {
-    case Equal(a, Def(ReadVar(v))) if queryNumber == 18 && leftPartKey.values.exists(_ == v) => unit(true)
   }
 }

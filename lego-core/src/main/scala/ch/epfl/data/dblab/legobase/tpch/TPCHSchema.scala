@@ -46,7 +46,8 @@ object TPCHSchema {
         R_REGIONKEY,
         R_NAME,
         ("R_COMMENT" -> VarCharType(152))),
-        List(PrimaryKey(List(R_REGIONKEY))),
+        List(PrimaryKey(List(R_REGIONKEY)),
+          Continuous(R_REGIONKEY, 0)),
         folderLocation + "region.tbl", 5)
     }
 
@@ -61,6 +62,7 @@ object TPCHSchema {
         ("N_COMMENT" -> VarCharType(152))),
         List(
           PrimaryKey(List(N_NATIONKEY)),
+          Continuous(N_NATIONKEY, 0),
           ForeignKey("NATION", "REGION", List(("N_REGIONKEY", "R_REGIONKEY")))),
         folderLocation + "nation.tbl", 25)
     }
@@ -78,6 +80,7 @@ object TPCHSchema {
         ("S_COMMENT" -> VarCharType(101))),
         List(
           PrimaryKey(List(sk)),
+          Continuous(sk, 1),
           ForeignKey("SUPPLIER", "NATION", List(("S_NATIONKEY", "N_NATIONKEY")))),
         folderLocation + "supplier.tbl", (scalingFactor * 10000).toLong)
     }
@@ -100,7 +103,8 @@ object TPCHSchema {
         "P_RETAILPRICE" -> DoubleType,
         ("P_COMMENT" -> VarCharType(23))),
         List(
-          PrimaryKey(List(P_PARTKEY))),
+          PrimaryKey(List(P_PARTKEY)),
+          Continuous(P_PARTKEY, 1)),
         folderLocation + "part.tbl", (scalingFactor * 200000).toLong)
     }
 
@@ -136,6 +140,7 @@ object TPCHSchema {
         ("C_COMMENT" -> VarCharType(117))),
         List(
           PrimaryKey(List(ck)),
+          Continuous(ck, 1),
           ForeignKey("CUSTOMER", "NATION", List(("C_NATIONKEY", "N_NATIONKEY")))),
         folderLocation + "customer.tbl", (scalingFactor * 150000).toLong)
     }
@@ -176,14 +181,15 @@ object TPCHSchema {
     tpchSchema.stats += "DISTINCT_L_SHIPMODE" -> 7
     tpchSchema.stats += "DISTINCT_L_RETURNFLAG" -> 3
     tpchSchema.stats += "DISTINCT_L_LINESTATUS" -> 2
-    tpchSchema.stats += "DISTINCT_L_ORDERKEY" -> lineItemTable.rowCount
+    tpchSchema.stats += "DISTINCT_L_ORDERKEY" -> ordersTable.rowCount * 5
     tpchSchema.stats += "DISTINCT_L_PARTKEY" -> partTable.rowCount
     tpchSchema.stats += "DISTINCT_L_SUPPKEY" -> supplierTable.rowCount
-    tpchSchema.stats += "DISTINCT_N_NAME" -> 25
+    tpchSchema.stats += "DISTINCT_N_NAME" -> nationTable.rowCount
+    tpchSchema.stats += "DISTINCT_N_NATIONKEY" -> nationTable.rowCount
     tpchSchema.stats += "DISTINCT_O_SHIPPRIORITY" -> 1
     tpchSchema.stats += "DISTINCT_O_ORDERDATE" -> 365 * 7 // 7-whole years
     tpchSchema.stats += "DISTINCT_O_ORDERPRIORITY" -> 5
-    tpchSchema.stats += "DISTINCT_O_ORDERKEY" -> lineItemTable.rowCount
+    tpchSchema.stats += "DISTINCT_O_ORDERKEY" -> ordersTable.rowCount * 5
     tpchSchema.stats += "DISTINCT_O_CUSTKEY" -> customerTable.rowCount
     tpchSchema.stats += "DISTINCT_P_PARTKEY" -> partTable.rowCount
     tpchSchema.stats += "DISTINCT_P_BRAND" -> 25
@@ -193,10 +199,16 @@ object TPCHSchema {
     tpchSchema.stats += "DISTINCT_PS_SUPPKEY" -> supplierTable.rowCount
     tpchSchema.stats += "DISTINCT_PS_AVAILQTY" -> 9999
     tpchSchema.stats += "DISTINCT_S_NAME" -> supplierTable.rowCount
-    tpchSchema.stats += "DISTINCT_S_NATIONKEY" -> 25
+    tpchSchema.stats += "DISTINCT_S_NATIONKEY" -> nationTable.rowCount
+    tpchSchema.stats += "DISTINCT_S_SUPPKEY" -> supplierTable.rowCount
     tpchSchema.stats += "DISTINCT_C_CUSTKEY" -> customerTable.rowCount
     tpchSchema.stats += "DISTINCT_C_NAME" -> customerTable.rowCount
-    tpchSchema.stats += "DISTINCT_C_NATIONKEY" -> 25
+    tpchSchema.stats += "DISTINCT_C_NATIONKEY" -> nationTable.rowCount
+    tpchSchema.stats += "DISTINCT_R_REGIONKEY" -> 5
+
+    tpchSchema.stats += "CONFLICT_L_ORDERKEY" -> 16
+    tpchSchema.stats += "CONFLICT_C_NATIONKEY" -> customerTable.rowCount / 20
+    tpchSchema.stats += "CONFLICT_S_NATIONKEY" -> supplierTable.rowCount / 20
 
     tpchSchema.stats += "NUM_YEARS_ALL_DATES" -> 7
 

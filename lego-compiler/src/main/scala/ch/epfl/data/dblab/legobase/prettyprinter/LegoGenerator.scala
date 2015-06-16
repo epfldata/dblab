@@ -18,7 +18,9 @@ import sc.pardis.deep.scalalib._
  * LegoBase or not.
  * @param outputFileName the name of output file
  */
-class LegoScalaGenerator(val shallow: Boolean = false, val outputFileName: String = "generatedProgram") extends ScalaCodeGenerator {
+class LegoScalaGenerator(val shallow: Boolean = false,
+                         val outputFileName: String,
+                         val runnerClassName: String) extends ScalaCodeGenerator {
 
   /**
    * Returns the generated code of the necessary import for the shallow libraries
@@ -27,7 +29,6 @@ class LegoScalaGenerator(val shallow: Boolean = false, val outputFileName: Strin
   def getShallowHeader: String = if (shallow) """
 import queryengine._
 import queryengine.push._
-import queryengine.TPCHRelations._
 import sc.pardis.shallow._
   """
   else
@@ -61,8 +62,8 @@ object OrderingFactory {
   /**
    * Returns the class/module signature code that the generated query is put inside that.
    */
-  override def getTraitSignature(): Document = doc"""object $outputFileName extends LegoRunner {
-  def executeQuery(query: String, sf: Double, schema: ch.epfl.data.dblab.legobase.schema.Schema): Unit = main()
+  override def getTraitSignature(): Document = doc"""object $outputFileName extends $runnerClassName {
+  def executeQuery(query: String, schema: ch.epfl.data.dblab.legobase.schema.Schema): Unit = main()
   def main(args: Array[String]) {
     run(args)
   }
@@ -90,7 +91,9 @@ object OrderingFactory {
  * LegoBase or not.
  * @param outputFileName the name of output file
  */
-class LegoScalaASTGenerator(val IR: Base, override val shallow: Boolean = false, override val outputFileName: String = "generatedProgram") extends LegoScalaGenerator(shallow, outputFileName) with ASTCodeGenerator[Base]
+class LegoScalaASTGenerator(val IR: Base, override val shallow: Boolean = false,
+                            override val outputFileName: String,
+                            override val runnerClassName: String) extends LegoScalaGenerator(shallow, outputFileName, runnerClassName) with ASTCodeGenerator[Base]
 
 /**
  * The class responsible for C code generation in ANF.
@@ -98,14 +101,12 @@ class LegoScalaASTGenerator(val IR: Base, override val shallow: Boolean = false,
  * This class unparses the IR nodes into their corresponding C syntax. However, the generated
  * code still remains in the administrative-normal form (ANF).
  *
- * @param shallow specifies whether the generated code should use the shallow interface classes of
- * LegoBase or not.
  * @param outputFileName the name of output file
  * @param verbose outputs comments inside the code to provide more information about specific variable
  * definitions. For example, in the case of defining mutable variables an appropriate comment in front
  * of that variable definition.
  */
-class LegoCGenerator(val shallow: Boolean = false, val outputFileName: String = "generatedProgram", override val verbose: Boolean = true) extends CCodeGenerator /* with BooleanCCodeGen */ {
+class LegoCGenerator(val outputFileName: String, override val verbose: Boolean = true) extends CCodeGenerator /* with BooleanCCodeGen */ {
   /**
    * Generates the code for the IR of the given program
    *
@@ -124,8 +125,9 @@ class LegoCGenerator(val shallow: Boolean = false, val outputFileName: String = 
    * @returns the corresponding generated code
    */
   override def functionNodeToDocument(fun: FunctionNode[_]) = fun match {
-    case GArrayHeaderG_array_indexObject(array, i) => "g_array_index(" :: expToDocument(array) :: ", " :: CUtils.pardisTypeToString(fun.tp) :: ", " :: expToDocument(i) :: ")"
-    case _                                         => super.functionNodeToDocument(fun)
+    case GArrayHeaderG_array_indexObject(array, i) =>
+      "g_array_index(" :: expToDocument(array) :: ", " :: CUtils.pardisTypeToString(fun.tp) :: ", " :: expToDocument(i) :: ")"
+    case _ => super.functionNodeToDocument(fun)
   }
 }
 
@@ -136,11 +138,11 @@ class LegoCGenerator(val shallow: Boolean = false, val outputFileName: String = 
  * is no longer in ANF, but in a more similar format to a code written by human.
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
- * @param shallow specifies whether the generated code should use the shallow interface classes of
- * LegoBase or not.
  * @param outputFileName the name of output file
  * @param verbose outputs comments inside the code to provide more information about specific variable
  * definitions. For example, in the case of defining mutable variables an appropriate comment in front
  * of that variable definition.
  */
-class LegoCASTGenerator(val IR: Base, override val shallow: Boolean = false, override val outputFileName: String = "generatedProgram", override val verbose: Boolean = true) extends LegoCGenerator(shallow, outputFileName, verbose) with CASTCodeGenerator[Base]
+class LegoCASTGenerator(val IR: Base,
+                        override val outputFileName: String,
+                        override val verbose: Boolean = true) extends LegoCGenerator(outputFileName, verbose) with CASTCodeGenerator[Base]
