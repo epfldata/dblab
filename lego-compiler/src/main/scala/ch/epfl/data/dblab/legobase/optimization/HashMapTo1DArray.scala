@@ -55,38 +55,38 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
 
   analysis += rule {
     case StructImmutableField(s, _) if s.tp.isLoweredRecordType =>
-      flattennedStructs += s
+      flattenedStructs += s
       ()
   }
 
   analysis += rule {
     case StructFieldGetter(s, _) if s.tp.isLoweredRecordType =>
-      flattennedStructs += s
+      flattenedStructs += s
       ()
   }
 
   analysis += rule {
     case StructFieldSetter(s, _, _) if s.tp.isLoweredRecordType =>
-      flattennedStructs += s
+      flattenedStructs += s
       ()
   }
 
   analysis += statement {
     case sym -> Struct(_, _, _) if sym.tp.isLoweredRecordType =>
-      flattennedStructs += sym
+      flattenedStructs += sym
       ()
   }
 
   val loweredHashMaps = scala.collection.mutable.Set[Rep[Any]]()
-  val flattennedStructs = scala.collection.mutable.Set[Rep[Any]]()
+  val flattenedStructs = scala.collection.mutable.Set[Rep[Any]]()
   val hashMapElemValue = scala.collection.mutable.Map[Rep[Any], Block[Any]]()
 
   def mustBeLowered[T](sym: Rep[T]): Boolean =
     // sym.asInstanceOf[Sym[T]].id == 649
     loweredHashMaps.contains(sym)
 
-  def isFlattennedStruct[T](sym: Rep[T]): Boolean =
-    flattennedStructs.contains(sym)
+  def isFlattenedStruct[T](sym: Rep[T]): Boolean =
+    flattenedStructs.contains(sym)
 
   val lastIndexMap = scala.collection.mutable.Map[Rep[Any], Var[Any]]()
   val tableMap = scala.collection.mutable.Map[Rep[Any], Rep[Any]]()
@@ -159,24 +159,24 @@ class HashMapTo1DArray(override val IR: HashMapOps with RangeOps with ArrayOps w
   }
 
   rewrite += statement {
-    case sym -> Struct(_, fields, _) if isFlattennedStruct(sym) =>
+    case sym -> Struct(_, fields, _) if isFlattenedStruct(sym) =>
       fields.find(f => f.name == "aggs").get.init
   }
 
   rewrite += rule {
-    case node @ StructImmutableField(s, "aggs") if isFlattennedStruct(s) =>
+    case node @ StructImmutableField(s, "aggs") if isFlattenedStruct(s) =>
       apply(s)
   }
   rewrite += rule {
-    case node @ StructFieldGetter(s, "aggs") if isFlattennedStruct(s) =>
+    case node @ StructFieldGetter(s, "aggs") if isFlattenedStruct(s) =>
       apply(s)
   }
   rewrite += rule {
-    case node @ StructFieldSetter(s @ TDef(ArrayApply(arr, i)), "aggs", v) if isFlattennedStruct(s) =>
+    case node @ StructFieldSetter(s @ TDef(ArrayApply(arr, i)), "aggs", v) if isFlattenedStruct(s) =>
       arr(i) = v
   }
   rewrite += rule {
-    case node @ StructImmutableField(s, "key") if isFlattennedStruct(s) && keyIndex != null =>
+    case node @ StructImmutableField(s, "key") if isFlattenedStruct(s) && keyIndex != null =>
       keyIndex
   }
 
