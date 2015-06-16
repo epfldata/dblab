@@ -9,11 +9,8 @@ object Config {
   var checkResults = true
   /** Specifies the location of data files. */
   var datapath: java.lang.String = null
-  /** Specifies the scaling factor for TPCH queries (TODO should be removed) */
-  var sf: Double = _
   /** Number of the repetitions of running a query */
   val numRuns: scala.Int = 1
-
   /* Code generation info */
   var codeGenLang: CodeGenerationLang = CCodeGeneration
 }

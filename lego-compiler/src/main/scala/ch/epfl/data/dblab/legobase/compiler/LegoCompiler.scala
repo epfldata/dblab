@@ -21,8 +21,13 @@ import sc.pardis.compiler._
  * @param DSL the polymorphic embedding trait which contains the reified program.
  * This object takes care of online partial evaluation
  * @param settings the compiler settings provided as command line arguments
+ * @param schema the given schema information
+ * @param runnerClassName the name of the runner class which is used in Scala code generation
  */
-class LegoCompiler(val DSL: LoweringLegoBase, val settings: Settings, val schema: Schema) extends Compiler[LoweringLegoBase] {
+class LegoCompiler(val DSL: LoweringLegoBase,
+                   val settings: Settings,
+                   val schema: Schema,
+                   val runnerClassName: String) extends Compiler[LoweringLegoBase] {
   def outputFile: String =
     if (settings.nameIsWithFlag)
       settings.args.filter(_.startsWith("+")).map(_.drop(1)).sorted.mkString("_") + "_" + settings.queryName
@@ -171,14 +176,14 @@ class LegoCompiler(val DSL: LoweringLegoBase, val settings: Settings, val schema
   val codeGenerator =
     if (settings.targetLanguage == CCodeGeneration) {
       if (settings.noLetBinding)
-        new LegoCASTGenerator(DSL, false, outputFile, true)
+        new LegoCASTGenerator(DSL, outputFile, true)
       else
-        new LegoCGenerator(false, outputFile, true)
+        new LegoCGenerator(outputFile, true)
     } else {
       if (settings.noLetBinding)
-        new LegoScalaASTGenerator(DSL, false, outputFile)
+        new LegoScalaASTGenerator(DSL, false, outputFile, runnerClassName)
       else
-        new LegoScalaGenerator(false, outputFile)
+        new LegoScalaGenerator(false, outputFile, runnerClassName)
     }
 
 }

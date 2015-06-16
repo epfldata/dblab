@@ -73,7 +73,7 @@ class Settings(val args: List[String]) {
   else
     CCodeGeneration
 
-  import Main.Q12SynthesizedExtract
+  import tpch.TPCHCompiler.Q12SynthesizedExtract
   def isSynthesized: Boolean = args(2) match {
     case Q12SynthesizedExtract(_, _) => true
     case _                           => false

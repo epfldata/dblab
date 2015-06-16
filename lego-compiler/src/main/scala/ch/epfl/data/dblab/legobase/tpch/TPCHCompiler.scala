@@ -1,7 +1,8 @@
 package ch.epfl.data
 package dblab.legobase
-package compiler
+package tpch
 
+import compiler._
 import schema._
 import deep._
 import prettyprinter._
@@ -12,9 +13,9 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
 
 /**
- * The starting point of the LegoBase compiler.
+ * The starting point of the TPCH Query Compiler.
  */
-object Main extends LegoRunner {
+object TPCHCompiler extends TPCHRunner {
 
   object Q12SynthesizedExtract {
     val Pat = "Q12S(_\\w)?_(\\d*)".r
@@ -36,9 +37,15 @@ object Main extends LegoRunner {
       System.out.println("USAGE: run <data_folder> <scaling_factor_number> <list of queries to run> <copy>? <+optimizations> <-options>")
       System.out.println("     : data_folder_name should contain folders named sf0.1 sf1 sf2 sf4 etc")
       System.out.println("  Available optimizations:")
-      System.out.println(Settings.ALL_SETTINGS.collect({ case opt: OptimizationSetting => opt.fullFlagName + ": " + opt.description }).mkString(" " * 6, "\n" + " " * 6, ""))
+      System.out.println(Settings.ALL_SETTINGS.collect({
+        case opt: OptimizationSetting =>
+          opt.fullFlagName + ": " + opt.description
+      }).mkString(" " * 6, "\n" + " " * 6, ""))
       System.out.println("  Available options:")
-      System.out.println(Settings.ALL_SETTINGS.collect({ case opt: OptionSetting => opt.fullFlagName + ": " + opt.description }).mkString(" " * 6, "\n" + " " * 6, ""))
+      System.out.println(Settings.ALL_SETTINGS.collect({
+        case opt: OptionSetting =>
+          opt.fullFlagName + ": " + opt.description
+      }).mkString(" " * 6, "\n" + " " * 6, ""))
       // System.out.println("""  Synthesized queries:
       //       Q12S[_C]_N: N is the number of fields of the Lineitem table which should be used.
       // """)
@@ -98,7 +105,7 @@ object Main extends LegoRunner {
 
     val validatedSettings = settings.validate(queryNumber)
 
-    val compiler = new LegoCompiler(context, validatedSettings, schema)
+    val compiler = new LegoCompiler(context, validatedSettings, schema, "ch.epfl.data.dblab.legobase.tpch.TPCHRunner")
     compiler.compile(queryFunction())
   }
 }

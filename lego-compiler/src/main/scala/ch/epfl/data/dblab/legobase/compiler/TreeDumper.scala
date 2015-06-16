@@ -20,7 +20,7 @@ object TreeDumper {
   def apply(concreteSyntax: Boolean) = new TransformerHandler {
     def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
       if (concreteSyntax) {
-        val cg = new LegoScalaGenerator(false, "tree_debug_dump.txt")
+        val cg = new LegoScalaGenerator(false, "tree_debug_dump.txt", "DummyRunner")
         val pw = new java.io.PrintWriter("tree_debug_dump.txt")
         val doc = cg.blockToDocument(block)
         doc.format(40, pw)
