@@ -8,7 +8,8 @@ import scala.collection.immutable.ListMap
 
 case class Catalog(schemata: Map[String, Schema])
 case class Schema(tables: List[Table], stats: Statistics = Statistics()) {
-  def findTable(name: String) = tables.find(t => t.name == name)
+  def findTable(name: String): Option[Table] = tables.find(t => t.name == name)
+  def findTableByType(tpe: PardisType[_]): Option[Table] = tables.find(t => t.name + "Record" == tpe.name)
   def findAttribute(attrName: String): Option[Attribute] = tables.map(t => t.attributes).flatten.find(attr => attr.name == attrName)
 }
 case class Table(name: String, attributes: List[Attribute], constraints: List[Constraint], resourceLocator: String, var rowCount: Long) {
@@ -17,6 +18,7 @@ case class Table(name: String, attributes: List[Attribute], constraints: List[Co
   def notNulls: List[NotNull] = constraints.collect { case nn: NotNull => nn }
   def uniques: List[Unique] = constraints.collect { case unq: Unique => unq }
   def autoIncrement: Option[AutoIncrement] = constraints.collectFirst { case ainc: AutoIncrement => ainc }
+  def continuous: Option[Continuous] = constraints.collectFirst { case cont: Continuous => cont }
   def findAttribute(attrName: String): Option[Attribute] = attributes.find(attr => attr.name == attrName)
 }
 case class Attribute(name: String, dataType: Tpe, constraints: List[Constraint] = List(), var distinctValuesCount: Int = 0, var nullValuesCount: Long = 0) {
@@ -36,6 +38,12 @@ case class ForeignKey(ownTable: String, referencedTable: String, attributes: Lis
 case class NotNull(attribute: Attribute) extends Constraint
 case class Unique(attribute: Attribute) extends Constraint
 case class AutoIncrement(attribute: Attribute) extends Constraint
+/**
+ * Specifies that the rows of a given table are continues (which means it is
+ * also a preimary key) with respect to the given attribute. The offset specifies
+ * the offset between the index of a row and the value of the attribute.
+ */
+case class Continuous(attribute: Attribute, offset: Int) extends Constraint
 object Compressed extends Constraint
 
 // TODO-GEN: Move this to its own file
@@ -43,7 +51,8 @@ case class Statistics() {
   private val statsMap = new scala.collection.mutable.HashMap[String, Double]()
   case class Dependency(name: String, func: Double => Double)
   private val statsDependencyMap = new scala.collection.mutable.HashMap[String, Dependency]()
-  private def format(name: String) = name.replaceAll("Record", "").replaceAll("Type", "").replaceAll("\\(", "_").replaceAll("\\)", "").replaceAll(",", "_").toUpperCase()
+  private def format(name: String) = name.replaceAll("Record", "").replaceAll("Type", "").
+    replaceAll("\\(", "_").replaceAll("\\)", "").replaceAll(",", "_").toUpperCase()
 
   def +=(nameAndValue: (String, Double)) = statsMap += (format(nameAndValue._1) -> nameAndValue._2)
   def +=(name: String, value: Double) = statsMap += (format(name) -> value)
