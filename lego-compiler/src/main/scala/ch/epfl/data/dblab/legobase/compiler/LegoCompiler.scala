@@ -20,19 +20,14 @@ import sc.pardis.compiler._
  *
  * @param DSL the polymorphic embedding trait which contains the reified program.
  * This object takes care of online partial evaluation
- * @param number specifies the TPCH query number (TODO should be removed)
  * @param settings the compiler settings provided as command line arguments
  */
-class LegoCompiler(val DSL: LoweringLegoBase, val number: Int, val settings: Settings, val schema: Schema) extends Compiler[LoweringLegoBase] {
-  def outputFile: String = {
-    def queryWithNumber =
-      settings.queryName
-    def argsString = settings.args.filter(_.startsWith("+")).map(_.drop(1)).sorted.mkString("_")
+class LegoCompiler(val DSL: LoweringLegoBase, val settings: Settings, val schema: Schema) extends Compiler[LoweringLegoBase] {
+  def outputFile: String =
     if (settings.nameIsWithFlag)
-      argsString + "_" + queryWithNumber
+      settings.args.filter(_.startsWith("+")).map(_.drop(1)).sorted.mkString("_") + "_" + settings.queryName
     else
-      queryWithNumber
-  }
+      settings.queryName
 
   val reportCompilationTime: Boolean = true
 
