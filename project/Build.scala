@@ -73,7 +73,7 @@ object LegoBuild extends Build {
           if(args(2).startsWith("Q")) {
             val cgDir = srcDir / "scala" / "generated"
             IO.delete(cgDir ** "*.scala" get)
-            toError(r.run("ch.epfl.data.dblab.legobase.compiler.Main", cp.files, args, s.log))
+            toError(r.run("ch.epfl.data.dblab.legobase.tpch.TPCHCompiler", cp.files, args :+ "-scala", s.log))
             val fileName = args(2) + "_Generated.scala"
             val filePath = cgDir / fileName
             println("Generated " + fileName)
@@ -82,7 +82,7 @@ object LegoBuild extends Build {
           } else if (args(2) == "testsuite-scala") {
             for(i <- 1 to 22) {
               val newArgs = args.dropRight(1) :+ s"Q$i"
-              toError(r.run("ch.epfl.data.dblab.legobase.compiler.Main", cp.files, newArgs, s.log))  
+              toError(r.run("ch.epfl.data.dblab.legobase.compiler.Main", cp.files, newArgs :+ "-scala", s.log))  
             }
           }
           // println("classpath:" + (cp.files :+ filePath).mkString("\n"))

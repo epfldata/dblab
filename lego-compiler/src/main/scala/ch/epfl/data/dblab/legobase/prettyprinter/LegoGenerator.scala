@@ -63,7 +63,7 @@ object OrderingFactory {
    * Returns the class/module signature code that the generated query is put inside that.
    */
   override def getTraitSignature(): Document = doc"""object $outputFileName extends $runnerClassName {
-  def executeQuery(query: String, sf: Double, schema: ch.epfl.data.dblab.legobase.schema.Schema): Unit = main()
+  def executeQuery(query: String, schema: ch.epfl.data.dblab.legobase.schema.Schema): Unit = main()
   def main(args: Array[String]) {
     run(args)
   }
