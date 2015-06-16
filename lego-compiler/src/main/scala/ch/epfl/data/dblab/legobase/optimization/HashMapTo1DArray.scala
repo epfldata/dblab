@@ -57,7 +57,7 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
     loweredHashMaps ++= (potentiallyLoweredHashMaps diff invalidLoweredHashMaps)
     phase = GatherLoweredSymbols
     traverseBlock(node)
-    System.out.println(flattennedStructValueFields)
+    System.out.println(flattenedStructValueFields)
   }
 
   val potentiallyLoweredHashMaps = scala.collection.mutable.Set[Rep[Any]]()
@@ -98,10 +98,10 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
   /* Phase II: Gathering the symbols that should be lowered */
 
   val loweredHashMaps = scala.collection.mutable.Set[Rep[Any]]()
-  val flattennedStructs = scala.collection.mutable.Set[Rep[Any]]()
+  val flattenedStructs = scala.collection.mutable.Set[Rep[Any]]()
   val hashMapElemValue = scala.collection.mutable.Map[Rep[Any], Block[Any]]()
-  val flattennedStructKeyField = scala.collection.mutable.Map[TypeRep[Any], String]()
-  val flattennedStructValueFields = scala.collection.mutable.Map[TypeRep[Any], List[String]]()
+  val flattenedStructKeyField = scala.collection.mutable.Map[TypeRep[Any], String]()
+  val flattenedStructValueFields = scala.collection.mutable.Map[TypeRep[Any], List[String]]()
 
   analysis += rule {
     case node @ HashMapGetOrElseUpdate(nodeself, nodekey, nodeopOutput) if phase == GatherLoweredSymbols && loweredHashMaps.contains(nodeself) =>
@@ -112,40 +112,40 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
 
   analysis += rule {
     case StructImmutableField(s, _) if phase == GatherLoweredSymbols && s.tp.isLoweredRecordType =>
-      flattennedStructs += s
+      flattenedStructs += s
       ()
   }
 
   analysis += rule {
     case StructFieldGetter(s, _) if phase == GatherLoweredSymbols && s.tp.isLoweredRecordType =>
-      flattennedStructs += s
+      flattenedStructs += s
       ()
   }
 
   analysis += rule {
     case StructFieldSetter(s, _, _) if phase == GatherLoweredSymbols && s.tp.isLoweredRecordType =>
-      flattennedStructs += s
+      flattenedStructs += s
       ()
   }
 
   analysis += statement {
     case sym -> Struct(_, fields, _) if phase == GatherLoweredSymbols && sym.tp.isLoweredRecordType =>
-      flattennedStructs += sym
-      flattennedStructKeyField += sym.tp -> fields.find(_.init.tp == IntType).get.name
-      flattennedStructValueFields += sym.tp -> fields.toList.filter(_ != fields.find(_.init.tp == IntType).get).map(_.name)
+      flattenedStructs += sym
+      flattenedStructKeyField += sym.tp -> fields.find(_.init.tp == IntType).get.name
+      flattenedStructValueFields += sym.tp -> fields.toList.filter(_ != fields.find(_.init.tp == IntType).get).map(_.name)
       ()
   }
 
   def mustBeLowered[T](sym: Rep[T]): Boolean =
     loweredHashMaps.contains(sym)
 
-  def isFlattennedStruct[T](sym: Rep[T]): Boolean =
-    flattennedStructs.contains(sym)
+  def isFlattenedStruct[T](sym: Rep[T]): Boolean =
+    flattenedStructs.contains(sym)
 
   def isKeyFieldOfFlattennedStruct[T](sym: Rep[T], name: String): Boolean =
-    flattennedStructKeyField(sym.tp.asInstanceOf[TypeRep[Any]]) == name
+    flattenedStructKeyField(sym.tp.asInstanceOf[TypeRep[Any]]) == name
   def isValueFieldOfFlattennedStruct[T](sym: Rep[T], name: String): Boolean =
-    flattennedStructValueFields(sym.tp.asInstanceOf[TypeRep[Any]]).contains(name)
+    flattenedStructValueFields(sym.tp.asInstanceOf[TypeRep[Any]]).contains(name)
 
   val hashmapForeachKeyIndex = scala.collection.mutable.Map[Rep[Any], Rep[Int]]()
   val lastIndexMap = scala.collection.mutable.Map[Rep[Any], Var[Any]]()
@@ -208,26 +208,26 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
   }
 
   rewrite += statement {
-    case sym -> Struct(_, fields, _) if isFlattennedStruct(sym) =>
+    case sym -> Struct(_, fields, _) if isFlattenedStruct(sym) =>
       // TODO can be generalized
       assert(fields.size == 2)
       fields.find(f => f.init.tp != IntType).get.init
   }
 
   rewrite += rule {
-    case node @ StructImmutableField(s, field) if isFlattennedStruct(s) && isValueFieldOfFlattennedStruct(s, field) =>
+    case node @ StructImmutableField(s, field) if isFlattenedStruct(s) && isValueFieldOfFlattennedStruct(s, field) =>
       apply(s)
   }
   rewrite += rule {
-    case node @ StructFieldGetter(s, field) if isFlattennedStruct(s) && isValueFieldOfFlattennedStruct(s, field) =>
+    case node @ StructFieldGetter(s, field) if isFlattenedStruct(s) && isValueFieldOfFlattennedStruct(s, field) =>
       apply(s)
   }
   rewrite += rule {
-    case node @ StructFieldSetter(s @ TDef(ArrayApply(arr, i)), field, v) if isFlattennedStruct(s) && isValueFieldOfFlattennedStruct(s, field) =>
+    case node @ StructFieldSetter(s @ TDef(ArrayApply(arr, i)), field, v) if isFlattenedStruct(s) && isValueFieldOfFlattennedStruct(s, field) =>
       arr(i) = v
   }
   rewrite += rule {
-    case node @ StructImmutableField(s, field) if isFlattennedStruct(s) && hashmapForeachKeyIndex.exists(_._1.tp.typeArguments(1) == s.tp) && isKeyFieldOfFlattennedStruct(s, field) =>
+    case node @ StructImmutableField(s, field) if isFlattenedStruct(s) && hashmapForeachKeyIndex.exists(_._1.tp.typeArguments(1) == s.tp) && isKeyFieldOfFlattennedStruct(s, field) =>
       hashmapForeachKeyIndex.find(_._1.tp.typeArguments(1) == s.tp).get._2
   }
 
