@@ -7,16 +7,14 @@ hosts the transformers and compilation pipeline of LegoBase.
 Installation
 ============
 
-The LegoBase compiler requires the SC Pardis Compiler (https://github.com/epfldata/sc), C.Scala Library and C.Scala Compiler; 
-the projects `sc-pardis-compiler`, `sc-c-scala-lib`, and `sc-c-scala-deep`.
+The LegoBase compiler requires the SC Pardis Compiler (https://github.com/epfldata/sc), 
+C.Scala Library, C.Scala Compiler, and SC Pardis Quasi-Quotation.
 
 If you have access to the sc repository follow these steps:
-1. Clone this project and checkout to the desired branch. Then, in sbt interactive mode,
-run `project sc-pardis-compiler` for 
-going to the Pardis Compiler project.
-2. Run `publish-local` on the `root` project of Pardis.
-Then run `sc-c-scala-lib/publish-local` and `sc-c-scala-deep/publish-local` in the sbt console
-of the Pardis project.
+
+1. Clone this project and checkout to the desired branch.
+
+2. Run `bin/install_all.sh`.
 
 sbt takes care of fetching the necessary dependencies. 
 
