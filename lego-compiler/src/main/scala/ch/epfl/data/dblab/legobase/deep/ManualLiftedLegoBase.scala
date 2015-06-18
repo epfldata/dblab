@@ -52,7 +52,11 @@ trait ManualLiftedLegoBase extends OrderingOps with ManifestOps with sc.pardis.d
 
   // this one is needed to rewrire `ArrayBuffer.apply()` to `new ArrayBuffer()`
   // TODO Purgatory should handle that
-  override def arrayBufferApplyObject[T]()(implicit typeT: TypeRep[T]): Rep[ArrayBuffer[T]] = __newArrayBuffer[T]()
+  override def arrayBufferApplyObject[A](elems: Rep[A]*)(implicit typeA: TypeRep[A]): Rep[ArrayBuffer[A]] =
+    if (elems.size == 0)
+      __newArrayBuffer[A]()
+    else
+      this.arrayBufferApplyObject(elems: _*)
 
   /* TODO there's a bug with the design of records which if it's solved there's no need for this manual node */
   override def aGGRecordNew[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = AGGRecordNew2[B](key, aggs)
