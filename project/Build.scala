@@ -66,7 +66,8 @@ object LegoBuild extends Build {
       libraryDependencies ++= Seq(//"ch.epfl.lamp" % "scala-yinyang_2.11" % "0.2.0-SNAPSHOT",
         "ch.epfl.data" % "sc-pardis-compiler_2.11" % "0.1-SNAPSHOT",
         "ch.epfl.data" % "sc-c-scala-lib_2.11" % "0.1-SNAPSHOT",
-        "ch.epfl.data" % "sc-c-scala-deep_2.11" % "0.1-SNAPSHOT"
+        "ch.epfl.data" % "sc-c-scala-deep_2.11" % "0.1-SNAPSHOT",
+        "ch.epfl.data" % "sc-pardis-quasi_2.11" % "0.1-SNAPSHOT"
         ),
       generate_test <<= inputTask { (argTask: TaskKey[Seq[String]]) =>
         (argTask, sourceDirectory in Test, fullClasspath in Compile, runner in Compile, streams) map { (args, srcDir, cp, r, s) =>

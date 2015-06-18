@@ -10,6 +10,7 @@ import deep._
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
+import quasi._
 
 /**
  * A transformer which rewrites while loops whenever possible to for expressions.
@@ -23,7 +24,9 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
     def unapply(block: Block[Boolean]): Option[(Var[Int], Rep[Int])] = {
       val resultNode = block.stmts.find(stm => stm.sym == block.res).get.rhs
       resultNode match {
+        // TODO needs correct handling of thunks in quasi
         case Boolean$amp$amp(Constant(true), block2) => RangeCondition.unapply(block2)
+        // TODO needs having readVar in shallow or some other mechanism to detect vars
         case Int$less1(Def(ReadVar(v)), size)        => Some(v -> size)
         case _                                       => None
       }
@@ -92,18 +95,33 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
   // }
 
   rewrite += statement {
+    // TODO needs correct handling of blocks in quasi
     case sym -> While(cond, body) if shouldBeConverted(sym) =>
       val whileInfo = convertedWhiles.find(_.whileSym == sym).get
       // System.out.println(s"startCond: $startConds")
       // System.out.println(s"whileInfo: $whileInfo")
       val start = startConds(whileInfo.variable)
+      //      val start = startConds(whileInfo.variable).toLong
       // we assume step = 1
-      Range(start, whileInfo.size).foreach {
-        __lambda { (i: Rep[Int]) =>
-          fillingPhase += whileInfo.variable -> i
-          body.stmts.foreach(transformStm)
-          unit(())
-        }
-      }
+      //      val i = fresh[Int]
+      val end = whileInfo.size.toLong
+      //      dsl"for(i <- $start until ${end}) { ${
+      //        //              fillingPhase += whileInfo.variable -> i
+      //        //              body.stmts.foreach(transformStm)
+      //        unit()
+      //      }; () }": Rep[Any]
+//
+//      val lambda = dsl"(i:Int) => ()"
+//      val dsl"($i:Int) => ()" = lambda
+//      fillingPhase += whileInfo.variable -> i
+//      body.stmts.foreach(transformStm)
+//      Range(start, whileInfo.size).foreach { lambda }
+          Range(start, whileInfo.size).foreach {
+            __lambda { (i: Rep[Int]) =>
+              fillingPhase += whileInfo.variable -> i
+              body.stmts.foreach(transformStm)
+              unit(())
+            }
+          }
   }
 }
