@@ -122,26 +122,13 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
 
   object Comparison {
     def unapply[T](node: Def[T]): Option[(Rep[Int], Rep[Int], Predicate)] = node match {
-      // TODO use qq
-      // case dsl"($a: Int) < ($b : Int)" =>
-      //   Some(a, b, LE)
-      // case dsl"($a: Int) <= ($b : Int)" =>
-      //   Some(a, b, LEq)
-      // case dsl"($a: Int) > ($b : Int)" =>
-      //   Some(a, b, GE)
-      // case dsl"($a: Int) >= ($b : Int)" =>
-      //   Some(a, b, GEq)
-      case Int$less1(a, b) =>
-        // The following line works!
-        node match {
-          case dsl"($a: Int) < ($b : Int)" =>
-        }
+      case dsl"($a: Int) < ($b : Int)" =>
         Some(a, b, LE)
-      case Int$less$eq1(a, b) =>
+      case dsl"($a: Int) <= ($b : Int)" =>
         Some(a, b, LEq)
-      case Int$greater1(a, b) =>
+      case dsl"($a: Int) > ($b : Int)" =>
         Some(a, b, GE)
-      case Int$greater$eq1(a, b) =>
+      case dsl"($a: Int) >= ($b : Int)" =>
         Some(a, b, GEq)
       case _ =>
         None
@@ -317,9 +304,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
   }
 
   analysis += statement {
-    // TODO does not correctly match
-    // case sym -> dsl"($arr: Array[Any]).apply($index)" if phase == CheckApplicablePhase && rangeForIndex.exists(_._2 == index) => {
-    case sym -> ArrayApply(arr, index) if phase == CheckApplicablePhase && rangeForIndex.exists(_._2 == index) => {
+    case sym -> dsl"($arr: Array[Any]).apply($index)" if phase == CheckApplicablePhase && rangeForIndex.exists(_._2 == index) => {
       val rangeForeach = rangeForIndex.find(_._2 == index).get._1
       rangeArray += rangeForeach -> arr
       rangeArrayApply += rangeForeach -> sym
@@ -388,9 +373,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
   var filling = false
 
   rewrite += statement {
-    // TODO does not correctly match
-    // case sym -> dsl"($range: Range).foreach($func)" if arraysInfo.exists(_.rangeForeachSymbol == sym) => {
-    case sym -> RangeForeach(range, func) if arraysInfo.exists(_.rangeForeachSymbol == sym) => {
+    case sym -> dsl"($range: Range).foreach($func)" if arraysInfo.exists(_.rangeForeachSymbol == sym) => {
       class ElemType
       val arrayInfo = arraysInfo.find(_.rangeForeachSymbol == sym).get.asInstanceOf[ArrayInfo[ElemType]]
 
@@ -416,9 +399,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
   }
 
   rewrite += statement {
-    // TODO does not correctly match
-    // case sym -> dsl"($arr: Array[Any]).apply($index)" if filling && arraysInfo.exists(ai => ai.array == arr && ai.arrayApplyIndex == index) => {
-    case sym -> ArrayApply(arr, index) if filling && arraysInfo.exists(ai => ai.array == arr && ai.arrayApplyIndex == index) => {
+    case sym -> dsl"($arr: Array[Any]).apply($index)" if filling && arraysInfo.exists(ai => ai.array == arr && ai.arrayApplyIndex == index) => {
       val arrayInfo = arraysInfo.find(ai => ai.array == arr && ai.arrayApplyIndex == index).get
       arraysInfoElem(arrayInfo)
     }
