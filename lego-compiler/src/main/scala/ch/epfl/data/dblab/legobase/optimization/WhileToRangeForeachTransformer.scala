@@ -94,6 +94,13 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
   //     ()
   // }
 
+  def reify[T](exp: => Rep[T]): Rep[T] = {
+    val expSymbol = exp.asInstanceOf[Sym[Any]]
+    // System.out.println(expSymbol.context.scopeDefs)
+    expSymbol.context.scopeDefs.foreach(x => reflectStm(x.asInstanceOf[Stm[Any]]))
+    scopeDefs.last.sym.asInstanceOf[Rep[T]]
+  }
+
   rewrite += statement {
     // TODO needs correct handling of blocks in quasi
     case sym -> While(cond, body) if shouldBeConverted(sym) =>
@@ -104,24 +111,40 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
       //      val start = startConds(whileInfo.variable).toLong
       // we assume step = 1
       //      val i = fresh[Int]
-      val end = whileInfo.size.toLong
+      // val end = whileInfo.size.toLong
       //      dsl"for(i <- $start until ${end}) { ${
       //        //              fillingPhase += whileInfo.variable -> i
       //        //              body.stmts.foreach(transformStm)
       //        unit()
       //      }; () }": Rep[Any]
-//
-//      val lambda = dsl"(i:Int) => ()"
-//      val dsl"($i:Int) => ()" = lambda
-//      fillingPhase += whileInfo.variable -> i
-//      body.stmts.foreach(transformStm)
-//      Range(start, whileInfo.size).foreach { lambda }
-          Range(start, whileInfo.size).foreach {
-            __lambda { (i: Rep[Int]) =>
-              fillingPhase += whileInfo.variable -> i
-              body.stmts.foreach(transformStm)
-              unit(())
-            }
-          }
+      //
+      //      val lambda = dsl"(i:Int) => ()"
+      //      val dsl"($i:Int) => ()" = lambda
+      //      fillingPhase += whileInfo.variable -> i
+      //      body.stmts.foreach(transformStm)
+      //      Range(start, whileInfo.size).foreach { lambda }
+      // System.out.println(s"exp: ${exp.asInstanceOf[Sym[Any]].context.scopeDefs}")
+      // reifyExternalBlock {
+      //   dsl"Predef.println(scala.collection.immutable.Range($start, ${whileInfo.size} - 1))"
+      // }
+
+      def foreachFunction = {
+        __lambda { (i: Rep[Int]) =>
+          fillingPhase += whileInfo.variable -> i
+          body.stmts.foreach(transformStm)
+          unit(())
+        }
+      }
+      // System.out.println("here!")
+      reify {
+        dsl"""scala.collection.immutable.Range($start, ${whileInfo.size}).foreach($foreachFunction)"""
+      }
+    // Range(start, whileInfo.size).foreach {
+    //   __lambda { (i: Rep[Int]) =>
+    //     fillingPhase += whileInfo.variable -> i
+    //     body.stmts.foreach(transformStm)
+    //     unit(())
+    //   }
+    // }
   }
 }
