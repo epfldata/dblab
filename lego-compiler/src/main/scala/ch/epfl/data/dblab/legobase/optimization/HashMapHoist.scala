@@ -92,12 +92,6 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
         foundFlag = true
       }
       rhs match {
-        case HashMapNew3(hashFunc, size) if startCollecting && !hoistedStatements.contains(stm) => {
-          hoistStatement()
-        }
-        case HashMapNew4(hashFunc, size) if startCollecting && !hoistedStatements.contains(stm) => {
-          hoistStatement()
-        }
         case HashMapNew() if startCollecting && !hoistedStatements.contains(stm) => {
           // System.out.println("hm new found!")
           hoistStatement()

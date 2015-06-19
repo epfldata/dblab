@@ -14,7 +14,7 @@ import pardis.effects._
 import ch.epfl.data.dblab.legobase.queryengine.push._
 
 /** A polymorphic embedding cake containing manually lifted methods and classes */
-trait ManualLiftedLegoBase extends OrderingOps with ManifestOps with sc.pardis.deep.scalalib.collection.RichIntOps with sc.pardis.deep.scalalib.ByteComponent with LegoHashMap with sc.pardis.deep.scalalib.collection.ContOps with sc.pardis.deep.scalalib.ScalaPredef { this: DeepDSL =>
+trait ManualLiftedLegoBase extends OrderingOps with ManifestOps with sc.pardis.deep.scalalib.collection.RichIntOps with sc.pardis.deep.scalalib.ByteComponent with sc.pardis.deep.scalalib.collection.ContOps with sc.pardis.deep.scalalib.ScalaPredef { this: DeepDSL =>
   // TODO these methods should be automatically lifted using Purgatory
   object Console {
     def err: Rep[PrintStream] = consoleErr()
@@ -102,24 +102,5 @@ trait ManifestOps { this: DeepDSL =>
 
   case class ManifestNew[T](man: Manifest[T])(implicit typeT: TypeRep[T]) extends FunctionDef[Manifest[T]](None, s"manifest[${t2s(typeT)}]", Nil) {
     override def curriedConstructor = copy[T] _
-  }
-}
-
-// TODO these are manual way of creating hashmaps. Should be checked to see if they can be removed or not.
-trait LegoHashMap { this: DeepDSL =>
-  def __newHashMap3[A, B](extract: Rep[B => A], size: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, ArrayBuffer[B]]] = hashMapNew3[A, B](extract, size)(typeA, typeB)
-  def hashMapNew3[A, B](extract: Rep[B => A], size: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, ArrayBuffer[B]]] = HashMapNew3[A, B](extract, size)(typeA, typeB)
-
-  case class HashMapNew3[A, B](extract: Rep[B => A], size: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[HashMap[A, ArrayBuffer[B]]](List(typeA, ArrayBufferType(typeB)), "HashMap", List(List())) {
-    override def rebuild(children: FunctionArg*) = HashMapNew3[A, B](children(0).asInstanceOf[Rep[B => A]], children(1).asInstanceOf[Rep[Int]])
-    override def funArgs = List(extract, size)
-  }
-
-  def __newHashMap4[A, B](extract: Rep[B => A], size: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, B]] = hashMapNew4[A, B](extract, size)(typeA, typeB)
-  def hashMapNew4[A, B](extract: Rep[B => A], size: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[HashMap[A, B]] = HashMapNew4[A, B](extract, size)(typeA, typeB)
-
-  case class HashMapNew4[A, B](extract: Rep[B => A], size: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[HashMap[A, B]](List(typeA, typeB), "HashMap", List(List())) {
-    override def rebuild(children: FunctionArg*) = HashMapNew4[A, B](children(0).asInstanceOf[Rep[B => A]], children(1).asInstanceOf[Rep[Int]])
-    override def funArgs = List(extract, size)
   }
 }
