@@ -11,6 +11,7 @@ import deep._
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
+import quasi._
 
 /**
  * A transformer for partitioning and indexing the MultiMaps. As a result, this transformation
@@ -72,7 +73,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
     def table: Table = schema.findTableByType(tpe).get
     def reuseOriginal1DArray: Boolean = table.continuous.nonEmpty
     def arraySize: Rep[Int] = arr match {
-      case Def(ArrayNew(s)) => s
+      // case Def(ArrayNew(s)) => s
+      case dsl"new Array[Any]($s)" => s
     }
   }
   val partitionedHashMapObjects = scala.collection.mutable.Set[HashMapPartitionObject]()
@@ -108,12 +110,14 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   }
 
   analysis += statement {
+    // TODO `new MultiMap` is synthetic and does not exist in shallow
     case sym -> (node @ MultiMapNew()) if node.typeB.isRecord =>
       allMaps += sym
       ()
   }
 
   analysis += rule {
+    // TODO needs struct immutable field support from qq
     case node @ MultiMapAddBinding(nodeself, Def(StructImmutableField(struct, field)), nodev) if allMaps.contains(nodeself) =>
       partitionedMaps += nodeself
       leftPartFunc += nodeself -> field
@@ -129,6 +133,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   val leftPartKey = scala.collection.mutable.Map[Rep[Any], Var[Any]]()
 
   analysis += rule {
+    // TODO needs struct immutable field support from qq
     case node @ MultiMapGet(nodeself, Def(StructImmutableField(struct, field))) if allMaps.contains(nodeself) =>
       partitionedMaps += nodeself
       rightPartFunc += nodeself -> field
@@ -142,17 +147,19 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
 
   // TODO when WindowOp is supported, this case should be removed
   analysis += rule {
-    case node @ MultiMapForeach(nodeself, f) if allMaps.contains(nodeself) =>
-      windowOpMaps += nodeself
+    case dsl"($mm : MultiMap[Any, Any]).foreach($f)" if allMaps.contains(mm) => 
+    // case node @ MultiMapForeach(mm, f) if allMaps.contains(mm) =>
+      windowOpMaps += mm
       f match {
-        case Def(fun @ Lambda(_, _, _)) => hashJoinAntiForeachLambda += nodeself -> fun.asInstanceOf[Lambda[Any, Unit]]
+        case Def(fun @ Lambda(_, _, _)) => hashJoinAntiForeachLambda += mm -> fun.asInstanceOf[Lambda[Any, Unit]]
         case _                          => ()
       }
       ()
   }
 
   analysis += rule {
-    case OptionGet(Def(MultiMapGet(mm, elem))) if allMaps.contains(mm) =>
+    case dsl"($mm : MultiMap[Any, Any]).get($_).get" if allMaps.contains(mm) => 
+    // case OptionGet(Def(MultiMapGet(mm, elem))) if allMaps.contains(mm) =>
       // At this phase it's potentially anti hash join multimap, it's not specified for sure
       hashJoinAntiMaps += mm
       ()
@@ -161,12 +168,14 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   var currentLoopSymbol: While = _
 
   analysis += statement {
-    case sym -> (node @ While(_, _)) =>
-      currentLoopSymbol = node
+    case sym -> (node @ dsl"while($_) $_") =>
+    // case sym -> (node @ While(_, _)) =>
+      currentLoopSymbol = node.asInstanceOf[While]
   }
 
   analysis += rule {
-    case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) => {
+    case dsl"($mm : MultiMap[Any, Any]).get($_).get.foreach($f)" => {
+    // case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) => {
       setForeachLambda(mm) = f.asInstanceOf[Rep[Any => Unit]]
     }
   }
