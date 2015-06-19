@@ -4,7 +4,7 @@ package deep
 
 import scala.reflect.runtime.universe.{ typeTag => tag }
 import scala.language.implicitConversions
-import sc.pardis.utils.Utils.{ pardisTypeToString => t2s }
+import sc.pardis.utils.TypeUtils.{ pardisTypeToString => t2s }
 import sc.pardis.types.PardisTypeImplicits._
 import java.io.PrintStream
 import ch.epfl.data.sc.pardis
