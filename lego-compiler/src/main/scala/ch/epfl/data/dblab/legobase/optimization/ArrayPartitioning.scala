@@ -327,11 +327,13 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
   }
 
   def array_foreach[T: TypeRep](arr: Rep[Array[T]], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
-    Range(unit(0), arr.length).foreach {
-      __lambda { i =>
-        val e = arr(i)
-        f(e)
-      }
+    def foreachFunction: Rep[Int => Unit] = {
+      (i: Rep[Int]) =>
+        f(arr(i))
+    }
+    reify {
+      // TODO why if we have $arr.length instead of ${arr.length} it produces wrong result?
+      dsl"scala.collection.immutable.Range(0, ${arr.length}).foreach($foreachFunction)"
     }
   }
 

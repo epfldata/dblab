@@ -11,4 +11,4 @@ trait LegoBaseQuasiExp extends LoweringLegoBase with DSLExpOps {
 
 }
 
-trait LegoBaseQuasiExt extends DSLExtOps with ArrayExtOps with RangeExtOps
+trait LegoBaseQuasiExt extends DSLExtOps with ArrayExtOps with RangeExtOps with BooleanExtOps

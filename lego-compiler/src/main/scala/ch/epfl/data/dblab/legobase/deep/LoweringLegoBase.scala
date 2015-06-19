@@ -20,4 +20,19 @@ trait LoweringLegoBase extends InliningLegoBase with LegoBaseCLang with ch.epfl.
   def getLoweredSymbolOriginalDef[T](sym: Rep[T]): Option[Def[Any]] = {
     loweredSymbolToOriginalDef.get(sym.asInstanceOf[Rep[Any]])
   }
+
+  // TODO should be moved to SC
+  /**
+   * Reifies the expression comming from a different polymorphic embedding context
+   * into the current context
+   */
+  def reify[T](exp: => Rep[T]): Rep[T] = {
+    val expValue = exp
+    expValue match {
+      case expSymbol: Sym[Any] if expSymbol.context != this =>
+        expSymbol.context.scopeDefs.foreach(x => reflectStm(x.asInstanceOf[Stm[Any]]))
+        expSymbol.context.scopeDefs.last.sym.asInstanceOf[Rep[T]]
+      case _ => expValue
+    }
+  }
 }
