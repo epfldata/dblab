@@ -132,6 +132,10 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
       // case dsl"($a: Int) >= ($b : Int)" =>
       //   Some(a, b, GEq)
       case Int$less1(a, b) =>
+        // TODO the following line throws an exception!
+        // node match {
+        //   case dsl"($a: Int) < ($b : Int)" =>
+        // }
         Some(a, b, LE)
       case Int$less$eq1(a, b) =>
         Some(a, b, LEq)
