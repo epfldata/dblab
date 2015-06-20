@@ -24,13 +24,11 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
     def unapply(block: Block[Boolean]): Option[(Var[Int], Rep[Int])] = {
       val resultNode = block.stmts.find(stm => stm.sym == block.res).get.rhs
       resultNode match {
-        // TODO needs correct handling of thunks in quasi
-        // case dsl"true && $block2"             => RangeCondition.unapply(block2)
-        case Boolean$amp$amp(Constant(true), block2) => RangeCondition.unapply(block2)
+        case dsl"true && $block2"             => RangeCondition.unapply(block2)
         // TODO needs having readVar in shallow or some other mechanism to detect vars
         // case dsl"(${ Def(ReadVar(v)) }: Int) < $size" => Some(v -> size)
-        case Int$less1(Def(ReadVar(v)), size)        => Some(v -> size)
-        case _                                       => None
+        case Int$less1(Def(ReadVar(v)), size) => Some(v -> size)
+        case _                                => None
       }
     }
   }
@@ -60,9 +58,9 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
   def varShouldBeRemoved[T](variable: Var[T]): Boolean = convertedWhiles.exists(_.variable == variable)
 
   analysis += statement {
-    case sym -> (node @ While(RangeCondition(variable1, size), RangeStep(variable2, step))) if variable1 == variable2 =>
+    case sym -> (node @ dsl"while(${ RangeCondition(variable1, size) }) ${ RangeStep(variable2, step) }") if variable1 == variable2 =>
       // val isForEach = isConditionForCheckingSize(cond)
-      convertedWhiles += WhileInfo(sym.asInstanceOf[Rep[Unit]], node, variable1, size, step)
+      convertedWhiles += WhileInfo(sym.asInstanceOf[Rep[Unit]], node.asInstanceOf[While], variable1, size, step)
       // System.out.println(s"$sym -> $variable1, $size")
       ()
   }
@@ -97,8 +95,7 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
   // }
 
   rewrite += statement {
-    // TODO needs correct handling of blocks in quasi
-    case sym -> While(cond, body) if shouldBeConverted(sym) =>
+    case sym -> dsl"while($cond) $body" if shouldBeConverted(sym) =>
       val whileInfo = convertedWhiles.find(_.whileSym == sym).get
       val start = startConds(whileInfo.variable)
 

@@ -295,7 +295,8 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
   }
 
   analysis += statement {
-    case sym -> RangeForeach(Def(RangeApplyObject(start, end)), Def(Lambda(_, i, body))) if phase == CheckApplicablePhase => {
+    case sym -> dsl"scala.collection.immutable.Range($start, $end).foreach($f)" if phase == CheckApplicablePhase => {
+      val Def(Lambda(_, i, body)) = f
       val unitSym = sym.asInstanceOf[Rep[Unit]]
       possibleRangeFors += unitSym
       rangeForIndex += unitSym -> i.asInstanceOf[Rep[Int]]
@@ -314,9 +315,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
   }
 
   analysis += statement {
-    // TODO needs immutable field from quasi
     case sym -> dsl"__struct_field($elem, $field)" if phase == CheckApplicablePhase && (rangeArrayApply.exists(_._2 == elem)) =>
-      // case sym -> StructImmutableField(elem, field) if phase == CheckApplicablePhase && (rangeArrayApply.exists(_._2 == elem)) =>
       val rangeForeach = rangeArrayApply.find(_._2 == elem).get._1
       rangeElemFields.getOrElseUpdate(rangeForeach, mutable.ArrayBuffer()) += sym
       ()
