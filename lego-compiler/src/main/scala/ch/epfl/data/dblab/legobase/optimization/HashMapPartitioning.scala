@@ -11,6 +11,7 @@ import deep._
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
+import sc.pardis.quasi.anf._
 import quasi._
 
 /**
@@ -117,15 +118,18 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   }
 
   analysis += rule {
-    // TODO needs struct immutable field support from qq
-    case node @ MultiMapAddBinding(nodeself, Def(StructImmutableField(struct, field)), nodev) if allMaps.contains(nodeself) =>
+    // case node @ MultiMapAddBinding(nodeself, Def(StructImmutableField(struct, field)), nodev) if allMaps.contains(nodeself) =>
+    case node @ dsl"($nodeself : MultiMap[Any, Any]).addBinding(__struct_field($struct, $fieldNode), $nodev)" if allMaps.contains(nodeself) =>
+      val Constant(field) = fieldNode
       partitionedMaps += nodeself
       leftPartFunc += nodeself -> field
       leftLoopSymbol += nodeself -> currentLoopSymbol
       def addPartArray(exp: Rep[Any]): Unit =
         exp match {
-          case Def(ArrayApply(arr, ind)) => leftPartArr += nodeself -> arr
-          case _                         =>
+          // case Def(ArrayApply(arr, ind)) => 
+          case dsl"($arr: Array[Any]).apply($index)" =>
+            leftPartArr += nodeself -> arr
+          case _ =>
         }
       addPartArray(struct)
   }
@@ -134,21 +138,25 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
 
   analysis += rule {
     // TODO needs struct immutable field support from qq
-    case node @ MultiMapGet(nodeself, Def(StructImmutableField(struct, field))) if allMaps.contains(nodeself) =>
+    // case node @ MultiMapGet(nodeself, Def(StructImmutableField(struct, field))) if allMaps.contains(nodeself) =>
+    case node @ dsl"($nodeself : MultiMap[Any, Any]).get(__struct_field($struct, $fieldNode))" if allMaps.contains(nodeself) =>
+      val Constant(field) = fieldNode
       partitionedMaps += nodeself
       rightPartFunc += nodeself -> field
       rightLoopSymbol += nodeself -> currentLoopSymbol
       struct match {
-        case Def(ArrayApply(arr, ind)) => rightPartArr += nodeself -> arr
-        case _                         =>
+        // case Def(ArrayApply(arr, ind)) => 
+        case dsl"($arr: Array[Any]).apply($index)" =>
+          rightPartArr += nodeself -> arr
+        case _ =>
       }
       ()
   }
 
   // TODO when WindowOp is supported, this case should be removed
   analysis += rule {
-    case dsl"($mm : MultiMap[Any, Any]).foreach($f)" if allMaps.contains(mm) => 
-    // case node @ MultiMapForeach(mm, f) if allMaps.contains(mm) =>
+    case dsl"($mm : MultiMap[Any, Any]).foreach($f)" if allMaps.contains(mm) =>
+      // case node @ MultiMapForeach(mm, f) if allMaps.contains(mm) =>
       windowOpMaps += mm
       f match {
         case Def(fun @ Lambda(_, _, _)) => hashJoinAntiForeachLambda += mm -> fun.asInstanceOf[Lambda[Any, Unit]]
@@ -158,8 +166,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   }
 
   analysis += rule {
-    case dsl"($mm : MultiMap[Any, Any]).get($_).get" if allMaps.contains(mm) => 
-    // case OptionGet(Def(MultiMapGet(mm, elem))) if allMaps.contains(mm) =>
+    case dsl"($mm : MultiMap[Any, Any]).get($elem).get" if allMaps.contains(mm) =>
+      // case OptionGet(Def(MultiMapGet(mm, elem))) if allMaps.contains(mm) =>
       // At this phase it's potentially anti hash join multimap, it's not specified for sure
       hashJoinAntiMaps += mm
       ()
@@ -168,14 +176,14 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   var currentLoopSymbol: While = _
 
   analysis += statement {
-    case sym -> (node @ dsl"while($_) $_") =>
-    // case sym -> (node @ While(_, _)) =>
+    case sym -> (node @ dsl"while($cond) $body") =>
+      // case sym -> (node @ While(_, _)) =>
       currentLoopSymbol = node.asInstanceOf[While]
   }
 
   analysis += rule {
-    case dsl"($mm : MultiMap[Any, Any]).get($_).get.foreach($f)" => {
-    // case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) => {
+    case dsl"($mm : MultiMap[Any, Any]).get($elem).get.foreach($f)" => {
+      // case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) => {
       setForeachLambda(mm) = f.asInstanceOf[Rep[Any => Unit]]
     }
   }

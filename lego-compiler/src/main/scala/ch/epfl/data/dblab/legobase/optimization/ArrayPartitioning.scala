@@ -11,6 +11,7 @@ import deep._
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
+import sc.pardis.quasi.anf._
 import quasi._
 
 /**
@@ -314,7 +315,8 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
 
   analysis += statement {
     // TODO needs immutable field from quasi
-    case sym -> StructImmutableField(elem, field) if phase == CheckApplicablePhase && (rangeArrayApply.exists(_._2 == elem)) =>
+    case sym -> dsl"__struct_field($elem, $field)" if phase == CheckApplicablePhase && (rangeArrayApply.exists(_._2 == elem)) =>
+      // case sym -> StructImmutableField(elem, field) if phase == CheckApplicablePhase && (rangeArrayApply.exists(_._2 == elem)) =>
       val rangeForeach = rangeArrayApply.find(_._2 == elem).get._1
       rangeElemFields.getOrElseUpdate(rangeForeach, mutable.ArrayBuffer()) += sym
       ()
