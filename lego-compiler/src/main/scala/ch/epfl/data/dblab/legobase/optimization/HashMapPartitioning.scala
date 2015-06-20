@@ -305,7 +305,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   val seenArrays = scala.collection.mutable.Set[Rep[Any]]()
 
   rewrite += statement {
-    case sym -> (node @ ArrayNew(size)) /*if !seenArrays.contains(sym)*/ =>
+    case sym -> (node @ dsl"new Array[Any]($size)") /*if !seenArrays.contains(sym)*/ =>
       seenArrays += sym
       reflectStm(Stm(sym, node))
       sym
@@ -327,14 +327,15 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   // }
 
   rewrite += remove {
-    case MultiMapGet(mm, elem) if shouldBePartitioned(mm) => {
+    case dsl"($mm: MultiMap[Any, Any]).get($elem)" if shouldBePartitioned(mm) => {
       ()
     }
   }
 
   // The case for HashJoinAnti
   rewrite += rule {
-    case MultiMapAddBinding(mm, elem, nodev) if shouldBePartitioned(mm) && getPartitionedObject(mm).isAnti =>
+    // case MultiMapAddBinding(mm, elem, nodev) if shouldBePartitioned(mm) && getPartitionedObject(mm).isAnti =>
+    case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if shouldBePartitioned(mm) && getPartitionedObject(mm).isAnti =>
       class ElemType
       implicit val elemType = nodev.tp.asInstanceOf[TypeRep[ElemType]]
       val value = apply(nodev).asInstanceOf[Rep[ElemType]]
@@ -364,17 +365,17 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   }
 
   rewrite += remove {
-    case MultiMapAddBinding(mm, _, nodev) if shouldBePartitioned(mm) && getPartitionedObject(mm).hasLeft && fillingHole.get(mm).isEmpty =>
+    case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if shouldBePartitioned(mm) && getPartitionedObject(mm).hasLeft && fillingHole.get(mm).isEmpty =>
       ()
   }
 
   rewrite += rule {
-    case MultiMapAddBinding(mm, _, nodev) if shouldBePartitioned(mm) && getPartitionedObject(mm).hasLeft && fillingHole.get(mm).nonEmpty =>
+    case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if shouldBePartitioned(mm) && getPartitionedObject(mm).hasLeft && fillingHole.get(mm).nonEmpty =>
       fillingFunction(mm)()
   }
 
   rewrite += rule {
-    case MultiMapAddBinding(mm, elem, nodev) if shouldBePartitioned(mm) && !getPartitionedObject(mm).hasLeft =>
+    case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if shouldBePartitioned(mm) && !getPartitionedObject(mm).hasLeft =>
       val hmParObj = getPartitionedObject(mm)
       val leftArray = hmParObj.partitionedObject
       val key = apply(elem).asInstanceOf[Rep[Int]]
@@ -395,7 +396,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   }
 
   rewrite += rule {
-    case ArrayApply(arr, _) if partitionedHashMapObjects.exists(obj => shouldBePartitioned(obj.mapSymbol) && /*!obj.isWindow &&*/ obj.partitionedObject.arr == arr && fillingHole.get(obj.mapSymbol).nonEmpty) =>
+    case dsl"($arr: Array[Any]).apply($index)" if partitionedHashMapObjects.exists(obj => shouldBePartitioned(obj.mapSymbol) && /*!obj.isWindow &&*/ obj.partitionedObject.arr == arr && fillingHole.get(obj.mapSymbol).nonEmpty) =>
       val allObjs = partitionedHashMapObjects.filter(obj => shouldBePartitioned(obj.mapSymbol) && /*!obj.isWindow &&*/ obj.partitionedObject.arr == arr && fillingHole.get(obj.mapSymbol).nonEmpty)
       val sortedObjs = allObjs.toList.sortBy(obj => fillingHole(obj.mapSymbol))
       val hmPartitionedObject = sortedObjs.last
@@ -404,17 +405,20 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   }
 
   rewrite += remove {
-    case node @ While(_, _) if partitionedHashMapObjects.exists(obj => shouldBePartitioned(obj.mapSymbol) && /*!obj.isWindow &&*/ obj.partitionedObject.loopSymbol == node) =>
+    case node @ dsl"while($cond) $body" if partitionedHashMapObjects.exists(obj => shouldBePartitioned(obj.mapSymbol) && /*!obj.isWindow &&*/ obj.partitionedObject.loopSymbol == node) =>
       ()
   }
 
   rewrite += rule {
-    case OptionNonEmpty(Def(MultiMapGet(mm, elem))) if shouldBePartitioned(mm) =>
+    // case OptionNonEmpty(Def(MultiMapGet(mm, elem))) if shouldBePartitioned(mm) =>
+    case dsl"($mm: MultiMap[Any, Any]).get($elem).nonEmpty" if shouldBePartitioned(mm) =>
       unit(true)
   }
 
   rewrite += remove {
-    case OptionGet(Def(MultiMapGet(mm, elem))) if shouldBePartitioned(mm) => ()
+    // case OptionGet(Def(MultiMapGet(mm, elem))) if shouldBePartitioned(mm) => 
+    case dsl"($mm: MultiMap[Any, Any]).get($elem).get" if shouldBePartitioned(mm) =>
+      ()
   }
 
   var loopDepth: Int = 0
@@ -429,7 +433,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   }
 
   rewrite += rule {
-    case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) if shouldBePartitioned(mm) && getPartitionedObject(mm).hasLeft => {
+    // case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) if shouldBePartitioned(mm) && getPartitionedObject(mm).hasLeft => {
+    case dsl"($mm: MultiMap[Any, Any]).get($elem).get.foreach($f)" if shouldBePartitioned(mm) && getPartitionedObject(mm).hasLeft => {
       val hmParObj = getPartitionedObject(mm)
       val leftArray = hmParObj.partitionedObject
       val key = apply(elem).asInstanceOf[Rep[Int]]
@@ -465,7 +470,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   }
 
   rewrite += rule {
-    case SetExists(Def(OptionGet(Def(MultiMapGet(mm, elem)))), p) if shouldBePartitioned(mm) && getPartitionedObject(mm).hasLeft => {
+    // case SetExists(Def(OptionGet(Def(MultiMapGet(mm, elem)))), p) if shouldBePartitioned(mm) && getPartitionedObject(mm).hasLeft => {
+    case dsl"($mm: MultiMap[Any, Any]).get($elem).get.exists($p)" if shouldBePartitioned(mm) &&
+      getPartitionedObject(mm).hasLeft => {
       val hmParObj = getPartitionedObject(mm)
       val leftArray = hmParObj.partitionedObject
       val key = apply(elem).asInstanceOf[Rep[Int]]
@@ -495,19 +502,28 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   }
 
   rewrite += remove {
-    case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) if shouldBePartitioned(mm) && !getPartitionedObject(mm).hasLeft && fillingHole.get(mm).isEmpty =>
+    // case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) if shouldBePartitioned(mm) && !getPartitionedObject(mm).hasLeft && fillingHole.get(mm).isEmpty =>
+    case dsl"($mm: MultiMap[Any, Any]).get($elem).get.foreach($f)" if shouldBePartitioned(mm) &&
+      !getPartitionedObject(mm).hasLeft &&
+      fillingHole.get(mm).isEmpty =>
       ()
   }
 
   rewrite += remove {
-    case MultiMapForeach(mm, f) if shouldBePartitioned(mm) && getPartitionedObject(mm).isAnti =>
+    // case MultiMapForeach(mm, f) if shouldBePartitioned(mm) && getPartitionedObject(mm).isAnti =>
+    case dsl"($mm: MultiMap[Any, Any]).foreach($f)" if shouldBePartitioned(mm) &&
+      getPartitionedObject(mm).isAnti =>
       ()
   }
 
   rewrite += rule {
-    case IfThenElse(Def(OptionNonEmpty(Def(MultiMapGet(mm, elem)))), thenp, elsep) if shouldBePartitioned(mm) && getPartitionedObject(mm).isAnti && fillingHole.get(mm).nonEmpty =>
+    case IfThenElse(Def(OptionNonEmpty(Def(MultiMapGet(mm, elem)))), thenp, elsep) if shouldBePartitioned(mm) &&
+      getPartitionedObject(mm).isAnti &&
+      fillingHole.get(mm).nonEmpty =>
       class ElemType
-      val retainPredicate = thenp.stmts.collect({ case Statement(sym, SetRetain(_, p)) => p }).head.asInstanceOf[Rep[ElemType => Boolean]]
+      val retainPredicate = thenp.stmts.collect({
+        case Statement(sym, SetRetain(_, p)) => p
+      }).head.asInstanceOf[Rep[ElemType => Boolean]]
       val typedElem = fillingFunction(mm)().asInstanceOf[Rep[ElemType]]
       implicit val elemType = typedElem.tp.asInstanceOf[TypeRep[ElemType]]
       val resultRetain = hashJoinAntiRetainVar(mm)
@@ -519,7 +535,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   }
 
   rewrite += rule {
-    case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) if shouldBePartitioned(mm) && !getPartitionedObject(mm).hasLeft && fillingHole.get(mm).nonEmpty =>
+    // case SetForeach(Def(OptionGet(Def(MultiMapGet(mm, elem)))), f) if shouldBePartitioned(mm) && !getPartitionedObject(mm).hasLeft && fillingHole.get(mm).nonEmpty =>
+    case dsl"($mm: MultiMap[Any, Any]).get($elem).get.foreach($f)" if shouldBePartitioned(mm) &&
+      !getPartitionedObject(mm).hasLeft &&
+      fillingHole.get(mm).nonEmpty =>
       inlineFunction(f, fillingFunction(mm)())
   }
 
@@ -530,17 +549,19 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
     }, unit(()))
   } else unit(())
 
-  def leftOuterJoinExistsVarDefine(mm: Rep[MultiMap[Any, Any]]): Unit = if (multiMapHasDefaultHandling(mm)) {
-    val exists = __newVarNamed[Boolean](unit(false), "exists")
-    leftOuterJoinExistsVar(mm) = exists
-    ()
-  } else ()
+  def leftOuterJoinExistsVarDefine(mm: Rep[MultiMap[Any, Any]]): Unit =
+    if (multiMapHasDefaultHandling(mm)) {
+      val exists = __newVarNamed[Boolean](unit(false), "exists")
+      leftOuterJoinExistsVar(mm) = exists
+      ()
+    } else ()
 
-  def leftOuterJoinExistsVarSet(mm: Rep[MultiMap[Any, Any]]): Unit = if (multiMapHasDefaultHandling(mm)) {
-    val exists = leftOuterJoinExistsVar(mm)
-    __assign(exists, unit(true))
-    ()
-  } else ()
+  def leftOuterJoinExistsVarSet(mm: Rep[MultiMap[Any, Any]]): Unit =
+    if (multiMapHasDefaultHandling(mm)) {
+      val exists = leftOuterJoinExistsVar(mm)
+      __assign(exists, unit(true))
+      ()
+    } else ()
 
   val leftOuterJoinDefault = scala.collection.mutable.Map[Rep[Any], Block[Unit]]()
   val leftOuterJoinExistsVar = scala.collection.mutable.Map[Rep[Any], Var[Boolean]]()
