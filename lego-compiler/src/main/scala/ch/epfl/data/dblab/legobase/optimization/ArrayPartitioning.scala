@@ -31,6 +31,8 @@ import quasi._
 class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
 
+  implicit val DSL = IR
+
   import scala.collection.mutable
 
   val possibleRangeFors = mutable.Set[Rep[Unit]]()
@@ -315,7 +317,10 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
   }
 
   analysis += statement {
-    case sym -> dsl"__struct_field($elem, $field)" if phase == CheckApplicablePhase && (rangeArrayApply.exists(_._2 == elem)) =>
+    // TODO diverging implicit expansion for type ArrayPartitioning.this.IR.TypeRep[T]
+    // [error] starting with value typeInt in trait IntOps
+    // case sym -> dsl"__struct_field($elem, $field)" if phase == CheckApplicablePhase && (rangeArrayApply.exists(_._2 == elem)) =>
+    case sym -> StructImmutableField(elem, field) if phase == CheckApplicablePhase && (rangeArrayApply.exists(_._2 == elem)) =>
       val rangeForeach = rangeArrayApply.find(_._2 == elem).get._1
       rangeElemFields.getOrElseUpdate(rangeForeach, mutable.ArrayBuffer()) += sym
       ()
@@ -332,10 +337,10 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
       (i: Rep[Int]) =>
         f(arr(i))
     }
-    reify {
-      // TODO why if we have $arr.length instead of ${arr.length} it produces wrong result?
-      dsl"scala.collection.immutable.Range(0, ${arr.length}).foreach($foreachFunction)"
-    }
+    // reify {
+    // TODO why if we have $arr.length instead of ${arr.length} it produces wrong result?
+    dsl"scala.collection.immutable.Range(0, ${arr.length}).foreach($foreachFunction)"
+    // }
   }
 
   def createPartitionArray[InnerType: TypeRep](arrayInfo: ArrayInfo[InnerType]): Unit = {

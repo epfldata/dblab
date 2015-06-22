@@ -119,8 +119,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
 
   analysis += rule {
     // case node @ MultiMapAddBinding(nodeself, Def(StructImmutableField(struct, field)), nodev) if allMaps.contains(nodeself) =>
-    case node @ dsl"($nodeself : MultiMap[Any, Any]).addBinding(__struct_field($struct, $fieldNode), $nodev)" if allMaps.contains(nodeself) =>
-      val Constant(field) = fieldNode
+    // TODO there's a problem with `__struct_field`
+    // case node @ dsl"($nodeself : MultiMap[Any, Any]).addBinding(__struct_field($struct, $fieldNode), $nodev)" if allMaps.contains(nodeself) =>
+    case node @ dsl"($nodeself : MultiMap[Any, Any]).addBinding(${ Def(StructImmutableField(struct, field)) }, $nodev)" if allMaps.contains(nodeself) =>
+      // val Constant(field) = fieldNode
       partitionedMaps += nodeself
       leftPartFunc += nodeself -> field
       leftLoopSymbol += nodeself -> currentLoopSymbol
@@ -137,8 +139,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   val leftPartKey = scala.collection.mutable.Map[Rep[Any], Var[Any]]()
 
   analysis += rule {
-    case node @ dsl"($nodeself : MultiMap[Any, Any]).get(__struct_field($struct, $fieldNode))" if allMaps.contains(nodeself) =>
-      val Constant(field) = fieldNode
+    // TODO there's a problem with `__struct_field`
+    // case node @ dsl"($nodeself : MultiMap[Any, Any]).get(__struct_field($struct, $fieldNode))" if allMaps.contains(nodeself) =>
+    case node @ dsl"($nodeself : MultiMap[Any, Any]).get(${ Def(StructImmutableField(struct, field)) })" if allMaps.contains(nodeself) =>
+      // val Constant(field) = fieldNode
       partitionedMaps += nodeself
       rightPartFunc += nodeself -> field
       rightLoopSymbol += nodeself -> currentLoopSymbol
