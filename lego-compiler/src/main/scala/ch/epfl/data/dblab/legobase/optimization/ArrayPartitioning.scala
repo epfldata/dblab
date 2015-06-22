@@ -31,8 +31,6 @@ import quasi._
 class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
 
-  implicit val DSL = IR
-
   import scala.collection.mutable
 
   val possibleRangeFors = mutable.Set[Rep[Unit]]()

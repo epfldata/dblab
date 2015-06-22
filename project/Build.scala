@@ -21,8 +21,8 @@ object LegoBuild extends Build {
     libraryDependencies ++= Seq(
       "junit" % "junit-dep" % "4.10" % "test",
       "org.scalatest" % "scalatest_2.11" % "2.2.0" % "test",
-      "org.scala-lang"         %  "scala-reflect" % "2.11.2",
-      "org.scala-lang" % "scala-compiler" % "2.11.2" % "optional"
+      "org.scala-lang"         %  "scala-reflect" % "2.11.4",
+      "org.scala-lang" % "scala-compiler" % "2.11.4" % "optional"
     ),
 
     // add scalac options (verbose deprecation warnings)
@@ -35,7 +35,7 @@ object LegoBuild extends Build {
     // testing
     parallelExecution in Test := false,
     fork in Test := false,
-    scalaVersion := "2.11.2"
+    scalaVersion := "2.11.4"
   )
 
   def formattingPreferences = {

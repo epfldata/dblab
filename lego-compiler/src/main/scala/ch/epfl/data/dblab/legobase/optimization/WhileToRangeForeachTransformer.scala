@@ -109,8 +109,8 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
           }
       }
       // System.out.println("here!")
-      reify {
-        dsl"""scala.collection.immutable.Range($start, ${whileInfo.size}).foreach($foreachFunction)"""
-      }
+      // reify {
+      dsl"""scala.collection.immutable.Range($start, ${whileInfo.size}).foreach($foreachFunction)"""
+    // }
   }
 }
