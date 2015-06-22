@@ -25,6 +25,7 @@ import quasi._
  */
 class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR._
+
   val allMaps = scala.collection.mutable.Set[Rep[Any]]()
   val partitionedMaps = scala.collection.mutable.Set[Rep[Any]]()
   val leftPartFunc = scala.collection.mutable.Map[Rep[Any], String]()
@@ -350,16 +351,16 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
         res
       })
       transformedMapsCount += 1
-      __ifThenElse(!readVar(resultRetain), {
-        inlineFunction(foreachFunction, value)
-      }, unit())
-    // TODO does not work
-    // def thenP = inlineFunction(foreachFunction, value)
-    // reify {
-    //   dsl"""if(${!readVar(resultRetain)}) {
-    //         ${thenP}
-    //       } else {
-    //       }"""
+      // __ifThenElse(!readVar(resultRetain), {
+      //   inlineFunction(foreachFunction, value)
+      // }, unit())
+      // TODO does not work
+      // def thenP = inlineFunction(foreachFunction, value)
+      // reify {
+      dsl"""if(${!readVar(resultRetain)}) {
+            ${inlineFunction(foreachFunction, value)}
+          } else {
+          }"""
     // }
   }
 
@@ -451,17 +452,17 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
             leftOuterJoinExistsVarSet(mm)
             inlineFunction(f.asInstanceOf[Rep[InnerType => Unit]], e)
           }
-          __ifThenElse[Unit](field[Int](e, leftArray.fieldFunc) __== apply(elem), {
-            ifThenBody
-          }, {
-            unit(())
-          })
+          // __ifThenElse[Unit](field[Int](e, leftArray.fieldFunc) __== apply(elem), {
+          //   ifThenBody
+          // }, {
+          //   unit(())
+          // })
           // TODO does not work
           // reify {
-          //   dsl"""if(${field[Int](e, leftArray.fieldFunc)} == ${apply(elem)}) {
-          //           ${ifThenBody}
-          //         } else {
-          //         }"""
+          dsl"""if(${field[Int](e, leftArray.fieldFunc)} == ${apply(elem)}) {
+                    ${ifThenBody}
+                  } else {
+                  }"""
           // }
         }
         // System.out.println(s"STARTED setforeach for the key $key $e.${leftArray.fieldFunc} mm: $mm")
@@ -493,16 +494,16 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
         fillingFunction(mm) = () => {
           // TODO does not work
           // reify {
-          //   dsl"""if(${field[Int](e, leftArray.fieldFunc)} == $elem && ${inlineFunction(p, e)}) {
-          //           ${__assign(result, unit(true))}
-          //         } else {
-          //         }"""
+          dsl"""if(${field[Int](e, leftArray.fieldFunc)} == $elem && ${inlineFunction(p, e)}) {
+                    ${__assign(result, unit(true))}
+                  } else {
+                  }"""
           // }
-          __ifThenElse[Unit]((field[Int](e, leftArray.fieldFunc) __== elem) && inlineFunction(p, e), {
-            __assign(result, unit(true))
-          }, {
-            unit(())
-          })
+          // __ifThenElse[Unit]((field[Int](e, leftArray.fieldFunc) __== elem) && inlineFunction(p, e), {
+          //   __assign(result, unit(true))
+          // }, {
+          //   unit(())
+          // })
         }
         fillingHole(mm) = loopDepth
         loopDepth += 1
@@ -546,17 +547,17 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
       val typedElem = fillingFunction(mm)().asInstanceOf[Rep[ElemType]]
       implicit val elemType = typedElem.tp.asInstanceOf[TypeRep[ElemType]]
       val resultRetain = hashJoinAntiRetainVar(mm)
-      __ifThenElse[Unit](!inlineFunction(retainPredicate, typedElem), {
-        __assign(resultRetain, unit(true))
-      }, {
-        unit()
-      })
-    // TODO does not work
-    // reify {
-    //   dsl"""if(!${inlineFunction(retainPredicate, typedElem)}) {
-    //           ${__assign(resultRetain, unit(true))}
-    //         } else {
-    //         }"""
+      // __ifThenElse[Unit](!inlineFunction(retainPredicate, typedElem), {
+      //   __assign(resultRetain, unit(true))
+      // }, {
+      //   unit()
+      // })
+      // TODO does not work
+      // reify {
+      dsl"""if(!${inlineFunction(retainPredicate, typedElem)}) {
+              ${__assign(resultRetain, unit(true))}
+            } else {
+            }"""
     // }
 
   }
@@ -572,14 +573,14 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   def leftOuterJoinDefaultHandling(mm: Rep[MultiMap[Any, Any]], key: Rep[Int], partitionedObject: PartitionObject): Rep[Unit] = if (multiMapHasDefaultHandling(mm)) {
     // TODO does not work
     // reify {
-    //   dsl"""if(!${readVar(leftOuterJoinExistsVar(mm))}) {
-    //           ${inlineBlock[Unit](leftOuterJoinDefault(mm))}
-    //         } else {
-    //         }"""
+    dsl"""if(!${readVar(leftOuterJoinExistsVar(mm))}) {
+              ${inlineBlock[Unit](leftOuterJoinDefault(mm))}
+            } else {
+            }"""
     // }
-    __ifThenElse(!readVar(leftOuterJoinExistsVar(mm)), {
-      inlineBlock[Unit](leftOuterJoinDefault(mm))
-    }, unit(()))
+    // __ifThenElse(!readVar(leftOuterJoinExistsVar(mm)), {
+    //   inlineBlock[Unit](leftOuterJoinDefault(mm))
+    // }, unit(()))
   } else dsl"()"
 
   def leftOuterJoinExistsVarDefine(mm: Rep[MultiMap[Any, Any]]): Unit =

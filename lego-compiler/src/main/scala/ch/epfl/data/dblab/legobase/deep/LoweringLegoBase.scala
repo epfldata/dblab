@@ -32,13 +32,13 @@ trait LoweringLegoBase
    * Reifies the expression comming from a different polymorphic embedding context
    * into the current context
    */
-  def reify[T](exp: => Rep[T]): Rep[T] = {
-    val expValue = exp
-    expValue match {
-      case expSymbol: Sym[Any] if expSymbol.context != this =>
-        expSymbol.context.scopeDefs.foreach(x => reflectStm(x.asInstanceOf[Stm[Any]]))
-        expSymbol.context.scopeDefs.last.sym.asInstanceOf[Rep[T]]
-      case _ => expValue
-    }
-  }
+  // def reify[T](exp: => Rep[T]): Rep[T] = {
+  //   val expValue = exp
+  //   expValue match {
+  //     case expSymbol: Sym[Any] if expSymbol.context != this =>
+  //       expSymbol.context.scopeDefs.foreach(x => reflectStm(x.asInstanceOf[Stm[Any]]))
+  //       expSymbol.context.scopeDefs.last.sym.asInstanceOf[Rep[T]]
+  //     case _ => expValue
+  //   }
+  // }
 }
