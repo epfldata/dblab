@@ -5,12 +5,13 @@ package quasi
 import org.scalatest.{ FlatSpec, ShouldMatchers }
 import prettyprinter._
 import optimization._
+import deep._
 import sc.pardis.optimization._
 import sc.pardis.types.PardisTypeImplicits._
 
 class LegoQuasiTest extends FlatSpec with ShouldMatchers {
 
-  val IR = new LegoBaseQuasiExp {}
+  implicit val IR = new LoweringLegoBase {}
 
   "int comparsion" should "work" in {
     val exp = {
