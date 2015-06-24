@@ -773,11 +773,11 @@ object AggOpIRs extends Base {
     override def curriedConstructor = (copy[A, B] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): HashMap[B, AGGRecord[B]] = {
+    override def partiallyEvaluate(children: Any*): HashMap[B, AGGRecord[B]] = {
       val self = children(0).asInstanceOf[AggOp[A, B]]
       self.hm
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -785,11 +785,11 @@ object AggOpIRs extends Base {
     override def curriedConstructor = (copy[A, B] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Seq[((A, Double) => Double)] = {
+    override def partiallyEvaluate(children: Any*): Seq[((A, Double) => Double)] = {
       val self = children(0).asInstanceOf[AggOp[A, B]]
       self.aggFuncs
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -797,11 +797,11 @@ object AggOpIRs extends Base {
     override def curriedConstructor = (copy[A, B] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): (A => B) = {
+    override def partiallyEvaluate(children: Any*): (A => B) = {
       val self = children(0).asInstanceOf[AggOp[A, B]]
       self.grp
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1173,11 +1173,11 @@ object SortOpIRs extends Base {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): TreeSet[A] = {
+    override def partiallyEvaluate(children: Any*): TreeSet[A] = {
       val self = children(0).asInstanceOf[SortOp[A]]
       self.sortedTree
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1406,11 +1406,11 @@ object HashJoinOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): MultiMap[C, A] = {
+    override def partiallyEvaluate(children: Any*): MultiMap[C, A] = {
       val self = children(0).asInstanceOf[HashJoinOp[A, B, C]]
       self.hm
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1426,11 +1426,11 @@ object HashJoinOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): (B => C) = {
+    override def partiallyEvaluate(children: Any*): (B => C) = {
       val self = children(0).asInstanceOf[HashJoinOp[A, B, C]]
       self.rightHash
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1438,11 +1438,11 @@ object HashJoinOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): (A => C) = {
+    override def partiallyEvaluate(children: Any*): (A => C) = {
       val self = children(0).asInstanceOf[HashJoinOp[A, B, C]]
       self.leftHash
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1450,11 +1450,11 @@ object HashJoinOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): ((A, B) => Boolean) = {
+    override def partiallyEvaluate(children: Any*): ((A, B) => Boolean) = {
       val self = children(0).asInstanceOf[HashJoinOp[A, B, C]]
       self.joinCond
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1474,11 +1474,11 @@ object HashJoinOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Operator[B] = {
+    override def partiallyEvaluate(children: Any*): Operator[B] = {
       val self = children(0).asInstanceOf[HashJoinOp[A, B, C]]
       self.rightParent
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1486,11 +1486,11 @@ object HashJoinOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Operator[A] = {
+    override def partiallyEvaluate(children: Any*): Operator[A] = {
       val self = children(0).asInstanceOf[HashJoinOp[A, B, C]]
       self.leftParent
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1718,11 +1718,11 @@ object WindowOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): MultiMap[B, A] = {
+    override def partiallyEvaluate(children: Any*): MultiMap[B, A] = {
       val self = children(0).asInstanceOf[WindowOp[A, B, C]]
       self.hm
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1730,11 +1730,11 @@ object WindowOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): (Set[A] => C) = {
+    override def partiallyEvaluate(children: Any*): (Set[A] => C) = {
       val self = children(0).asInstanceOf[WindowOp[A, B, C]]
       self.wndf
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1742,11 +1742,11 @@ object WindowOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): (A => B) = {
+    override def partiallyEvaluate(children: Any*): (A => B) = {
       val self = children(0).asInstanceOf[WindowOp[A, B, C]]
       self.grp
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1962,11 +1962,11 @@ object LeftHashSemiJoinOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): MultiMap[C, B] = {
+    override def partiallyEvaluate(children: Any*): MultiMap[C, B] = {
       val self = children(0).asInstanceOf[LeftHashSemiJoinOp[A, B, C]]
       self.hm
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -2673,11 +2673,11 @@ object HashJoinAntiIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): MultiMap[C, A] = {
+    override def partiallyEvaluate(children: Any*): MultiMap[C, A] = {
       val self = children(0).asInstanceOf[HashJoinAnti[A, B, C]]
       self.hm
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -2955,11 +2955,11 @@ object ViewOpIRs extends Base {
     override def curriedConstructor = (copy[A] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Array[A] = {
+    override def partiallyEvaluate(children: Any*): Array[A] = {
       val self = children(0).asInstanceOf[ViewOp[A]]
       self.table
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -3192,11 +3192,11 @@ object LeftOuterJoinOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): B = {
+    override def partiallyEvaluate(children: Any*): B = {
       val self = children(0).asInstanceOf[LeftOuterJoinOp[A, B, C]]
       self.defaultB
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -3204,11 +3204,11 @@ object LeftOuterJoinOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): MultiMap[C, B] = {
+    override def partiallyEvaluate(children: Any*): MultiMap[C, B] = {
       val self = children(0).asInstanceOf[LeftOuterJoinOp[A, B, C]]
       self.hm
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -3230,11 +3230,11 @@ object LeftOuterJoinOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): (B => C) = {
+    override def partiallyEvaluate(children: Any*): (B => C) = {
       val self = children(0).asInstanceOf[LeftOuterJoinOp[A, B, C]]
       self.rightHash
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -3242,11 +3242,11 @@ object LeftOuterJoinOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): (A => C) = {
+    override def partiallyEvaluate(children: Any*): (A => C) = {
       val self = children(0).asInstanceOf[LeftOuterJoinOp[A, B, C]]
       self.leftHash
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -3254,11 +3254,11 @@ object LeftOuterJoinOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): ((A, B) => Boolean) = {
+    override def partiallyEvaluate(children: Any*): ((A, B) => Boolean) = {
       val self = children(0).asInstanceOf[LeftOuterJoinOp[A, B, C]]
       self.joinCond
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -3266,11 +3266,11 @@ object LeftOuterJoinOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Operator[B] = {
+    override def partiallyEvaluate(children: Any*): Operator[B] = {
       val self = children(0).asInstanceOf[LeftOuterJoinOp[A, B, C]]
       self.rightParent
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -3278,11 +3278,11 @@ object LeftOuterJoinOpIRs extends Base {
     override def curriedConstructor = (copy[A, B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Operator[A] = {
+    override def partiallyEvaluate(children: Any*): Operator[A] = {
       val self = children(0).asInstanceOf[LeftOuterJoinOp[A, B, C]]
       self.leftParent
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 

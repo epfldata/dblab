@@ -63,11 +63,11 @@ object Q1GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Char = {
+    override def partiallyEvaluate(children: Any*): Char = {
       val self = children(0).asInstanceOf[Q1GRPRecord]
       self.L_LINESTATUS
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -75,11 +75,11 @@ object Q1GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Char = {
+    override def partiallyEvaluate(children: Any*): Char = {
       val self = children(0).asInstanceOf[Q1GRPRecord]
       self.L_RETURNFLAG
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -164,11 +164,11 @@ object Q3GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q3GRPRecord]
       self.O_SHIPPRIORITY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -176,11 +176,11 @@ object Q3GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q3GRPRecord]
       self.O_ORDERDATE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -188,11 +188,11 @@ object Q3GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q3GRPRecord]
       self.L_ORDERKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -282,11 +282,11 @@ object Q7GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q7GRPRecord]
       self.L_YEAR
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -294,11 +294,11 @@ object Q7GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q7GRPRecord]
       self.CUST_NATION
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -306,11 +306,11 @@ object Q7GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q7GRPRecord]
       self.SUPP_NATION
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -396,11 +396,11 @@ object Q9GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q9GRPRecord]
       self.O_YEAR
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -408,11 +408,11 @@ object Q9GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q9GRPRecord]
       self.NATION
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -514,11 +514,11 @@ object Q10GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q10GRPRecord]
       self.C_COMMENT
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -526,11 +526,11 @@ object Q10GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q10GRPRecord]
       self.C_ADDRESS
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -538,11 +538,11 @@ object Q10GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q10GRPRecord]
       self.N_NAME
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -550,11 +550,11 @@ object Q10GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q10GRPRecord]
       self.C_PHONE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -562,11 +562,11 @@ object Q10GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Double = {
+    override def partiallyEvaluate(children: Any*): Double = {
       val self = children(0).asInstanceOf[Q10GRPRecord]
       self.C_ACCTBAL
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -574,11 +574,11 @@ object Q10GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q10GRPRecord]
       self.C_NAME
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -586,11 +586,11 @@ object Q10GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q10GRPRecord]
       self.C_CUSTKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -773,11 +773,11 @@ object Q16GRPRecord1IRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q16GRPRecord1]
       self.PS_SUPPKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -785,11 +785,11 @@ object Q16GRPRecord1IRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q16GRPRecord1]
       self.P_SIZE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -797,11 +797,11 @@ object Q16GRPRecord1IRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q16GRPRecord1]
       self.P_TYPE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -809,11 +809,11 @@ object Q16GRPRecord1IRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q16GRPRecord1]
       self.P_BRAND
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -907,11 +907,11 @@ object Q16GRPRecord2IRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q16GRPRecord2]
       self.P_SIZE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -919,11 +919,11 @@ object Q16GRPRecord2IRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q16GRPRecord2]
       self.P_TYPE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -931,11 +931,11 @@ object Q16GRPRecord2IRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q16GRPRecord2]
       self.P_BRAND
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1033,11 +1033,11 @@ object Q18GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Double = {
+    override def partiallyEvaluate(children: Any*): Double = {
       val self = children(0).asInstanceOf[Q18GRPRecord]
       self.O_TOTALPRICE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1045,11 +1045,11 @@ object Q18GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q18GRPRecord]
       self.O_ORDERDATE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1057,11 +1057,11 @@ object Q18GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q18GRPRecord]
       self.O_ORDERKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1069,11 +1069,11 @@ object Q18GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q18GRPRecord]
       self.C_CUSTKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1081,11 +1081,11 @@ object Q18GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q18GRPRecord]
       self.C_NAME
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1182,11 +1182,11 @@ object Q20GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q20GRPRecord]
       self.PS_AVAILQTY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1194,11 +1194,11 @@ object Q20GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q20GRPRecord]
       self.PS_SUPPKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1206,11 +1206,11 @@ object Q20GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q20GRPRecord]
       self.PS_PARTKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 

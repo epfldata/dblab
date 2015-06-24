@@ -120,11 +120,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_COMMENT
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -132,11 +132,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_SHIPMODE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -144,11 +144,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_SHIPINSTRUCT
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -156,11 +156,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_RECEIPTDATE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -168,11 +168,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_COMMITDATE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -180,11 +180,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_SHIPDATE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -192,11 +192,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Char = {
+    override def partiallyEvaluate(children: Any*): Char = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_LINESTATUS
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -204,11 +204,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Char = {
+    override def partiallyEvaluate(children: Any*): Char = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_RETURNFLAG
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -216,11 +216,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Double = {
+    override def partiallyEvaluate(children: Any*): Double = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_TAX
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -228,11 +228,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Double = {
+    override def partiallyEvaluate(children: Any*): Double = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_DISCOUNT
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -240,11 +240,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Double = {
+    override def partiallyEvaluate(children: Any*): Double = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_EXTENDEDPRICE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -252,11 +252,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Double = {
+    override def partiallyEvaluate(children: Any*): Double = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_QUANTITY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -264,11 +264,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_LINENUMBER
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -276,11 +276,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_SUPPKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -288,11 +288,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_PARTKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -300,11 +300,11 @@ object LINEITEMRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[LINEITEMRecord]
       self.L_ORDERKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -470,11 +470,11 @@ object ORDERSRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[ORDERSRecord]
       self.O_COMMENT
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -482,11 +482,11 @@ object ORDERSRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[ORDERSRecord]
       self.O_SHIPPRIORITY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -494,11 +494,11 @@ object ORDERSRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[ORDERSRecord]
       self.O_CLERK
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -506,11 +506,11 @@ object ORDERSRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[ORDERSRecord]
       self.O_ORDERPRIORITY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -518,11 +518,11 @@ object ORDERSRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[ORDERSRecord]
       self.O_ORDERDATE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -530,11 +530,11 @@ object ORDERSRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Double = {
+    override def partiallyEvaluate(children: Any*): Double = {
       val self = children(0).asInstanceOf[ORDERSRecord]
       self.O_TOTALPRICE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -542,11 +542,11 @@ object ORDERSRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Char = {
+    override def partiallyEvaluate(children: Any*): Char = {
       val self = children(0).asInstanceOf[ORDERSRecord]
       self.O_ORDERSTATUS
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -554,11 +554,11 @@ object ORDERSRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[ORDERSRecord]
       self.O_CUSTKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -566,11 +566,11 @@ object ORDERSRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[ORDERSRecord]
       self.O_ORDERKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -704,11 +704,11 @@ object CUSTOMERRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[CUSTOMERRecord]
       self.C_COMMENT
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -716,11 +716,11 @@ object CUSTOMERRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[CUSTOMERRecord]
       self.C_MKTSEGMENT
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -728,11 +728,11 @@ object CUSTOMERRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Double = {
+    override def partiallyEvaluate(children: Any*): Double = {
       val self = children(0).asInstanceOf[CUSTOMERRecord]
       self.C_ACCTBAL
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -740,11 +740,11 @@ object CUSTOMERRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[CUSTOMERRecord]
       self.C_PHONE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -752,11 +752,11 @@ object CUSTOMERRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[CUSTOMERRecord]
       self.C_NATIONKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -764,11 +764,11 @@ object CUSTOMERRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[CUSTOMERRecord]
       self.C_ADDRESS
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -776,11 +776,11 @@ object CUSTOMERRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[CUSTOMERRecord]
       self.C_NAME
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -788,11 +788,11 @@ object CUSTOMERRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[CUSTOMERRecord]
       self.C_CUSTKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -918,11 +918,11 @@ object SUPPLIERRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[SUPPLIERRecord]
       self.S_COMMENT
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -930,11 +930,11 @@ object SUPPLIERRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Double = {
+    override def partiallyEvaluate(children: Any*): Double = {
       val self = children(0).asInstanceOf[SUPPLIERRecord]
       self.S_ACCTBAL
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -942,11 +942,11 @@ object SUPPLIERRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[SUPPLIERRecord]
       self.S_PHONE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -954,11 +954,11 @@ object SUPPLIERRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[SUPPLIERRecord]
       self.S_NATIONKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -966,11 +966,11 @@ object SUPPLIERRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[SUPPLIERRecord]
       self.S_ADDRESS
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -978,11 +978,11 @@ object SUPPLIERRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[SUPPLIERRecord]
       self.S_NAME
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -990,11 +990,11 @@ object SUPPLIERRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[SUPPLIERRecord]
       self.S_SUPPKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1108,11 +1108,11 @@ object PARTSUPPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[PARTSUPPRecord]
       self.PS_COMMENT
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1120,11 +1120,11 @@ object PARTSUPPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Double = {
+    override def partiallyEvaluate(children: Any*): Double = {
       val self = children(0).asInstanceOf[PARTSUPPRecord]
       self.PS_SUPPLYCOST
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1132,11 +1132,11 @@ object PARTSUPPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[PARTSUPPRecord]
       self.PS_AVAILQTY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1144,11 +1144,11 @@ object PARTSUPPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[PARTSUPPRecord]
       self.PS_SUPPKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1156,11 +1156,11 @@ object PARTSUPPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[PARTSUPPRecord]
       self.PS_PARTKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1258,11 +1258,11 @@ object REGIONRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[REGIONRecord]
       self.R_COMMENT
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1270,11 +1270,11 @@ object REGIONRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[REGIONRecord]
       self.R_NAME
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1282,11 +1282,11 @@ object REGIONRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[REGIONRecord]
       self.R_REGIONKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1380,11 +1380,11 @@ object NATIONRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[NATIONRecord]
       self.N_COMMENT
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1392,11 +1392,11 @@ object NATIONRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[NATIONRecord]
       self.N_REGIONKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1404,11 +1404,11 @@ object NATIONRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[NATIONRecord]
       self.N_NAME
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1416,11 +1416,11 @@ object NATIONRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[NATIONRecord]
       self.N_NATIONKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1538,11 +1538,11 @@ object PARTRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[PARTRecord]
       self.P_COMMENT
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1550,11 +1550,11 @@ object PARTRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Double = {
+    override def partiallyEvaluate(children: Any*): Double = {
       val self = children(0).asInstanceOf[PARTRecord]
       self.P_RETAILPRICE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1562,11 +1562,11 @@ object PARTRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[PARTRecord]
       self.P_CONTAINER
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1574,11 +1574,11 @@ object PARTRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[PARTRecord]
       self.P_SIZE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1586,11 +1586,11 @@ object PARTRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[PARTRecord]
       self.P_TYPE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1598,11 +1598,11 @@ object PARTRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[PARTRecord]
       self.P_BRAND
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1610,11 +1610,11 @@ object PARTRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[PARTRecord]
       self.P_MFGR
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1622,11 +1622,11 @@ object PARTRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[PARTRecord]
       self.P_NAME
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1634,11 +1634,11 @@ object PARTRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[PARTRecord]
       self.P_PARTKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 

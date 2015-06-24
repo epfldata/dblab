@@ -40,14 +40,14 @@ class LegoCompiler(val DSL: LoweringLegoBase,
     if (reportCompilationTime) {
       val block = utils.Utilities.time(DSL.reifyBlock(program), "Reification")
       val optimizedBlock = utils.Utilities.time(optimize(block), "Optimization")
-      val irProgram = irToPorgram.createProgram(optimizedBlock)
+      val irProgram = irToProgram.createProgram(optimizedBlock)
       utils.Utilities.time(codeGenerator.generate(irProgram, outputFile), "Code Generation")
     } else {
       super.compile(program, outputFile)
     }
   }
 
-  override def irToPorgram = if (settings.targetLanguage == CCodeGeneration) {
+  override def irToProgram = if (settings.targetLanguage == CCodeGeneration) {
     IRToCProgram(DSL)
   } else {
     IRToProgram(DSL)

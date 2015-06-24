@@ -65,11 +65,11 @@ object AGGRecordIRs extends Base {
     override def curriedConstructor = (copy[B] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Array[Double] = {
+    override def partiallyEvaluate(children: Any*): Array[Double] = {
       val self = children(0).asInstanceOf[AGGRecord[B]]
       self.aggs
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -77,11 +77,11 @@ object AGGRecordIRs extends Base {
     override def curriedConstructor = (copy[B] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): B = {
+    override def partiallyEvaluate(children: Any*): B = {
       val self = children(0).asInstanceOf[AGGRecord[B]]
       self.key
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -165,11 +165,11 @@ object WindowRecordIRs extends Base {
     override def curriedConstructor = (copy[B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): C = {
+    override def partiallyEvaluate(children: Any*): C = {
       val self = children(0).asInstanceOf[WindowRecord[B, C]]
       self.wnd
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -177,11 +177,11 @@ object WindowRecordIRs extends Base {
     override def curriedConstructor = (copy[B, C] _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): B = {
+    override def partiallyEvaluate(children: Any*): B = {
       val self = children(0).asInstanceOf[WindowRecord[B, C]]
       self.key
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
