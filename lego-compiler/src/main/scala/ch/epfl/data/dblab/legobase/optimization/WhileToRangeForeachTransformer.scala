@@ -15,6 +15,20 @@ import quasi._
 /**
  * A transformer which rewrites while loops whenever possible to for expressions.
  *
+ * As an example the following program:
+ * {{{
+ *     var i = 0
+ *     while(i < size) {
+ *       f(i)
+ *       i += 1
+ *     }
+ * }}}
+ * is converted into
+ * {{{
+ *     for(i <- 0 until size) {
+ *       f(i)
+ *     }
+ * }}}
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
 class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
