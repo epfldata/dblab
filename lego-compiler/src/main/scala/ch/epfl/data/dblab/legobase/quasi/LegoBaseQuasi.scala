@@ -5,9 +5,9 @@ package quasi
 import deep.LoweringLegoBase
 import sc.pardis.deep.scalalib._
 import sc.pardis.deep.scalalib.collection._
-import sc.pardis.quasi.anf.BaseExt
+import sc.pardis.quasi.anf.BaseQuasiExt
 
-trait LegoBaseQuasiExt extends BaseExt
+trait LegoBaseQuasiExt extends BaseQuasiExt
   with NumericExtOps
   with ByteExtOps
   with SetExtOps

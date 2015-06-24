@@ -2,14 +2,14 @@ package ch.epfl.data
 package dblab.legobase
 package deep
 
-import sc.pardis.quasi.anf.BaseQuasi
+import sc.pardis.quasi.anf.BaseQuasiExp
 
 /** A polymophic embedding cake which chains all other cakes together */
 trait LoweringLegoBase
   extends InliningLegoBase
   with LegoBaseCLang
   with ch.epfl.data.sc.cscala.deep.DeepCScala
-  with BaseQuasi {
+  with BaseQuasiExp {
   /**
    * Keeps the link between the lowered symbols and the original (higher level) symbol node definition
    *
