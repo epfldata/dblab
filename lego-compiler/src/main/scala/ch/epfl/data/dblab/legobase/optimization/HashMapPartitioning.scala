@@ -24,7 +24,10 @@ import scala.collection.mutable
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
+                                     val schema: Schema)
+  extends RuleBasedTransformer[LoweringLegoBase](IR)
+  with StructCollector[LoweringLegoBase] {
   import IR.{ __struct_field => _, _ }
 
   /**
@@ -33,7 +36,22 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
    */
   case class RelationInfo(partitioningField: String,
                           loop: While,
-                          array: Rep[Array[Any]])
+                          array: Rep[Array[Any]]) {
+    def tpe: TypeRep[Any] = array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
+    def numBuckets: Rep[Int] =
+      unit(schema.stats.getDistinctAttrValues(partitioningField))
+    def bucketSize: Rep[Int] =
+      unit(schema.stats.getConflictsAttr(partitioningField).getOrElse(1 << 10))
+    def is1D: Boolean =
+      schema.findTableByType(tpe).exists(table =>
+        table.primaryKey.exists(pk =>
+          pk.attributes.size == 1 && pk.attributes.head.name == partitioningField))
+    def table: Table = schema.findTableByType(tpe).get
+    def reuseOriginal1DArray: Boolean = table.continuous.nonEmpty
+    def arraySize: Rep[Int] = array match {
+      case dsl"new Array[Any]($s)" => s
+    }
+  }
 
   /**
    * Keeps the information about a MultiMap
@@ -75,6 +93,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
       multiMapsInfo.getOrElseUpdate(key, MultiMapInfo(key))
   }
 
+  /**
+   * Data structures for storing the information collected during the analysis phase
+   */
   val allMaps = mutable.Set[Rep[Any]]()
   val multiMapsInfo = mutable.Map[Rep[Any], MultiMapInfo]()
   val partitionedMaps = mutable.Set[Rep[Any]]()
@@ -83,16 +104,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   val hashJoinAntiMaps = mutable.Set[Rep[Any]]()
   val windowOpMaps = mutable.Set[Rep[Any]]()
   val hashJoinAntiForeachLambda = mutable.Map[Rep[Any], Lambda[Any, Unit]]()
-  var hashJoinAntiRetainVar = mutable.Map[Rep[Any], Var[Boolean]]()
   val setForeachLambda = mutable.Map[Rep[Any], Rep[Any => Unit]]()
-
-  val ONE_D_ENABLED = true
-
-  def isPrimaryKey[T](tp: TypeRep[T], field: String): Boolean =
-    schema.findTableByType(tp).exists(table =>
-      table.primaryKey.exists(pk => pk.attributes.forall(att => att.name == field)))
-
-  var transformedMapsCount = 0
+  val leftOuterJoinDefault = mutable.Map[Rep[Any], Block[Unit]]()
+  /* Keeps the closest while loop in the scope */
+  var currentWhileLoop: While = _
 
   // TODO should be removed
   case class HashMapPartitionObject(mapSymbol: Rep[Any], left: Option[PartitionObject], right: Option[PartitionObject]) {
@@ -116,22 +131,17 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
     def fieldFunc: String = relationInfo.partitioningField
     def loopSymbol: While = relationInfo.loop
     def tpe = arr.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
-    def buckets = numBuckets(this)
+    def buckets = relationInfo.numBuckets
     def count = partitionedObjectsCount(this)
     def parArr = partitionedObjectsArray(this).asInstanceOf[Rep[Array[Array[Any]]]]
-    def is1D: Boolean = if (ONE_D_ENABLED) isPrimaryKey(tpe, fieldFunc) else false
+    def is1D: Boolean = relationInfo.is1D
     def table: Table = schema.findTableByType(tpe).get
     def reuseOriginal1DArray: Boolean = table.continuous.nonEmpty
     def arraySize: Rep[Int] = arr match {
       case dsl"new Array[Any]($s)" => s
     }
+    def bucketSize: Rep[Int] = relationInfo.bucketSize
   }
-  val partitionedHashMapObjects = mutable.Set[HashMapPartitionObject]()
-  val partitionedObjectsArray = mutable.Map[PartitionObject, Rep[Array[Any]]]()
-  val partitionedObjectsCount = mutable.Map[PartitionObject, Rep[Array[Int]]]()
-
-  def getPartitionedObject[T: TypeRep](hm: Rep[T]): HashMapPartitionObject = 
-    partitionedHashMapObjects.find(x => x.mapSymbol == hm).get
 
   override def optimize[T: TypeRep](node: Block[T]): Block[T] = {
     val res = super.optimize(node)
@@ -157,6 +167,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
     //   mm => mm._2.shouldBePartitioned).map(_._1).toSet)
   }
 
+  /* ---- ANALYSIS PHASE ---- */
+
   analysis += statement {
     // TODO `new MultiMap` is synthetic and does not exist in shallow
     case sym -> (node @ MultiMapNew()) if node.typeB.isRecord =>
@@ -164,39 +176,32 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
       ()
   }
 
-  var currentWhileLoop: While = _
-
   analysis += statement {
     case sym -> (node @ dsl"while($cond) $body") =>
       currentWhileLoop = node.asInstanceOf[While]
   }
 
-  def getCorrespondingArray(exp: Rep[Any]): Option[Rep[Array[Any]]] = exp match {
-    case dsl"($array: Array[Any]).apply($index)" =>
-      Some(array)
-    case _ =>
-      None
-  }
-
   analysis += rule {
-    case node @ dsl"($mm : MultiMap[Any, Any]).addBinding(__struct_field($struct, ${ Constant(field) }), $nodev)" if allMaps.contains(mm) =>
+    case dsl"($mm : MultiMap[Any, Any]).addBinding(__struct_field($struct, ${ Constant(field) }), $nodev)" if allMaps.contains(mm) =>
       partitionedMaps += mm
       mm.updateInfo(_.copy(isPartitioned = true))
       for (array <- getCorrespondingArray(struct)) {
         leftRelationsInfo +=
           mm -> RelationInfo(field, currentWhileLoop, array)
-        mm.updateInfo(_.copy(leftRelationInfo = Some(RelationInfo(field, currentWhileLoop, array))))
+        mm.updateInfo(_.copy(leftRelationInfo =
+          Some(RelationInfo(field, currentWhileLoop, array))))
       }
   }
 
   analysis += rule {
-    case node @ dsl"($mm : MultiMap[Any, Any]).get(__struct_field($struct, ${ Constant(field) }))" if allMaps.contains(mm) =>
+    case dsl"($mm : MultiMap[Any, Any]).get(__struct_field($struct, ${ Constant(field) }))" if allMaps.contains(mm) =>
       partitionedMaps += mm
       mm.updateInfo(_.copy(isPartitioned = true))
       for (array <- getCorrespondingArray(struct)) {
         rightRelationsInfo +=
           mm -> RelationInfo(field, currentWhileLoop, array)
-        mm.updateInfo(_.copy(rightRelationInfo = Some(RelationInfo(field, currentWhileLoop, array))))
+        mm.updateInfo(_.copy(rightRelationInfo =
+          Some(RelationInfo(field, currentWhileLoop, array))))
       }
       ()
   }
@@ -231,121 +236,46 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
     }
   }
 
-  def numBuckets(partitionedObject: PartitionObject): Rep[Int] =
-    unit(schema.stats.getDistinctAttrValues(partitionedObject.fieldFunc))
-
-  def bucketSize(partitionedObject: PartitionObject): Rep[Int] =
-    schema.stats.getConflictsAttr(partitionedObject.fieldFunc) match {
-      case Some(v) => unit(v)
-      case None    => unit(1 << 10)
-    }
-
-  def recreateNode[T: TypeRep](exp: Rep[T]): Rep[T] = exp match {
-    case Def(node) => toAtom(node)(exp.tp)
-    case _         => ???
-  }
-
-  def array_foreach[T: TypeRep](arr: Rep[Array[T]], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
-    Range(unit(0), arr.length).foreach {
-      __lambda { i =>
-        val e = arr(i)
-        f(e)
-      }
+  analysis += rule {
+    // TODO a bit ugly, because of the type inference we have to put `: Any`
+    case dsl"""(
+                if(($mm: MultiMap[Any, Any]).get($elem).nonEmpty) 
+                  $thenp 
+                else 
+                  $elsep
+               ): Any""" if mm.getInfo.isOuter => {
+      leftOuterJoinDefault += mm -> elsep.asInstanceOf[Block[Unit]]
+      ()
     }
   }
 
-  def findBucketFunction(key: Rep[Int], partitionedObject: PartitionObject): Rep[Int] = key % partitionedObject.buckets
-
-  def par_array_foreach[T: TypeRep](partitionedObject: PartitionObject, key: Rep[Int], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
-    if (partitionedObject.is1D) {
-      val parArr = partitionedObject.parArr.asInstanceOf[Rep[Array[T]]]
-      val bucket = partitionedObject.table.continuous match {
-        case Some(continuous) => key - unit(continuous.offset)
-        case None             => key
-      }
-      val e = parArr(bucket)
-      // System.out.println(s"part foreach for val $e=$parArr($bucket) ")
-      f(e)
-    } else {
-      val bucket = findBucketFunction(key, partitionedObject)
-      val count = partitionedObject.count(bucket)
-      val parArrWhole = partitionedObject.parArr.asInstanceOf[Rep[Array[Array[T]]]]
-      val parArr = parArrWhole(bucket)
-      Range(unit(0), count).foreach {
-        __lambda { i =>
-          val e = parArr(i)
-          f(e)
-        }
-      }
-    }
+  def getCorrespondingArray(exp: Rep[Any]): Option[Rep[Array[Any]]] = exp match {
+    case dsl"($array: Array[Any]).apply($index)" =>
+      Some(array)
+    case _ =>
+      None
   }
 
-  def createPartitionArray(partitionedObject: PartitionObject): Unit = {
-    System.out.println(scala.Console.GREEN + "Table " + partitionedObject.arr.tp.typeArguments(0) + " was partitioned on field " + partitionedObject.fieldFunc + scala.Console.RESET)
-
-    class InnerType
-    implicit val typeInner = partitionedObject.arr.tp.typeArguments(0).asInstanceOf[TypeRep[InnerType]]
-    val originalArray = {
-      val origArray =
-        if (!seenArrays.contains(partitionedObject.arr)) {
-          seenArrays += partitionedObject.arr
-          recreateNode(partitionedObject.arr)
-        } else {
-          partitionedObject.arr
-        }
-      origArray.asInstanceOf[Rep[Array[InnerType]]]
-    }
-    val buckets = partitionedObject.buckets
-    if (partitionedObject.is1D) {
-      //System.out.println(s"${scala.Console.BLUE}1D Array!!!${scala.Console.RESET}")
-      if (partitionedObject.reuseOriginal1DArray) {
-        partitionedObjectsArray += partitionedObject -> originalArray.asInstanceOf[Rep[Array[Any]]]
-      } else {
-        val partitionedArray = __newArray[InnerType](buckets)
-        partitionedObjectsArray += partitionedObject -> partitionedArray.asInstanceOf[Rep[Array[Any]]]
-        array_foreach(originalArray, {
-          (e: Rep[InnerType]) =>
-            val pkey = field[Int](e, partitionedObject.fieldFunc) % buckets
-            partitionedArray(pkey) = e
-        })
-      }
-    } else {
-      val partitionedObjectAlreadyExists = {
-        partitionedObjectsArray.find({
-          case (po, _) =>
-            po.fieldFunc == partitionedObject.fieldFunc && po.tpe == partitionedObject.tpe
-        })
-      }
-      if (partitionedObjectAlreadyExists.nonEmpty) {
-        System.out.println(s"${scala.Console.BLUE}2D Array already exists!${scala.Console.RESET}")
-        partitionedObjectsArray += partitionedObject -> partitionedObjectAlreadyExists.get._1.parArr.asInstanceOf[Rep[Array[Any]]]
-        partitionedObjectsCount += partitionedObject -> partitionedObjectAlreadyExists.get._1.count
-      } else {
-        val partitionedArray = __newArray[Array[InnerType]](buckets)
-        val partitionedCount = __newArray[Int](buckets)
-        partitionedObjectsArray += partitionedObject -> partitionedArray.asInstanceOf[Rep[Array[Any]]]
-        partitionedObjectsCount += partitionedObject -> partitionedCount
-        Range(unit(0), buckets).foreach {
-          __lambda { i =>
-            partitionedArray(i) = __newArray[InnerType](bucketSize(partitionedObject))
-          }
-        }
-        val index = __newVarNamed[Int](unit(0), "partIndex")
-        array_foreach(originalArray, {
-          (e: Rep[InnerType]) =>
-            // TODO needs a better way of computing the index of each object
-            val pkey = field[Int](e, partitionedObject.fieldFunc) % buckets
-            val currIndex = partitionedCount(pkey)
-            val partitionedArrayBucket = partitionedArray(pkey)
-            partitionedArrayBucket(currIndex) = e
-            partitionedCount(pkey) = currIndex + unit(1)
-            __assign(index, readVar(index) + unit(1))
-        })
-      }
-    }
-  }
-
+  /**
+   * Data structures for storing the expressions created during the rewriting phase
+   */
+  val partitionedHashMapObjects = mutable.Set[HashMapPartitionObject]()
+  val partitionedObjectsArray = mutable.Map[PartitionObject, Rep[Array[Any]]]()
+  val partitionedObjectsCount = mutable.Map[PartitionObject, Rep[Array[Int]]]()
+  val hashJoinAntiRetainVar = mutable.Map[Rep[Any], Var[Boolean]]()
+  var loopDepth: Int = 0
+  // associates each multimap with a level which specifies the depth of the corresponding for loop
+  val fillingHole = mutable.Map[Rep[Any], Int]()
+  val fillingFunction = mutable.Map[Rep[Any], () => Rep[Any]]()
+  val fillingElem = mutable.Map[Rep[Any], Rep[Any]]()
   val seenArrays = mutable.Set[Rep[Any]]()
+  var transformedMapsCount = 0
+  val leftOuterJoinExistsVar = mutable.Map[Rep[Any], Var[Boolean]]()
+
+  def getPartitionedObject[T: TypeRep](hm: Rep[T]): HashMapPartitionObject =
+    partitionedHashMapObjects.find(x => x.mapSymbol == hm).get
+
+  /* ---- REWRITING PHASE ---- */
 
   rewrite += statement {
     case sym -> (node @ dsl"new Array[Any]($size)") /*if !seenArrays.contains(sym)*/ =>
@@ -463,12 +393,6 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
       ()
   }
 
-  var loopDepth: Int = 0
-  // associates each multimap with a level which specifies the depth of the corresponding for loop
-  val fillingHole = mutable.Map[Rep[Any], Int]()
-  var fillingFunction = mutable.Map[Rep[Any], () => Rep[Any]]()
-  var fillingElem = mutable.Map[Rep[Any], Rep[Any]]()
-
   rewrite += removeStatement {
     case sym -> Lambda(_, _, _) if setForeachLambda.exists(_._2 == sym) =>
       ()
@@ -583,6 +507,111 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
       inlineFunction(f, fillingFunction(mm)())
   }
 
+  /* ---- Helper Methods for Rewriting ---- */
+
+  def recreateNode[T: TypeRep](exp: Rep[T]): Rep[T] = exp match {
+    case Def(node) => toAtom(node)(exp.tp)
+    case _         => ???
+  }
+
+  def array_foreach[T: TypeRep](arr: Rep[Array[T]], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
+    Range(unit(0), arr.length).foreach {
+      __lambda { i =>
+        val e = arr(i)
+        f(e)
+      }
+    }
+  }
+
+  def par_array_foreach[T: TypeRep](partitionedObject: PartitionObject, key: Rep[Int], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
+    if (partitionedObject.is1D) {
+      val parArr = partitionedObject.parArr.asInstanceOf[Rep[Array[T]]]
+      val bucket = partitionedObject.table.continuous match {
+        case Some(continuous) => key - unit(continuous.offset)
+        case None             => key
+      }
+      val e = parArr(bucket)
+      // System.out.println(s"part foreach for val $e=$parArr($bucket) ")
+      f(e)
+    } else {
+      val bucket = key % partitionedObject.buckets
+      val count = partitionedObject.count(bucket)
+      val parArrWhole = partitionedObject.parArr.asInstanceOf[Rep[Array[Array[T]]]]
+      val parArr = parArrWhole(bucket)
+      Range(unit(0), count).foreach {
+        __lambda { i =>
+          val e = parArr(i)
+          f(e)
+        }
+      }
+    }
+  }
+
+  def createPartitionArray(partitionedObject: PartitionObject): Unit = {
+    System.out.println(scala.Console.GREEN + "Table " + partitionedObject.arr.tp.typeArguments(0) + " was partitioned on field " + partitionedObject.fieldFunc + scala.Console.RESET)
+
+    class InnerType
+    implicit val typeInner = partitionedObject.arr.tp.typeArguments(0).asInstanceOf[TypeRep[InnerType]]
+    val originalArray = {
+      val origArray =
+        if (!seenArrays.contains(partitionedObject.arr)) {
+          seenArrays += partitionedObject.arr
+          recreateNode(partitionedObject.arr)
+        } else {
+          partitionedObject.arr
+        }
+      origArray.asInstanceOf[Rep[Array[InnerType]]]
+    }
+    val buckets = partitionedObject.buckets
+    if (partitionedObject.is1D) {
+      //System.out.println(s"${scala.Console.BLUE}1D Array!!!${scala.Console.RESET}")
+      if (partitionedObject.reuseOriginal1DArray) {
+        partitionedObjectsArray += partitionedObject -> originalArray.asInstanceOf[Rep[Array[Any]]]
+      } else {
+        val partitionedArray = __newArray[InnerType](buckets)
+        partitionedObjectsArray += partitionedObject -> partitionedArray.asInstanceOf[Rep[Array[Any]]]
+        array_foreach(originalArray, {
+          (e: Rep[InnerType]) =>
+            val pkey = field[Int](e, partitionedObject.fieldFunc) % buckets
+            partitionedArray(pkey) = e
+        })
+      }
+    } else {
+      val partitionedObjectAlreadyExists = {
+        partitionedObjectsArray.find({
+          case (po, _) =>
+            po.fieldFunc == partitionedObject.fieldFunc && po.tpe == partitionedObject.tpe
+        })
+      }
+      if (partitionedObjectAlreadyExists.nonEmpty) {
+        System.out.println(s"${scala.Console.BLUE}2D Array already exists!${scala.Console.RESET}")
+        partitionedObjectsArray += partitionedObject -> partitionedObjectAlreadyExists.get._1.parArr.asInstanceOf[Rep[Array[Any]]]
+        partitionedObjectsCount += partitionedObject -> partitionedObjectAlreadyExists.get._1.count
+      } else {
+        val partitionedArray = __newArray[Array[InnerType]](buckets)
+        val partitionedCount = __newArray[Int](buckets)
+        partitionedObjectsArray += partitionedObject -> partitionedArray.asInstanceOf[Rep[Array[Any]]]
+        partitionedObjectsCount += partitionedObject -> partitionedCount
+        Range(unit(0), buckets).foreach {
+          __lambda { i =>
+            partitionedArray(i) = __newArray[InnerType](partitionedObject.bucketSize)
+          }
+        }
+        val index = __newVarNamed[Int](unit(0), "partIndex")
+        array_foreach(originalArray, {
+          (e: Rep[InnerType]) =>
+            // TODO needs a better way of computing the index of each object
+            val pkey = field[Int](e, partitionedObject.fieldFunc) % buckets
+            val currIndex = partitionedCount(pkey)
+            val partitionedArrayBucket = partitionedArray(pkey)
+            partitionedArrayBucket(currIndex) = e
+            partitionedCount(pkey) = currIndex + unit(1)
+            __assign(index, readVar(index) + unit(1))
+        })
+      }
+    }
+  }
+
   /* The parts dedicated to left outer join handling */
   def leftOuterJoinDefaultHandling(mm: Rep[MultiMap[Any, Any]], key: Rep[Int], partitionedObject: PartitionObject): Rep[Unit] = if (mm.getInfo.isOuter) {
     dsl"""if(!${readVar(leftOuterJoinExistsVar(mm))}) {
@@ -604,20 +633,4 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
       __assign(exists, unit(true))
       ()
     } else ()
-
-  val leftOuterJoinDefault = mutable.Map[Rep[Any], Block[Unit]]()
-  val leftOuterJoinExistsVar = mutable.Map[Rep[Any], Var[Boolean]]()
-
-  analysis += rule {
-    // TODO a bit ugly, because of the type inference we have to put `: Any`
-    case dsl"""(
-                if(($mm: MultiMap[Any, Any]).get($elem).nonEmpty) 
-                  $thenp 
-                else 
-                  $elsep
-               ): Any""" if mm.getInfo.isOuter => {
-      leftOuterJoinDefault += mm -> elsep.asInstanceOf[Block[Unit]]
-      ()
-    }
-  }
 }
