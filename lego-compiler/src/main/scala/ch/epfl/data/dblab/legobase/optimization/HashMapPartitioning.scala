@@ -13,6 +13,7 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 import sc.pardis.quasi.anf._
 import quasi._
+import scala.collection.mutable
 
 /**
  * A transformer for partitioning and indexing the MultiMaps. As a result, this transformation
@@ -26,20 +27,21 @@ import quasi._
 class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
   import IR.{ __struct_field => _, _ }
 
-  val allMaps = scala.collection.mutable.Set[Rep[Any]]()
-  val partitionedMaps = scala.collection.mutable.Set[Rep[Any]]()
-  val leftPartFunc = scala.collection.mutable.Map[Rep[Any], String]()
-  val rightPartFunc = scala.collection.mutable.Map[Rep[Any], String]()
-  val leftPartArr = scala.collection.mutable.Map[Rep[Any], Rep[Array[Any]]]()
-  val rightPartArr = scala.collection.mutable.Map[Rep[Any], Rep[Array[Any]]]()
-  val leftLoopSymbol = scala.collection.mutable.Map[Rep[Any], While]()
-  val rightLoopSymbol = scala.collection.mutable.Map[Rep[Any], While]()
-  val hashJoinAntiMaps = scala.collection.mutable.Set[Rep[Any]]()
-  val hashJoinAntiForeachLambda = scala.collection.mutable.Map[Rep[Any], Lambda[Any, Unit]]()
-  var hashJoinAntiRetainVar = scala.collection.mutable.Map[Rep[Any], Var[Boolean]]()
-  val setForeachLambda = scala.collection.mutable.Map[Rep[Any], Rep[Any => Unit]]()
+  /**
+   * Keeps the information about a relation which (probably) participates in a join.
+   * This information is gathered during the analysis phase.
+   */
+  case class RelationInfo(partitioningField: String, loop: While, array: Option[Rep[Array[Any]]])
 
-  val windowOpMaps = scala.collection.mutable.Set[Rep[Any]]()
+  val allMaps = mutable.Set[Rep[Any]]()
+  val partitionedMaps = mutable.Set[Rep[Any]]()
+  val leftRelationsInfo = mutable.Map[Rep[Any], RelationInfo]()
+  val rightRelationsInfo = mutable.Map[Rep[Any], RelationInfo]()
+  val hashJoinAntiMaps = mutable.Set[Rep[Any]]()
+  val windowOpMaps = mutable.Set[Rep[Any]]()
+  val hashJoinAntiForeachLambda = mutable.Map[Rep[Any], Lambda[Any, Unit]]()
+  var hashJoinAntiRetainVar = mutable.Map[Rep[Any], Var[Boolean]]()
+  val setForeachLambda = mutable.Map[Rep[Any], Rep[Any => Unit]]()
 
   def multiMapHasDefaultHandling[T](mm: Rep[T]): Boolean = getLoweredSymbolOriginalDef(mm) match {
     case Some(loj: LeftOuterJoinOpNew[_, _, _]) => true
@@ -66,7 +68,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
     def isAnti: Boolean = hashJoinAntiMaps.contains(mapSymbol)
     def antiLambda: Lambda[Any, Unit] = hashJoinAntiForeachLambda(mapSymbol)
   }
-  case class PartitionObject(arr: Rep[Array[Any]], fieldFunc: String, loopSymbol: While) {
+  case class PartitionObject(relationInfo: RelationInfo) {
+    def arr: Rep[Array[Any]] = relationInfo.array.get
+    def fieldFunc: String = relationInfo.partitioningField
+    def loopSymbol: While = relationInfo.loop
     def tpe = arr.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
     def buckets = numBuckets(this)
     def count = partitionedObjectsCount(this)
@@ -78,9 +83,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
       case dsl"new Array[Any]($s)" => s
     }
   }
-  val partitionedHashMapObjects = scala.collection.mutable.Set[HashMapPartitionObject]()
-  val partitionedObjectsArray = scala.collection.mutable.Map[PartitionObject, Rep[Array[Any]]]()
-  val partitionedObjectsCount = scala.collection.mutable.Map[PartitionObject, Rep[Array[Int]]]()
+  val partitionedHashMapObjects = mutable.Set[HashMapPartitionObject]()
+  val partitionedObjectsArray = mutable.Map[PartitionObject, Rep[Array[Any]]]()
+  val partitionedObjectsCount = mutable.Map[PartitionObject, Rep[Array[Int]]]()
 
   // TODO should be `|| ?.right.nonEmpty`
   def shouldBePartitioned[T: TypeRep](hm: Rep[T]): Boolean = {
@@ -103,10 +108,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
     hashJoinAntiMaps.clear()
     hashJoinAntiMaps ++= realHashJoinAntiMaps
     // val supportedMaps = partitionedMaps diff windowOpMaps
-    partitionedHashMapObjects ++= partitionedMaps.map({ hm =>
-      val left = leftPartArr.get(hm).map(v => PartitionObject(v, leftPartFunc(hm), leftLoopSymbol(hm)))
-      val right = rightPartArr.get(hm).map(v => PartitionObject(v, rightPartFunc(hm), rightLoopSymbol(hm)))
-      HashMapPartitionObject(hm, left, right)
+    partitionedHashMapObjects ++= partitionedMaps.map({ mm =>
+      val left = leftRelationsInfo.get(mm).filter(_.array.nonEmpty).map(PartitionObject)
+      val right = rightRelationsInfo.get(mm).filter(_.array.nonEmpty).map(PartitionObject)
+      HashMapPartitionObject(mm, left, right)
     })
   }
 
@@ -117,33 +122,26 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
       ()
   }
 
-  analysis += rule {
-    case node @ dsl"($nodeself : MultiMap[Any, Any]).addBinding(__struct_field($struct, ${ Constant(field) }), $nodev)" if allMaps.contains(nodeself) =>
-      partitionedMaps += nodeself
-      leftPartFunc += nodeself -> field
-      leftLoopSymbol += nodeself -> currentLoopSymbol
-      def addPartArray(exp: Rep[Any]): Unit =
-        exp match {
-          // case Def(ArrayApply(arr, ind)) => 
-          case dsl"($arr: Array[Any]).apply($index)" =>
-            leftPartArr += nodeself -> arr
-          case _ =>
-        }
-      addPartArray(struct)
+  def getCorrespondingArray(exp: Rep[Any]): Option[Rep[Array[Any]]] = exp match {
+    case dsl"($array: Array[Any]).apply($index)" =>
+      Some(array)
+    case _ =>
+      None
   }
 
-  val leftPartKey = scala.collection.mutable.Map[Rep[Any], Var[Any]]()
+  analysis += rule {
+    case node @ dsl"($mm : MultiMap[Any, Any]).addBinding(__struct_field($struct, ${ Constant(field) }), $nodev)" if allMaps.contains(mm) =>
+      partitionedMaps += mm
+      leftRelationsInfo +=
+        mm -> RelationInfo(field, currentLoopSymbol, getCorrespondingArray(struct))
+      ()
+  }
 
   analysis += rule {
-    case node @ dsl"($nodeself : MultiMap[Any, Any]).get(__struct_field($struct, ${ Constant(field) }))" if allMaps.contains(nodeself) =>
-      partitionedMaps += nodeself
-      rightPartFunc += nodeself -> field
-      rightLoopSymbol += nodeself -> currentLoopSymbol
-      struct match {
-        case dsl"($arr: Array[Any]).apply($index)" =>
-          rightPartArr += nodeself -> arr
-        case _ =>
-      }
+    case node @ dsl"($mm : MultiMap[Any, Any]).get(__struct_field($struct, ${ Constant(field) }))" if allMaps.contains(mm) =>
+      partitionedMaps += mm
+      rightRelationsInfo +=
+        mm -> RelationInfo(field, currentLoopSymbol, getCorrespondingArray(struct))
       ()
   }
 
@@ -292,7 +290,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
     }
   }
 
-  val seenArrays = scala.collection.mutable.Set[Rep[Any]]()
+  val seenArrays = mutable.Set[Rep[Any]]()
 
   rewrite += statement {
     case sym -> (node @ dsl"new Array[Any]($size)") /*if !seenArrays.contains(sym)*/ =>
@@ -343,17 +341,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
         res
       })
       transformedMapsCount += 1
-      // __ifThenElse(!readVar(resultRetain), {
-      //   inlineFunction(foreachFunction, value)
-      // }, unit())
-      // TODO does not work
-      // def thenP = inlineFunction(foreachFunction, value)
-      // reify {
       dsl"""if(${!readVar(resultRetain)}) {
             ${inlineFunction(foreachFunction, value)}
           } else {
           }"""
-    // }
   }
 
   rewrite += remove {
@@ -419,9 +410,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
 
   var loopDepth: Int = 0
   // associates each multimap with a level which specifies the depth of the corresponding for loop
-  val fillingHole = scala.collection.mutable.Map[Rep[Any], Int]()
-  var fillingFunction = scala.collection.mutable.Map[Rep[Any], () => Rep[Any]]()
-  var fillingElem = scala.collection.mutable.Map[Rep[Any], Rep[Any]]()
+  val fillingHole = mutable.Map[Rep[Any], Int]()
+  var fillingFunction = mutable.Map[Rep[Any], () => Rep[Any]]()
+  var fillingElem = mutable.Map[Rep[Any], Rep[Any]]()
 
   rewrite += removeStatement {
     case sym -> Lambda(_, _, _) if setForeachLambda.exists(_._2 == sym) =>
@@ -444,18 +435,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
             leftOuterJoinExistsVarSet(mm)
             inlineFunction(f.asInstanceOf[Rep[InnerType => Unit]], e)
           }
-          // __ifThenElse[Unit](field[Int](e, leftArray.fieldFunc) __== apply(elem), {
-          //   ifThenBody
-          // }, {
-          //   unit(())
-          // })
-          // TODO does not work
-          // reify {
           dsl"""if(${field[Int](e, leftArray.fieldFunc)} == ${apply(elem)}) {
                     ${ifThenBody}
                   } else {
                   }"""
-          // }
         }
         // System.out.println(s"STARTED setforeach for the key $key $e.${leftArray.fieldFunc} mm: $mm")
         fillingHole(mm) = loopDepth
@@ -484,18 +467,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
       par_array_foreach[InnerType](leftArray, key, (e: Rep[InnerType]) => {
         fillingElem(mm) = e
         fillingFunction(mm) = () => {
-          // TODO does not work
-          // reify {
           dsl"""if(${field[Int](e, leftArray.fieldFunc)} == $elem && ${inlineFunction(p, e)}) {
                     ${__assign(result, unit(true))}
                   } else {
                   }"""
-          // }
-          // __ifThenElse[Unit]((field[Int](e, leftArray.fieldFunc) __== elem) && inlineFunction(p, e), {
-          //   __assign(result, unit(true))
-          // }, {
-          //   unit(())
-          // })
         }
         fillingHole(mm) = loopDepth
         loopDepth += 1
@@ -539,19 +514,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
       val typedElem = fillingFunction(mm)().asInstanceOf[Rep[ElemType]]
       implicit val elemType = typedElem.tp.asInstanceOf[TypeRep[ElemType]]
       val resultRetain = hashJoinAntiRetainVar(mm)
-      // __ifThenElse[Unit](!inlineFunction(retainPredicate, typedElem), {
-      //   __assign(resultRetain, unit(true))
-      // }, {
-      //   unit()
-      // })
-      // TODO does not work
-      // reify {
       dsl"""if(!${inlineFunction(retainPredicate, typedElem)}) {
               ${__assign(resultRetain, unit(true))}
             } else {
             }"""
-    // }
-
   }
 
   rewrite += rule {
@@ -563,16 +529,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
 
   /* The parts dedicated to left outer join handling */
   def leftOuterJoinDefaultHandling(mm: Rep[MultiMap[Any, Any]], key: Rep[Int], partitionedObject: PartitionObject): Rep[Unit] = if (multiMapHasDefaultHandling(mm)) {
-    // TODO does not work
-    // reify {
     dsl"""if(!${readVar(leftOuterJoinExistsVar(mm))}) {
               ${inlineBlock[Unit](leftOuterJoinDefault(mm))}
             } else {
             }"""
-    // }
-    // __ifThenElse(!readVar(leftOuterJoinExistsVar(mm)), {
-    //   inlineBlock[Unit](leftOuterJoinDefault(mm))
-    // }, unit(()))
   } else dsl"()"
 
   def leftOuterJoinExistsVarDefine(mm: Rep[MultiMap[Any, Any]]): Unit =
@@ -589,8 +549,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
       ()
     } else ()
 
-  val leftOuterJoinDefault = scala.collection.mutable.Map[Rep[Any], Block[Unit]]()
-  val leftOuterJoinExistsVar = scala.collection.mutable.Map[Rep[Any], Var[Boolean]]()
+  val leftOuterJoinDefault = mutable.Map[Rep[Any], Block[Unit]]()
+  val leftOuterJoinExistsVar = mutable.Map[Rep[Any], Var[Boolean]]()
 
   analysis += rule {
     // TODO a bit ugly, because of the type inference we have to put `: Any`
@@ -600,7 +560,6 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
                 else 
                   $elsep
                ): Any""" if multiMapHasDefaultHandling(mm) => {
-      // System.out.println(s"elsep: $elsep")
       leftOuterJoinDefault += mm -> elsep.asInstanceOf[Block[Unit]]
       ()
     }
