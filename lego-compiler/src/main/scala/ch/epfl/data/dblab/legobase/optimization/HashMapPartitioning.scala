@@ -31,9 +31,37 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
    * Keeps the information about a relation which (probably) participates in a join.
    * This information is gathered during the analysis phase.
    */
-  case class RelationInfo(partitioningField: String, loop: While, array: Option[Rep[Array[Any]]])
+  case class RelationInfo(partitioningField: String,
+                          loop: While,
+                          array: Rep[Array[Any]])
+
+  /**
+   * Keeps the information about a MultiMap
+   */
+  case class MultiMapInfo(multiMapSymbol: Rep[Any],
+                          leftRelationInfo: Option[RelationInfo] = None,
+                          rightRelationInfo: Option[RelationInfo] = None,
+                          isPartitioned: Boolean = false,
+                          isPotentiallyWindow: Boolean = false,
+                          isPotentiallyAnti: Boolean = false,
+                          foreachLambda: Option[Lambda[Any, Unit]] = None,
+                          collectionForeachLambda: Option[Rep[Any => Unit]] = None) {
+    def isOuter: Boolean = multiMapHasDefaultHandling(multiMapSymbol)
+    def isAnti: Boolean = isPotentiallyAnti && isPotentiallyWindow
+    def shouldBePartitioned: Boolean =
+      isPartitioned && (leftRelationInfo.nonEmpty || rightRelationInfo.nonEmpty)
+  }
+
+  implicit class MultiMapOps[T, S](mm: Rep[MultiMap[T, S]]) {
+    def key = mm.asInstanceOf[Rep[Any]]
+    def updateInfo(newInfoFunction: (MultiMapInfo => MultiMapInfo)): Unit =
+      multiMapsInfo(key) = newInfoFunction(getInfo)
+    def getInfo: MultiMapInfo =
+      multiMapsInfo.getOrElseUpdate(key, MultiMapInfo(key))
+  }
 
   val allMaps = mutable.Set[Rep[Any]]()
+  val multiMapsInfo = mutable.Map[Rep[Any], MultiMapInfo]()
   val partitionedMaps = mutable.Set[Rep[Any]]()
   val leftRelationsInfo = mutable.Map[Rep[Any], RelationInfo]()
   val rightRelationsInfo = mutable.Map[Rep[Any], RelationInfo]()
@@ -69,7 +97,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
     def antiLambda: Lambda[Any, Unit] = hashJoinAntiForeachLambda(mapSymbol)
   }
   case class PartitionObject(relationInfo: RelationInfo) {
-    def arr: Rep[Array[Any]] = relationInfo.array.get
+    def arr: Rep[Array[Any]] = relationInfo.array
     def fieldFunc: String = relationInfo.partitioningField
     def loopSymbol: While = relationInfo.loop
     def tpe = arr.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
@@ -108,11 +136,16 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
     hashJoinAntiMaps.clear()
     hashJoinAntiMaps ++= realHashJoinAntiMaps
     // val supportedMaps = partitionedMaps diff windowOpMaps
+    assert(hashJoinAntiMaps.size == multiMapsInfo.map(_._2.isAnti).filter(identity[Boolean]).size)
+    assert(multiMapsInfo.filter(_._2.isPartitioned).map(_._1).toSet == partitionedMaps.toSet)
+
     partitionedHashMapObjects ++= partitionedMaps.map({ mm =>
-      val left = leftRelationsInfo.get(mm).filter(_.array.nonEmpty).map(PartitionObject)
-      val right = rightRelationsInfo.get(mm).filter(_.array.nonEmpty).map(PartitionObject)
+      val left = leftRelationsInfo.get(mm).map(PartitionObject)
+      val right = rightRelationsInfo.get(mm).map(PartitionObject)
       HashMapPartitionObject(mm, left, right)
     })
+    assert(allMaps.filter(shouldBePartitioned).toSet == multiMapsInfo.filter(
+      mm => mm._2.shouldBePartitioned).map(_._1).toSet)
   }
 
   analysis += statement {
@@ -132,26 +165,36 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
   analysis += rule {
     case node @ dsl"($mm : MultiMap[Any, Any]).addBinding(__struct_field($struct, ${ Constant(field) }), $nodev)" if allMaps.contains(mm) =>
       partitionedMaps += mm
-      leftRelationsInfo +=
-        mm -> RelationInfo(field, currentLoopSymbol, getCorrespondingArray(struct))
-      ()
+      mm.updateInfo(_.copy(isPartitioned = true))
+      for (array <- getCorrespondingArray(struct)) {
+        leftRelationsInfo +=
+          mm -> RelationInfo(field, currentLoopSymbol, array)
+        mm.updateInfo(_.copy(leftRelationInfo = Some(RelationInfo(field, currentLoopSymbol, array))))
+      }
   }
 
   analysis += rule {
     case node @ dsl"($mm : MultiMap[Any, Any]).get(__struct_field($struct, ${ Constant(field) }))" if allMaps.contains(mm) =>
       partitionedMaps += mm
-      rightRelationsInfo +=
-        mm -> RelationInfo(field, currentLoopSymbol, getCorrespondingArray(struct))
+      mm.updateInfo(_.copy(isPartitioned = true))
+      for (array <- getCorrespondingArray(struct)) {
+        rightRelationsInfo +=
+          mm -> RelationInfo(field, currentLoopSymbol, array)
+        mm.updateInfo(_.copy(rightRelationInfo = Some(RelationInfo(field, currentLoopSymbol, array))))
+      }
       ()
   }
 
-  // TODO when WindowOp is supported, this case should be removed
   analysis += rule {
     case dsl"($mm : MultiMap[Any, Any]).foreach($f)" if allMaps.contains(mm) =>
       windowOpMaps += mm
+      mm.updateInfo(_.copy(isPotentiallyWindow = true))
       f match {
-        case Def(fun @ Lambda(_, _, _)) => hashJoinAntiForeachLambda += mm -> fun.asInstanceOf[Lambda[Any, Unit]]
-        case _                          => ()
+        case Def(fun @ Lambda(_, _, _)) =>
+          val lambda = fun.asInstanceOf[Lambda[Any, Unit]]
+          hashJoinAntiForeachLambda += mm -> lambda
+          mm.updateInfo(_.copy(foreachLambda = Some(lambda)))
+        case _ => ()
       }
       ()
   }
@@ -160,6 +203,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
     case dsl"($mm : MultiMap[Any, Any]).get($elem).get" if allMaps.contains(mm) =>
       // At this phase it's potentially anti hash join multimap, it's not specified for sure
       hashJoinAntiMaps += mm
+      mm.updateInfo(_.copy(isPotentiallyAnti = true))
       ()
   }
 
@@ -172,7 +216,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase, val sche
 
   analysis += rule {
     case dsl"($mm : MultiMap[Any, Any]).get($elem).get.foreach($f)" => {
-      setForeachLambda(mm) = f.asInstanceOf[Rep[Any => Unit]]
+      val lambda = f.asInstanceOf[Rep[Any => Unit]]
+      setForeachLambda(mm) = lambda
+      mm.updateInfo(_.copy(collectionForeachLambda = Some(lambda)))
     }
   }
 
