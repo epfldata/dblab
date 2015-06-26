@@ -29,7 +29,7 @@ import quasi._
  * @param schema the schema information
  */
 class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) {
-  import IR.{ __struct_field => _, Range => _, _ }
+  import IR.{ __struct_field => _, Range => _, Binding => _, _ }
 
   import scala.collection.mutable
 
@@ -272,7 +272,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
     computeConstraints()
   }
 
-  // TODO value as is not a member of Any
+  // TODO exception during macro expansion
   // analysis += statement {
   //   case sym -> dsl"""Range($start, $end).foreach({(i: Int) => 
   //                       val elem = ($arr: Array[Any]).apply(i as $index) as $elem
