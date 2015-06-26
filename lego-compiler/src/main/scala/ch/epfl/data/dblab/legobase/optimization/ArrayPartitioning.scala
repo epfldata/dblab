@@ -277,7 +277,7 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
   //   case sym -> dsl"""Range($start, $end).foreach({(i: Int) => 
   //                       val elem = ($arr: Array[Any]).apply(i as $index) as $elem
   //                       val key = __struct_field(elem, $field)
-  //                       ${ ConstraintExtract(key, $constraint) }
+  //                       ${ ConstraintExtract(key, constraint) }
   //                       ()
   //                     } as $f)""" => {
   //     val Def(Lambda(_, i, body)) = f
