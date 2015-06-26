@@ -228,19 +228,25 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
     val leftOuterJoinExistsVar = mutable.Map[Rep[Any], Var[Boolean]]()
   }
 
-  // associates each multimap with a level which specifies the depth of the corresponding for loop
+  // Associates each multimap with a level which specifies the depth of the nested loops
   val fillingHole = mutable.Map[Rep[Any], Int]()
+  // Keeps the code that should be generated for the given MultiMap
   val fillingFunction = mutable.Map[Rep[Any], () => Rep[Any]]()
+  // Keeps the element that should be substituted instead of the array accesses 
   val fillingElem = mutable.Map[Rep[Any], Rep[Any]]()
 
   /**
-   * Keeps the depth of nested loops for the given expression
+   * Keeps the depth of the nested loops for the given expression
    */
   var loopDepth: Int = 0
   var transformedMapsCount = 0
 
   /* ---- REWRITING PHASE ---- */
 
+  /*
+   * If a MultiMap should be partitioned, instead of the construction of that MultiMap object,
+   * partitions the corresponding array (if it is needed to be partitioned).
+   */
   rewrite += statement {
     case sym -> (node @ MultiMapNew()) if sym.asInstanceOf[Rep[MultiMap[Any, Any]]].getInfo.shouldBePartitioned => {
 
@@ -250,13 +256,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
     }
   }
 
-  rewrite += remove {
-    case dsl"($mm: MultiMap[Any, Any]).get($elem)" if mm.getInfo.shouldBePartitioned => {
-      ()
-    }
-  }
+  /* The case for HashJoinAnti */
 
-  // The case for HashJoinAnti
   rewrite += rule {
     case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if mm.getInfo.shouldBePartitioned &&
       mm.getInfo.isAnti =>
@@ -280,7 +281,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       implicit val elemType2 = rightArray.array.tp.typeArguments(0).asInstanceOf[TypeRep[ElemType2]]
       par_array_foreach[ElemType2](rightArray, key, (e: Rep[ElemType2]) => {
         fillingElem(mm) = e
-        fillingFunction(mm) = () => apply(nodev)
+        fillingFunction(mm) = () => value
         fillingHole(mm) = loopDepth
         loopDepth += 1
         val res = inlineBlock2(rightArray.loop.body)
@@ -294,6 +295,43 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
           } else {
           }"""
   }
+
+  rewrite += remove {
+    case dsl"($mm: MultiMap[Any, Any]).foreach($f)" if mm.getInfo.shouldBePartitioned &&
+      mm.getInfo.isAnti =>
+      ()
+  }
+
+  rewrite += rule {
+    // TODO a bit ugly, because of the type inference we have to put `: Any`
+    case dsl"""(
+                if(($mm: MultiMap[Any, Any]).get($elem).nonEmpty) 
+                  $thenp 
+                else 
+                  $elsep
+               ): Any""" if mm.getInfo.shouldBePartitioned &&
+      mm.getInfo.isAnti &&
+      fillingHole.get(mm).nonEmpty =>
+      class ElemType
+      val retainPredicate = thenp.stmts.collect({
+        case Statement(sym, SetRetain(_, p)) => p
+      }).head.asInstanceOf[Rep[ElemType => Boolean]]
+      // { ($set: Set[Any]).retain($p2); $res }
+      // thenp match {
+      //   case dsl"__block{ ($set: Set[Any]).retain($p2); $res }" => assert(p == p2)
+      //   case dsl"__block{ ($set: Set[Any]).retain($p2); $res }" => assert(p == p2)
+      // }
+      // val retainPredicate = p2.asInstanceOf[Rep[ElemType => Boolean]]
+      val typedElem = fillingFunction(mm)().asInstanceOf[Rep[ElemType]]
+      implicit val elemType = typedElem.tp.asInstanceOf[TypeRep[ElemType]]
+      val resultRetain = mm.antiRetainVar
+      dsl"""if(!${inlineFunction(retainPredicate, typedElem)}) {
+              ${__assign(resultRetain, unit(true))}
+            } else {
+            }"""
+  }
+
+  /* The case for HashJoin and LeftOuterJoin */
 
   rewrite += remove {
     case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if mm.getInfo.shouldBePartitioned &&
@@ -312,12 +350,12 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
   rewrite += rule {
     case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if mm.getInfo.shouldBePartitioned &&
       !mm.getInfo.hasLeft =>
-      val leftArray = mm.getInfo.partitionedRelationInfo
+      val rightArray = mm.getInfo.partitionedRelationInfo
       val key = apply(elem).asInstanceOf[Rep[Int]]
-      val whileLoop = leftArray.loop
+      val whileLoop = rightArray.loop
       class InnerType
-      implicit val typeInner = leftArray.tpe.asInstanceOf[TypeRep[InnerType]]
-      par_array_foreach[InnerType](leftArray, key, (e: Rep[InnerType]) => {
+      implicit val typeInner = rightArray.tpe.asInstanceOf[TypeRep[InnerType]]
+      par_array_foreach[InnerType](rightArray, key, (e: Rep[InnerType]) => {
         fillingElem(mm) = e
         fillingFunction(mm) = () => apply(nodev)
         fillingHole(mm) = loopDepth
@@ -331,6 +369,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
   }
 
   // TODO `as` can improve this rule a lot
+  /* 
+   * Substitutes the array accesses with the filling element specified before.
+   */
   rewrite += rule {
     case dsl"($arr: Array[Any]).apply($index)" if multiMapsInfo.exists({
       case (mm, info) =>
@@ -346,16 +387,26 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       }).map(_._2)
       val sortedObjs = allInfo.toList.sortBy(obj => fillingHole(obj.multiMapSymbol))
       val multiMapInfo = sortedObjs.last
-      // System.out.println(s"filling array apply hole with ${fillingElem(hmPartitionedObject.mapSymbol)}: ${hmPartitionedObject.partitionedRelationInfo.tpe}, all: ${partitionedHashMapObjects.map(x => x.mapSymbol -> fillingHole.get(x.mapSymbol) -> x.partitionedRelationInfo.tpe).mkString("\n")}")
       fillingElem(multiMapInfo.multiMapSymbol)
   }
 
+  /*
+   * If the loop corresponds to a relation which should be partitioned, 
+   * the loop is completely removed. However, the body of the loop is regenerated
+   * somewhere else.
+   */
   rewrite += remove {
     case node @ dsl"while($cond) $body" if multiMapsInfo.exists({
       case (mm, info) => info.shouldBePartitioned &&
         info.partitionedRelationInfo.loop == node
     }) =>
       ()
+  }
+
+  rewrite += remove {
+    case dsl"($mm: MultiMap[Any, Any]).get($elem)" if mm.getInfo.shouldBePartitioned => {
+      ()
+    }
   }
 
   rewrite += rule {
@@ -442,41 +493,6 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       !mm.getInfo.hasLeft &&
       fillingHole.get(mm).isEmpty =>
       ()
-  }
-
-  rewrite += remove {
-    case dsl"($mm: MultiMap[Any, Any]).foreach($f)" if mm.getInfo.shouldBePartitioned &&
-      mm.getInfo.isAnti =>
-      ()
-  }
-
-  rewrite += rule {
-    // TODO a bit ugly, because of the type inference we have to put `: Any`
-    case dsl"""(
-                if(($mm: MultiMap[Any, Any]).get($elem).nonEmpty) 
-                  $thenp 
-                else 
-                  $elsep
-               ): Any""" if mm.getInfo.shouldBePartitioned &&
-      mm.getInfo.isAnti &&
-      fillingHole.get(mm).nonEmpty =>
-      class ElemType
-      val retainPredicate = thenp.stmts.collect({
-        case Statement(sym, SetRetain(_, p)) => p
-      }).head.asInstanceOf[Rep[ElemType => Boolean]]
-      // { ($set: Set[Any]).retain($p2); $res }
-      // thenp match {
-      //   case dsl"__block{ ($set: Set[Any]).retain($p2); $res }" => assert(p == p2)
-      //   case dsl"__block{ ($set: Set[Any]).retain($p2); $res }" => assert(p == p2)
-      // }
-      // val retainPredicate = p2.asInstanceOf[Rep[ElemType => Boolean]]
-      val typedElem = fillingFunction(mm)().asInstanceOf[Rep[ElemType]]
-      implicit val elemType = typedElem.tp.asInstanceOf[TypeRep[ElemType]]
-      val resultRetain = mm.antiRetainVar
-      dsl"""if(!${inlineFunction(retainPredicate, typedElem)}) {
-              ${__assign(resultRetain, unit(true))}
-            } else {
-            }"""
   }
 
   rewrite += rule {

@@ -272,7 +272,6 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
     computeConstraints()
   }
 
-  // TODO exception during macro expansion
   analysis += statement {
     case sym -> dsl"""Range($start, $end).foreach({(i: Int) => 
                          val elem = ($arr: Array[Any]).apply(i as $index) as $elem
