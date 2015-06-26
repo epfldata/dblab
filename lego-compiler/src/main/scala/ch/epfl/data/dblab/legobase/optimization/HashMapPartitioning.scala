@@ -28,7 +28,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
                                      val schema: Schema)
   extends RuleBasedTransformer[LoweringLegoBase](IR)
   with StructCollector[LoweringLegoBase] {
-  import IR.{ __struct_field => _, _ }
+  import IR.{ __struct_field => _, __block => _, _ }
 
   /**
    * Keeps the information about a relation which (probably) participates in a join.
@@ -190,22 +190,53 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
    * Provides additional operations for a relation which is partitioned
    */
   implicit class PartitionedRelationInfoOps(relationInfo: RelationInfo) {
-    def count = partitionedRelationCount(relationInfo)
-    def parArr = partitionedRelationArray(relationInfo).asInstanceOf[Rep[Array[Array[Any]]]]
+    import PartitionedRelationInfoOps._
+    def count: Rep[Array[Int]] =
+      partitionedRelationCount(relationInfo)
+    def count_=(value: Rep[Array[Int]]): Unit =
+      partitionedRelationCount(relationInfo) = value
+    def partitionedArray: Rep[Array[Array[Any]]] =
+      partitionedRelationArray(relationInfo).asInstanceOf[Rep[Array[Array[Any]]]]
+    def partitionedArray_=[T](value: Rep[Array[T]]) =
+      partitionedRelationArray(relationInfo) = value.asInstanceOf[Rep[Array[Any]]]
+  }
+
+  /**
+   * Provides additional operations for a MultiMap which is partitioned
+   */
+  implicit class PartitionedMultiMapInfoOps(multiMap: Rep[Any]) {
+    import PartitionedMultiMapInfoOps._
+    def antiRetainVar: Var[Boolean] =
+      hashJoinAntiRetainVar(multiMap)
+    def outerExistsVar: Var[Boolean] =
+      leftOuterJoinExistsVar(multiMap)
+    def antiRetainVar_=(value: Var[Boolean]): Unit =
+      hashJoinAntiRetainVar(multiMap) = value
+    def outerExistsVar_=(value: Var[Boolean]): Unit =
+      leftOuterJoinExistsVar(multiMap) = value
   }
 
   /**
    * Data structures for storing the expressions created during the rewriting phase
    */
-  val partitionedRelationArray = mutable.Map[RelationInfo, Rep[Array[Any]]]()
-  val partitionedRelationCount = mutable.Map[RelationInfo, Rep[Array[Int]]]()
-  val hashJoinAntiRetainVar = mutable.Map[Rep[Any], Var[Boolean]]()
-  val leftOuterJoinExistsVar = mutable.Map[Rep[Any], Var[Boolean]]()
-  var loopDepth: Int = 0
+  object PartitionedRelationInfoOps {
+    val partitionedRelationArray = mutable.Map[RelationInfo, Rep[Array[Any]]]()
+    val partitionedRelationCount = mutable.Map[RelationInfo, Rep[Array[Int]]]()
+  }
+  object PartitionedMultiMapInfoOps {
+    val hashJoinAntiRetainVar = mutable.Map[Rep[Any], Var[Boolean]]()
+    val leftOuterJoinExistsVar = mutable.Map[Rep[Any], Var[Boolean]]()
+  }
+
   // associates each multimap with a level which specifies the depth of the corresponding for loop
   val fillingHole = mutable.Map[Rep[Any], Int]()
   val fillingFunction = mutable.Map[Rep[Any], () => Rep[Any]]()
   val fillingElem = mutable.Map[Rep[Any], Rep[Any]]()
+
+  /**
+   * Keeps the depth of nested loops for the given expression
+   */
+  var loopDepth: Int = 0
   var transformedMapsCount = 0
 
   /* ---- REWRITING PHASE ---- */
@@ -227,7 +258,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
 
   // The case for HashJoinAnti
   rewrite += rule {
-    case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if mm.getInfo.shouldBePartitioned && mm.getInfo.isAnti =>
+    case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if mm.getInfo.shouldBePartitioned &&
+      mm.getInfo.isAnti =>
       class ElemType
       implicit val elemType = nodev.tp.asInstanceOf[TypeRep[ElemType]]
       val value = apply(nodev).asInstanceOf[Rep[ElemType]]
@@ -235,9 +267,16 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       val rightArray = mmInfo.partitionedRelationInfo
       val key = apply(elem).asInstanceOf[Rep[Int]]
       val antiLambda = mmInfo.foreachLambda.get
-      val foreachFunction = antiLambda.body.stmts.collect({ case Statement(sym, SetForeach(_, f)) => f }).head.asInstanceOf[Rep[ElemType => Unit]]
+      // TODO
+      // antiLambda.body match {
+      //   case dsl"__block{($set: Set[Any]).foreach($f2);()}" => ???
+      // }
+      val foreachFunction = antiLambda.body.stmts.collect({
+        case Statement(sym, SetForeach(_, f)) =>
+          f
+      }).head.asInstanceOf[Rep[ElemType => Unit]]
       val resultRetain = __newVarNamed[Boolean](unit(false), "resultRetain")
-      hashJoinAntiRetainVar += mm -> resultRetain
+      mm.antiRetainVar = resultRetain
       class ElemType2
       implicit val elemType2 = rightArray.array.tp.typeArguments(0).asInstanceOf[TypeRep[ElemType2]]
       par_array_foreach[ElemType2](rightArray, key, (e: Rep[ElemType2]) => {
@@ -434,7 +473,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       // val retainPredicate = p2.asInstanceOf[Rep[ElemType => Boolean]]
       val typedElem = fillingFunction(mm)().asInstanceOf[Rep[ElemType]]
       implicit val elemType = typedElem.tp.asInstanceOf[TypeRep[ElemType]]
-      val resultRetain = hashJoinAntiRetainVar(mm)
+      val resultRetain = mm.antiRetainVar
       dsl"""if(!${inlineFunction(retainPredicate, typedElem)}) {
               ${__assign(resultRetain, unit(true))}
             } else {
@@ -459,9 +498,11 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
     }
   }
 
-  def par_array_foreach[T: TypeRep](partitionedRelationInfo: RelationInfo, key: Rep[Int], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
+  def par_array_foreach[T: TypeRep](partitionedRelationInfo: RelationInfo,
+                                    key: Rep[Int],
+                                    f: Rep[T] => Rep[Unit]): Rep[Unit] = {
     if (partitionedRelationInfo.is1D) {
-      val parArr = partitionedRelationInfo.parArr.asInstanceOf[Rep[Array[T]]]
+      val parArr = partitionedRelationInfo.partitionedArray.asInstanceOf[Rep[Array[T]]]
       val bucket = partitionedRelationInfo.table.continuous match {
         case Some(continuous) => key - unit(continuous.offset)
         case None             => key
@@ -472,7 +513,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
     } else {
       val bucket = key % partitionedRelationInfo.numBuckets
       val count = partitionedRelationInfo.count(bucket)
-      val parArrWhole = partitionedRelationInfo.parArr.asInstanceOf[Rep[Array[Array[T]]]]
+      val parArrWhole = partitionedRelationInfo.partitionedArray.asInstanceOf[Rep[Array[Array[T]]]]
       val parArr = parArrWhole(bucket)
       Range(unit(0), count).foreach {
         __lambda { i =>
@@ -498,12 +539,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
     if (partitionedRelationInfo.is1D) {
       //System.out.println(s"${scala.Console.BLUE}1D Array!!!${scala.Console.RESET}")
       if (partitionedRelationInfo.reuseOriginal1DArray) {
-        partitionedRelationArray +=
-          partitionedRelationInfo -> originalArray.asInstanceOf[Rep[Array[Any]]]
+        partitionedRelationInfo.partitionedArray = originalArray
       } else {
         val partitionedArray = __newArray[InnerType](buckets)
-        partitionedRelationArray +=
-          partitionedRelationInfo -> partitionedArray.asInstanceOf[Rep[Array[Any]]]
+        partitionedRelationInfo.partitionedArray = partitionedArray
         array_foreach(originalArray, {
           (e: Rep[InnerType]) =>
             val pkey = field[Int](e, partitionedRelationInfo.partitioningField) % buckets
@@ -512,7 +551,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       }
     } else {
       val partitionedObjectAlreadyExists = {
-        partitionedRelationArray.find({
+        PartitionedRelationInfoOps.partitionedRelationArray.find({
           case (po, _) =>
             po.partitioningField == partitionedRelationInfo.partitioningField &&
               po.tpe == partitionedRelationInfo.tpe
@@ -520,13 +559,13 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       }
       if (partitionedObjectAlreadyExists.nonEmpty) {
         System.out.println(s"${scala.Console.BLUE}2D Array already exists!${scala.Console.RESET}")
-        partitionedRelationArray += partitionedRelationInfo -> partitionedObjectAlreadyExists.get._1.parArr.asInstanceOf[Rep[Array[Any]]]
-        partitionedRelationCount += partitionedRelationInfo -> partitionedObjectAlreadyExists.get._1.count
+        partitionedRelationInfo.partitionedArray = partitionedObjectAlreadyExists.get._1.partitionedArray
+        partitionedRelationInfo.count = partitionedObjectAlreadyExists.get._1.count
       } else {
         val partitionedArray = __newArray[Array[InnerType]](buckets)
         val partitionedCount = __newArray[Int](buckets)
-        partitionedRelationArray += partitionedRelationInfo -> partitionedArray.asInstanceOf[Rep[Array[Any]]]
-        partitionedRelationCount += partitionedRelationInfo -> partitionedCount
+        partitionedRelationInfo.partitionedArray = partitionedArray
+        partitionedRelationInfo.count = partitionedCount
         Range(unit(0), buckets).foreach {
           __lambda { i =>
             partitionedArray(i) = __newArray[InnerType](partitionedRelationInfo.bucketSize)
@@ -549,7 +588,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
 
   /* The parts dedicated to left outer join handling */
   def leftOuterJoinDefaultHandling(mm: Rep[MultiMap[Any, Any]], key: Rep[Int]): Rep[Unit] = if (mm.getInfo.isOuter) {
-    dsl"""if(!${readVar(leftOuterJoinExistsVar(mm))}) {
+    dsl"""if(!${readVar(mm.outerExistsVar)}) {
               ${inlineBlock[Unit](mm.getInfo.outerDefault.get)}
             } else {
             }"""
@@ -558,13 +597,13 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
   def leftOuterJoinExistsVarDefine(mm: Rep[MultiMap[Any, Any]]): Unit =
     if (mm.getInfo.isOuter) {
       val exists = __newVarNamed[Boolean](unit(false), "exists")
-      leftOuterJoinExistsVar(mm) = exists
+      mm.outerExistsVar = exists
       ()
     } else ()
 
   def leftOuterJoinExistsVarSet(mm: Rep[MultiMap[Any, Any]]): Unit =
     if (mm.getInfo.isOuter) {
-      val exists = leftOuterJoinExistsVar(mm)
+      val exists = mm.outerExistsVar
       __assign(exists, unit(true))
       ()
     } else ()
