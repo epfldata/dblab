@@ -273,25 +273,25 @@ class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) e
   }
 
   // TODO exception during macro expansion
-  // analysis += statement {
-  //   case sym -> dsl"""Range($start, $end).foreach({(i: Int) => 
-  //                       val elem = ($arr: Array[Any]).apply(i as $index) as $elem
-  //                       val key = __struct_field(elem, $field)
-  //                       ${ ConstraintExtract(key, $constraint) }
-  //                       ()
-  //                     } as $f)""" => {
-  //     val Def(Lambda(_, i, body)) = f
-  //     val rangeForeach = sym.asInstanceOf[Rep[Unit]]
-  //     possibleRangeFors += rangeForeach
-  //     rangeForIndex += rangeForeach -> i.asInstanceOf[Rep[Int]]
-  //     rangeArray += rangeForeach -> arr
-  //     rangeArrayApply += rangeForeach -> elem
-  //     rangeElemFields.getOrElseUpdate(rangeForeach, mutable.ArrayBuffer()) += sym
-  //     System.out.println("Analysis in one line!!!")
-  //     // traverseBlock(body)
-  //     ()
-  //   }
-  // }
+  analysis += statement {
+    case sym -> dsl"""Range($start, $end).foreach({(i: Int) => 
+                         val elem = ($arr: Array[Any]).apply(i as $index) as $elem
+                         val key = __struct_field(elem, $field)
+                         ${ ConstraintExtract(key, constraint) }
+                         ()
+                       } as $f)""" => {
+      val Def(Lambda(_, i, body)) = f
+      val rangeForeach = sym.asInstanceOf[Rep[Unit]]
+      possibleRangeFors += rangeForeach
+      rangeForIndex += rangeForeach -> i.asInstanceOf[Rep[Int]]
+      rangeArray += rangeForeach -> arr
+      rangeArrayApply += rangeForeach -> elem
+      rangeElemFields.getOrElseUpdate(rangeForeach, mutable.ArrayBuffer()) += sym
+      System.out.println("Analysis in one line!!!")
+      // traverseBlock(body)
+      ()
+    }
+  }
 
   analysis += statement {
     case sym -> dsl"Range($start, $end).foreach($f)" => {
