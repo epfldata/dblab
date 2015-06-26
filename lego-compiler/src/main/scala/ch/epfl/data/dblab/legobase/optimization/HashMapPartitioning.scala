@@ -206,17 +206,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
   val fillingHole = mutable.Map[Rep[Any], Int]()
   val fillingFunction = mutable.Map[Rep[Any], () => Rep[Any]]()
   val fillingElem = mutable.Map[Rep[Any], Rep[Any]]()
-  val seenArrays = mutable.Set[Rep[Any]]()
   var transformedMapsCount = 0
 
   /* ---- REWRITING PHASE ---- */
-
-  rewrite += statement {
-    case sym -> (node @ dsl"new Array[Any]($size)") /*if !seenArrays.contains(sym)*/ =>
-      seenArrays += sym
-      reflectStm(Stm(sym, node))
-      sym
-  }
 
   rewrite += statement {
     case sym -> (node @ MultiMapNew()) if sym.asInstanceOf[Rep[MultiMap[Any, Any]]].getInfo.shouldBePartitioned => {
@@ -458,11 +450,6 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
 
   /* ---- Helper Methods for Rewriting ---- */
 
-  def recreateNode[T: TypeRep](exp: Rep[T]): Rep[T] = exp match {
-    case Def(node) => toAtom(node)(exp.tp)
-    case _         => ???
-  }
-
   def array_foreach[T: TypeRep](arr: Rep[Array[T]], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
     Range(unit(0), arr.length).foreach {
       __lambda { i =>
@@ -502,25 +489,21 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       partitionedRelationInfo.partitioningField + scala.Console.RESET)
 
     class InnerType
-    implicit val typeInner = partitionedRelationInfo.array.tp.typeArguments(0).asInstanceOf[TypeRep[InnerType]]
-    val originalArray = {
-      val origArray =
-        if (!seenArrays.contains(partitionedRelationInfo.array)) {
-          seenArrays += partitionedRelationInfo.array
-          recreateNode(partitionedRelationInfo.array)
-        } else {
-          partitionedRelationInfo.array
-        }
-      origArray.asInstanceOf[Rep[Array[InnerType]]]
-    }
+    implicit val typeInner =
+      partitionedRelationInfo.array.tp.typeArguments(0).asInstanceOf[TypeRep[InnerType]]
+    val originalArray =
+      partitionedRelationInfo.array.asInstanceOf[Rep[Array[InnerType]]]
+
     val buckets = partitionedRelationInfo.numBuckets
     if (partitionedRelationInfo.is1D) {
       //System.out.println(s"${scala.Console.BLUE}1D Array!!!${scala.Console.RESET}")
       if (partitionedRelationInfo.reuseOriginal1DArray) {
-        partitionedRelationArray += partitionedRelationInfo -> originalArray.asInstanceOf[Rep[Array[Any]]]
+        partitionedRelationArray +=
+          partitionedRelationInfo -> originalArray.asInstanceOf[Rep[Array[Any]]]
       } else {
         val partitionedArray = __newArray[InnerType](buckets)
-        partitionedRelationArray += partitionedRelationInfo -> partitionedArray.asInstanceOf[Rep[Array[Any]]]
+        partitionedRelationArray +=
+          partitionedRelationInfo -> partitionedArray.asInstanceOf[Rep[Array[Any]]]
         array_foreach(originalArray, {
           (e: Rep[InnerType]) =>
             val pkey = field[Int](e, partitionedRelationInfo.partitioningField) % buckets
@@ -531,7 +514,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       val partitionedObjectAlreadyExists = {
         partitionedRelationArray.find({
           case (po, _) =>
-            po.partitioningField == partitionedRelationInfo.partitioningField && po.tpe == partitionedRelationInfo.tpe
+            po.partitioningField == partitionedRelationInfo.partitioningField &&
+              po.tpe == partitionedRelationInfo.tpe
         })
       }
       if (partitionedObjectAlreadyExists.nonEmpty) {
