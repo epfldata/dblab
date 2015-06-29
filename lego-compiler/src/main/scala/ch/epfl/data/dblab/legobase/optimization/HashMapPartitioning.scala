@@ -233,16 +233,12 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
   }
 
   // Associates each multimap with a level which specifies the depth of the nested loops
-  val fillingHole = mutable.Map[Rep[Any], Int]()
+  val fillingHole = mutable.Set[Rep[Any]]()
   // Keeps the code that should be generated for the given MultiMap
   val fillingFunction = mutable.Map[Rep[Any], () => Rep[Any]]()
   // Keeps the element that should be substituted instead of the array accesses 
   val fillingElem = mutable.Map[Rep[Any], Rep[Any]]()
 
-  /**
-   * Keeps the depth of the nested loops for the given expression
-   */
-  var loopDepth: Int = 0
   var transformedMapsCount = 0
 
   /* ---- REWRITING PHASE ---- */
@@ -282,11 +278,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       par_array_foreach[ElemType2](rightArray, key, (e: Rep[ElemType2]) => {
         fillingElem(mm) = e
         fillingFunction(mm) = () => value
-        fillingHole(mm) = loopDepth
-        loopDepth += 1
+        fillingHole += mm
         val res = inlineBlock2(rightArray.loop.body)
-        fillingHole.remove(mm)
-        loopDepth -= 1
+        fillingHole -= mm
         res
       })
       transformedMapsCount += 1
@@ -311,7 +305,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
                   $elsep
                ): Any""" if mm.getInfo.shouldBePartitioned &&
       mm.getInfo.isAnti &&
-      fillingHole.get(mm).nonEmpty =>
+      fillingHole.contains(mm) =>
       class ElemType
       // val retainPredicate = thenp.stmts.collect({
       //   case Statement(sym, SetRetain(_, p)) => p
@@ -335,14 +329,14 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
   rewrite += remove {
     case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if mm.getInfo.shouldBePartitioned &&
       mm.getInfo.hasLeft &&
-      fillingHole.get(mm).isEmpty =>
+      !fillingHole.contains(mm) =>
       ()
   }
 
   rewrite += rule {
     case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if mm.getInfo.shouldBePartitioned &&
       mm.getInfo.hasLeft &&
-      fillingHole.get(mm).nonEmpty =>
+      fillingHole.contains(mm) =>
       fillingFunction(mm)()
   }
 
@@ -357,11 +351,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       par_array_foreach[InnerType](rightArray, key, (e: Rep[InnerType]) => {
         fillingElem(mm) = e
         fillingFunction(mm) = () => apply(nodev)
-        fillingHole(mm) = loopDepth
-        loopDepth += 1
+        fillingHole += mm
         val res1 = inlineBlock2(whileLoop.body)
-        fillingHole.remove(mm)
-        loopDepth -= 1
+        fillingHole -= mm
         transformedMapsCount += 1
         res1
       })
@@ -373,7 +365,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
     multiMapInfo.shouldBePartitioned &&
       multiMapInfo.partitionedRelationInfo.array == array &&
       multiMapInfo.partitionedRelationInfo.loopIndexVariable == indexVariable &&
-      fillingHole.get(multiMapInfo.multiMapSymbol).nonEmpty
+      fillingHole.contains(multiMapInfo.multiMapSymbol)
   }
 
   // TODO `as` can improve this rule a lot
@@ -449,12 +441,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
                   }"""
         }
         // System.out.println(s"STARTED setforeach for the key $key $e.${leftArray.fieldFunc} mm: $mm")
-        fillingHole(mm) = loopDepth
-        loopDepth += 1
+        fillingHole += mm
         val res1 = inlineBlock2(whileLoop.body)
         // System.out.println(s"FINISH setforeach for the key $key")
-        fillingHole.remove(mm)
-        loopDepth -= 1
+        fillingHole -= mm
         transformedMapsCount += 1
         res1
       })
@@ -479,11 +469,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
                   } else {
                   }"""
         }
-        fillingHole(mm) = loopDepth
-        loopDepth += 1
+        fillingHole += mm
         val res1 = inlineBlock2(whileLoop.body)
-        fillingHole.remove(mm)
-        loopDepth -= 1
+        fillingHole -= mm
         transformedMapsCount += 1
         res1
       })
@@ -494,14 +482,14 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
   rewrite += remove {
     case dsl"($mm: MultiMap[Any, Any]).get($elem).get.foreach($f)" if mm.getInfo.shouldBePartitioned &&
       !mm.getInfo.hasLeft &&
-      fillingHole.get(mm).isEmpty =>
+      !fillingHole.contains(mm) =>
       ()
   }
 
   rewrite += rule {
     case dsl"($mm: MultiMap[Any, Any]).get($elem).get.foreach($f)" if mm.getInfo.shouldBePartitioned &&
       !mm.getInfo.hasLeft &&
-      fillingHole.get(mm).nonEmpty =>
+      fillingHole.contains(mm) =>
       inlineFunction(f, fillingFunction(mm)())
   }
 
