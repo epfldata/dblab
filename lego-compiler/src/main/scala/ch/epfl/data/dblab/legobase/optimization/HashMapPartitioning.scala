@@ -268,13 +268,9 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       val rightArray = mmInfo.partitionedRelationInfo
       val key = apply(elem).asInstanceOf[Rep[Int]]
       val antiLambda = mmInfo.foreachLambda.get
-      antiLambda.body match {
-        case dsl"__block{($set: Set[Any]).foreach($f2);()}" => ???
+      val foreachFunction = antiLambda.body match {
+        case dsl"__block{($set: Set[Any]).foreach($f)}" => f.asInstanceOf[Rep[ElemType => Unit]]
       }
-      val foreachFunction = antiLambda.body.stmts.collect({
-        case Statement(sym, SetForeach(_, f)) =>
-          f
-      }).head.asInstanceOf[Rep[ElemType => Unit]]
       val resultRetain = __newVarNamed[Boolean](unit(false), "resultRetain")
       mm.antiRetainVar = resultRetain
       class ElemType2
