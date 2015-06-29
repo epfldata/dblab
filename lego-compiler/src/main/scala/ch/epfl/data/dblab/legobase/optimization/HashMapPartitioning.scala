@@ -27,7 +27,7 @@ import scala.collection.mutable
 class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
                                      val schema: Schema)
   extends RuleBasedTransformer[LoweringLegoBase](IR)
-  with StructCollector[LoweringLegoBase] {
+  with WhileLoopProcessing {
   import IR.{ __struct_field => _, __block => _, _ }
 
   /**
@@ -50,6 +50,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
     def reuseOriginal1DArray: Boolean = table.continuous.nonEmpty
     def arraySize: Rep[Int] = array match {
       case dsl"new Array[Any]($s)" => s
+    }
+    def loopIndexVariable: Var[Int] = loop.cond match {
+      case RangeCondition(v, _) => v
+      case _                    => throw new Exception("While loop without appropriate format of condition")
     }
   }
 
@@ -309,14 +313,13 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       mm.getInfo.isAnti &&
       fillingHole.get(mm).nonEmpty =>
       class ElemType
-      val retainPredicate = thenp.stmts.collect({
-        case Statement(sym, SetRetain(_, p)) => p
-      }).head.asInstanceOf[Rep[ElemType => Boolean]]
+      // val retainPredicate = thenp.stmts.collect({
+      //   case Statement(sym, SetRetain(_, p)) => p
+      // }).head.asInstanceOf[Rep[ElemType => Boolean]]
       // { ($set: Set[Any]).retain($p2); $res }
-      // thenp match {
-      //   case dsl"__block{ ($set: Set[Any]).retain($p2); $res }" => assert(p == p2)
-      //   case dsl"__block{ ($set: Set[Any]).retain($p2); $res }" => assert(p == p2)
-      // }
+      val retainPredicate = thenp match {
+        case dsl"__block{ ($set: Set[Any]).retain($pred); $res }" => pred.asInstanceOf[Rep[ElemType => Boolean]]
+      }
       // val retainPredicate = p2.asInstanceOf[Rep[ElemType => Boolean]]
       val typedElem = fillingFunction(mm)().asInstanceOf[Rep[ElemType]]
       implicit val elemType = typedElem.tp.asInstanceOf[TypeRep[ElemType]]
@@ -364,26 +367,30 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       })
   }
 
+  def arrayApplyAssociatesToMultiMap(array: Rep[Array[Any]],
+                                     indexVariable: Var[Int],
+                                     multiMapInfo: MultiMapInfo): Boolean = {
+    multiMapInfo.shouldBePartitioned &&
+      multiMapInfo.partitionedRelationInfo.array == array &&
+      multiMapInfo.partitionedRelationInfo.loopIndexVariable == indexVariable &&
+      fillingHole.get(multiMapInfo.multiMapSymbol).nonEmpty
+  }
+
   // TODO `as` can improve this rule a lot
+  // TODO var handling in quasi quotes can beautify this rule a lot
   /* 
    * Substitutes the array accesses with the filling element specified before.
    */
   rewrite += rule {
-    case dsl"($arr: Array[Any]).apply($index)" if multiMapsInfo.exists({
-      case (mm, info) =>
-        info.shouldBePartitioned &&
-          info.partitionedRelationInfo.array == arr &&
-          fillingHole.get(mm).nonEmpty
+    case dsl"($arr: Array[Any]).apply(${ Def(ReadVar(indexVariable)) })" if multiMapsInfo.exists({
+      case (_, info) =>
+        arrayApplyAssociatesToMultiMap(arr, indexVariable, info)
     }) =>
-      val allInfo = multiMapsInfo.filter({
-        case (mm, info) =>
-          info.shouldBePartitioned &&
-            info.partitionedRelationInfo.array == arr &&
-            fillingHole.get(mm).nonEmpty
-      }).map(_._2)
-      val sortedObjs = allInfo.toList.sortBy(obj => fillingHole(obj.multiMapSymbol))
-      val multiMapInfo = sortedObjs.last
-      fillingElem(multiMapInfo.multiMapSymbol)
+      val multiMapSymbol = multiMapsInfo.find({
+        case (_, info) =>
+          arrayApplyAssociatesToMultiMap(arr, indexVariable, info)
+      }).head._1
+      fillingElem(multiMapSymbol)
   }
 
   /*

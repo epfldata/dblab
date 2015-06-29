@@ -31,24 +31,9 @@ import quasi._
  * }}}
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR)
+  with WhileLoopProcessing {
   import IR.{ Range => _, _ }
-
-  /**
-   * Keeps the information about a while loop
-   */
-  case class WhileInfo(whileSym: Rep[Unit],
-                       whileNode: While,
-                       variable: Var[Int],
-                       size: Rep[Int],
-                       step: Rep[Int]) {
-    def start: Rep[Int] = variable match {
-      case Var(Def(NewVar(init))) => init
-      case _ =>
-        throw new Exception(s"No initial value can be computed for the" +
-          s" while loop with the following info:\n$this")
-    }
-  }
 
   /**
    * Keeps the list of while loops that should be converted
@@ -65,31 +50,6 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
 
   def varShouldBeRemoved[T](variable: Var[T]): Boolean =
     convertedWhiles.exists(_.variable == variable)
-
-  /**
-   * Extracts the condition part of a while loop
-   */
-  object RangeCondition {
-    def unapply(block: Block[Boolean]): Option[(Var[Int], Rep[Int])] = {
-      val resultNode = block.stmts.find(stm => stm.sym == block.res).get.rhs
-      resultNode match {
-        case dsl"true && $block2" => RangeCondition.unapply(block2)
-        // TODO needs having readVar in shallow or some other mechanism to detect vars
-        case dsl"(${ Def(ReadVar(v)) }: Int) < ($size: Int)" => Some(v -> size)
-        case _ => None
-      }
-    }
-  }
-
-  /**
-   * Extracts the stepping part of a while loop
-   */
-  object RangeStep {
-    def unapply(block: Block[Unit]): Option[(Var[Int], Rep[Int])] = block.stmts.last.rhs match {
-      case Assign(v, Def(Int$plus2(Def(ReadVar(v2)), step))) if v == v2 => Some(v2 -> step)
-      case _ => None
-    }
-  }
 
   analysis += statement {
     case sym -> (node @ dsl"""while(${ RangeCondition(variable1, size) }) 
