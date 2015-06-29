@@ -205,6 +205,17 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       partitionedRelationArray(relationInfo) = value.asInstanceOf[Rep[Array[Any]]]
   }
 
+  // TODO a better name
+  type StoredCode[T] = () => Rep[T]
+
+  // class CodeReifier(multiMap: Rep[Any]) {
+  //   def :=(code: => Rep[Any]): Unit = {
+  //     rightElemProcessingCodeMap(multiMap) = () => code
+  //   }
+  //   def apply[T](): Rep[T] = 
+  //     rightElemProcessingCodeMap(multiMap)().asInstanceOf[Rep[T]]
+  // }
+
   /**
    * Provides additional operations for a MultiMap which is partitioned
    */
@@ -218,6 +229,27 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       hashJoinAntiRetainVar(multiMap) = value
     def outerExistsVar_=(value: Var[Boolean]): Unit =
       leftOuterJoinExistsVar(multiMap) = value
+    def isFillingHole: Boolean =
+      fillingHole.contains(multiMap)
+    def startFillingHole(): Unit =
+      fillingHole += multiMap
+    def finishFillingHole(): Unit =
+      fillingHole -= multiMap
+    /**
+     * Reifies the code that is needed for the processing that hapenning for the
+     * right element of a join
+     */
+    // def rightElemProcessingCode[T](): Rep[T] =
+    //   rightElemProcessingCodeMap(multiMap)().asInstanceOf[Rep[T]]
+    // def rightElemProcessingCode_=(code: => Rep[Any]) =
+    //   rightElemProcessingCodeMap(multiMap) = () => code
+    def rightElemProcessingCode = new {
+      def :=(code: => Rep[Any]): Unit = {
+        rightElemProcessingCodeMap(multiMap) = () => code
+      }
+      def apply[T](): Rep[T] =
+        rightElemProcessingCodeMap(multiMap)().asInstanceOf[Rep[T]]
+    }
   }
 
   /**
@@ -230,12 +262,13 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
   object PartitionedMultiMapInfoOps {
     val hashJoinAntiRetainVar = mutable.Map[Rep[Any], Var[Boolean]]()
     val leftOuterJoinExistsVar = mutable.Map[Rep[Any], Var[Boolean]]()
+    // Determines if we are in the phase of filling hole for a MultiMap
+    val fillingHole = mutable.Set[Rep[Any]]()
+    val rightElemProcessingCodeMap = mutable.Map[Rep[Any], StoredCode[Any]]()
   }
 
-  // Associates each multimap with a level which specifies the depth of the nested loops
-  val fillingHole = mutable.Set[Rep[Any]]()
   // Keeps the code that should be generated for the given MultiMap
-  val fillingFunction = mutable.Map[Rep[Any], () => Rep[Any]]()
+  // val fillingFunction = mutable.Map[Rep[Any], () => Rep[Any]]()
   // Keeps the element that should be substituted instead of the array accesses 
   val fillingElem = mutable.Map[Rep[Any], Rep[Any]]()
 
@@ -277,10 +310,11 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       implicit val elemType2 = rightArray.array.tp.typeArguments(0).asInstanceOf[TypeRep[ElemType2]]
       par_array_foreach[ElemType2](rightArray, key, (e: Rep[ElemType2]) => {
         fillingElem(mm) = e
-        fillingFunction(mm) = () => value
-        fillingHole += mm
+        mm.rightElemProcessingCode := value
+        // fillingFunction(mm) = () => value
+        mm.startFillingHole()
         val res = inlineBlock2(rightArray.loop.body)
-        fillingHole -= mm
+        mm.finishFillingHole()
         res
       })
       transformedMapsCount += 1
@@ -305,7 +339,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
                   $elsep
                ): Any""" if mm.getInfo.shouldBePartitioned &&
       mm.getInfo.isAnti &&
-      fillingHole.contains(mm) =>
+      mm.isFillingHole =>
       class ElemType
       // val retainPredicate = thenp.stmts.collect({
       //   case Statement(sym, SetRetain(_, p)) => p
@@ -315,7 +349,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
         case dsl"__block{ ($set: Set[Any]).retain($pred); $res }" => pred.asInstanceOf[Rep[ElemType => Boolean]]
       }
       // val retainPredicate = p2.asInstanceOf[Rep[ElemType => Boolean]]
-      val typedElem = fillingFunction(mm)().asInstanceOf[Rep[ElemType]]
+      // val typedElem = fillingFunction(mm)().asInstanceOf[Rep[ElemType]]
+      val typedElem = mm.rightElemProcessingCode[ElemType]()
       implicit val elemType = typedElem.tp.asInstanceOf[TypeRep[ElemType]]
       val resultRetain = mm.antiRetainVar
       dsl"""if(!${inlineFunction(retainPredicate, typedElem)}) {
@@ -329,15 +364,16 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
   rewrite += remove {
     case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if mm.getInfo.shouldBePartitioned &&
       mm.getInfo.hasLeft &&
-      !fillingHole.contains(mm) =>
+      !mm.isFillingHole =>
       ()
   }
 
   rewrite += rule {
     case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if mm.getInfo.shouldBePartitioned &&
       mm.getInfo.hasLeft &&
-      fillingHole.contains(mm) =>
-      fillingFunction(mm)()
+      mm.isFillingHole =>
+      // fillingFunction(mm)()
+      mm.rightElemProcessingCode()
   }
 
   rewrite += rule {
@@ -350,10 +386,11 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       implicit val typeInner = rightArray.tpe.asInstanceOf[TypeRep[InnerType]]
       par_array_foreach[InnerType](rightArray, key, (e: Rep[InnerType]) => {
         fillingElem(mm) = e
-        fillingFunction(mm) = () => apply(nodev)
-        fillingHole += mm
+        // fillingFunction(mm) = () => apply(nodev)
+        mm.rightElemProcessingCode := apply(nodev)
+        mm.startFillingHole()
         val res1 = inlineBlock2(whileLoop.body)
-        fillingHole -= mm
+        mm.finishFillingHole()
         transformedMapsCount += 1
         res1
       })
@@ -365,7 +402,7 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
     multiMapInfo.shouldBePartitioned &&
       multiMapInfo.partitionedRelationInfo.array == array &&
       multiMapInfo.partitionedRelationInfo.loopIndexVariable == indexVariable &&
-      fillingHole.contains(multiMapInfo.multiMapSymbol)
+      multiMapInfo.multiMapSymbol.isFillingHole
   }
 
   // TODO `as` can improve this rule a lot
@@ -430,7 +467,8 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       implicit val typeInner = leftArray.tpe.asInstanceOf[TypeRep[InnerType]]
       par_array_foreach[InnerType](leftArray, key, (e: Rep[InnerType]) => {
         fillingElem(mm) = e
-        fillingFunction(mm) = () => {
+        // fillingFunction(mm) = () => {
+        mm.rightElemProcessingCode := {
           def ifThenBody: Rep[Unit] = {
             leftOuterJoinExistsVarSet(mm)
             inlineFunction(f.asInstanceOf[Rep[InnerType => Unit]], e)
@@ -441,10 +479,10 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
                   }"""
         }
         // System.out.println(s"STARTED setforeach for the key $key $e.${leftArray.fieldFunc} mm: $mm")
-        fillingHole += mm
+        mm.startFillingHole()
         val res1 = inlineBlock2(whileLoop.body)
         // System.out.println(s"FINISH setforeach for the key $key")
-        fillingHole -= mm
+        mm.finishFillingHole()
         transformedMapsCount += 1
         res1
       })
@@ -463,15 +501,16 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
       implicit val typeInner = leftArray.tpe.asInstanceOf[TypeRep[InnerType]]
       par_array_foreach[InnerType](leftArray, key, (e: Rep[InnerType]) => {
         fillingElem(mm) = e
-        fillingFunction(mm) = () => {
+        // fillingFunction(mm) = () => {
+        mm.rightElemProcessingCode := {
           dsl"""if(${field[Int](e, leftArray.partitioningField)} == $elem && ${inlineFunction(p, e)}) {
                     ${__assign(result, unit(true))}
                   } else {
                   }"""
         }
-        fillingHole += mm
+        mm.startFillingHole()
         val res1 = inlineBlock2(whileLoop.body)
-        fillingHole -= mm
+        mm.finishFillingHole()
         transformedMapsCount += 1
         res1
       })
@@ -482,15 +521,16 @@ class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
   rewrite += remove {
     case dsl"($mm: MultiMap[Any, Any]).get($elem).get.foreach($f)" if mm.getInfo.shouldBePartitioned &&
       !mm.getInfo.hasLeft &&
-      !fillingHole.contains(mm) =>
+      !mm.isFillingHole =>
       ()
   }
 
   rewrite += rule {
     case dsl"($mm: MultiMap[Any, Any]).get($elem).get.foreach($f)" if mm.getInfo.shouldBePartitioned &&
       !mm.getInfo.hasLeft &&
-      fillingHole.contains(mm) =>
-      inlineFunction(f, fillingFunction(mm)())
+      mm.isFillingHole =>
+      // inlineFunction(f, fillingFunction(mm)())
+      inlineFunction(f, mm.rightElemProcessingCode[Any]())
   }
 
   /* ---- Helper Methods for Rewriting ---- */
