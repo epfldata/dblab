@@ -20,7 +20,54 @@ import scala.collection.mutable
  * converts a MultiMap and the corresponding operations into an Array (either one dimensional or
  * two dimensional).
  *
- * TODO maybe add an example
+ * As an example the following program:
+ * {{{
+ *      val multiMap = new MultiMap[Int, LeftRelation]
+ *      var leftIndex = 0
+ *      while(leftIndex < leftArray.length) {
+ *        val leftElement = leftArray(leftIndex)
+ *        if(leftPredicate(leftElement)) {
+ *          multiMap.addBinding(leftElement.primaryKey, leftElement)
+ *        }
+ *        leftIndex += 1
+ *      }
+ *      var rightIndex = 0
+ *      while(rightIndex < rightArray.length) {
+ *        val rightElement = rightArray(rightIndex)
+ *        val setOption = multiMap.get(rightElement.foreignKey)
+ *        if(setOption.nonEmpty) {
+ *          val tmpBuffer = setOption.get
+ *          tmpBuffer foreach { leftElement =>
+ *            if (leftElement.primaryKey == rightElement.foreignKey) {
+ *              process(leftElement, rightElement)
+ *            }
+ *          }
+ *        }
+ *        rightIndex += 1
+ *      }
+ * }}}
+ * is converted to:
+ * {{{
+ *      var rightIndex = 0
+ *      val leftArrayGroupedByPrimaryKey: Array[LeftRelation] = {
+ *        // Constructs an array in which the index of each element in that array
+ *        // is the primary key of that element
+ *      }
+ *      while(rightIndex < rightArray.length) {
+ *        val rightElement = rightArray(rightIndex)
+ *        val primaryKey = rightElement.foreignKey
+ *        val leftElement = leftArrayGroupedByPrimaryKey(primaryKey)
+ *        if(leftPredicate(leftElement)) {
+ *          if(leftElement.primaryKey == rightElement.foreignKey) {
+ *            process(leftElement, rightElement)
+ *          }
+ *        }
+ *        rightIndex += 1
+ *      }
+ * }}}
+ *
+ * In the given example, three loops (2 while loops + 1 foreach) are converted
+ * into a single loop (1 while loop).
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
