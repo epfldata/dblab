@@ -13,7 +13,7 @@ import sc.pardis.ir._
  *
  * As an example the following program:
  * {{{
- * 	   val block1 = {
+ *     val block1 = {
  *       val x = {
  *         y
  *       }

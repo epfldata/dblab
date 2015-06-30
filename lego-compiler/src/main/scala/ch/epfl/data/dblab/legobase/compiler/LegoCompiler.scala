@@ -84,7 +84,7 @@ class LegoCompiler(val DSL: LoweringLegoBase,
   }
 
   if (settings.hashMapPartitioning) {
-    pipeline += new HashMapPartitioningTransformer(DSL, schema)
+    pipeline += new HashMapGrouping(DSL, schema)
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE
@@ -131,7 +131,7 @@ class LegoCompiler(val DSL: LoweringLegoBase,
   if (settings.partitioning) {
     pipeline += TreeDumper(false)
     pipeline += new WhileToRangeForeachTransformer(DSL)
-    pipeline += new ArrayPartitioning(DSL, schema)
+    pipeline += new IntroduceHashIndexForRangeLookup(DSL, schema)
     pipeline += DCE
   }
 

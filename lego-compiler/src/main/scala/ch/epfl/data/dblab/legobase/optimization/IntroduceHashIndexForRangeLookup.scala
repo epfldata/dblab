@@ -15,7 +15,8 @@ import sc.pardis.quasi.anf._
 import quasi._
 
 /**
- * A transformer for partitioning and indexing the arrays whenever possible.
+ * A transformer which introduces hash index in the case of a range lookup to
+ * only iterate over the relavant part of the given range.
  *
  * Given an input program first it identify all arrays and the iterations over those arrays.
  * Then it looks for the filters over the elements of all those arrays. If it identifies
@@ -28,7 +29,7 @@ import quasi._
  * @param IR the polymorphic embedding trait which contains the reified program.
  * @param schema the schema information
  */
-class ArrayPartitioning(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class IntroduceHashIndexForRangeLookup(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR.{ __struct_field => _, Range => _, Binding => _, _ }
 
   import scala.collection.mutable
