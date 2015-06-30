@@ -31,8 +31,8 @@ class WhileToRangeForeachTest extends FlatSpec with ShouldMatchers {
     }
   }
 
-  "less simple example" should "work" in {
-    val exp: IR.Rep[Block] = {
+  "an infinite while loop" should "not be transformed" in {
+    val exp: IR.Block[Unit] = {
       import IR._
       reifyBlock {
         val x = __newVar(unit(0))
@@ -44,10 +44,22 @@ class WhileToRangeForeachTest extends FlatSpec with ShouldMatchers {
       }
     }
     val newExp = new WhileToRangeForeachTransformer(IR).optimize(exp)
-    println("Hello: " + exp)
-    println("Goodbye: " + newExp)
-    newExp match {
-      case dsl"__block{ Range(0, 10).foreach($f) }" =>
+    assert(newExp == exp)
+  }
+
+  "while loop with additional mutation of the index variable" should "not be transformed" in {
+    val exp: IR.Block[Unit] = {
+      import IR._
+      reifyBlock {
+        val x = __newVar(unit(0))
+        __whileDo(readVar(x) < unit(10), {
+          __assign(x, readVar(x) + unit(2))
+          println(readVar(x))
+          __assign(x, readVar(x) + unit(1))
+        })
+      }
     }
+    val newExp = new WhileToRangeForeachTransformer(IR).optimize(exp)
+    assert(newExp == exp)
   }
 }
