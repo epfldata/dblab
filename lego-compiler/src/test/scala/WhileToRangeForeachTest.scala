@@ -16,13 +16,13 @@ class WhileToRangeForeachTest extends FlatSpec with ShouldMatchers {
 
   "simple example" should "work" in {
     val exp = {
-      import IR._
-      reifyBlock {
-        val x = __newVar(unit(0))
-        __whileDo(readVar(x) < unit(10), {
-          println(readVar(x))
-          __assign(x, readVar(x) + unit(1))
-        })
+      IR.reifyBlock {
+        dsl"""var x = 0
+        while(x < 10) {
+          println(x)
+          x += 1
+        }
+        """
       }
     }
     val newExp = new WhileToRangeForeachTransformer(IR).optimize(exp)
@@ -33,14 +33,14 @@ class WhileToRangeForeachTest extends FlatSpec with ShouldMatchers {
 
   "an infinite while loop" should "not be transformed" in {
     val exp: IR.Block[Unit] = {
-      import IR._
-      reifyBlock {
-        val x = __newVar(unit(0))
-        __whileDo(readVar(x) < unit(10), {
-          val x = __newVar(unit(4))
-          println(readVar(x))
-          __assign(x, readVar(x) + unit(1))
-        })
+      IR.reifyBlock {
+        dsl"""var x = 0
+        while(x < 10) {
+          var x = 4
+          println(x)
+          x += 1
+        }
+        """
       }
     }
     val newExp = new WhileToRangeForeachTransformer(IR).optimize(exp)
@@ -49,14 +49,14 @@ class WhileToRangeForeachTest extends FlatSpec with ShouldMatchers {
 
   "while loop with additional mutation of the index variable" should "not be transformed" in {
     val exp: IR.Block[Unit] = {
-      import IR._
-      reifyBlock {
-        val x = __newVar(unit(0))
-        __whileDo(readVar(x) < unit(10), {
-          __assign(x, readVar(x) + unit(2))
-          println(readVar(x))
-          __assign(x, readVar(x) + unit(1))
-        })
+      IR.reifyBlock {
+        dsl"""var x = 0
+        while(x < 10) {
+          x += 2
+          println(x)
+          x += 1
+        }
+        """
       }
     }
     val newExp = new WhileToRangeForeachTransformer(IR).optimize(exp)
