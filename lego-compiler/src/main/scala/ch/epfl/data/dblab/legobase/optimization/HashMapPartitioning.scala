@@ -27,7 +27,7 @@ import scala.collection.mutable
 class HashMapPartitioningTransformer(override val IR: LoweringLegoBase,
                                      val schema: Schema)
   extends RuleBasedTransformer[LoweringLegoBase](IR)
-  with WhileLoopProcessing {
+  with WhileRangeProcessing {
   import IR.{ __struct_field => _, __block => _, _ }
 
   /**

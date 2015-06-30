@@ -10,6 +10,7 @@ import deep._
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
+import sc.pardis.quasi.anf._
 import quasi._
 
 /**
@@ -25,15 +26,20 @@ import quasi._
  * }}}
  * is converted into
  * {{{
- *     for(i <- 0 until size) {
- *       f(i)
+ *     for(j <- 0 until size) {
+ *       f(j)
  *     }
  * }}}
+ *
+ * Precondition: There should be no further mutation into the variable `i` in `f(i)`.
+ * Additional transformations: In `f(i)` every read of the variable `i` should be
+ * substituted by the range index `j`.
+ *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
 class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR)
-  with WhileLoopProcessing {
-  import IR.{ Range => _, _ }
+  with WhileRangeProcessing {
+  import IR.{ Range => _, Binding => _, _ }
 
   /**
    * Keeps the list of while loops that should be converted
@@ -48,28 +54,30 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
   def whileShouldBeConverted[T](whileSym: Rep[T]): Boolean =
     convertedWhiles.exists(_.whileSym == whileSym)
 
-  def varShouldBeRemoved[T](variable: Var[T]): Boolean =
+  def varCorrespondsToRangeWhile[T](variable: Var[T]): Boolean =
     convertedWhiles.exists(_.variable == variable)
 
   analysis += statement {
-    case sym -> (node @ dsl"""while(${ RangeCondition(variable1, size) }) 
-                                ${ RangeStep(variable2, step) }""") if variable1 == variable2 =>
-      convertedWhiles += WhileInfo(sym.asInstanceOf[Rep[Unit]], node.asInstanceOf[While], variable1, size, step)
-      ()
-  }
-
-  rewrite += remove {
-    case ReadVar(v) if varShouldBeRemoved(v) && !substituteVarInsideLoopBody.contains(v) =>
+    case sym -> (node @ dsl"""while(${ RangeCondition(indexVariable, size) }) 
+                                $block""") if rangeIndexMutatedOnce(block, indexVariable) &&
+      rangeIndexMutatesItselfAtTheEnd(block, indexVariable) =>
+      val RangeStep(_, step) = block
+      convertedWhiles += WhileInfo(sym.asInstanceOf[Rep[Unit]], node.asInstanceOf[While], indexVariable, size, step)
       ()
   }
 
   rewrite += rule {
-    case ReadVar(v) if varShouldBeRemoved(v) && substituteVarInsideLoopBody.contains(v) =>
+    case ReadVar(v) if varCorrespondsToRangeWhile(v) && substituteVarInsideLoopBody.contains(v) =>
       substituteVarInsideLoopBody(v)
   }
 
   rewrite += remove {
-    case Assign(v, _) if varShouldBeRemoved(v) =>
+    case Assign(v, _) if varCorrespondsToRangeWhile(v) =>
+      ()
+  }
+
+  rewrite += remove {
+    case ReadVar(v) if varCorrespondsToRangeWhile(v) && !substituteVarInsideLoopBody.contains(v) =>
       ()
   }
 
@@ -83,8 +91,7 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
           {
             substituteVarInsideLoopBody += whileInfo.variable -> i
             // Triggers rewriting the statements inside the while loop
-            body.stmts.foreach(transformStm)
-            unit(())
+            inlineBlock(body)
           }
       }
       dsl"""Range(${whileInfo.start}, ${whileInfo.size}).foreach($foreachFunction)"""

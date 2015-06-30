@@ -14,9 +14,9 @@ import quasi._
 
 /**
  * An interface containing appropriate methods and data structures for processing
- * while loops
+ * while loops which are iterating over a range
  */
-trait WhileLoopProcessing {
+trait WhileRangeProcessing {
   val IR: LoweringLegoBase
   import IR.{ Range => _, _ }
 
@@ -53,6 +53,22 @@ trait WhileLoopProcessing {
       }
     }
   }
+
+  /**
+   * Specifies if the variable `indexVar` is mutated only once in the given block
+   */
+  def rangeIndexMutatedOnce(block: Block[Unit], indexVar: Var[Int]): Boolean =
+    block.stmts.collect({
+      case Stm(_, Assign(v, _)) if v == indexVar =>
+        v
+    }).size == 1
+
+  /**
+   * Specifies if the variable `indexVar` mutates itself at the end of the given
+   * block by a constant number
+   */
+  def rangeIndexMutatesItselfAtTheEnd(block: Block[Unit], indexVar: Var[Int]): Boolean =
+    RangeStep.unapply(block).exists(_._1 == indexVar)
 
   /**
    * Extracts the stepping part of a while loop
