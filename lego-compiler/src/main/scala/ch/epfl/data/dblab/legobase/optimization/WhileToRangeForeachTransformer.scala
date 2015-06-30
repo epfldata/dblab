@@ -31,9 +31,21 @@ import quasi._
  *     }
  * }}}
  *
- * Precondition: There should be no further mutation into the variable `i` in `f(i)`.
- * Additional transformations: In `f(i)` every read of the variable `i` should be
- * substituted by the range index `j`.
+ * Preconditions:
+ * a) There should be no further mutation into the variable `i` in `f(i)`.
+ * b) There should be no use of the variable `i` outside of the loop.
+ * c) The while loop can only iterate ascendingly.
+ * d) The step counter can be every positive number.
+ *
+ * Additional transformations:
+ * As we are using administrative normal form (ANF), we are placing a let-binding for
+ * every read of a mutable variable. This means that every read from the variable `i`
+ * is associated with a new symbol. These symbols in `f(i)` should be substituted
+ * by the range index `j`.
+ * Moreover, our system ensures that the programs in ANF will not have any issues
+ * with name conflicits. Hence, even if in the inital program another variable is
+ * defined with the name `i` in the block of f(i), our engine distinguishes them
+ * with different symbols.
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
@@ -57,6 +69,8 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
   def varCorrespondsToRangeWhile[T](variable: Var[T]): Boolean =
     convertedWhiles.exists(_.variable == variable)
 
+  // TODO precondition (b) is not checked yet.
+
   analysis += statement {
     case sym -> (node @ dsl"""while(${ RangeCondition(indexVariable, size) }) 
                                 $block""") if rangeIndexMutatedOnce(block, indexVariable) &&
@@ -65,6 +79,8 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
       convertedWhiles += WhileInfo(sym.asInstanceOf[Rep[Unit]], node.asInstanceOf[While], indexVariable, size, step)
       ()
   }
+
+  // The order of the application of the following rules does not matter. 
 
   rewrite += rule {
     case ReadVar(v) if varCorrespondsToRangeWhile(v) && substituteVarInsideLoopBody.contains(v) =>
@@ -94,6 +110,6 @@ class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends 
             inlineBlock(body)
           }
       }
-      dsl"""Range(${whileInfo.start}, ${whileInfo.size}).foreach($foreachFunction)"""
+      dsl"""new Range(${whileInfo.start}, ${whileInfo.size}, ${whileInfo.step}).foreach($foreachFunction)"""
   }
 }

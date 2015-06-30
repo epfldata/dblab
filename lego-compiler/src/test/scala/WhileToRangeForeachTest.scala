@@ -31,6 +31,38 @@ class WhileToRangeForeachTest extends FlatSpec with ShouldMatchers {
     }
   }
 
+  "while with step 2 and start 5" should "work" in {
+    val exp = {
+      IR.reifyBlock {
+        dsl"""var x = 5
+        while(x < 10) {
+          println(x)
+          x += 2
+        }
+        """
+      }
+    }
+    val newExp = new WhileToRangeForeachTransformer(IR).optimize(exp)
+    newExp match {
+      case dsl"__block{ new Range(5, 10, 2).foreach($f) }" =>
+    }
+  }
+
+  "decrementing range while" should "not be transformed" in {
+    val exp = {
+      IR.reifyBlock {
+        dsl"""var x = 10
+        while(x > 0) {
+          println(x)
+          x -= 1
+        }
+        """
+      }
+    }
+    val newExp = new WhileToRangeForeachTransformer(IR).optimize(exp)
+    assert(newExp == exp)
+  }
+
   "an infinite while loop" should "not be transformed" in {
     val exp: IR.Block[Unit] = {
       IR.reifyBlock {
