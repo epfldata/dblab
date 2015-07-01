@@ -255,6 +255,10 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
     }
   }
 
+  /*
+   * For an expression representing accessing an element of a particular array,
+   * returns that array.
+   */
   def getCorrespondingArray(exp: Rep[Any]): Option[Rep[Array[Any]]] = exp match {
     case dsl"($array: Array[Any]).apply($index)" =>
       Some(array)
@@ -389,7 +393,7 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
       mm.antiRetainVar = resultRetain
       class ElemType2
       implicit val elemType2 = rightArray.array.tp.typeArguments(0).asInstanceOf[TypeRep[ElemType2]]
-      par_array_foreach[ElemType2](rightArray, key, (e: Rep[ElemType2]) => {
+      partitionedArrayForeach[ElemType2](rightArray, key, (e: Rep[ElemType2]) => {
         mm.leftElemCode := e
         mm.rightElemProcessingCode := value
         mm.startFillingHole()
@@ -433,8 +437,39 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
             }"""
   }
 
+  rewrite += rule {
+    case dsl"($mm: MultiMap[Any, Any]).get($elem).get.exists($p)" if mm.getInfo.shouldBePartitioned &&
+      mm.getInfo.hasLeft => {
+      val leftArray = mm.getInfo.partitionedRelationInfo
+      val key = apply(elem).asInstanceOf[Rep[Int]]
+      val whileLoop = leftArray.loop
+      val result = __newVarNamed[Boolean](unit(false), "existsResult")
+      class InnerType
+      implicit val typeInner = leftArray.tpe.asInstanceOf[TypeRep[InnerType]]
+      partitionedArrayForeach[InnerType](leftArray, key, (e: Rep[InnerType]) => {
+        mm.leftElemCode := e
+        mm.rightElemProcessingCode := {
+          dsl"""if(${field[Int](e, leftArray.partitioningField)} == $elem && ${inlineFunction(p, e)}) {
+                    ${__assign(result, unit(true))}
+                  } else {
+                  }"""
+        }
+        mm.startFillingHole()
+        val res1 = inlineBlock2(whileLoop.body)
+        mm.finishFillingHole()
+        transformedMapsCount += 1
+        res1
+      })
+      readVar(result)
+    }
+  }
+
   /* The case for HashJoin and LeftOuterJoin */
 
+  /*
+   * Removes the `addBinding` for the left relation, in the case 
+   * that the left relation should be partitioned.
+   */
   rewrite += remove {
     case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if mm.getInfo.shouldBePartitioned &&
       mm.getInfo.hasLeft &&
@@ -442,12 +477,66 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
       ()
   }
 
+  /*
+   * Rewrites the iteration of the set of all matching elements with the right element
+   * to an iteration over the partitioned relation (cf. partitionedArrayForeach method).
+   * In the body of this iteration, it will put the body of the while loop for the left
+   * relation. However, it will substitute the `addBinding` in that while loop, with the
+   * code snippet assigned to `rightElemProcessingCode`. Furthermore, in that while loop
+   * the array accesses for the left relation should also be substituted by the elements
+   * that we are iterating over. These substitutations are performed by other rewrite rules.
+   */
+  rewrite += rule {
+    case dsl"($mm: MultiMap[Any, Any]).get($elem).get.foreach($f)" if mm.getInfo.shouldBePartitioned &&
+      mm.getInfo.hasLeft => {
+      val leftArray = mm.getInfo.partitionedRelationInfo
+      val key = apply(elem).asInstanceOf[Rep[Int]]
+      val whileLoop = leftArray.loop
+      leftOuterJoinExistsVarDefine(mm)
+      class InnerType
+      implicit val typeInner = leftArray.tpe.asInstanceOf[TypeRep[InnerType]]
+      partitionedArrayForeach[InnerType](leftArray, key, (e: Rep[InnerType]) => {
+        mm.leftElemCode := e
+        mm.rightElemProcessingCode := {
+          def ifThenBody: Rep[Unit] = {
+            leftOuterJoinExistsVarSet(mm)
+            inlineFunction(f.asInstanceOf[Rep[InnerType => Unit]], e)
+          }
+          dsl"""if(${field[Int](e, leftArray.partitioningField)} == ${apply(elem)}) {
+                    ${ifThenBody}
+                  } else {
+                  }"""
+        }
+        // System.out.println(s"STARTED setforeach for the key $key $e.${leftArray.fieldFunc} mm: $mm")
+        mm.startFillingHole()
+        val res1 = inlineBlock2(whileLoop.body)
+        // System.out.println(s"FINISH setforeach for the key $key")
+        mm.finishFillingHole()
+        transformedMapsCount += 1
+        res1
+      })
+      leftOuterJoinDefaultHandling(mm, key)
+    }
+  }
+
+  /*
+   * While it reifies the code for the right relation (iterating over the appropriate 
+   * bucket in the partitioned array of the left relation), instead of addBinding, puts the
+   * code snippet that was constructed in the previous rewrite rule.
+   */
   rewrite += rule {
     case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if mm.getInfo.shouldBePartitioned &&
       mm.getInfo.hasLeft &&
       mm.isFillingHole =>
       mm.rightElemProcessingCode()
   }
+
+  /*
+   * The 3 rewrite rules below are dual to the previous 3 rewrite rules.
+   * The previous 3 rewrite rules were applicable in the case that the left relation
+   * was partitioned, however the following rewrite rules are applicable whenever
+   * the right relation should be partitioned.
+   */
 
   rewrite += rule {
     case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if mm.getInfo.shouldBePartitioned &&
@@ -457,7 +546,7 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
       val whileLoop = rightArray.loop
       class InnerType
       implicit val typeInner = rightArray.tpe.asInstanceOf[TypeRep[InnerType]]
-      par_array_foreach[InnerType](rightArray, key, (e: Rep[InnerType]) => {
+      partitionedArrayForeach[InnerType](rightArray, key, (e: Rep[InnerType]) => {
         mm.leftElemCode := e
         mm.rightElemProcessingCode := apply(nodev)
         mm.startFillingHole()
@@ -468,6 +557,55 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
       })
   }
 
+  rewrite += remove {
+    case dsl"($mm: MultiMap[Any, Any]).get($elem).get.foreach($f)" if mm.getInfo.shouldBePartitioned &&
+      !mm.getInfo.hasLeft &&
+      !mm.isFillingHole =>
+      ()
+  }
+
+  rewrite += rule {
+    case dsl"($mm: MultiMap[Any, Any]).get($elem).get.foreach($f)" if mm.getInfo.shouldBePartitioned &&
+      !mm.getInfo.hasLeft &&
+      mm.isFillingHole =>
+      inlineFunction(f, mm.rightElemProcessingCode[Any]())
+  }
+
+  /*
+   * For a partitioned relation, the following statement should always be true. 
+   * While we are iterating over the partitioned array the emptiness is implicitly 
+   * encoded.
+   */
+  rewrite += rule {
+    case dsl"($mm: MultiMap[Any, Any]).get($elem).nonEmpty" if mm.getInfo.shouldBePartitioned =>
+      unit(true)
+  }
+
+  /*
+   * As we are completely removing MultiMap abstraction, the following statements
+   * should be completely removed.
+   */
+
+  rewrite += remove {
+    case dsl"($mm: MultiMap[Any, Any]).get($elem)" if mm.getInfo.shouldBePartitioned => {
+      ()
+    }
+  }
+
+  rewrite += remove {
+    case dsl"($mm: MultiMap[Any, Any]).get($elem).get" if mm.getInfo.shouldBePartitioned =>
+      ()
+  }
+
+  rewrite += removeStatement {
+    case sym -> Lambda(_, _, _) if multiMapsInfo.exists(_._2.collectionForeachLambda.exists(_ == sym)) =>
+      ()
+  }
+
+  /**
+   * Specifies if an array element access should be substituted with another
+   * expression specified in other rewrite rules.
+   */
   def arrayApplyAssociatesToMultiMap(array: Rep[Array[Any]],
                                      indexVariable: Var[Int],
                                      multiMapInfo: MultiMapInfo): Boolean = {
@@ -480,7 +618,8 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
   // TODO `as` can improve this rule a lot
   // TODO var handling in quasi quotes can beautify this rule a lot
   /* 
-   * Substitutes the array accesses with the filling element specified before.
+   * Substitutes the array accesses with the filling element specified while
+   * reifying the code snippet for iterating the partitioned array.
    */
   rewrite += rule {
     case dsl"($arr: Array[Any]).apply(${ Def(ReadVar(indexVariable)) })" if multiMapsInfo.exists({
@@ -507,101 +646,6 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
       ()
   }
 
-  rewrite += remove {
-    case dsl"($mm: MultiMap[Any, Any]).get($elem)" if mm.getInfo.shouldBePartitioned => {
-      ()
-    }
-  }
-
-  rewrite += rule {
-    case dsl"($mm: MultiMap[Any, Any]).get($elem).nonEmpty" if mm.getInfo.shouldBePartitioned =>
-      unit(true)
-  }
-
-  rewrite += remove {
-    case dsl"($mm: MultiMap[Any, Any]).get($elem).get" if mm.getInfo.shouldBePartitioned =>
-      ()
-  }
-
-  rewrite += removeStatement {
-    case sym -> Lambda(_, _, _) if multiMapsInfo.exists(_._2.collectionForeachLambda.exists(_ == sym)) =>
-      ()
-  }
-
-  rewrite += rule {
-    case dsl"($mm: MultiMap[Any, Any]).get($elem).get.foreach($f)" if mm.getInfo.shouldBePartitioned &&
-      mm.getInfo.hasLeft => {
-      val leftArray = mm.getInfo.partitionedRelationInfo
-      val key = apply(elem).asInstanceOf[Rep[Int]]
-      val whileLoop = leftArray.loop
-      leftOuterJoinExistsVarDefine(mm)
-      class InnerType
-      implicit val typeInner = leftArray.tpe.asInstanceOf[TypeRep[InnerType]]
-      par_array_foreach[InnerType](leftArray, key, (e: Rep[InnerType]) => {
-        mm.leftElemCode := e
-        mm.rightElemProcessingCode := {
-          def ifThenBody: Rep[Unit] = {
-            leftOuterJoinExistsVarSet(mm)
-            inlineFunction(f.asInstanceOf[Rep[InnerType => Unit]], e)
-          }
-          dsl"""if(${field[Int](e, leftArray.partitioningField)} == ${apply(elem)}) {
-                    ${ifThenBody}
-                  } else {
-                  }"""
-        }
-        // System.out.println(s"STARTED setforeach for the key $key $e.${leftArray.fieldFunc} mm: $mm")
-        mm.startFillingHole()
-        val res1 = inlineBlock2(whileLoop.body)
-        // System.out.println(s"FINISH setforeach for the key $key")
-        mm.finishFillingHole()
-        transformedMapsCount += 1
-        res1
-      })
-      leftOuterJoinDefaultHandling(mm, key)
-    }
-  }
-
-  rewrite += rule {
-    case dsl"($mm: MultiMap[Any, Any]).get($elem).get.exists($p)" if mm.getInfo.shouldBePartitioned &&
-      mm.getInfo.hasLeft => {
-      val leftArray = mm.getInfo.partitionedRelationInfo
-      val key = apply(elem).asInstanceOf[Rep[Int]]
-      val whileLoop = leftArray.loop
-      val result = __newVarNamed[Boolean](unit(false), "existsResult")
-      class InnerType
-      implicit val typeInner = leftArray.tpe.asInstanceOf[TypeRep[InnerType]]
-      par_array_foreach[InnerType](leftArray, key, (e: Rep[InnerType]) => {
-        mm.leftElemCode := e
-        mm.rightElemProcessingCode := {
-          dsl"""if(${field[Int](e, leftArray.partitioningField)} == $elem && ${inlineFunction(p, e)}) {
-                    ${__assign(result, unit(true))}
-                  } else {
-                  }"""
-        }
-        mm.startFillingHole()
-        val res1 = inlineBlock2(whileLoop.body)
-        mm.finishFillingHole()
-        transformedMapsCount += 1
-        res1
-      })
-      readVar(result)
-    }
-  }
-
-  rewrite += remove {
-    case dsl"($mm: MultiMap[Any, Any]).get($elem).get.foreach($f)" if mm.getInfo.shouldBePartitioned &&
-      !mm.getInfo.hasLeft &&
-      !mm.isFillingHole =>
-      ()
-  }
-
-  rewrite += rule {
-    case dsl"($mm: MultiMap[Any, Any]).get($elem).get.foreach($f)" if mm.getInfo.shouldBePartitioned &&
-      !mm.getInfo.hasLeft &&
-      mm.isFillingHole =>
-      inlineFunction(f, mm.rightElemProcessingCode[Any]())
-  }
-
   /* ---- Helper Methods for Rewriting ---- */
 
   /**
@@ -614,9 +658,9 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
    * In the case of 2D partitioned array, the function `f` is applied to all
    * elements of the bucket specified by `index`.
    */
-  def par_array_foreach[T: TypeRep](partitionedRelationInfo: RelationInfo,
-                                    index: Rep[Int],
-                                    f: Rep[T] => Rep[Unit]): Rep[Unit] = {
+  def partitionedArrayForeach[T: TypeRep](partitionedRelationInfo: RelationInfo,
+                                          index: Rep[Int],
+                                          f: Rep[T] => Rep[Unit]): Rep[Unit] = {
     if (partitionedRelationInfo.is1D) {
       val parArr = partitionedRelationInfo.partitionedArray.asInstanceOf[Rep[Array[T]]]
       val bucket = partitionedRelationInfo.table.continuous match {
