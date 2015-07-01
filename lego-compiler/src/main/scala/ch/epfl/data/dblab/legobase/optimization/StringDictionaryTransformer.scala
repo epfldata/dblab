@@ -81,15 +81,6 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
     }
   }
 
-  def array_foreach[T: TypeRep](arr: Rep[Array[T]], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
-    Range(unit(0), arr.length).foreach {
-      __lambda { i =>
-        val e = arr(i)
-        f(e)
-      }
-    }
-  }
-
   analysis += rule {
     case ArrayUpdate(array, idx, Def(Struct(tag, elems, methods))) if phase == LoadingPhase => {
       scanOperatorArrays += new Tuple2(array.asInstanceOf[Expression[Array[Any]]],

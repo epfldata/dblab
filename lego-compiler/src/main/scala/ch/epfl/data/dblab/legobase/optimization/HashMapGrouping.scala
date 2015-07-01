@@ -51,7 +51,7 @@ import scala.collection.mutable
  *      var rightIndex = 0
  *      val leftArrayGroupedByPrimaryKey: Array[LeftRelation] = {
  *        // Constructs an array in which the index of each element in that array
- *        // is the primary key of that element
+ *        // is the primary key of that element (cf. `createPartitionedArray` method)
  *      }
  *      while(rightIndex < rightArray.length) {
  *        val rightElement = rightArray(rightIndex)
@@ -161,6 +161,10 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
 
   /* ---- ANALYSIS PHASE ---- */
 
+  /*
+   * Gatters all MultiMap symbols which are holding a record collection as 
+   * their value 
+   */
   analysis += statement {
     // TODO `new MultiMap` is synthetic and does not exist in shallow
     case sym -> (node @ MultiMapNew()) if node.typeB.isRecord =>
@@ -168,11 +172,17 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
       ()
   }
 
+  /*
+   * Keeps the closest while loop in the scope
+   */
   analysis += statement {
     case sym -> (node @ dsl"while($cond) $body") =>
       currentWhileLoop = node.asInstanceOf[While]
   }
 
+  /*
+   * The following pattern is used for the left relation of HashJoin and LeftOuterJoin
+   */
   analysis += rule {
     case dsl"($mm : MultiMap[Any, Any]).addBinding(__struct_field($struct, ${ Constant(field) }), $nodev)" if allMaps.contains(mm) =>
       mm.updateInfo(_.copy(isPartitioned = true))
@@ -182,6 +192,9 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
       }
   }
 
+  /*
+   * The following pattern is used for the right relation of HashJoin and LeftOuterJoin
+   */
   analysis += rule {
     case dsl"($mm : MultiMap[Any, Any]).get(__struct_field($struct, ${ Constant(field) }))" if allMaps.contains(mm) =>
       mm.updateInfo(_.copy(isPartitioned = true))
@@ -192,6 +205,9 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
       ()
   }
 
+  /*
+   * The following pattern is used for the right relation of HashJoinAnti and Window
+   */
   analysis += rule {
     case dsl"($mm : MultiMap[Any, Any]).foreach($f)" if allMaps.contains(mm) =>
       mm.updateInfo(_.copy(isPotentiallyWindow = true))
@@ -204,6 +220,9 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
       ()
   }
 
+  /*
+   * The following pattern is used for the right relation of HashJoinAnti
+   */
   analysis += rule {
     case dsl"($mm : MultiMap[Any, Any]).get($elem).get" if allMaps.contains(mm) =>
       // At this phase it's potentially anti hash join multimap, it's not specified for sure
@@ -211,6 +230,9 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
       ()
   }
 
+  /*
+   * The following pattern is used for the right relation of HashJoin and LeftOuterJoin
+   */
   analysis += rule {
     case dsl"($mm : MultiMap[Any, Any]).get($elem).get.foreach($f)" => {
       val lambda = f.asInstanceOf[Rep[Any => Unit]]
@@ -218,6 +240,9 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
     }
   }
 
+  /*
+   * The following pattern is used for LeftOuterJoin
+   */
   analysis += rule {
     case dsl"""(
                 if(($mm: MultiMap[Any, Any]).get($elem).nonEmpty) 
@@ -339,7 +364,7 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
   rewrite += statement {
     case sym -> (node @ MultiMapNew()) if sym.asInstanceOf[Rep[MultiMap[Any, Any]]].getInfo.shouldBePartitioned => {
 
-      createPartitionArray(sym.asInstanceOf[Rep[MultiMap[Any, Any]]].getInfo.partitionedRelationInfo)
+      createPartitionedArray(sym.asInstanceOf[Rep[MultiMap[Any, Any]]].getInfo.partitionedRelationInfo)
 
       sym
     }
@@ -579,29 +604,30 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
 
   /* ---- Helper Methods for Rewriting ---- */
 
-  def array_foreach[T: TypeRep](arr: Rep[Array[T]], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
-    Range(unit(0), arr.length).foreach {
-      __lambda { i =>
-        val e = arr(i)
-        f(e)
-      }
-    }
-  }
-
+  /**
+   * Iterates over the given `index` of the partitioned array for the
+   * given relation, and applies the given function `f`.
+   *
+   * In the case that a 1D partitioned array is created (the partitioning field
+   * is the primary key), function `f` will be applied to only one element with
+   * the given primary key.
+   * In the case of 2D partitioned array, the function `f` is applied to all
+   * elements of the bucket specified by `index`.
+   */
   def par_array_foreach[T: TypeRep](partitionedRelationInfo: RelationInfo,
-                                    key: Rep[Int],
+                                    index: Rep[Int],
                                     f: Rep[T] => Rep[Unit]): Rep[Unit] = {
     if (partitionedRelationInfo.is1D) {
       val parArr = partitionedRelationInfo.partitionedArray.asInstanceOf[Rep[Array[T]]]
       val bucket = partitionedRelationInfo.table.continuous match {
-        case Some(continuous) => key - unit(continuous.offset)
-        case None             => key
+        case Some(continuous) => index - unit(continuous.offset)
+        case None             => index
       }
       val e = parArr(bucket)
       // System.out.println(s"part foreach for val $e=$parArr($bucket) ")
       f(e)
     } else {
-      val bucket = key % partitionedRelationInfo.numBuckets
+      val bucket = index % partitionedRelationInfo.numBuckets
       val count = partitionedRelationInfo.count(bucket)
       val parArrWhole = partitionedRelationInfo.partitionedArray.asInstanceOf[Rep[Array[Array[T]]]]
       val parArr = parArrWhole(bucket)
@@ -614,7 +640,25 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
     }
   }
 
-  def createPartitionArray(partitionedRelationInfo: RelationInfo): Unit = {
+  /**
+   * For the given relation, creates a partitioned array.
+   *
+   * There are different cases when a relation is partitioned:
+   * 1) The given relation is partitioned on its primary key. The partitioned array
+   *    suffices to be 1D.
+   *    1a) If the primary key value of the relation is continous, the original relation
+   *        array can be reused
+   *    1b) If it is not the case, a new array should be generated that the index of
+   *        each element is the same as its primary key
+   * 2) The partitioning field is not the primary key. The partitioned array should
+   *    be a 2D array in which the first index specifies the bucket number (indexed using
+   *    the value of partitioning field). For every bucket a value should be associated
+   *    which keeps the size of each bucket. For that another 1D array is generated.
+   *    There are cases that an already partitioned array can be reused, without the need
+   *    to create a new partitioned array.
+   *
+   */
+  def createPartitionedArray(partitionedRelationInfo: RelationInfo): Unit = {
     System.out.println(scala.Console.GREEN + "Table " +
       partitionedRelationInfo.array.tp.typeArguments(0) + " was partitioned on field " +
       partitionedRelationInfo.partitioningField + scala.Console.RESET)

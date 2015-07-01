@@ -34,7 +34,6 @@ class HashMapGroupingTest extends FlatSpec with ShouldMatchers {
     pipeline += PartiallyEvaluate
     pipeline += DCE
     pipeline += new c.BlockFlattening(IR)
-    // pipeline += DCE
     pipeline += TreeDumper(true)
 
     pipeline(IR)(block)

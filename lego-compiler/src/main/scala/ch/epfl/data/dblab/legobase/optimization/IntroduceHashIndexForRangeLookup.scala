@@ -327,14 +327,6 @@ class IntroduceHashIndexForRangeLookup(override val IR: LoweringLegoBase, val sc
       ()
   }
 
-  def array_foreach[T: TypeRep](arr: Rep[Array[T]], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
-    def foreachFunction: Rep[Int => Unit] = {
-      (i: Rep[Int]) =>
-        f(arr(i))
-    }
-    dsl"Range(0, ${arr.length}).foreach($foreachFunction)"
-  }
-
   def createPartitionArray[InnerType: TypeRep](arrayInfo: ArrayInfo[InnerType]): Unit = {
     val buckets = arrayInfo.buckets
     // TODO scala.reflect.macros.TypecheckException: cannot find class tag for element type InnerType
