@@ -24,7 +24,39 @@ import quasi._
  * chuncks in the loading time. Then, it iterates only over the relavant partitions of the arrays
  * in the query processing time.
  *
- * TODO maybe add an example
+ * As an example:
+ * {{{
+ *      for(i <- start until end) {
+ *        val elem = array(i)
+ *        if(min < elem.field && elem.field < max) {
+ *          process(elem)
+ *        }
+ *      }
+ * }}}
+ * is converted to
+ * {{{
+ *      // During Loading Time
+ *      val partitionedArray = {
+ *        // partition the elements of the original array `array` using the field
+ *        // `field` in a way
+ *      }
+ *      // During Query Processing Time
+ *      val minIndex = {
+ *        // compute the index containing all elements that the value of their field
+ *        // `field` is greater than min
+ *      }
+ *      val maxIndex = {
+ *        // compute the index containing all elements that the value of their field
+ *        // `field` is less than max
+ *      }
+ *      for(index <- minIndex to maxIndex) {
+ *        for(elem <- partitionedArray(index)) {
+ *          if(min < elem.field && elem.field < max) {
+ *            process(elem)
+ *          }
+ *        }
+ *      }
+ * }}}
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  * @param schema the schema information
@@ -273,6 +305,7 @@ class IntroduceHashIndexForRangeLookup(override val IR: LoweringLegoBase, val sc
     computeConstraints()
   }
 
+  // TODO needs a fix in quasi engine for `as` statements in blocks 
   // TODO assertion failed: Inconsistent number of extracted objects! (7)
   // analysis += statement {
   //   case sym -> dsl"""Range($start, $end).foreach({(i: Int) => 
