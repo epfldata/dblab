@@ -57,20 +57,20 @@ object ConstSizeArrayToLocalVars extends TransformerHandler {
  * is converted to:
  * {{{
  *      val record = Record {
- *        var arr0: Int = _
- *        var arr1: Int = _
+ *        var arr: Int = _
+ *        var arr_1: Int = _
  *      }
- *      record.arr0 = foo()
- *      record.arr1 = goo()
+ *      record.arr = foo()
+ *      record.arr_1 = goo()
  *      ...
- *      process(record.arr0, record.arr1)
+ *      process(record.arr, record.arr_1)
  * }}}
  *
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
 class ConstSizeArrayToLocalVars(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
-  import IR._
+  import IR.{ __struct_field => _, Binding => _, _ }
 
   val constSizeArrays = scala.collection.mutable.Set[Rep[Any]]()
   val constSizeArraysSize = scala.collection.mutable.Map[Rep[Any], Int]()
@@ -95,12 +95,12 @@ class ConstSizeArrayToLocalVars(override val IR: LoweringLegoBase) extends Recur
   val SIZE_THRESHOLD = 10
 
   analysis += statement {
-    case sym -> (an @ ArrayNew(Constant(v))) =>
+    case sym -> dsl"new Array[Any](${ Constant(v) })" =>
       if (v < SIZE_THRESHOLD) {
         constSizeArraysSize(sym.asInstanceOf[Rep[Any]]) = v
         addSingleton(sym, sym.tp.typeArguments(0))
       }
-    case sym -> PardisStructImmutableField(s, f) if sym.tp.isArray && structSymHasSingletonArrayAsField(s) =>
+    case sym -> dsl"__struct_field($s, $f)" if sym.tp.isArray && structSymHasSingletonArrayAsField(s) =>
       addSingleton(sym, sym.tp.typeArguments(0))
   }
 
@@ -116,16 +116,19 @@ class ConstSizeArrayToLocalVars(override val IR: LoweringLegoBase) extends Recur
   }
 
   rewrite += statement {
-    case sym -> (an @ ArrayNew(Constant(v))) if isConstSizeArray(sym) => {
+    case sym -> dsl"new Array[Any](${ Constant(v) })" if isConstSizeArray(sym) => {
+      val elemType = sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
       val vars = new Array[Var[Any]](v)
-      val default = getDefaultValue(an.typeT)
+      val default = getDefaultValue(elemType)
+      // TODO needs var support from quasi engine
       for (i <- 0 until v) {
-        vars(i.toInt) = __newVar(default)(an.typeT)
+        vars(i.toInt) = __newVar(default)(elemType)
       }
       arrayVars(sym) = vars
       default
     }
 
+    // TODO needs more clear support from quasi engine
     case sym -> (ps @ PardisStruct(tag, elems, methods)) if structHasSingletonArrayAsField(ps) =>
       val newElems = elems.flatMap(e =>
         if (e.init.tp.isArray && isConstSizeArray(e.init)) {
@@ -153,14 +156,18 @@ class ConstSizeArrayToLocalVars(override val IR: LoweringLegoBase) extends Recur
   }
 
   rewrite += rule {
-    case au @ ArrayUpdate(a @ Def(PardisStructImmutableField(s, f)), Constant(i), v) if isConstSizeArray(a) =>
+    case dsl"((__struct_field($s, ${ Constant(f) }): Array[Any]) as $a)(${ Constant(i) }) = $v" if isConstSizeArray(a) =>
       val postFix = if (i == 0) "" else s"_$i"
       fieldSetter(s, s"$f$postFix", v)
-    case aa @ ArrayApply(a @ Def(PardisStructImmutableField(s, f)), Constant(i)) if isConstSizeArray(a) =>
+  }
+
+  rewrite += rule {
+    case aa @ dsl"((__struct_field($s, ${ Constant(f) }): Array[Any]) as $a : Array[Any])(${ Constant(i) })" if isConstSizeArray(a) =>
       val postFix = if (i == 0) "" else s"_$i"
       fieldGetter(s, s"$f$postFix")(aa.tp)
   }
 
+  // TODO needs var support from quasi engine
   rewrite += statement {
     case sym -> NewVar(a @ Def(PardisStructImmutableField(s, f))) if isConstSizeArray(a) && structsConstSizeArrayFieldSize(s.tp, f) == 1 =>
       val res = __newVar(fieldGetter(s, f)(a.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]))(a.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
@@ -168,6 +175,7 @@ class ConstSizeArrayToLocalVars(override val IR: LoweringLegoBase) extends Recur
       res.e
   }
 
+  // TODO needs var support from quasi engine
   rewrite += rule {
     case ReadVar(v) if escapedVarArrays.contains(v.e) =>
       val newV = escapedVarArrays(v.e)
@@ -175,9 +183,12 @@ class ConstSizeArrayToLocalVars(override val IR: LoweringLegoBase) extends Recur
   }
 
   rewrite += rule {
-    case au @ ArrayUpdate(a, Constant(i), v) if isConstSizeArray(a) && arrayVars.contains(a) =>
+    case dsl"($a: Array[Any])(${ Constant(i) }) = $v" if isConstSizeArray(a) && arrayVars.contains(a) =>
       __assign(arrayVars(a)(i), v)
-    case aa @ ArrayApply(a, Constant(i)) if isConstSizeArray(a) && arrayVars.contains(a) =>
+  }
+
+  rewrite += rule {
+    case dsl"($a: Array[Any])(${ Constant(i) })" if isConstSizeArray(a) && arrayVars.contains(a) =>
       readVar(arrayVars(a)(i))(a.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
   }
 }
