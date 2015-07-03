@@ -21,6 +21,24 @@ object LBLowering {
   }
 }
 
+/**
+ * Lowers the query operators as well as the case class records for the relation
+ * records and intermediate records to structs.
+ * Furthermore, while lowering the case class records, finds the fields that are
+ * unused and if `removeUnusedFields` is true, removes them.
+ * For example:
+ * {{{
+ *    val rec = new Record { var fieldA: Int, val fieldB: String }
+ *    rec.fieldA = 2
+ *    // fieldB is not used
+ * }}}
+ * is converted to:
+ * {{{
+ *    val rec = new Record { var fieldA: Int }
+ *    rec.fieldA = 2
+ *    // fieldB is not used
+ * }}}
+ */
 class LBLowering(override val from: LoweringLegoBase, override val to: LoweringLegoBase, val removeUnusedFields: Boolean) extends Lowering[LoweringLegoBase, LoweringLegoBase](from, to) {
   import from._
 
