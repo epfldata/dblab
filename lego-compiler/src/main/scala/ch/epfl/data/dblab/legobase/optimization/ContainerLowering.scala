@@ -22,10 +22,25 @@ object ContainerLowering extends TransformerHandler {
 
 /**
  * A lowering transformation for converting container objects into records.
+ * Example:
+ * {{{
+ *    // class Container[T] { val elem: T, var next: Container[T] }
+ *    // struct RecordA { val fieldA: Int, val fieldB: String }
+ *    val rec1 = new RecordA(...)
+ *    val contRecA = new Containter[RecordA](rec1)
+ * }}}
+ * is converted to:
+ * {{{
+ *    // struct RecordA { val fieldA: Int, val fieldB: String }
+ *    // struct ContainerRecordA { val elem: RecordA, var next: ContainerRecordA }
+ *    val rec1 = new RecordA(...)
+ *    val contRecA = new ContainerRecordA(rec1)
+ * }}}
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class ContainerLowering[Lang <: sc.pardis.deep.scalalib.ArrayComponent with sc.pardis.deep.scalalib.Tuple2Component with ContOps](override val IR: Lang) extends sc.pardis.optimization.RecursiveRuleBasedTransformer[Lang](IR)
+class ContainerLowering[Lang <: sc.pardis.deep.scalalib.ArrayComponent with sc.pardis.deep.scalalib.Tuple2Component with ContOps](override val IR: Lang)
+  extends sc.pardis.optimization.RecursiveRuleBasedTransformer[Lang](IR)
   with ArrayEscapeLowering[Lang]
   with VarEscapeLowering[Lang]
   with Tuple2EscapeLowering[Lang]
@@ -82,53 +97,4 @@ class ContainerLowering[Lang <: sc.pardis.deep.scalalib.ArrayComponent with sc.p
     case n @ Cont_Field_Elem(self) if mayBeLowered(self) =>
       field(self, "elem")(apply(n.tp))
   }
-
-  // rewrite += statement {
-  //   case sym -> (node @ Struct(tag, elems, methods)) if mustBeLowered(node) && elems.forall(f => f.name != "next") =>
-  //     System.out.println(s"appending next to ${node.tp}, $sym")
-  //     // IR.asInstanceOf[LoweringLegoBase].printf(unit(s"struct creation $tag: ${node.tp}"))
-  //     toAtom(Struct(tag, elems :+ PardisStructArg("next", true, infix_asInstanceOf(unit(null))(node.tp)), methods)(node.tp))(node.tp)
-  // }
-
-  // analysis += statement {
-  //   case sym -> ArrayNew(len) if isContRecord(sym.tp.typeArguments(0)) => {
-  //     recordTypes += sym.tp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[Any]]
-  //     ()
-  //   }
-  // }
-
-  // rewrite += statement {
-  //   case sym -> ArrayNew(len) if isContRecord(sym.tp.typeArguments(0)) => {
-  //     class B
-  //     implicit val typeB = sym.tp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[B]]
-  //     __newArray[B](len).asInstanceOf[Rep[Any]]
-  //   }
-  // }
-
-  // analysis += statement {
-  //   case sym -> Tuple2New(_1, _2) if isContRecord(sym.tp.typeArguments(1)) => {
-  //     // System.out.println(s"tuple 2 new lowering ${_2}")
-  //     recordTypes += sym.tp.typeArguments(1).typeArguments(0).asInstanceOf[TypeRep[Any]]
-  //     ()
-  //   }
-  // }
-
-  // rewrite += statement {
-  //   case sym -> Tuple2New(node_1, node_2) if isContRecord(sym.tp.typeArguments(1)) => {
-  //     class A
-  //     class B
-  //     val _1 = node_1.asInstanceOf[Rep[A]]
-  //     val _2 = node_2.asInstanceOf[Rep[B]]
-
-  //     implicit val typeA = node_1.tp.asInstanceOf[TypeRep[A]]
-  //     implicit val typeB = node_2.tp.typeArguments(0).asInstanceOf[TypeRep[B]]
-  //     // System.out.println(s"tuple 2 lowering ${typeB}")
-  //     __newTuple2(_1, _2).asInstanceOf[Rep[Any]]
-  //   }
-  // }
-
-  // rewrite += statement {
-  //   case sym -> (node @ Cast(v)) if isContRecord(sym.tp) =>
-  //     infix_asInstanceOf(v)(apply(sym.tp))
-  // }
 }
