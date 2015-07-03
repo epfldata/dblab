@@ -17,9 +17,34 @@ import sc.pardis.ir.StructTags._
  * Transforms `malloc`s inside the part which runs the query into buffers which are allocated
  * at the loading time.
  *
+ * Example:
+ * {{{
+ *    // During Query Processing Time
+ *    while(condition) {
+ *      // the following record is allocated in the critical path
+ *      val record = new RecordA(...)
+ *      process(record)
+ *    }
+ * }}}
+ * is converted to:
+ * {{{
+ *    // During Loading Time
+ *    val recordAPool = new Array[RecordA](estimedSizeForRecordA)
+ *    var recordAPoolCounter = 0
+ *    // During Query Processing Time
+ *    while(condition) {
+ *      val record = recordAPool(recordAPoolCounter)
+ *      initRecordA(record)
+ *      recordAPoolCounter += 1
+ *      process(record)
+ *    }
+ * }}}
+ *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class MemoryAllocationHoist(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class MemoryAllocationHoist(override val IR: LoweringLegoBase, val schema: Schema)
+  extends RuleBasedTransformer[LoweringLegoBase](IR)
+  with StructCollector[LoweringLegoBase] {
   import IR._
   //import CNodes._
   //import CTypes._
@@ -130,16 +155,6 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val schema: Schem
     tagToTableNames(tag) match {
       case List(name) => schema.stats.getEstimatedNumObjectsForType(name)
       case names      => schema.stats.getJoinOutputEstimation(names)
-      // case CompositeTag(_, _, ClassTag(a), ClassTag(b)) =>
-      //   schema.stats.getJoinOutputEstimation(a, b)
-      // // Left deep plan
-      // case CompositeTag(_, _, ct @ CompositeTag(_, _, _, _), ClassTag(b)) =>
-      //   schema.stats.getJoinOutputEstimation(getStructSizeEstimationFromStatistics(ct), b)
-      // // Right deep plan
-      // case CompositeTag(_, _, ClassTag(a), ct @ CompositeTag(_, _, _, _)) =>
-      //   schema.stats.getJoinOutputEstimation(a, getStructSizeEstimationFromStatistics(ct))
-      // case ClassTag(tag) =>
-      //   schema.stats.getEstimatedNumObjectsForType(tag)
     }
   }
 
