@@ -26,9 +26,31 @@ object ContainerFlatTransformer extends TransformerHandler {
  *
  * This transformer is useful when a linked-list is used.
  *
+ * Example:
+ * {{{
+ *    // class Container[T] { val elem: T, var next: Container[T] }
+ *    // struct RecordA { val fieldA: Int, val fieldB: String }
+ *    val rec1 = new RecordA(...)
+ *    val rec2 = new RecordA(...)
+ *    val contRecA = new Containter[RecordA](rec1)
+ *    contRecA.next = new Containter[RecordA](rec2)
+ *    val rec3: RecordA = contRecA.elem
+ *    process(rec3)
+ * }}}
+ * is converted to:
+ * {{{
+ *    // RecordA { val fieldA: Int, val fieldB: String, var next: RecordA }
+ *    val rec1 = new RecordA(...)
+ *    val rec2 = new RecordA(...)
+ *    rec1.next = rec2
+ *    process(rec1)
+ * }}}
+ *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class ContainerFlatTransformer[Lang <: sc.pardis.deep.scalalib.ArrayComponent with sc.pardis.deep.scalalib.Tuple2Component with ContOps](override val IR: Lang) extends sc.pardis.optimization.RecursiveRuleBasedTransformer[Lang](IR) with StructCollector[Lang] {
+class ContainerFlatTransformer[Lang <: sc.pardis.deep.scalalib.ArrayComponent with sc.pardis.deep.scalalib.Tuple2Component with ContOps](override val IR: Lang)
+  extends sc.pardis.optimization.RecursiveRuleBasedTransformer[Lang](IR)
+  with StructCollector[Lang] {
   import IR._
   type Rep[T] = IR.Rep[T]
   type Var[T] = IR.Var[T]
