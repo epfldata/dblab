@@ -23,12 +23,46 @@ import sc.pardis.deep.scalalib.io._
  * into other values which do not contain the key anymore. As a result, they save more computation
  * and space.
  *
+ * Example:
+ * {{{
+ *    // RecordA { key: Int, fieldA: Int }
+ *    val hm = new HashMap[Int, RecordA]
+ *    // Add some element into the HashMap
+ *    hm.foreach( { case (key, value) =>
+ *      process(key, value.fieldA)
+ *    })
+ * }}}
+ * is converted to:
+ * {{{
+ *    val table = new Array[Int]
+ *    var currentSize = 0
+ *    // Add some element into the lowered HashMap
+ *    for (i <- 0 until currentSize) {
+ *      val value = table(i)
+ *      process(i, value)
+ *    }
+ * }}}
+ * Precondition:
+ * 1) There should be a functional dependancy between key and value, which means
+ * that we can extract key from the value.
+ * 2) Furthermore, this lowering is implemented only in the case of using 3 methods
+ * of a HashMap: a) getOrElseUpdate b) foreach c) remove.
+ * In the other cases this transformation should not be applied.
+ * 3) There should be no collision between the hashing function computed using the
+ * keys.
+ * 4) The record for the value, should only have 2 fields, one of which is the key.
+ * 5) Key must be an integer, otherwise this rule is not applicable.
+ *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops](override val IR: Lang) extends sc.pardis.optimization.RuleBasedTransformer[Lang](IR) {
+class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops](override val IR: Lang)
+  extends sc.pardis.optimization.RuleBasedTransformer[Lang](IR) {
   import IR._
   type Rep[T] = IR.Rep[T]
   type Var[T] = IR.Var[T]
+
+  // TODO quasification of this transformer makes the compilation very slow.
+  // Should be quasified after optimizing the quasi engine.
 
   class A
   class B
@@ -67,10 +101,10 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
   /* Phase I: Identifying the types and hashmaps that have the potential to be lowered */
 
   analysis += rule {
-    case node @ HashMapGetOrElseUpdate(nodeself, nodekey, Block(_, struct @ Def(Struct(_, fields, _)))) if phase == FindLoweredRecordType =>
+    case node @ HashMapGetOrElseUpdate(hm, key, Block(_, Def(Struct(_, fields, _)))) if phase == FindLoweredRecordType =>
       // TODO maybe can be generalized
-      if (nodekey.tp == IntType && fields.exists(_.init == nodekey) && fields.size == 2) {
-        potentiallyLoweredHashMaps += nodeself
+      if (key.tp == IntType && fields.exists(_.init == key) && fields.size == 2) {
+        potentiallyLoweredHashMaps += hm
       }
       ()
   }
@@ -104,7 +138,8 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
   val flattenedStructValueFields = scala.collection.mutable.Map[TypeRep[Any], List[String]]()
 
   analysis += rule {
-    case node @ HashMapGetOrElseUpdate(nodeself, nodekey, nodeopOutput) if phase == GatherLoweredSymbols && loweredHashMaps.contains(nodeself) =>
+    case node @ HashMapGetOrElseUpdate(nodeself, nodekey, nodeopOutput) if phase == GatherLoweredSymbols &&
+      loweredHashMaps.contains(nodeself) =>
       hashMapElemValue(nodeself) = nodeopOutput
       traverseBlock(nodeopOutput)
       ()
@@ -173,7 +208,8 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
     val v = lastIndexMap(self).asInstanceOf[Var[Int]]
     __readVar(v).asInstanceOf[Rep[Int]]
   }
-  def hashMap_Field_Table[A, B](self: Rep[HashMap[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Array[B]] = tableMap(self).asInstanceOf[Rep[Array[B]]]
+  def hashMap_Field_Table[A, B](self: Rep[HashMap[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Array[B]] =
+    tableMap(self).asInstanceOf[Rep[Array[B]]]
   rewrite += statement {
     case sym -> (node @ HashMapNew()) if mustBeLowered(sym) =>
 
@@ -215,19 +251,24 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
   }
 
   rewrite += rule {
-    case node @ StructImmutableField(s, field) if isFlattenedStruct(s) && isValueFieldOfFlattennedStruct(s, field) =>
+    case node @ StructImmutableField(s, field) if isFlattenedStruct(s) &&
+      isValueFieldOfFlattennedStruct(s, field) =>
       apply(s)
   }
   rewrite += rule {
-    case node @ StructFieldGetter(s, field) if isFlattenedStruct(s) && isValueFieldOfFlattennedStruct(s, field) =>
+    case node @ StructFieldGetter(s, field) if isFlattenedStruct(s) &&
+      isValueFieldOfFlattennedStruct(s, field) =>
       apply(s)
   }
   rewrite += rule {
-    case node @ StructFieldSetter(s @ TDef(ArrayApply(arr, i)), field, v) if isFlattenedStruct(s) && isValueFieldOfFlattennedStruct(s, field) =>
+    case node @ StructFieldSetter(s @ TDef(ArrayApply(arr, i)), field, v) if isFlattenedStruct(s) &&
+      isValueFieldOfFlattennedStruct(s, field) =>
       arr(i) = v
   }
   rewrite += rule {
-    case node @ StructImmutableField(s, field) if isFlattenedStruct(s) && hashmapForeachKeyIndex.exists(_._1.tp.typeArguments(1) == s.tp) && isKeyFieldOfFlattennedStruct(s, field) =>
+    case node @ StructImmutableField(s, field) if isFlattenedStruct(s) &&
+      hashmapForeachKeyIndex.exists(_._1.tp.typeArguments(1) == s.tp) &&
+      isKeyFieldOfFlattennedStruct(s, field) =>
       hashmapForeachKeyIndex.find(_._1.tp.typeArguments(1) == s.tp).get._2
   }
 
