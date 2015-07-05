@@ -17,28 +17,83 @@ object SingletonHashMapToValueTransformer extends TransformerHandler {
   }
 }
 
-class SingletonHashMapToValueTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) {
+/**
+ * Converts a HashMap with only one constant key to a local variable of its
+ * corresponding value.
+ *
+ * Example:
+ * {{{
+ *    val hm = new HashMap[String, Array[Int]]
+ *    while(...) {
+ *      val array = hm.getOrElseUpdate("Total", new Array[Int](5))
+ *      array(0) = foo()
+ *      ...
+ *      array(4) = goo()
+ *    }
+ *    hm.foreach({ case (k, v) =>
+ *      process(v)
+ *    })
+ * }}}
+ * is converted to:
+ * {{{
+ *    val array = new Array[Int](5)
+ *    while(...) {
+ *      array(0) = foo()
+ *      ...
+ *      array(4) = goo()
+ *    }
+ *    process(array)
+ * }}}
+ */
+class SingletonHashMapToValueTransformer(override val IR: LoweringLegoBase)
+  extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
 
-  val constantKeyMap = collection.mutable.Map[Sym[Any], Block[Any]]()
-  val singletonHashMaps = scala.collection.mutable.ArrayBuffer[Rep[Any]]()
+  val singletonHashMapValues = collection.mutable.Map[Sym[Any], Block[Any]]()
+  val singletonHashMapKeys = collection.mutable.Map[Sym[Any], String]()
+  val singletonHashMaps = scala.collection.mutable.Set[Rep[Any]]()
+  val multiValuedHashMaps = scala.collection.mutable.Set[Rep[Any]]()
   def isSingletonHashMap[T](a: Rep[T]): Boolean = singletonHashMaps.contains(a.asInstanceOf[Rep[Any]])
-  def addSingleton[T, S](sym: Rep[T], block: Block[S]) = {
-    constantKeyMap += sym.asInstanceOf[Sym[Any]] -> block.asInstanceOf[Block[Any]]
-    singletonHashMaps += sym.asInstanceOf[Rep[Any]]
+
+  /**
+   * Adds the pair of keys and values for the given HashMap symbol.
+   */
+  def addSingleton[T, S](sym: Rep[T], key: String, block: Block[S]) = {
+    val hm = sym.asInstanceOf[Sym[Any]]
+    val value = block.asInstanceOf[Block[Any]]
+    singletonHashMapKeys.get(hm) match {
+      case Some(key2) if key != key2 =>
+        // If the HashMap has different constant keys, this optimization does not
+        // handle it
+        multiValuedHashMaps += hm
+      case _ =>
+    }
+    singletonHashMapValues(hm) = value
+    singletonHashMapKeys(hm) = key
+    singletonHashMaps += hm
+  }
+
+  /**
+   * Considers only the HashMaps with one constant key.
+   */
+  override def postAnalyseProgram[T: TypeRep](node: Block[T]): Unit = {
+    singletonHashMaps --= multiValuedHashMaps
   }
 
   analysis += rule {
-    case hmgeu @ HashMapGetOrElseUpdate(hm, Constant(_), value) => {
-      addSingleton(hm, value)
+    case hmgeu @ HashMapGetOrElseUpdate(hm, Constant(key: String), value) => {
+      addSingleton(hm, key, value)
       ()
     }
   }
 
   rewrite += rule {
-    case (hmgeu @ HashMapGetOrElseUpdate(hm, k, v)) if (isSingletonHashMap(hm)) =>
+    case HashMapGetOrElseUpdate(hm, k, v) if (isSingletonHashMap(hm)) =>
       apply(hm)
-    case (hmr @ HashMapRemove(hm, key)) if (isSingletonHashMap(hm)) =>
+  }
+
+  rewrite += rule {
+    case HashMapRemove(hm, key) if (isSingletonHashMap(hm)) =>
       apply(hm)
   }
 
@@ -50,13 +105,8 @@ class SingletonHashMapToValueTransformer(override val IR: LoweringLegoBase) exte
   }
 
   rewrite += statement {
-    case sym -> (hmn @ HashMapNew()) if (isSingletonHashMap(sym)) =>
-      val valueBlock = constantKeyMap(sym)
+    case sym -> HashMapNew() if (isSingletonHashMap(sym)) =>
+      val valueBlock = singletonHashMapValues(sym)
       inlineBlock(valueBlock)
-  }
-
-  override def newSym[T: TypeRep](sym: Rep[T]): to.Sym[_] = {
-    if (isSingletonHashMap(sym)) fresh(sym.tp.typeArguments(1)).copyFrom(sym.asInstanceOf[Sym[T]])
-    else super.newSym[T](sym)
   }
 }
