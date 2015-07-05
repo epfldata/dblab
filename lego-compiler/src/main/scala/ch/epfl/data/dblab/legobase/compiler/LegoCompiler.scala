@@ -79,7 +79,7 @@ class LegoCompiler(val DSL: LoweringLegoBase,
   if (settings.hashMapToArray) {
     pipeline += ConstSizeArrayToLocalVars
     pipeline += DCE
-    // pipeline += TreeDumper(true)
+    // pipeline += TreeDumper(false)
     pipeline += new HashMapTo1DArray(DSL)
   }
 
@@ -106,7 +106,7 @@ class LegoCompiler(val DSL: LoweringLegoBase,
     pipeline += DCE
 
     if (settings.setToLinkedList) {
-      pipeline += SetLinkedListTransformation
+      pipeline += new SetToLinkedListTransformation(DSL)
       if (settings.containerFlattenning) {
         pipeline += ContainerFlatTransformer
       }
@@ -114,7 +114,7 @@ class LegoCompiler(val DSL: LoweringLegoBase,
     }
 
     if (settings.setToArray) {
-      pipeline += new SetArrayTransformation(DSL, schema)
+      pipeline += new SetToArrayTransformation(DSL, schema)
     }
     if (settings.setToLinkedList || settings.setToArray || settings.hashMapNoCollision) {
       pipeline += AssertTransformer(TypeAssertion(t => !t.isInstanceOf[DSL.SetType[_]]))
@@ -129,7 +129,7 @@ class LegoCompiler(val DSL: LoweringLegoBase,
   }
 
   if (settings.partitioning) {
-    pipeline += TreeDumper(false)
+    // pipeline += TreeDumper(false)
     pipeline += new WhileToRangeForeachTransformer(DSL)
     pipeline += new IntroduceHashIndexForRangeLookup(DSL, schema)
     pipeline += DCE
@@ -140,7 +140,6 @@ class LegoCompiler(val DSL: LoweringLegoBase,
 
   if (settings.constArray) {
     pipeline += ConstSizeArrayToLocalVars
-    // pipeline += SingletonArrayToValueTransformer
   }
 
   if (settings.columnStore) {
