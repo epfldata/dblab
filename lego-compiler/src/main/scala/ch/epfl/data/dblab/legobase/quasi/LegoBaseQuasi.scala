@@ -18,3 +18,4 @@ trait LegoBaseQuasiExt extends BaseQuasiExt
   with BooleanExtOps
   with MultiMapExtOps
   with OptionExtOps
+  with HashMapExtOps
