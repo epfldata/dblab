@@ -18,8 +18,56 @@ object SetToLinkedListTransformation {
 
 import SetToLinkedListTransformation.Lang
 
+/**
+ * Converts a Set collection, which there is no duplicate element inserted into it,
+ * to a linked list.
+ * To check how this transformation is implemented take a look at the implementation
+ * of [[sc.pardis.shallow.scalalib.collection.SetLinkedList]]. Purgatory automatically
+ * generates the skeleton of the core part of this transformation out of the shallow
+ * implementation.
+ *
+ * Example:
+ * {{{
+ *    val elements: Collection[A] = // some collection of elements of type A
+ *    val set = Set[A]()
+ *    for(elem <- elements) {
+ *      set += elem
+ *    }
+ *    ...
+ *    for(e <- set) { // desugared into `set.foreach(e => ...)`
+ *      process(e)
+ *    }
+ * }}}
+ * is converted into:
+ * {{{
+ *    val elements: Collection[A] = // some collection of elements of type A
+ *    var setLinkedList = new Container[A](null)
+ *    for(elem <- elements) {
+ *      if (setLinkedList == null) {
+ *        setLinkedList = new Container(elem, null)
+ *      } else {
+ *        val prevNext = setLinkedList.next
+ *        val current = new Cont(elem, prevNext)
+ *        setLinkedList.next = current
+ *      }
+ *    }
+ *    ...
+ *    var current = setLinkedList
+ *    while (current != null) {
+ *      val next = current.next
+ *      process(current.elem)
+ *      current = next
+ *    }
+ * }}}
+ *
+ * Precondition:
+ * The elements inserted into the set should not have any duplication. Otherwise,
+ * this transformation does not work correctly. There is no analysis phase involved
+ * for check this contraint, which means it should be made sure by the user.
+ */
 class SetToLinkedListTransformation(
-  override val IR: Lang) extends sc.pardis.deep.scalalib.collection.SetLinkedListTransformation(IR)
+  override val IR: Lang)
+  extends sc.pardis.deep.scalalib.collection.SetLinkedListTransformation(IR)
   with ArrayEscapeLowering[Lang]
   with VarEscapeLowering[Lang]
   with Tuple2EscapeLowering[Lang]
@@ -28,6 +76,9 @@ class SetToLinkedListTransformation(
   with RuleBasedLowering[Lang] {
   import IR._
 
+  /**
+   * The list of Set symbols that are lowered
+   */
   val loweredSets = scala.collection.mutable.ArrayBuffer[Rep[Any]]()
 
   def mustBeLowered[T](sym: Rep[T]): Boolean =
@@ -45,7 +96,16 @@ class SetToLinkedListTransformation(
     }
   }).asInstanceOf[PardisType[Any]]
 
-  override def set_Field_HeadCont_$eq[A](self: Rep[Set[A]], x$1: Rep[Cont[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+  /*
+   * As a Set is directly lowered into a local variable, instead of first lowering
+   * it into a record and then promoting the field of that record to local variable,
+   * while we are updating or accessing the head of the lowered linked list, 
+   * we have to take care of the cases handled by scalar replacement optimizations.
+   * The following two methods are responsible for handling this task.
+   */
+
+  override def set_Field_HeadCont_$eq[A](self: Rep[Set[A]],
+                                         x$1: Rep[Cont[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
     self match {
       case Def(ReadVar(v)) =>
         v.e match {
@@ -68,7 +128,8 @@ class SetToLinkedListTransformation(
     self match {
       case Def(ReadVar(v)) => {
         v.e match {
-          case Def(NewVar(arrApp @ Def(ArrayApply(arr, i)))) => apply(arrApp).asInstanceOf[Rep[Cont[A]]]
+          case Def(NewVar(arrApp @ Def(ArrayApply(arr, i)))) =>
+            apply(arrApp).asInstanceOf[Rep[Cont[A]]]
           case _ => __readVar(v.asInstanceOf[Var[Cont[A]]])
         }
       }
