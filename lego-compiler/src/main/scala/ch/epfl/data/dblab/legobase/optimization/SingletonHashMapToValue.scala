@@ -45,14 +45,41 @@ object SingletonHashMapToValueTransformer extends TransformerHandler {
  *    }
  *    process(array)
  * }}}
+ *
+ * Preconditions:
+ * a) There should be only one constant key for the HashMap.
+ * b) The value for that particular key should be assigned only by `getOrElseUpdate`
+ * and only invokation of this method in only one statement.
+ * c) The value should not have dependencies on the statements happening between
+ * `new HashMap` and the invokation of `getOrElseUpdate`.
+ * d) Only in the case of using the following 3 methods
+ * of a HashMap this transformation can be applied: 1) getOrElseUpdate 2) foreach
+ * 3) remove.
+ * e) In foreach method, there should be no use of the key, which means only the
+ * value should be used.
  */
 class SingletonHashMapToValueTransformer(override val IR: LoweringLegoBase)
   extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
 
+  /**
+   * Contains the value for a specific HashMap symbol
+   */
   val singletonHashMapValues = collection.mutable.Map[Sym[Any], Block[Any]]()
-  val singletonHashMapKeys = collection.mutable.Map[Sym[Any], String]()
+  /**
+   * Contains the constant key for a specific HashMap symbol
+   */
+  val singletonHashMapKeys = collection.mutable.Map[Sym[Any], Any]()
+  /**
+   * Contains the list of HashMaps which have one or more than constant keys.
+   * After the analysis phase (in the method `postAnalyseProgram`) the HashMaps
+   * with more than one constant keys (which are stored in the `multiValuedHashMaps`)
+   * are removed from this list.
+   */
   val singletonHashMaps = scala.collection.mutable.Set[Rep[Any]]()
+  /**
+   * Contains the list of HashMaps which have more than one constant keys.
+   */
   val multiValuedHashMaps = scala.collection.mutable.Set[Rep[Any]]()
 
   def isSingletonHashMap[T](a: Rep[T]): Boolean =
@@ -61,7 +88,7 @@ class SingletonHashMapToValueTransformer(override val IR: LoweringLegoBase)
   /**
    * Adds the pair of keys and values for the given HashMap symbol.
    */
-  def addSingleton[T, S](sym: Rep[T], key: String, block: Block[S]) = {
+  def addSingleton[T, S](sym: Rep[T], key: Any, block: Block[S]) = {
     val hm = sym.asInstanceOf[Sym[Any]]
     val value = block.asInstanceOf[Block[Any]]
     singletonHashMapKeys.get(hm) match {
@@ -84,7 +111,7 @@ class SingletonHashMapToValueTransformer(override val IR: LoweringLegoBase)
   }
 
   analysis += rule {
-    case dsl"($hm: HashMap[Any, Any]).getOrElseUpdate(${ Constant(key: String) }, $value)" => {
+    case dsl"($hm: HashMap[Any, Any]).getOrElseUpdate(${ Constant(key) }, $value)" => {
       addSingleton(hm, key, value)
       ()
     }
