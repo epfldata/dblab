@@ -12,6 +12,10 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 
+/**
+ * In the cases that printing the result output is very time consuming, this transformer
+ * puts the printing part outside of the query processing timing.
+ */
 class LargeOutputPrintHoister(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
 
