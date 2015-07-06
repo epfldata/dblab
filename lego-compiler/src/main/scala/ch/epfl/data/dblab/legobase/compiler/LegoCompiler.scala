@@ -73,6 +73,8 @@ class LegoCompiler(val DSL: LoweringLegoBase,
 
   // pipeline += PartiallyEvaluate
   pipeline += HashMapHoist
+  pipeline += TreeDumper(true)
+
   if (!settings.noSingletonHashMap)
     pipeline += SingletonHashMapToValueTransformer
 
@@ -144,7 +146,7 @@ class LegoCompiler(val DSL: LoweringLegoBase,
 
   if (settings.columnStore) {
 
-    pipeline += new ColumnStoreTransformer(DSL, settings)
+    pipeline += new ColumnStoreTransformer(DSL)
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
 
