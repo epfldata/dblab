@@ -282,40 +282,6 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
   }
 
   /**
-   * Stores a code that is produced somewhere and should be reified somewhere else.
-   */
-  class CodeReifier {
-    private var _code: () => Rep[Any] = _
-    /**
-     * Stores the given code.
-     * The given code will not be reified here.
-     */
-    def :=(code: => Rep[Any]): Unit = {
-      _code = () => code
-    }
-    /**
-     * Reifies the stored code.
-     */
-    def apply[T](): Rep[T] =
-      reify[T]()
-    /**
-     * Reifies the stored code.
-     */
-    def reify[T](): Rep[T] =
-      _code().asInstanceOf[Rep[T]]
-    /**
-     * Resets the stored code.
-     */
-    def reset(): Unit =
-      _code = null
-    /**
-     * Specifies if there is any code stored.
-     */
-    def hasCode(): Boolean =
-      _code != null
-  }
-
-  /**
    * Provides additional operations for a MultiMap which is partitioned
    */
   implicit class PartitionedMultiMapInfoOps(multiMap: Rep[Any]) {
@@ -328,16 +294,6 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
       hashJoinAntiRetainVar(multiMap) = value
     def outerExistsVar_=(value: Var[Boolean]): Unit =
       leftOuterJoinExistsVar(multiMap) = value
-    /**
-     * Specifies if during the rewriting, we are in the phase of filling the hole
-     * for a given MultiMap
-     */
-    // def isFillingHole: Boolean =
-    //   fillingHole.contains(multiMap)
-    // def startFillingHole(): Unit =
-    //   fillingHole += multiMap
-    // def finishFillingHole(): Unit =
-    //   fillingHole -= multiMap
     /**
      * Reifies the code that is needed for the processing that happening for the
      * right element of a join.
@@ -406,11 +362,9 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
       partitionedArrayForeach[ElemType2](rightArray, key, (e: Rep[ElemType2]) => {
         mm.leftElemCode := e
         mm.rightElemProcessingCode := value
-        // mm.startFillingHole()
         val res = inlineBlock2(rightArray.loop.body)
         mm.leftElemCode.reset()
         mm.rightElemProcessingCode.reset()
-        // mm.finishFillingHole()
         res
       })
       transformedMapsCount += 1
@@ -466,9 +420,7 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
                   } else {
                   }"""
         }
-        // mm.startFillingHole()
         val res1 = inlineBlock2(whileLoop.body)
-        // mm.finishFillingHole()
         mm.leftElemCode.reset()
         mm.rightElemProcessingCode.reset()
         transformedMapsCount += 1
@@ -522,10 +474,8 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
                   }"""
         }
         // System.out.println(s"STARTED setforeach for the key $key $e.${leftArray.fieldFunc} mm: $mm")
-        // mm.startFillingHole()
         val res1 = inlineBlock2(whileLoop.body)
         // System.out.println(s"FINISH setforeach for the key $key")
-        // mm.finishFillingHole()
         mm.leftElemCode.reset()
         mm.rightElemProcessingCode.reset()
         transformedMapsCount += 1
@@ -565,9 +515,7 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
       partitionedArrayForeach[InnerType](rightArray, key, (e: Rep[InnerType]) => {
         mm.leftElemCode := e
         mm.rightElemProcessingCode := apply(nodev)
-        // mm.startFillingHole()
         val res1 = inlineBlock2(whileLoop.body)
-        // mm.finishFillingHole()
         mm.leftElemCode.reset()
         mm.rightElemProcessingCode.reset()
         transformedMapsCount += 1
@@ -686,7 +634,6 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
         case None             => index
       }
       val e = parArr(bucket)
-      // System.out.println(s"part foreach for val $e=$parArr($bucket) ")
       f(e)
     } else {
       val bucket = index % partitionedRelationInfo.numBuckets
