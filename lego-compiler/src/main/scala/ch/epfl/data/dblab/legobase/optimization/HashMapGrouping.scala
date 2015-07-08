@@ -303,6 +303,16 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
      */
     def reify[T](): Rep[T] =
       _code().asInstanceOf[Rep[T]]
+    /**
+     * Resets the stored code.
+     */
+    def reset(): Unit =
+      _code = null
+    /**
+     * Specifies if there is any code stored.
+     */
+    def hasCode(): Boolean =
+      _code != null
   }
 
   /**
@@ -322,12 +332,12 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
      * Specifies if during the rewriting, we are in the phase of filling the hole
      * for a given MultiMap
      */
-    def isFillingHole: Boolean =
-      fillingHole.contains(multiMap)
-    def startFillingHole(): Unit =
-      fillingHole += multiMap
-    def finishFillingHole(): Unit =
-      fillingHole -= multiMap
+    // def isFillingHole: Boolean =
+    //   fillingHole.contains(multiMap)
+    // def startFillingHole(): Unit =
+    //   fillingHole += multiMap
+    // def finishFillingHole(): Unit =
+    //   fillingHole -= multiMap
     /**
      * Reifies the code that is needed for the processing that happening for the
      * right element of a join.
@@ -396,9 +406,11 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
       partitionedArrayForeach[ElemType2](rightArray, key, (e: Rep[ElemType2]) => {
         mm.leftElemCode := e
         mm.rightElemProcessingCode := value
-        mm.startFillingHole()
+        // mm.startFillingHole()
         val res = inlineBlock2(rightArray.loop.body)
-        mm.finishFillingHole()
+        mm.leftElemCode.reset()
+        mm.rightElemProcessingCode.reset()
+        // mm.finishFillingHole()
         res
       })
       transformedMapsCount += 1
@@ -423,7 +435,7 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
                   $elsep
                ): Any""" if mm.getInfo.shouldBePartitioned &&
       mm.getInfo.isAnti &&
-      mm.isFillingHole =>
+      mm.rightElemProcessingCode.hasCode() =>
       class ElemType
       val retainPredicate = thenp match {
         case dsl"__block{ ($set: Set[Any]).retain($pred); $res }" => pred.asInstanceOf[Rep[ElemType => Boolean]]
@@ -454,9 +466,11 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
                   } else {
                   }"""
         }
-        mm.startFillingHole()
+        // mm.startFillingHole()
         val res1 = inlineBlock2(whileLoop.body)
-        mm.finishFillingHole()
+        // mm.finishFillingHole()
+        mm.leftElemCode.reset()
+        mm.rightElemProcessingCode.reset()
         transformedMapsCount += 1
         res1
       })
@@ -473,7 +487,7 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
   rewrite += remove {
     case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if mm.getInfo.shouldBePartitioned &&
       mm.getInfo.hasLeft &&
-      !mm.isFillingHole =>
+      !mm.leftElemCode.hasCode() =>
       ()
   }
 
@@ -508,10 +522,12 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
                   }"""
         }
         // System.out.println(s"STARTED setforeach for the key $key $e.${leftArray.fieldFunc} mm: $mm")
-        mm.startFillingHole()
+        // mm.startFillingHole()
         val res1 = inlineBlock2(whileLoop.body)
         // System.out.println(s"FINISH setforeach for the key $key")
-        mm.finishFillingHole()
+        // mm.finishFillingHole()
+        mm.leftElemCode.reset()
+        mm.rightElemProcessingCode.reset()
         transformedMapsCount += 1
         res1
       })
@@ -527,7 +543,7 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
   rewrite += rule {
     case dsl"($mm: MultiMap[Any, Any]).addBinding($elem, $nodev)" if mm.getInfo.shouldBePartitioned &&
       mm.getInfo.hasLeft &&
-      mm.isFillingHole =>
+      mm.rightElemProcessingCode.hasCode() =>
       mm.rightElemProcessingCode()
   }
 
@@ -549,9 +565,11 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
       partitionedArrayForeach[InnerType](rightArray, key, (e: Rep[InnerType]) => {
         mm.leftElemCode := e
         mm.rightElemProcessingCode := apply(nodev)
-        mm.startFillingHole()
+        // mm.startFillingHole()
         val res1 = inlineBlock2(whileLoop.body)
-        mm.finishFillingHole()
+        // mm.finishFillingHole()
+        mm.leftElemCode.reset()
+        mm.rightElemProcessingCode.reset()
         transformedMapsCount += 1
         res1
       })
@@ -560,14 +578,14 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
   rewrite += remove {
     case dsl"($mm: MultiMap[Any, Any]).get($elem).get.foreach($f)" if mm.getInfo.shouldBePartitioned &&
       !mm.getInfo.hasLeft &&
-      !mm.isFillingHole =>
+      !mm.leftElemCode.hasCode() =>
       ()
   }
 
   rewrite += rule {
     case dsl"($mm: MultiMap[Any, Any]).get($elem).get.foreach($f)" if mm.getInfo.shouldBePartitioned &&
       !mm.getInfo.hasLeft &&
-      mm.isFillingHole =>
+      mm.rightElemProcessingCode.hasCode() =>
       inlineFunction(f, mm.rightElemProcessingCode[Any]())
   }
 
@@ -612,7 +630,7 @@ class HashMapGrouping(override val IR: LoweringLegoBase,
     multiMapInfo.shouldBePartitioned &&
       multiMapInfo.partitionedRelationInfo.array == array &&
       multiMapInfo.partitionedRelationInfo.loopIndexVariable == indexVariable &&
-      multiMapInfo.multiMapSymbol.isFillingHole
+      multiMapInfo.multiMapSymbol.leftElemCode.hasCode()
   }
 
   // TODO `as` can improve this rule a lot
