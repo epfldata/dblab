@@ -52,20 +52,6 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val schema: Schem
   /* If you want to disable this optimization, set this flag to `false` */
   val enabled = true
 
-  override def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
-    phase = FindMallocs
-    traverseBlock(node)
-    phase = FindSize
-    traverseBlock(node)
-    transformProgram(node)
-  }
-
-  sealed trait Phase
-  case object FindMallocs extends Phase
-  case object FindSize extends Phase
-
-  var phase: Phase = _
-
   var startCollecting = false
   //val mallocNodes = collection.mutable.ArrayBuffer[PardisStruct[Any]]()
   val mallocNodes = collection.mutable.ArrayBuffer[Def[Any]]()
@@ -98,7 +84,7 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val schema: Schem
   }
 
   analysis += rule {
-    case m @ PardisStruct(tag, elems, methods) if startCollecting && phase == FindMallocs => {
+    case m @ PardisStruct(tag, elems, methods) if startCollecting => {
       /*System.out.println("---------------------")
       System.out.println("INSERTING STRUCT: " + node.tp + " TO LIST ")
       System.out.println(mallocNodes.map(mn => mn.tp).mkString("\n"))
@@ -111,7 +97,7 @@ class MemoryAllocationHoist(override val IR: LoweringLegoBase, val schema: Schem
   }
 
   analysis += rule {
-    case m @ ArrayNew(size) if startCollecting && phase == FindMallocs => {
+    case m @ ArrayNew(size) if startCollecting => {
       /*System.out.println("---------------------")
       System.out.println("INSERTING ARRAy: " + node.tp + " TO LIST ")
       System.out.println(mallocNodes.map(mn => mn.tp).mkString("\n"))
