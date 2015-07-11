@@ -80,16 +80,14 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
     }
   }.asInstanceOf[TypeRep[Any]]
 
-  var phase: Phase = _
-  sealed trait Phase
-  case object FindLoweredRecordType extends Phase
-  case object GatherLoweredSymbols extends Phase
+  case object FindLoweredRecordType extends AnalysisPhase
+  case object GatherLoweredSymbols extends AnalysisPhase
 
   override def analyseProgram[T: TypeRep](node: Block[T]): Unit = {
-    phase = FindLoweredRecordType
+    currentAnalysisPhase = FindLoweredRecordType
     traverseBlock(node)
     loweredHashMaps ++= (potentiallyLoweredHashMaps diff invalidLoweredHashMaps)
-    phase = GatherLoweredSymbols
+    currentAnalysisPhase = GatherLoweredSymbols
     traverseBlock(node)
     System.out.println(flattenedStructValueFields)
   }
@@ -100,8 +98,8 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
 
   /* Phase I: Identifying the types and hashmaps that have the potential to be lowered */
 
-  analysis += rule {
-    case node @ HashMapGetOrElseUpdate(hm, key, Block(_, Def(Struct(_, fields, _)))) if phase == FindLoweredRecordType =>
+  analysis atPhase FindLoweredRecordType += rule {
+    case node @ HashMapGetOrElseUpdate(hm, key, Block(_, Def(Struct(_, fields, _)))) =>
       // TODO maybe can be generalized
       if (key.tp == IntType && fields.exists(_.init == key) && fields.size == 2) {
         potentiallyLoweredHashMaps += hm
@@ -109,22 +107,22 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
       ()
   }
 
-  analysis += rule {
-    case node @ HashMapForeach(nodeself, Def(Lambda(_, i, o))) if phase == FindLoweredRecordType =>
+  analysis atPhase FindLoweredRecordType += rule {
+    case node @ HashMapForeach(nodeself, Def(Lambda(_, i, o))) =>
       analysingInputForeach(i) = nodeself
       traverseBlock(o)
       analysingInputForeach.remove(i)
       ()
   }
 
-  analysis += rule {
-    case node @ HashMapRemove(nodeself, nodekey) if phase == FindLoweredRecordType =>
+  analysis atPhase FindLoweredRecordType += rule {
+    case node @ HashMapRemove(nodeself, nodekey) =>
       invalidLoweredHashMaps += nodeself
       ()
   }
 
-  analysis += rule {
-    case Tuple2_Field__1(i) if phase == FindLoweredRecordType && analysingInputForeach.contains(i) =>
+  analysis atPhase FindLoweredRecordType += rule {
+    case Tuple2_Field__1(i) if analysingInputForeach.contains(i) =>
       invalidLoweredHashMaps += analysingInputForeach(i)
       ()
   }
@@ -137,34 +135,33 @@ class HashMapTo1DArray[Lang <: HashMapOps with RangeOps with ArrayOps with Optio
   val flattenedStructKeyField = scala.collection.mutable.Map[TypeRep[Any], String]()
   val flattenedStructValueFields = scala.collection.mutable.Map[TypeRep[Any], List[String]]()
 
-  analysis += rule {
-    case node @ HashMapGetOrElseUpdate(nodeself, nodekey, nodeopOutput) if phase == GatherLoweredSymbols &&
-      loweredHashMaps.contains(nodeself) =>
+  analysis atPhase GatherLoweredSymbols += rule {
+    case node @ HashMapGetOrElseUpdate(nodeself, nodekey, nodeopOutput) if loweredHashMaps.contains(nodeself) =>
       hashMapElemValue(nodeself) = nodeopOutput
       traverseBlock(nodeopOutput)
       ()
   }
 
-  analysis += rule {
-    case StructImmutableField(s, _) if phase == GatherLoweredSymbols && s.tp.isLoweredRecordType =>
+  analysis atPhase GatherLoweredSymbols += rule {
+    case StructImmutableField(s, _) if s.tp.isLoweredRecordType =>
       flattenedStructs += s
       ()
   }
 
-  analysis += rule {
-    case StructFieldGetter(s, _) if phase == GatherLoweredSymbols && s.tp.isLoweredRecordType =>
+  analysis atPhase GatherLoweredSymbols += rule {
+    case StructFieldGetter(s, _) if s.tp.isLoweredRecordType =>
       flattenedStructs += s
       ()
   }
 
-  analysis += rule {
-    case StructFieldSetter(s, _, _) if phase == GatherLoweredSymbols && s.tp.isLoweredRecordType =>
+  analysis atPhase GatherLoweredSymbols += rule {
+    case StructFieldSetter(s, _, _) if s.tp.isLoweredRecordType =>
       flattenedStructs += s
       ()
   }
 
-  analysis += statement {
-    case sym -> Struct(_, fields, _) if phase == GatherLoweredSymbols && sym.tp.isLoweredRecordType =>
+  analysis atPhase GatherLoweredSymbols += statement {
+    case sym -> Struct(_, fields, _) if sym.tp.isLoweredRecordType =>
       flattenedStructs += sym
       flattenedStructKeyField += sym.tp -> fields.find(_.init.tp == IntType).get.name
       flattenedStructValueFields += sym.tp -> fields.toList.filter(_ != fields.find(_.init.tp == IntType).get).map(_.name)
