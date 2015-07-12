@@ -9,6 +9,7 @@ import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
 import scala.language.existentials
+
 /**
  * Transforms Scala Arrays into C structs.
  *
@@ -103,7 +104,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
       val newTp = ({
         if (elemType.isArray) typePointer(typeCArray(elemType.typeArguments(0)))
         else typeArray(typePointer(elemType))
-      }).asInstanceOf[PardisType[Any]] //if (elemType.isPrimitive) elemType else typePointer(elemType)
+      }).asInstanceOf[PardisType[Any]]
       // Read array and perform update
       val arr = field(s, "array")(newTp)
       if (elemType.isPrimitive) arrayUpdate(arr.asInstanceOf[Expression[Array[Any]]], i, apply(v))
@@ -115,23 +116,10 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         case _                         => false
       }) {
         class T
-        // implicit val typeT = apply(v).tp.typeArguments(0).asInstanceOf[TypeRep[T]]
         implicit val typeT = newTp.typeArguments(0).typeArguments(0).asInstanceOf[TypeRep[T]]
         val tArr = arr.asInstanceOf[Expression[Pointer[T]]]
         pointer_assign_content(tArr, i, unit(null))
-      } // else if (elemType.isRecord) {
-      //   class T
-      //   implicit val typeT = apply(v).tp.typeArguments(0).asInstanceOf[TypeRep[T]]
-      //   val newV = apply(v).asInstanceOf[Expression[Pointer[T]]]
-      //   val vContent = *(newV)
-      //   val tArr = arr.asInstanceOf[Expression[Pointer[T]]]
-      //   pointer_assign(tArr, i, vContent)
-      //   val pointerVar = newV match {
-      //     case Def(ReadVar(v)) => v.asInstanceOf[Var[Pointer[T]]]
-      //     case x               => Var(x.asInstanceOf[Rep[Var[Pointer[T]]]])
-      //   }
-      //   __assign(pointerVar, (&(tArr, i)).asInstanceOf[Rep[Pointer[T]]])(PointerType(typeT))
-      else if (elemType.isRecord) {
+      } else if (elemType.isRecord) {
         class T
         implicit val typeT = apply(v).tp.typeArguments(0).asInstanceOf[TypeRep[T]]
         val newV = apply(v).asInstanceOf[Expression[Pointer[T]]]
@@ -173,27 +161,13 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
         else typeArray(typePointer(elemType))
       }).asInstanceOf[PardisType[Any]]
       val arr = field(s, "array")(newTp)
-      // <<<<<<< HEAD
-      // if (elemType.isRecord) {
-      // =======
       if (elemType.isPrimitive || elemType == OptimalStringType || elemType.isInstanceOf[SetType[_]]) ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], apply(i))(newTp.asInstanceOf[PardisType[Any]])
       else {
-        // >>>>>>> merged-ir-str
         i match {
           case Constant(0) => Cast(arr)(arr.tp, typePointer(newTp))
           case _           => PTRADDRESS(arr.asInstanceOf[Expression[Pointer[Any]]], apply(i))(typePointer(newTp).asInstanceOf[PardisType[Pointer[Any]]])
         }
       }
-    // } else ArrayApply(arr.asInstanceOf[Expression[Array[Any]]], apply(i))(newTp.asInstanceOf[PardisType[Any]])
-    // class T
-    // implicit val typeT = a.tp.typeArguments(0).asInstanceOf[PardisType[T]]
-    // val newTp = ({
-    //   if (elemType.isArray) typePointer(typeCArray(elemType.typeArguments(0)))
-    //   else typeArray(typePointer(elemType))
-    // }).asInstanceOf[PardisType[Any]]
-    // val arr = field[Array[T]](s, "array")(newTp.asInstanceOf[PardisType[Array[T]]])
-    // if (elemType.isPrimitive) arrayApply(arr, i)(newTp.asInstanceOf[PardisType[T]])
-    // else &(arr, i)(newTp.typeArguments(0).typeArguments(0).asInstanceOf[PardisType[Array[T]]])
   }
 
   def __arrayLength[T: TypeRep](arr: Rep[Array[T]]): Rep[Int] = {
@@ -207,9 +181,7 @@ class ScalaArrayToCStructTransformer(override val IR: LoweringLegoBase) extends 
   }
   rewrite += rule {
     case ArrayForeach(a, f) =>
-      // val length = toAtom(apply(ArrayLength(a)))(IntType)
       val length = __arrayLength(a)
-      // System.out.println(s"symbol for length $length")
       // TODO if we use recursive rule based, the next line will be cleaner
       Range(unit(0), length).foreach {
         __lambda { index =>

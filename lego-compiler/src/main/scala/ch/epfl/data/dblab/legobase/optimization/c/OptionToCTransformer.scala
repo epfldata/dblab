@@ -8,6 +8,7 @@ import sc.pardis.optimization._
 import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
 
+// TODO add an anlysis phase to check the soundness of this optimization
 /**
  * Removes the abstraction overhead of Options.
  *
