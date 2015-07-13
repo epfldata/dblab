@@ -3,7 +3,13 @@ package dblab.legobase
 package queryengine
 package monad
 
-class Query[T](val underlying: List[T]) {
+import sc.pardis.annotations.{ deep, noImplementation, needsCircular, dontLift, needs, reflect }
+
+@deep
+@noImplementation
+@needs[List[_]]
+@needsCircular[GroupedQuery[_, _]]
+class Query[T](private val underlying: List[T]) {
   def map[S](f: T => S): Query[S] =
     new Query(underlying.map(f))
   def filter(p: T => Boolean): Query[T] =
@@ -22,7 +28,19 @@ class Query[T](val underlying: List[T]) {
     new Query(underlying.sortBy(f))
 }
 
-class GroupedQuery[K, V](val underlying: Map[K, List[V]]) {
+// HACK
+@deep
+@reflect[List[_]]
+class MList[A]
+
+@deep
+@reflect[Map[_, _]]
+class MMap[A, B]
+
+@deep
+@noImplementation
+@needs[(Tuple2[_, _], Query[_], Map[_, _], List[_])]
+class GroupedQuery[K, V](private val underlying: Map[K, List[V]]) {
   def mapValues[S](f: Query[V] => S): Query[(K, S)] =
     new Query(underlying.mapValues(l => f(new Query(l))).toList)
 }
