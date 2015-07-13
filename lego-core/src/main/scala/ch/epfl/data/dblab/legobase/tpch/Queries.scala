@@ -30,7 +30,7 @@ trait Queries
  */
 object Queries {
 
-  def Q1(numRuns: Int) {
+  def Q1_old(numRuns: Int) {
     val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
       runQuery {
@@ -58,6 +58,34 @@ object Queries {
         po.open
         po.next
         ()
+      }
+    }
+  }
+
+  // @dontLift
+  def Q1(numRuns: Int) {
+    val lineitemTable = loadLineitem().toList
+    for (i <- 0 until numRuns) {
+      runQuery {
+        val constantDate: Int = parseDate("1998-09-02")
+        val result = lineitemTable.filter(_.L_SHIPDATE <= constantDate).groupBy(x => new Q1GRPRecord(
+          x.L_RETURNFLAG, x.L_LINESTATUS)).mapValues(l =>
+          (
+            l.map(_.L_DISCOUNT).sum,
+            l.map(_.L_QUANTITY).sum,
+            l.map(_.L_EXTENDEDPRICE).sum,
+            l.map(t => t.L_EXTENDEDPRICE * (1.0 - t.L_DISCOUNT)).sum,
+            l.map(t => t.L_EXTENDEDPRICE * (1.0 - t.L_DISCOUNT) * (1.0 + t.L_TAX)).sum,
+            l.size,
+            l.map(_.L_QUANTITY).sum / l.size,
+            l.map(_.L_EXTENDEDPRICE).sum / l.size,
+            l.map(_.L_DISCOUNT).sum / l.size)).toList.sortBy(t =>
+          t._1.L_RETURNFLAG)
+        result.foreach(kv =>
+          printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%d\n",
+            kv._1.L_RETURNFLAG, kv._1.L_LINESTATUS, kv._2._2, kv._2._3, kv._2._4, kv._2._5,
+            kv._2._7, kv._2._8, kv._2._9, kv._2._6))
+        printf("(%d rows)\n", result.size)
       }
     }
   }
