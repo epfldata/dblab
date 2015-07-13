@@ -14,6 +14,7 @@ import tpch.TPCHLoader._
 import GenericEngine._
 // import queryengine.TPCHRelations._
 import storagemanager._
+import queryengine.monad._
 
 @metadeep(
   folder = "",
@@ -64,7 +65,7 @@ object Queries {
 
   // @dontLift
   def Q1(numRuns: Int) {
-    val lineitemTable = loadLineitem().toList
+    val lineitemTable = new Query(loadLineitem().toList)
     for (i <- 0 until numRuns) {
       runQuery {
         val constantDate: Int = parseDate("1998-09-02")
@@ -76,16 +77,16 @@ object Queries {
             l.map(_.L_EXTENDEDPRICE).sum,
             l.map(t => t.L_EXTENDEDPRICE * (1.0 - t.L_DISCOUNT)).sum,
             l.map(t => t.L_EXTENDEDPRICE * (1.0 - t.L_DISCOUNT) * (1.0 + t.L_TAX)).sum,
-            l.size,
-            l.map(_.L_QUANTITY).sum / l.size,
-            l.map(_.L_EXTENDEDPRICE).sum / l.size,
-            l.map(_.L_DISCOUNT).sum / l.size)).toList.sortBy(t =>
+            l.count,
+            l.map(_.L_QUANTITY).avg,
+            l.map(_.L_EXTENDEDPRICE).avg,
+            l.map(_.L_DISCOUNT).avg)).sortBy(t =>
           t._1.L_RETURNFLAG)
         result.foreach(kv =>
           printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%d\n",
             kv._1.L_RETURNFLAG, kv._1.L_LINESTATUS, kv._2._2, kv._2._3, kv._2._4, kv._2._5,
             kv._2._7, kv._2._8, kv._2._9, kv._2._6))
-        printf("(%d rows)\n", result.size)
+        printf("(%d rows)\n", result.count)
       }
     }
   }
