@@ -58,8 +58,11 @@ trait DeepDSL extends queryengine.push.OperatorsComponent
   with ManualLiftedLegoBase
   with QueryComponent
   with Tuple2Component
+  with Tuple9Component
   with MultiMapComponent
   with OptionComponent
   with SynthesizedQueriesComponent
   with TPCHLoaderComponent
+  with monad.GroupedQueryComponent
+  with monad.QueryComponent
 

@@ -31,7 +31,7 @@ trait Queries
  */
 object Queries {
 
-  def Q1(numRuns: Int) {
+  def Q1_old(numRuns: Int) {
     val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
       runQuery {
@@ -63,9 +63,9 @@ object Queries {
     }
   }
 
-  @dontLift
-  def Q1_new(numRuns: Int) {
-    val lineitemTable = new Query(loadLineitem().toList)
+  // def Q1_functional(numRuns: Int) {
+  def Q1(numRuns: Int) {
+    val lineitemTable = new Query(loadLineitem())
     for (i <- 0 until numRuns) {
       runQuery {
         val constantDate: Int = parseDate("1998-09-02")
