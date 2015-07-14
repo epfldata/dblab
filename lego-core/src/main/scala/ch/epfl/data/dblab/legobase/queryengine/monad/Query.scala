@@ -7,9 +7,10 @@ import sc.pardis.annotations.{ deep, noImplementation, needsCircular, dontLift, 
 
 @deep
 @noImplementation
-@needs[List[_]]
+@needs[(List[_], Array[_])]
 @needsCircular[GroupedQuery[_, _]]
 class Query[T](private val underlying: List[T]) {
+  def this(arr: Array[T]) = this(arr.toList)
   def map[S](f: T => S): Query[S] =
     new Query(underlying.map(f))
   def filter(p: T => Boolean): Query[T] =
@@ -27,15 +28,6 @@ class Query[T](private val underlying: List[T]) {
   def sortBy[S](f: T => S)(implicit ord: Ordering[S]): Query[T] =
     new Query(underlying.sortBy(f))
 }
-
-// HACK
-@deep
-@reflect[List[_]]
-class MList[A]
-
-@deep
-@reflect[Map[_, _]]
-class MMap[A, B]
 
 @deep
 @noImplementation

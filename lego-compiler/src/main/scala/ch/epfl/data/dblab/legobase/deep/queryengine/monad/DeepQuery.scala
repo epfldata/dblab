@@ -10,7 +10,7 @@ import pardis.deep._
 import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
-trait QueryOps extends Base with ListOps { this: GroupedQueryOps =>
+trait QueryOps extends Base with ListOps with ArrayOps { this: GroupedQueryOps =>
   // Type representation
   val QueryType = QueryIRs.QueryType
   type QueryType[T] = QueryIRs.QueryType[T]
@@ -30,10 +30,13 @@ trait QueryOps extends Base with ListOps { this: GroupedQueryOps =>
 
   }
   // constructors
-  def __newQuery[T](underlying: Rep[List[T]])(implicit typeT: TypeRep[T]): Rep[Query[T]] = queryNew[T](underlying)(typeT)
+  def __newQuery[T](underlying: Rep[List[T]])(implicit overload1: Overloaded1, typeT: TypeRep[T]): Rep[Query[T]] = queryNew1[T](underlying)(typeT)
+  def __newQuery[T](arr: Rep[Array[T]])(implicit overload2: Overloaded2, typeT: TypeRep[T]): Rep[Query[T]] = queryNew2[T](arr)(typeT)
   // IR defs
-  val QueryNew = QueryIRs.QueryNew
-  type QueryNew[T] = QueryIRs.QueryNew[T]
+  val QueryNew1 = QueryIRs.QueryNew1
+  type QueryNew1[T] = QueryIRs.QueryNew1[T]
+  val QueryNew2 = QueryIRs.QueryNew2
+  type QueryNew2[T] = QueryIRs.QueryNew2[T]
   val QueryMap = QueryIRs.QueryMap
   type QueryMap[T, S] = QueryIRs.QueryMap[T, S]
   val QueryFilter = QueryIRs.QueryFilter
@@ -53,7 +56,8 @@ trait QueryOps extends Base with ListOps { this: GroupedQueryOps =>
   val Query_Field_Underlying = QueryIRs.Query_Field_Underlying
   type Query_Field_Underlying[T] = QueryIRs.Query_Field_Underlying[T]
   // method definitions
-  def queryNew[T](underlying: Rep[List[T]])(implicit typeT: TypeRep[T]): Rep[Query[T]] = QueryNew[T](underlying)
+  def queryNew1[T](underlying: Rep[List[T]])(implicit typeT: TypeRep[T]): Rep[Query[T]] = QueryNew1[T](underlying)
+  def queryNew2[T](arr: Rep[Array[T]])(implicit typeT: TypeRep[T]): Rep[Query[T]] = QueryNew2[T](arr)
   def queryMap[T, S](self: Rep[Query[T]], f: Rep[((T) => S)])(implicit typeT: TypeRep[T], typeS: TypeRep[S]): Rep[Query[S]] = QueryMap[T, S](self, f)
   def queryFilter[T](self: Rep[Query[T]], p: Rep[((T) => Boolean)])(implicit typeT: TypeRep[T]): Rep[Query[T]] = QueryFilter[T](self, p)
   def queryForeach[T](self: Rep[Query[T]], f: Rep[((T) => Unit)])(implicit typeT: TypeRep[T]): Rep[Unit] = QueryForeach[T](self, f)
@@ -67,6 +71,7 @@ trait QueryOps extends Base with ListOps { this: GroupedQueryOps =>
 }
 object QueryIRs extends Base {
   import ListIRs._
+  import ArrayIRs._
   import GroupedQueryIRs._
   // Type representation
   case class QueryType[T](typeT: TypeRep[T]) extends TypeRep[Query[T]] {
@@ -79,7 +84,11 @@ object QueryIRs extends Base {
   }
   implicit def typeQuery[T: TypeRep]: TypeRep[Query[T]] = QueryType(implicitly[TypeRep[T]])
   // case classes
-  case class QueryNew[T](underlying: Rep[List[T]])(implicit val typeT: TypeRep[T]) extends ConstructorDef[Query[T]](List(typeT), "Query", List(List(underlying))) {
+  case class QueryNew1[T](underlying: Rep[List[T]])(implicit val typeT: TypeRep[T]) extends ConstructorDef[Query[T]](List(typeT), "Query", List(List(underlying))) {
+    override def curriedConstructor = (copy[T] _)
+  }
+
+  case class QueryNew2[T](arr: Rep[Array[T]])(implicit val typeT: TypeRep[T]) extends ConstructorDef[Query[T]](List(typeT), "Query", List(List(arr))) {
     override def curriedConstructor = (copy[T] _)
   }
 
@@ -129,119 +138,14 @@ trait QueryImplicits extends QueryOps { this: GroupedQueryOps =>
 trait QueryPartialEvaluation extends QueryComponent with BasePartialEvaluation { this: GroupedQueryOps =>
   // Immutable field inlining 
   override def query_Field_Underlying[T](self: Rep[Query[T]])(implicit typeT: TypeRep[T]): Rep[List[T]] = self match {
-    case Def(node: QueryNew[_]) => node.underlying
-    case _                      => super.query_Field_Underlying[T](self)(typeT)
+    case Def(node: QueryNew1[_]) => node.underlying
+    case _                       => super.query_Field_Underlying[T](self)(typeT)
   }
 
   // Mutable field inlining 
   // Pure function partial evaluation
 }
 trait QueryComponent extends QueryOps with QueryImplicits { this: GroupedQueryOps => }
-trait ListOps extends Base {
-  // Type representation
-  val ListType = ListIRs.ListType
-  type ListType[A] = ListIRs.ListType[A]
-  implicit def typeList[A: TypeRep]: TypeRep[List[A]] = ListType(implicitly[TypeRep[A]])
-  implicit class ListRep[A](self: Rep[List[A]])(implicit typeA: TypeRep[A]) {
-
-  }
-  object List {
-
-  }
-  // constructors
-  def __newList[A]()(implicit typeA: TypeRep[A]): Rep[List[A]] = listNew[A]()(typeA)
-  // IR defs
-  val ListNew = ListIRs.ListNew
-  type ListNew[A] = ListIRs.ListNew[A]
-  // method definitions
-  def listNew[A]()(implicit typeA: TypeRep[A]): Rep[List[A]] = ListNew[A]()
-  type List[A] = scala.collection.immutable.List[A]
-}
-object ListIRs extends Base {
-  // Type representation
-  case class ListType[A](typeA: TypeRep[A]) extends TypeRep[List[A]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ListType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    val name = s"List[${typeA.name}]"
-    val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[List[A]]
-  }
-  implicit def typeList[A: TypeRep]: TypeRep[List[A]] = ListType(implicitly[TypeRep[A]])
-  // case classes
-  case class ListNew[A]()(implicit val typeA: TypeRep[A]) extends ConstructorDef[List[A]](List(typeA), "List", List(List())) {
-    override def curriedConstructor = (x: Any) => copy[A]()
-  }
-
-  type List[A] = scala.collection.immutable.List[A]
-}
-trait ListImplicits extends ListOps {
-  // Add implicit conversions here!
-}
-trait ListImplementations extends ListOps {
-
-}
-
-trait ListPartialEvaluation extends ListComponent with BasePartialEvaluation {
-  // Immutable field inlining 
-
-  // Mutable field inlining 
-  // Pure function partial evaluation
-}
-trait ListComponent extends ListOps with ListImplicits {}
-trait MapOps extends Base {
-  // Type representation
-  val MapType = MapIRs.MapType
-  type MapType[A, B] = MapIRs.MapType[A, B]
-  implicit def typeMap[A: TypeRep, B: TypeRep]: TypeRep[Map[A, B]] = MapType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
-  implicit class MapRep[A, B](self: Rep[Map[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]) {
-
-  }
-  object Map {
-
-  }
-  // constructors
-  def __newMap[A, B]()(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Map[A, B]] = mapNew[A, B]()(typeA, typeB)
-  // IR defs
-  val MapNew = MapIRs.MapNew
-  type MapNew[A, B] = MapIRs.MapNew[A, B]
-  // method definitions
-  def mapNew[A, B]()(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Map[A, B]] = MapNew[A, B]()
-  type Map[A, B] = scala.collection.immutable.Map[A, B]
-}
-object MapIRs extends Base {
-  // Type representation
-  case class MapType[A, B](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[Map[A, B]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = MapType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    val name = s"Map[${typeA.name}, ${typeB.name}]"
-    val typeArguments = List(typeA, typeB)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[Map[A, B]]
-  }
-  implicit def typeMap[A: TypeRep, B: TypeRep]: TypeRep[Map[A, B]] = MapType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
-  // case classes
-  case class MapNew[A, B]()(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[Map[A, B]](List(typeA, typeB), "Map", List(List())) {
-    override def curriedConstructor = (x: Any) => copy[A, B]()
-  }
-
-  type Map[A, B] = scala.collection.immutable.Map[A, B]
-}
-trait MapImplicits extends MapOps {
-  // Add implicit conversions here!
-}
-trait MapImplementations extends MapOps {
-
-}
-
-trait MapPartialEvaluation extends MapComponent with BasePartialEvaluation {
-  // Immutable field inlining 
-
-  // Mutable field inlining 
-  // Pure function partial evaluation
-}
-trait MapComponent extends MapOps with MapImplicits {}
 trait GroupedQueryOps extends Base with Tuple2Ops with QueryOps with MapOps with ListOps {
   // Type representation
   val GroupedQueryType = GroupedQueryIRs.GroupedQueryType
