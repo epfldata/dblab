@@ -19,6 +19,8 @@ import dblab.legobase.deep._
 class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) {
   import IR._
 
+  // TODO needs clean up
+
   sealed trait Phase
   case object LoadingPhase extends Phase
   case object QueryExecutionPhase extends Phase
@@ -28,19 +30,19 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
   var wordTokinizingStringCompressionNeeded: Boolean = false
   val tokenizedStrings = collection.mutable.Set[String]()
   var stringReversalNeeded: Boolean = false // Used for endsWith
-  val scanOperatorArrays = new scala.collection.mutable.ArrayBuffer[(Expression[Array[Any]], Seq[String])]()
+  val scanOperatorArrays = new scala.collection.mutable.ArrayBuffer[(Rep[Array[Any]], Seq[String])]()
   val COMPRESSION_THREASHOLD = unit(4096) // maximum number of unique strings per list possible
 
   val debugEnabled = false
   // The third argument of the following map is used only for the twoPhaseStringCompression
-  var compressedStringsMaps = scala.collection.mutable.Map[String, (Var[Int], Expression[ArrayBuffer[OptimalString]], Expression[ArrayBuffer[OptimalString]])]()
+  var compressedStringsMaps = scala.collection.mutable.Map[String, (Var[Int], Rep[ArrayBuffer[OptimalString]], Rep[ArrayBuffer[OptimalString]])]()
   val hoistedStatements = collection.mutable.Set[String]()
-  val modifiedExpressions = collection.mutable.Map[Expression[Any], String]()
+  val modifiedExpressions = collection.mutable.Map[Rep[Any], String]()
   case class ConstantStringInfo(val poolName: String, val isStartsWithOperation: Boolean)
-  val constantStrings = collection.mutable.Map[Expression[Any], ConstantStringInfo]()
+  val constantStrings = collection.mutable.Map[Rep[Any], ConstantStringInfo]()
   val nameAliases = collection.mutable.Map[String, String]()
   val MAX_NUM_WORDS = 15;
-  val max_num_words_map = scala.collection.mutable.Map[String, (Var[Int], Expression[Array[Int]])]()
+  val max_num_words_map = scala.collection.mutable.Map[String, (Var[Int], Rep[Array[Int]])]()
 
   def shouldTokenize(name: String): Boolean = wordTokinizingStringCompressionNeeded && tokenizedStrings.contains(name)
   def compressedStringType(name: String): TypeRep[Any] = (if (shouldTokenize(name)) ArrayType(IntType) else IntType).asInstanceOf[TypeRep[Any]]
@@ -83,7 +85,7 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
 
   analysis += rule {
     case ArrayUpdate(array, idx, Def(Struct(tag, elems, methods))) if phase == LoadingPhase => {
-      scanOperatorArrays += new Tuple2(array.asInstanceOf[Expression[Array[Any]]],
+      scanOperatorArrays += new Tuple2(array.asInstanceOf[Rep[Array[Any]]],
         elems.filter(e => e.init.tp == OptimalStringType).map(e => e.name))
       ()
     }
@@ -91,26 +93,26 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
 
   // Used to hoist out compression of constant strings
   analysis += rule {
-    case OptimalStringComparison(Def(PardisStructImmutableField(s, name)),
+    case OptimalStringComparison(Def(StructImmutableField(s, name)),
       str2 @ Def(GenericEngineParseStringObject(constantString)), _) =>
       constantStrings += str2 -> ConstantStringInfo(name, false)
       ()
     case OptimalStringDiff(_, _) =>
       twoPhaseStringCompressionNeeded = true
       ()
-    case OptimalStringStartsOrEndsWith(Def(PardisStructImmutableField(s, name)),
+    case OptimalStringStartsOrEndsWith(Def(StructImmutableField(s, name)),
       str2 @ Def(GenericEngineParseStringObject(constantString)), reverseString) =>
       constantStrings += str2 -> ConstantStringInfo(name, true)
       twoPhaseStringCompressionNeeded = true
       if (reverseString) stringReversalNeeded = true
       ()
-    case OptimalStringIndexOfSlice(Def(PardisStructImmutableField(s, name)),
+    case OptimalStringIndexOfSlice(Def(StructImmutableField(s, name)),
       str2 @ Def(GenericEngineParseStringObject(constantString)), idx) =>
       constantStrings += str2 -> ConstantStringInfo(name, false)
       wordTokinizingStringCompressionNeeded = true
       tokenizedStrings += name
       ()
-    case OptimalStringContainsSlice(Def(PardisStructImmutableField(s, name)),
+    case OptimalStringContainsSlice(Def(StructImmutableField(s, name)),
       str2 @ Def(GenericEngineParseStringObject(constantString))) =>
       constantStrings += str2 -> ConstantStringInfo(name, false)
       wordTokinizingStringCompressionNeeded = true
@@ -130,7 +132,7 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
   }
 
   // !!! HIGHLY EXPERIMENTAL DEPENDENCY ANALYSIS (is there a generic mechanism for this is SysC?)
-  def checkAndAddDependency(c: Expression[Any], a: Expression[Any]*): Unit = {
+  def checkAndAddDependency(c: Rep[Any], a: Rep[Any]*): Unit = {
     if (modifiedExpressions.contains(c)) a.foreach(e => {
       modifiedExpressions += e -> modifiedExpressions(c)
     })
@@ -140,7 +142,7 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
       elems.foreach(e => {
         if (e.init.tp == OptimalStringType) {
           e.init match {
-            case Def(PardisStructImmutableField(s, f)) => {
+            case Def(StructImmutableField(s, f)) => {
               if (e.name != f) {
                 System.out.println("StringDictionaryTransformer: Registering name alias: " + e.name + " -> " + getNameAliasIfAny(f))
                 nameAliases += e.name -> getNameAliasIfAny(f)
@@ -153,22 +155,22 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
         }
       })
 
-    case sym -> PardisStructImmutableField(s, f) if phase == QueryExecutionPhase =>
+    case sym -> StructImmutableField(s, f) if phase == QueryExecutionPhase =>
       checkAndAddDependency(s, sym)
     case sym -> HashMapGetOrElseUpdate(map, key, Block(b, res)) =>
       checkAndAddDependency(res, sym, map)
-    case sym -> HashMapForeach(map, Def(PardisLambda(f, i, b))) =>
+    case sym -> HashMapForeach(map, Def(Lambda(f, i, b))) =>
       checkAndAddDependency(map, i)
       traverseBlock(b)
     case sym -> TreeSet$plus$eq(tree, elem) =>
       checkAndAddDependency(elem, tree)
       tree match {
-        case Def(TreeSetNew2(Def(OrderingNew(Def(PardisLambda2(f, i1, i2, b)))))) =>
+        case Def(TreeSetNew2(Def(OrderingNew(Def(Lambda2(f, i1, i2, b)))))) =>
           checkAndAddDependency(elem, i1)
           checkAndAddDependency(elem, i2)
           traverseBlock(b)
-        case Def(PardisStructImmutableField(a, b)) => // TODO: Check what is needed to be done here -- for now it is OK
-        case _                                     => throw new Exception("StringDictionaryTransformer BUG: unknown node type in analysis of trees: " + tree.correspondingNode)
+        case Def(StructImmutableField(a, b)) => // TODO: Check what is needed to be done here -- for now it is OK
+        case _                               => throw new Exception("StringDictionaryTransformer BUG: unknown node type in analysis of trees: " + tree.correspondingNode)
       }
     case sym -> TreeSetHead(tree)      => checkAndAddDependency(tree, sym)
     case sym -> Tuple2_Field__1(tuple) => checkAndAddDependency(tuple, sym)
@@ -191,8 +193,8 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
           val compressedStringValues = compressedStringMetaData._2
 
           val uncompressedString = {
-            if (stringReversalNeeded) e.init.asInstanceOf[Expression[OptimalString]].reverse
-            else e.init.asInstanceOf[Expression[OptimalString]]
+            if (stringReversalNeeded) e.init.asInstanceOf[Rep[OptimalString]].reverse
+            else e.init.asInstanceOf[Rep[OptimalString]]
           }
 
           // Compress string according to algorithm (if twoPhaseStringCompressionNeeded then the value assigned 
@@ -234,7 +236,7 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
             //printf(unit("%d\n"), tokenizedStringInfo._2(tokenizedStringInfo._1))
             __assign(tokenizedStringInfo._1, readVar(tokenizedStringInfo._1) + unit(1))
 
-            /*val compressedWords = words.map((w: Expression[OptimalString]) => {
+            /*val compressedWords = words.map((w: Rep[OptimalString]) => {
               __ifThenElse(!compressedStringValues.contains(w), {
                 __assign(num_unique_strings, readVar(num_unique_strings) + unit(1))
                 compressedStringValues.append(w)
@@ -305,7 +307,7 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
       case Def(GenericEngineParseStringObject(constantString)) =>
         if (debugEnabled) System.out.println("StringDictionaryTransformer: GenericEngineParseStringObject of " + constantString + " encountered ")
         str1 match {
-          case Def(PardisStructImmutableField(s, name)) =>
+          case Def(StructImmutableField(s, name)) =>
             if (cc(name)) {
               if (equalityCheck) infix_==(apply(str1), apply(str2))
               else infix_!=(apply(str1), apply(str2))
@@ -325,16 +327,16 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
         case Some(fieldName) =>
           if (cc(fieldName)) {
             val compressedStringValues = compressedStringsMaps(fieldName)._2
-            val uncompressedStr1 = compressedStringValues(apply(str1).asInstanceOf[Expression[Int]])
-            val uncompressedStr2 = compressedStringValues(apply(str2).asInstanceOf[Expression[Int]])
+            val uncompressedStr1 = compressedStringValues(apply(str1).asInstanceOf[Rep[Int]])
+            val uncompressedStr2 = compressedStringValues(apply(str2).asInstanceOf[Rep[Int]])
             optimalStringDiff(uncompressedStr1, uncompressedStr2)
           } else optimalStringDiff(str1, str2)
         case None =>
           str1 match {
-            case Def(PardisStructImmutableField(s, f)) => if (cc(f)) {
+            case Def(StructImmutableField(s, f)) => if (cc(f)) {
               // str1 && str2 are already integers by propagation of compressed string 
               // (e.g. intermediate struct allocated during query execution)
-              apply(str1).asInstanceOf[Expression[Int]] - apply(str2).asInstanceOf[Expression[Int]]
+              apply(str1).asInstanceOf[Rep[Int]] - apply(str2).asInstanceOf[Rep[Int]]
             } else optimalStringDiff(str1, str2)
             case _ => throw new Exception("StringDictionaryTransformer BUG: OptimalStringDiff " + str1.correspondingNode)
           }
@@ -344,15 +346,15 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
       val fieldName = modifiedExpressions.get(str) match {
         case Some(f) => getNameAliasIfAny(f)
         case None => str match {
-          case Def(PardisStructImmutableField(s, f)) => getNameAliasIfAny(f)
-          case _                                     => throw new Exception("StringDictionaryTransformer BUG: unknown node type in stringification of compressed string. LHS node is " + str.correspondingNode)
+          case Def(StructImmutableField(s, f)) => getNameAliasIfAny(f)
+          case _                               => throw new Exception("StringDictionaryTransformer BUG: unknown node type in stringification of compressed string. LHS node is " + str.correspondingNode)
         }
       }
       if (cc(fieldName)) {
         System.out.println("StringDictionaryTransformer: Stringification of compressed string: Corresponding node is " + str.correspondingNode)
         val compressedStringMetaData = compressedStringsMaps(fieldName)
         val compressedStringValues = compressedStringMetaData._2
-        val tmpString = compressedStringValues(apply(str).asInstanceOf[Expression[Int]])
+        val tmpString = compressedStringValues(apply(str).asInstanceOf[Rep[Int]])
         if (stringReversalNeeded) tmpString.reverse else tmpString
       } else optimalStringString(str)
     }
@@ -361,10 +363,10 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
       case Def(GenericEngineParseStringObject(constantString)) =>
         if (debugEnabled) System.out.println("StringDictionaryTransformer: GenericEngineParseStringObject of " + constantString + " encountered ")
         str1 match {
-          case Def(PardisStructImmutableField(s, name)) =>
+          case Def(StructImmutableField(s, name)) =>
             if (cc(name)) {
-              val range = apply(str2).asInstanceOf[Expression[Tuple2[Int, Int]]]
-              val index = apply(str1).asInstanceOf[Expression[Int]]
+              val range = apply(str2).asInstanceOf[Rep[Tuple2[Int, Int]]]
+              val index = apply(str1).asInstanceOf[Rep[Int]]
               index >= range._1 && index <= range._2
             } else {
               if (endsWith) optimalStringEndsWith(str1, str2)
@@ -380,7 +382,7 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
   rewrite += rule {
     case hm @ HashMapNew() if hm.typeA == OptimalStringType && modifiedExpressions.size != 0 =>
       System.out.println("StringDictionaryTransformer: Replacing map of OptimalString with map of Int")
-      HashMapNew()(typeRep[Int].asInstanceOf[PardisType[Any]], hm.typeB)
+      HashMapNew()(typeRep[Int].asInstanceOf[TypeRep[Any]], hm.typeB)
   }
 
   rewrite += rule {
@@ -428,7 +430,7 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
     case NotEqual(elem, value) => {
       elem match {
         case Def(OptimalStringIndexOfSlice(str1, str2, beg)) => str1 match {
-          case Def(PardisStructImmutableField(s, name)) if (cc(name)) => NotEqual(apply(elem), unit(MAX_NUM_WORDS))
+          case Def(StructImmutableField(s, name)) if (cc(name)) => NotEqual(apply(elem), unit(MAX_NUM_WORDS))
           case _ => NotEqual(apply(elem), apply(value))
         }
         case _ => NotEqual(apply(elem), apply(value))
@@ -439,7 +441,7 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
   rewrite += rule {
     case OptimalStringIndexOfSlice(str1, str2, beg) =>
       str1 match {
-        case Def(PardisStructImmutableField(s, name)) if (cc(name)) =>
+        case Def(StructImmutableField(s, name)) if (cc(name)) =>
           System.out.println("AM I EVER HERE FOR " + name + " ? ")
           val tokenizedStringInfo = max_num_words_map(name)
           val idx = __newVarNamed[Int](MAX_NUM_WORDS, "findSlice")
@@ -455,7 +457,7 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
           //Range(apply(beg), MAX_NUM_WORDS /* apply(str1).length */ ).foreach {
           //__lambda { i =>
           __whileDo(readVar(start) < num_words /*MAX_NUM_WORDS*/ , {
-            val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Expression[Array[Int]]], readVar(start)))(IntType)
+            val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Rep[Array[Int]]], readVar(start)))(IntType)
             __ifThenElse(wordI __== apply(str2), {
               // __ifThenElse(readVar(idx) __== unit(-1), __assign(idx, i), unit())
               __assign(idx, readVar(start))
@@ -466,25 +468,25 @@ class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema:
           //}
           //}
           readVar(idx)
-        case Def(PardisStructImmutableField(s, name)) if (!cc(name)) => optimalStringIndexOfSlice(str1, str2, apply(beg))
-        case _ => throw new Exception("StringDictionaryTransformer BUG: OptimalStringIndexOfSlice with a node != PardisStructImmutableField (node is of type " + str1.correspondingNode + ")")
+        case Def(StructImmutableField(s, name)) if (!cc(name)) => optimalStringIndexOfSlice(str1, str2, apply(beg))
+        case _ => throw new Exception("StringDictionaryTransformer BUG: OptimalStringIndexOfSlice with a node != StructImmutableField (node is of type " + str1.correspondingNode + ")")
       }
 
     case OptimalStringContainsSlice(str1, str2) =>
       str1 match {
-        case Def(PardisStructImmutableField(s, name)) if (cc(name)) =>
+        case Def(StructImmutableField(s, name)) if (cc(name)) =>
           val idx = __newVarNamed[Int](unit(-1), "containsSlice")
           Range(unit(0), /*apply(str1).length*/ unit(15)).foreach {
             __lambda { i =>
-              val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Expression[Array[Int]]], i))(IntType)
+              val wordI = toAtom(ArrayApply(apply(str1).asInstanceOf[Rep[Array[Int]]], i))(IntType)
               __ifThenElse(wordI __== apply(str2), {
                 __assign(idx, i)
               }, unit())
             }
           }
           __ifThenElse(readVar(idx) __!= unit(-1), unit(true), unit(false))
-        case Def(PardisStructImmutableField(s, name)) if (!cc(name)) => optimalStringContainsSlice(str1, str2)
-        case _ => throw new Exception("StringDictionaryTransformer BUG: OptimalStringContainsSlice with a node != PardisStructImmutableField (node is of type " + str1.correspondingNode + ")")
+        case Def(StructImmutableField(s, name)) if (!cc(name)) => optimalStringContainsSlice(str1, str2)
+        case _ => throw new Exception("StringDictionaryTransformer BUG: OptimalStringContainsSlice with a node != StructImmutableField (node is of type " + str1.correspondingNode + ")")
       }
   }
 }
