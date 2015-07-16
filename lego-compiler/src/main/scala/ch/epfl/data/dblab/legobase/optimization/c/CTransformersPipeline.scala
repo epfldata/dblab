@@ -16,9 +16,9 @@ import sc.pardis.optimization._
  */
 class CTransformersPipeline(val settings: compiler.Settings) extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    apply[T](context.asInstanceOf[LoweringLegoBase], block)
+    apply[T](context.asInstanceOf[LegoBaseExp], block)
   }
-  def apply[A: PardisType](context: LoweringLegoBase, b: PardisBlock[A]) = {
+  def apply[A: PardisType](context: LegoBaseExp, b: PardisBlock[A]) = {
     val pipeline = new TransformerPipeline()
     pipeline += new GenericEngineToCTransformer(context, settings)
     pipeline += new ScalaScannerToCmmapTransformer(context, settings)

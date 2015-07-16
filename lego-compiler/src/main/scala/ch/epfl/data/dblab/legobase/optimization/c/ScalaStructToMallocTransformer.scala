@@ -15,7 +15,7 @@ import scala.language.existentials
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class ScalaStructToMallocTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+class ScalaStructToMallocTransformer(override val IR: LegoBaseExp) extends RuleBasedTransformer[LegoBaseExp](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._

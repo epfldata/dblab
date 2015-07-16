@@ -11,8 +11,6 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 
-// TODO there should be no need for queryNumber thanks to Schema information
-
 /**
  * Transforms row layout representation to columnar layout representation.
  *
@@ -27,10 +25,18 @@ import sc.pardis.shallow.utils.DefaultValue
  * }}}
  * is converted to:
  * {{{
+ *    // ColumnStoreOfRecordA {
+ *    //   arrayOfFieldA: Int,
+ *    //   arrayOfFieldB: String
+ *    // }
  *    val csArray = ColumnStoreOfRecordA {
  *      val arrayOfFieldA = new Array[Int](size)
  *      val arrayOfFieldB = new Array[String](size)
  *    }
+ *    // RowOfRecordA {
+ *    //   columnStorePointer: ColumnStoreOfRecordA,
+ *    //   index: Int
+ *    // }
  *    for(i <- 0 until size) {
  *      val csElem = RowOfRecordA {
  *        val columnStorePointer = csArray
@@ -63,9 +69,9 @@ import sc.pardis.shallow.utils.DefaultValue
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class ColumnStoreTransformer(override val IR: LoweringLegoBase)
-  extends RuleBasedTransformer[LoweringLegoBase](IR)
-  with StructCollector[LoweringLegoBase] {
+class ColumnStoreTransformer(override val IR: LegoBaseExp)
+  extends RuleBasedTransformer[LegoBaseExp](IR)
+  with StructCollector[LegoBaseExp] {
   import IR._
 
   def shouldBeColumnarized[T](tp: PardisType[T]): Boolean =
@@ -156,7 +162,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase)
   }
 
   rewrite += remove {
-    case (ps @ PardisStruct(_, _, _)) if shouldBeColumnarized(ps.tp) =>
+    case (ps @ Struct(_, _, _)) if shouldBeColumnarized(ps.tp) =>
       ()
   }
 
@@ -215,7 +221,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase)
   }
 
   rewrite += rule {
-    case psif @ PardisStructImmutableField(s, f) if shouldBeColumnarized(s.tp) =>
+    case psif @ StructImmutableField(s, f) if shouldBeColumnarized(s.tp) =>
       val structDef = getStructDef(s.tp).get
       class ColumnType
       implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]
@@ -229,7 +235,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase)
   }
 
   rewrite += rule {
-    case psif @ PardisStructFieldGetter(s, f) if shouldBeColumnarized(s.tp) =>
+    case psif @ StructFieldGetter(s, f) if shouldBeColumnarized(s.tp) =>
       val structDef = getStructDef(s.tp).get
       class ColumnType
       implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]
@@ -243,7 +249,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase)
   }
 
   rewrite += rule {
-    case psif @ PardisStructFieldSetter(s, f, v) if shouldBeColumnarized(s.tp) =>
+    case psif @ StructFieldSetter(s, f, v) if shouldBeColumnarized(s.tp) =>
       val structDef = getStructDef(s.tp).get
       class ColumnType
       implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]

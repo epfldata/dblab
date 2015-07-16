@@ -23,7 +23,7 @@ import sc.pardis.shallow.utils.DefaultValue
  *    string(0) == 'f' && string(1) == 'o' && string(2) == 'o'
  * }}}
  */
-class StringOptimization(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) {
+class StringOptimization(override val IR: LegoBaseExp) extends RecursiveRuleBasedTransformer[LegoBaseExp](IR) {
   import IR._
 
   // TODO needs quasi lifting legobase.

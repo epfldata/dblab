@@ -13,7 +13,7 @@ import sc.pardis.optimization._
 object LBLowering {
   def apply(removeUnusedFields: Boolean) = new TransformerHandler {
     def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-      val lbContext = context.asInstanceOf[LoweringLegoBase]
+      val lbContext = context.asInstanceOf[LegoBaseExp]
       val lbLowering = new LBLowering(lbContext, lbContext, removeUnusedFields)
       val newBlock = lbLowering.lower(block)
       new LBLoweringPostProcess(lbContext, lbLowering).optimize(newBlock)
@@ -39,7 +39,7 @@ object LBLowering {
  *    // fieldB is not used
  * }}}
  */
-class LBLowering(override val from: LoweringLegoBase, override val to: LoweringLegoBase, val removeUnusedFields: Boolean) extends Lowering[LoweringLegoBase, LoweringLegoBase](from, to) {
+class LBLowering(override val from: LegoBaseExp, override val to: LegoBaseExp, val removeUnusedFields: Boolean) extends Lowering[LegoBaseExp, LegoBaseExp](from, to) {
   import from._
 
   // override val lowerStructs: Boolean = false
@@ -328,7 +328,7 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
   }
 }
 
-class LBLoweringPostProcess(override val IR: LoweringLegoBase, val lbLowering: LBLowering) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class LBLoweringPostProcess(override val IR: LegoBaseExp, val lbLowering: LBLowering) extends RuleBasedTransformer[LegoBaseExp](IR) {
   import IR._
 
   rewrite += statement {

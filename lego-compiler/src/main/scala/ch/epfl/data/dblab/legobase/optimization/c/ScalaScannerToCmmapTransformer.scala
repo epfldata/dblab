@@ -16,7 +16,7 @@ import scala.language.implicitConversions
  * @param IR the polymorphic embedding trait which contains the reified program.
  * @param settings the compiler settings provided as command line arguments (TODO should be removed)
  */
-class ScalaScannerToCmmapTransformer(override val IR: LoweringLegoBase, val settings: compiler.Settings) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class ScalaScannerToCmmapTransformer(override val IR: LegoBaseExp, val settings: compiler.Settings) extends RuleBasedTransformer[LegoBaseExp](IR) {
   import IR._
   import CNodes._
   import CTypes._

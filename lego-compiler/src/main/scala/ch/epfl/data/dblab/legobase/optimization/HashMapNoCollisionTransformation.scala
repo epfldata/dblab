@@ -37,7 +37,7 @@ import sc.pardis.deep.scalalib.collection._
  *      val value = table(i)
  *      if (value != null) {
  *        val key = extractKey(value) // extracts key from the value
- *        process(value, elem)
+ *        process(key, value)
  *      }
  *    }
  * }}}
@@ -47,6 +47,7 @@ import sc.pardis.deep.scalalib.collection._
  * that we can extract key from the value.
  * 2) Furthermore, this lowering is implemented only in the case of using 3 methods
  * of a HashMap: a) getOrElseUpdate b) foreach c) remove.
+ * These methods should be accessed exactly in the given order.
  * In the other cases this transformation should not be applied.
  * 3) There should be no collision between the hashing function computed using the
  * keys.
@@ -54,7 +55,7 @@ import sc.pardis.deep.scalalib.collection._
  * @param LB the polymorphic embedding trait which contains the reified program.
  * @param schema the schema information which will be used to estimate the number of buckets
  */
-class HashMapNoCollisionTransformation(val LB: LoweringLegoBase, val schema: Schema) extends sc.pardis.deep.scalalib.collection.HashMapOptimalNoCollisionTransformation(LB) with StructCollector[HashMapOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops] with HashMapBucketAnalyser[HashMapOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops] {
+class HashMapNoCollisionTransformation(val LB: LegoBaseExp, val schema: Schema) extends sc.pardis.deep.scalalib.collection.HashMapOptimalNoCollisionTransformation(LB) with StructCollector[HashMapOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops] with HashMapBucketAnalyser[HashMapOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops] {
   import LB._
   /**
    * Specifies the function that is used for extracting the key from the value.

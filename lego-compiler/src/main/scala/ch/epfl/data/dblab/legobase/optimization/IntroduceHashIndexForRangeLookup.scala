@@ -61,7 +61,7 @@ import quasi._
  * @param IR the polymorphic embedding trait which contains the reified program.
  * @param schema the schema information
  */
-class IntroduceHashIndexForRangeLookup(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class IntroduceHashIndexForRangeLookup(override val IR: LegoBaseExp, val schema: Schema) extends RuleBasedTransformer[LegoBaseExp](IR) {
   import IR.{ __struct_field => _, Range => _, Binding => _, _ }
 
   import scala.collection.mutable
