@@ -30,7 +30,7 @@ import scala.language.existentials
  * @param IR the polymorphic embedding trait which contains the reified program.
  * @param settings the compiler settings provided as command line arguments (TODO should be removed)
  */
-class ScalaArrayToPointerTransformer(override val IR: LoweringLegoBase, val settings: compiler.Settings) extends RuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+class ScalaArrayToPointerTransformer(override val IR: LegoBaseExp, val settings: compiler.Settings) extends RuleBasedTransformer[LegoBaseExp](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._

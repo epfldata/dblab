@@ -14,13 +14,13 @@ import sc.pardis.shallow.utils._
 import sc.pardis.ir.StructTags._
 
 /**
- * Analyzes the query to gather additional statisti
+ * Analyzes the query to gather additional statistics.
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  * @param schema the schema over which the query runs. This already contains base
  * relations cardinalities and selectivities between two-way joins
  */
-class StatisticsEstimator(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class StatisticsEstimator(override val IR: LegoBaseExp, val schema: Schema) extends RuleBasedTransformer[LegoBaseExp](IR) {
   import IR._
 
   override def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {

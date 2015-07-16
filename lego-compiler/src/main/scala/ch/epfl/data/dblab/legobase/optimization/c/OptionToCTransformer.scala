@@ -14,7 +14,7 @@ import sc.pardis.types.PardisTypeImplicits._
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class OptionToCTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+class OptionToCTransformer(override val IR: LegoBaseExp) extends RecursiveRuleBasedTransformer[LegoBaseExp](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._

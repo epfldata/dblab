@@ -49,7 +49,7 @@ import quasi._
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR)
+class WhileToRangeForeachTransformer(override val IR: LegoBaseExp) extends RuleBasedTransformer[LegoBaseExp](IR)
   with WhileRangeProcessing {
   import IR.{ Range => _, Binding => _, _ }
 

@@ -33,7 +33,7 @@ import scala.language.existentials
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class ScalaArrayToPointerBadRecordTransformer(override val IR: LoweringLegoBase, val settings: compiler.Settings) extends RuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+class ScalaArrayToPointerBadRecordTransformer(override val IR: LegoBaseExp, val settings: compiler.Settings) extends RuleBasedTransformer[LegoBaseExp](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._

@@ -36,7 +36,7 @@ import sc.pardis.deep.scalalib.io._
  * {{{
  *    val table = new Array[Int]
  *    var currentSize = 0
- *    // Add some element into the lowered HashMap
+ *    // Add some element into the lowered HashMap which modifies currentSize
  *    for (i <- 0 until currentSize) {
  *      val value = table(i)
  *      process(i, value)

@@ -71,9 +71,9 @@ import scala.collection.mutable
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class HashMapGrouping(override val IR: LoweringLegoBase,
+class HashMapGrouping(override val IR: LegoBaseExp,
                       val schema: Schema)
-  extends RuleBasedTransformer[LoweringLegoBase](IR)
+  extends RuleBasedTransformer[LegoBaseExp](IR)
   with WhileRangeProcessing {
   import IR.{ __struct_field => _, __block => _, _ }
 

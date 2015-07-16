@@ -42,9 +42,9 @@ import sc.pardis.ir.StructTags._
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class MemoryAllocationHoist(override val IR: LoweringLegoBase, val schema: Schema)
-  extends RuleBasedTransformer[LoweringLegoBase](IR)
-  with StructCollector[LoweringLegoBase] {
+class MemoryAllocationHoist(override val IR: LegoBaseExp, val schema: Schema)
+  extends RuleBasedTransformer[LegoBaseExp](IR)
+  with StructCollector[LegoBaseExp] {
   import IR._
   //import CNodes._
   //import CTypes._

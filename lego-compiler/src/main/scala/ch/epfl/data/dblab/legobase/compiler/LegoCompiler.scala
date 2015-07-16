@@ -24,10 +24,10 @@ import sc.pardis.compiler._
  * @param schema the given schema information
  * @param runnerClassName the name of the runner class which is used in Scala code generation
  */
-class LegoCompiler(val DSL: LoweringLegoBase,
+class LegoCompiler(val DSL: LegoBaseExp,
                    val settings: Settings,
                    val schema: Schema,
-                   val runnerClassName: String) extends Compiler[LoweringLegoBase] {
+                   val runnerClassName: String) extends Compiler[LegoBaseExp] {
   def outputFile: String =
     if (settings.nameIsWithFlag)
       settings.args.filter(_.startsWith("+")).map(_.drop(1)).sorted.mkString("_") + "_" + settings.queryName

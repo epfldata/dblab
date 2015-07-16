@@ -16,7 +16,7 @@ import sc.pardis.deep.scalalib.collection._
  */
 object ContainerLowering extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    new ContainerLowering(context.asInstanceOf[LoweringLegoBase]).optimize(block)
+    new ContainerLowering(context.asInstanceOf[LegoBaseExp]).optimize(block)
   }
 }
 

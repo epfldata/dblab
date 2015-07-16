@@ -30,7 +30,7 @@ import sc.pardis.types._
  * @param IR the polymorphic embedding trait which contains the reified program.
  * @param ifAgg specifies whether aggressive if rewriting optimization should be applied or not
  */
-class ScalaConstructsToCTranformer(override val IR: LoweringLegoBase, val ifAgg: Boolean) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+class ScalaConstructsToCTranformer(override val IR: LegoBaseExp, val ifAgg: Boolean) extends RecursiveRuleBasedTransformer[LegoBaseExp](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._

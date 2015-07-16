@@ -16,7 +16,7 @@ import sc.pardis.utils.Graph
  */
 object HashMapHoist extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    new HashMapHoist(context.asInstanceOf[LoweringLegoBase]).optimize(block)
+    new HashMapHoist(context.asInstanceOf[LegoBaseExp]).optimize(block)
   }
 }
 
@@ -46,7 +46,7 @@ object HashMapHoist extends TransformerHandler {
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) {
+class HashMapHoist(override val IR: LegoBaseExp) extends Optimizer[LegoBaseExp](IR) {
   import IR._
   import CNodes._
   import CTypes._

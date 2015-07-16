@@ -2,7 +2,7 @@ package ch.epfl.data
 package dblab.legobase
 package quasi
 
-import deep.LoweringLegoBase
+import deep.LegoBaseExp
 import sc.pardis.deep.scalalib._
 import sc.pardis.deep.scalalib.collection._
 import sc.pardis.quasi.anf.BaseQuasiExt

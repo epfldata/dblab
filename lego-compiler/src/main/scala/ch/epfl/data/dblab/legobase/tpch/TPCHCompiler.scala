@@ -70,7 +70,7 @@ object TPCHCompiler extends TPCHRunner {
   def executeQuery(query: String, schema: Schema): Unit = {
     System.out.println(s"\nRunning $query!")
 
-    val context = new LoweringLegoBase {}
+    val context = new LegoBaseExp {}
 
     import context.unit
     import context.Queries._

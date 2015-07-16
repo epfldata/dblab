@@ -16,7 +16,7 @@ import sc.pardis.deep.scalalib.collection._
  */
 object ContainerFlatTransformer extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    new ContainerFlatTransformer(context.asInstanceOf[LoweringLegoBase]).optimize(block)
+    new ContainerFlatTransformer(context.asInstanceOf[LegoBaseExp]).optimize(block)
   }
 }
 
@@ -130,14 +130,14 @@ class ContainerFlatTransformer[Lang <: sc.pardis.deep.scalalib.ArrayComponent wi
   // analysis += statement {
   //   case sym -> (node @ Struct(tag, elems, methods)) /*if mustBeLowered(sym) && elems.forall(f => f.name != "next")*/ =>
   //     System.out.println(s"found next for ${node.tp}, $sym, ${sym.tp}")
-  //     // IR.asInstanceOf[LoweringLegoBase].printf(unit(s"struct creation $tag: ${node.tp}"))
+  //     // IR.asInstanceOf[LegoBaseExp].printf(unit(s"struct creation $tag: ${node.tp}"))
   //     ()
   // }
 
   rewrite += statement {
     case sym -> (node @ Struct(tag, elems, methods)) if mustBeLowered(node) && elems.forall(f => f.name != "next") =>
       // System.out.println(s"appending next to ${node.tp}, $sym")
-      // IR.asInstanceOf[LoweringLegoBase].printf(unit(s"struct creation $tag: ${node.tp}"))
+      // IR.asInstanceOf[LegoBaseExp].printf(unit(s"struct creation $tag: ${node.tp}"))
       toAtom(Struct(tag, elems :+ PardisStructArg("next", true, infix_asInstanceOf(unit(null))(node.tp)), methods)(node.tp))(node.tp)
   }
 

@@ -18,12 +18,13 @@ import quasi._
  */
 object ConstSizeArrayToLocalVars extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    new ConstSizeArrayToLocalVars(context.asInstanceOf[LoweringLegoBase]).optimize(block)
+    new ConstSizeArrayToLocalVars(context.asInstanceOf[LegoBaseExp]).optimize(block)
   }
 }
 
 /**
- * Transforms the elements of an array of a constant and small size into local variables.
+ * Transforms the elements of an array that has a statically known and small size
+ * into local variables.
  *
  * As a simple example, the following code:
  * {{{
@@ -69,8 +70,8 @@ object ConstSizeArrayToLocalVars extends TransformerHandler {
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class ConstSizeArrayToLocalVars(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR)
-  with StructCollector[LoweringLegoBase] {
+class ConstSizeArrayToLocalVars(override val IR: LegoBaseExp) extends RecursiveRuleBasedTransformer[LegoBaseExp](IR)
+  with StructCollector[LegoBaseExp] {
   import IR.{ __struct_field => _, Binding => _, _ }
 
   // TODO To make it always sound, another analysis is needed to check if the elements of that array 

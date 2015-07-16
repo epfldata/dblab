@@ -35,13 +35,13 @@ import sc.pardis.deep.scalalib.collection._
  * {{{
  *    val table = new Array[Set[RecordA]]
  *    var currentSize = 0
- *    // Add some element into the lowered HashMap
+ *    // Add some element into the lowered HashMap which which modifies currentSize
  *    for (i <- 0 until currentSize) {
  *      val list = table(i)
  *      if (list != null) {
  *        list.foreach(value =>
  *          val key = extractKey(value) // extracts key from the value
- *          process(value, elem)
+ *          process(key, value)
  *        )
  *      }
  *    }
@@ -57,7 +57,7 @@ import sc.pardis.deep.scalalib.collection._
  * @param IR the polymorphic embedding trait which contains the reified program.
  * @param schema the schema information which will be used to estimate the number of buckets
  */
-class HashMapToSetTransformation(override val IR: LoweringLegoBase, val schema: Schema)
+class HashMapToSetTransformation(override val IR: LegoBaseExp, val schema: Schema)
   extends HashMapOptimalNoMallocTransformation(IR)
   with StructCollector[HashMapOps with SetOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops]
   with HashMapBucketAnalyser[HashMapOps with SetOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops] {

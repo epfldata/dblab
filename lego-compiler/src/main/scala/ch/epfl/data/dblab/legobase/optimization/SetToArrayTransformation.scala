@@ -54,7 +54,7 @@ import SetToArrayTransformation.Lang
  *    }
  *    ...
  *    for(i <- 0 until setRecord.maxSize) {
- *      val e = setRecod.array(i)
+ *      val e = setRecord.array(i)
  *      process(e)
  *    }
  * }}}

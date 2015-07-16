@@ -14,7 +14,7 @@ import quasi._
 
 object SingletonHashMapToValueTransformer extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    new SingletonHashMapToValueTransformer(context.asInstanceOf[LoweringLegoBase]).optimize(block)
+    new SingletonHashMapToValueTransformer(context.asInstanceOf[LegoBaseExp]).optimize(block)
   }
 }
 
@@ -58,8 +58,8 @@ object SingletonHashMapToValueTransformer extends TransformerHandler {
  * e) In foreach method, there should be no use of the key, which means only the
  * value should be used.
  */
-class SingletonHashMapToValueTransformer(override val IR: LoweringLegoBase)
-  extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) {
+class SingletonHashMapToValueTransformer(override val IR: LegoBaseExp)
+  extends RecursiveRuleBasedTransformer[LegoBaseExp](IR) {
   import IR._
 
   /**

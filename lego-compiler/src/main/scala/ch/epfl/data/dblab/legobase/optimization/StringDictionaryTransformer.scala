@@ -16,7 +16,7 @@ import dblab.legobase.deep._
  * operations.
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class StringDictionaryTransformer(override val IR: LoweringLegoBase, val schema: Schema) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class StringDictionaryTransformer(override val IR: LegoBaseExp, val schema: Schema) extends RuleBasedTransformer[LegoBaseExp](IR) {
   import IR._
 
   // TODO needs clean up

@@ -16,7 +16,7 @@ import sc.pardis.types.PardisTypeImplicits._
  */
 object DCECLang extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    new DCECLang(context.asInstanceOf[LoweringLegoBase]).optimize(block)
+    new DCECLang(context.asInstanceOf[LegoBaseExp]).optimize(block)
   }
 }
 
@@ -25,4 +25,4 @@ object DCECLang extends TransformerHandler {
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class DCECLang(override val IR: LoweringLegoBase) extends DCE[LoweringLegoBase](IR) with CTransformer
+class DCECLang(override val IR: LegoBaseExp) extends DCE[LegoBaseExp](IR) with CTransformer

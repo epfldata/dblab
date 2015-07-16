@@ -17,7 +17,7 @@ import quasi._
  * while loops which are iterating over a range
  */
 trait WhileRangeProcessing {
-  val IR: LoweringLegoBase
+  val IR: LegoBaseExp
   import IR.{ Range => _, _ }
 
   private implicit val ImplicitIR = IR
