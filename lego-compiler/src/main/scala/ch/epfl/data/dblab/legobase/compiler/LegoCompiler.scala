@@ -71,8 +71,16 @@ class LegoCompiler(val DSL: LegoBaseExp,
   pipeline += DCE
   pipeline += PartiallyEvaluate
 
-  // pipeline += PartiallyEvaluate
-  pipeline += HashMapHoist
+  if (settings.queryMonadLowering) {
+    pipeline += new QueryMonadLowering(DSL)
+    pipeline += ParameterPromotion
+    pipeline += DCE
+    pipeline += PartiallyEvaluate
+  } else {
+    // pipeline += PartiallyEvaluate
+    pipeline += HashMapHoist
+  }
+
   pipeline += TreeDumper(true)
 
   if (!settings.noSingletonHashMap)

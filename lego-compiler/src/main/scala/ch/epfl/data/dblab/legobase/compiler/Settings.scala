@@ -67,6 +67,7 @@ class Settings(val args: List[String]) {
     ScalaCodeGeneration
   else
     CCodeGeneration
+  def queryMonadLowering: Boolean = hasSetting(QueryMonadLoweringSetting)
 
   def queryName: String = args(2)
 }
@@ -98,7 +99,8 @@ object Settings {
     OutputNameWithFlagSetting,
     OnlyLoaderSetting,
     OptimalSetting,
-    ScalaCGSetting)
+    ScalaCGSetting,
+    QueryMonadLoweringSetting)
 }
 
 /**
@@ -192,6 +194,8 @@ case object NoFieldRemovalSetting extends OptimizationSetting("no-field-rem",
 case object NoSingletonHashMapSetting extends OptimizationSetting("no-sing-hm",
   "Disables the singleton hashmap optimization",
   "Deoptimization!")
+case object QueryMonadLoweringSetting extends OptimizationSetting("monad-lowering",
+  "Enables Query Monad Lowering")
 
 /* 
  * Available option settings
