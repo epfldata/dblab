@@ -26,11 +26,25 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
     val resultArray = __newArray[T](resultSize)
     val counter = __newVarNamed[Int](unit(0), "arrayCounter")
     array_foreach(array, (elem: Rep[T]) => {
-      __ifThenElse(pred(elem),
-        resultArray(readVar(counter)) = elem,
+      __ifThenElse(pred(elem), {
+        resultArray(readVar(counter)) = elem
+        __assign(counter, readVar(counter) + unit(1))
+      },
         unit())
-      __assign(counter, readVar(counter) + unit(1))
+
     })
+    resultArray
+  }
+
+  def array_dropRight[T: TypeRep](array: Rep[Array[T]], num: Rep[Int]): Rep[Array[T]] = {
+    val resultSize = array.length - num
+    val resultArray = __newArray[T](resultSize)
+    val counter = __newVarNamed[Int](unit(0), "arrayCounter")
+    Range(unit(0), resultSize).foreach {
+      __lambda { i =>
+        resultArray(i) = array(i)
+      }
+    }
     resultArray
   }
 
@@ -104,6 +118,12 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
       array_avg(array)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
   }
 
+  // rewrite += rule {
+  //   case QuerySortBy(monad, f) =>
+  //     val array = apply(monad).asInstanceOf[Rep[Array[Any]]]
+      
+  // }
+
   rewrite += remove {
     case QueryGroupBy(_, _) => ()
   }
@@ -127,12 +147,15 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
       val keyRevertIndex = __newArray[K](MAX_SIZE)
       val lastIndex = __newVarNamed(unit(0), "lastIndex")
       val array = __newArray[Array[V]](MAX_SIZE)
+      val eachBucketSize = __newArray[Int](MAX_SIZE)
       Range(unit(0), MAX_SIZE).foreach {
         __lambda { i =>
           array(i) = __newArray[V](originalArray.length)
+          eachBucketSize(i) = unit(0)
         }
       }
-      val eachBucketSize = __newArray[Int](MAX_SIZE)
+
+      // printf(unit("start!"))
       array_foreach(originalArray, (elem: Rep[V]) => {
         // val key = par(elem)
         val key = inlineFunction(par, elem)
@@ -145,14 +168,14 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
         eachBucketSize(bucket) += unit(1)
       })
       val resultArray = __newArray[(K, S)](MAX_SIZE)
+      // Range(unit(0), array.length).foreach {
+      //   __lambda { i =>
+      //     array(i) = __newArray[V](originalArray.length)
+      //   }
+      // }
       Range(unit(0), array.length).foreach {
         __lambda { i =>
-          array(i) = __newArray[V](originalArray.length)
-        }
-      }
-      Range(unit(0), array.length).foreach {
-        __lambda { i =>
-          val arr = array(i) //.dropRight(query.array.size - eachBucketSize(i))
+          val arr = array_dropRight(array(i), originalArray.length - eachBucketSize(i))
           // System.out.println(s"arr size ${arr.size} bucket size ${eachBucketSize(i)}")
           val key = keyRevertIndex(i)
           val newValue = inlineFunction(func, arr)
