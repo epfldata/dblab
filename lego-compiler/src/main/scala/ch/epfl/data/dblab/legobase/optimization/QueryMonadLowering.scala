@@ -36,8 +36,8 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
     resultArray
   }
 
-  def array_dropRight[T: TypeRep](array: Rep[Array[T]], num: Rep[Int]): Rep[Array[T]] = {
-    val resultSize = array.length - num
+  def array_dropRight[T: TypeRep](array: Rep[Array[T]], keepNum: Rep[Int]): Rep[Array[T]] = {
+    val resultSize = keepNum
     val resultArray = __newArray[T](resultSize)
     val counter = __newVarNamed[Int](unit(0), "arrayCounter")
     Range(unit(0), resultSize).foreach {
@@ -121,7 +121,7 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
   // rewrite += rule {
   //   case QuerySortBy(monad, f) =>
   //     val array = apply(monad).asInstanceOf[Rep[Array[Any]]]
-      
+
   // }
 
   rewrite += remove {
@@ -175,7 +175,7 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
       // }
       Range(unit(0), array.length).foreach {
         __lambda { i =>
-          val arr = array_dropRight(array(i), originalArray.length - eachBucketSize(i))
+          val arr = array_dropRight(array(i), eachBucketSize(i))
           // System.out.println(s"arr size ${arr.size} bucket size ${eachBucketSize(i)}")
           val key = keyRevertIndex(i)
           val newValue = inlineFunction(func, arr)
