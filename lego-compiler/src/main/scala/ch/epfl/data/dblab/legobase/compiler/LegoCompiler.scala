@@ -178,6 +178,10 @@ class LegoCompiler(val DSL: LegoBaseExp,
     pipeline += new LargeOutputPrintHoister(DSL, schema)
   }
 
+  if (settings.queryMonadLowering) {
+    pipeline += new Tuple2Lowering(DSL)
+  }
+
   if (settings.targetLanguage == CCodeGeneration) pipeline += new CTransformersPipeline(settings)
 
   pipeline += DCECLang //NEVER REMOVE!!!!
