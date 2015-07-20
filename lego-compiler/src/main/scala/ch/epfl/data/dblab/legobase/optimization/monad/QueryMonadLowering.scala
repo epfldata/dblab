@@ -1,6 +1,7 @@
 package ch.epfl.data
 package dblab.legobase
 package optimization
+package monad
 
 import schema._
 import scala.language.implicitConversions
