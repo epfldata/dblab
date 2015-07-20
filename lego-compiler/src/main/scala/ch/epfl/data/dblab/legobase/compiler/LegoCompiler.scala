@@ -8,6 +8,7 @@ import deep._
 import prettyprinter._
 import optimization._
 import optimization.c._
+import optimization.monad._
 import sc.pardis.optimization._
 import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
@@ -72,6 +73,8 @@ class LegoCompiler(val DSL: LegoBaseExp,
   pipeline += PartiallyEvaluate
 
   if (settings.queryMonadLowering) {
+    // pipeline += new QueryMonadOptimization
+    // pipeline += DCE
     pipeline += new QueryMonadLowering(schema, DSL)
     pipeline += ParameterPromotion
     pipeline += DCE
