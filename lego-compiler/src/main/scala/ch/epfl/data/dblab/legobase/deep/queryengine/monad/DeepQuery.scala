@@ -18,11 +18,13 @@ trait QueryOps extends Base with ListOps with ArrayOps { this: GroupedQueryOps =
   implicit class QueryRep[T](self: Rep[Query[T]])(implicit typeT: TypeRep[T]) {
     def map[S](f: Rep[(T => S)])(implicit typeS: TypeRep[S]): Rep[Query[S]] = queryMap[T, S](self, f)(typeT, typeS)
     def filter(p: Rep[(T => Boolean)]): Rep[Query[T]] = queryFilter[T](self, p)(typeT)
+    def foldLeft[S](z: Rep[S])(f: Rep[((S, T) => S)])(implicit typeS: TypeRep[S]): Rep[S] = queryFoldLeft[T, S](self, z, f)(typeT, typeS)
     def foreach(f: Rep[(T => Unit)]): Rep[Unit] = queryForeach[T](self, f)(typeT)
     def sum(implicit num: Numeric[T]): Rep[T] = querySum[T](self)(typeT, num)
     def count: Rep[Int] = queryCount[T](self)(typeT)
     def avg(implicit num: Fractional[T]): Rep[T] = queryAvg[T](self)(typeT, num)
     def groupBy[K](par: Rep[(T => K)])(implicit typeK: TypeRep[K]): Rep[GroupedQuery[K, T]] = queryGroupBy[T, K](self, par)(typeT, typeK)
+    def filteredGroupBy[K](pred: Rep[(T => Boolean)], par: Rep[(T => K)])(implicit typeK: TypeRep[K]): Rep[GroupedQuery[K, T]] = queryFilteredGroupBy[T, K](self, pred, par)(typeT, typeK)
     def sortBy[S](f: Rep[(T => S)])(implicit typeS: TypeRep[S], ord: Ordering[S]): Rep[Query[T]] = querySortBy[T, S](self, f)(typeT, typeS, ord)
     def underlying: Rep[List[T]] = query_Field_Underlying[T](self)(typeT)
   }
@@ -41,6 +43,8 @@ trait QueryOps extends Base with ListOps with ArrayOps { this: GroupedQueryOps =
   type QueryMap[T, S] = QueryIRs.QueryMap[T, S]
   val QueryFilter = QueryIRs.QueryFilter
   type QueryFilter[T] = QueryIRs.QueryFilter[T]
+  val QueryFoldLeft = QueryIRs.QueryFoldLeft
+  type QueryFoldLeft[T, S] = QueryIRs.QueryFoldLeft[T, S]
   val QueryForeach = QueryIRs.QueryForeach
   type QueryForeach[T] = QueryIRs.QueryForeach[T]
   val QuerySum = QueryIRs.QuerySum
@@ -51,6 +55,8 @@ trait QueryOps extends Base with ListOps with ArrayOps { this: GroupedQueryOps =
   type QueryAvg[T] = QueryIRs.QueryAvg[T]
   val QueryGroupBy = QueryIRs.QueryGroupBy
   type QueryGroupBy[T, K] = QueryIRs.QueryGroupBy[T, K]
+  val QueryFilteredGroupBy = QueryIRs.QueryFilteredGroupBy
+  type QueryFilteredGroupBy[T, K] = QueryIRs.QueryFilteredGroupBy[T, K]
   val QuerySortBy = QueryIRs.QuerySortBy
   type QuerySortBy[T, S] = QueryIRs.QuerySortBy[T, S]
   val Query_Field_Underlying = QueryIRs.Query_Field_Underlying
@@ -60,11 +66,13 @@ trait QueryOps extends Base with ListOps with ArrayOps { this: GroupedQueryOps =
   def queryNew2[T](arr: Rep[Array[T]])(implicit typeT: TypeRep[T]): Rep[Query[T]] = QueryNew2[T](arr)
   def queryMap[T, S](self: Rep[Query[T]], f: Rep[((T) => S)])(implicit typeT: TypeRep[T], typeS: TypeRep[S]): Rep[Query[S]] = QueryMap[T, S](self, f)
   def queryFilter[T](self: Rep[Query[T]], p: Rep[((T) => Boolean)])(implicit typeT: TypeRep[T]): Rep[Query[T]] = QueryFilter[T](self, p)
+  def queryFoldLeft[T, S](self: Rep[Query[T]], z: Rep[S], f: Rep[((S, T) => S)])(implicit typeT: TypeRep[T], typeS: TypeRep[S]): Rep[S] = QueryFoldLeft[T, S](self, z, f)
   def queryForeach[T](self: Rep[Query[T]], f: Rep[((T) => Unit)])(implicit typeT: TypeRep[T]): Rep[Unit] = QueryForeach[T](self, f)
   def querySum[T](self: Rep[Query[T]])(implicit typeT: TypeRep[T], num: Numeric[T]): Rep[T] = QuerySum[T](self)
   def queryCount[T](self: Rep[Query[T]])(implicit typeT: TypeRep[T]): Rep[Int] = QueryCount[T](self)
   def queryAvg[T](self: Rep[Query[T]])(implicit typeT: TypeRep[T], num: Fractional[T]): Rep[T] = QueryAvg[T](self)
   def queryGroupBy[T, K](self: Rep[Query[T]], par: Rep[((T) => K)])(implicit typeT: TypeRep[T], typeK: TypeRep[K]): Rep[GroupedQuery[K, T]] = QueryGroupBy[T, K](self, par)
+  def queryFilteredGroupBy[T, K](self: Rep[Query[T]], pred: Rep[((T) => Boolean)], par: Rep[((T) => K)])(implicit typeT: TypeRep[T], typeK: TypeRep[K]): Rep[GroupedQuery[K, T]] = QueryFilteredGroupBy[T, K](self, pred, par)
   def querySortBy[T, S](self: Rep[Query[T]], f: Rep[((T) => S)])(implicit typeT: TypeRep[T], typeS: TypeRep[S], ord: Ordering[S]): Rep[Query[T]] = QuerySortBy[T, S](self, f)
   def query_Field_Underlying[T](self: Rep[Query[T]])(implicit typeT: TypeRep[T]): Rep[List[T]] = Query_Field_Underlying[T](self)
   type Query[T] = ch.epfl.data.dblab.legobase.queryengine.monad.Query[T]
@@ -94,10 +102,42 @@ object QueryIRs extends Base {
 
   case class QueryMap[T, S](self: Rep[Query[T]], f: Rep[((T) => S)])(implicit val typeT: TypeRep[T], val typeS: TypeRep[S]) extends FunctionDef[Query[S]](Some(self), "map", List(List(f))) {
     override def curriedConstructor = (copy[T, S] _).curried
+    override def isPure = true
+
+    override def partiallyEvaluate(children: Any*): Query[S] = {
+      val self = children(0).asInstanceOf[Query[T]]
+      val f = children(1).asInstanceOf[((T) => S)]
+      self.map[S](f)
+    }
+    override def partiallyEvaluable: Boolean = true
+
   }
 
   case class QueryFilter[T](self: Rep[Query[T]], p: Rep[((T) => Boolean)])(implicit val typeT: TypeRep[T]) extends FunctionDef[Query[T]](Some(self), "filter", List(List(p))) {
     override def curriedConstructor = (copy[T] _).curried
+    override def isPure = true
+
+    override def partiallyEvaluate(children: Any*): Query[T] = {
+      val self = children(0).asInstanceOf[Query[T]]
+      val p = children(1).asInstanceOf[((T) => Boolean)]
+      self.filter(p)
+    }
+    override def partiallyEvaluable: Boolean = true
+
+  }
+
+  case class QueryFoldLeft[T, S](self: Rep[Query[T]], z: Rep[S], f: Rep[((S, T) => S)])(implicit val typeT: TypeRep[T], val typeS: TypeRep[S]) extends FunctionDef[S](Some(self), "foldLeft", List(List(z), List(f))) {
+    override def curriedConstructor = (copy[T, S] _).curried
+    override def isPure = true
+
+    override def partiallyEvaluate(children: Any*): S = {
+      val self = children(0).asInstanceOf[Query[T]]
+      val z = children(1).asInstanceOf[S]
+      val f = children(2).asInstanceOf[((S, T) => S)]
+      self.foldLeft[S](z)(f)
+    }
+    override def partiallyEvaluable: Boolean = true
+
   }
 
   case class QueryForeach[T](self: Rep[Query[T]], f: Rep[((T) => Unit)])(implicit val typeT: TypeRep[T]) extends FunctionDef[Unit](Some(self), "foreach", List(List(f))) {
@@ -106,22 +146,78 @@ object QueryIRs extends Base {
 
   case class QuerySum[T](self: Rep[Query[T]])(implicit val typeT: TypeRep[T], val num: Numeric[T]) extends FunctionDef[T](Some(self), "sum", List()) {
     override def curriedConstructor = (copy[T] _)
+    override def isPure = true
+
+    override def partiallyEvaluate(children: Any*): T = {
+      val self = children(0).asInstanceOf[Query[T]]
+      self.sum
+    }
+    override def partiallyEvaluable: Boolean = true
+
   }
 
   case class QueryCount[T](self: Rep[Query[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Int](Some(self), "count", List()) {
     override def curriedConstructor = (copy[T] _)
+    override def isPure = true
+
+    override def partiallyEvaluate(children: Any*): Int = {
+      val self = children(0).asInstanceOf[Query[T]]
+      self.count
+    }
+    override def partiallyEvaluable: Boolean = true
+
   }
 
   case class QueryAvg[T](self: Rep[Query[T]])(implicit val typeT: TypeRep[T], val num: Fractional[T]) extends FunctionDef[T](Some(self), "avg", List()) {
     override def curriedConstructor = (copy[T] _)
+    override def isPure = true
+
+    override def partiallyEvaluate(children: Any*): T = {
+      val self = children(0).asInstanceOf[Query[T]]
+      self.avg
+    }
+    override def partiallyEvaluable: Boolean = true
+
   }
 
   case class QueryGroupBy[T, K](self: Rep[Query[T]], par: Rep[((T) => K)])(implicit val typeT: TypeRep[T], val typeK: TypeRep[K]) extends FunctionDef[GroupedQuery[K, T]](Some(self), "groupBy", List(List(par))) {
     override def curriedConstructor = (copy[T, K] _).curried
+    override def isPure = true
+
+    override def partiallyEvaluate(children: Any*): GroupedQuery[K, T] = {
+      val self = children(0).asInstanceOf[Query[T]]
+      val par = children(1).asInstanceOf[((T) => K)]
+      self.groupBy[K](par)
+    }
+    override def partiallyEvaluable: Boolean = true
+
+  }
+
+  case class QueryFilteredGroupBy[T, K](self: Rep[Query[T]], pred: Rep[((T) => Boolean)], par: Rep[((T) => K)])(implicit val typeT: TypeRep[T], val typeK: TypeRep[K]) extends FunctionDef[GroupedQuery[K, T]](Some(self), "filteredGroupBy", List(List(pred, par))) {
+    override def curriedConstructor = (copy[T, K] _).curried
+    override def isPure = true
+
+    override def partiallyEvaluate(children: Any*): GroupedQuery[K, T] = {
+      val self = children(0).asInstanceOf[Query[T]]
+      val pred = children(1).asInstanceOf[((T) => Boolean)]
+      val par = children(2).asInstanceOf[((T) => K)]
+      self.filteredGroupBy[K](pred, par)
+    }
+    override def partiallyEvaluable: Boolean = true
+
   }
 
   case class QuerySortBy[T, S](self: Rep[Query[T]], f: Rep[((T) => S)])(implicit val typeT: TypeRep[T], val typeS: TypeRep[S], val ord: Ordering[S]) extends FunctionDef[Query[T]](Some(self), "sortBy", List(List(f))) {
     override def curriedConstructor = (copy[T, S] _).curried
+    override def isPure = true
+
+    override def partiallyEvaluate(children: Any*): Query[T] = {
+      val self = children(0).asInstanceOf[Query[T]]
+      val f = children(1).asInstanceOf[((T) => S)]
+      self.sortBy[S](f)
+    }
+    override def partiallyEvaluable: Boolean = true
+
   }
 
   case class Query_Field_Underlying[T](self: Rep[Query[T]])(implicit val typeT: TypeRep[T]) extends FieldDef[List[T]](self, "underlying") {
@@ -196,6 +292,15 @@ object GroupedQueryIRs extends Base {
 
   case class GroupedQueryMapValues[K, V, S](self: Rep[GroupedQuery[K, V]], f: Rep[((Query[V]) => S)])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V], val typeS: TypeRep[S]) extends FunctionDef[Query[Tuple2[K, S]]](Some(self), "mapValues", List(List(f))) {
     override def curriedConstructor = (copy[K, V, S] _).curried
+    override def isPure = true
+
+    override def partiallyEvaluate(children: Any*): Query[Tuple2[K, S]] = {
+      val self = children(0).asInstanceOf[GroupedQuery[K, V]]
+      val f = children(1).asInstanceOf[((Query[V]) => S)]
+      self.mapValues[S](f)
+    }
+    override def partiallyEvaluable: Boolean = true
+
   }
 
   case class GroupedQuery_Field_Underlying[K, V](self: Rep[GroupedQuery[K, V]])(implicit val typeK: TypeRep[K], val typeV: TypeRep[V]) extends FieldDef[Map[K, List[V]]](self, "underlying") {

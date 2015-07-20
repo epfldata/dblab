@@ -70,6 +70,14 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
     readVar(sumResult).asInstanceOf[Rep[T]]
   }
 
+  def array_foldLeft[T: TypeRep, S: TypeRep](array: Rep[Array[T]], z: Rep[S], f: Rep[(S, T) => S]): Rep[S] = {
+    val foldResult = __newVarNamed[S](z, "foldResult")
+    array_foreach(array, (elem: Rep[T]) => {
+      __assign(foldResult, inlineFunction(f, readVar(foldResult), elem))
+    })
+    readVar(foldResult)
+  }
+
   def array_avg[T: TypeRep](array: Rep[Array[T]]): Rep[T] = {
     // TODO handle the generic case using numeric
     assert(typeRep[T] == DoubleType)
@@ -116,6 +124,12 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
     case QueryAvg(monad) =>
       val array = apply(monad).asInstanceOf[Rep[Array[Any]]]
       array_avg(array)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
+  }
+
+  rewrite += rule {
+    case QueryFoldLeft(monad, z, f) =>
+      val array = apply(monad).asInstanceOf[Rep[Array[Any]]]
+      array_foldLeft(array, z, f)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]], z.tp.asInstanceOf[TypeRep[Any]])
   }
 
   // rewrite += rule {
@@ -183,11 +197,5 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
         }
       }
       resultArray.asInstanceOf[Rep[Any]]
-  }
-
-  // TODO needs quasi lifting legobase.
-  rewrite += rule {
-    case OptimalStringStartsWith(str, Def(GenericEngineParseStringObject(Constant(str2: String)))) =>
-      str2.toCharArray.zipWithIndex.foldLeft(unit(true))((acc, curr) => acc && (str(curr._2) __== unit(curr._1)))
   }
 }
