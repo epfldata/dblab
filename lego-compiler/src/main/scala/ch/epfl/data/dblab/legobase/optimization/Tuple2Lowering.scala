@@ -16,7 +16,7 @@ import sc.pardis.deep.scalalib.collection._
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class Tuple2Lowering[Lang <: sc.pardis.deep.scalalib.ArrayComponent with sc.pardis.deep.scalalib.Tuple2Component](override val IR: Lang)
+class Tuple2Lowering[Lang <: LegoBaseExp](override val IR: Lang)
   extends sc.pardis.optimization.RecursiveRuleBasedTransformer[Lang](IR)
   with ArrayEscapeLowering[Lang]
   with VarEscapeLowering[Lang]
@@ -77,6 +77,68 @@ class Tuple2Lowering[Lang <: sc.pardis.deep.scalalib.ArrayComponent with sc.pard
   rewrite += rule {
     case n @ Tuple2_Field__2(sym) if mustBeLowered(sym) =>
       field(sym, "_2")(sym.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
+  }
+
+  analysis += rule {
+    case Lambda2(f, i1, i2, o) if mayBeLowered(i1) || mayBeLowered(i2) => {
+      addToLowered(i1)
+      addToLowered(i2)
+      ()
+    }
+  }
+
+  rewrite += rule {
+    case Lambda2(f, i1, i2, o) if mustBeLowered(i1) || mustBeLowered(i2) => {
+      class A
+      class B
+      implicit val typeA = lowerType(i1.tp).asInstanceOf[TypeRep[A]]
+      implicit val typeB = lowerType(i2.tp).asInstanceOf[TypeRep[B]]
+      val newI1 = fresh[A]
+      val newI2 = fresh[B]
+      subst += i1 -> newI1
+      subst += i2 -> newI2
+      val newO = transformBlockTyped(o)(o.tp, transformType(o.tp)).asInstanceOf[Block[Any]]
+      val newF = (x: Rep[Any], y: Rep[Any]) => substitutionContext(newI1 -> x, newI2 -> y) {
+        inlineBlock(newO)
+      }
+      addToLowered(newI1)
+      addToLowered(newI2)
+      Lambda2(newF, newI1, newI2, newO).asInstanceOf[Def[Any]]
+    }
+  }
+
+  rewrite += rule {
+    case pc @ PardisCast(exp) => {
+      infix_asInstanceOf(apply(exp))(lowerType(pc.castTp))
+      // PardisCast(transformExp[Any, Any](exp))(lowerType(exp.tp), lowerType(pc.castTp))
+    }
+  }
+
+  val loweredEscapeTreeSets = scala.collection.mutable.ArrayBuffer[Rep[Any]]()
+
+  analysis += statement {
+    case sym -> TreeSetHead(treeSet) if mayBeLowered(sym) => {
+      addToLowered(sym)
+      loweredEscapeTreeSets += treeSet
+      ()
+    }
+  }
+
+  rewrite += statement {
+    case sym -> TreeSetNew2(ordering) if loweredEscapeTreeSets.contains(sym) => {
+      class B
+      implicit val typeB = lowerType(sym.tp.typeArguments(0)).asInstanceOf[TypeRep[B]]
+      __newTreeSet2[B](ordering.asInstanceOf[Rep[Ordering[B]]]).asInstanceOf[Rep[Any]]
+    }
+  }
+
+  rewrite += statement {
+    case sym -> TreeSetHead(treeSet) if loweredEscapeTreeSets.contains(treeSet) => {
+      class B
+      implicit val typeB = apply(treeSet).tp.typeArguments(0).asInstanceOf[TypeRep[B]]
+      val treeSet2 = apply(treeSet).asInstanceOf[Rep[TreeSet[B]]]
+      treeSet2.head.asInstanceOf[Rep[Any]]
+    }
   }
 
 }
