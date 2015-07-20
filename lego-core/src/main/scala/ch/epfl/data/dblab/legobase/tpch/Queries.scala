@@ -14,7 +14,8 @@ import tpch.TPCHLoader._
 import GenericEngine._
 // import queryengine.TPCHRelations._
 import storagemanager._
-import queryengine.monad._
+import queryengine.monad.Query
+// import queryengine.monad.{ QueryOptimized => Query }
 
 @metadeep(
   folder = "",
@@ -31,7 +32,7 @@ trait Queries
  */
 object Queries {
 
-  def Q1_old(numRuns: Int) {
+  def Q1(numRuns: Int) {
     val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
       runQuery {
@@ -63,15 +64,15 @@ object Queries {
     }
   }
 
-  // def Q1_functional(numRuns: Int) {
-  def Q1(numRuns: Int) {
+  def Q1_functional(numRuns: Int) {
+    // def Q1(numRuns: Int) {
     val lineitemTable = new Query(loadLineitem())
     for (i <- 0 until numRuns) {
       runQuery {
         val constantDate: Int = parseDate("1998-09-02")
         val result = lineitemTable.filter(_.L_SHIPDATE <= constantDate).groupBy(x => new Q1GRPRecord(
           x.L_RETURNFLAG, x.L_LINESTATUS)).mapValues(l =>
-          (
+          Array(
             l.map(_.L_DISCOUNT).sum,
             l.map(_.L_QUANTITY).sum,
             l.map(_.L_EXTENDEDPRICE).sum,
@@ -80,12 +81,35 @@ object Queries {
             l.count,
             l.map(_.L_QUANTITY).avg,
             l.map(_.L_EXTENDEDPRICE).avg,
-            l.map(_.L_DISCOUNT).avg)).sortBy(t =>
-          t._1.L_RETURNFLAG)
+            l.map(_.L_DISCOUNT).avg))
+          // val result = lineitemTable.filter(_.L_SHIPDATE <= constantDate).groupBy(x => new Q1GRPRecord(
+          //   x.L_RETURNFLAG, x.L_LINESTATUS)).mapValues(l => {
+          //   val (x0, x1, x2, x3, x4, x5) = l.foldLeft((0.0, 0.0, 0.0, 0.0, 0.0, 0.0))((acc, cur) => {
+          //     (acc._1 + cur.L_DISCOUNT,
+          //       acc._2 + cur.L_QUANTITY,
+          //       acc._3 + cur.L_EXTENDEDPRICE,
+          //       acc._4 + cur.L_EXTENDEDPRICE * (1.0 - cur.L_DISCOUNT),
+          //       acc._5 + cur.L_EXTENDEDPRICE * (1.0 - cur.L_DISCOUNT) * (1.0 + cur.L_TAX),
+          //       acc._6 + 1)
+          //   })
+          //   val (x6, x7, x8) = (x1 / x5, x2 / x5, x0 / x5)
+          //   Array(
+          //     x0,
+          //     x1,
+          //     x2,
+          //     x3,
+          //     x4,
+          //     x5,
+          //     x6,
+          //     x7,
+          //     x8)
+          // })
+          .sortBy(t =>
+            t._1.L_RETURNFLAG.toInt * 128 + t._1.L_LINESTATUS.toInt)
         result.foreach(kv =>
-          printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%d\n",
-            kv._1.L_RETURNFLAG, kv._1.L_LINESTATUS, kv._2._2, kv._2._3, kv._2._4, kv._2._5,
-            kv._2._7, kv._2._8, kv._2._9, kv._2._6))
+          printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n",
+            kv._1.L_RETURNFLAG, kv._1.L_LINESTATUS, kv._2.apply(1), kv._2.apply(2), kv._2.apply(3), kv._2.apply(4),
+            kv._2.apply(6), kv._2.apply(7), kv._2.apply(8), kv._2.apply(5)))
         printf("(%d rows)\n", result.count)
       }
     }
