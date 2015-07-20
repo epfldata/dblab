@@ -2,6 +2,7 @@ package ch.epfl.data
 package dblab.legobase
 package optimization
 
+import schema._
 import scala.language.implicitConversions
 import sc.pardis.ir._
 import reflect.runtime.universe.{ TypeTag, Type }
@@ -14,7 +15,7 @@ import sc.pardis.shallow.utils.DefaultValue
 /**
  * Lowers query monad operations.
  */
-class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransformer[LegoBaseExp](IR) {
+class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) extends RuleBasedTransformer[LegoBaseExp](IR) {
   import IR._
 
   def array_filter[T: TypeRep](array: Rep[Array[T]], p: Rep[T => Boolean]): Rep[Array[T]] = {
@@ -36,16 +37,16 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
     resultArray
   }
 
-  def array_dropRight[T: TypeRep](array: Rep[Array[T]], keepNum: Rep[Int]): Rep[Array[T]] = {
-    val resultSize = keepNum
-    val resultArray = __newArray[T](resultSize)
-    Range(unit(0), resultSize).foreach {
-      __lambda { i =>
-        resultArray(i) = array(i)
-      }
-    }
-    resultArray
-  }
+  // def array_dropRight[T: TypeRep](array: Rep[Array[T]], keepNum: Rep[Int]): Rep[Array[T]] = {
+  //   val resultSize = keepNum
+  //   val resultArray = __newArray[T](resultSize)
+  //   Range(unit(0), resultSize).foreach {
+  //     __lambda { i =>
+  //       resultArray(i) = array(i)
+  //     }
+  //   }
+  //   resultArray
+  // }
 
   def array_map[T: TypeRep, S: TypeRep](array: Rep[Array[T]], f: Rep[T => S]): Rep[Array[S]] = {
     val Def(Lambda(func, _, _)) = f
@@ -148,6 +149,9 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
     val keyRevertIndex = __newArray[K](MAX_SIZE)
     val lastIndex = __newVarNamed(unit(0), "lastIndex")
     val array = __newArray[Array[V]](MAX_SIZE)
+    // TODO generalize
+    schema.stats += "QS_MEM_ARRAY_LINEITEM" -> 4
+    schema.stats += "QS_MEM_ARRAY_DOUBLE" -> 4
     val eachBucketSize = __newArray[Int](MAX_SIZE)
     Range(unit(0), MAX_SIZE).foreach {
       __lambda { i =>
@@ -179,7 +183,8 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
     // }
     Range(unit(0), array.length).foreach {
       __lambda { i =>
-        val arr = array_dropRight(array(i), eachBucketSize(i))
+        // val arr = array_dropRight(array(i), eachBucketSize(i))
+        val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
         // System.out.println(s"arr size ${arr.size} bucket size ${eachBucketSize(i)}")
         val key = keyRevertIndex(i)
         val newValue = inlineFunction(func, arr)
