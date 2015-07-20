@@ -139,11 +139,30 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
 
   // }
 
-  rewrite += remove {
-    case QueryGroupBy(_, _) => ()
+  rewrite += statement {
+    case sym -> QueryGroupBy(monad, par) => {
+      implicit val typeK = par.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
+      implicit val typeV = par.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
+      val result = queryGroupBy(monad, None, par)(typeK, typeV)
+      groupByResults(sym) = result
+      result.partitionedArray
+    }
   }
 
-  def queryGroupByMapValues[K: TypeRep, V: TypeRep, S: TypeRep](monad: Rep[Query[V]], pred: Option[Rep[V => Boolean]], par: Rep[V => K], func: Rep[Array[V] => S]): Rep[Any] = {
+  rewrite += statement {
+    case sym -> QueryFilteredGroupBy(monad, pred, par) => {
+      implicit val typeK = par.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
+      implicit val typeV = par.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
+      val result = queryGroupBy(monad, Some(pred), par)(typeK, typeV)
+      groupByResults(sym) = result
+      result.partitionedArray
+    }
+  }
+
+  case class GroupByResult[K, V](partitionedArray: Rep[Array[Array[V]]], keyRevertIndex: Rep[Array[K]], eachBucketSize: Rep[Array[Int]], partitions: Rep[Int])
+  val groupByResults = scala.collection.mutable.Map[Rep[Any], GroupByResult[Any, Any]]()
+
+  def queryGroupBy[K: TypeRep, V: TypeRep](monad: Rep[Query[V]], pred: Option[Rep[V => Boolean]], par: Rep[V => K]): GroupByResult[K, V] = {
     val originalArray = apply(monad).asInstanceOf[Rep[Array[V]]]
     val MAX_SIZE = unit(4)
     val keyIndex = __newHashMap[K, Int]()
@@ -176,12 +195,15 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
         eachBucketSize(bucket) += unit(1)
       }, unit())
     })
-    val resultArray = __newArray[(K, S)](MAX_SIZE)
-    // Range(unit(0), array.length).foreach {
-    //   __lambda { i =>
-    //     array(i) = __newArray[V](originalArray.length)
-    //   }
-    // }
+    GroupByResult(array, keyRevertIndex, eachBucketSize, MAX_SIZE)
+  }
+
+  // def queryGroupByMapValues[K: TypeRep, V: TypeRep, S: TypeRep](monad: Rep[Query[V]], pred: Option[Rep[V => Boolean]], par: Rep[V => K], func: Rep[Array[V] => S]): Rep[Any] = {
+  def groupedQueryMapValues[K: TypeRep, V: TypeRep, S: TypeRep](groupedMonad: Rep[GroupedQuery[K, V]], func: Rep[Array[V] => S]): Rep[Any] = {
+    val GroupByResult(array, keyRevertIndex, eachBucketSize, partitions) =
+      // queryGroupBy(monad, pred, par)
+      groupByResults(groupedMonad.asInstanceOf[Rep[Any]]).asInstanceOf[GroupByResult[K, V]]
+    val resultArray = __newArray[(K, S)](partitions)
     Range(unit(0), array.length).foreach {
       __lambda { i =>
         // val arr = array_dropRight(array(i), eachBucketSize(i))
@@ -195,21 +217,31 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
     resultArray.asInstanceOf[Rep[Any]]
   }
 
-  rewrite += rule {
-    case GroupedQueryMapValues(Def(QueryGroupBy(monad, par)), func) =>
-      implicit val typeK = par.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-      implicit val typeV = par.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
-      implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-      queryGroupByMapValues(monad, None, par, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
+  // rewrite += rule {
+  //   case GroupedQueryMapValues(Def(QueryGroupBy(monad, par)), func) =>
+  //     implicit val typeK = par.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
+  //     implicit val typeV = par.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
+  //     implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
+  //     queryGroupByMapValues(monad, None, par, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
 
-  }
+  // }
+
+  // rewrite += rule {
+  //   case GroupedQueryMapValues(Def(QueryFilteredGroupBy(monad, pred, par)), func) =>
+  //     implicit val typeK = par.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
+  //     implicit val typeV = par.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
+  //     implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
+  //     queryGroupByMapValues(monad, Some(pred), par, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
+
+  // }
 
   rewrite += rule {
-    case GroupedQueryMapValues(Def(QueryFilteredGroupBy(monad, pred, par)), func) =>
-      implicit val typeK = par.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-      implicit val typeV = par.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
+    case GroupedQueryMapValues(groupedMonad, func) =>
+      implicit val typeK = groupedMonad.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
+      implicit val typeV = groupedMonad.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
       implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-      queryGroupByMapValues(monad, Some(pred), par, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
+      // queryGroupByMapValues(monad, Some(pred), par, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
+      groupedQueryMapValues(groupedMonad, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
 
   }
 }
