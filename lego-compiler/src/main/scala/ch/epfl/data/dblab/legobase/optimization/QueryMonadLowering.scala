@@ -39,7 +39,6 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
   def array_dropRight[T: TypeRep](array: Rep[Array[T]], keepNum: Rep[Int]): Rep[Array[T]] = {
     val resultSize = keepNum
     val resultArray = __newArray[T](resultSize)
-    val counter = __newVarNamed[Int](unit(0), "arrayCounter")
     Range(unit(0), resultSize).foreach {
       __lambda { i =>
         resultArray(i) = array(i)
@@ -142,36 +141,26 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
     case QueryGroupBy(_, _) => ()
   }
 
-  rewrite += rule {
-    case GroupedQueryMapValues(Def(QueryGroupBy(monad, parNode)), f) =>
-      class K
-      class V
-      class S
-      implicit val typeK = parNode.tp.typeArguments(1).asInstanceOf[TypeRep[K]]
-      implicit val typeV = parNode.tp.typeArguments(0).asInstanceOf[TypeRep[V]]
-      implicit val typeS = f.tp.typeArguments(1).asInstanceOf[TypeRep[S]]
-      // val Def(Lambda(func: (Rep[Array[V]] => Rep[S]), _, _)) = f
-      // val Def(Lambda(par: (Rep[V] => Rep[K]), _, _)) = parNode
-      val func = f.asInstanceOf[Rep[Array[V] => S]]
-      val par = parNode.asInstanceOf[Rep[V => K]]
-      // val Def(Lambda(par: (Rep[V] => Rep[K]), _, _)) = parNode
-      val originalArray = apply(monad).asInstanceOf[Rep[Array[V]]]
-      val MAX_SIZE = unit(4)
-      val keyIndex = __newHashMap[K, Int]()
-      val keyRevertIndex = __newArray[K](MAX_SIZE)
-      val lastIndex = __newVarNamed(unit(0), "lastIndex")
-      val array = __newArray[Array[V]](MAX_SIZE)
-      val eachBucketSize = __newArray[Int](MAX_SIZE)
-      Range(unit(0), MAX_SIZE).foreach {
-        __lambda { i =>
-          array(i) = __newArray[V](originalArray.length)
-          eachBucketSize(i) = unit(0)
-        }
+  def queryGroupByMapValues[K: TypeRep, V: TypeRep, S: TypeRep](monad: Rep[Query[V]], pred: Option[Rep[V => Boolean]], par: Rep[V => K], func: Rep[Array[V] => S]): Rep[Any] = {
+    val originalArray = apply(monad).asInstanceOf[Rep[Array[V]]]
+    val MAX_SIZE = unit(4)
+    val keyIndex = __newHashMap[K, Int]()
+    val keyRevertIndex = __newArray[K](MAX_SIZE)
+    val lastIndex = __newVarNamed(unit(0), "lastIndex")
+    val array = __newArray[Array[V]](MAX_SIZE)
+    val eachBucketSize = __newArray[Int](MAX_SIZE)
+    Range(unit(0), MAX_SIZE).foreach {
+      __lambda { i =>
+        array(i) = __newArray[V](originalArray.length)
+        eachBucketSize(i) = unit(0)
       }
+    }
 
-      // printf(unit("start!"))
-      array_foreach(originalArray, (elem: Rep[V]) => {
-        // val key = par(elem)
+    // printf(unit("start!"))
+    array_foreach(originalArray, (elem: Rep[V]) => {
+      // val key = par(elem)
+      val cond = pred.map(p => inlineFunction(p, elem)).getOrElse(unit(true))
+      __ifThenElse(cond, {
         val key = inlineFunction(par, elem)
         val bucket = keyIndex.getOrElseUpdate(key, {
           keyRevertIndex(readVar(lastIndex)) = key
@@ -180,22 +169,41 @@ class QueryMonadLowering(override val IR: LegoBaseExp) extends RuleBasedTransfor
         })
         array(bucket)(eachBucketSize(bucket)) = elem
         eachBucketSize(bucket) += unit(1)
-      })
-      val resultArray = __newArray[(K, S)](MAX_SIZE)
-      // Range(unit(0), array.length).foreach {
-      //   __lambda { i =>
-      //     array(i) = __newArray[V](originalArray.length)
-      //   }
-      // }
-      Range(unit(0), array.length).foreach {
-        __lambda { i =>
-          val arr = array_dropRight(array(i), eachBucketSize(i))
-          // System.out.println(s"arr size ${arr.size} bucket size ${eachBucketSize(i)}")
-          val key = keyRevertIndex(i)
-          val newValue = inlineFunction(func, arr)
-          resultArray(i) = Tuple2(key, newValue)
-        }
+      }, unit())
+    })
+    val resultArray = __newArray[(K, S)](MAX_SIZE)
+    // Range(unit(0), array.length).foreach {
+    //   __lambda { i =>
+    //     array(i) = __newArray[V](originalArray.length)
+    //   }
+    // }
+    Range(unit(0), array.length).foreach {
+      __lambda { i =>
+        val arr = array_dropRight(array(i), eachBucketSize(i))
+        // System.out.println(s"arr size ${arr.size} bucket size ${eachBucketSize(i)}")
+        val key = keyRevertIndex(i)
+        val newValue = inlineFunction(func, arr)
+        resultArray(i) = Tuple2(key, newValue)
       }
-      resultArray.asInstanceOf[Rep[Any]]
+    }
+    resultArray.asInstanceOf[Rep[Any]]
+  }
+
+  rewrite += rule {
+    case GroupedQueryMapValues(Def(QueryGroupBy(monad, par)), func) =>
+      implicit val typeK = par.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
+      implicit val typeV = par.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
+      implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
+      queryGroupByMapValues(monad, None, par, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
+
+  }
+
+  rewrite += rule {
+    case GroupedQueryMapValues(Def(QueryFilteredGroupBy(monad, pred, par)), func) =>
+      implicit val typeK = par.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
+      implicit val typeV = par.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
+      implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
+      queryGroupByMapValues(monad, Some(pred), par, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
+
   }
 }
