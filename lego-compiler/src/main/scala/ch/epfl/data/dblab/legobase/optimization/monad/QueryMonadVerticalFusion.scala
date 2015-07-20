@@ -55,7 +55,24 @@ class QueryMonadVerticalFusion(override val IR: LegoBaseExp) extends RuleBasedTr
 
   rewrite += rule {
     case QueryCount(Def(QueryMap(monad, f))) =>
-      QueryCount(apply(monad))
+      implicit val typeT = f.tp.typeArguments(0).asInstanceOf[TypeRep[T]]
+      // val array = apply(monad).asInstanceOf[Rep[Array[Any]]]
+      // array_map(array, f)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]], f.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
+      apply(monad).asInstanceOf[Rep[Query[T]]].foldLeft(unit(0))(__lambda { (acc, cur) =>
+        acc + unit(1)
+      })
+    // QueryCount(apply(monad))
+  }
+
+  rewrite += rule {
+    case QueryCount(monad) =>
+      implicit val typeT = monad.tp.typeArguments(0).asInstanceOf[TypeRep[T]]
+      // val array = apply(monad).asInstanceOf[Rep[Array[Any]]]
+      // array_map(array, f)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]], f.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
+      apply(monad).asInstanceOf[Rep[Query[T]]].foldLeft(unit(0))(__lambda { (acc, cur) =>
+        acc + unit(1)
+      })
+    // QueryCount(apply(monad))
   }
 
   class K
@@ -78,6 +95,39 @@ class QueryMonadVerticalFusion(override val IR: LegoBaseExp) extends RuleBasedTr
       implicit val typeK = par.tp.typeArguments(1).asInstanceOf[TypeRep[K]]
       apply(monad).asInstanceOf[Rep[Query[T]]].filteredGroupBy(pred.asInstanceOf[Rep[T => Boolean]],
         par.asInstanceOf[Rep[T => K]])
+  }
+
+  rewrite += rule {
+    case QueryFoldLeft(Def(QueryFilter(monad, pred)), z, f) =>
+
+      implicit val typeT = monad.tp.typeArguments(0).asInstanceOf[TypeRep[T]]
+      implicit val typeS = z.tp.asInstanceOf[TypeRep[S]]
+      val zTyped = z.asInstanceOf[Rep[S]]
+      val predTyped = pred.asInstanceOf[Rep[T => Boolean]]
+      val fTyped = f.asInstanceOf[Rep[(S, T) => S]]
+      apply(monad).asInstanceOf[Rep[Query[T]]].foldLeft(zTyped)(__lambda { (acc, cur) =>
+        val cond = inlineFunction(predTyped, cur)
+        __ifThenElse(cond, {
+          inlineFunction(fTyped, acc, cur)
+        }, {
+          acc
+        })
+      })
+  }
+
+  rewrite += rule {
+    case QueryForeach(Def(QueryFilter(monad, pred)), f) =>
+      implicit val typeT = monad.tp.typeArguments(0).asInstanceOf[TypeRep[T]]
+      val predTyped = pred.asInstanceOf[Rep[T => Boolean]]
+      val fTyped = f.asInstanceOf[Rep[T => Unit]]
+      apply(monad).asInstanceOf[Rep[Query[T]]].foreach(__lambda { elem =>
+        val cond = inlineFunction(predTyped, elem)
+        __ifThenElse(cond, {
+          inlineFunction(fTyped, elem)
+        }, {
+          unit()
+        })
+      })
   }
 
   rewrite += rule {
