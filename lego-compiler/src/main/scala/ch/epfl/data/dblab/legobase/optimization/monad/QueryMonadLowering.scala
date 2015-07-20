@@ -244,4 +244,30 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
       groupedQueryMapValues(groupedMonad, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
 
   }
+
+  def array_sortBy[T: TypeRep, S: TypeRep](array: Rep[Array[T]], sortFunction: Rep[T => S]): Rep[Array[T]] = {
+    val resultArray = __newArray[T](array.length)
+    val counter = __newVarNamed[Int](unit(0), "arrayCounter")
+    // TODO generalize
+    val treeSet = __newTreeSet2(Ordering[T](__lambda { (x, y) =>
+      inlineFunction(sortFunction, x).asInstanceOf[Rep[Int]] - inlineFunction(sortFunction, y).asInstanceOf[Rep[Int]]
+    }))
+    array_foreach(array, (elem: Rep[T]) => {
+      treeSet += elem
+      __assign(counter, readVar(counter) + unit(1))
+    })
+    Range(unit(0), array.length).foreach(__lambda { i =>
+      val elem = treeSet.head
+      treeSet -= elem
+      resultArray(i) = elem
+    })
+    resultArray
+  }
+
+  rewrite += statement {
+    case sym -> QuerySortBy(monad, sortFunction) => {
+      val array = apply(monad).asInstanceOf[Rep[Array[Any]]]
+      array_sortBy(array, sortFunction)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]], sortFunction.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
+    }
+  }
 }
