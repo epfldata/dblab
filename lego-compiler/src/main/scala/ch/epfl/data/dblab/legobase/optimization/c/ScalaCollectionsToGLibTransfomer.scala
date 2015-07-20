@@ -89,25 +89,49 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LegoBaseExp) extends Rec
   rewrite += rule {
     case ma @ HashMapApply(map, k) =>
       val key = if (ma.typeA == DoubleType || ma.typeA == PointerType(DoubleType)) CLang.&(apply(k)) else apply(k)
+
       g_hash_table_lookup(map.asInstanceOf[Rep[LPointer[GHashTable]]], key.asInstanceOf[Rep[gconstpointer]])
   }
   rewrite += rule {
     case mu @ HashMapUpdate(map, k, value) =>
       val key = if (mu.typeA == DoubleType || mu.typeA == PointerType(DoubleType)) allocDoubleKey(apply(k)) else apply(k)
+      // for handling the case of positive integers that the value NULL is mixed with 0
+      val newValue =
+        if (mu.typeB == IntType)
+          value.asInstanceOf[Rep[Int]] + unit(1)
+        else
+          value
       g_hash_table_insert(map.asInstanceOf[Rep[LPointer[GHashTable]]],
         key.asInstanceOf[Rep[gconstpointer]],
-        value.asInstanceOf[Rep[gpointer]])
+        newValue.asInstanceOf[Rep[gpointer]])
+  }
+  def elemType[T](tp: TypeRep[T]): TypeRep[Any] = {
+    if (tp.isPrimitive) {
+      transformType(tp).asInstanceOf[TypeRep[Any]]
+    } else {
+      typePointer(transformType(tp)).asInstanceOf[TypeRep[Any]]
+    }
   }
   rewrite += rule {
     case hmgu @ HashMapGetOrElseUpdate(map, key, value) =>
-      val ktp = typePointer(transformType(hmgu.typeA)).asInstanceOf[TypeRep[Any]]
-      val vtp = typePointer(transformType(hmgu.typeB)).asInstanceOf[TypeRep[Any]]
+      val ktp = elemType(hmgu.typeA)
+      val vtp = elemType(hmgu.typeB)
       val v = toAtom(transformDef(HashMapApply(map, key)(ktp, vtp))(vtp))(vtp)
+      // what happends if the value associated to the key is zero?
+      // g_hash_table_lookup does not distinguish between NULL and zero!
+      // we will take care of it here.
+      // However, here we're assuming that always: value >= 0
       __ifThenElse(infix_==(v, unit(null)), {
         val res = inlineBlock(apply(value))
         toAtom(HashMapUpdate(map, key, res)(ktp, vtp))
         res
-      }, v)(v.tp)
+      }, {
+        if (hmgu.typeB == IntType)
+          v.asInstanceOf[Rep[Int]] - unit(1)
+        else
+          v
+      })(v.tp)
+
   }
   rewrite += rule {
     case mr @ HashMapRemove(map, key) =>
