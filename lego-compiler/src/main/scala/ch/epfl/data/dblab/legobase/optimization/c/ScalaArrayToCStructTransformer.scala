@@ -64,11 +64,12 @@ class ScalaArrayToCStructTransformer(override val IR: LegoBaseExp) extends RuleB
 
   rewrite += rule {
     case a @ ArrayNew(x) =>
+      val size = apply(x)
       if (a.tp.typeArguments(0).isArray) {
         // Get type of elements stored in array
         val elemType = typeCArray(a.tp.typeArguments(0).typeArguments(0))
         // Allocate original array
-        val array = malloc(x)(elemType)
+        val array = malloc(size)(elemType)
         // Create wrapper with length
         val am = typeCArray(typeCArray(a.tp.typeArguments(0).typeArguments(0))).asInstanceOf[PardisType[CArray[CArray[Any]]]] //transformType(a.tp)
         val tagName = structName(am)
@@ -83,7 +84,7 @@ class ScalaArrayToCStructTransformer(override val IR: LegoBaseExp) extends RuleB
         // Get type of elements stored in array
         val elemType = if (a.tp.typeArguments(0).isRecord) a.tp.typeArguments(0) else transformType(a.tp.typeArguments(0))
         // Allocate original array
-        val array = malloc(x)(elemType)
+        val array = malloc(size)(elemType)
         // Create wrapper with length
         val am = transformType(a.tp)
         val s = toAtom(
