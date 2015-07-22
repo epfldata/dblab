@@ -308,8 +308,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LegoBaseExp) extends Rec
   rewrite += rule {
     case TreeSetSize(t) => g_tree_nnodes(t.asInstanceOf[Rep[LPointer[GTree]]])
   }
-  rewrite += rule {
-    case op @ TreeSetHead(t) =>
+  rewrite += statement {
+    case sym -> (op @ TreeSetHead(t)) =>
       // def treeHead[A: PardisType, B: PardisType] = doLambda3((s1: Rep[A], s2: Rep[A], s3: Rep[Pointer[B]]) => {
       //   pointer_assign_content(s3.asInstanceOf[Expression[Pointer[Any]]], s2)
       def treeHead[T: TypeRep] = doLambda3((s1: Rep[gpointer], s2: Rep[gpointer], s3: Rep[gpointer]) => {
@@ -317,7 +317,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LegoBaseExp) extends Rec
         unit(1)
       })
       class X
-      implicit val elemType = transformType(if (op.typeA.isRecord) typeLPointer(op.typeA) else op.typeA).asInstanceOf[TypeRep[X]]
+      val opTypeA = sym.tp
+      implicit val elemType = transformType(if (opTypeA.isRecord) typeLPointer(opTypeA) else opTypeA).asInstanceOf[TypeRep[X]]
       val init = CLang.NULL[Any]
       g_tree_foreach(t.asInstanceOf[Rep[LPointer[GTree]]], (treeHead(elemType)).asInstanceOf[Rep[LPointer[(gpointer, gpointer, gpointer) => Int]]], CLang.&(init).asInstanceOf[Rep[gpointer]])
       init.asInstanceOf[Rep[LPointer[Any]]]
