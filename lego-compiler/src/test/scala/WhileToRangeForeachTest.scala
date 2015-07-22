@@ -12,7 +12,7 @@ import sc.pardis.quasi.anf._
 
 class WhileToRangeForeachTest extends FlatSpec with ShouldMatchers {
 
-  implicit val IR = new LoweringLegoBase {}
+  implicit val IR = new LegoBaseExp {}
 
   "simple example" should "work" in {
     val exp = {
