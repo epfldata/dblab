@@ -73,8 +73,8 @@ class LegoCompiler(val DSL: LegoBaseExp,
   pipeline += PartiallyEvaluate
 
   if (settings.queryMonadLowering) {
-    // pipeline += new QueryMonadOptimization
-    // pipeline += DCE
+    pipeline += new QueryMonadOptimization
+    pipeline += DCE
     pipeline += new QueryMonadLowering(schema, DSL)
     pipeline += ParameterPromotion
     pipeline += DCE
@@ -186,11 +186,14 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   if (settings.queryMonadLowering) {
     pipeline += new Tuple2Lowering(DSL)
+    pipeline += TreeDumper(true)
   }
 
   if (settings.targetLanguage == CCodeGeneration) pipeline += new CTransformersPipeline(settings)
 
   pipeline += DCECLang //NEVER REMOVE!!!!
+
+  // pipeline += TreeDumper(true)
 
   val codeGenerator =
     if (settings.targetLanguage == CCodeGeneration) {
