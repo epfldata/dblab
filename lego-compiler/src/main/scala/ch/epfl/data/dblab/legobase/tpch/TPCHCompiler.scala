@@ -77,7 +77,6 @@ object TPCHCompiler extends TPCHRunner {
     val (queryNumber, queryFunction) =
       query match {
         case "Q1"            => (1, () => Q1(unit(Config.numRuns)))
-        case "Q1_functional" => (1, () => Q1_functional(unit(Config.numRuns)))
         case "Q2"            => (2, () => Q2(unit(Config.numRuns)))
         case "Q3"            => (3, () => Q3(unit(Config.numRuns)))
         case "Q4"            => (4, () => Q4(unit(Config.numRuns)))
@@ -99,6 +98,7 @@ object TPCHCompiler extends TPCHRunner {
         case "Q20"           => (20, () => Q20(unit(Config.numRuns)))
         case "Q21"           => (21, () => Q21(unit(Config.numRuns)))
         case "Q22"           => (22, () => Q22(unit(Config.numRuns)))
+        case "Q1_functional" => (1, () => Q1_functional(unit(Config.numRuns)))
         case Q12SynthesizedExtract(targetCode, numFields) => {
           (12, () => context.Q12Synthesized(unit(Config.numRuns), numFields))
         }

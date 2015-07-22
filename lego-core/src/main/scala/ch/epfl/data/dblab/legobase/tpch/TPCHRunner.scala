@@ -17,8 +17,15 @@ trait TPCHRunner extends LegoRunner {
 
   def getOutputName(query: String): String = query + "Output.txt"
 
-  def getResultFileName(query: String): String =
-    "results/" + query + ".result_sf" + scalingFactor
+  def getResultFileName(query: String): String = {
+    val FUNCTIONAL_POST_FIX = "_functional"
+    val resultFileName =
+      if (query.endsWith(FUNCTIONAL_POST_FIX))
+        query.dropRight(FUNCTIONAL_POST_FIX.size)
+      else
+        query
+    "results/" + resultFileName + ".result_sf" + scalingFactor
+  }
 
   def getQueries(args: Array[String]): List[String] = {
     val excludedQueries = Nil
