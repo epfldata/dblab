@@ -4,6 +4,7 @@ package queryengine
 package monad
 
 import sc.pardis.annotations.{ deep, noImplementation, needsCircular, dontLift, needs, reflect, pure }
+import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
 
 @deep
 @noImplementation
@@ -34,6 +35,8 @@ class Query[T](private val underlying: List[T]) {
   // }
   @pure def sortBy[S](f: T => S)(implicit ord: Ordering[S]): Query[T] =
     new Query(underlying.sortBy(f))
+
+  @pure def getList: List[T] = underlying
 }
 
 @deep

@@ -26,6 +26,7 @@ trait QueryOps extends Base with ListOps with ArrayOps { this: GroupedQueryOps =
     def groupBy[K](par: Rep[(T => K)])(implicit typeK: TypeRep[K]): Rep[GroupedQuery[K, T]] = queryGroupBy[T, K](self, par)(typeT, typeK)
     def filteredGroupBy[K](pred: Rep[(T => Boolean)], par: Rep[(T => K)])(implicit typeK: TypeRep[K]): Rep[GroupedQuery[K, T]] = queryFilteredGroupBy[T, K](self, pred, par)(typeT, typeK)
     def sortBy[S](f: Rep[(T => S)])(implicit typeS: TypeRep[S], ord: Ordering[S]): Rep[Query[T]] = querySortBy[T, S](self, f)(typeT, typeS, ord)
+    def getList: Rep[List[T]] = queryGetList[T](self)(typeT)
     def underlying: Rep[List[T]] = query_Field_Underlying[T](self)(typeT)
   }
   object Query {
@@ -59,6 +60,8 @@ trait QueryOps extends Base with ListOps with ArrayOps { this: GroupedQueryOps =
   type QueryFilteredGroupBy[T, K] = QueryIRs.QueryFilteredGroupBy[T, K]
   val QuerySortBy = QueryIRs.QuerySortBy
   type QuerySortBy[T, S] = QueryIRs.QuerySortBy[T, S]
+  val QueryGetList = QueryIRs.QueryGetList
+  type QueryGetList[T] = QueryIRs.QueryGetList[T]
   val Query_Field_Underlying = QueryIRs.Query_Field_Underlying
   type Query_Field_Underlying[T] = QueryIRs.Query_Field_Underlying[T]
   // method definitions
@@ -74,6 +77,7 @@ trait QueryOps extends Base with ListOps with ArrayOps { this: GroupedQueryOps =
   def queryGroupBy[T, K](self: Rep[Query[T]], par: Rep[((T) => K)])(implicit typeT: TypeRep[T], typeK: TypeRep[K]): Rep[GroupedQuery[K, T]] = QueryGroupBy[T, K](self, par)
   def queryFilteredGroupBy[T, K](self: Rep[Query[T]], pred: Rep[((T) => Boolean)], par: Rep[((T) => K)])(implicit typeT: TypeRep[T], typeK: TypeRep[K]): Rep[GroupedQuery[K, T]] = QueryFilteredGroupBy[T, K](self, pred, par)
   def querySortBy[T, S](self: Rep[Query[T]], f: Rep[((T) => S)])(implicit typeT: TypeRep[T], typeS: TypeRep[S], ord: Ordering[S]): Rep[Query[T]] = QuerySortBy[T, S](self, f)
+  def queryGetList[T](self: Rep[Query[T]])(implicit typeT: TypeRep[T]): Rep[List[T]] = QueryGetList[T](self)
   def query_Field_Underlying[T](self: Rep[Query[T]])(implicit typeT: TypeRep[T]): Rep[List[T]] = Query_Field_Underlying[T](self)
   type Query[T] = ch.epfl.data.dblab.legobase.queryengine.monad.Query[T]
 }
@@ -215,6 +219,18 @@ object QueryIRs extends Base {
       val self = children(0).asInstanceOf[Query[T]]
       val f = children(1).asInstanceOf[((T) => S)]
       self.sortBy[S](f)
+    }
+    override def partiallyEvaluable: Boolean = true
+
+  }
+
+  case class QueryGetList[T](self: Rep[Query[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[List[T]](Some(self), "getList", List()) {
+    override def curriedConstructor = (copy[T] _)
+    override def isPure = true
+
+    override def partiallyEvaluate(children: Any*): List[T] = {
+      val self = children(0).asInstanceOf[Query[T]]
+      self.getList
     }
     override def partiallyEvaluable: Boolean = true
 
