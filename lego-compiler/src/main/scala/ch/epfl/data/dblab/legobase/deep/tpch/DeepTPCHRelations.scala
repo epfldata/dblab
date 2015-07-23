@@ -34,7 +34,7 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
     def L_ORDERKEY: Rep[Int] = lINEITEMRecord_Field_L_ORDERKEY(self)
   }
   object LINEITEMRecord {
-
+    def apply(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = lINEITEMRecordApplyObject(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
   }
   // constructors
   def __newLINEITEMRecord(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = lINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
@@ -75,6 +75,8 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
   type LINEITEMRecord_Field_L_PARTKEY = LINEITEMRecordIRs.LINEITEMRecord_Field_L_PARTKEY
   val LINEITEMRecord_Field_L_ORDERKEY = LINEITEMRecordIRs.LINEITEMRecord_Field_L_ORDERKEY
   type LINEITEMRecord_Field_L_ORDERKEY = LINEITEMRecordIRs.LINEITEMRecord_Field_L_ORDERKEY
+  val LINEITEMRecordApplyObject = LINEITEMRecordIRs.LINEITEMRecordApplyObject
+  type LINEITEMRecordApplyObject = LINEITEMRecordIRs.LINEITEMRecordApplyObject
   // method definitions
   def lINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = LINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
   def lINEITEMRecordGetField(self: Rep[LINEITEMRecord], key: Rep[String]): Rep[Option[Any]] = LINEITEMRecordGetField(self, key)
@@ -94,6 +96,7 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
   def lINEITEMRecord_Field_L_SUPPKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_SUPPKEY(self)
   def lINEITEMRecord_Field_L_PARTKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_PARTKEY(self)
   def lINEITEMRecord_Field_L_ORDERKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_ORDERKEY(self)
+  def lINEITEMRecordApplyObject(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = LINEITEMRecordApplyObject(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
   type LINEITEMRecord = ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord
 }
 object LINEITEMRecordIRs extends Base {
@@ -308,6 +311,10 @@ object LINEITEMRecordIRs extends Base {
 
   }
 
+  case class LINEITEMRecordApplyObject(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]) extends FunctionDef[LINEITEMRecord](None, "LINEITEMRecord.apply", List(List(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
   type LINEITEMRecord = ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord
 }
 trait LINEITEMRecordImplicits extends LINEITEMRecordOps {
@@ -405,7 +412,7 @@ trait ORDERSRecordOps extends Base with OptimalStringOps {
     def O_ORDERKEY: Rep[Int] = oRDERSRecord_Field_O_ORDERKEY(self)
   }
   object ORDERSRecord {
-
+    def apply(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Char], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = oRDERSRecordApplyObject(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
   }
   // constructors
   def __newORDERSRecord(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Char], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = oRDERSRecordNew(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
@@ -432,6 +439,8 @@ trait ORDERSRecordOps extends Base with OptimalStringOps {
   type ORDERSRecord_Field_O_CUSTKEY = ORDERSRecordIRs.ORDERSRecord_Field_O_CUSTKEY
   val ORDERSRecord_Field_O_ORDERKEY = ORDERSRecordIRs.ORDERSRecord_Field_O_ORDERKEY
   type ORDERSRecord_Field_O_ORDERKEY = ORDERSRecordIRs.ORDERSRecord_Field_O_ORDERKEY
+  val ORDERSRecordApplyObject = ORDERSRecordIRs.ORDERSRecordApplyObject
+  type ORDERSRecordApplyObject = ORDERSRecordIRs.ORDERSRecordApplyObject
   // method definitions
   def oRDERSRecordNew(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Char], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = ORDERSRecordNew(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
   def oRDERSRecordGetField(self: Rep[ORDERSRecord], key: Rep[String]): Rep[Option[Any]] = ORDERSRecordGetField(self, key)
@@ -444,6 +453,7 @@ trait ORDERSRecordOps extends Base with OptimalStringOps {
   def oRDERSRecord_Field_O_ORDERSTATUS(self: Rep[ORDERSRecord]): Rep[Char] = ORDERSRecord_Field_O_ORDERSTATUS(self)
   def oRDERSRecord_Field_O_CUSTKEY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_CUSTKEY(self)
   def oRDERSRecord_Field_O_ORDERKEY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_ORDERKEY(self)
+  def oRDERSRecordApplyObject(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Char], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = ORDERSRecordApplyObject(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
   type ORDERSRecord = ch.epfl.data.dblab.legobase.tpch.ORDERSRecord
 }
 object ORDERSRecordIRs extends Base {
@@ -574,6 +584,10 @@ object ORDERSRecordIRs extends Base {
 
   }
 
+  case class ORDERSRecordApplyObject(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Char], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]) extends FunctionDef[ORDERSRecord](None, "ORDERSRecord.apply", List(List(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
   type ORDERSRecord = ch.epfl.data.dblab.legobase.tpch.ORDERSRecord
 }
 trait ORDERSRecordImplicits extends ORDERSRecordOps {
@@ -642,7 +656,7 @@ trait CUSTOMERRecordOps extends Base with OptimalStringOps {
     def C_CUSTKEY: Rep[Int] = cUSTOMERRecord_Field_C_CUSTKEY(self)
   }
   object CUSTOMERRecord {
-
+    def apply(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[CUSTOMERRecord] = cUSTOMERRecordApplyObject(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT)
   }
   // constructors
   def __newCUSTOMERRecord(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[CUSTOMERRecord] = cUSTOMERRecordNew(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT)
@@ -667,6 +681,8 @@ trait CUSTOMERRecordOps extends Base with OptimalStringOps {
   type CUSTOMERRecord_Field_C_NAME = CUSTOMERRecordIRs.CUSTOMERRecord_Field_C_NAME
   val CUSTOMERRecord_Field_C_CUSTKEY = CUSTOMERRecordIRs.CUSTOMERRecord_Field_C_CUSTKEY
   type CUSTOMERRecord_Field_C_CUSTKEY = CUSTOMERRecordIRs.CUSTOMERRecord_Field_C_CUSTKEY
+  val CUSTOMERRecordApplyObject = CUSTOMERRecordIRs.CUSTOMERRecordApplyObject
+  type CUSTOMERRecordApplyObject = CUSTOMERRecordIRs.CUSTOMERRecordApplyObject
   // method definitions
   def cUSTOMERRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[CUSTOMERRecord] = CUSTOMERRecordNew(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT)
   def cUSTOMERRecordGetField(self: Rep[CUSTOMERRecord], key: Rep[String]): Rep[Option[Any]] = CUSTOMERRecordGetField(self, key)
@@ -678,6 +694,7 @@ trait CUSTOMERRecordOps extends Base with OptimalStringOps {
   def cUSTOMERRecord_Field_C_ADDRESS(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_ADDRESS(self)
   def cUSTOMERRecord_Field_C_NAME(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_NAME(self)
   def cUSTOMERRecord_Field_C_CUSTKEY(self: Rep[CUSTOMERRecord]): Rep[Int] = CUSTOMERRecord_Field_C_CUSTKEY(self)
+  def cUSTOMERRecordApplyObject(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[CUSTOMERRecord] = CUSTOMERRecordApplyObject(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT)
   type CUSTOMERRecord = ch.epfl.data.dblab.legobase.tpch.CUSTOMERRecord
 }
 object CUSTOMERRecordIRs extends Base {
@@ -796,6 +813,10 @@ object CUSTOMERRecordIRs extends Base {
 
   }
 
+  case class CUSTOMERRecordApplyObject(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends FunctionDef[CUSTOMERRecord](None, "CUSTOMERRecord.apply", List(List(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
   type CUSTOMERRecord = ch.epfl.data.dblab.legobase.tpch.CUSTOMERRecord
 }
 trait CUSTOMERRecordImplicits extends CUSTOMERRecordOps {
@@ -859,7 +880,7 @@ trait SUPPLIERRecordOps extends Base with OptimalStringOps {
     def S_SUPPKEY: Rep[Int] = sUPPLIERRecord_Field_S_SUPPKEY(self)
   }
   object SUPPLIERRecord {
-
+    def apply(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]): Rep[SUPPLIERRecord] = sUPPLIERRecordApplyObject(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT)
   }
   // constructors
   def __newSUPPLIERRecord(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]): Rep[SUPPLIERRecord] = sUPPLIERRecordNew(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT)
@@ -882,6 +903,8 @@ trait SUPPLIERRecordOps extends Base with OptimalStringOps {
   type SUPPLIERRecord_Field_S_NAME = SUPPLIERRecordIRs.SUPPLIERRecord_Field_S_NAME
   val SUPPLIERRecord_Field_S_SUPPKEY = SUPPLIERRecordIRs.SUPPLIERRecord_Field_S_SUPPKEY
   type SUPPLIERRecord_Field_S_SUPPKEY = SUPPLIERRecordIRs.SUPPLIERRecord_Field_S_SUPPKEY
+  val SUPPLIERRecordApplyObject = SUPPLIERRecordIRs.SUPPLIERRecordApplyObject
+  type SUPPLIERRecordApplyObject = SUPPLIERRecordIRs.SUPPLIERRecordApplyObject
   // method definitions
   def sUPPLIERRecordNew(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]): Rep[SUPPLIERRecord] = SUPPLIERRecordNew(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT)
   def sUPPLIERRecordGetField(self: Rep[SUPPLIERRecord], key: Rep[String]): Rep[Option[Any]] = SUPPLIERRecordGetField(self, key)
@@ -892,6 +915,7 @@ trait SUPPLIERRecordOps extends Base with OptimalStringOps {
   def sUPPLIERRecord_Field_S_ADDRESS(self: Rep[SUPPLIERRecord]): Rep[OptimalString] = SUPPLIERRecord_Field_S_ADDRESS(self)
   def sUPPLIERRecord_Field_S_NAME(self: Rep[SUPPLIERRecord]): Rep[OptimalString] = SUPPLIERRecord_Field_S_NAME(self)
   def sUPPLIERRecord_Field_S_SUPPKEY(self: Rep[SUPPLIERRecord]): Rep[Int] = SUPPLIERRecord_Field_S_SUPPKEY(self)
+  def sUPPLIERRecordApplyObject(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]): Rep[SUPPLIERRecord] = SUPPLIERRecordApplyObject(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT)
   type SUPPLIERRecord = ch.epfl.data.dblab.legobase.tpch.SUPPLIERRecord
 }
 object SUPPLIERRecordIRs extends Base {
@@ -998,6 +1022,10 @@ object SUPPLIERRecordIRs extends Base {
 
   }
 
+  case class SUPPLIERRecordApplyObject(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]) extends FunctionDef[SUPPLIERRecord](None, "SUPPLIERRecord.apply", List(List(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
   type SUPPLIERRecord = ch.epfl.data.dblab.legobase.tpch.SUPPLIERRecord
 }
 trait SUPPLIERRecordImplicits extends SUPPLIERRecordOps {
@@ -1055,7 +1083,7 @@ trait PARTSUPPRecordOps extends Base with OptimalStringOps {
     def PS_PARTKEY: Rep[Int] = pARTSUPPRecord_Field_PS_PARTKEY(self)
   }
   object PARTSUPPRecord {
-
+    def apply(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]): Rep[PARTSUPPRecord] = pARTSUPPRecordApplyObject(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT)
   }
   // constructors
   def __newPARTSUPPRecord(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]): Rep[PARTSUPPRecord] = pARTSUPPRecordNew(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT)
@@ -1074,6 +1102,8 @@ trait PARTSUPPRecordOps extends Base with OptimalStringOps {
   type PARTSUPPRecord_Field_PS_SUPPKEY = PARTSUPPRecordIRs.PARTSUPPRecord_Field_PS_SUPPKEY
   val PARTSUPPRecord_Field_PS_PARTKEY = PARTSUPPRecordIRs.PARTSUPPRecord_Field_PS_PARTKEY
   type PARTSUPPRecord_Field_PS_PARTKEY = PARTSUPPRecordIRs.PARTSUPPRecord_Field_PS_PARTKEY
+  val PARTSUPPRecordApplyObject = PARTSUPPRecordIRs.PARTSUPPRecordApplyObject
+  type PARTSUPPRecordApplyObject = PARTSUPPRecordIRs.PARTSUPPRecordApplyObject
   // method definitions
   def pARTSUPPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]): Rep[PARTSUPPRecord] = PARTSUPPRecordNew(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT)
   def pARTSUPPRecordGetField(self: Rep[PARTSUPPRecord], key: Rep[String]): Rep[Option[Any]] = PARTSUPPRecordGetField(self, key)
@@ -1082,6 +1112,7 @@ trait PARTSUPPRecordOps extends Base with OptimalStringOps {
   def pARTSUPPRecord_Field_PS_AVAILQTY(self: Rep[PARTSUPPRecord]): Rep[Int] = PARTSUPPRecord_Field_PS_AVAILQTY(self)
   def pARTSUPPRecord_Field_PS_SUPPKEY(self: Rep[PARTSUPPRecord]): Rep[Int] = PARTSUPPRecord_Field_PS_SUPPKEY(self)
   def pARTSUPPRecord_Field_PS_PARTKEY(self: Rep[PARTSUPPRecord]): Rep[Int] = PARTSUPPRecord_Field_PS_PARTKEY(self)
+  def pARTSUPPRecordApplyObject(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]): Rep[PARTSUPPRecord] = PARTSUPPRecordApplyObject(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT)
   type PARTSUPPRecord = ch.epfl.data.dblab.legobase.tpch.PARTSUPPRecord
 }
 object PARTSUPPRecordIRs extends Base {
@@ -1164,6 +1195,10 @@ object PARTSUPPRecordIRs extends Base {
 
   }
 
+  case class PARTSUPPRecordApplyObject(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]) extends FunctionDef[PARTSUPPRecord](None, "PARTSUPPRecord.apply", List(List(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
   type PARTSUPPRecord = ch.epfl.data.dblab.legobase.tpch.PARTSUPPRecord
 }
 trait PARTSUPPRecordImplicits extends PARTSUPPRecordOps {
@@ -1211,7 +1246,7 @@ trait REGIONRecordOps extends Base with OptimalStringOps {
     def R_REGIONKEY: Rep[Int] = rEGIONRecord_Field_R_REGIONKEY(self)
   }
   object REGIONRecord {
-
+    def apply(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]): Rep[REGIONRecord] = rEGIONRecordApplyObject(R_REGIONKEY, R_NAME, R_COMMENT)
   }
   // constructors
   def __newREGIONRecord(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]): Rep[REGIONRecord] = rEGIONRecordNew(R_REGIONKEY, R_NAME, R_COMMENT)
@@ -1226,12 +1261,15 @@ trait REGIONRecordOps extends Base with OptimalStringOps {
   type REGIONRecord_Field_R_NAME = REGIONRecordIRs.REGIONRecord_Field_R_NAME
   val REGIONRecord_Field_R_REGIONKEY = REGIONRecordIRs.REGIONRecord_Field_R_REGIONKEY
   type REGIONRecord_Field_R_REGIONKEY = REGIONRecordIRs.REGIONRecord_Field_R_REGIONKEY
+  val REGIONRecordApplyObject = REGIONRecordIRs.REGIONRecordApplyObject
+  type REGIONRecordApplyObject = REGIONRecordIRs.REGIONRecordApplyObject
   // method definitions
   def rEGIONRecordNew(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]): Rep[REGIONRecord] = REGIONRecordNew(R_REGIONKEY, R_NAME, R_COMMENT)
   def rEGIONRecordGetField(self: Rep[REGIONRecord], key: Rep[String]): Rep[Option[Any]] = REGIONRecordGetField(self, key)
   def rEGIONRecord_Field_R_COMMENT(self: Rep[REGIONRecord]): Rep[OptimalString] = REGIONRecord_Field_R_COMMENT(self)
   def rEGIONRecord_Field_R_NAME(self: Rep[REGIONRecord]): Rep[OptimalString] = REGIONRecord_Field_R_NAME(self)
   def rEGIONRecord_Field_R_REGIONKEY(self: Rep[REGIONRecord]): Rep[Int] = REGIONRecord_Field_R_REGIONKEY(self)
+  def rEGIONRecordApplyObject(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]): Rep[REGIONRecord] = REGIONRecordApplyObject(R_REGIONKEY, R_NAME, R_COMMENT)
   type REGIONRecord = ch.epfl.data.dblab.legobase.tpch.REGIONRecord
 }
 object REGIONRecordIRs extends Base {
@@ -1290,6 +1328,10 @@ object REGIONRecordIRs extends Base {
 
   }
 
+  case class REGIONRecordApplyObject(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]) extends FunctionDef[REGIONRecord](None, "REGIONRecord.apply", List(List(R_REGIONKEY, R_NAME, R_COMMENT))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
   type REGIONRecord = ch.epfl.data.dblab.legobase.tpch.REGIONRecord
 }
 trait REGIONRecordImplicits extends REGIONRecordOps {
@@ -1330,7 +1372,7 @@ trait NATIONRecordOps extends Base with OptimalStringOps {
     def N_NATIONKEY: Rep[Int] = nATIONRecord_Field_N_NATIONKEY(self)
   }
   object NATIONRecord {
-
+    def apply(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]): Rep[NATIONRecord] = nATIONRecordApplyObject(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT)
   }
   // constructors
   def __newNATIONRecord(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]): Rep[NATIONRecord] = nATIONRecordNew(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT)
@@ -1347,6 +1389,8 @@ trait NATIONRecordOps extends Base with OptimalStringOps {
   type NATIONRecord_Field_N_NAME = NATIONRecordIRs.NATIONRecord_Field_N_NAME
   val NATIONRecord_Field_N_NATIONKEY = NATIONRecordIRs.NATIONRecord_Field_N_NATIONKEY
   type NATIONRecord_Field_N_NATIONKEY = NATIONRecordIRs.NATIONRecord_Field_N_NATIONKEY
+  val NATIONRecordApplyObject = NATIONRecordIRs.NATIONRecordApplyObject
+  type NATIONRecordApplyObject = NATIONRecordIRs.NATIONRecordApplyObject
   // method definitions
   def nATIONRecordNew(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]): Rep[NATIONRecord] = NATIONRecordNew(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT)
   def nATIONRecordGetField(self: Rep[NATIONRecord], key: Rep[String]): Rep[Option[Any]] = NATIONRecordGetField(self, key)
@@ -1354,6 +1398,7 @@ trait NATIONRecordOps extends Base with OptimalStringOps {
   def nATIONRecord_Field_N_REGIONKEY(self: Rep[NATIONRecord]): Rep[Int] = NATIONRecord_Field_N_REGIONKEY(self)
   def nATIONRecord_Field_N_NAME(self: Rep[NATIONRecord]): Rep[OptimalString] = NATIONRecord_Field_N_NAME(self)
   def nATIONRecord_Field_N_NATIONKEY(self: Rep[NATIONRecord]): Rep[Int] = NATIONRecord_Field_N_NATIONKEY(self)
+  def nATIONRecordApplyObject(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]): Rep[NATIONRecord] = NATIONRecordApplyObject(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT)
   type NATIONRecord = ch.epfl.data.dblab.legobase.tpch.NATIONRecord
 }
 object NATIONRecordIRs extends Base {
@@ -1424,6 +1469,10 @@ object NATIONRecordIRs extends Base {
 
   }
 
+  case class NATIONRecordApplyObject(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]) extends FunctionDef[NATIONRecord](None, "NATIONRecord.apply", List(List(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT))) {
+    override def curriedConstructor = (copy _).curried
+  }
+
   type NATIONRecord = ch.epfl.data.dblab.legobase.tpch.NATIONRecord
 }
 trait NATIONRecordImplicits extends NATIONRecordOps {
@@ -1473,7 +1522,7 @@ trait PARTRecordOps extends Base with OptimalStringOps {
     def P_PARTKEY: Rep[Int] = pARTRecord_Field_P_PARTKEY(self)
   }
   object PARTRecord {
-
+    def apply(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]): Rep[PARTRecord] = pARTRecordApplyObject(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT)
   }
   // constructors
   def __newPARTRecord(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]): Rep[PARTRecord] = pARTRecordNew(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT)
@@ -1500,6 +1549,8 @@ trait PARTRecordOps extends Base with OptimalStringOps {
   type PARTRecord_Field_P_NAME = PARTRecordIRs.PARTRecord_Field_P_NAME
   val PARTRecord_Field_P_PARTKEY = PARTRecordIRs.PARTRecord_Field_P_PARTKEY
   type PARTRecord_Field_P_PARTKEY = PARTRecordIRs.PARTRecord_Field_P_PARTKEY
+  val PARTRecordApplyObject = PARTRecordIRs.PARTRecordApplyObject
+  type PARTRecordApplyObject = PARTRecordIRs.PARTRecordApplyObject
   // method definitions
   def pARTRecordNew(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]): Rep[PARTRecord] = PARTRecordNew(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT)
   def pARTRecordGetField(self: Rep[PARTRecord], key: Rep[String]): Rep[Option[Any]] = PARTRecordGetField(self, key)
@@ -1512,6 +1563,7 @@ trait PARTRecordOps extends Base with OptimalStringOps {
   def pARTRecord_Field_P_MFGR(self: Rep[PARTRecord]): Rep[OptimalString] = PARTRecord_Field_P_MFGR(self)
   def pARTRecord_Field_P_NAME(self: Rep[PARTRecord]): Rep[OptimalString] = PARTRecord_Field_P_NAME(self)
   def pARTRecord_Field_P_PARTKEY(self: Rep[PARTRecord]): Rep[Int] = PARTRecord_Field_P_PARTKEY(self)
+  def pARTRecordApplyObject(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]): Rep[PARTRecord] = PARTRecordApplyObject(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT)
   type PARTRecord = ch.epfl.data.dblab.legobase.tpch.PARTRecord
 }
 object PARTRecordIRs extends Base {
@@ -1640,6 +1692,10 @@ object PARTRecordIRs extends Base {
     }
     override def partiallyEvaluable: Boolean = true
 
+  }
+
+  case class PARTRecordApplyObject(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]) extends FunctionDef[PARTRecord](None, "PARTRecord.apply", List(List(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT))) {
+    override def curriedConstructor = (copy _).curried
   }
 
   type PARTRecord = ch.epfl.data.dblab.legobase.tpch.PARTRecord

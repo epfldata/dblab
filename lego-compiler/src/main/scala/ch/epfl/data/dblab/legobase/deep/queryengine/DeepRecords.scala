@@ -21,7 +21,7 @@ trait AGGRecordOps extends Base {
     def key: Rep[B] = aGGRecord_Field_Key[B](self)(typeB)
   }
   object AGGRecord {
-
+    def apply[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = aGGRecordApplyObject[B](key, aggs)(typeB)
   }
   // constructors
   def __newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)(typeB)
@@ -34,11 +34,14 @@ trait AGGRecordOps extends Base {
   type AGGRecord_Field_Aggs[B] = AGGRecordIRs.AGGRecord_Field_Aggs[B]
   val AGGRecord_Field_Key = AGGRecordIRs.AGGRecord_Field_Key
   type AGGRecord_Field_Key[B] = AGGRecordIRs.AGGRecord_Field_Key[B]
+  val AGGRecordApplyObject = AGGRecordIRs.AGGRecordApplyObject
+  type AGGRecordApplyObject[B] = AGGRecordIRs.AGGRecordApplyObject[B]
   // method definitions
   def aGGRecordNew[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = AGGRecordNew[B](key, aggs)
   def aGGRecordGetField[B](self: Rep[AGGRecord[B]], key: Rep[String])(implicit typeB: TypeRep[B]): Rep[Option[Any]] = AGGRecordGetField[B](self, key)
   def aGGRecord_Field_Aggs[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]): Rep[Array[Double]] = AGGRecord_Field_Aggs[B](self)
   def aGGRecord_Field_Key[B](self: Rep[AGGRecord[B]])(implicit typeB: TypeRep[B]): Rep[B] = AGGRecord_Field_Key[B](self)
+  def aGGRecordApplyObject[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit typeB: TypeRep[B]): Rep[AGGRecord[B]] = AGGRecordApplyObject[B](key, aggs)
   type AGGRecord[B] = ch.epfl.data.dblab.legobase.queryengine.AGGRecord[B]
 }
 object AGGRecordIRs extends Base {
@@ -85,6 +88,10 @@ object AGGRecordIRs extends Base {
 
   }
 
+  case class AGGRecordApplyObject[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit val typeB: TypeRep[B]) extends FunctionDef[AGGRecord[B]](None, "AGGRecord.apply", List(List(key, aggs))) {
+    override def curriedConstructor = (copy[B] _).curried
+  }
+
   type AGGRecord[B] = ch.epfl.data.dblab.legobase.queryengine.AGGRecord[B]
 }
 trait AGGRecordImplicits extends AGGRecordOps {
@@ -120,7 +127,7 @@ trait WindowRecordOps extends Base {
     def key: Rep[B] = windowRecord_Field_Key[B, C](self)(typeB, typeC)
   }
   object WindowRecord {
-
+    def apply[B, C](key: Rep[B], wnd: Rep[C])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowRecord[B, C]] = windowRecordApplyObject[B, C](key, wnd)(typeB, typeC)
   }
   // constructors
   def __newWindowRecord[B, C](key: Rep[B], wnd: Rep[C])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowRecord[B, C]] = windowRecordNew[B, C](key, wnd)(typeB, typeC)
@@ -133,11 +140,14 @@ trait WindowRecordOps extends Base {
   type WindowRecord_Field_Wnd[B, C] = WindowRecordIRs.WindowRecord_Field_Wnd[B, C]
   val WindowRecord_Field_Key = WindowRecordIRs.WindowRecord_Field_Key
   type WindowRecord_Field_Key[B, C] = WindowRecordIRs.WindowRecord_Field_Key[B, C]
+  val WindowRecordApplyObject = WindowRecordIRs.WindowRecordApplyObject
+  type WindowRecordApplyObject[B, C] = WindowRecordIRs.WindowRecordApplyObject[B, C]
   // method definitions
   def windowRecordNew[B, C](key: Rep[B], wnd: Rep[C])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowRecord[B, C]] = WindowRecordNew[B, C](key, wnd)
   def windowRecordGetField[B, C](self: Rep[WindowRecord[B, C]], key: Rep[String])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[Option[Any]] = WindowRecordGetField[B, C](self, key)
   def windowRecord_Field_Wnd[B, C](self: Rep[WindowRecord[B, C]])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[C] = WindowRecord_Field_Wnd[B, C](self)
   def windowRecord_Field_Key[B, C](self: Rep[WindowRecord[B, C]])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[B] = WindowRecord_Field_Key[B, C](self)
+  def windowRecordApplyObject[B, C](key: Rep[B], wnd: Rep[C])(implicit typeB: TypeRep[B], typeC: TypeRep[C]): Rep[WindowRecord[B, C]] = WindowRecordApplyObject[B, C](key, wnd)
   type WindowRecord[B, C] = ch.epfl.data.dblab.legobase.queryengine.WindowRecord[B, C]
 }
 object WindowRecordIRs extends Base {
@@ -183,6 +193,10 @@ object WindowRecordIRs extends Base {
     }
     override def partiallyEvaluable: Boolean = true
 
+  }
+
+  case class WindowRecordApplyObject[B, C](key: Rep[B], wnd: Rep[C])(implicit val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FunctionDef[WindowRecord[B, C]](None, "WindowRecord.apply", List(List(key, wnd))) {
+    override def curriedConstructor = (copy[B, C] _).curried
   }
 
   type WindowRecord[B, C] = ch.epfl.data.dblab.legobase.queryengine.WindowRecord[B, C]
