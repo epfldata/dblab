@@ -368,10 +368,10 @@ class HashMapGrouping(override val IR: LegoBaseExp,
         res
       })
       transformedMapsCount += 1
-      dsl"""if(${!readVar(resultRetain)}) {
-            ${inlineFunction(foreachFunction, value)}
-          } else {
-          }"""
+      dsl"""if(!$resultRetain) {
+        ${inlineFunction(foreachFunction, value)}
+      } else {
+      }"""
   }
 
   rewrite += remove {
@@ -398,9 +398,9 @@ class HashMapGrouping(override val IR: LegoBaseExp,
       implicit val elemType = typedElem.tp.asInstanceOf[TypeRep[ElemType]]
       val resultRetain = mm.antiRetainVar
       dsl"""if(!${inlineFunction(retainPredicate, typedElem)}) {
-              ${__assign(resultRetain, unit(true))}
-            } else {
-            }"""
+        $resultRetain = true
+      } else {
+      }"""
   }
 
   rewrite += rule {
@@ -416,9 +416,9 @@ class HashMapGrouping(override val IR: LegoBaseExp,
         mm.leftElemCode := e
         mm.rightElemProcessingCode := {
           dsl"""if(${field[Int](e, leftArray.partitioningField)} == $elem && ${inlineFunction(p, e)}) {
-                    ${__assign(result, unit(true))}
-                  } else {
-                  }"""
+            $result = true
+          } else {
+          }"""
         }
         val res1 = inlineBlock2(whileLoop.body)
         mm.leftElemCode.reset()
@@ -723,7 +723,8 @@ class HashMapGrouping(override val IR: LegoBaseExp,
             val partitionedArrayBucket = partitionedArray(pkey)
             partitionedArrayBucket(currIndex) = e
             partitionedCount(pkey) = currIndex + unit(1)
-            __assign(index, readVar(index) + unit(1))
+            // __assign(index, readVar(index) + unit(1))
+            dsl"$index = $index+1"
         })
       }
     }
@@ -731,10 +732,10 @@ class HashMapGrouping(override val IR: LegoBaseExp,
 
   /* The parts dedicated to left outer join handling */
   def leftOuterJoinDefaultHandling(mm: Rep[MultiMap[Any, Any]], key: Rep[Int]): Rep[Unit] = if (mm.getInfo.isOuter) {
-    dsl"""if(!${readVar(mm.outerExistsVar)}) {
-              ${inlineBlock[Unit](mm.getInfo.outerDefault.get)}
-            } else {
-            }"""
+    dsl"""if(!${mm.outerExistsVar}) {
+      ${inlineBlock[Unit](mm.getInfo.outerDefault.get)}
+    } else {
+    }"""
   } else dsl"()"
 
   def leftOuterJoinExistsVarDefine(mm: Rep[MultiMap[Any, Any]]): Unit =
@@ -747,7 +748,8 @@ class HashMapGrouping(override val IR: LegoBaseExp,
   def leftOuterJoinExistsVarSet(mm: Rep[MultiMap[Any, Any]]): Unit =
     if (mm.getInfo.isOuter) {
       val exists = mm.outerExistsVar
-      __assign(exists, unit(true))
+      // __assign(exists, unit(true))
+      dsl"$exists = true"
       ()
     } else ()
 }
