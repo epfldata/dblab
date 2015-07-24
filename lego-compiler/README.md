@@ -43,4 +43,9 @@ For generating Scala code you have to add the `-scala` flag. For example, in ord
 generate the best Scala program, you have to run the following command:
 `run DATA_FOLDER N QX -optimal -scala`
 
+For some queries, a functional implementation is available. For generating those queries
+you have to append `_functional` postfix to the name of queries. Also, you have to use
+the `+monad-lowering` flag:
+`run DATA_FOLDER N QX_functional +monad-lowering`
+
 The generated C and Scala codes will be in the folder `generator-out`.
