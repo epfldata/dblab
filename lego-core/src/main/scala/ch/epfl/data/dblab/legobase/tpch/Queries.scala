@@ -276,6 +276,20 @@ object Queries {
     }
   }
 
+  def Q6_functional(numRuns: Int) {
+    val lineitemTable = new Query(loadLineitem())
+    for (i <- 0 until numRuns) {
+      runQuery {
+        val constantDate1: Int = parseDate("1996-01-01")
+        val constantDate2: Int = parseDate("1997-01-01")
+        val result = lineitemTable.filter(x => x.L_SHIPDATE >= constantDate1 && (x.L_SHIPDATE < constantDate2 && (x.L_DISCOUNT >= 0.08 && (x.L_DISCOUNT <= 0.1 && (x.L_QUANTITY < 24)))))
+          .map(t => t.L_EXTENDEDPRICE * t.L_DISCOUNT).sum
+        printf("%.4f\n", result)
+        printf("(%d rows)\n", 1)
+      }
+    }
+  }
+
   def Q7(numRuns: Int) {
     val nationTable = loadNation()
     val ordersTable = loadOrders()
