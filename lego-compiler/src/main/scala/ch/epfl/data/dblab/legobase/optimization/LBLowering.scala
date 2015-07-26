@@ -73,16 +73,20 @@ class LBLowering(override val from: LegoBaseExp, override val to: LegoBaseExp, v
   def registerField[A](t: PardisType[A], field: String): Unit = {
     t match {
       case DynamicCompositeRecordType(l, r) =>
-        manifestTags(getType(t)) match {
-          case tag @ StructTags.CompositeTag(la, ra, ltag, rtag) =>
-            val lstruct = structs(ltag)
-            val rstruct = structs(rtag)
+        manifestTags.get(getType(t)) match {
+          case Some(tag @ StructTags.CompositeTag(la, ra, ltag, rtag)) =>
+            // val lstruct = structs(ltag)
+            // val rstruct = structs(rtag)
             if (field.startsWith(la)) {
               registerField(l, field.substring(la.size))
             }
             if (field.startsWith(ra)) {
               registerField(r, field.substring(ra.size))
             }
+          case _ =>
+            System.err.println(s"${scala.Console.RED}Warning${scala.Console.RESET}:No tag found for type $t. Hence assuming no aliasing!")
+            registerField(l, field)
+            registerField(r, field)
         }
       case _ =>
         manifestTags.get(getType(t)) match {
