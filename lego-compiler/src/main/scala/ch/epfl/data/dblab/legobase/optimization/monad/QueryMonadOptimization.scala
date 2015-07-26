@@ -27,6 +27,11 @@ class QueryMonadOptimization extends TransformerHandler {
     pipeline += new QueryMonadVerticalFusion(context)
     pipeline += DCE
 
+    pipeline += new QueryMonadHoisting(context)
+    pipeline += DCE
+    pipeline += new QueryMonadPostHoisting(context)
+    pipeline += DCE
+
     pipeline += new QueryMonadHorizontalFusion(context)
     pipeline += DCE
 
