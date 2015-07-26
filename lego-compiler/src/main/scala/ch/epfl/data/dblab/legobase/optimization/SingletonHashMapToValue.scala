@@ -137,13 +137,9 @@ class SingletonHashMapToValueTransformer(override val IR: LegoBaseExp)
   }
 
   rewrite += statement {
-    // TODO requires support from the quasi engine
-    // found   : [T]ch.epfl.data.sc.pardis.ir.Expression[Seq[T]]
-    // required: SingletonHashMapToValueTransformer.this.IR.Seq[Nothing]
-    // case sym -> dsl"new HashMap[Any, Any]" if isSingletonHashMap(sym) =>
-    case sym -> HashMapNew() if (isSingletonHashMap(sym)) =>
-
+    case sym -> dsl"new HashMap[Any, Any]" if isSingletonHashMap(sym) =>
       val valueBlock = singletonHashMapValues(sym)
       inlineBlock(valueBlock)
   }
+
 }
