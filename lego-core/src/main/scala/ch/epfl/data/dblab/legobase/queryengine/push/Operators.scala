@@ -214,6 +214,7 @@ object MultiMap {
   def consume(tuple: Record) { sortedTree += tuple.asInstanceOf[A] }
 }
 
+// TODO do we need joinCond? Can't we infer it from leftHash and rightHash?
 /**
  * Hash Join Operator
  *
@@ -221,7 +222,7 @@ object MultiMap {
  * @param rightParent the right parent operator of this operator
  * @param leftAlias the String that should be prepended to the field names of the records
  * of the left operator
- * @param leftAlias the String that should be prepended to the field names of the records
+ * @param rightAlias the String that should be prepended to the field names of the records
  * of the right operator
  * @param joinCond the join condition
  * @param leftHash the hashing function used to convert the values of the records of the
@@ -352,7 +353,7 @@ class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator
  * @param rightParent the right parent operator of this operator
  * @param leftAlias the String that should be prepended to the field names of the records
  * of the left operator
- * @param leftAlias the String that should be prepended to the field names of the records
+ * @param rightAlias the String that should be prepended to the field names of the records
  * of the right operator
  * @param joinCond the join condition
  */
