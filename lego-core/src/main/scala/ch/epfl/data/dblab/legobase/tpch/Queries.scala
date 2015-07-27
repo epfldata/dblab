@@ -603,6 +603,27 @@ object Queries {
     }
   }
 
+  def Q14_functional(numRuns: Int) {
+    val lineitemTable = new Query(loadLineitem())
+    val partTable = new Query(loadPart())
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val promo = parseString("PROMO")
+        val constantDate = parseDate("1994-04-01")
+        val constantDate2 = parseDate("1994-03-01")
+        val joinResult = partTable
+          .join(lineitemTable
+            .filter(x => x.L_SHIPDATE >= constantDate2 && x.L_SHIPDATE < constantDate))(_.P_PARTKEY)(_.L_PARTKEY)((x, y) => x.P_PARTKEY == y.L_PARTKEY)
+        val agg1 = joinResult.filter(_.P_TYPE[LBString].startsWith(promo)).map(t => (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))).sum
+        val agg2 = joinResult.map(t => (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))).sum
+        val result = agg1 * 100 / agg2
+        printf("%.4f\n", result)
+        printf("(%d rows)\n", 1)
+        ()
+      })
+    }
+  }
+
   def Q15(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val supplierTable = loadSupplier()
