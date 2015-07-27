@@ -5,6 +5,9 @@ package monad
 
 import sc.pardis.annotations.{ deep, noImplementation, needsCircular, dontLift, needs, reflect, pure }
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
+import push.MultiMap
+import scala.collection.mutable.MultiMap
+import scala.collection.mutable.ArrayBuffer
 
 @deep
 @noImplementation
@@ -37,6 +40,39 @@ class Query[T](private val underlying: List[T]) {
     new Query(underlying.sortBy(f))
 
   @pure def getList: List[T] = underlying
+}
+
+@deep
+@noImplementation
+@needs[(Query[_], List[_])]
+@needsCircular[GroupedQuery[_, _]]
+class JoinableQuery[T <: Record](private val underlying: List[T]) {
+  def join[S <: Record, R](q2: Query[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): Query[DynamicCompositeRecord[T, S]] = {
+    /* Naive implementation */
+    // new Query(underlying.flatMap(e1 =>
+    //   q2.getList.flatMap(e2 =>
+    //     if (joinCond(e1, e2))
+    //       List(e1.concatenateDynamic(e2))
+    //     else
+    //       Nil)))
+    /* Implementation using MultiMap */
+    val res = ArrayBuffer[DynamicCompositeRecord[T, S]]()
+    val hm = MultiMap[R, T]
+    for (elem <- underlying) {
+      hm.addBinding(leftHash(elem), elem)
+    }
+    for (elem <- q2.getList) {
+      val k = rightHash(elem)
+      hm.get(k) foreach { tmpBuffer =>
+        tmpBuffer foreach { bufElem =>
+          if (joinCond(bufElem, elem)) {
+            res += bufElem.concatenateDynamic(elem)
+          }
+        }
+      }
+    }
+    new Query(res.toList)
+  }
 }
 
 @deep
