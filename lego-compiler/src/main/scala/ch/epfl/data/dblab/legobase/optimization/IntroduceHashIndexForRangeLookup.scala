@@ -362,18 +362,13 @@ class IntroduceHashIndexForRangeLookup(override val IR: LegoBaseExp, val schema:
 
   def createPartitionArray[InnerType: TypeRep](arrayInfo: ArrayInfo[InnerType]): Unit = {
     val buckets = arrayInfo.buckets
-    // TODO scala.reflect.macros.TypecheckException: cannot find class tag for element type InnerType
-    // val partitionedArray = dsl"new Array[InnerType]($buckets)"
-    val partitionedArray = __newArray[Array[InnerType]](buckets)
-    val partitionedCount = __newArray[Int](buckets)
+    val partitionedArray = dsl"new Array[Array[InnerType]]($buckets)" // : Rep[Array[Array[InnerType]]]
+    val partitionedCount = dsl"new Array[Int]($buckets)"
     val originalArray = arrayInfo.array
     arraysInfoArray(arrayInfo) = partitionedArray.asInstanceOf[Rep[Array[Any]]]
     arraysInfoCount(arrayInfo) = partitionedCount
-    dsl"""Range(0, $buckets).foreach(${
-      __lambda { (i: Rep[Int]) =>
-        partitionedArray(i) = __newArray[InnerType](bucketSize(arrayInfo))
-      }
-    })"""
+    dsl"""Range(0, $buckets).foreach(i =>
+      $partitionedArray(i) = new Array[InnerType](${bucketSize(arrayInfo)}) )"""
     val index = __newVarNamed[Int](unit(0), "partIndex")
     array_foreach(originalArray, {
       (e: Rep[InnerType]) =>
