@@ -65,4 +65,4 @@ trait DeepDSL extends queryengine.push.OperatorsComponent
   with TPCHLoaderComponent
   with monad.GroupedQueryComponent
   with monad.QueryComponent
-
+  with monad.JoinableQueryComponent

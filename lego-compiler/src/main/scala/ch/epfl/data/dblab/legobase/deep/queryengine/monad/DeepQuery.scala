@@ -258,6 +258,78 @@ trait QueryPartialEvaluation extends QueryComponent with BasePartialEvaluation {
   // Pure function partial evaluation
 }
 trait QueryComponent extends QueryOps with QueryImplicits { this: GroupedQueryOps => }
+trait JoinableQueryOps extends Base with QueryOps with ListOps { this: GroupedQueryOps =>
+  // Type representation
+  val JoinableQueryType = JoinableQueryIRs.JoinableQueryType
+  type JoinableQueryType[T <: ch.epfl.data.sc.pardis.shallow.Record] = JoinableQueryIRs.JoinableQueryType[T]
+  implicit def typeJoinableQuery[T <: ch.epfl.data.sc.pardis.shallow.Record: TypeRep]: TypeRep[JoinableQuery[T]] = JoinableQueryType(implicitly[TypeRep[T]])
+  implicit class JoinableQueryRep[T <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[JoinableQuery[T]])(implicit typeT: TypeRep[T]) {
+    def join[S <: ch.epfl.data.sc.pardis.shallow.Record, R](q2: Rep[Query[S]])(leftHash: Rep[(T => R)])(rightHash: Rep[(S => R)])(joinCond: Rep[((T, S) => Boolean)])(implicit typeS: TypeRep[S], typeR: TypeRep[R]): Rep[Query[DynamicCompositeRecord[T, S]]] = joinableQueryJoin[T, S, R](self, q2, leftHash, rightHash, joinCond)(typeT, typeS, typeR)
+    def underlying: Rep[List[T]] = joinableQuery_Field_Underlying[T](self)(typeT)
+  }
+  object JoinableQuery {
+
+  }
+  // constructors
+  def __newJoinableQuery[T <: ch.epfl.data.sc.pardis.shallow.Record](underlying: Rep[List[T]])(implicit typeT: TypeRep[T]): Rep[JoinableQuery[T]] = joinableQueryNew[T](underlying)(typeT)
+  // IR defs
+  val JoinableQueryNew = JoinableQueryIRs.JoinableQueryNew
+  type JoinableQueryNew[T <: ch.epfl.data.sc.pardis.shallow.Record] = JoinableQueryIRs.JoinableQueryNew[T]
+  val JoinableQueryJoin = JoinableQueryIRs.JoinableQueryJoin
+  type JoinableQueryJoin[T <: ch.epfl.data.sc.pardis.shallow.Record, S <: ch.epfl.data.sc.pardis.shallow.Record, R] = JoinableQueryIRs.JoinableQueryJoin[T, S, R]
+  val JoinableQuery_Field_Underlying = JoinableQueryIRs.JoinableQuery_Field_Underlying
+  type JoinableQuery_Field_Underlying[T <: ch.epfl.data.sc.pardis.shallow.Record] = JoinableQueryIRs.JoinableQuery_Field_Underlying[T]
+  // method definitions
+  def joinableQueryNew[T <: ch.epfl.data.sc.pardis.shallow.Record](underlying: Rep[List[T]])(implicit typeT: TypeRep[T]): Rep[JoinableQuery[T]] = JoinableQueryNew[T](underlying)
+  def joinableQueryJoin[T <: ch.epfl.data.sc.pardis.shallow.Record, S <: ch.epfl.data.sc.pardis.shallow.Record, R](self: Rep[JoinableQuery[T]], q2: Rep[Query[S]], leftHash: Rep[((T) => R)], rightHash: Rep[((S) => R)], joinCond: Rep[((T, S) => Boolean)])(implicit typeT: TypeRep[T], typeS: TypeRep[S], typeR: TypeRep[R]): Rep[Query[DynamicCompositeRecord[T, S]]] = JoinableQueryJoin[T, S, R](self, q2, leftHash, rightHash, joinCond)
+  def joinableQuery_Field_Underlying[T <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[JoinableQuery[T]])(implicit typeT: TypeRep[T]): Rep[List[T]] = JoinableQuery_Field_Underlying[T](self)
+  type JoinableQuery[T <: ch.epfl.data.sc.pardis.shallow.Record] = ch.epfl.data.dblab.legobase.queryengine.monad.JoinableQuery[T]
+}
+object JoinableQueryIRs extends Base {
+  import QueryIRs._
+  import ListIRs._
+  import GroupedQueryIRs._
+  // Type representation
+  case class JoinableQueryType[T <: ch.epfl.data.sc.pardis.shallow.Record](typeT: TypeRep[T]) extends TypeRep[JoinableQuery[T]] {
+    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = JoinableQueryType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.sc.pardis.shallow.Record]])
+    private implicit val tagT = typeT.typeTag
+    val name = s"JoinableQuery[${typeT.name}]"
+    val typeArguments = List(typeT)
+
+    val typeTag = scala.reflect.runtime.universe.typeTag[JoinableQuery[T]]
+  }
+  implicit def typeJoinableQuery[T <: ch.epfl.data.sc.pardis.shallow.Record: TypeRep]: TypeRep[JoinableQuery[T]] = JoinableQueryType(implicitly[TypeRep[T]])
+  // case classes
+  case class JoinableQueryNew[T <: ch.epfl.data.sc.pardis.shallow.Record](underlying: Rep[List[T]])(implicit val typeT: TypeRep[T]) extends ConstructorDef[JoinableQuery[T]](List(typeT), "JoinableQuery", List(List(underlying))) {
+    override def curriedConstructor = (copy[T] _)
+  }
+
+  case class JoinableQueryJoin[T <: ch.epfl.data.sc.pardis.shallow.Record, S <: ch.epfl.data.sc.pardis.shallow.Record, R](self: Rep[JoinableQuery[T]], q2: Rep[Query[S]], leftHash: Rep[((T) => R)], rightHash: Rep[((S) => R)], joinCond: Rep[((T, S) => Boolean)])(implicit val typeT: TypeRep[T], val typeS: TypeRep[S], val typeR: TypeRep[R]) extends FunctionDef[Query[DynamicCompositeRecord[T, S]]](Some(self), "join", List(List(q2), List(leftHash), List(rightHash), List(joinCond))) {
+    override def curriedConstructor = (copy[T, S, R] _).curried
+  }
+
+  case class JoinableQuery_Field_Underlying[T <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[JoinableQuery[T]])(implicit val typeT: TypeRep[T]) extends FieldDef[List[T]](self, "underlying") {
+    override def curriedConstructor = (copy[T] _)
+    override def isPure = true
+
+  }
+
+  type JoinableQuery[T <: ch.epfl.data.sc.pardis.shallow.Record] = ch.epfl.data.dblab.legobase.queryengine.monad.JoinableQuery[T]
+}
+trait JoinableQueryImplicits extends JoinableQueryOps { this: GroupedQueryOps =>
+  // Add implicit conversions here!
+}
+trait JoinableQueryPartialEvaluation extends JoinableQueryComponent with BasePartialEvaluation { this: GroupedQueryOps =>
+  // Immutable field inlining 
+  override def joinableQuery_Field_Underlying[T <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[JoinableQuery[T]])(implicit typeT: TypeRep[T]): Rep[List[T]] = self match {
+    case Def(node: JoinableQueryNew[_]) => node.underlying
+    case _                              => super.joinableQuery_Field_Underlying[T](self)(typeT)
+  }
+
+  // Mutable field inlining 
+  // Pure function partial evaluation
+}
+trait JoinableQueryComponent extends JoinableQueryOps with JoinableQueryImplicits { this: GroupedQueryOps => }
 trait GroupedQueryOps extends Base with Tuple2Ops with QueryOps with MapOps with ListOps {
   // Type representation
   val GroupedQueryType = GroupedQueryIRs.GroupedQueryType
