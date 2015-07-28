@@ -34,6 +34,7 @@ trait QueriesOps extends Base { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =
     def Q12(numRuns: Rep[Int]): Rep[Unit] = queriesQ12Object(numRuns)
     def Q13(numRuns: Rep[Int]): Rep[Unit] = queriesQ13Object(numRuns)
     def Q14(numRuns: Rep[Int]): Rep[Unit] = queriesQ14Object(numRuns)
+    def Q14_functional(numRuns: Rep[Int]): Rep[Unit] = queriesQ14_functionalObject(numRuns)
     def Q15(numRuns: Rep[Int]): Rep[Unit] = queriesQ15Object(numRuns)
     def Q16(numRuns: Rep[Int]): Rep[Unit] = queriesQ16Object(numRuns)
     def Q17(numRuns: Rep[Int]): Rep[Unit] = queriesQ17Object(numRuns)
@@ -78,6 +79,8 @@ trait QueriesOps extends Base { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =
   type QueriesQ13Object = QueriesIRs.QueriesQ13Object
   val QueriesQ14Object = QueriesIRs.QueriesQ14Object
   type QueriesQ14Object = QueriesIRs.QueriesQ14Object
+  val QueriesQ14_functionalObject = QueriesIRs.QueriesQ14_functionalObject
+  type QueriesQ14_functionalObject = QueriesIRs.QueriesQ14_functionalObject
   val QueriesQ15Object = QueriesIRs.QueriesQ15Object
   type QueriesQ15Object = QueriesIRs.QueriesQ15Object
   val QueriesQ16Object = QueriesIRs.QueriesQ16Object
@@ -111,6 +114,7 @@ trait QueriesOps extends Base { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =
   def queriesQ12Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ12Object(numRuns)
   def queriesQ13Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ13Object(numRuns)
   def queriesQ14Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ14Object(numRuns)
+  def queriesQ14_functionalObject(numRuns: Rep[Int]): Rep[Unit] = QueriesQ14_functionalObject(numRuns)
   def queriesQ15Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ15Object(numRuns)
   def queriesQ16Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ16Object(numRuns)
   def queriesQ17Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ17Object(numRuns)
@@ -193,6 +197,10 @@ object QueriesIRs extends Base {
   }
 
   case class QueriesQ14Object(numRuns: Rep[Int]) extends FunctionDef[Unit](None, "Queries.Q14", List(List(numRuns))) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class QueriesQ14_functionalObject(numRuns: Rep[Int]) extends FunctionDef[Unit](None, "Queries.Q14_functional", List(List(numRuns))) {
     override def curriedConstructor = (copy _)
   }
 
@@ -662,6 +670,24 @@ trait QueriesImplementations extends QueriesOps { this: ch.epfl.data.dblab.legob
         val po: this.Rep[ch.epfl.data.dblab.legobase.queryengine.push.PrintOp[ch.epfl.data.dblab.legobase.queryengine.AGGRecord[String]]] = __newPrintOp(mapOp)(__lambda(((kv: this.Rep[ch.epfl.data.dblab.legobase.queryengine.AGGRecord[String]]) => printf(unit("%.4f\n"), kv.aggs.apply(unit(2))))), unit(-1));
         po.open();
         po.next();
+        unit(())
+      }))))
+    }
+  }
+  override def queriesQ14_functionalObject(numRuns: Rep[Int]): Rep[Unit] = {
+    {
+      val lineitemTable: this.Rep[ch.epfl.data.dblab.legobase.queryengine.monad.Query[ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord]] = __newQuery(TPCHLoader.loadLineitem());
+      val partTable: this.Rep[ch.epfl.data.dblab.legobase.queryengine.monad.Query[ch.epfl.data.dblab.legobase.tpch.PARTRecord]] = __newQuery(TPCHLoader.loadPart());
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
+        val promo: this.Rep[ch.epfl.data.dblab.legobase.LBString] = GenericEngine.parseString(unit("PROMO"));
+        val constantDate: this.Rep[Int] = GenericEngine.parseDate(unit("1994-04-01"));
+        val constantDate2: this.Rep[Int] = GenericEngine.parseDate(unit("1994-03-01"));
+        val joinResult: this.Rep[ch.epfl.data.dblab.legobase.queryengine.monad.Query[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.dblab.legobase.tpch.PARTRecord, ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord]]] = queryToJoinableQuery[ch.epfl.data.dblab.legobase.tpch.PARTRecord](partTable).join[ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord, Int](lineitemTable.filter(__lambda(((x: this.Rep[ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord]) => x.L_SHIPDATE.$greater$eq(constantDate2).$amp$amp(x.L_SHIPDATE.$less(constantDate))))))(__lambda(((x$8: this.Rep[ch.epfl.data.dblab.legobase.tpch.PARTRecord]) => x$8.P_PARTKEY)))(__lambda(((x$9: this.Rep[ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord]) => x$9.L_PARTKEY)))(__lambda(((x: this.Rep[ch.epfl.data.dblab.legobase.tpch.PARTRecord], y: this.Rep[ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord]) => infix_$eq$eq(x.P_PARTKEY, y.L_PARTKEY))));
+        val agg1: this.Rep[Double] = joinResult.filter(__lambda(((x$10: this.Rep[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.dblab.legobase.tpch.PARTRecord, ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord]]) => x$10.selectDynamic[ch.epfl.data.dblab.legobase.LBString](unit("P_TYPE")).startsWith(promo)))).map[Double](__lambda(((t: this.Rep[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.dblab.legobase.tpch.PARTRecord, ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord]]) => t.selectDynamic[Double](unit("L_EXTENDEDPRICE")).$times(unit(1.0).$minus(t.selectDynamic[Double](unit("L_DISCOUNT"))))))).sum;
+        val agg2: this.Rep[Double] = joinResult.map[Double](__lambda(((t: this.Rep[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.dblab.legobase.tpch.PARTRecord, ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord]]) => t.selectDynamic[Double](unit("L_EXTENDEDPRICE")).$times(unit(1.0).$minus(t.selectDynamic[Double](unit("L_DISCOUNT"))))))).sum;
+        val result: this.Rep[Double] = agg1.$times(unit(100)).$div(agg2);
+        printf(unit("%.4f\n"), result);
+        printf(unit("(%d rows)\n"), unit(1));
         unit(())
       }))))
     }
