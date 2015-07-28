@@ -24,9 +24,8 @@ class CTransformersPipeline(val settings: compiler.Settings) extends Transformer
     pipeline += new ScalaScannerToCmmapTransformer(context, settings)
     // pipeline += new ScalaScannerToCFScanfTransformer(context)
     // pipeline += compiler.TreeDumper(false)
-
+    pipeline += new ScalaArrayToCCommon(context)
     if (settings.oldCArrayHandling) {
-      pipeline += new ScalaArrayToCCommon(context)
       pipeline += new ScalaArrayToCStructTransformer(context)
     } else {
       if (settings.pointerStore) {

@@ -66,6 +66,8 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   pipeline += new StatisticsEstimator(DSL, schema)
 
+  pipeline += TreeDumper(true)
+
   pipeline += LBLowering(shouldRemoveUnusedFields)
   // pipeline += TreeDumper(false)
   pipeline += ParameterPromotion
@@ -81,8 +83,8 @@ class LegoCompiler(val DSL: LegoBaseExp,
     pipeline += PartiallyEvaluate
   } else {
     // pipeline += PartiallyEvaluate
-
   }
+
   pipeline += HashMapHoist
 
   // pipeline += TreeDumper(true)
@@ -186,7 +188,6 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   if (settings.queryMonadLowering) {
     pipeline += new Tuple2Lowering(DSL)
-    pipeline += TreeDumper(true)
   }
 
   if (settings.targetLanguage == CCodeGeneration) pipeline += new CTransformersPipeline(settings)
