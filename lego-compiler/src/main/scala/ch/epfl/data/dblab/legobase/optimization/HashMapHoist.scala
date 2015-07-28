@@ -134,6 +134,8 @@ class HashMapHoist(override val IR: LegoBaseExp) extends Optimizer[LegoBaseExp](
         case MultiMapNew() if startCollecting && !hoistedStatements.contains(stm) => {
           hoistStatement()
         }
+        case ArrayNew(Def(ReadVar(_))) =>
+          super.traverseStm(stm)
         case ArrayNew(_) if startCollecting && depthLevel == 1 && !hoistedStatements.contains(stm) => {
           hoistStatement()
         }
