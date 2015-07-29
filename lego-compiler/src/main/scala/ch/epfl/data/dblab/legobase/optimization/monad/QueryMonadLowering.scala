@@ -16,7 +16,7 @@ import sc.pardis.shallow.utils.DefaultValue
 /**
  * Lowers query monad operations.
  */
-class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) extends RuleBasedTransformer[LegoBaseExp](IR) {
+class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) extends RuleBasedTransformer[LegoBaseExp](IR) with StructCollector[LegoBaseExp] {
   import IR._
 
   def array_filter[T: TypeRep](array: Rep[Array[T]], p: Rep[T => Boolean]): Rep[Array[T]] = {
@@ -268,6 +268,75 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
     case sym -> QuerySortBy(monad, sortFunction) => {
       val array = apply(monad).asInstanceOf[Rep[Array[Any]]]
       array_sortBy(array, sortFunction)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]], sortFunction.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
+    }
+  }
+
+  rewrite += rule {
+    case JoinableQueryNew(joinMonad) => apply(joinMonad)
+  }
+
+  rewrite += rule {
+    case QueryGetList(monad) => apply(monad)
+  }
+
+  def concat_types[T: TypeRep, S: TypeRep, Res: TypeRep]: TypeRep[Res] = {
+    val leftTag = typeRep[T].asInstanceOf[RecordType[T]].tag
+    val rightTag = typeRep[S].asInstanceOf[RecordType[S]].tag
+    val concatTag = StructTags.CompositeTag[T, S]("", "", leftTag, rightTag)
+    new RecordType(concatTag, Some(typeRep[Res].asInstanceOf[TypeRep[Any]])).asInstanceOf[TypeRep[Res]]
+  }
+
+  def concat_records[T: TypeRep, S: TypeRep, Res: TypeRep](elem1: Rep[T], elem2: Rep[S]): Rep[Res] = {
+    val resultType = concat_types[T, S, Res]
+    val elems1 = getStructDef(typeRep[T]).get.fields.map(x => PardisStructArg(x.name, x.mutable, field(elem1, x.name)(x.tpe)))
+    val elems2 = getStructDef(typeRep[S]).get.fields.map(x => PardisStructArg(x.name, x.mutable, field(elem2, x.name)(x.tpe)))
+    // val structFields = elems.zip(elemsRhs).map(x => PardisStructArg(x._1.name, x._1.mutable, field(x._2.rec, x._2.name)(x._2.tp)))
+    val structFields = elems1 ++ elems2
+    struct(structFields: _*)(resultType)
+  }
+
+  def hashJoin[T: TypeRep, S: TypeRep, R: TypeRep, Res: TypeRep](array1: Rep[Array[T]], array2: Rep[Array[S]], leftHash: Rep[T => R], rightHash: Rep[S => R], joinCond: Rep[(T, S) => Boolean]): Rep[Array[Res]] = {
+    // TODO generalize
+    val maxSize = unit(1000000)
+    val res = __newArray[Res](maxSize)(concat_types[T, S, Res])
+    val counter = __newVar[Int](unit(0))
+    val hm = __newMultiMap[R, T]()
+    // System.out.println(concat_types[T, S, Res])
+    array_foreach(array1, (elem: Rep[T]) => {
+      hm.addBinding(leftHash(elem), elem)
+    })
+    array_foreach(array2, (elem: Rep[S]) => {
+      val k = rightHash(elem)
+      hm.get(k) foreach {
+        __lambda { tmpBuffer =>
+          tmpBuffer foreach {
+            __lambda { bufElem =>
+              __ifThenElse(joinCond(bufElem, elem), {
+                res(readVar(counter)) = //bufElem.asInstanceOf[Rep[Record]].concatenateDynamic(elem.asInstanceOf[Rep[Record]])(elem.tp.asInstanceOf[TypeRep[Record]]).asInstanceOf[Rep[Res]]
+                  concat_records[T, S, Res](bufElem, elem)
+                __assign(counter, readVar(counter) + unit(1))
+              }, unit())
+            }
+          }
+        }
+      }
+    })
+    res.dropRight(maxSize - readVar(counter))
+  }
+
+  rewrite += statement {
+    case sym -> JoinableQueryJoin(monad1, monad2, leftHash, rightHash, joinCond) => {
+      val arr1 = apply(monad1).asInstanceOf[Rep[Array[Any]]]
+      val arr2 = apply(monad2).asInstanceOf[Rep[Array[Any]]]
+      hashJoin(arr1,
+        arr2,
+        leftHash.asInstanceOf[Rep[Any => Any]],
+        rightHash.asInstanceOf[Rep[Any => Any]],
+        joinCond.asInstanceOf[Rep[(Any, Any) => Boolean]])(arr1.tp.typeArguments(0).asInstanceOf[TypeRep[Any]],
+          arr2.tp.typeArguments(0).asInstanceOf[TypeRep[Any]],
+          leftHash.tp.typeArguments(1).asInstanceOf[TypeRep[Any]],
+          sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
+      // System.out.println(unit(s"$leftHash, $rightHash, $joinCond"))
     }
   }
 }
