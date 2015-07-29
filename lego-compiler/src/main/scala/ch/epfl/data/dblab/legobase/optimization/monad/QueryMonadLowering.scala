@@ -295,6 +295,15 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
     struct(structFields: _*)(resultType)
   }
 
+  def array_foreach_using_while[T: TypeRep](arr: Rep[Array[T]], f: Rep[T] => Rep[Unit]): Rep[Unit] = {
+    val counter = __newVar[Int](unit(0))
+    __whileDo(readVar(counter) < arr.length, {
+      val e = arr(readVar(counter))
+      f(e)
+      __assign(counter, readVar(counter) + unit(1))
+    })
+  }
+
   def hashJoin[T: TypeRep, S: TypeRep, R: TypeRep, Res: TypeRep](array1: Rep[Array[T]], array2: Rep[Array[S]], leftHash: Rep[T => R], rightHash: Rep[S => R], joinCond: Rep[(T, S) => Boolean]): Rep[Array[Res]] = {
     // TODO generalize
     val maxSize = unit(1000000)
@@ -302,10 +311,10 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
     val counter = __newVar[Int](unit(0))
     val hm = __newMultiMap[R, T]()
     // System.out.println(concat_types[T, S, Res])
-    array_foreach(array1, (elem: Rep[T]) => {
+    array_foreach_using_while(array1, (elem: Rep[T]) => {
       hm.addBinding(leftHash(elem), elem)
     })
-    array_foreach(array2, (elem: Rep[S]) => {
+    array_foreach_using_while(array2, (elem: Rep[S]) => {
       val k = rightHash(elem)
       hm.get(k) foreach {
         __lambda { tmpBuffer =>
