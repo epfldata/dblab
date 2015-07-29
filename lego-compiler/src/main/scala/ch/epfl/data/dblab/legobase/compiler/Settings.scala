@@ -59,6 +59,7 @@ class Settings(val args: List[String]) {
   def hashMapNoCollision: Boolean = hasSetting(HashMapNoCollisionSetting)
   def largeOutputHoisting: Boolean = hasSetting(LargeOutputHoistingSetting)
   def noFieldRemoval: Boolean = hasSetting(NoFieldRemovalSetting)
+  def forceFieldRemoval: Boolean = hasSetting(ForceFieldRemovalSetting)
   def noSingletonHashMap: Boolean = hasSetting(NoSingletonHashMapSetting)
   def nameIsWithFlag: Boolean = hasSetting(OutputNameWithFlagSetting)
   def onlyLoading: Boolean = hasSetting(OnlyLoaderSetting)
@@ -100,7 +101,8 @@ object Settings {
     OnlyLoaderSetting,
     OptimalSetting,
     ScalaCGSetting,
-    QueryMonadLoweringSetting)
+    QueryMonadLoweringSetting,
+    ForceFieldRemovalSetting)
 }
 
 /**
@@ -196,6 +198,8 @@ case object NoSingletonHashMapSetting extends OptimizationSetting("no-sing-hm",
   "Deoptimization!")
 case object QueryMonadLoweringSetting extends OptimizationSetting("monad-lowering",
   "Enables Query Monad Lowering")
+case object ForceFieldRemovalSetting extends OptimizationSetting("force-field-removal",
+  "Enables Field Removal")
 
 /* 
  * Available option settings
