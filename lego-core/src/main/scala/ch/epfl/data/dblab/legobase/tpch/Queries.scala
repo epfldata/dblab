@@ -194,6 +194,31 @@ object Queries {
     }
   }
 
+  def Q3_functional(numRuns: Int) {
+    val lineitemTable = new Query(loadLineitem())
+    val ordersTable = new Query(loadOrders())
+    val customerTable = new Query(loadCustomer())
+    for (i <- 0 until numRuns) {
+      runQuery {
+        val constantDate = parseDate("1995-03-04")
+        val houseHold = parseString("HOUSEHOLD")
+        val scanCustomer = customerTable.filter(x => x.C_MKTSEGMENT === houseHold)
+        val scanOrders = ordersTable.filter(x => x.O_ORDERDATE < constantDate)
+        val scanLineitem = lineitemTable.filter(x => x.L_SHIPDATE > constantDate)
+        val jo1 = scanCustomer.join(scanOrders)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)
+        val jo2 = jo1.join(scanLineitem)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY[Int] == y.L_ORDERKEY)
+        val aggOp = jo2.groupBy(x => new Q3GRPRecord(x.L_ORDERKEY[Int], x.O_ORDERDATE[Int], x.O_SHIPPRIORITY[Int])).mapValues(_.map(t => (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))).sum)
+        val sortOp = aggOp.sortBy(x => (-x._2, x._1.O_ORDERDATE))
+        var rows = 0
+        sortOp.take(10).foreach(e => {
+          printf("%d|%.4f|%s|%d\n", e._1.L_ORDERKEY, e._2, dateToString(e._1.O_ORDERDATE), e._1.O_SHIPPRIORITY)
+          rows += 1
+        })
+        printf("(%d rows)\n", rows)
+      }
+    }
+  }
+
   def Q4(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
