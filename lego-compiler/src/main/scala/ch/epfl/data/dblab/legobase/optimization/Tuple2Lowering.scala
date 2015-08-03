@@ -87,6 +87,24 @@ class Tuple2Lowering[Lang <: LegoBaseExp](override val IR: Lang)
     }
   }
 
+  // TODO move to SC?
+  analysis += rule {
+    case ArrayUpdate(arr, i, v) if mayBeLowered(v) => {
+      addToLowered(v)
+      loweredEscapeArrays += arr
+      ()
+    }
+  }
+
+  rewrite += rule {
+    case ArrayUpdate(nodearr, i, v) if loweredEscapeArrays.contains(nodearr) => {
+      class B
+      implicit val typeB = apply(nodearr).tp.typeArguments(0).asInstanceOf[TypeRep[B]]
+      val arr = apply(nodearr).asInstanceOf[Rep[Array[B]]]
+      arr(i) = apply(v).asInstanceOf[Rep[B]]
+    }
+  }
+
   rewrite += rule {
     case Lambda2(f, i1, i2, o) if mustBeLowered(i1) || mustBeLowered(i2) => {
       class A
