@@ -15,7 +15,7 @@ import schema._
 
 class HashMapGroupingTest extends FlatSpec with ShouldMatchers {
 
-  implicit val IR = new LoweringLegoBase {
+  implicit val IR = new LegoBaseExp {
   }
 
   import IR.Predef._

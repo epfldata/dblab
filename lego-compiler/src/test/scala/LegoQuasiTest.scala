@@ -11,7 +11,7 @@ import sc.pardis.types.PardisTypeImplicits._
 
 class LegoQuasiTest extends FlatSpec with ShouldMatchers {
 
-  implicit val IR = new LoweringLegoBase {}
+  implicit val IR = new LegoBaseExp {}
 
   "int comparsion" should "work" in {
     val exp = {
@@ -24,5 +24,14 @@ class LegoQuasiTest extends FlatSpec with ShouldMatchers {
     exp match {
       case dsl"($x: Int) < ($y: Int)" =>
     }
+  }
+
+  "vars" should "work" in {
+    val exp = {
+      import IR._
+      val x: Var[Int] = __newVar(unit(2))
+      __readVar(x)
+    }
+    println(exp.tp)
   }
 }
