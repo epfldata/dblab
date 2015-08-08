@@ -16,7 +16,7 @@ import compiler._
 /**
  * Query monad optimizations.
  */
-class QueryMonadOptimization extends TransformerHandler {
+class QueryMonadOptimization(val settings: compiler.Settings) extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
     apply[T](context.asInstanceOf[LegoBaseExp], block)
   }
@@ -27,17 +27,18 @@ class QueryMonadOptimization extends TransformerHandler {
     pipeline += new QueryMonadVerticalFusion(context)
     pipeline += DCE
 
-    pipeline += new QueryMonadHoisting(context)
-    pipeline += DCE
-    pipeline += new QueryMonadPostHoisting(context)
-    pipeline += DCE
+    if (settings.queryMonadHoisting) {
+      pipeline += new QueryMonadHoisting(context)
+      pipeline += DCE
+      pipeline += new QueryMonadPostHoisting(context)
+      pipeline += DCE
+    }
 
     pipeline += new QueryMonadHorizontalFusion(context)
     pipeline += DCE
 
     pipeline += new QueryMonadVerticalFusion(context)
     pipeline += DCE
-    pipeline += TreeDumper(true)
     pipeline += new QueryMonadVerticalFusion(context)
     pipeline += DCE
 

@@ -66,7 +66,7 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   pipeline += new StatisticsEstimator(DSL, schema)
 
-  pipeline += TreeDumper(true)
+  // pipeline += TreeDumper(false)
 
   pipeline += LBLowering(shouldRemoveUnusedFields)
   // pipeline += TreeDumper(false)
@@ -75,7 +75,7 @@ class LegoCompiler(val DSL: LegoBaseExp,
   pipeline += PartiallyEvaluate
 
   if (settings.queryMonadLowering) {
-    pipeline += new QueryMonadOptimization
+    pipeline += new QueryMonadOptimization(settings)
     pipeline += DCE
     pipeline += new QueryMonadLowering(schema, DSL)
     pipeline += ParameterPromotion
@@ -86,8 +86,6 @@ class LegoCompiler(val DSL: LegoBaseExp,
   }
 
   pipeline += HashMapHoist
-
-  // pipeline += TreeDumper(true)
 
   if (!settings.noSingletonHashMap)
     pipeline += SingletonHashMapToValueTransformer
@@ -104,7 +102,13 @@ class LegoCompiler(val DSL: LegoBaseExp,
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE
+    // if (settings.queryMonadLowering) {
+    //   pipeline += new ScalaArrayToCCommon(DSL)
+    //   pipeline += DCE
+    // }
   }
+
+  pipeline += TreeDumper(true)
 
   if (settings.stringCompression) pipeline += new StringDictionaryTransformer(DSL, schema)
   // pipeline += TreeDumper(false)
@@ -187,8 +191,14 @@ class LegoCompiler(val DSL: LegoBaseExp,
   }
 
   if (settings.queryMonadLowering) {
+    if (!settings.mallocHoisting) {
+      pipeline += new ScalaArrayToCCommon(DSL)
+      pipeline += DCE
+    }
     pipeline += new Tuple2Lowering(DSL)
   }
+
+  // pipeline += TreeDumper(false)
 
   if (settings.targetLanguage == CCodeGeneration) pipeline += new CTransformersPipeline(settings)
 
