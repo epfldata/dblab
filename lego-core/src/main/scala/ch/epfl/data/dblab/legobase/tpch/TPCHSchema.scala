@@ -178,6 +178,8 @@ object TPCHSchema {
     tpchSchema.stats += "CARDINALITY_NATION" -> nationTable.rowCount
     tpchSchema.stats += "CARDINALITY_REGION" -> regionTable.rowCount
 
+    tpchSchema.stats += "CARDINALITY_Q3GRP" -> ordersTable.rowCount / 100
+
     tpchSchema.stats += "DISTINCT_L_SHIPMODE" -> 7
     tpchSchema.stats += "DISTINCT_L_RETURNFLAG" -> 3
     tpchSchema.stats += "DISTINCT_L_LINESTATUS" -> 2

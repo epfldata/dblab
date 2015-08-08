@@ -64,16 +64,19 @@ case class Statistics() {
     // System.out.println(s"dep added from ${format(name1)} to ${format(name2)}")
   }
 
-  def getCardinality(tableName: String) = statsMap.get("CARDINALITY_" + format(tableName)) match {
+  def getCardinalityOrElse(tableName: String, value: => Double): Double = statsMap.get("CARDINALITY_" + format(tableName)) match {
     case Some(stat) => stat
-    case None =>
-      // This means that the statistics module has been asked for either a) a table that does not exist
-      // in this schema or b) cardinality of an intermediate table that is being scanned over (see TPCH 
-      // Q13 for an example about how this may happen). In both cases, we throw a warning message and
-      // return the biggest cardinality
-      System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics do not include cardinality information for table " + tableName + ". Returning largest cardinality to compensate. This may lead to degraded performance due to unnecessarily large memory pool allocations.")
-      getLargestCardinality()
+    case None       => value
   }
+
+  def getCardinality(tableName: String) = getCardinalityOrElse(tableName, {
+    // This means that the statistics module has been asked for either a) a table that does not exist
+    // in this schema or b) cardinality of an intermediate table that is being scanned over (see TPCH 
+    // Q13 for an example about how this may happen). In both cases, we throw a warning message and
+    // return the biggest cardinality
+    System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics do not include cardinality information for table " + tableName + ". Returning largest cardinality to compensate. This may lead to degraded performance due to unnecessarily large memory pool allocations.")
+    getLargestCardinality()
+  })
 
   def getLargestCardinality() = {
     statsMap.foldLeft(1.0)((max, kv) => {
