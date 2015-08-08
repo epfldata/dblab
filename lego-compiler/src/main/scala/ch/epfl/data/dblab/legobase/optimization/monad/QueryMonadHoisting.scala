@@ -65,9 +65,18 @@ class QueryMonadHoisting(override val IR: LegoBaseExp) extends Optimizer[LegoBas
   def getDependencies(node: Def[_]): List[Sym[Any]] = {
     val allArgs = node.funArgs ++ {
       node match {
-        case x: PardisLambdaDef => x.body.stmts.flatMap(x => x.sym :: x.rhs.funArgs)
-        case b: Block[_]        => b.stmts.flatMap(x => x.sym :: x.rhs.funArgs)
-        case _                  => Nil
+        case x: PardisLambdaDef => {
+          val dependentStatements = x.body.stmts.foldLeft[List[Stm[_]]](Nil)((acc, cur) => {
+            if ((x.inputs ++ acc.map(_.sym)).exists(i => cur.rhs.funArgs.exists(_ == i)))
+              acc :+ cur
+            else
+              acc
+          })
+          // System.out.println(s"dependentStatements: %x -> \n${dependentStatements.mkString("\n")}")
+          x.body.stmts.flatMap(stm => stm.sym :: stm.rhs.funArgs).filter(sym => !dependentStatements.exists(_.sym == sym))
+        }
+        case b: Block[_] => b.stmts.flatMap(x => x.sym :: x.rhs.funArgs)
+        case _           => Nil
       }
     }
     allArgs.filter(_.isInstanceOf[Sym[Any]]).map(_.asInstanceOf[Sym[Any]])
