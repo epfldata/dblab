@@ -214,7 +214,9 @@ object Queries {
           printf("%d|%.4f|%s|%d\n", e._1.L_ORDERKEY, e._2, dateToString(e._1.O_ORDERDATE), e._1.O_SHIPPRIORITY)
           rows += 1
         })
-        printf("(%d rows)\n", rows)
+        // there's an unknown bug (with the inference of IntType TypeRep) which needs the next line
+        val resultRows = rows
+        printf("(%d rows)\n", resultRows)
       }
     }
   }
