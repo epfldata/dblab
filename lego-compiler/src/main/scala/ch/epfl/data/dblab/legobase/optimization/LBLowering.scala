@@ -53,6 +53,7 @@ class LBLowering(override val from: LegoBaseExp, override val to: LegoBaseExp, v
   var phase: Phase = _
 
   val fieldsAccessed = collection.mutable.Map[StructTags.StructTag[_], ArrayBuffer[String]]()
+  val notSeenDynamicRecordTypes = collection.mutable.Set[TypeRep[Any]]()
 
   def getRegisteredFieldsOfType[A](t: PardisType[A]): List[String] = {
     val registeredFields = t match {
@@ -84,7 +85,7 @@ class LBLowering(override val from: LegoBaseExp, override val to: LegoBaseExp, v
               registerField(r, field.substring(ra.size))
             }
           case _ =>
-            System.err.println(s"${scala.Console.RED}Warning${scala.Console.RESET}:No tag found for type $t. Hence assuming no aliasing!")
+            notSeenDynamicRecordTypes += t.asInstanceOf[TypeRep[Any]]
             registerField(l, field)
             registerField(r, field)
         }
@@ -122,6 +123,7 @@ class LBLowering(override val from: LegoBaseExp, override val to: LegoBaseExp, v
       val Constant(ra: String) = rightAlias
       val leftTag = getTag(getType(self.tp))
       val rightTag = getTag(getType(record2.tp))
+      // TODO rewrite using getElems method
       val concatTag = StructTags.CompositeTag[Any, Any](la, ra, leftTag, rightTag)
       val regFields = getRegisteredFieldsOfType(self.tp) ++ getRegisteredFieldsOfType(record2.tp)
       def fieldIsRegistered(f: StructElemInformation): Boolean = regFields.contains(f.name) || !removeUnusedFields
@@ -132,12 +134,45 @@ class LBLowering(override val from: LegoBaseExp, override val to: LegoBaseExp, v
     case _ => super.traverseDef(node)
   }
 
+  def getElems[T](tp: TypeRep[T], aliasing: String = ""): Seq[StructElemInformation] = {
+    val tag = getTag(getType(tp))
+    val regFields = getRegisteredFieldsOfType(tp)
+    def fieldIsRegistered(f: StructElemInformation): Boolean = regFields.contains(f.name) || !removeUnusedFields
+    getStructElems(tag).filter(fieldIsRegistered).map(x => StructElemInformation(aliasing + x.name, x.tpe, x.mutable))
+  }
+
+  def computeConcatTypeEtc(): Unit = {
+    def types[T: TypeRep]: List[TypeRep[Any]] = {
+      typeRep[T] match {
+        case DynamicCompositeRecordType(l, r) => types(l) ++ types(r)
+        case t: TypeRep[Any]                  => List(t)
+      }
+    }
+    val sorted = notSeenDynamicRecordTypes.toList.sortBy(x => types(x).size)
+    for (tp <- sorted) {
+      val dtp = tp.asInstanceOf[DynamicCompositeRecordType[_, _]]
+      val (lt, rt) = dtp.leftType -> dtp.rightType
+      val leftTag = getTag(getType(lt))
+      val rightTag = getTag(getType(rt))
+      System.err.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: No tag found for type $tp. Hence assuming no aliasing!")
+      val concatTag = StructTags.CompositeTag[Any, Any]("", "", leftTag, rightTag)
+      val newElems = getElems(lt) ++ getElems(rt)
+      // System.out.println(s"concatTag $tp -> $concatTag -> $newElems")
+      structs += concatTag -> newElems
+      manifestTags += getType(tp) -> concatTag
+    }
+    // System.out.println(s"sorted ${sorted.mkString("\n")}")
+  }
+
   override def lower[T: TypeRep](node: Block[T]): to.Block[T] = {
     phase = FieldExtractionPhase
     traverseBlock(node)
     phase = FieldUsagePhase
     traverseBlock(node)
     phase = OtherPhase
+    // System.out.println(s"tags: $manifestTags")
+    // System.out.println(s"dtypes: $notSeenDynamicRecordTypes")
+    computeConcatTypeEtc()
     val res = transformProgram(node)
     res
   }
