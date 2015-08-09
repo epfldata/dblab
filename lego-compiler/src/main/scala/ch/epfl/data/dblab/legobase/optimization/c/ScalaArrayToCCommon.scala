@@ -27,7 +27,7 @@ class ScalaArrayToCCommon(override val IR: LegoBaseExp) extends RuleBasedTransfo
       val tp = n.tp.typeArguments(0)
       implicit val typeT = tp.asInstanceOf[TypeRep[T]]
       // TODO generalize
-      assert(tp == DoubleType)
+      // assert(tp == DoubleType)
       val array = __newArray[T](unit(elems.size))
       for (i <- 0 until elems.size) {
         array(unit(i.toInt)) = elems(i.toInt).asInstanceOf[Rep[T]]
@@ -37,20 +37,33 @@ class ScalaArrayToCCommon(override val IR: LegoBaseExp) extends RuleBasedTransfo
 
   val dropRightArrays = scala.collection.mutable.Map[Rep[Any], ArrayDropRight[Any]]()
 
-  rewrite += statement {
+  analysis += statement {
     case sym -> (node @ ArrayDropRight(array, num)) =>
       dropRightArrays(sym) = node
+      ()
+  }
+
+  rewrite += statement {
+    case sym -> (node @ ArrayDropRight(array, num)) =>
+      // dropRightArrays(sym) = node
       array
   }
 
   rewrite += rule {
     case ArrayLength(array) if dropRightArrays.contains(array) =>
-      val originalArray = apply(array)
+      // val originalArray = apply(array)
+      val originalArray = dropRightArrays(array).self
       dropRightArrays(array).num match {
         // TODO needs checking arr2 == originalArray
         case Def(Int$minus1(Def(ArrayLength(arr2)), num2)) => num2
         case num => originalArray.length - num
       }
+  }
 
+  rewrite += rule {
+    case ArrayApply(array, index) if dropRightArrays.contains(array) =>
+      // val originalArray = apply(array)
+      val originalArray = dropRightArrays(array).self
+      arrayApply(originalArray, index)(originalArray.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
   }
 }
