@@ -164,7 +164,10 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
 
   def queryGroupBy[K: TypeRep, V: TypeRep](monad: Rep[Query[V]], pred: Option[Rep[V => Boolean]], par: Rep[V => K]): GroupByResult[K, V] = {
     val originalArray = apply(monad).asInstanceOf[Rep[Array[V]]]
-    val MAX_SIZE = unit(4)
+    val max_partitions = schema.stats.getCardinalityOrElse(typeRep[K].name, 8)
+    System.out.println(typeRep[K] + "-" + max_partitions)
+    // val MAX_SIZE = unit(4000)
+    val MAX_SIZE = unit(max_partitions.toInt)
     val keyIndex = __newHashMap[K, Int]()
     val keyRevertIndex = __newArray[K](MAX_SIZE)
     val lastIndex = __newVarNamed(unit(0), "lastIndex")
@@ -175,7 +178,10 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
     val eachBucketSize = __newArray[Int](MAX_SIZE)
     Range(unit(0), MAX_SIZE).foreach {
       __lambda { i =>
-        array(i) = __newArray[V](originalArray.length)
+        val arraySize = originalArray.length / MAX_SIZE * unit(4)
+        // val arraySize = originalArray.length
+        // val arraySize = unit(128)
+        array(i) = __newArray[V](arraySize)
         eachBucketSize(i) = unit(0)
       }
     }
@@ -195,7 +201,7 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
         eachBucketSize(bucket) += unit(1)
       }, unit())
     })
-    GroupByResult(array, keyRevertIndex, eachBucketSize, MAX_SIZE)
+    GroupByResult(array, keyRevertIndex, eachBucketSize, lastIndex)
   }
 
   // def queryGroupByMapValues[K: TypeRep, V: TypeRep, S: TypeRep](monad: Rep[Query[V]], pred: Option[Rep[V => Boolean]], par: Rep[V => K], func: Rep[Array[V] => S]): Rep[Any] = {
@@ -204,7 +210,7 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
       // queryGroupBy(monad, pred, par)
       groupByResults(groupedMonad.asInstanceOf[Rep[Any]]).asInstanceOf[GroupByResult[K, V]]
     val resultArray = __newArray[(K, S)](partitions)
-    Range(unit(0), array.length).foreach {
+    Range(unit(0), partitions).foreach {
       __lambda { i =>
         // val arr = array_dropRight(array(i), eachBucketSize(i))
         val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
@@ -245,18 +251,46 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
 
   }
 
+  // TODO should be moved to SC
+  def ordering_minus[T: TypeRep](num1: Rep[T], num2: Rep[T]): Rep[Int] = typeRep[T] match {
+    case IntType    => num1.asInstanceOf[Rep[Int]] - num2.asInstanceOf[Rep[Int]]
+    case DoubleType => (num1.asInstanceOf[Rep[Double]] - num2.asInstanceOf[Rep[Double]]).toInt
+    case StringType => (num1, num2) match {
+      case (Def(OptimalStringString(str1)), Def(OptimalStringString(str2))) => str1 diff str2
+    }
+    case Tuple2Type(tp1, tp2) => {
+      class Tp1
+      class Tp2
+      implicit val ttp1 = tp1.asInstanceOf[TypeRep[Tp1]]
+      implicit val ttp2 = tp2.asInstanceOf[TypeRep[Tp2]]
+      val tup1 = num1.asInstanceOf[Rep[(Tp1, Tp2)]]
+      val tup2 = num2.asInstanceOf[Rep[(Tp1, Tp2)]]
+      val e11 = tup1._1
+      val e21 = tup2._1
+      val c1 = ordering_minus(e11, e21)
+      __ifThenElse(c1 __== unit(0), {
+        val e12 = tup1._2
+        val e22 = tup2._2
+        ordering_minus(e12, e22)
+      }, {
+        c1
+      })
+    }
+  }
+
   def array_sortBy[T: TypeRep, S: TypeRep](array: Rep[Array[T]], sortFunction: Rep[T => S]): Rep[Array[T]] = {
     val resultArray = __newArray[T](array.length)
     val counter = __newVarNamed[Int](unit(0), "arrayCounter")
     // TODO generalize
     val treeSet = __newTreeSet2(Ordering[T](__lambda { (x, y) =>
-      inlineFunction(sortFunction, x).asInstanceOf[Rep[Int]] - inlineFunction(sortFunction, y).asInstanceOf[Rep[Int]]
+      // inlineFunction(sortFunction, x).asInstanceOf[Rep[Int]] - inlineFunction(sortFunction, y).asInstanceOf[Rep[Int]]
+      ordering_minus(inlineFunction(sortFunction, x), inlineFunction(sortFunction, y))
     }))
     array_foreach(array, (elem: Rep[T]) => {
       treeSet += elem
       __assign(counter, readVar(counter) + unit(1))
     })
-    Range(unit(0), array.length).foreach(__lambda { i =>
+    Range(unit(0), treeSet.size).foreach(__lambda { i =>
       val elem = treeSet.head
       treeSet -= elem
       resultArray(i) = elem
@@ -280,16 +314,48 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
   }
 
   def concat_types[T: TypeRep, S: TypeRep, Res: TypeRep]: TypeRep[Res] = {
-    val leftTag = typeRep[T].asInstanceOf[RecordType[T]].tag
-    val rightTag = typeRep[S].asInstanceOf[RecordType[S]].tag
-    val concatTag = StructTags.CompositeTag[T, S]("", "", leftTag, rightTag)
-    new RecordType(concatTag, Some(typeRep[Res].asInstanceOf[TypeRep[Any]])).asInstanceOf[TypeRep[Res]]
+    // val leftTag = typeRep[T].asInstanceOf[RecordType[T]].tag
+    // val rightTag = typeRep[S].asInstanceOf[RecordType[S]].tag
+    // val concatTag = StructTags.CompositeTag[T, S]("", "", leftTag, rightTag)
+    // new RecordType(concatTag, Some(typeRep[Res].asInstanceOf[TypeRep[Any]])).asInstanceOf[TypeRep[Res]]
+    typeRep[Res]
   }
+
+  def getStructDefByTag[T: TypeRep](tag: StructTags.StructTag[T]): Option[PardisStructDef[T]] =
+    structsDefMap.get(tag).asInstanceOf[Option[PardisStructDef[T]]]
+
+  def getFieldsByTag[T: TypeRep](tag: StructTags.StructTag[T]): Seq[StructElemInformation] = tag match {
+    case StructTags.CompositeTag(_, _, lt, rt) => getFieldsByTag(lt) ++ getFieldsByTag(rt)
+    case _                                     => getStructDefByTag(tag).get.fields
+  }
+
+  def getFields[T: TypeRep]: Seq[StructElemInformation] = typeRep[T] match {
+    case rt: RecordType[T] => getFieldsByTag(rt.tag)
+    case t                 => throw new Exception(s"No fields exist for ${typeRep[T]}")
+  }
+  //   typeRep[T] match {
+  //     case rt: RecordType[T] => getStructDef(rt) match {
+  //       case Some(d) => d.fields
+  //       case _ => x.originalType.get match {
+  //         case Dyna
+  //       }
+  //     }
+  //   }
+  //  getStructDef(typeRep[T]) match {
+  //   case Some(d) => d.fields
+  //   case _ =>
+  //     typeRep[T] match {
+  //       case x: RecordType[T] => x.originalType.get match {
+  //         case DynamicCompositeRecordType(lt, rt) => getFields(lt) ++ getFields(rt)
+  //       }
+  //     }
+  //     throw new Exception(s"No fields exist for ${typeRep[T]}")
+  // }
 
   def concat_records[T: TypeRep, S: TypeRep, Res: TypeRep](elem1: Rep[T], elem2: Rep[S]): Rep[Res] = {
     val resultType = concat_types[T, S, Res]
-    val elems1 = getStructDef(typeRep[T]).get.fields.map(x => PardisStructArg(x.name, x.mutable, field(elem1, x.name)(x.tpe)))
-    val elems2 = getStructDef(typeRep[S]).get.fields.map(x => PardisStructArg(x.name, x.mutable, field(elem2, x.name)(x.tpe)))
+    val elems1 = getFields[T].map(x => PardisStructArg(x.name, x.mutable, field(elem1, x.name)(x.tpe)))
+    val elems2 = getFields[S].map(x => PardisStructArg(x.name, x.mutable, field(elem2, x.name)(x.tpe)))
     // val structFields = elems.zip(elemsRhs).map(x => PardisStructArg(x._1.name, x._1.mutable, field(x._2.rec, x._2.name)(x._2.tp)))
     val structFields = elems1 ++ elems2
     struct(structFields: _*)(resultType)
@@ -306,6 +372,7 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
 
   def hashJoin[T: TypeRep, S: TypeRep, R: TypeRep, Res: TypeRep](array1: Rep[Array[T]], array2: Rep[Array[S]], leftHash: Rep[T => R], rightHash: Rep[S => R], joinCond: Rep[(T, S) => Boolean]): Rep[Array[Res]] = {
     // TODO generalize
+    assert(typeRep[Res].isInstanceOf[RecordType[_]])
     val maxSize = unit(1000000)
     val res = __newArray[Res](maxSize)(concat_types[T, S, Res])
     val counter = __newVar[Int](unit(0))
