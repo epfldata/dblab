@@ -133,6 +133,12 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
       array_foldLeft(array, z, f)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]], z.tp.asInstanceOf[TypeRep[Any]])
   }
 
+  rewrite += rule {
+    case QueryTake(monad, num) =>
+      val array = apply(monad).asInstanceOf[Rep[Array[Any]]]
+      arrayDropRight(array, array.length - num)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
+  }
+
   // rewrite += rule {
   //   case QuerySortBy(monad, f) =>
   //     val array = apply(monad).asInstanceOf[Rep[Array[Any]]]
@@ -371,9 +377,10 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
   }
 
   def hashJoin[T: TypeRep, S: TypeRep, R: TypeRep, Res: TypeRep](array1: Rep[Array[T]], array2: Rep[Array[S]], leftHash: Rep[T => R], rightHash: Rep[S => R], joinCond: Rep[(T, S) => Boolean]): Rep[Array[Res]] = {
-    // TODO generalize
     assert(typeRep[Res].isInstanceOf[RecordType[_]])
-    val maxSize = unit(1000000)
+    // TODO generalize to the cases other than primary key - foreign key relations
+    // val maxSize = __ifThenElse(array1.length > array2.length, array1.length, array2.length)
+    val maxSize = unit(100000000)
     val res = __newArray[Res](maxSize)(concat_types[T, S, Res])
     val counter = __newVar[Int](unit(0))
     val hm = __newMultiMap[R, T]()
