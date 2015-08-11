@@ -101,6 +101,7 @@ object TPCHCompiler extends TPCHRunner {
         case "Q1_functional"  => (1, () => Q1_functional(unit(Config.numRuns)))
         case "Q3_functional"  => (3, () => Q3_functional(unit(Config.numRuns)))
         case "Q6_functional"  => (6, () => Q6_functional(unit(Config.numRuns)))
+        case "Q12_functional" => (12, () => Q12_functional(unit(Config.numRuns)))
         case "Q14_functional" => (14, () => Q14_functional(unit(Config.numRuns)))
         case Q12SynthesizedExtract(targetCode, numFields) => {
           (12, () => context.Q12Synthesized(unit(Config.numRuns), numFields))
