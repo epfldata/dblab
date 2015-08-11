@@ -408,7 +408,7 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
   }
 
   rewrite += statement {
-    case sym -> JoinableQueryJoin(monad1, monad2, leftHash, rightHash, joinCond) => {
+    case sym -> JoinableQueryHashJoin(monad1, monad2, leftHash, rightHash, joinCond) => {
       val arr1 = apply(monad1).asInstanceOf[Rep[Array[Any]]]
       val arr2 = apply(monad2).asInstanceOf[Rep[Array[Any]]]
       hashJoin(arr1,

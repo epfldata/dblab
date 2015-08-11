@@ -205,8 +205,8 @@ object Queries {
         val scanCustomer = customerTable.filter(x => x.C_MKTSEGMENT === houseHold)
         val scanOrders = ordersTable.filter(x => x.O_ORDERDATE < constantDate)
         val scanLineitem = lineitemTable.filter(x => x.L_SHIPDATE > constantDate)
-        val jo1 = scanCustomer.join(scanOrders)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)
-        val jo2 = jo1.join(scanLineitem)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY[Int] == y.L_ORDERKEY)
+        val jo1 = scanCustomer.hashJoin(scanOrders)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)
+        val jo2 = jo1.hashJoin(scanLineitem)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY[Int] == y.L_ORDERKEY)
         val aggOp = jo2.groupBy(x => new Q3GRPRecord(x.L_ORDERKEY[Int], x.O_ORDERDATE[Int], x.O_SHIPPRIORITY[Int])).mapValues(_.map(t => (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))).sum)
         val sortOp = aggOp.sortBy(x => (-x._2, x._1.O_ORDERDATE))
         var rows = 0
@@ -575,7 +575,7 @@ object Queries {
         val constantDate2 = parseDate("1994-01-01")
         val so2 = lineitemTable.filter(x =>
           x.L_RECEIPTDATE < constantDate && x.L_COMMITDATE < constantDate && x.L_SHIPDATE < constantDate && x.L_SHIPDATE < x.L_COMMITDATE && x.L_COMMITDATE < x.L_RECEIPTDATE && x.L_RECEIPTDATE >= constantDate2 && (x.L_SHIPMODE === mail || x.L_SHIPMODE === ship))
-        val jo = ordersTable.join(so2)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
+        val jo = ordersTable.hashJoin(so2)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
         val URGENT = parseString("1-URGENT")
         val HIGH = parseString("2-HIGH")
         val aggOp = jo.groupBy(x => x.L_SHIPMODE[LBString]).mapValues(list =>
@@ -668,7 +668,7 @@ object Queries {
         val constantDate = parseDate("1994-04-01")
         val constantDate2 = parseDate("1994-03-01")
         val joinResult = partTable
-          .join(lineitemTable
+          .hashJoin(lineitemTable
             .filter(x => x.L_SHIPDATE >= constantDate2 && x.L_SHIPDATE < constantDate))(_.P_PARTKEY)(_.L_PARTKEY)((x, y) => x.P_PARTKEY == y.L_PARTKEY)
         val agg1 = joinResult.filter(_.P_TYPE[LBString].startsWith(promo)).map(t => (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))).sum
         val agg2 = joinResult.map(t => (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))).sum

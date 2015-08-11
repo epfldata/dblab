@@ -50,7 +50,7 @@ class Query[T](private val underlying: List[T]) {
 @needs[(Query[_], List[_])]
 @needsCircular[GroupedQuery[_, _]]
 class JoinableQuery[T <: Record](private val underlying: List[T]) {
-  def join[S <: Record, R](q2: Query[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): Query[DynamicCompositeRecord[T, S]] = {
+  def hashJoin[S <: Record, R](q2: Query[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): Query[DynamicCompositeRecord[T, S]] = {
     /* Naive implementation */
     // new Query(underlying.flatMap(e1 =>
     //   q2.getList.flatMap(e2 =>
