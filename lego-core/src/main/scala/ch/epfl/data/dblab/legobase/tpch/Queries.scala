@@ -564,6 +564,35 @@ object Queries {
     }
   }
 
+  def Q12_functional(numRuns: Int) {
+    val lineitemTable = new Query(loadLineitem())
+    val ordersTable = new Query(loadOrders())
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val mail = parseString("MAIL")
+        val ship = parseString("SHIP")
+        val constantDate = parseDate("1995-01-01")
+        val constantDate2 = parseDate("1994-01-01")
+        val so2 = lineitemTable.filter(x =>
+          x.L_RECEIPTDATE < constantDate && x.L_COMMITDATE < constantDate && x.L_SHIPDATE < constantDate && x.L_SHIPDATE < x.L_COMMITDATE && x.L_COMMITDATE < x.L_RECEIPTDATE && x.L_RECEIPTDATE >= constantDate2 && (x.L_SHIPMODE === mail || x.L_SHIPMODE === ship))
+        val jo = ordersTable.join(so2)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
+        val URGENT = parseString("1-URGENT")
+        val HIGH = parseString("2-HIGH")
+        val aggOp = jo.groupBy(x => x.L_SHIPMODE[LBString]).mapValues(list =>
+          Array(list.filter(t => t.O_ORDERPRIORITY[LBString] === URGENT || t.O_ORDERPRIORITY[LBString] === HIGH).count,
+            list.filter(t => t.O_ORDERPRIORITY[LBString] =!= URGENT && t.O_ORDERPRIORITY[LBString] =!= HIGH).count))
+        val sortOp = aggOp.sortBy(_._1.string)
+        var rows = 0
+        sortOp.foreach(kv => {
+          printf("%s|%d|%d\n", kv._1.string, kv._2(0), kv._2(1))
+          rows += 1
+        })
+        val resultRows = rows
+        printf("(%d rows)\n", resultRows)
+      })
+    }
+  }
+
   def Q13(numRuns: Int) {
     val customerTable = loadCustomer()
     val ordersTable = loadOrders()
