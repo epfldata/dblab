@@ -39,8 +39,14 @@ class Query[T](private val underlying: List[T]) {
   @pure def sortBy[S](f: T => S)(implicit ord: Ordering[S]): Query[T] =
     new Query(underlying.sortBy(f))
 
+  @pure def sortByReverse[S](f: T => S)(implicit ord: Ordering[S]): Query[T] =
+    new Query(underlying.sortBy(f).reverse)
+
   @pure def take(i: Int): Query[T] =
     new Query(underlying.take(i))
+
+  @pure def minBy[S](f: T => S)(implicit ord: Ordering[S]): T =
+    underlying.minBy(f)
 
   @pure def getList: List[T] = underlying
 }

@@ -158,6 +158,65 @@ object Queries {
     }
   }
 
+  def Q2_functional(numRuns: Int) {
+    val partTable = new Query(loadPart())
+    val partsuppTable = new Query(loadPartsupp())
+    val nationTable = new Query(loadNation())
+    val regionTable = new Query(loadRegion())
+    val supplierTable = new Query(loadSupplier())
+    for (i <- 0 until numRuns) {
+      runQuery {
+        val africa = parseString("AFRICA")
+        val tin = parseString("TIN")
+        // val partsuppScan = new ScanOp(partsuppTable)
+        // val supplierScan = new ScanOp(supplierTable)
+        val jo1 = supplierTable.hashJoin(partsuppTable)(x => x.S_SUPPKEY)(x => x.PS_SUPPKEY)((x, y) => x.S_SUPPKEY == y.PS_SUPPKEY)
+        // val jo1 = new HashJoinOp(supplierScan, partsuppScan)((x, y) => x.S_SUPPKEY == y.PS_SUPPKEY)(x => x.S_SUPPKEY)(x => x.PS_SUPPKEY)
+        // val nationScan = new ScanOp(nationTable)
+        val jo2 = nationTable.hashJoin(jo1)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])
+        // val jo2 = new HashJoinOp(nationScan, jo1)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])
+        // val partScan = new SelectOp(new ScanOp(partTable))(x => x.P_SIZE == 43 && x.P_TYPE.endsWith(tin))
+        val partScan = partTable.filter(x => x.P_SIZE == 43 && x.P_TYPE.endsWith(tin))
+        val jo3 = partScan.hashJoin(jo2)(x => x.P_PARTKEY)(x => x.PS_PARTKEY[Int])((x, y) => x.P_PARTKEY == y.PS_PARTKEY[Int])
+        // val jo3 = new HashJoinOp(partScan, jo2)((x, y) => x.P_PARTKEY == y.PS_PARTKEY[Int])(x => x.P_PARTKEY)(x => x.PS_PARTKEY[Int])
+        val regionScan = regionTable.filter(_.R_NAME === africa)
+        // val regionScan = new SelectOp(new ScanOp(regionTable))(x => x.R_NAME === africa) //for comparing equality of LBString we should use === instead of ==
+        val jo4 = regionScan.hashJoin(jo3)(x => x.R_REGIONKEY)(x => x.N_REGIONKEY[Int])((x, y) => x.R_REGIONKEY == y.N_REGIONKEY[Int])
+        // val jo4 = new HashJoinOp(regionScan, jo3)((x, y) => x.R_REGIONKEY == y.N_REGIONKEY[Int])(x => x.R_REGIONKEY)(x => x.N_REGIONKEY[Int])
+        val wo = jo4.groupBy(x => x.P_PARTKEY[Int]).mapValues(x => x.minBy(y => y.PS_SUPPLYCOST[Double]))
+        // val wo = new WindowOp(jo4)(x => x.P_PARTKEY[Int])(x => x.minBy(y => y.PS_SUPPLYCOST[Double]))
+        val so = wo.sortBy(x => (-x._2.S_ACCTBAL[Double], x._2.N_NAME[LBString].string, x._2.P_PARTKEY[Int]))
+        // val so = new SortOp(wo)((x, y) => {
+        //   if (x.wnd.S_ACCTBAL[Double] < y.wnd.S_ACCTBAL[Double]) 1
+        //   else if (x.wnd.S_ACCTBAL[Double] > y.wnd.S_ACCTBAL[Double]) -1
+        //   else {
+        //     var res = x.wnd.N_NAME[LBString] diff y.wnd.N_NAME[LBString]
+        //     if (res == 0) {
+        //       res = x.wnd.S_NAME[LBString] diff y.wnd.S_NAME[LBString]
+        //       if (res == 0) res = x.wnd.P_PARTKEY[Int] - y.wnd.P_PARTKEY[Int]
+        //     }
+        //     res
+        //   }
+        // })
+        var rows = 0
+        so.take(100).foreach { e =>
+          val kv = e._2
+          printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL[Double], (kv.S_NAME[LBString]).string, (kv.N_NAME[LBString]).string, kv.P_PARTKEY[Int], (kv.P_MFGR[LBString]).string, (kv.S_ADDRESS[LBString]).string, (kv.S_PHONE[LBString]).string, (kv.S_COMMENT[LBString]).string)
+          rows += 1
+        }
+        val resultRows = rows
+        printf("(%d rows)\n", resultRows)
+        // val po = new PrintOp(so)(e => {
+        //   val kv = e.wnd
+        //   printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL[Double], (kv.S_NAME[LBString]).string, (kv.N_NAME[LBString]).string, kv.P_PARTKEY[Int], (kv.P_MFGR[LBString]).string, (kv.S_ADDRESS[LBString]).string, (kv.S_PHONE[LBString]).string, (kv.S_COMMENT[LBString]).string)
+        // }, 100)
+        // po.open
+        // po.next
+        ()
+      }
+    }
+  }
+
   def Q3(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()

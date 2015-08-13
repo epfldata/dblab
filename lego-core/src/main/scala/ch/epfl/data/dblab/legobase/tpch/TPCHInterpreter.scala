@@ -41,6 +41,7 @@ object TPCHInterpreter extends TPCHRunner {
     case "Q21"            => Q21(Config.numRuns)
     case "Q22"            => Q22(Config.numRuns)
     case "Q1_functional"  => Q1_functional(Config.numRuns)
+    case "Q2_functional"  => Q2_functional(Config.numRuns)
     case "Q3_functional"  => Q3_functional(Config.numRuns)
     case "Q6_functional"  => Q6_functional(Config.numRuns)
     case "Q12_functional" => Q12_functional(Config.numRuns)
