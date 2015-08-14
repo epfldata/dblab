@@ -263,6 +263,7 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
     case DoubleType => (num1.asInstanceOf[Rep[Double]] - num2.asInstanceOf[Rep[Double]]).toInt
     case StringType => (num1, num2) match {
       case (Def(OptimalStringString(str1)), Def(OptimalStringString(str2))) => str1 diff str2
+      case (str1: Rep[String], str2: Rep[String])                           => str1 diff str2
     }
     case Tuple2Type(tp1, tp2) => {
       class Tp1
@@ -278,6 +279,44 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
         val e12 = tup1._2
         val e22 = tup2._2
         ordering_minus(e12, e22)
+      }, {
+        c1
+      })
+    }
+    case Tuple3Type(tp1, tp2, tp3) => {
+      class Tp1
+      class Tp2
+      class Tp3
+      implicit val ttp1 = tp1.asInstanceOf[TypeRep[Tp1]]
+      implicit val ttp2 = tp2.asInstanceOf[TypeRep[Tp2]]
+      implicit val ttp3 = tp3.asInstanceOf[TypeRep[Tp3]]
+      implicit class Tuple3NOps(self: Rep[(Tp1, Tp2, Tp3)]) {
+        def _1: Rep[Tp1] = self match {
+          case Def(Tuple3ApplyObject(x, y, z)) => x
+        }
+        def _2: Rep[Tp2] = self match {
+          case Def(Tuple3ApplyObject(x, y, z)) => y
+        }
+        def _3: Rep[Tp3] = self match {
+          case Def(Tuple3ApplyObject(x, y, z)) => z
+        }
+      }
+      val tup1 = num1.asInstanceOf[Rep[(Tp1, Tp2, Tp3)]]
+      val tup2 = num2.asInstanceOf[Rep[(Tp1, Tp2, Tp3)]]
+      val e11 = tup1._1
+      val e21 = tup2._1
+      val c1 = ordering_minus(e11, e21)
+      __ifThenElse(c1 __== unit(0), {
+        val e12 = tup1._2
+        val e22 = tup2._2
+        val c2 = ordering_minus(e12, e22)
+        __ifThenElse(c2 __== unit(0), {
+          val e13 = tup1._3
+          val e23 = tup2._3
+          ordering_minus(e13, e23)
+        }, {
+          c2
+        })
       }, {
         c1
       })
@@ -304,11 +343,31 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
     resultArray
   }
 
+  def array_minBy[T: TypeRep, S: TypeRep](array: Rep[Array[T]], by: Rep[T => S]): Rep[T] = {
+    val minResult = __newVarNamed[T](unit(null).asInstanceOf[Rep[T]], "minResult")
+    def compare(x: Rep[T], y: Rep[T]): Rep[Int] =
+      ordering_minus(inlineFunction(by, x), inlineFunction(by, y))
+    array_foreach(array, (elem: Rep[T]) => {
+      __ifThenElse((readVar(minResult) __== unit(null)) || compare(elem, readVar(minResult)) < unit(0), {
+        __assign(minResult, elem)
+      }, {
+        unit()
+      })
+    })
+    readVar(minResult)
+  }
+
   rewrite += statement {
     case sym -> QuerySortBy(monad, sortFunction) => {
       val array = apply(monad).asInstanceOf[Rep[Array[Any]]]
       array_sortBy(array, sortFunction)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]], sortFunction.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
     }
+  }
+
+  rewrite += rule {
+    case QueryMinBy(monad, by) =>
+      val array = apply(monad).asInstanceOf[Rep[Array[Any]]]
+      array_minBy(array, by)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]], by.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
   }
 
   rewrite += rule {
