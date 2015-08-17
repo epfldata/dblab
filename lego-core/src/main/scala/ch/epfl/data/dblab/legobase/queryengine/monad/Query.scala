@@ -82,6 +82,22 @@ class JoinableQuery[T <: Record](private val underlying: List[T]) {
     }
     new Query(res.toList)
   }
+
+  def leftHashSemiJoin[S <: Record, R](q2: Query[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): Query[T] = {
+    val res = ArrayBuffer[T]()
+    val hm = MultiMap[R, S]
+    for (elem <- q2.getList) {
+      hm.addBinding(rightHash(elem), elem)
+    }
+    for (elem <- underlying) {
+      val k = leftHash(elem)
+      hm.get(k) foreach { tmpBuffer =>
+        if (tmpBuffer.exists(bufElem => joinCond(elem, bufElem)))
+          res += elem
+      }
+    }
+    new Query(res.toList)
+  }
 }
 
 @deep
