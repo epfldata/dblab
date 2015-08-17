@@ -101,12 +101,15 @@ case class Statistics() {
     System.out.println("Returning largest cardinality to compensate. This may lead to degraded performance due to unnecessarily large memory pool allocations.")
   }
 
-  def getDistinctAttrValues(attrName: String): Int = statsMap.get("DISTINCT_" + attrName) match {
+  def getDistinctAttrValuesOrElse(attrName: String, value: => Int): Int = statsMap.get("DISTINCT_" + attrName) match {
     case Some(stat) => stat.toInt
-    case None =>
-      warningPerformance("DISTINCT_" + attrName)
-      getLargestCardinality().toInt // TODO-GEN: Make this return the cardinality of the corresponding table
+    case None       => value
   }
+
+  def getDistinctAttrValues(attrName: String): Int = getDistinctAttrValuesOrElse(attrName, {
+    warningPerformance("DISTINCT_" + attrName)
+    getLargestCardinality().toInt // TODO-GEN: Make this return the cardinality of the corresponding table
+  })
 
   val CONFLICT_PREFIX = "CONFLICT_"
 

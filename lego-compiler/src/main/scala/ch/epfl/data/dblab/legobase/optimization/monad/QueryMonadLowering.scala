@@ -170,10 +170,17 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
 
   def queryGroupBy[K: TypeRep, V: TypeRep](monad: Rep[Query[V]], pred: Option[Rep[V => Boolean]], par: Rep[V => K]): GroupByResult[K, V] = {
     val originalArray = apply(monad).asInstanceOf[Rep[Array[V]]]
-    val max_partitions = schema.stats.getCardinalityOrElse(typeRep[K].name, 8)
+    def sizeByCardinality: Int = schema.stats.getCardinalityOrElse(typeRep[K].name, 8).toInt
+    val max_partitions = par match {
+      case Def(Lambda(_, i, Block(stmts, Def(StructImmutableField(struct, name))))) if i == struct && stmts.size == 1 =>
+        schema.stats.getDistinctAttrValuesOrElse(name, sizeByCardinality)
+      case _ =>
+        sizeByCardinality
+    }
+
     System.out.println(typeRep[K] + "-" + max_partitions)
     // val MAX_SIZE = unit(4000)
-    val MAX_SIZE = unit(max_partitions.toInt)
+    val MAX_SIZE = unit(max_partitions)
     val keyIndex = __newHashMap[K, Int]()
     val keyRevertIndex = __newArray[K](MAX_SIZE)
     val lastIndex = __newVarNamed(unit(0), "lastIndex")
