@@ -304,6 +304,30 @@ object Queries {
     }
   }
 
+  def Q4_functional(numRuns: Int) {
+    val lineitemTable = new Query(loadLineitem())
+    val ordersTable = new Query(loadOrders())
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val constantDate1: Int = parseDate("1993-11-01")
+        val constantDate2: Int = parseDate("1993-08-01")
+        val scanOrders = ordersTable.filter(x => x.O_ORDERDATE < constantDate1 && x.O_ORDERDATE >= constantDate2)
+        val scanLineitem = lineitemTable.filter(x => x.L_COMMITDATE < x.L_RECEIPTDATE)
+        val hj = scanOrders.leftHashSemiJoin(scanLineitem)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
+        val aggRes = hj.groupBy(x => x.O_ORDERPRIORITY).mapValues(_.count)
+        val sortOp = aggRes.sortBy(_._1.string)
+        var rows = 0
+        sortOp.foreach { kv =>
+          printf("%s|%d\n", kv._1.string, kv._2)
+          rows += 1
+        }
+        // there's an unknown bug (with the inference of IntType TypeRep) which needs the next line
+        val resultRows = rows
+        printf("(%d rows)\n", resultRows)
+      })
+    }
+  }
+
   def Q5(numRuns: Int) {
     val nationTable = loadNation()
     val regionTable = loadRegion()
