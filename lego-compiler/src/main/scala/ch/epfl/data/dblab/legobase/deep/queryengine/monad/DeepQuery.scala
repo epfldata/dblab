@@ -316,6 +316,7 @@ trait JoinableQueryOps extends Base with QueryOps with ListOps { this: GroupedQu
   implicit def typeJoinableQuery[T <: ch.epfl.data.sc.pardis.shallow.Record: TypeRep]: TypeRep[JoinableQuery[T]] = JoinableQueryType(implicitly[TypeRep[T]])
   implicit class JoinableQueryRep[T <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[JoinableQuery[T]])(implicit typeT: TypeRep[T]) {
     def hashJoin[S <: ch.epfl.data.sc.pardis.shallow.Record, R](q2: Rep[Query[S]])(leftHash: Rep[(T => R)])(rightHash: Rep[(S => R)])(joinCond: Rep[((T, S) => Boolean)])(implicit typeS: TypeRep[S], typeR: TypeRep[R]): Rep[Query[DynamicCompositeRecord[T, S]]] = joinableQueryHashJoin[T, S, R](self, q2, leftHash, rightHash, joinCond)(typeT, typeS, typeR)
+    def leftHashSemiJoin[S <: ch.epfl.data.sc.pardis.shallow.Record, R](q2: Rep[Query[S]])(leftHash: Rep[(T => R)])(rightHash: Rep[(S => R)])(joinCond: Rep[((T, S) => Boolean)])(implicit typeS: TypeRep[S], typeR: TypeRep[R]): Rep[Query[T]] = joinableQueryLeftHashSemiJoin[T, S, R](self, q2, leftHash, rightHash, joinCond)(typeT, typeS, typeR)
     def underlying: Rep[List[T]] = joinableQuery_Field_Underlying[T](self)(typeT)
   }
   object JoinableQuery {
@@ -328,11 +329,14 @@ trait JoinableQueryOps extends Base with QueryOps with ListOps { this: GroupedQu
   type JoinableQueryNew[T <: ch.epfl.data.sc.pardis.shallow.Record] = JoinableQueryIRs.JoinableQueryNew[T]
   val JoinableQueryHashJoin = JoinableQueryIRs.JoinableQueryHashJoin
   type JoinableQueryHashJoin[T <: ch.epfl.data.sc.pardis.shallow.Record, S <: ch.epfl.data.sc.pardis.shallow.Record, R] = JoinableQueryIRs.JoinableQueryHashJoin[T, S, R]
+  val JoinableQueryLeftHashSemiJoin = JoinableQueryIRs.JoinableQueryLeftHashSemiJoin
+  type JoinableQueryLeftHashSemiJoin[T <: ch.epfl.data.sc.pardis.shallow.Record, S <: ch.epfl.data.sc.pardis.shallow.Record, R] = JoinableQueryIRs.JoinableQueryLeftHashSemiJoin[T, S, R]
   val JoinableQuery_Field_Underlying = JoinableQueryIRs.JoinableQuery_Field_Underlying
   type JoinableQuery_Field_Underlying[T <: ch.epfl.data.sc.pardis.shallow.Record] = JoinableQueryIRs.JoinableQuery_Field_Underlying[T]
   // method definitions
   def joinableQueryNew[T <: ch.epfl.data.sc.pardis.shallow.Record](underlying: Rep[List[T]])(implicit typeT: TypeRep[T]): Rep[JoinableQuery[T]] = JoinableQueryNew[T](underlying)
   def joinableQueryHashJoin[T <: ch.epfl.data.sc.pardis.shallow.Record, S <: ch.epfl.data.sc.pardis.shallow.Record, R](self: Rep[JoinableQuery[T]], q2: Rep[Query[S]], leftHash: Rep[((T) => R)], rightHash: Rep[((S) => R)], joinCond: Rep[((T, S) => Boolean)])(implicit typeT: TypeRep[T], typeS: TypeRep[S], typeR: TypeRep[R]): Rep[Query[DynamicCompositeRecord[T, S]]] = JoinableQueryHashJoin[T, S, R](self, q2, leftHash, rightHash, joinCond)
+  def joinableQueryLeftHashSemiJoin[T <: ch.epfl.data.sc.pardis.shallow.Record, S <: ch.epfl.data.sc.pardis.shallow.Record, R](self: Rep[JoinableQuery[T]], q2: Rep[Query[S]], leftHash: Rep[((T) => R)], rightHash: Rep[((S) => R)], joinCond: Rep[((T, S) => Boolean)])(implicit typeT: TypeRep[T], typeS: TypeRep[S], typeR: TypeRep[R]): Rep[Query[T]] = JoinableQueryLeftHashSemiJoin[T, S, R](self, q2, leftHash, rightHash, joinCond)
   def joinableQuery_Field_Underlying[T <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[JoinableQuery[T]])(implicit typeT: TypeRep[T]): Rep[List[T]] = JoinableQuery_Field_Underlying[T](self)
   type JoinableQuery[T <: ch.epfl.data.sc.pardis.shallow.Record] = ch.epfl.data.dblab.legobase.queryengine.monad.JoinableQuery[T]
 }
@@ -356,6 +360,10 @@ object JoinableQueryIRs extends Base {
   }
 
   case class JoinableQueryHashJoin[T <: ch.epfl.data.sc.pardis.shallow.Record, S <: ch.epfl.data.sc.pardis.shallow.Record, R](self: Rep[JoinableQuery[T]], q2: Rep[Query[S]], leftHash: Rep[((T) => R)], rightHash: Rep[((S) => R)], joinCond: Rep[((T, S) => Boolean)])(implicit val typeT: TypeRep[T], val typeS: TypeRep[S], val typeR: TypeRep[R]) extends FunctionDef[Query[DynamicCompositeRecord[T, S]]](Some(self), "hashJoin", List(List(q2), List(leftHash), List(rightHash), List(joinCond))) {
+    override def curriedConstructor = (copy[T, S, R] _).curried
+  }
+
+  case class JoinableQueryLeftHashSemiJoin[T <: ch.epfl.data.sc.pardis.shallow.Record, S <: ch.epfl.data.sc.pardis.shallow.Record, R](self: Rep[JoinableQuery[T]], q2: Rep[Query[S]], leftHash: Rep[((T) => R)], rightHash: Rep[((S) => R)], joinCond: Rep[((T, S) => Boolean)])(implicit val typeT: TypeRep[T], val typeS: TypeRep[S], val typeR: TypeRep[R]) extends FunctionDef[Query[T]](Some(self), "leftHashSemiJoin", List(List(q2), List(leftHash), List(rightHash), List(joinCond))) {
     override def curriedConstructor = (copy[T, S, R] _).curried
   }
 
