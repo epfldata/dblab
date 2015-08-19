@@ -473,6 +473,35 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
     res.dropRight(maxSize - readVar(counter))
   }
 
+  def leftSemiHashJoin[T: TypeRep, S: TypeRep, R: TypeRep](array1: Rep[Array[T]], array2: Rep[Array[S]], leftHash: Rep[T => R], rightHash: Rep[S => R], joinCond: Rep[(T, S) => Boolean]): Rep[Array[T]] = {
+    // TODO generalize to the cases other than primary key - foreign key relations
+    // val maxSize = __ifThenElse(array1.length > array2.length, array1.length, array2.length)
+    val maxSize = unit(100000000)
+    val res = __newArray[T](maxSize)
+    val counter = __newVar[Int](unit(0))
+    val hm = __newMultiMap[R, S]()
+    // System.out.println(concat_types[T, S, Res])
+    array_foreach_using_while(array2, (elem: Rep[S]) => {
+      hm.addBinding(rightHash(elem), elem)
+    })
+    array_foreach_using_while(array1, (elem: Rep[T]) => {
+      val k = leftHash(elem)
+      hm.get(k) foreach {
+        __lambda { tmpBuffer =>
+          __ifThenElse(tmpBuffer.exists(
+            __lambda { bufElem =>
+              joinCond(elem, bufElem)
+            }), {
+            res(readVar(counter)) = //bufElem.asInstanceOf[Rep[Record]].concatenateDynamic(elem.asInstanceOf[Rep[Record]])(elem.tp.asInstanceOf[TypeRep[Record]]).asInstanceOf[Rep[Res]]
+              elem
+            __assign(counter, readVar(counter) + unit(1))
+          }, unit())
+        }
+      }
+    })
+    res.dropRight(maxSize - readVar(counter))
+  }
+
   rewrite += statement {
     case sym -> JoinableQueryHashJoin(monad1, monad2, leftHash, rightHash, joinCond) => {
       val arr1 = apply(monad1).asInstanceOf[Rep[Array[Any]]]
@@ -485,6 +514,21 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
           arr2.tp.typeArguments(0).asInstanceOf[TypeRep[Any]],
           leftHash.tp.typeArguments(1).asInstanceOf[TypeRep[Any]],
           sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
+      // System.out.println(unit(s"$leftHash, $rightHash, $joinCond"))
+    }
+  }
+
+  rewrite += statement {
+    case sym -> JoinableQueryLeftHashSemiJoin(monad1, monad2, leftHash, rightHash, joinCond) => {
+      val arr1 = apply(monad1).asInstanceOf[Rep[Array[Any]]]
+      val arr2 = apply(monad2).asInstanceOf[Rep[Array[Any]]]
+      leftSemiHashJoin(arr1,
+        arr2,
+        leftHash.asInstanceOf[Rep[Any => Any]],
+        rightHash.asInstanceOf[Rep[Any => Any]],
+        joinCond.asInstanceOf[Rep[(Any, Any) => Boolean]])(arr1.tp.typeArguments(0).asInstanceOf[TypeRep[Any]],
+          arr2.tp.typeArguments(0).asInstanceOf[TypeRep[Any]],
+          leftHash.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
       // System.out.println(unit(s"$leftHash, $rightHash, $joinCond"))
     }
   }
