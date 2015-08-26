@@ -3,7 +3,7 @@ package dblab.legobase
 package queryengine
 package monad
 
-import sc.pardis.annotations.{ deep, noImplementation, needsCircular, dontLift, needs, reflect, pure }
+import sc.pardis.annotations.{ deep, noImplementation, needsCircular, dontLift, needs, reflect, pure, direct }
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
 import push.MultiMap
 import scala.collection.mutable.MultiMap
@@ -49,6 +49,11 @@ class Query[T](private val underlying: List[T]) {
     underlying.minBy(f)
 
   @pure def getList: List[T] = underlying
+}
+
+object Query {
+  @direct def apply[T](underlying: List[T]): Query[T] = new Query(underlying)
+  @direct def apply[T](underlying: Array[T]): Query[T] = new Query(underlying)
 }
 
 @deep

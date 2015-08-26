@@ -33,7 +33,8 @@ trait QueryOps extends Base with ListOps with ArrayOps { this: GroupedQueryOps =
     def underlying: Rep[List[T]] = query_Field_Underlying[T](self)(typeT)
   }
   object Query {
-
+    def apply[T](underlying: Rep[List[T]])(implicit typeT: TypeRep[T], overload1: Overloaded1): Rep[Query[T]] = queryApplyObject1[T](underlying)(typeT)
+    def apply[T](underlying: Rep[Array[T]])(implicit typeT: TypeRep[T], overload2: Overloaded2): Rep[Query[T]] = queryApplyObject2[T](underlying)(typeT)
   }
   // constructors
   def __newQuery[T](underlying: Rep[List[T]])(implicit overload1: Overloaded1, typeT: TypeRep[T]): Rep[Query[T]] = queryNew1[T](underlying)(typeT)
@@ -91,6 +92,12 @@ trait QueryOps extends Base with ListOps with ArrayOps { this: GroupedQueryOps =
   def queryMinBy[T, S](self: Rep[Query[T]], f: Rep[((T) => S)])(implicit typeT: TypeRep[T], typeS: TypeRep[S], ord: Ordering[S]): Rep[T] = QueryMinBy[T, S](self, f)
   def queryGetList[T](self: Rep[Query[T]])(implicit typeT: TypeRep[T]): Rep[List[T]] = QueryGetList[T](self)
   def query_Field_Underlying[T](self: Rep[Query[T]])(implicit typeT: TypeRep[T]): Rep[List[T]] = Query_Field_Underlying[T](self)
+  def queryApplyObject1[T](underlying: Rep[List[T]])(implicit typeT: TypeRep[T]): Rep[Query[T]] = {
+    __newQuery(underlying)
+  }
+  def queryApplyObject2[T](underlying: Rep[Array[T]])(implicit typeT: TypeRep[T]): Rep[Query[T]] = {
+    __newQuery(underlying)
+  }
   type Query[T] = ch.epfl.data.dblab.legobase.queryengine.monad.Query[T]
 }
 object QueryIRs extends Base {
