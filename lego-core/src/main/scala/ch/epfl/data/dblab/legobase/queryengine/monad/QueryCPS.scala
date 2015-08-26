@@ -21,16 +21,19 @@ abstract class QueryCPS[T] { self =>
     }
   // @pure def foldLeft[S](z: S)(f: (S, T) => S): S =
   //   underlying.foldLeft(z)(f)
-  def foreach(f: T => Unit): Unit 
+  def foreach(f: T => Unit): Unit
   @pure def sum(implicit num: Numeric[T]): T = {
     var res = num.zero
     self.foreach(e => res = num.plus(res, e))
     res
   }
-  // @pure def count: Int =
-  //   underlying.size
-  // @pure def avg(implicit num: Fractional[T]): T =
-  //   num.div(sum, num.fromInt(count))
+  @pure def count: Int = {
+    var size = 0
+    self.foreach(e => size += 1)
+    size
+  }
+  @pure def avg(implicit num: Fractional[T]): T =
+    num.div(sum, num.fromInt(count))
   @pure def groupBy[K](par: T => K): GroupedQueryCPS[K, T] =
     new GroupedQueryCPS(this, par)
   // @pure def filteredGroupBy[K](pred: T => Boolean, par: T => K): GroupedQuery[K, T] =
@@ -89,24 +92,23 @@ object JoinableQueryCPS {
 
 class JoinableQueryCPS[T <: Record](private val underlying: QueryCPS[T]) {
   def hashJoin[S <: Record, R](q2: QueryCPS[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): QueryCPS[DynamicCompositeRecord[T, S]] = {
-    val res = ArrayBuffer[DynamicCompositeRecord[T, S]]()
-    val hm = MultiMap[R, T]
-    for (elem <- underlying) {
-      hm.addBinding(leftHash(elem), elem)
-    }
-    for (elem <- q2) {
-      val k = rightHash(elem)
-      hm.get(k) foreach { tmpBuffer =>
-        tmpBuffer foreach { bufElem =>
-          if (joinCond(bufElem, elem)) {
-            res += bufElem.concatenateDynamic(elem)
-          }
-        }
-      }
-    }
     new QueryCPS[DynamicCompositeRecord[T, S]] {
       def foreach(f: DynamicCompositeRecord[T, S] => Unit): Unit = {
-        res.foreach(f)
+        val hm = MultiMap[R, T]
+        for (elem <- underlying) {
+          hm.addBinding(leftHash(elem), elem)
+        }
+        for (elem <- q2) {
+          val k = rightHash(elem)
+          hm.get(k) foreach { tmpBuffer =>
+            tmpBuffer foreach { bufElem =>
+              if (joinCond(bufElem, elem)) {
+                val newElem = bufElem.concatenateDynamic(elem)
+                f(newElem)
+              }
+            }
+          }
+        }
       }
     }
   }
