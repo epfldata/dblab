@@ -69,8 +69,15 @@ abstract class QueryCPS[T] {
     })
   }
 
-  // @pure def minBy[S](f: T => S)(implicit ord: Ordering[S]): T =
-  //   underlying.minBy(f)
+  @pure def minBy[S](f: T => S)(implicit ord: Ordering[S]): T = {
+    var minResult: T = null.asInstanceOf[T]
+    foreach(e => {
+      if (minResult == null || ord.compare(f(minResult), f(e)) > 0) {
+        minResult = e
+      }
+    })
+    minResult
+  }
 
   // @pure def getList: List[T] = ???
 }
@@ -108,7 +115,7 @@ class JoinableQueryCPS[T <: Record](private val underlying: QueryCPS[T]) {
     }
   }
 
-  def leftHashSemiJoin[S <: Record, R](q2: Query[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): QueryCPS[T] = (k: T => Unit) => {
+  def leftHashSemiJoin[S <: Record, R](q2: QueryCPS[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): QueryCPS[T] = (k: T => Unit) => {
     val hm = MultiMap[R, S]
     for (elem <- q2) {
       hm.addBinding(rightHash(elem), elem)
