@@ -3,7 +3,7 @@ package dblab.legobase
 package queryengine
 package monad
 
-import sc.pardis.annotations.{ deep, noImplementation, needsCircular, dontLift, needs, reflect, pure }
+import sc.pardis.annotations.{ deep, noImplementation, needsCircular, dontLift, needs, reflect, pure, transformation }
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
 import push.MultiMap
 import scala.collection.mutable.MultiMap
@@ -11,6 +11,8 @@ import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.TreeSet
 import scala.language.implicitConversions
 
+// @reflect[Query[_]]
+// @transformation
 abstract class QueryCPS[T] {
   @pure def map[S](f: T => S): QueryCPS[S] = (k: S => Unit) => {
     foreach(e => k(f(e)))
@@ -38,12 +40,12 @@ abstract class QueryCPS[T] {
     num.div(sum, num.fromInt(count))
   @pure def groupBy[K](par: T => K): GroupedQueryCPS[K, T] =
     new GroupedQueryCPS(this, par)
-  // @pure def filteredGroupBy[K](pred: T => Boolean, par: T => K): GroupedQuery[K, T] =
-  //   new GroupedQuery(underlying.filter(pred).groupBy(par))
+  @pure def filteredGroupBy[K](pred: T => Boolean, par: T => K): GroupedQueryCPS[K, T] =
+    filter(pred).groupBy(par)
   // def groupByMapValues[K, S](par: T => K)(f: Query[T] => S): Query[(K, T)] = {
   //   groupBy(par).mapValues(f)
   // }
-  @pure def sortBy[S](f: T => S)(implicit ord: Ordering[S]): QueryCPS[T] = (k: T => Unit) => {
+  @dontLift def sortBy[S](f: T => S)(implicit ord: Ordering[S]): QueryCPS[T] = (k: T => Unit) => {
     val sortedTree = new TreeSet()(
       new Ordering[T] {
         def compare(o1: T, o2: T) = ord.compare(f(o1), f(o2))
@@ -84,10 +86,10 @@ abstract class QueryCPS[T] {
 
 object QueryCPS {
   // def apply[T](underlying: List[T]): QueryCPS[T] = new Query(underlying)
-  def apply[T](underlying: Array[T]): QueryCPS[T] = (k: T => Unit) => {
+  @dontLift def apply[T](underlying: Array[T]): QueryCPS[T] = (k: T => Unit) => {
     underlying.foreach(k)
   }
-  implicit def apply[T](k: (T => Unit) => Unit): QueryCPS[T] = new QueryCPS[T] {
+  @dontLift implicit def apply[T](k: (T => Unit) => Unit): QueryCPS[T] = new QueryCPS[T] {
     def foreach(f: T => Unit): Unit = k(f)
   }
 }
