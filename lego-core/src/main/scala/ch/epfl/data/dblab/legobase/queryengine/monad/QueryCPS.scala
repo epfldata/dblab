@@ -11,24 +11,27 @@ import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.TreeSet
 import scala.language.implicitConversions
 
-abstract class QueryCPS[T] { self =>
+abstract class QueryCPS[T] {
   @pure def map[S](f: T => S): QueryCPS[S] = (k: S => Unit) => {
     foreach(e => k(f(e)))
   }
   @pure def filter(p: T => Boolean): QueryCPS[T] = (k: T => Unit) => {
     foreach(e => if (p(e)) k(e))
   }
-  // @pure def foldLeft[S](z: S)(f: (S, T) => S): S =
-  //   underlying.foldLeft(z)(f)
+  @pure def foldLeft[S](z: S)(f: (S, T) => S): S = {
+    var res = z
+    foreach(e => res = f(res, e))
+    res
+  }
   def foreach(f: T => Unit): Unit
   @pure def sum(implicit num: Numeric[T]): T = {
     var res = num.zero
-    self.foreach(e => res = num.plus(res, e))
+    foreach(e => res = num.plus(res, e))
     res
   }
   @pure def count: Int = {
     var size = 0
-    self.foreach(e => size += 1)
+    foreach(e => size += 1)
     size
   }
   @pure def avg(implicit num: Fractional[T]): T =
@@ -45,7 +48,7 @@ abstract class QueryCPS[T] { self =>
       new Ordering[T] {
         def compare(o1: T, o2: T) = ord.compare(f(o1), f(o2))
       })
-    self.foreach(e => sortedTree += e)
+    foreach(e => sortedTree += e)
     while (sortedTree.size != 0) {
       val elem = sortedTree.head
       sortedTree -= elem
@@ -58,7 +61,7 @@ abstract class QueryCPS[T] { self =>
 
   @pure def take(i: Int): QueryCPS[T] = (k: T => Unit) => {
     var count = 0
-    self.foreach(e => {
+    foreach(e => {
       if (count < i) {
         k(e)
         count += 1
@@ -105,21 +108,19 @@ class JoinableQueryCPS[T <: Record](private val underlying: QueryCPS[T]) {
     }
   }
 
-  // def leftHashSemiJoin[S <: Record, R](q2: Query[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): Query[T] = {
-  //   val res = ArrayBuffer[T]()
-  //   val hm = MultiMap[R, S]
-  //   for (elem <- q2.getList) {
-  //     hm.addBinding(rightHash(elem), elem)
-  //   }
-  //   for (elem <- underlying) {
-  //     val k = leftHash(elem)
-  //     hm.get(k) foreach { tmpBuffer =>
-  //       if (tmpBuffer.exists(bufElem => joinCond(elem, bufElem)))
-  //         res += elem
-  //     }
-  //   }
-  //   new Query(res.toList)
-  // }
+  def leftHashSemiJoin[S <: Record, R](q2: Query[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): QueryCPS[T] = (k: T => Unit) => {
+    val hm = MultiMap[R, S]
+    for (elem <- q2) {
+      hm.addBinding(rightHash(elem), elem)
+    }
+    for (elem <- underlying) {
+      val key = leftHash(elem)
+      hm.get(key) foreach { tmpBuffer =>
+        if (tmpBuffer.exists(bufElem => joinCond(elem, bufElem)))
+          k(elem)
+      }
+    }
+  }
 }
 
 class GroupedQueryCPS[K, V](underlying: QueryCPS[V], par: V => K) {
