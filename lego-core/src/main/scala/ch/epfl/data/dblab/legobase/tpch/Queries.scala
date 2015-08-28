@@ -16,6 +16,7 @@ import GenericEngine._
 import storagemanager._
 import queryengine.monad.Query
 // import queryengine.monad.{ QueryOptimized => Query }
+// import queryengine.monad.{ QueryCPS => Query }
 
 @metadeep(
   folder = "",
@@ -66,7 +67,7 @@ object Queries {
 
   def Q1_functional(numRuns: Int) {
     // def Q1(numRuns: Int) {
-    val lineitemTable = new Query(loadLineitem())
+    val lineitemTable = Query(loadLineitem())
     for (i <- 0 until numRuns) {
       runQuery {
         val constantDate: Int = parseDate("1998-09-02")
@@ -159,11 +160,11 @@ object Queries {
   }
 
   def Q2_functional(numRuns: Int) {
-    val partTable = new Query(loadPart())
-    val partsuppTable = new Query(loadPartsupp())
-    val nationTable = new Query(loadNation())
-    val regionTable = new Query(loadRegion())
-    val supplierTable = new Query(loadSupplier())
+    val partTable = Query(loadPart())
+    val partsuppTable = Query(loadPartsupp())
+    val nationTable = Query(loadNation())
+    val regionTable = Query(loadRegion())
+    val supplierTable = Query(loadSupplier())
     for (i <- 0 until numRuns) {
       runQuery {
         val africa = parseString("AFRICA")
@@ -254,9 +255,9 @@ object Queries {
   }
 
   def Q3_functional(numRuns: Int) {
-    val lineitemTable = new Query(loadLineitem())
-    val ordersTable = new Query(loadOrders())
-    val customerTable = new Query(loadCustomer())
+    val lineitemTable = Query(loadLineitem())
+    val ordersTable = Query(loadOrders())
+    val customerTable = Query(loadCustomer())
     for (i <- 0 until numRuns) {
       runQuery {
         val constantDate = parseDate("1995-03-04")
@@ -305,8 +306,8 @@ object Queries {
   }
 
   def Q4_functional(numRuns: Int) {
-    val lineitemTable = new Query(loadLineitem())
-    val ordersTable = new Query(loadOrders())
+    val lineitemTable = Query(loadLineitem())
+    val ordersTable = Query(loadOrders())
     for (i <- 0 until numRuns) {
       runQuery({
         val constantDate1: Int = parseDate("1993-11-01")
@@ -370,12 +371,12 @@ object Queries {
   }
 
   def Q5_functional(numRuns: Int) {
-    val nationTable = new Query(loadNation())
-    val regionTable = new Query(loadRegion())
-    val supplierTable = new Query(loadSupplier())
-    val lineitemTable = new Query(loadLineitem())
-    val ordersTable = new Query(loadOrders())
-    val customerTable = new Query(loadCustomer())
+    val nationTable = Query(loadNation())
+    val regionTable = Query(loadRegion())
+    val supplierTable = Query(loadSupplier())
+    val lineitemTable = Query(loadLineitem())
+    val ordersTable = Query(loadOrders())
+    val customerTable = Query(loadCustomer())
 
     for (i <- 0 until numRuns) {
       runQuery({
@@ -448,7 +449,7 @@ object Queries {
   }
 
   def Q6_functional(numRuns: Int) {
-    val lineitemTable = new Query(loadLineitem())
+    val lineitemTable = Query(loadLineitem())
     for (i <- 0 until numRuns) {
       runQuery {
         val constantDate1: Int = parseDate("1996-01-01")
@@ -709,8 +710,8 @@ object Queries {
   }
 
   def Q12_functional(numRuns: Int) {
-    val lineitemTable = new Query(loadLineitem())
-    val ordersTable = new Query(loadOrders())
+    val lineitemTable = Query(loadLineitem())
+    val ordersTable = Query(loadOrders())
     for (i <- 0 until numRuns) {
       runQuery({
         val mail = parseString("MAIL")
@@ -804,8 +805,8 @@ object Queries {
   }
 
   def Q14_functional(numRuns: Int) {
-    val lineitemTable = new Query(loadLineitem())
-    val partTable = new Query(loadPart())
+    val lineitemTable = Query(loadLineitem())
+    val partTable = Query(loadPart())
     for (i <- 0 until numRuns) {
       runQuery({
         val promo = parseString("PROMO")
