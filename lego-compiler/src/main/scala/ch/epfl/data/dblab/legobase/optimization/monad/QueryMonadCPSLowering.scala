@@ -28,6 +28,13 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
     def filter(p: Rep[T] => Rep[Boolean]): QueryCPS[T] = (k: Rep[T] => Rep[Unit]) => {
       foreach(e => __ifThenElse(p(e), k(e), unit()))
     }
+    def count: Rep[Int] = {
+      val size = __newVarNamed[Int](unit(0), "size")
+      foreach(e => {
+        __assign(size, readVar(size) + unit(1))
+      })
+      readVar(size)
+    }
   }
 
   object QueryCPS {
@@ -46,10 +53,24 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
 
   val cpsMap = mutable.Map[Rep[Any], QueryCPS[Any]]()
 
-  rewrite += removeStatement {
+  rewrite += statement {
     case sym -> QueryNew2(array) =>
       val cps = QueryCPS(array)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
       cpsMap += sym -> cps
-      ()
+      sym
+  }
+
+  rewrite += statement {
+    case sym -> QueryFilter(monad, p) =>
+      val Def(Lambda(pred, _, _)) = p
+      val cps = monad.filter(pred)
+      cpsMap += sym -> cps
+      // System.out.println(s"$sym -> $cps added to map")
+      sym
+  }
+
+  rewrite += rule {
+    case QueryCount(monad) =>
+      queryToCps(monad).count
   }
 }
