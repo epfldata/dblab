@@ -75,7 +75,9 @@ class LegoCompiler(val DSL: LegoBaseExp,
   pipeline += PartiallyEvaluate
 
   if (settings.queryMonadLowering) {
-    pipeline += new QueryMonadOptimization(settings)
+    if (settings.queryMonadOptimization) {
+      pipeline += new QueryMonadOptimization(settings)
+    }
     pipeline += DCE
     if (settings.queryMonadCPS) {
       pipeline += new QueryMonadCPSLowering(schema, DSL)

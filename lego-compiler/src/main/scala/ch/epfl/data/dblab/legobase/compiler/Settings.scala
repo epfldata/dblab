@@ -70,6 +70,7 @@ class Settings(val args: List[String]) {
     CCodeGeneration
   def queryMonadLowering: Boolean = hasSetting(QueryMonadLoweringSetting)
   def queryMonadCPS: Boolean = hasSetting(QueryMonadCPSSetting)
+  def queryMonadOptimization: Boolean = hasSetting(QueryMonadOptSetting)
   def queryMonadHoisting: Boolean = hasSetting(QueryMonadHoistingSetting)
 
   def queryName: String = args(2)
@@ -105,6 +106,7 @@ object Settings {
     ScalaCGSetting,
     QueryMonadLoweringSetting,
     QueryMonadCPSSetting,
+    QueryMonadOptSetting,
     ForceFieldRemovalSetting,
     QueryMonadHoistingSetting)
 }
@@ -204,6 +206,8 @@ case object QueryMonadLoweringSetting extends OptimizationSetting("monad-lowerin
   "Enables Query Monad Lowering")
 case object QueryMonadCPSSetting extends OptimizationSetting("monad-cps",
   "Enables Query Monad CPS Lowering")
+case object QueryMonadOptSetting extends OptimizationSetting("monad-opt",
+  "Enables Query Monad Optimizations")
 case object ForceFieldRemovalSetting extends OptimizationSetting("force-field-removal",
   "Enables Field Removal")
 case object QueryMonadHoistingSetting extends OptimizationSetting("monad-hoist",
