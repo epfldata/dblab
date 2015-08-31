@@ -36,6 +36,14 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
       })
       readVar(size)
     }
+    def sum: Rep[T] = {
+      assert(typeRep[T] == DoubleType)
+      val sumResult = __newVarNamed[Double](unit(0.0), "sumResult")
+      foreach(elem => {
+        __assign(sumResult, readVar(sumResult) + elem.asInstanceOf[Rep[Double]])
+      })
+      readVar(sumResult).asInstanceOf[Rep[T]]
+    }
     def leftHashSemiJoin2[S: TypeRep, R: TypeRep](q2: QueryCPS[S])(leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryCPS[T] = (k: Rep[T] => Rep[Unit]) => {
       val hm = __newMultiMap[R, S]()
       for (elem <- q2) {
@@ -105,9 +113,22 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
       sym
   }
 
+  rewrite += statement {
+    case sym -> QueryMap(monad, f) =>
+      val Def(Lambda(func, _, _)) = f
+      val cps = monad.map(func)(f.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
+      cpsMap += sym -> cps
+      sym
+  }
+
   rewrite += rule {
     case QueryCount(monad) =>
       queryToCps(monad).count
+  }
+
+  rewrite += rule {
+    case QuerySum(monad) =>
+      queryToCps(monad).sum
   }
 
   rewrite += remove {
