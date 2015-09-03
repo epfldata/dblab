@@ -40,7 +40,7 @@ class QueryMonadCPSLoweringTest extends FlatSpec with ShouldMatchers {
     pipeline(IR)(block)
   }
 
-  "cps lowering filter" should "work" in {
+  "cps lowering filter leftHashSemiJoin" should "work" in {
     val exp = {
       IR.reifyBlock {
         val lineitemArray = {
@@ -49,7 +49,10 @@ class QueryMonadCPSLoweringTest extends FlatSpec with ShouldMatchers {
         }
 
         dsl"""
-        Query($lineitemArray).filter(_.L_ORDERKEY == 1).count
+        val l1 = Query($lineitemArray).filter(_.L_ORDERKEY == 1)
+        val l2 = Query($lineitemArray)
+        val l3 = l1.leftHashSemiJoin(l2)(_.L_ORDERKEY)(_.L_ORDERKEY)(_.L_ORDERKEY == _.L_ORDERKEY)
+        l3.count
         """
       }
     }
