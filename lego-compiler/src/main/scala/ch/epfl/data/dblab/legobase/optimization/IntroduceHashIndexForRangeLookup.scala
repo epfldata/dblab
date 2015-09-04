@@ -58,6 +58,11 @@ import quasi._
  *      }
  * }}}
  *
+ * Precondition:
+ * 1) The array that will be partitioned should not be an intermediate array. In
+ * other words, it should be an array which is created while scanning a relation
+ * from an input source (e.g. csv file).
+ *
  * @param IR the polymorphic embedding trait which contains the reified program.
  * @param schema the schema information
  */

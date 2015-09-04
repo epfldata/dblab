@@ -66,6 +66,11 @@ import scala.collection.mutable
  *      }
  * }}}
  *
+ * Precondition:
+ * 1) The array that is partitioned should not be an intermediate array. In other words,
+ * it should be an array which is created while scanning a relation from an input source
+ * (e.g. csv file).
+ *
  * In the given example, three loops (2 while loops + 1 foreach) are converted
  * into a single loop (1 while loop).
  *
