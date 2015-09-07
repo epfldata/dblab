@@ -49,6 +49,25 @@ class Query[T](private val underlying: List[T]) {
     underlying.minBy(f)
 
   @pure def getList: List[T] = underlying
+
+  def printRows(printFunc: T => Unit, limit: Int = -1): Unit = {
+    var rows = 0
+    if (limit == -1) {
+      for (e <- this) {
+        // printf(format, elems.map(_(e)): _*)
+        printFunc(e)
+        rows += 1
+      }
+    } else {
+      while (rows < limit && rows < underlying.size) {
+        val e = underlying(rows)
+        // printf(format, elems.map(_(e)): _*)
+        printFunc(e)
+        rows += 1
+      }
+    }
+    printf("(%d rows)\n", rows)
+  }
 }
 
 object Query {
