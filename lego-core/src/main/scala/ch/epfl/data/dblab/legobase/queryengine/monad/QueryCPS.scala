@@ -81,6 +81,25 @@ abstract class QueryCPS[T] {
     minResult
   }
 
+  def printRows(printFunc: T => Unit, limit: Int = -1): Unit = {
+    var rows = 0
+    if (limit == -1) {
+      for (e <- this) {
+        // printf(format, elems.map(_(e)): _*)
+        printFunc(e)
+        rows += 1
+      }
+    } else {
+      for (e <- this) {
+        if (rows < limit) {
+          printFunc(e)
+          rows += 1
+        }
+      }
+    }
+    printf("(%d rows)\n", rows)
+  }
+
   // @pure def getList: List[T] = ???
 }
 
