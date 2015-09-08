@@ -107,11 +107,14 @@ object Queries {
           // })
           .sortBy(t =>
             t._1.L_RETURNFLAG.toInt * 128 + t._1.L_LINESTATUS.toInt)
-        result.foreach(kv =>
+        // result.printRows("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n",
+        //   _._1.L_RETURNFLAG, _._1.L_LINESTATUS, _._2.apply(1), _._2.apply(2), _._2.apply(3), _._2.apply(4),
+        //   _._2.apply(6), _._2.apply(7), _._2.apply(8), _._2.apply(5))()
+        result.printRows(kv => {
           printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n",
             kv._1.L_RETURNFLAG, kv._1.L_LINESTATUS, kv._2.apply(1), kv._2.apply(2), kv._2.apply(3), kv._2.apply(4),
-            kv._2.apply(6), kv._2.apply(7), kv._2.apply(8), kv._2.apply(5)))
-        printf("(%d rows)\n", result.count)
+            kv._2.apply(6), kv._2.apply(7), kv._2.apply(8), kv._2.apply(5))
+        })
       }
     }
   }
@@ -199,14 +202,20 @@ object Queries {
         //     res
         //   }
         // })
-        var rows = 0
-        so.take(100).foreach { e =>
+        // var rows = 0
+        // so.take(100).foreach { e =>
+        //   val kv = e._2
+        //   printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL[Double], (kv.S_NAME[LBString]).string, (kv.N_NAME[LBString]).string, kv.P_PARTKEY[Int], (kv.P_MFGR[LBString]).string, (kv.S_ADDRESS[LBString]).string, (kv.S_PHONE[LBString]).string, (kv.S_COMMENT[LBString]).string)
+        //   rows += 1
+        // }
+        // val resultRows = rows
+        // printf("(%d rows)\n", resultRows)
+        // so.printRows("%.2f|%s|%s|%d|%s|%s|%s|%s\n", _._2.S_ACCTBAL[Double], _._2.S_NAME[LBString].string, _._2.N_NAME[LBString].string, _._2.P_PARTKEY[Int],
+        //   _._2.P_MFGR[LBString].string, _._2.S_ADDRESS[LBString].string, _._2.S_PHONE[LBString].string, _._2.S_COMMENT[LBString].string)(100)
+        so.printRows(e => {
           val kv = e._2
           printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL[Double], (kv.S_NAME[LBString]).string, (kv.N_NAME[LBString]).string, kv.P_PARTKEY[Int], (kv.P_MFGR[LBString]).string, (kv.S_ADDRESS[LBString]).string, (kv.S_PHONE[LBString]).string, (kv.S_COMMENT[LBString]).string)
-          rows += 1
-        }
-        val resultRows = rows
-        printf("(%d rows)\n", resultRows)
+        })
         // val po = new PrintOp(so)(e => {
         //   val kv = e.wnd
         //   printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL[Double], (kv.S_NAME[LBString]).string, (kv.N_NAME[LBString]).string, kv.P_PARTKEY[Int], (kv.P_MFGR[LBString]).string, (kv.S_ADDRESS[LBString]).string, (kv.S_PHONE[LBString]).string, (kv.S_COMMENT[LBString]).string)
@@ -270,13 +279,15 @@ object Queries {
         val aggOp = jo2.groupBy(x => new Q3GRPRecord(x.L_ORDERKEY[Int], x.O_ORDERDATE[Int], x.O_SHIPPRIORITY[Int])).mapValues(_.map(t => (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))).sum)
         val sortOp = aggOp.sortBy(x => (-x._2, x._1.O_ORDERDATE))
         var rows = 0
-        sortOp.take(10).foreach(e => {
-          printf("%d|%.4f|%s|%d\n", e._1.L_ORDERKEY, e._2, dateToString(e._1.O_ORDERDATE), e._1.O_SHIPPRIORITY)
-          rows += 1
-        })
-        // there's an unknown bug (with the inference of IntType TypeRep) which needs the next line
-        val resultRows = rows
-        printf("(%d rows)\n", resultRows)
+        // sortOp.take(10).foreach(e => {
+        //   printf("%d|%.4f|%s|%d\n", e._1.L_ORDERKEY, e._2, dateToString(e._1.O_ORDERDATE), e._1.O_SHIPPRIORITY)
+        //   rows += 1
+        // })
+        // // there's an unknown bug (with the inference of IntType TypeRep) which needs the next line
+        // val resultRows = rows
+        sortOp.printRows(e =>
+          printf("%d|%.4f|%s|%d\n", e._1.L_ORDERKEY, e._2, dateToString(e._1.O_ORDERDATE), e._1.O_SHIPPRIORITY), 10)
+        // printf("(%d rows)\n", resultRows)
       }
     }
   }
@@ -317,14 +328,16 @@ object Queries {
         val hj = scanOrders.leftHashSemiJoin(scanLineitem)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
         val aggRes = hj.groupBy(x => x.O_ORDERPRIORITY).mapValues(_.count)
         val sortOp = aggRes.sortBy(_._1.string)
-        var rows = 0
-        sortOp.foreach { kv =>
-          printf("%s|%d\n", kv._1.string, kv._2)
-          rows += 1
-        }
-        // there's an unknown bug (with the inference of IntType TypeRep) which needs the next line
-        val resultRows = rows
-        printf("(%d rows)\n", resultRows)
+        // var rows = 0
+        // sortOp.foreach { kv =>
+        //   printf("%s|%d\n", kv._1.string, kv._2)
+        //   rows += 1
+        // }
+        // // there's an unknown bug (with the inference of IntType TypeRep) which needs the next line
+        // val resultRows = rows
+        // printf("(%d rows)\n", resultRows)
+        sortOp.printRows(kv =>
+          printf("%s|%d\n", kv._1.string, kv._2))
       })
     }
   }
@@ -416,14 +429,16 @@ object Queries {
         //   else 0
         // })
         // val po = new PrintOp(sortOp)(kv => { printf("%s|%.4f\n", kv.key.string, kv.aggs(0)) }, -1)
-        var rows = 0
-        sortOp.foreach(kv => {
-          printf("%s|%.4f\n", kv._1.string, kv._2)
-          rows += 1
-        })
-        // there's an unknown bug (with the inference of IntType TypeRep) which needs the next line
-        val resultRows = rows
-        printf("(%d rows)\n", resultRows)
+        // var rows = 0
+        // sortOp.foreach(kv => {
+        //   printf("%s|%.4f\n", kv._1.string, kv._2)
+        //   rows += 1
+        // })
+        // // there's an unknown bug (with the inference of IntType TypeRep) which needs the next line
+        // val resultRows = rows
+        // printf("(%d rows)\n", resultRows)
+        sortOp.printRows(kv =>
+          printf("%s|%.4f\n", kv._1.string, kv._2))
         // po.open
         // po.next
         ()
@@ -727,13 +742,15 @@ object Queries {
           Array(list.filter(t => t.O_ORDERPRIORITY[LBString] === URGENT || t.O_ORDERPRIORITY[LBString] === HIGH).count,
             list.filter(t => t.O_ORDERPRIORITY[LBString] =!= URGENT && t.O_ORDERPRIORITY[LBString] =!= HIGH).count))
         val sortOp = aggOp.sortBy(_._1.string)
-        var rows = 0
-        sortOp.foreach(kv => {
-          printf("%s|%d|%d\n", kv._1.string, kv._2(0), kv._2(1))
-          rows += 1
-        })
-        val resultRows = rows
-        printf("(%d rows)\n", resultRows)
+        // var rows = 0
+        // sortOp.foreach(kv => {
+        //   printf("%s|%d|%d\n", kv._1.string, kv._2(0), kv._2(1))
+        //   rows += 1
+        // })
+        // val resultRows = rows
+        // printf("(%d rows)\n", resultRows)
+        sortOp.printRows(kv =>
+          printf("%s|%d|%d\n", kv._1.string, kv._2(0), kv._2(1)))
       })
     }
   }
