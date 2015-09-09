@@ -81,6 +81,20 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
       }
     }
 
+    def minBy[S: TypeRep](by: Rep[T => S]): Rep[T] = {
+      val minResult = __newVarNamed[T](unit(null).asInstanceOf[Rep[T]], "minResult")
+      def compare(x: Rep[T], y: Rep[T]): Rep[Int] =
+        QML.ordering_minus(inlineFunction(by, x), inlineFunction(by, y))
+      foreach((elem: Rep[T]) => {
+        __ifThenElse((readVar(minResult) __== unit(null)) || compare(elem, readVar(minResult)) < unit(0), {
+          __assign(minResult, elem)
+        }, {
+          unit()
+        })
+      })
+      readVar(minResult)
+    }
+
     def sortBy[S: TypeRep](sortFunction: Rep[T => S]): QueryCPS[T] = (k: Rep[T] => Rep[Unit]) => {
       // TODO generalize
       val treeSet = __newTreeSet2(Ordering[T](__lambda { (x, y) =>
@@ -245,6 +259,11 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
       val cps = monad.sortBy(f)(f.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
       cpsMap += sym -> cps
       sym
+  }
+
+  rewrite += rule {
+    case QueryMinBy(monad, by) =>
+      queryToCps(monad).minBy(by)(by.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
   }
 
   rewrite += rule {
