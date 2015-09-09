@@ -17,14 +17,25 @@ import scala.collection.mutable
 /**
  * Lowers query monad operations using continuation-passing style.
  */
-class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) extends RuleBasedTransformer[LegoBaseExp](IR) with StructCollector[LegoBaseExp] {
+class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) extends RuleBasedTransformer[LegoBaseExp](IR) with StructProcessing[LegoBaseExp] {
   import IR._
+
+  val QML = new QueryMonadLowering(schema, IR)
 
   abstract class QueryCPS[T: TypeRep] {
     val tp = typeRep[T]
     def foreach(k: Rep[T] => Rep[Unit]): Rep[Unit]
     def map[S: TypeRep](f: Rep[T] => Rep[S]): QueryCPS[S] = (k: Rep[S] => Rep[Unit]) => {
       foreach(e => k(f(e)))
+    }
+    def take(num: Rep[Int]): QueryCPS[T] = (k: Rep[T] => Rep[Unit]) => {
+      val counter = __newVarNamed[Int](unit(0), "counter")
+      foreach(e => __ifThenElse(readVar(counter) < num,
+        {
+          k(e)
+          __assign(counter, readVar(counter) + unit(1))
+        },
+        unit()))
     }
     def filter(p: Rep[T] => Rep[Boolean]): QueryCPS[T] = (k: Rep[T] => Rep[Unit]) => {
       foreach(e => __ifThenElse(p(e), k(e), unit()))
@@ -71,10 +82,9 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
     }
 
     def sortBy[S: TypeRep](sortFunction: Rep[T => S]): QueryCPS[T] = (k: Rep[T] => Rep[Unit]) => {
-      val qml = new QueryMonadLowering(schema, IR)
       // TODO generalize
       val treeSet = __newTreeSet2(Ordering[T](__lambda { (x, y) =>
-        qml.ordering_minus(inlineFunction(sortFunction, x), inlineFunction(sortFunction, y))
+        QML.ordering_minus(inlineFunction(sortFunction, x), inlineFunction(sortFunction, y))
       }))
       foreach((elem: Rep[T]) => {
         treeSet += elem
@@ -85,6 +95,34 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
         treeSet -= elem
         k(elem)
       })
+    }
+
+    def hashJoin2[S: TypeRep, R: TypeRep, Res: TypeRep](q2: QueryCPS[S])(leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryCPS[Res] = (k: Rep[Res] => Rep[Unit]) => {
+      assert(typeRep[Res].isInstanceOf[RecordType[_]])
+      // val res = __newArray[Res](maxSize)(concat_types[T, S, Res])
+      // val counter = __newVar[Int](unit(0))
+      val hm = __newMultiMap[R, T]()
+      // System.out.println(concat_types[T, S, Res])
+      foreach((elem: Rep[T]) => {
+        hm.addBinding(leftHash(elem), elem)
+      })
+      q2.foreach((elem: Rep[S]) => {
+        val key = rightHash(elem)
+        hm.get(key) foreach {
+          __lambda { tmpBuffer =>
+            tmpBuffer foreach {
+              __lambda { bufElem =>
+                __ifThenElse(joinCond(bufElem, elem), {
+                  // res(readVar(counter)) = //bufElem.asInstanceOf[Rep[Record]].concatenateDynamic(elem.asInstanceOf[Rep[Record]])(elem.tp.asInstanceOf[TypeRep[Record]]).asInstanceOf[Rep[Res]]
+                  k(concat_records[T, S, Res](bufElem, elem))
+                  // __assign(counter, readVar(counter) + unit(1))
+                }, unit())
+              }
+            }
+          }
+        }
+      })
+      // res.dropRight(maxSize - readVar(counter))
     }
 
     def groupByMapValues[K: TypeRep, S: TypeRep](par: Rep[T => K], pred: Option[Rep[T => Boolean]])(func: Rep[Array[T] => S]): QueryCPS[(K, S)] = (k: (Rep[(K, S)]) => Rep[Unit]) => {
@@ -224,6 +262,13 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
       queryToCps(monad).sum
   }
 
+  rewrite += statement {
+    case sym -> QueryTake(monad, num) =>
+      val cps = queryToCps(monad).take(num)
+      cpsMap += sym -> cps
+      sym
+  }
+
   rewrite += remove {
     case JoinableQueryNew(joinMonad) => apply(joinMonad)
   }
@@ -245,6 +290,20 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
     }
   }
 
+  rewrite += statement {
+    case sym -> JoinableQueryHashJoin(monad1, monad2, leftHash, rightHash, joinCond) => {
+      val Def(JoinableQueryNew(Def(QueryGetList(m1)))) = monad1
+      val Def(Lambda(lh, _, _)) = leftHash
+      val Def(Lambda(rh, _, _)) = rightHash
+      val Def(Lambda2(jc, _, _, _)) = joinCond
+      val cps = m1.hashJoin2(monad2)(lh)(rh)(jc)(monad2.tp.typeArguments(0).asInstanceOf[TypeRep[Record]],
+        leftHash.tp.typeArguments(1).asInstanceOf[TypeRep[Any]],
+        sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
+      cpsMap += sym -> cps.asInstanceOf[QueryCPS[Any]]
+      sym
+    }
+  }
+
   val mapValuesFuncs = scala.collection.mutable.ArrayBuffer[Rep[Query[Any] => Any]]()
 
   analysis += statement {
@@ -254,7 +313,7 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
   }
 
   rewrite += removeStatement {
-    case (sym -> _) if mapValuesFuncs.contains(sym) =>
+    case (sym -> Lambda(_, _, _)) if mapValuesFuncs.contains(sym) =>
       ()
   }
 
