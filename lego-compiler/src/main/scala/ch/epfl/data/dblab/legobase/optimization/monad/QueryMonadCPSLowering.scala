@@ -70,6 +70,23 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
       }
     }
 
+    def sortBy[S: TypeRep](sortFunction: Rep[T => S]): QueryCPS[T] = (k: Rep[T] => Rep[Unit]) => {
+      val qml = new QueryMonadLowering(schema, IR)
+      // TODO generalize
+      val treeSet = __newTreeSet2(Ordering[T](__lambda { (x, y) =>
+        qml.ordering_minus(inlineFunction(sortFunction, x), inlineFunction(sortFunction, y))
+      }))
+      foreach((elem: Rep[T]) => {
+        treeSet += elem
+        unit()
+      })
+      Range(unit(0), treeSet.size).foreach(__lambda { i =>
+        val elem = treeSet.head
+        treeSet -= elem
+        k(elem)
+      })
+    }
+
     def groupByMapValues[K: TypeRep, S: TypeRep](par: Rep[T => K], pred: Option[Rep[T => Boolean]])(func: Rep[Array[T] => S]): QueryCPS[(K, S)] = (k: (Rep[(K, S)]) => Rep[Unit]) => {
       type V = T
       def sizeByCardinality: Int = schema.stats.getCardinalityOrElse(typeRep[K].name, 8).toInt
@@ -183,6 +200,13 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
       val Def(Lambda(func, _, _)) = f
       val cps = monad.foreach(func)
       cps
+  }
+
+  rewrite += statement {
+    case sym -> QuerySortBy(monad, f) =>
+      val cps = monad.sortBy(f)(f.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
+      cpsMap += sym -> cps
+      sym
   }
 
   rewrite += rule {
