@@ -36,6 +36,12 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
       })
       readVar(size)
     }
+
+    def avg: Rep[T] = {
+      assert(typeRep[T] == DoubleType)
+      (sum.asInstanceOf[Rep[Double]] / count).asInstanceOf[Rep[T]]
+    }
+
     def sum: Rep[T] = {
       assert(typeRep[T] == DoubleType)
       val sumResult = __newVarNamed[Double](unit(0.0), "sumResult")
@@ -64,18 +70,68 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
       }
     }
 
-    // def groupByMapValues[K: TypeRep, S: TypeRep](par: Rep[T] => Rep[K])(f: QueryCPS[V] => Rep[S]): QueryCPS[(K, S)] = (k: (Rep[(K, S)]) => Rep[Unit]) => {
-    // //    val hm = __newMultiMap[K, T]()
-    // // for (elem <- this) {
-    // //   hm.addBinding(par(elem), elem)
-    // // }
-    // // hm.foreach {
-    // //   case (key, set) =>
-    // //     val value = f(QueryCPS(set.asInstanceOf[scala.collection.mutable.HashSet[Any]].toArray.asInstanceOf[Array[V]]))
-    // //     k((key, value))
-    // // }
-    // ???
-    // }
+    def groupByMapValues[K: TypeRep, S: TypeRep](par: Rep[T => K], pred: Option[Rep[T => Boolean]])(func: Rep[Array[T] => S]): QueryCPS[(K, S)] = (k: (Rep[(K, S)]) => Rep[Unit]) => {
+      type V = T
+      def sizeByCardinality: Int = schema.stats.getCardinalityOrElse(typeRep[K].name, 8).toInt
+      val max_partitions = par match {
+        case Def(Lambda(_, i, Block(stmts, Def(StructImmutableField(struct, name))))) if i == struct && stmts.size == 1 =>
+          schema.stats.getDistinctAttrValuesOrElse(name, sizeByCardinality)
+        case _ =>
+          sizeByCardinality
+      }
+
+      System.out.println(typeRep[K] + "-" + max_partitions)
+      // val MAX_SIZE = unit(4000)
+      val MAX_SIZE = unit(max_partitions)
+      val keyIndex = __newHashMap[K, Int]()
+      val keyRevertIndex = __newArray[K](MAX_SIZE)
+      val lastIndex = __newVarNamed(unit(0), "lastIndex")
+      val array = __newArray[Array[V]](MAX_SIZE)
+      // TODO generalize
+      schema.stats += "QS_MEM_ARRAY_LINEITEM" -> 4
+      schema.stats += "QS_MEM_ARRAY_DOUBLE" -> 4
+      val eachBucketSize = __newArray[Int](MAX_SIZE)
+      val arraySize = this.count / MAX_SIZE * unit(4)
+      Range(unit(0), MAX_SIZE).foreach {
+        __lambda { i =>
+          // val arraySize = originalArray.length
+          // val arraySize = unit(128)
+          array(i) = __newArray[V](arraySize)
+          eachBucketSize(i) = unit(0)
+        }
+      }
+
+      // printf(unit("start!"))
+      foreach((elem: Rep[V]) => {
+        // val key = par(elem)
+        val cond = pred.map(p => inlineFunction(p, elem)).getOrElse(unit(true))
+        __ifThenElse(cond, {
+          val key = inlineFunction(par, elem)
+          val bucket = keyIndex.getOrElseUpdate(key, {
+            keyRevertIndex(readVar(lastIndex)) = key
+            __assign(lastIndex, readVar(lastIndex) + unit(1))
+            readVar(lastIndex) - unit(1)
+          })
+          array(bucket)(eachBucketSize(bucket)) = elem
+          eachBucketSize(bucket) += unit(1)
+        }, unit())
+      })
+
+      val partitions = lastIndex
+
+      Range(unit(0), partitions).foreach {
+        __lambda { i =>
+          // val arr = array_dropRight(array(i), eachBucketSize(i))
+          val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
+          // System.out.println(s"arr size ${arr.size} bucket size ${eachBucketSize(i)}")
+          val key = keyRevertIndex(i)
+          val Def(Lambda(_, input, _)) = func
+          cpsMap += input -> QueryCPS(arr).asInstanceOf[QueryCPS[Any]]
+          val newValue = inlineFunction(func, arr)
+          k(Tuple2(key, newValue))
+        }
+      }
+    }
   }
 
   object QueryCPS {
@@ -90,6 +146,7 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
   }
 
   implicit def queryToCps[T](sym: Rep[Query[T]]): QueryCPS[T] = {
+    System.out.println(s"finding cps for $sym")
     val cps = cpsMap(sym.asInstanceOf[Rep[Any]]).asInstanceOf[QueryCPS[T]]
     System.out.println(s"tp associated to sym $sym is: ${cps.tp}")
     cps
@@ -121,9 +178,21 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
       sym
   }
 
+  rewrite += statement {
+    case sym -> QueryForeach(monad, f) =>
+      val Def(Lambda(func, _, _)) = f
+      val cps = monad.foreach(func)
+      cps
+  }
+
   rewrite += rule {
     case QueryCount(monad) =>
       queryToCps(monad).count
+  }
+
+  rewrite += rule {
+    case QueryAvg(monad) =>
+      queryToCps(monad).avg
   }
 
   rewrite += rule {
@@ -152,14 +221,29 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
     }
   }
 
-  // rewrite += statement {
-  //   case sym -> GroupedQueryMapValues(groupedMonad, func) =>
-  //     val Def(QueryGroupBy(monad, par)) = groupedMonad
-  //     implicit val typeK = groupedMonad.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
-  //     implicit val typeV = groupedMonad.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-  //     implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-  //     // queryGroupByMapValues(monad, Some(pred), par, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
-  //     groupedQueryMapValues(groupedMonad, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
+  val mapValuesFuncs = scala.collection.mutable.ArrayBuffer[Rep[Query[Any] => Any]]()
 
-  // }
+  analysis += statement {
+    case sym -> GroupedQueryMapValues(groupedMonad, func) =>
+      mapValuesFuncs += func
+      ()
+  }
+
+  rewrite += removeStatement {
+    case (sym -> _) if mapValuesFuncs.contains(sym) =>
+      ()
+  }
+
+  rewrite += statement {
+    case sym -> GroupedQueryMapValues(groupedMonad, func) =>
+      val Def(QueryGroupBy(monad, par)) = groupedMonad
+      implicit val typeK = groupedMonad.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
+      implicit val typeV = groupedMonad.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
+      implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
+      // queryGroupByMapValues(monad, Some(pred), par, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
+      // groupedQueryMapValues(groupedMonad, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
+      val cps = monad.groupByMapValues(par, None)(func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeS)
+      cpsMap += sym -> cps.asInstanceOf[QueryCPS[Any]]
+      sym
+  }
 }
