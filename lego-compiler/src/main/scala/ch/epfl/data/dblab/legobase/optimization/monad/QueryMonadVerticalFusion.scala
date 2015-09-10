@@ -64,6 +64,7 @@ class QueryMonadVerticalFusion(override val IR: LegoBaseExp) extends RuleBasedTr
     // QueryCount(apply(monad))
   }
 
+  // Normalizer
   rewrite += rule {
     case QueryCount(monad) =>
       implicit val typeT = monad.tp.typeArguments(0).asInstanceOf[TypeRep[T]]
@@ -88,6 +89,7 @@ class QueryMonadVerticalFusion(override val IR: LegoBaseExp) extends RuleBasedTr
   //     })
   // }
 
+  // Creates the super operator `filteredGroupBy`
   rewrite += rule {
     case QueryGroupBy(Def(QueryFilter(monad, pred)), par) =>
 

@@ -113,6 +113,7 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
 
     def hashJoin2[S: TypeRep, R: TypeRep, Res: TypeRep](q2: QueryCPS[S])(leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryCPS[Res] = (k: Rep[Res] => Rep[Unit]) => {
       assert(typeRep[Res].isInstanceOf[RecordType[_]])
+      System.out.println(s"hashJoin called!!!")
       // val res = __newArray[Res](maxSize)(concat_types[T, S, Res])
       // val counter = __newVar[Int](unit(0))
       val hm = __newMultiMap[R, T]()
@@ -249,8 +250,7 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
 
   rewrite += statement {
     case sym -> QueryForeach(monad, f) =>
-      val Def(Lambda(func, _, _)) = f
-      val cps = monad.foreach(func)
+      val cps = queryToCps(monad).foreach(i => inlineFunction(f, i))
       cps
   }
 
@@ -289,11 +289,11 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
   }
 
   rewrite += remove {
-    case JoinableQueryNew(joinMonad) => apply(joinMonad)
+    case JoinableQueryNew(joinMonad) => ()
   }
 
   rewrite += remove {
-    case QueryGetList(monad) => apply(monad)
+    case QueryGetList(monad) => ()
   }
 
   rewrite += statement {

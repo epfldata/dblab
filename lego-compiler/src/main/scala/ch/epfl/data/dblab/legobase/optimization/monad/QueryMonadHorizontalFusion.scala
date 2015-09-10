@@ -179,8 +179,11 @@ class QueryMonadHorizontalFusion(override val IR: LegoBaseExp) extends RuleBased
         alreadyRewrittenOpsVars(sym) = v
       }
 
+      class T
+      implicit val typeT = range.tp.typeArguments(0).asInstanceOf[TypeRep[T]]
+
       // Rewrites all the horizontal loops into a single loop.
-      range.foreach {
+      range.asInstanceOf[Rep[Query[T]]].foreach {
         __lambda { i =>
           uniqueLoops.zip(variables).foreach({
             case (loop, v) =>
