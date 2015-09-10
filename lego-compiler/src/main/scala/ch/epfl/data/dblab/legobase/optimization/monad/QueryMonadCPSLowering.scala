@@ -25,8 +25,8 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
   abstract class QueryCPS[T: TypeRep] {
     val tp = typeRep[T]
     def foreach(k: Rep[T] => Rep[Unit]): Rep[Unit]
-    def map[S: TypeRep](f: Rep[T] => Rep[S]): QueryCPS[S] = (k: Rep[S] => Rep[Unit]) => {
-      foreach(e => k(f(e)))
+    def map[S: TypeRep](f: Rep[T => S]): QueryCPS[S] = (k: Rep[S] => Rep[Unit]) => {
+      foreach(e => k(inlineFunction(f, e)))
     }
     def take(num: Rep[Int]): QueryCPS[T] = (k: Rep[T] => Rep[Unit]) => {
       val counter = __newVarNamed[Int](unit(0), "counter")
@@ -37,8 +37,8 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
         },
         unit()))
     }
-    def filter(p: Rep[T] => Rep[Boolean]): QueryCPS[T] = (k: Rep[T] => Rep[Unit]) => {
-      foreach(e => __ifThenElse(p(e), k(e), unit()))
+    def filter(p: Rep[T => Boolean]): QueryCPS[T] = (k: Rep[T] => Rep[Unit]) => {
+      foreach(e => __ifThenElse(inlineFunction(p, e), k(e), unit()))
     }
     def count: Rep[Int] = {
       val size = __newVarNamed[Int](unit(0), "size")
@@ -161,7 +161,9 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
       schema.stats += "QS_MEM_ARRAY_LINEITEM" -> 4
       schema.stats += "QS_MEM_ARRAY_DOUBLE" -> 4
       val eachBucketSize = __newArray[Int](MAX_SIZE)
-      val arraySize = this.count / MAX_SIZE * unit(4)
+      // FIXME if we use .count it will regenerate the same loop until before groupBy
+      // val arraySize = this.count / MAX_SIZE * unit(4)
+      val arraySize = unit(1 << 21) / MAX_SIZE
       Range(unit(0), MAX_SIZE).foreach {
         __lambda { i =>
           // val arraySize = originalArray.length
@@ -233,8 +235,7 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
 
   rewrite += statement {
     case sym -> QueryFilter(monad, p) =>
-      val Def(Lambda(pred, _, _)) = p
-      val cps = monad.filter(pred)
+      val cps = queryToCps(monad).filter(p)
       cpsMap += sym -> cps
       // System.out.println(s"$sym -> $cps added to map")
       sym
@@ -242,8 +243,7 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
 
   rewrite += statement {
     case sym -> QueryMap(monad, f) =>
-      val Def(Lambda(func, _, _)) = f
-      val cps = monad.map(func)(f.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
+      val cps = queryToCps(monad).map(f)(f.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
       cpsMap += sym -> cps
       sym
   }
@@ -338,13 +338,16 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
 
   rewrite += statement {
     case sym -> GroupedQueryMapValues(groupedMonad, func) =>
-      val Def(QueryGroupBy(monad, par)) = groupedMonad
+      val (monad, pred, par) = groupedMonad match {
+        case Def(QueryFilteredGroupBy(monad, pred, par)) => (monad, Some(pred), par)
+        case Def(QueryGroupBy(monad, par))               => (monad, None, par)
+      }
       implicit val typeK = groupedMonad.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
       implicit val typeV = groupedMonad.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
       implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
       // queryGroupByMapValues(monad, Some(pred), par, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
       // groupedQueryMapValues(groupedMonad, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
-      val cps = monad.groupByMapValues(par, None)(func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeS)
+      val cps = monad.groupByMapValues(par, pred)(func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeS)
       cpsMap += sym -> cps.asInstanceOf[QueryCPS[Any]]
       sym
   }
