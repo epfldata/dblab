@@ -84,6 +84,7 @@ class LegoCompiler(val DSL: LegoBaseExp,
     } else {
       pipeline += new QueryMonadLowering(schema, DSL)
     }
+    pipeline += TreeDumper(true)
     pipeline += ParameterPromotion
     pipeline += DCE
     pipeline += PartiallyEvaluate
@@ -114,7 +115,7 @@ class LegoCompiler(val DSL: LegoBaseExp,
     // }
   }
 
-  pipeline += TreeDumper(true)
+  // pipeline += TreeDumper(true)
 
   if (settings.stringCompression) pipeline += new StringDictionaryTransformer(DSL, schema)
   // pipeline += TreeDumper(false)

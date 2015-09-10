@@ -139,12 +139,6 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
       arrayDropRight(array, array.length - num)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
   }
 
-  // rewrite += rule {
-  //   case QuerySortBy(monad, f) =>
-  //     val array = apply(monad).asInstanceOf[Rep[Array[Any]]]
-
-  // }
-
   rewrite += statement {
     case sym -> QueryGroupBy(monad, par) => {
       implicit val typeK = par.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
@@ -236,24 +230,6 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
     resultArray.asInstanceOf[Rep[Any]]
   }
 
-  // rewrite += rule {
-  //   case GroupedQueryMapValues(Def(QueryGroupBy(monad, par)), func) =>
-  //     implicit val typeK = par.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-  //     implicit val typeV = par.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
-  //     implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-  //     queryGroupByMapValues(monad, None, par, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
-
-  // }
-
-  // rewrite += rule {
-  //   case GroupedQueryMapValues(Def(QueryFilteredGroupBy(monad, pred, par)), func) =>
-  //     implicit val typeK = par.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-  //     implicit val typeV = par.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
-  //     implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-  //     queryGroupByMapValues(monad, Some(pred), par, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
-
-  // }
-
   rewrite += rule {
     case GroupedQueryMapValues(groupedMonad, func) =>
       implicit val typeK = groupedMonad.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
@@ -333,9 +309,7 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
   def array_sortBy[T: TypeRep, S: TypeRep](array: Rep[Array[T]], sortFunction: Rep[T => S]): Rep[Array[T]] = {
     val resultArray = __newArray[T](array.length)
     val counter = __newVarNamed[Int](unit(0), "arrayCounter")
-    // TODO generalize
     val treeSet = __newTreeSet2(Ordering[T](__lambda { (x, y) =>
-      // inlineFunction(sortFunction, x).asInstanceOf[Rep[Int]] - inlineFunction(sortFunction, y).asInstanceOf[Rep[Int]]
       ordering_minus(inlineFunction(sortFunction, x), inlineFunction(sortFunction, y))
     }))
     array_foreach(array, (elem: Rep[T]) => {
@@ -413,7 +387,7 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
           tmpBuffer foreach {
             __lambda { bufElem =>
               __ifThenElse(joinCond(bufElem, elem), {
-                res(readVar(counter)) = //bufElem.asInstanceOf[Rep[Record]].concatenateDynamic(elem.asInstanceOf[Rep[Record]])(elem.tp.asInstanceOf[TypeRep[Record]]).asInstanceOf[Rep[Res]]
+                res(readVar(counter)) =
                   concat_records[T, S, Res](bufElem, elem)
                 __assign(counter, readVar(counter) + unit(1))
               }, unit())
@@ -444,7 +418,7 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
             __lambda { bufElem =>
               joinCond(elem, bufElem)
             }), {
-            res(readVar(counter)) = //bufElem.asInstanceOf[Rep[Record]].concatenateDynamic(elem.asInstanceOf[Rep[Record]])(elem.tp.asInstanceOf[TypeRep[Record]]).asInstanceOf[Rep[Res]]
+            res(readVar(counter)) =
               elem
             __assign(counter, readVar(counter) + unit(1))
           }, unit())
@@ -466,7 +440,6 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
           arr2.tp.typeArguments(0).asInstanceOf[TypeRep[Any]],
           leftHash.tp.typeArguments(1).asInstanceOf[TypeRep[Any]],
           sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
-      // System.out.println(unit(s"$leftHash, $rightHash, $joinCond"))
     }
   }
 
@@ -481,7 +454,6 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
         joinCond.asInstanceOf[Rep[(Any, Any) => Boolean]])(arr1.tp.typeArguments(0).asInstanceOf[TypeRep[Any]],
           arr2.tp.typeArguments(0).asInstanceOf[TypeRep[Any]],
           leftHash.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
-      // System.out.println(unit(s"$leftHash, $rightHash, $joinCond"))
     }
   }
 }

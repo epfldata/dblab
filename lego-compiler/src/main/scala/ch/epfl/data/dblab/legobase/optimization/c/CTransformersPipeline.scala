@@ -7,6 +7,7 @@ import deep._
 import sc.pardis.types._
 import sc.pardis.ir._
 import sc.pardis.optimization._
+import compiler._
 
 /**
  * A pipeline of transformations necessary to lower the program into an
@@ -23,7 +24,6 @@ class CTransformersPipeline(val settings: compiler.Settings) extends Transformer
     pipeline += new GenericEngineToCTransformer(context, settings)
     pipeline += new ScalaScannerToCmmapTransformer(context, settings)
     // pipeline += new ScalaScannerToCFScanfTransformer(context)
-    // pipeline += compiler.TreeDumper(false)
     pipeline += new ScalaArrayToCCommon(context)
     if (settings.oldCArrayHandling) {
       pipeline += new ScalaArrayToCStructTransformer(context)

@@ -40,16 +40,12 @@ class QueryMonadPostHoisting(override val IR: LegoBaseExp) extends RuleBasedTran
       implicit val typeK = groupedMonad.tp.typeArguments(0).asInstanceOf[TypeRep[K]]
       implicit val typeV = groupedMonad.tp.typeArguments(1).asInstanceOf[TypeRep[V]]
       implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[S]]
-      // queryGroupByMapValues(monad, Some(pred), par, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
-      // groupedQueryMapValues(groupedMonad, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
       val QueryFilteredGroupBy(_, pred, _) = hoistedFilteredGroupBy(groupedMonad).asInstanceOf[QueryFilteredGroupBy[V, K]]
       apply(groupedMonad).asInstanceOf[Rep[GroupedQuery[K, V]]].mapValues({
         __lambda { list =>
           inlineFunction(func.asInstanceOf[Rep[Query[V] => S]], list.filter(pred))
         }
       })
-    // System.out.println(s"HERE! $pred")
-    // unit()
 
   }
 

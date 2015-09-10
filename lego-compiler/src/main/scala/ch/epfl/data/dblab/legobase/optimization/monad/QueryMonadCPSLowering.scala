@@ -50,7 +50,15 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
 
     def avg: Rep[T] = {
       assert(typeRep[T] == DoubleType)
-      (sum.asInstanceOf[Rep[Double]] / count).asInstanceOf[Rep[T]]
+      // it will generate the loops before avg two times
+      // (sum.asInstanceOf[Rep[Double]] / count).asInstanceOf[Rep[T]]
+      val sumResult = __newVarNamed[Double](unit(0.0), "sumResult")
+      val size = __newVarNamed[Int](unit(0), "size")
+      foreach(elem => {
+        __assign(sumResult, readVar(sumResult) + elem.asInstanceOf[Rep[Double]])
+        __assign(size, readVar(size) + unit(1))
+      })
+      (readVar(sumResult) / readVar(size)).asInstanceOf[Rep[T]]
     }
 
     def sum: Rep[T] = {
@@ -114,10 +122,7 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
     def hashJoin2[S: TypeRep, R: TypeRep, Res: TypeRep](q2: QueryCPS[S])(leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryCPS[Res] = (k: Rep[Res] => Rep[Unit]) => {
       assert(typeRep[Res].isInstanceOf[RecordType[_]])
       System.out.println(s"hashJoin called!!!")
-      // val res = __newArray[Res](maxSize)(concat_types[T, S, Res])
-      // val counter = __newVar[Int](unit(0))
       val hm = __newMultiMap[R, T]()
-      // System.out.println(concat_types[T, S, Res])
       foreach((elem: Rep[T]) => {
         hm.addBinding(leftHash(elem), elem)
       })
@@ -128,16 +133,13 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
             tmpBuffer foreach {
               __lambda { bufElem =>
                 __ifThenElse(joinCond(bufElem, elem), {
-                  // res(readVar(counter)) = //bufElem.asInstanceOf[Rep[Record]].concatenateDynamic(elem.asInstanceOf[Rep[Record]])(elem.tp.asInstanceOf[TypeRep[Record]]).asInstanceOf[Rep[Res]]
                   k(concat_records[T, S, Res](bufElem, elem))
-                  // __assign(counter, readVar(counter) + unit(1))
                 }, unit())
               }
             }
           }
         }
       })
-      // res.dropRight(maxSize - readVar(counter))
     }
 
     def groupByMapValues[K: TypeRep, S: TypeRep](par: Rep[T => K], pred: Option[Rep[T => Boolean]])(func: Rep[Array[T] => S]): QueryCPS[(K, S)] = (k: (Rep[(K, S)]) => Rep[Unit]) => {
@@ -237,7 +239,6 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
     case sym -> QueryFilter(monad, p) =>
       val cps = queryToCps(monad).filter(p)
       cpsMap += sym -> cps
-      // System.out.println(s"$sym -> $cps added to map")
       sym
   }
 
@@ -345,8 +346,6 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
       implicit val typeK = groupedMonad.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
       implicit val typeV = groupedMonad.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
       implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-      // queryGroupByMapValues(monad, Some(pred), par, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
-      // groupedQueryMapValues(groupedMonad, func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeV, typeS)
       val cps = monad.groupByMapValues(par, pred)(func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeS)
       cpsMap += sym -> cps.asInstanceOf[QueryCPS[Any]]
       sym
