@@ -165,7 +165,8 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
       val eachBucketSize = __newArray[Int](MAX_SIZE)
       // FIXME if we use .count it will regenerate the same loop until before groupBy
       // val arraySize = this.count / MAX_SIZE * unit(4)
-      val arraySize = unit(1 << 21) / MAX_SIZE
+      val thisSize = unit(schema.stats.getCardinalityOrElse(typeRep[T].name, 1 << 25).toInt)
+      val arraySize = thisSize / MAX_SIZE * unit(8)
       Range(unit(0), MAX_SIZE).foreach {
         __lambda { i =>
           // val arraySize = originalArray.length
@@ -211,7 +212,7 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
   object QueryCPS {
     def apply[T: TypeRep](arr: Rep[Array[T]]): QueryCPS[T] =
       QueryCPS { (k: Rep[T] => Rep[Unit]) =>
-        array_foreach(arr, k)
+        QML.array_foreach_using_while(arr, k)
       }
     implicit def apply[T: TypeRep](k: (Rep[T] => Rep[Unit]) => Rep[Unit]): QueryCPS[T] =
       new QueryCPS[T] {

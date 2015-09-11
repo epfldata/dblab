@@ -185,7 +185,7 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
     val eachBucketSize = __newArray[Int](MAX_SIZE)
     Range(unit(0), MAX_SIZE).foreach {
       __lambda { i =>
-        val arraySize = originalArray.length / MAX_SIZE * unit(4)
+        val arraySize = originalArray.length / MAX_SIZE * unit(8)
         // val arraySize = originalArray.length
         // val arraySize = unit(128)
         array(i) = __newArray[V](arraySize)
