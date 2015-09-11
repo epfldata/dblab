@@ -114,7 +114,7 @@ object Queries {
           printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n",
             kv._1.L_RETURNFLAG, kv._1.L_LINESTATUS, kv._2.apply(1), kv._2.apply(2), kv._2.apply(3), kv._2.apply(4),
             kv._2.apply(6), kv._2.apply(7), kv._2.apply(8), kv._2.apply(5))
-        })
+        }, -1)
       }
     }
   }
@@ -215,7 +215,7 @@ object Queries {
         so.printRows(e => {
           val kv = e._2
           printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL[Double], (kv.S_NAME[LBString]).string, (kv.N_NAME[LBString]).string, kv.P_PARTKEY[Int], (kv.P_MFGR[LBString]).string, (kv.S_ADDRESS[LBString]).string, (kv.S_PHONE[LBString]).string, (kv.S_COMMENT[LBString]).string)
-        })
+        }, 100)
         // val po = new PrintOp(so)(e => {
         //   val kv = e.wnd
         //   printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL[Double], (kv.S_NAME[LBString]).string, (kv.N_NAME[LBString]).string, kv.P_PARTKEY[Int], (kv.P_MFGR[LBString]).string, (kv.S_ADDRESS[LBString]).string, (kv.S_PHONE[LBString]).string, (kv.S_COMMENT[LBString]).string)
@@ -337,7 +337,7 @@ object Queries {
         // val resultRows = rows
         // printf("(%d rows)\n", resultRows)
         sortOp.printRows(kv =>
-          printf("%s|%d\n", kv._1.string, kv._2))
+          printf("%s|%d\n", kv._1.string, kv._2), -1)
       })
     }
   }
@@ -438,7 +438,7 @@ object Queries {
         // val resultRows = rows
         // printf("(%d rows)\n", resultRows)
         sortOp.printRows(kv =>
-          printf("%s|%.4f\n", kv._1.string, kv._2))
+          printf("%s|%.4f\n", kv._1.string, kv._2), -1)
         // po.open
         // po.next
         ()
@@ -750,7 +750,7 @@ object Queries {
         // val resultRows = rows
         // printf("(%d rows)\n", resultRows)
         sortOp.printRows(kv =>
-          printf("%s|%d|%d\n", kv._1.string, kv._2(0), kv._2(1)))
+          printf("%s|%d|%d\n", kv._1.string, kv._2(0), kv._2(1)), -1)
       })
     }
   }

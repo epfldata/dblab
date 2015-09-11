@@ -81,7 +81,7 @@ abstract class QueryCPS[T] {
     minResult
   }
 
-  def printRows(printFunc: T => Unit, limit: Int = -1): Unit = {
+  def printRows(printFunc: T => Unit, limit: Int): Unit = {
     var rows = 0
     if (limit == -1) {
       for (e <- this) {
