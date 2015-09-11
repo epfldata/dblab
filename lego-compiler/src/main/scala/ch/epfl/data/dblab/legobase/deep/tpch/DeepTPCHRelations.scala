@@ -113,6 +113,8 @@ object LINEITEMRecordIRs extends Base {
   // case classes
   case class LINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]) extends ConstructorDef[LINEITEMRecord](List(), "LINEITEMRecord", List(List(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class LINEITEMRecordGetField(self: Rep[LINEITEMRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -313,6 +315,8 @@ object LINEITEMRecordIRs extends Base {
 
   case class LINEITEMRecordApplyObject(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]) extends FunctionDef[LINEITEMRecord](None, "LINEITEMRecord.apply", List(List(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type LINEITEMRecord = ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord
@@ -470,6 +474,8 @@ object ORDERSRecordIRs extends Base {
   // case classes
   case class ORDERSRecordNew(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Char], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]) extends ConstructorDef[ORDERSRecord](List(), "ORDERSRecord", List(List(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class ORDERSRecordGetField(self: Rep[ORDERSRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -586,6 +592,8 @@ object ORDERSRecordIRs extends Base {
 
   case class ORDERSRecordApplyObject(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Char], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]) extends FunctionDef[ORDERSRecord](None, "ORDERSRecord.apply", List(List(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type ORDERSRecord = ch.epfl.data.dblab.legobase.tpch.ORDERSRecord
@@ -711,6 +719,8 @@ object CUSTOMERRecordIRs extends Base {
   // case classes
   case class CUSTOMERRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends ConstructorDef[CUSTOMERRecord](List(), "CUSTOMERRecord", List(List(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class CUSTOMERRecordGetField(self: Rep[CUSTOMERRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -815,6 +825,8 @@ object CUSTOMERRecordIRs extends Base {
 
   case class CUSTOMERRecordApplyObject(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends FunctionDef[CUSTOMERRecord](None, "CUSTOMERRecord.apply", List(List(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type CUSTOMERRecord = ch.epfl.data.dblab.legobase.tpch.CUSTOMERRecord
@@ -932,6 +944,8 @@ object SUPPLIERRecordIRs extends Base {
   // case classes
   case class SUPPLIERRecordNew(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]) extends ConstructorDef[SUPPLIERRecord](List(), "SUPPLIERRecord", List(List(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class SUPPLIERRecordGetField(self: Rep[SUPPLIERRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -1024,6 +1038,8 @@ object SUPPLIERRecordIRs extends Base {
 
   case class SUPPLIERRecordApplyObject(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]) extends FunctionDef[SUPPLIERRecord](None, "SUPPLIERRecord.apply", List(List(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type SUPPLIERRecord = ch.epfl.data.dblab.legobase.tpch.SUPPLIERRecord
@@ -1129,6 +1145,8 @@ object PARTSUPPRecordIRs extends Base {
   // case classes
   case class PARTSUPPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]) extends ConstructorDef[PARTSUPPRecord](List(), "PARTSUPPRecord", List(List(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class PARTSUPPRecordGetField(self: Rep[PARTSUPPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -1197,6 +1215,8 @@ object PARTSUPPRecordIRs extends Base {
 
   case class PARTSUPPRecordApplyObject(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]) extends FunctionDef[PARTSUPPRecord](None, "PARTSUPPRecord.apply", List(List(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type PARTSUPPRecord = ch.epfl.data.dblab.legobase.tpch.PARTSUPPRecord
@@ -1286,6 +1306,8 @@ object REGIONRecordIRs extends Base {
   // case classes
   case class REGIONRecordNew(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]) extends ConstructorDef[REGIONRecord](List(), "REGIONRecord", List(List(R_REGIONKEY, R_NAME, R_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class REGIONRecordGetField(self: Rep[REGIONRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -1330,6 +1352,8 @@ object REGIONRecordIRs extends Base {
 
   case class REGIONRecordApplyObject(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]) extends FunctionDef[REGIONRecord](None, "REGIONRecord.apply", List(List(R_REGIONKEY, R_NAME, R_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type REGIONRecord = ch.epfl.data.dblab.legobase.tpch.REGIONRecord
@@ -1415,6 +1439,8 @@ object NATIONRecordIRs extends Base {
   // case classes
   case class NATIONRecordNew(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]) extends ConstructorDef[NATIONRecord](List(), "NATIONRecord", List(List(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class NATIONRecordGetField(self: Rep[NATIONRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -1471,6 +1497,8 @@ object NATIONRecordIRs extends Base {
 
   case class NATIONRecordApplyObject(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]) extends FunctionDef[NATIONRecord](None, "NATIONRecord.apply", List(List(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type NATIONRecord = ch.epfl.data.dblab.legobase.tpch.NATIONRecord
@@ -1580,6 +1608,8 @@ object PARTRecordIRs extends Base {
   // case classes
   case class PARTRecordNew(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]) extends ConstructorDef[PARTRecord](List(), "PARTRecord", List(List(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class PARTRecordGetField(self: Rep[PARTRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -1696,6 +1726,8 @@ object PARTRecordIRs extends Base {
 
   case class PARTRecordApplyObject(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]) extends FunctionDef[PARTRecord](None, "PARTRecord.apply", List(List(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type PARTRecord = ch.epfl.data.dblab.legobase.tpch.PARTRecord

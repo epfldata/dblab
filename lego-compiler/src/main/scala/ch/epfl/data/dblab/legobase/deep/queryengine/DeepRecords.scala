@@ -58,6 +58,8 @@ object AGGRecordIRs extends Base {
   // case classes
   case class AGGRecordNew[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit val typeB: TypeRep[B]) extends ConstructorDef[AGGRecord[B]](List(typeB), "AGGRecord", List(List(key, aggs))) {
     override def curriedConstructor = (copy[B] _).curried
+    override def isPure = true
+
   }
 
   case class AGGRecordGetField[B](self: Rep[AGGRecord[B]], key: Rep[String])(implicit val typeB: TypeRep[B]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -90,6 +92,8 @@ object AGGRecordIRs extends Base {
 
   case class AGGRecordApplyObject[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit val typeB: TypeRep[B]) extends FunctionDef[AGGRecord[B]](None, "AGGRecord.apply", List(List(key, aggs))) {
     override def curriedConstructor = (copy[B] _).curried
+    override def isPure = true
+
   }
 
   type AGGRecord[B] = ch.epfl.data.dblab.legobase.queryengine.AGGRecord[B]
@@ -165,6 +169,8 @@ object WindowRecordIRs extends Base {
   // case classes
   case class WindowRecordNew[B, C](key: Rep[B], wnd: Rep[C])(implicit val typeB: TypeRep[B], val typeC: TypeRep[C]) extends ConstructorDef[WindowRecord[B, C]](List(typeB, typeC), "WindowRecord", List(List(key, wnd))) {
     override def curriedConstructor = (copy[B, C] _).curried
+    override def isPure = true
+
   }
 
   case class WindowRecordGetField[B, C](self: Rep[WindowRecord[B, C]], key: Rep[String])(implicit val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -197,6 +203,8 @@ object WindowRecordIRs extends Base {
 
   case class WindowRecordApplyObject[B, C](key: Rep[B], wnd: Rep[C])(implicit val typeB: TypeRep[B], val typeC: TypeRep[C]) extends FunctionDef[WindowRecord[B, C]](None, "WindowRecord.apply", List(List(key, wnd))) {
     override def curriedConstructor = (copy[B, C] _).curried
+    override def isPure = true
+
   }
 
   type WindowRecord[B, C] = ch.epfl.data.dblab.legobase.queryengine.WindowRecord[B, C]

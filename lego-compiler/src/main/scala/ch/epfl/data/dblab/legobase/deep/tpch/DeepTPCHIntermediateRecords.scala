@@ -56,6 +56,8 @@ object Q1GRPRecordIRs extends Base {
   // case classes
   case class Q1GRPRecordNew(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]) extends ConstructorDef[Q1GRPRecord](List(), "Q1GRPRecord", List(List(L_RETURNFLAG, L_LINESTATUS))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q1GRPRecordGetField(self: Rep[Q1GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -88,6 +90,8 @@ object Q1GRPRecordIRs extends Base {
 
   case class Q1GRPRecordApplyObject(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]) extends FunctionDef[Q1GRPRecord](None, "Q1GRPRecord.apply", List(List(L_RETURNFLAG, L_LINESTATUS))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type Q1GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q1GRPRecord
@@ -164,6 +168,8 @@ object Q3GRPRecordIRs extends Base {
   // case classes
   case class Q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]) extends ConstructorDef[Q3GRPRecord](List(), "Q3GRPRecord", List(List(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q3GRPRecordGetField(self: Rep[Q3GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -208,6 +214,8 @@ object Q3GRPRecordIRs extends Base {
 
   case class Q3GRPRecordApplyObject(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]) extends FunctionDef[Q3GRPRecord](None, "Q3GRPRecord.apply", List(List(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type Q3GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q3GRPRecord
@@ -289,6 +297,8 @@ object Q7GRPRecordIRs extends Base {
   // case classes
   case class Q7GRPRecordNew(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]) extends ConstructorDef[Q7GRPRecord](List(), "Q7GRPRecord", List(List(SUPP_NATION, CUST_NATION, L_YEAR))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q7GRPRecordGetField(self: Rep[Q7GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -333,6 +343,8 @@ object Q7GRPRecordIRs extends Base {
 
   case class Q7GRPRecordApplyObject(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]) extends FunctionDef[Q7GRPRecord](None, "Q7GRPRecord.apply", List(List(SUPP_NATION, CUST_NATION, L_YEAR))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type Q7GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q7GRPRecord
@@ -410,6 +422,8 @@ object Q9GRPRecordIRs extends Base {
   // case classes
   case class Q9GRPRecordNew(NATION: Rep[OptimalString], O_YEAR: Rep[Int]) extends ConstructorDef[Q9GRPRecord](List(), "Q9GRPRecord", List(List(NATION, O_YEAR))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q9GRPRecordGetField(self: Rep[Q9GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -442,6 +456,8 @@ object Q9GRPRecordIRs extends Base {
 
   case class Q9GRPRecordApplyObject(NATION: Rep[OptimalString], O_YEAR: Rep[Int]) extends FunctionDef[Q9GRPRecord](None, "Q9GRPRecord.apply", List(List(NATION, O_YEAR))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type Q9GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q9GRPRecord
@@ -535,6 +551,8 @@ object Q10GRPRecordIRs extends Base {
   // case classes
   case class Q10GRPRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends ConstructorDef[Q10GRPRecord](List(), "Q10GRPRecord", List(List(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q10GRPRecordGetField(self: Rep[Q10GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -627,6 +645,8 @@ object Q10GRPRecordIRs extends Base {
 
   case class Q10GRPRecordApplyObject(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends FunctionDef[Q10GRPRecord](None, "Q10GRPRecord.apply", List(List(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type Q10GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q10GRPRecord
@@ -719,6 +739,8 @@ object Q13IntRecordIRs extends Base {
   // case classes
   case class Q13IntRecordNew(count: Rep[Int]) extends ConstructorDef[Q13IntRecord](List(), "Q13IntRecord", List(List(count))) {
     override def curriedConstructor = (copy _)
+    override def isPure = true
+
   }
 
   case class Q13IntRecordGetField(self: Rep[Q13IntRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -735,6 +757,8 @@ object Q13IntRecordIRs extends Base {
 
   case class Q13IntRecordApplyObject(count: Rep[Int]) extends FunctionDef[Q13IntRecord](None, "Q13IntRecord.apply", List(List(count))) {
     override def curriedConstructor = (copy _)
+    override def isPure = true
+
   }
 
   type Q13IntRecord = ch.epfl.data.dblab.legobase.tpch.Q13IntRecord
@@ -808,6 +832,8 @@ object Q16GRPRecord1IRs extends Base {
   // case classes
   case class Q16GRPRecord1New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]) extends ConstructorDef[Q16GRPRecord1](List(), "Q16GRPRecord1", List(List(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q16GRPRecord1GetField(self: Rep[Q16GRPRecord1], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -864,6 +890,8 @@ object Q16GRPRecord1IRs extends Base {
 
   case class Q16GRPRecord1ApplyObject(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]) extends FunctionDef[Q16GRPRecord1](None, "Q16GRPRecord1.apply", List(List(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type Q16GRPRecord1 = ch.epfl.data.dblab.legobase.tpch.Q16GRPRecord1
@@ -949,6 +977,8 @@ object Q16GRPRecord2IRs extends Base {
   // case classes
   case class Q16GRPRecord2New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]) extends ConstructorDef[Q16GRPRecord2](List(), "Q16GRPRecord2", List(List(P_BRAND, P_TYPE, P_SIZE))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q16GRPRecord2GetField(self: Rep[Q16GRPRecord2], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -993,6 +1023,8 @@ object Q16GRPRecord2IRs extends Base {
 
   case class Q16GRPRecord2ApplyObject(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]) extends FunctionDef[Q16GRPRecord2](None, "Q16GRPRecord2.apply", List(List(P_BRAND, P_TYPE, P_SIZE))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type Q16GRPRecord2 = ch.epfl.data.dblab.legobase.tpch.Q16GRPRecord2
@@ -1082,6 +1114,8 @@ object Q18GRPRecordIRs extends Base {
   // case classes
   case class Q18GRPRecordNew(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]) extends ConstructorDef[Q18GRPRecord](List(), "Q18GRPRecord", List(List(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q18GRPRecordGetField(self: Rep[Q18GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -1150,6 +1184,8 @@ object Q18GRPRecordIRs extends Base {
 
   case class Q18GRPRecordApplyObject(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]) extends FunctionDef[Q18GRPRecord](None, "Q18GRPRecord.apply", List(List(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type Q18GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q18GRPRecord
@@ -1238,6 +1274,8 @@ object Q20GRPRecordIRs extends Base {
   // case classes
   case class Q20GRPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]) extends ConstructorDef[Q20GRPRecord](List(), "Q20GRPRecord", List(List(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q20GRPRecordGetField(self: Rep[Q20GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -1282,6 +1320,8 @@ object Q20GRPRecordIRs extends Base {
 
   case class Q20GRPRecordApplyObject(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]) extends FunctionDef[Q20GRPRecord](None, "Q20GRPRecord.apply", List(List(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   type Q20GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q20GRPRecord
