@@ -240,7 +240,25 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
 
   }
 
-  // TODO should be moved to SC
+  object TupleNType {
+    def unapply[T](tp: TypeRep[T]): Option[scala.Seq[TypeRep[Any]]] = tp match {
+      case Tuple2Type(tp1, tp2)           => Some(scala.Seq(tp1, tp2))
+      case Tuple3Type(tp1, tp2, tp3)      => Some(scala.Seq(tp1, tp2, tp3))
+      case Tuple4Type(tp1, tp2, tp3, tp4) => Some(scala.Seq(tp1, tp2, tp3, tp4))
+      case _                              => None
+    }
+  }
+
+  object TupleNCreate {
+    def unapply[T](exp: Rep[T]): Option[scala.Seq[Rep[Any]]] = exp match {
+      case Def(Tuple2ApplyObject(x, y))       => Some(scala.Seq(x, y))
+      case Def(Tuple3ApplyObject(x, y, z))    => Some(scala.Seq(x, y, z))
+      case Def(Tuple4ApplyObject(x, y, z, t)) => Some(scala.Seq(x, y, z, t))
+      case _                                  => None
+    }
+  }
+
+  // TODO should be moved to SC?
   def ordering_minus[T: TypeRep](num1: Rep[T], num2: Rep[T]): Rep[Int] = typeRep[T] match {
     case IntType    => num1.asInstanceOf[Rep[Int]] - num2.asInstanceOf[Rep[Int]]
     case DoubleType => (num1.asInstanceOf[Rep[Double]] - num2.asInstanceOf[Rep[Double]]).toInt
@@ -248,62 +266,74 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
       case (Def(OptimalStringString(str1)), Def(OptimalStringString(str2))) => str1 diff str2
       case (str1: Rep[String], str2: Rep[String])                           => str1 diff str2
     }
-    case Tuple2Type(tp1, tp2) => {
-      class Tp1
-      class Tp2
-      implicit val ttp1 = tp1.asInstanceOf[TypeRep[Tp1]]
-      implicit val ttp2 = tp2.asInstanceOf[TypeRep[Tp2]]
-      val tup1 = num1.asInstanceOf[Rep[(Tp1, Tp2)]]
-      val tup2 = num2.asInstanceOf[Rep[(Tp1, Tp2)]]
-      val e11 = tup1._1
-      val e21 = tup2._1
-      val c1 = ordering_minus(e11, e21)
-      __ifThenElse(c1 __== unit(0), {
-        val e12 = tup1._2
-        val e22 = tup2._2
-        ordering_minus(e12, e22)
-      }, {
-        c1
+    case TupleNType(tps) => {
+      val TupleNCreate(elems1) = num1
+      val TupleNCreate(elems2) = num2
+      elems1.zip(elems2).zip(tps).foldLeft(unit(0))((acc, cur) => {
+        __ifThenElse(acc __== unit(0), {
+          val e1 = cur._1._1
+          val e2 = cur._1._2
+          val tp = cur._2
+          ordering_minus(e1, e2)(tp)
+        }, acc)
       })
     }
-    case Tuple3Type(tp1, tp2, tp3) => {
-      class Tp1
-      class Tp2
-      class Tp3
-      implicit val ttp1 = tp1.asInstanceOf[TypeRep[Tp1]]
-      implicit val ttp2 = tp2.asInstanceOf[TypeRep[Tp2]]
-      implicit val ttp3 = tp3.asInstanceOf[TypeRep[Tp3]]
-      implicit class Tuple3NOps(self: Rep[(Tp1, Tp2, Tp3)]) {
-        def _1: Rep[Tp1] = self match {
-          case Def(Tuple3ApplyObject(x, y, z)) => x
-        }
-        def _2: Rep[Tp2] = self match {
-          case Def(Tuple3ApplyObject(x, y, z)) => y
-        }
-        def _3: Rep[Tp3] = self match {
-          case Def(Tuple3ApplyObject(x, y, z)) => z
-        }
-      }
-      val tup1 = num1.asInstanceOf[Rep[(Tp1, Tp2, Tp3)]]
-      val tup2 = num2.asInstanceOf[Rep[(Tp1, Tp2, Tp3)]]
-      val e11 = tup1._1
-      val e21 = tup2._1
-      val c1 = ordering_minus(e11, e21)
-      __ifThenElse(c1 __== unit(0), {
-        val e12 = tup1._2
-        val e22 = tup2._2
-        val c2 = ordering_minus(e12, e22)
-        __ifThenElse(c2 __== unit(0), {
-          val e13 = tup1._3
-          val e23 = tup2._3
-          ordering_minus(e13, e23)
-        }, {
-          c2
-        })
-      }, {
-        c1
-      })
-    }
+    // case Tuple2Type(tp1, tp2) => {
+    //   class Tp1
+    //   class Tp2
+    //   implicit val ttp1 = tp1.asInstanceOf[TypeRep[Tp1]]
+    //   implicit val ttp2 = tp2.asInstanceOf[TypeRep[Tp2]]
+    //   val tup1 = num1.asInstanceOf[Rep[(Tp1, Tp2)]]
+    //   val tup2 = num2.asInstanceOf[Rep[(Tp1, Tp2)]]
+    //   val e11 = tup1._1
+    //   val e21 = tup2._1
+    //   val c1 = ordering_minus(e11, e21)
+    //   __ifThenElse(c1 __== unit(0), {
+    //     val e12 = tup1._2
+    //     val e22 = tup2._2
+    //     ordering_minus(e12, e22)
+    //   }, {
+    //     c1
+    //   })
+    // }
+    // case Tuple3Type(tp1, tp2, tp3) => {
+    //   class Tp1
+    //   class Tp2
+    //   class Tp3
+    //   implicit val ttp1 = tp1.asInstanceOf[TypeRep[Tp1]]
+    //   implicit val ttp2 = tp2.asInstanceOf[TypeRep[Tp2]]
+    //   implicit val ttp3 = tp3.asInstanceOf[TypeRep[Tp3]]
+    //   implicit class Tuple3NOps(self: Rep[(Tp1, Tp2, Tp3)]) {
+    //     def _1: Rep[Tp1] = self match {
+    //       case Def(Tuple3ApplyObject(x, y, z)) => x
+    //     }
+    //     def _2: Rep[Tp2] = self match {
+    //       case Def(Tuple3ApplyObject(x, y, z)) => y
+    //     }
+    //     def _3: Rep[Tp3] = self match {
+    //       case Def(Tuple3ApplyObject(x, y, z)) => z
+    //     }
+    //   }
+    //   val tup1 = num1.asInstanceOf[Rep[(Tp1, Tp2, Tp3)]]
+    //   val tup2 = num2.asInstanceOf[Rep[(Tp1, Tp2, Tp3)]]
+    //   val e11 = tup1._1
+    //   val e21 = tup2._1
+    //   val c1 = ordering_minus(e11, e21)
+    //   __ifThenElse(c1 __== unit(0), {
+    //     val e12 = tup1._2
+    //     val e22 = tup2._2
+    //     val c2 = ordering_minus(e12, e22)
+    //     __ifThenElse(c2 __== unit(0), {
+    //       val e13 = tup1._3
+    //       val e23 = tup2._3
+    //       ordering_minus(e13, e23)
+    //     }, {
+    //       c2
+    //     })
+    //   }, {
+    //     c1
+    //   })
+    // }
   }
 
   def array_sortBy[T: TypeRep, S: TypeRep](array: Rep[Array[T]], sortFunction: Rep[T => S]): Rep[Array[T]] = {

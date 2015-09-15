@@ -15,6 +15,8 @@ import sc.pardis.shallow.utils.DefaultValue
 
 trait StructProcessing[Lang <: Base] extends StructCollector[Lang] {
   import IR._
+
+  // TODO remove
   def concat_types[T: TypeRep, S: TypeRep, Res: TypeRep]: TypeRep[Res] = {
     typeRep[Res]
   }
