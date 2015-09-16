@@ -189,7 +189,7 @@ object Queries {
         // val jo4 = new HashJoinOp(regionScan, jo3)((x, y) => x.R_REGIONKEY == y.N_REGIONKEY[Int])(x => x.R_REGIONKEY)(x => x.N_REGIONKEY[Int])
         val wo = jo4.groupBy(x => x.P_PARTKEY[Int]).mapValues(x => x.minBy(y => y.PS_SUPPLYCOST[Double]))
         // val wo = new WindowOp(jo4)(x => x.P_PARTKEY[Int])(x => x.minBy(y => y.PS_SUPPLYCOST[Double]))
-        val so = wo.sortBy(x => (-x._2.S_ACCTBAL[Double], x._2.N_NAME[LBString].string, x._2.P_PARTKEY[Int]))
+        val so = wo.sortBy(x => (-x._2.S_ACCTBAL[Double], x._2.N_NAME[LBString].string, x._2.S_NAME[LBString].string, x._2.P_PARTKEY[Int]))
         // val so = new SortOp(wo)((x, y) => {
         //   if (x.wnd.S_ACCTBAL[Double] < y.wnd.S_ACCTBAL[Double]) 1
         //   else if (x.wnd.S_ACCTBAL[Double] > y.wnd.S_ACCTBAL[Double]) -1
@@ -614,6 +614,35 @@ object Queries {
         po.open
         po.next
         ()
+      })
+    }
+  }
+
+  def Q9_functional(numRuns: Int) {
+    val partTable = Query(loadPart())
+    val nationTable = Query(loadNation())
+    val ordersTable = Query(loadOrders())
+    val partsuppTable = Query(loadPartsupp())
+    val supplierTable = Query(loadSupplier())
+    val lineitemTable = Query(loadLineitem())
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val ghost = parseString("ghost")
+        val soNation = nationTable
+        val soSupplier = supplierTable
+        val soLineitem = lineitemTable
+        val soPart = partTable.filter(x => x.P_NAME.containsSlice(ghost))
+        val soPartsupp = partsuppTable
+        val soOrders = ordersTable
+        val hj1 = soLineitem.hashJoin(soPart)(x => x.L_PARTKEY)(x => x.P_PARTKEY)((x, y) => x.L_PARTKEY == y.P_PARTKEY)
+        val hj2 = hj1.hashJoin(soSupplier)(x => x.L_SUPPKEY[Int])(x => x.S_SUPPKEY)((x, y) => x.L_SUPPKEY[Int] == y.S_SUPPKEY)
+        val hj3 = hj2.hashJoin(soNation)(x => x.S_NATIONKEY[Int])(x => x.N_NATIONKEY)((x, y) => x.S_NATIONKEY[Int] == y.N_NATIONKEY)
+        val hj4 = soPartsupp.hashJoin(hj3)(x => x.PS_PARTKEY)(x => x.L_PARTKEY[Int])((x, y) => x.PS_PARTKEY == y.L_PARTKEY[Int] && x.PS_SUPPKEY == y.L_SUPPKEY[Int])
+        val hj5 = hj4.hashJoin(soOrders)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)((x, y) => x.L_ORDERKEY[Int] == y.O_ORDERKEY)
+        val aggOp = hj5.groupBy(x => new Q9GRPRecord(x.N_NAME[LBString], dateToYear(x.O_ORDERDATE[Int]))).mapValues(_.map(t =>
+          ((t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))) - ((1.0 * t.PS_SUPPLYCOST[Double]) * t.L_QUANTITY[Double])).sum)
+        val sortOp = aggOp.sortBy(x => (x._1.NATION.string, -x._1.O_YEAR))
+        sortOp.printRows(kv => printf("%s|%d|%.4f\n", kv._1.NATION.string, kv._1.O_YEAR, kv._2), -1)
       })
     }
   }
