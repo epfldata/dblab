@@ -2,6 +2,8 @@ package ch.epfl.data
 package dblab.legobase
 package optimization
 
+import ch.epfl.data.sc.pardis.quasi.TypeParameters._
+
 import scala.language.implicitConversions
 import sc.pardis.ir._
 import reflect.runtime.universe.{ TypeTag, Type }
@@ -10,6 +12,7 @@ import deep._
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
+import quasi._
 
 /**
  * Transforms row layout representation to columnar layout representation.
@@ -116,15 +119,18 @@ class ColumnStoreTransformer(override val IR: LegoBaseExp)
   val potentialTypes = scala.collection.mutable.Set[TypeRep[_]]()
   val forbiddenTypes = scala.collection.mutable.Set[TypeRep[_]]()
   val columnarTypes = scala.collection.mutable.Set[TypeRep[_]]()
-
+  
+  {
+//  implicit val _ = ch.epfl.data.sc.pardis.quasi.MacroUtils.MacroDebug
   analysis += statement {
-    case sym -> ArrayNew(_) =>
+    case sym -> dsl"new Array($_)" => //ArrayNew(_) =>
       val innerType = sym.tp.typeArguments(0)
       if (innerType.isRecord)
         potentialTypes += innerType
       if (innerType.isArray && innerType.typeArguments(0).isRecord)
         forbiddenTypes += innerType.typeArguments(0)
       ()
+  }
   }
 
   /**
@@ -140,12 +146,18 @@ class ColumnStoreTransformer(override val IR: LegoBaseExp)
     }
   }
 
-  analysis += rule {
-    case ArrayUpdate(arr, _, UnacceptableUpdateValue(_)) =>
-      val innerType = arr.tp.typeArguments(0)
-      if (innerType.isRecord)
-        forbiddenTypes += innerType
-      ()
+  {
+    val params = newTypeParams("A")
+    import params._
+    analysis += rule {
+  //    case ArrayUpdate(arr, _, UnacceptableUpdateValue(_)) =>
+      case dsl"($arr: Array[A])($_) = ${UnacceptableUpdateValue(_)}" =>
+  //      (??? : Rep[Array[Int]])(0) = 1
+        val innerType = arr.tp.typeArguments(0)
+        if (innerType.isRecord)
+          forbiddenTypes += innerType
+        ()
+    }
   }
 
   def computeColumnarTypes(): Unit = {
