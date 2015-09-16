@@ -48,7 +48,7 @@ class HashEqualsFuncsToCTransformer(override val IR: LegoBaseExp) extends Recurs
         try {
           getStructDef(ttp).get
         } catch {
-          case ex => throw new Exception(s"${e1.tp} is not a record type in $e1 and the node ${e1.correspondingNode} => ${ex}")
+          case ex: Throwable => throw new Exception(s"${e1.tp} is not a record type in $e1 and the node ${e1.correspondingNode} => ${ex}")
         }
       }
       // System.out.println(structDef.fields)
