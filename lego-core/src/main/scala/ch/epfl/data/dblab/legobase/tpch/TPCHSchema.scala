@@ -183,6 +183,7 @@ object TPCHSchema {
     tpchSchema.stats += "CARDINALITY_Q1GRP" -> 4
     tpchSchema.stats += "CARDINALITY_Q3GRP" -> ordersTable.rowCount / 100
     tpchSchema.stats += "CARDINALITY_Q9GRP" -> nationTable.rowCount * YEARS
+    tpchSchema.stats += "CARDINALITY_Q10GRP" -> customerTable.rowCount
 
     tpchSchema.stats += "DISTINCT_L_SHIPMODE" -> YEARS
     tpchSchema.stats += "DISTINCT_L_RETURNFLAG" -> 3

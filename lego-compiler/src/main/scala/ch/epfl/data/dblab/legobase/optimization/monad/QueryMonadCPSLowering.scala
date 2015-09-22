@@ -338,6 +338,7 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
       ()
   }
 
+  // TODO: Separate groupBy and mapValues
   rewrite += statement {
     case sym -> GroupedQueryMapValues(groupedMonad, func) =>
       val (monad, pred, par) = groupedMonad match {

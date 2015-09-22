@@ -689,6 +689,37 @@ object Queries {
     }
   }
 
+  def Q10_functional(numRuns: Int) {
+    val lineitemTable = Query(loadLineitem())
+    val nationTable = Query(loadNation())
+    val customerTable = Query(loadCustomer())
+    val ordersTable = Query(loadOrders())
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val constantDate1 = parseDate("1994-11-01")
+        val constantDate2 = parseDate("1995-02-01")
+        val so1 = ordersTable.filter(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE < constantDate2)
+        val so2 = customerTable
+        val so3 = nationTable
+        val so4 = lineitemTable.filter(x => x.L_RETURNFLAG == 'R')
+        val hj1 = so4.hashJoin(so1)(x => x.L_ORDERKEY)(x => x.O_ORDERKEY)((x, y) => x.L_ORDERKEY == y.O_ORDERKEY)
+        val hj2 = so2.hashJoin(hj1)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY[Int])((x, y) => x.C_CUSTKEY == y.O_CUSTKEY[Int])
+        val hj3 = so3.hashJoin(hj2)(x => x.N_NATIONKEY)(x => x.C_NATIONKEY[Int])((x, y) => x.N_NATIONKEY == y.C_NATIONKEY[Int])
+        val aggOp = hj3.groupBy(x => new Q10GRPRecord(x.C_CUSTKEY[Int],
+          x.C_NAME[LBString], x.C_ACCTBAL[Double],
+          x.C_PHONE[LBString], x.N_NAME[LBString],
+          x.C_ADDRESS[LBString], x.C_COMMENT[LBString])).mapValues(list => list.map(t => t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])).sum)
+        val sortOp = aggOp.sortBy(-_._2)
+        sortOp.printRows(kv => {
+          printf("%d|%s|%.4f|%.2f|%s|%s|%s|%s\n", kv._1.C_CUSTKEY, kv._1.C_NAME.string, kv._2,
+            kv._1.C_ACCTBAL, kv._1.N_NAME.string, kv._1.C_ADDRESS.string, kv._1.C_PHONE.string,
+            kv._1.C_COMMENT.string)
+        }, 20)
+        ()
+      })
+    }
+  }
+
   def Q11(numRuns: Int) {
     val partsuppTable = loadPartsupp()
     val supplierTable = loadSupplier()
