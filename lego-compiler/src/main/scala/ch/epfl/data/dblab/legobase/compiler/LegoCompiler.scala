@@ -183,6 +183,14 @@ class LegoCompiler(val DSL: LegoBaseExp,
     pipeline += DCE
   }
 
+  if (settings.queryMonadLowering) {
+    if (!settings.mallocHoisting) {
+      pipeline += new ScalaArrayToCCommon(DSL)
+      pipeline += DCE
+    }
+    pipeline += new Tuple2Lowering(DSL)
+  }
+
   if (settings.mallocHoisting) {
     pipeline += new ScalaArrayToCCommon(DSL)
     pipeline += DCE
@@ -195,14 +203,6 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   if (settings.largeOutputHoisting && !settings.onlyLoading) {
     pipeline += new LargeOutputPrintHoister(DSL, schema)
-  }
-
-  if (settings.queryMonadLowering) {
-    if (!settings.mallocHoisting) {
-      pipeline += new ScalaArrayToCCommon(DSL)
-      pipeline += DCE
-    }
-    pipeline += new Tuple2Lowering(DSL)
   }
 
   // pipeline += TreeDumper(false)
