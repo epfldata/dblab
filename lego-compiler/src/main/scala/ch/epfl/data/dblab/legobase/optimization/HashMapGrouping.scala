@@ -617,6 +617,24 @@ class HashMapGrouping(override val IR: LegoBaseExp,
       ()
   }
 
+  def isPartitionedWhileIndex[T](v: Var[T]): Boolean = multiMapsInfo.exists({
+    case (mm, info) => info.shouldBePartitioned && (
+      info.partitionedRelationInfo.loop.cond match {
+        case RangeCondition(v2, _) => v2 == v
+        case _                     => false
+      })
+  })
+
+  rewrite += remove {
+    case ReadVar(v) if isPartitionedWhileIndex(v) =>
+      ()
+  }
+
+  rewrite += rule {
+    case Assign(v, _) if isPartitionedWhileIndex(v) =>
+      unit()
+  }
+
   /* ---- Helper Methods for Rewriting ---- */
 
   /**
