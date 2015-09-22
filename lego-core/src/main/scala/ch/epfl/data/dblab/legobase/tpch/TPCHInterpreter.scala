@@ -48,6 +48,7 @@ object TPCHInterpreter extends TPCHRunner {
     case "Q6_functional"  => Q6_functional(Config.numRuns)
     case "Q9_functional"  => Q9_functional(Config.numRuns)
     case "Q10_functional" => Q10_functional(Config.numRuns)
+    case "Q11_functional" => Q11_functional(Config.numRuns)
     case "Q12_functional" => Q12_functional(Config.numRuns)
     case "Q14_functional" => Q14_functional(Config.numRuns)
     case dflt @ _         => throw new Exception("Query " + dflt + " not supported!")

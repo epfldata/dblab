@@ -756,6 +756,27 @@ object Queries {
     }
   }
 
+  def Q11_functional(numRuns: Int) {
+    val partsuppTable = Query(loadPartsupp())
+    val supplierTable = Query(loadSupplier())
+    val nationTable = Query(loadNation())
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val uk = parseString("UNITED KINGDOM")
+        val scanSupplier = supplierTable
+        val scanNation = nationTable.filter(x => x.N_NAME === uk)
+        val jo1 = scanNation.hashJoin(scanSupplier)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY)
+        val scanPartsupp = partsuppTable
+        val jo2 = jo1.hashJoin(scanPartsupp)(x => x.S_SUPPKEY[Int])(x => x.PS_SUPPKEY)((x, y) => x.S_SUPPKEY[Int] == y.PS_SUPPKEY)
+        val wo = jo2.groupBy(x => x.PS_PARTKEY[Int]).mapValues(list => list.map(e => (e.PS_SUPPLYCOST[Double] * e.PS_AVAILQTY[Int])).sum)
+        val total = wo.map(_._2).sum
+        val so = wo.filter(_._2 > total * 0.0001)
+        val sortOp = so.sortBy(-_._2)
+        sortOp.printRows(kv => printf("%d|%.2f\n", kv._1, kv._2), -1)
+      })
+    }
+  }
+
   def Q12(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
