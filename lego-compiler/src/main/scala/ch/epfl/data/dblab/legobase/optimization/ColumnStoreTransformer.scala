@@ -121,7 +121,8 @@ class ColumnStoreTransformer(override val IR: LegoBaseExp)
   val columnarTypes = scala.collection.mutable.Set[TypeRep[_]]()
   
   analysis += statement {
-    case sym -> dsl"new Array($_)" =>
+//    case sym -> dsl"new Array($_)" =>
+    case sym -> dsl"new Array[Any]($_)" =>
       val innerType = sym.tp.typeArguments(0)
       if (innerType.isRecord)
         potentialTypes += innerType
@@ -172,7 +173,9 @@ class ColumnStoreTransformer(override val IR: LegoBaseExp)
   }
 
   rewrite += rule {
-    case dsl"new Array[Any]($size) as $an" if shouldBeColumnarized(an.tp.typeArguments(0)) => {
+//    case an @ ArrayNew(size) if shouldBeColumnarized(an.tp.typeArguments(0)) => {
+//    case dsl"new Array[Any]($size) as $an" if shouldBeColumnarized(an.tp.typeArguments(0)) => {
+    case an @ dsl"new Array[Any]($size)" if shouldBeColumnarized(an.tp.typeArguments(0)) => {
       val elemType = an.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
       val structDef = getStructDef(elemType).get
       val newElems = structDef.fields.map(el =>
@@ -184,7 +187,7 @@ class ColumnStoreTransformer(override val IR: LegoBaseExp)
   }
 
   rewrite += rule {
-    case dsl"(($arr: Array[Any])($idx) = $value) as $au" if shouldBeColumnarized(arr.tp.typeArguments(0)) =>
+    case au @ dsl"(($arr: Array[Any])($idx) = $value)" if shouldBeColumnarized(arr.tp.typeArguments(0)) =>
       val elemType = arr.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
       val structDef = getStructDef(elemType).get
       for (el <- structDef.fields) {
@@ -218,7 +221,7 @@ class ColumnStoreTransformer(override val IR: LegoBaseExp)
 
   rewrite += statement {
     /* Nodes returning struct nodes -- convert them to a reference to column store */
-    case sym -> dsl"($arr: Array[Any])($idx) as $aa" if shouldBeColumnarized(sym.tp) =>
+    case sym -> (aa @ dsl"($arr: Array[Any])($idx)") if shouldBeColumnarized(sym.tp) =>
       val tpe = sym.tp.asInstanceOf[RecordType[Any]]
       val newElems = List(PardisStructArg(COLUMN_STORE_POINTER, false, apply(arr)), PardisStructArg(INDEX, false, apply(idx)))
       val rTpe = elemColumnStoreType(tpe.tag)
