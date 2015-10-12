@@ -111,11 +111,8 @@ object QueryIRs extends Base {
   // Type representation
   case class QueryType[T](typeT: TypeRep[T]) extends TypeRep[Query[T]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = QueryType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagT = typeT.typeTag
     val name = s"Query[${typeT.name}]"
     val typeArguments = List(typeT)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[Query[T]]
   }
   implicit def typeQuery[T: TypeRep]: TypeRep[Query[T]] = QueryType(implicitly[TypeRep[T]])
   // case classes
@@ -362,11 +359,8 @@ object JoinableQueryIRs extends Base {
   // Type representation
   case class JoinableQueryType[T <: ch.epfl.data.sc.pardis.shallow.Record](typeT: TypeRep[T]) extends TypeRep[JoinableQuery[T]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = JoinableQueryType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.sc.pardis.shallow.Record]])
-    private implicit val tagT = typeT.typeTag
     val name = s"JoinableQuery[${typeT.name}]"
     val typeArguments = List(typeT)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[JoinableQuery[T]]
   }
   implicit def typeJoinableQuery[T <: ch.epfl.data.sc.pardis.shallow.Record: TypeRep]: TypeRep[JoinableQuery[T]] = JoinableQueryType(implicitly[TypeRep[T]])
   // case classes
@@ -439,12 +433,8 @@ object GroupedQueryIRs extends Base {
   // Type representation
   case class GroupedQueryType[K, V](typeK: TypeRep[K], typeV: TypeRep[V]) extends TypeRep[GroupedQuery[K, V]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GroupedQueryType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
-    private implicit val tagK = typeK.typeTag
-    private implicit val tagV = typeV.typeTag
     val name = s"GroupedQuery[${typeK.name}, ${typeV.name}]"
     val typeArguments = List(typeK, typeV)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[GroupedQuery[K, V]]
   }
   implicit def typeGroupedQuery[K: TypeRep, V: TypeRep]: TypeRep[GroupedQuery[K, V]] = GroupedQueryType(implicitly[TypeRep[K]], implicitly[TypeRep[V]])
   // case classes

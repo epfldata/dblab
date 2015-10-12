@@ -19,11 +19,11 @@ object ListIRs extends Base {
   // Type representation
   case class ListType[A](typeA: TypeRep[A]) extends TypeRep[List[A]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ListType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
+    // private implicit val tagA = typeA.typeTag
     val name = s"List[${typeA.name}]"
     val typeArguments = List(typeA)
 
-    val typeTag = scala.reflect.runtime.universe.typeTag[List[A]]
+    // val typeTag = scala.reflect.runtime.universe.typeTag[List[A]]
   }
   implicit def typeList[A: TypeRep]: TypeRep[List[A]] = ListType(implicitly[TypeRep[A]])
 }
@@ -38,12 +38,12 @@ object MapIRs extends Base {
   // Type representation
   case class MapType[A, B](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[Map[A, B]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = MapType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
+    // private implicit val tagA = typeA.typeTag
+    // private implicit val tagB = typeB.typeTag
     val name = s"Map[${typeA.name}, ${typeB.name}]"
     val typeArguments = List(typeA, typeB)
 
-    val typeTag = scala.reflect.runtime.universe.typeTag[Map[A, B]]
+    // val typeTag = scala.reflect.runtime.universe.typeTag[Map[A, B]]
   }
   implicit def typeMap[A: TypeRep, B: TypeRep]: TypeRep[Map[A, B]] = MapType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
 }

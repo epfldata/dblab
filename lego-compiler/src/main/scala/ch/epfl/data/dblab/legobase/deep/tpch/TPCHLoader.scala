@@ -85,8 +85,6 @@ object TPCHLoaderIRs extends Base {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = TPCHLoaderType
     val name = "TPCHLoader"
     val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[TPCHLoader]
   }
   implicit val typeTPCHLoader: TypeRep[TPCHLoader] = TPCHLoaderType
   // case classes

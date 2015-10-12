@@ -102,12 +102,8 @@ trait LINEITEMRecordOps extends Base with OptimalStringOps {
 object LINEITEMRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object LINEITEMRecordType extends TypeRep[LINEITEMRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LINEITEMRecordType
-    val name = "LINEITEMRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[LINEITEMRecord]
+  case object LINEITEMRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[LINEITEMRecord](scala.reflect.runtime.universe.typeOf[LINEITEMRecord]) {
+    override def isRecord = true
   }
   implicit val typeLINEITEMRecord: TypeRep[LINEITEMRecord] = LINEITEMRecordType
   // case classes
@@ -463,12 +459,8 @@ trait ORDERSRecordOps extends Base with OptimalStringOps {
 object ORDERSRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object ORDERSRecordType extends TypeRep[ORDERSRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ORDERSRecordType
-    val name = "ORDERSRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[ORDERSRecord]
+  case object ORDERSRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[ORDERSRecord](scala.reflect.runtime.universe.typeOf[ORDERSRecord]) {
+    override def isRecord = true
   }
   implicit val typeORDERSRecord: TypeRep[ORDERSRecord] = ORDERSRecordType
   // case classes
@@ -708,12 +700,8 @@ trait CUSTOMERRecordOps extends Base with OptimalStringOps {
 object CUSTOMERRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object CUSTOMERRecordType extends TypeRep[CUSTOMERRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = CUSTOMERRecordType
-    val name = "CUSTOMERRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[CUSTOMERRecord]
+  case object CUSTOMERRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[CUSTOMERRecord](scala.reflect.runtime.universe.typeOf[CUSTOMERRecord]) {
+    override def isRecord = true
   }
   implicit val typeCUSTOMERRecord: TypeRep[CUSTOMERRecord] = CUSTOMERRecordType
   // case classes
@@ -933,12 +921,8 @@ trait SUPPLIERRecordOps extends Base with OptimalStringOps {
 object SUPPLIERRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object SUPPLIERRecordType extends TypeRep[SUPPLIERRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SUPPLIERRecordType
-    val name = "SUPPLIERRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[SUPPLIERRecord]
+  case object SUPPLIERRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[SUPPLIERRecord](scala.reflect.runtime.universe.typeOf[SUPPLIERRecord]) {
+    override def isRecord = true
   }
   implicit val typeSUPPLIERRecord: TypeRep[SUPPLIERRecord] = SUPPLIERRecordType
   // case classes
@@ -1134,12 +1118,8 @@ trait PARTSUPPRecordOps extends Base with OptimalStringOps {
 object PARTSUPPRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object PARTSUPPRecordType extends TypeRep[PARTSUPPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PARTSUPPRecordType
-    val name = "PARTSUPPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[PARTSUPPRecord]
+  case object PARTSUPPRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[PARTSUPPRecord](scala.reflect.runtime.universe.typeOf[PARTSUPPRecord]) {
+    override def isRecord = true
   }
   implicit val typePARTSUPPRecord: TypeRep[PARTSUPPRecord] = PARTSUPPRecordType
   // case classes
@@ -1295,12 +1275,8 @@ trait REGIONRecordOps extends Base with OptimalStringOps {
 object REGIONRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object REGIONRecordType extends TypeRep[REGIONRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = REGIONRecordType
-    val name = "REGIONRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[REGIONRecord]
+  case object REGIONRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[REGIONRecord](scala.reflect.runtime.universe.typeOf[REGIONRecord]) {
+    override def isRecord = true
   }
   implicit val typeREGIONRecord: TypeRep[REGIONRecord] = REGIONRecordType
   // case classes
@@ -1428,12 +1404,8 @@ trait NATIONRecordOps extends Base with OptimalStringOps {
 object NATIONRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object NATIONRecordType extends TypeRep[NATIONRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = NATIONRecordType
-    val name = "NATIONRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[NATIONRecord]
+  case object NATIONRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[NATIONRecord](scala.reflect.runtime.universe.typeOf[NATIONRecord]) {
+    override def isRecord = true
   }
   implicit val typeNATIONRecord: TypeRep[NATIONRecord] = NATIONRecordType
   // case classes
@@ -1597,12 +1569,8 @@ trait PARTRecordOps extends Base with OptimalStringOps {
 object PARTRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object PARTRecordType extends TypeRep[PARTRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PARTRecordType
-    val name = "PARTRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[PARTRecord]
+  case object PARTRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[PARTRecord](scala.reflect.runtime.universe.typeOf[PARTRecord]) {
+    override def isRecord = true
   }
   implicit val typePARTRecord: TypeRep[PARTRecord] = PARTRecordType
   // case classes

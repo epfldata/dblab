@@ -63,11 +63,8 @@ object OperatorIRs extends Base {
   // Type representation
   case class OperatorType[A](typeA: TypeRep[A]) extends TypeRep[Operator[A]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = OperatorType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
     val name = s"Operator[${typeA.name}]"
     val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[Operator[A]]
   }
   implicit def typeOperator[A: TypeRep]: TypeRep[Operator[A]] = OperatorType(implicitly[TypeRep[A]])
   // case classes
@@ -194,11 +191,8 @@ object ScanOpIRs extends Base {
   // Type representation
   case class ScanOpType[A](typeA: TypeRep[A]) extends TypeRep[ScanOp[A]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ScanOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
     val name = s"ScanOp[${typeA.name}]"
     val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[ScanOp[A]]
   }
   implicit def typeScanOp[A: TypeRep]: TypeRep[ScanOp[A]] = ScanOpType(implicitly[TypeRep[A]])
   // case classes
@@ -369,11 +363,8 @@ object PrintOpIRs extends Base {
   // Type representation
   case class PrintOpType[A](typeA: TypeRep[A]) extends TypeRep[PrintOp[A]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = PrintOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
     val name = s"PrintOp[${typeA.name}]"
     val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[PrintOp[A]]
   }
   implicit def typePrintOp[A: TypeRep]: TypeRep[PrintOp[A]] = PrintOpType(implicitly[TypeRep[A]])
   // case classes
@@ -558,11 +549,8 @@ object SelectOpIRs extends Base {
   // Type representation
   case class SelectOpType[A](typeA: TypeRep[A]) extends TypeRep[SelectOp[A]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SelectOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
     val name = s"SelectOp[${typeA.name}]"
     val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[SelectOp[A]]
   }
   implicit def typeSelectOp[A: TypeRep]: TypeRep[SelectOp[A]] = SelectOpType(implicitly[TypeRep[A]])
   // case classes
@@ -740,12 +728,8 @@ object AggOpIRs extends Base {
   // Type representation
   case class AggOpType[A, B](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[AggOp[A, B]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = AggOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
     val name = s"AggOp[${typeA.name}, ${typeB.name}]"
     val typeArguments = List(typeA, typeB)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[AggOp[A, B]]
   }
   implicit def typeAggOp[A: TypeRep, B: TypeRep]: TypeRep[AggOp[A, B]] = AggOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
   // case classes
@@ -968,11 +952,8 @@ object MapOpIRs extends Base {
   // Type representation
   case class MapOpType[A](typeA: TypeRep[A]) extends TypeRep[MapOp[A]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = MapOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
     val name = s"MapOp[${typeA.name}]"
     val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[MapOp[A]]
   }
   implicit def typeMapOp[A: TypeRep]: TypeRep[MapOp[A]] = MapOpType(implicitly[TypeRep[A]])
   // case classes
@@ -1141,11 +1122,8 @@ object SortOpIRs extends Base {
   // Type representation
   case class SortOpType[A](typeA: TypeRep[A]) extends TypeRep[SortOp[A]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SortOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
     val name = s"SortOp[${typeA.name}]"
     val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[SortOp[A]]
   }
   implicit def typeSortOp[A: TypeRep]: TypeRep[SortOp[A]] = SortOpType(implicitly[TypeRep[A]])
   // case classes
@@ -1368,13 +1346,8 @@ object HashJoinOpIRs extends Base {
   // Type representation
   case class HashJoinOpType[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[HashJoinOp[A, B, C]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = HashJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.sc.pardis.shallow.Record]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.sc.pardis.shallow.Record]], newArguments(2).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
     val name = s"HashJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
     val typeArguments = List(typeA, typeB, typeC)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[HashJoinOp[A, B, C]]
   }
   implicit def typeHashJoinOp[A <: ch.epfl.data.sc.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.sc.pardis.shallow.Record: TypeRep, C: TypeRep]: TypeRep[HashJoinOp[A, B, C]] = HashJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
@@ -1684,13 +1657,8 @@ object WindowOpIRs extends Base {
   // Type representation
   case class WindowOpType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[WindowOp[A, B, C]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = WindowOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
     val name = s"WindowOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
     val typeArguments = List(typeA, typeB, typeC)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[WindowOp[A, B, C]]
   }
   implicit def typeWindowOp[A: TypeRep, B: TypeRep, C: TypeRep]: TypeRep[WindowOp[A, B, C]] = WindowOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
@@ -1928,13 +1896,8 @@ object LeftHashSemiJoinOpIRs extends Base {
   // Type representation
   case class LeftHashSemiJoinOpType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[LeftHashSemiJoinOp[A, B, C]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LeftHashSemiJoinOpType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
     val name = s"LeftHashSemiJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
     val typeArguments = List(typeA, typeB, typeC)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[LeftHashSemiJoinOp[A, B, C]]
   }
   implicit def typeLeftHashSemiJoinOp[A: TypeRep, B: TypeRep, C: TypeRep]: TypeRep[LeftHashSemiJoinOp[A, B, C]] = LeftHashSemiJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
@@ -2199,12 +2162,8 @@ object NestedLoopsJoinOpIRs extends Base {
   // Type representation
   case class NestedLoopsJoinOpType[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[NestedLoopsJoinOp[A, B]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = NestedLoopsJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.sc.pardis.shallow.Record]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.sc.pardis.shallow.Record]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
     val name = s"NestedLoopsJoinOp[${typeA.name}, ${typeB.name}]"
     val typeArguments = List(typeA, typeB)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[NestedLoopsJoinOp[A, B]]
   }
   implicit def typeNestedLoopsJoinOp[A <: ch.epfl.data.sc.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.sc.pardis.shallow.Record: TypeRep]: TypeRep[NestedLoopsJoinOp[A, B]] = NestedLoopsJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
   // case classes
@@ -2438,11 +2397,8 @@ object SubquerySingleResultIRs extends Base {
   // Type representation
   case class SubquerySingleResultType[A](typeA: TypeRep[A]) extends TypeRep[SubquerySingleResult[A]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = SubquerySingleResultType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
     val name = s"SubquerySingleResult[${typeA.name}]"
     val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[SubquerySingleResult[A]]
   }
   implicit def typeSubquerySingleResult[A: TypeRep]: TypeRep[SubquerySingleResult[A]] = SubquerySingleResultType(implicitly[TypeRep[A]])
   // case classes
@@ -2639,13 +2595,8 @@ object HashJoinAntiIRs extends Base {
   // Type representation
   case class HashJoinAntiType[A, B, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[HashJoinAnti[A, B, C]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = HashJoinAntiType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]], newArguments(2).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
     val name = s"HashJoinAnti[${typeA.name}, ${typeB.name}, ${typeC.name}]"
     val typeArguments = List(typeA, typeB, typeC)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[HashJoinAnti[A, B, C]]
   }
   implicit def typeHashJoinAnti[A: TypeRep, B: TypeRep, C: TypeRep]: TypeRep[HashJoinAnti[A, B, C]] = HashJoinAntiType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
@@ -2915,11 +2866,8 @@ object ViewOpIRs extends Base {
   // Type representation
   case class ViewOpType[A](typeA: TypeRep[A]) extends TypeRep[ViewOp[A]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = ViewOpType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
     val name = s"ViewOp[${typeA.name}]"
     val typeArguments = List(typeA)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[ViewOp[A]]
   }
   implicit def typeViewOp[A: TypeRep]: TypeRep[ViewOp[A]] = ViewOpType(implicitly[TypeRep[A]])
   // case classes
@@ -3158,13 +3106,8 @@ object LeftOuterJoinOpIRs extends Base {
   // Type representation
   case class LeftOuterJoinOpType[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record, C](typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[LeftOuterJoinOp[A, B, C]] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LeftOuterJoinOpType(newArguments(0).asInstanceOf[TypeRep[_ <: ch.epfl.data.sc.pardis.shallow.Record]], newArguments(1).asInstanceOf[TypeRep[_ <: ch.epfl.data.sc.pardis.shallow.Record]], newArguments(2).asInstanceOf[TypeRep[_]])
-    private implicit val tagA = typeA.typeTag
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
     val name = s"LeftOuterJoinOp[${typeA.name}, ${typeB.name}, ${typeC.name}]"
     val typeArguments = List(typeA, typeB, typeC)
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[LeftOuterJoinOp[A, B, C]]
   }
   implicit def typeLeftOuterJoinOp[A <: ch.epfl.data.sc.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.sc.pardis.shallow.Record: TypeRep, C: TypeRep]: TypeRep[LeftOuterJoinOp[A, B, C]] = LeftOuterJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes

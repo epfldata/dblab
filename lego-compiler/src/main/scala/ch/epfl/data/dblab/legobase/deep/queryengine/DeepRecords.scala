@@ -46,13 +46,8 @@ trait AGGRecordOps extends Base {
 }
 object AGGRecordIRs extends Base {
   // Type representation
-  case class AGGRecordType[B](typeB: TypeRep[B]) extends TypeRep[AGGRecord[B]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = AGGRecordType(newArguments(0).asInstanceOf[TypeRep[_]])
-    private implicit val tagB = typeB.typeTag
-    val name = s"AGGRecord[${typeB.name}]"
-    val typeArguments = List(typeB)
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[AGGRecord[B]]
+  case class AGGRecordType[B](typeB: TypeRep[B]) extends ch.epfl.data.sc.pardis.types.ReflectionType[AGGRecord[B]](scala.reflect.runtime.universe.typeOf[AGGRecord[Any]], List(typeB)) {
+    override def isRecord = true
   }
   implicit def typeAGGRecord[B: TypeRep]: TypeRep[AGGRecord[B]] = AGGRecordType(implicitly[TypeRep[B]])
   // case classes
@@ -156,14 +151,8 @@ trait WindowRecordOps extends Base {
 }
 object WindowRecordIRs extends Base {
   // Type representation
-  case class WindowRecordType[B, C](typeB: TypeRep[B], typeC: TypeRep[C]) extends TypeRep[WindowRecord[B, C]] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = WindowRecordType(newArguments(0).asInstanceOf[TypeRep[_]], newArguments(1).asInstanceOf[TypeRep[_]])
-    private implicit val tagB = typeB.typeTag
-    private implicit val tagC = typeC.typeTag
-    val name = s"WindowRecord[${typeB.name}, ${typeC.name}]"
-    val typeArguments = List(typeB, typeC)
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[WindowRecord[B, C]]
+  case class WindowRecordType[B, C](typeB: TypeRep[B], typeC: TypeRep[C]) extends ch.epfl.data.sc.pardis.types.ReflectionType[WindowRecord[B, C]](scala.reflect.runtime.universe.typeOf[WindowRecord[Any, Any]], List(typeB, typeC)) {
+    override def isRecord = true
   }
   implicit def typeWindowRecord[B: TypeRep, C: TypeRep]: TypeRep[WindowRecord[B, C]] = WindowRecordType(implicitly[TypeRep[B]], implicitly[TypeRep[C]])
   // case classes
