@@ -225,18 +225,24 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LegoBaseExp) extends Rec
       val found = set.find(fun)
       found.nonEmpty
   }
+  // rewrite += statement {
+  //   case sym -> SetFoldLeft(s, z, f) =>
+  //     val typeA = sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
+  //     val typeB = sym.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
   rewrite += rule {
     case sfl @ SetFoldLeft(s, z, f) =>
-      val elemType = if (sfl.typeA.isRecord) typeLPointer(sfl.typeA) else sfl.typeA
-      val state = __newVar(z)(sfl.typeB)
+      val typeA = sfl.typeA
+      val typeB = sfl.typeB
+      val elemType = if (typeA.isRecord) typeLPointer(typeA) else typeA
+      val state = __newVar(z)(typeB)
       val l = __newVar(CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[GList]]]]))
       __whileDo(__readVar(l) __!= CLang.NULL[GList], {
         val elem = infix_asInstanceOf(g_list_nth_data(readVar(l), unit(0)))(elemType)
-        val newState = inlineFunction(f, __readVar(state)(sfl.typeB), elem)
-        __assign(state, newState)(sfl.typeB)
+        val newState = inlineFunction(f, __readVar(state)(typeB), elem)
+        __assign(state, newState)(typeB)
         __assign(l, g_list_next(readVar(l)))
       })
-      __readVar(state)(sfl.typeB)
+      __readVar(state)(typeB)
   }
   rewrite += rule {
     case SetSize(s) =>
