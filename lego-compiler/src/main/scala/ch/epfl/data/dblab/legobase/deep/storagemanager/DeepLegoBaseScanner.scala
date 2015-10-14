@@ -66,8 +66,6 @@ object K2DBScannerIRs extends Base {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = K2DBScannerType
     val name = "K2DBScanner"
     val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[K2DBScanner]
   }
   implicit val typeK2DBScanner: TypeRep[K2DBScanner] = K2DBScannerType
   // case classes

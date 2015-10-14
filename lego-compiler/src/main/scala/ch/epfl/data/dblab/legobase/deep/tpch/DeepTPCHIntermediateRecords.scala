@@ -45,12 +45,8 @@ trait Q1GRPRecordOps extends Base {
 }
 object Q1GRPRecordIRs extends Base {
   // Type representation
-  case object Q1GRPRecordType extends TypeRep[Q1GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q1GRPRecordType
-    val name = "Q1GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q1GRPRecord]
+  case object Q1GRPRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q1GRPRecord](scala.reflect.runtime.universe.typeOf[Q1GRPRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ1GRPRecord: TypeRep[Q1GRPRecord] = Q1GRPRecordType
   // case classes
@@ -157,12 +153,8 @@ trait Q3GRPRecordOps extends Base {
 }
 object Q3GRPRecordIRs extends Base {
   // Type representation
-  case object Q3GRPRecordType extends TypeRep[Q3GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q3GRPRecordType
-    val name = "Q3GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q3GRPRecord]
+  case object Q3GRPRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q3GRPRecord](scala.reflect.runtime.universe.typeOf[Q3GRPRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ3GRPRecord: TypeRep[Q3GRPRecord] = Q3GRPRecordType
   // case classes
@@ -286,12 +278,8 @@ trait Q7GRPRecordOps extends Base with OptimalStringOps {
 object Q7GRPRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object Q7GRPRecordType extends TypeRep[Q7GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q7GRPRecordType
-    val name = "Q7GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q7GRPRecord]
+  case object Q7GRPRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q7GRPRecord](scala.reflect.runtime.universe.typeOf[Q7GRPRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ7GRPRecord: TypeRep[Q7GRPRecord] = Q7GRPRecordType
   // case classes
@@ -411,12 +399,8 @@ trait Q9GRPRecordOps extends Base with OptimalStringOps {
 object Q9GRPRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object Q9GRPRecordType extends TypeRep[Q9GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q9GRPRecordType
-    val name = "Q9GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q9GRPRecord]
+  case object Q9GRPRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q9GRPRecord](scala.reflect.runtime.universe.typeOf[Q9GRPRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ9GRPRecord: TypeRep[Q9GRPRecord] = Q9GRPRecordType
   // case classes
@@ -540,12 +524,8 @@ trait Q10GRPRecordOps extends Base with OptimalStringOps {
 object Q10GRPRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object Q10GRPRecordType extends TypeRep[Q10GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q10GRPRecordType
-    val name = "Q10GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q10GRPRecord]
+  case object Q10GRPRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q10GRPRecord](scala.reflect.runtime.universe.typeOf[Q10GRPRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ10GRPRecord: TypeRep[Q10GRPRecord] = Q10GRPRecordType
   // case classes
@@ -728,12 +708,8 @@ trait Q13IntRecordOps extends Base {
 }
 object Q13IntRecordIRs extends Base {
   // Type representation
-  case object Q13IntRecordType extends TypeRep[Q13IntRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q13IntRecordType
-    val name = "Q13IntRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q13IntRecord]
+  case object Q13IntRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q13IntRecord](scala.reflect.runtime.universe.typeOf[Q13IntRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ13IntRecord: TypeRep[Q13IntRecord] = Q13IntRecordType
   // case classes
@@ -821,12 +797,8 @@ trait Q16GRPRecord1Ops extends Base with OptimalStringOps {
 object Q16GRPRecord1IRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object Q16GRPRecord1Type extends TypeRep[Q16GRPRecord1] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q16GRPRecord1Type
-    val name = "Q16GRPRecord1"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q16GRPRecord1]
+  case object Q16GRPRecord1Type extends ch.epfl.data.sc.pardis.types.ReflectionType[Q16GRPRecord1](scala.reflect.runtime.universe.typeOf[Q16GRPRecord1]) {
+    override def isRecord = true
   }
   implicit val typeQ16GRPRecord1: TypeRep[Q16GRPRecord1] = Q16GRPRecord1Type
   // case classes
@@ -966,12 +938,8 @@ trait Q16GRPRecord2Ops extends Base with OptimalStringOps {
 object Q16GRPRecord2IRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object Q16GRPRecord2Type extends TypeRep[Q16GRPRecord2] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q16GRPRecord2Type
-    val name = "Q16GRPRecord2"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q16GRPRecord2]
+  case object Q16GRPRecord2Type extends ch.epfl.data.sc.pardis.types.ReflectionType[Q16GRPRecord2](scala.reflect.runtime.universe.typeOf[Q16GRPRecord2]) {
+    override def isRecord = true
   }
   implicit val typeQ16GRPRecord2: TypeRep[Q16GRPRecord2] = Q16GRPRecord2Type
   // case classes
@@ -1103,12 +1071,8 @@ trait Q18GRPRecordOps extends Base with OptimalStringOps {
 object Q18GRPRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object Q18GRPRecordType extends TypeRep[Q18GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q18GRPRecordType
-    val name = "Q18GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q18GRPRecord]
+  case object Q18GRPRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q18GRPRecord](scala.reflect.runtime.universe.typeOf[Q18GRPRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ18GRPRecord: TypeRep[Q18GRPRecord] = Q18GRPRecordType
   // case classes
@@ -1263,12 +1227,8 @@ trait Q20GRPRecordOps extends Base {
 }
 object Q20GRPRecordIRs extends Base {
   // Type representation
-  case object Q20GRPRecordType extends TypeRep[Q20GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q20GRPRecordType
-    val name = "Q20GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q20GRPRecord]
+  case object Q20GRPRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q20GRPRecord](scala.reflect.runtime.universe.typeOf[Q20GRPRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ20GRPRecord: TypeRep[Q20GRPRecord] = Q20GRPRecordType
   // case classes

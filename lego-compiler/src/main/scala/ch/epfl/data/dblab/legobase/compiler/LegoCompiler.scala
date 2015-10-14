@@ -211,7 +211,7 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   pipeline += DCECLang //NEVER REMOVE!!!!
 
-  // pipeline += TreeDumper(true)
+  pipeline += TreeDumper(true)
 
   val codeGenerator =
     if (settings.targetLanguage == CCodeGeneration) {

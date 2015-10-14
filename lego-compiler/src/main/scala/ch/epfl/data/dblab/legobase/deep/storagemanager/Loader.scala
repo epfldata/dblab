@@ -55,8 +55,6 @@ object LoaderIRs extends Base {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LoaderType
     val name = "Loader"
     val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[Loader]
   }
   implicit val typeLoader: TypeRep[Loader] = LoaderType
   // case classes

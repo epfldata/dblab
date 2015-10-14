@@ -58,12 +58,12 @@ class LBLowering(override val from: LegoBaseExp, override val to: LegoBaseExp, v
   def getRegisteredFieldsOfType[A](t: PardisType[A]): List[String] = {
     val registeredFields = t match {
       case DynamicCompositeRecordType(l, r) =>
-        manifestTags(getType(t)) match {
+        getTag(t) match {
           case tag @ StructTags.CompositeTag(la, ra, ltag, rtag) =>
             getRegisteredFieldsOfType(l).map(la + _) ++ getRegisteredFieldsOfType(r).map(ra + _)
         }
       case _ =>
-        manifestTags.get(getType(t)).flatMap(x => fieldsAccessed.get(x)) match {
+        manifestTags.get(t.asInstanceOf[TypeRep[Any]]).flatMap(x => fieldsAccessed.get(x)) match {
           case Some(x) => x
           case None    => List()
         }
@@ -74,7 +74,7 @@ class LBLowering(override val from: LegoBaseExp, override val to: LegoBaseExp, v
   def registerField[A](t: PardisType[A], field: String): Unit = {
     t match {
       case DynamicCompositeRecordType(l, r) =>
-        manifestTags.get(getType(t)) match {
+        manifestTags.get(t.asInstanceOf[TypeRep[Any]]) match {
           case Some(tag @ StructTags.CompositeTag(la, ra, ltag, rtag)) =>
             // val lstruct = structs(ltag)
             // val rstruct = structs(rtag)
@@ -90,7 +90,7 @@ class LBLowering(override val from: LegoBaseExp, override val to: LegoBaseExp, v
             registerField(r, field)
         }
       case _ =>
-        manifestTags.get(getType(t)) match {
+        manifestTags.get(t.asInstanceOf[TypeRep[Any]]) match {
           case Some(tag) => structs.get(tag) match {
             case Some(s) =>
               val l = fieldsAccessed.getOrElseUpdate(tag, new ArrayBuffer())
@@ -121,21 +121,21 @@ class LBLowering(override val from: LegoBaseExp, override val to: LegoBaseExp, v
     case ConcatDynamic(self, record2, leftAlias, rightAlias) if phase == FieldUsagePhase => {
       val Constant(la: String) = leftAlias
       val Constant(ra: String) = rightAlias
-      val leftTag = getTag(getType(self.tp))
-      val rightTag = getTag(getType(record2.tp))
+      val leftTag = getTag(self.tp)
+      val rightTag = getTag(record2.tp)
       // TODO rewrite using getElems method
       val concatTag = StructTags.CompositeTag[Any, Any](la, ra, leftTag, rightTag)
       val regFields = getRegisteredFieldsOfType(self.tp) ++ getRegisteredFieldsOfType(record2.tp)
       def fieldIsRegistered(f: StructElemInformation): Boolean = regFields.contains(f.name) || !removeUnusedFields
       val newElems = getStructElems(leftTag).filter(fieldIsRegistered).map(x => StructElemInformation(la + x.name, x.tpe, x.mutable)) ++ getStructElems(rightTag).filter(fieldIsRegistered).map(x => StructElemInformation(ra + x.name, x.tpe, x.mutable))
       structs += concatTag -> newElems
-      manifestTags += getType(node.tp) -> concatTag
+      manifestTags += node.tp.asInstanceOf[TypeRep[Any]] -> concatTag
     }
     case _ => super.traverseDef(node)
   }
 
   def getElems[T](tp: TypeRep[T], aliasing: String = ""): Seq[StructElemInformation] = {
-    val tag = getTag(getType(tp))
+    val tag = getTag(tp)
     val regFields = getRegisteredFieldsOfType(tp)
     def fieldIsRegistered(f: StructElemInformation): Boolean = regFields.contains(f.name) || !removeUnusedFields
     getStructElems(tag).filter(fieldIsRegistered).map(x => StructElemInformation(aliasing + x.name, x.tpe, x.mutable))
@@ -152,14 +152,14 @@ class LBLowering(override val from: LegoBaseExp, override val to: LegoBaseExp, v
     for (tp <- sorted) {
       val dtp = tp.asInstanceOf[DynamicCompositeRecordType[_, _]]
       val (lt, rt) = dtp.leftType -> dtp.rightType
-      val leftTag = getTag(getType(lt))
-      val rightTag = getTag(getType(rt))
+      val leftTag = getTag(lt)
+      val rightTag = getTag(rt)
       System.err.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: No tag found for type $tp. Hence assuming no aliasing!")
       val concatTag = StructTags.CompositeTag[Any, Any]("", "", leftTag, rightTag)
       val newElems = getElems(lt) ++ getElems(rt)
       // System.out.println(s"concatTag $tp -> $concatTag -> $newElems")
       structs += concatTag -> newElems
-      manifestTags += getType(tp) -> concatTag
+      manifestTags += tp.asInstanceOf[TypeRep[Any]] -> concatTag
     }
     // System.out.println(s"sorted ${sorted.mkString("\n")}")
   }
@@ -194,12 +194,12 @@ class LBLowering(override val from: LegoBaseExp, override val to: LegoBaseExp, v
       super.transformDef(PardisStruct(tag, newFields, Nil)(ps.tp))(ps.tp)
     case ConcatDynamic(record1, record2, leftAlias, rightAlias) if lowerStructs => {
       val tp = node.tp.asInstanceOf[TypeRep[(Any, Any)]]
-      val leftTag = getTag(getType(record1.tp))
-      val rightTag = getTag(getType(record2.tp))
+      val leftTag = getTag(record1.tp)
+      val rightTag = getTag(record2.tp)
       val Constant(la: String) = leftAlias
       val Constant(ra: String) = rightAlias
       val concatTag = StructTags.CompositeTag[Any, Any](la, ra, leftTag, rightTag)
-      def getElems[T](exp: Rep[T]): Seq[StructElemInformation] = getStructElems(manifestTags(getType(exp.tp)))
+      def getElems[T](exp: Rep[T]): Seq[StructElemInformation] = getStructElems(getTag(exp.tp))
       val elems = getStructElems(concatTag)
       case class ElemInfo[T](name: String, rec: Rep[T], tp: TypeRep[Any])
       val regFields = getRegisteredFieldsOfType(record1.tp) ++ getRegisteredFieldsOfType(record2.tp)
@@ -372,8 +372,8 @@ class LBLoweringPostProcess(override val IR: LegoBaseExp, val lbLowering: LBLowe
 
   rewrite += statement {
     case sym -> StructImmutableField(obj, name) if sym.tp.isRecord && !sym.tp.isInstanceOf[RecordType[_]] =>
-      import lbLowering.{ createTag, getType }
-      val tag = createTag(getType(sym.tp))
+      import lbLowering.{ createTag }
+      val tag = createTag(sym.tp)
       val newTp = new RecordType(tag, Some(sym.tp.asInstanceOf[TypeRep[Any]])).asInstanceOf[TypeRep[Any]]
       field(obj, name)(newTp)
   }

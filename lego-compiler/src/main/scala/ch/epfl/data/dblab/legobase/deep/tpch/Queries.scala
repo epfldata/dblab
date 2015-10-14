@@ -163,8 +163,6 @@ object QueriesIRs extends Base {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = QueriesType
     val name = "Queries"
     val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[Queries]
   }
   implicit val typeQueries: TypeRep[Queries] = QueriesType
   // case classes
