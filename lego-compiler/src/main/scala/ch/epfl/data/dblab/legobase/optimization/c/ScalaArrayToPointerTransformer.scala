@@ -145,7 +145,7 @@ class ScalaArrayToPointerTransformer(override val IR: LegoBaseExp, val settings:
       val elemType = try {
         a.tp.typeArguments(0)
       } catch {
-        case ex => throw new Exception(s"A problem with array $a:${a.tp}", ex)
+        case ex: Throwable => throw new Exception(s"A problem with array $a:${a.tp}", ex)
       }
       // Get type of internal array
       val newTp = ({

@@ -5,7 +5,7 @@ package deep
 import sc.pardis.quasi.anf.BaseQuasiExp
 
 /** A polymophic embedding cake which chains all other cakes together */
-trait LegoBaseExp
+class LegoBaseExp
   extends InliningLegoBase
   with LegoBaseCLang
   with ch.epfl.data.sc.cscala.deep.DeepCScala

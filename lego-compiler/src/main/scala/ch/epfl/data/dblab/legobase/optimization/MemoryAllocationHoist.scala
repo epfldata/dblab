@@ -129,9 +129,9 @@ class MemoryAllocationHoist(override val IR: LegoBaseExp, val schema: Schema)
 
   def tagToTableNames[T](tag: StructTag[T]): List[String] = {
     tag match {
-      case CompositeTag(_, _, a, b) =>
+      case StructTags.CompositeTag(_, _, a, b) =>
         tagToTableNames(a) ++ tagToTableNames(b)
-      case ClassTag(name) =>
+      case StructTags.ClassTag(name) =>
         List(name)
     }
   }

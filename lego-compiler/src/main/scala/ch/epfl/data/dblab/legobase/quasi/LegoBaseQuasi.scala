@@ -7,7 +7,7 @@ import sc.pardis.deep.scalalib._
 import sc.pardis.deep.scalalib.collection._
 import sc.pardis.quasi.anf.BaseQuasiExt
 
-trait LegoBaseQuasiExt extends BaseQuasiExt
+class LegoBaseQuasiExt extends BaseQuasiExt
   with NumericExtOps
   with ByteExtOps
   with SetExtOps

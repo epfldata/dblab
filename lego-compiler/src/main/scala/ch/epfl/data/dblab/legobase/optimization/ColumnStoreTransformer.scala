@@ -2,6 +2,8 @@ package ch.epfl.data
 package dblab.legobase
 package optimization
 
+import ch.epfl.data.sc.pardis.quasi.TypeParameters._
+
 import scala.language.implicitConversions
 import sc.pardis.ir._
 import reflect.runtime.universe.{ TypeTag, Type }
@@ -10,6 +12,7 @@ import deep._
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
+import quasi._
 
 /**
  * Transforms row layout representation to columnar layout representation.
@@ -100,7 +103,7 @@ class ColumnStoreTransformer(override val IR: LegoBaseExp)
     def columnStoreOf = s"$CSTORE_OF_PREFIX$className"
   }
 
-  override def transformType[T: PardisType]: PardisType[Any] = ({
+  override def transformType[T: PardisType]: PardisType[Any] = {
     val tp = typeRep[T]
     if (tp.isArray) {
       if (shouldBeColumnarized(tp.typeArguments(0))) {
@@ -111,14 +114,15 @@ class ColumnStoreTransformer(override val IR: LegoBaseExp)
       val structDef = getStructDef(tp).get
       elemColumnStoreType(structDef.tag)
     } else super.transformType[T]
-  })
+  }
 
   val potentialTypes = scala.collection.mutable.Set[TypeRep[_]]()
   val forbiddenTypes = scala.collection.mutable.Set[TypeRep[_]]()
   val columnarTypes = scala.collection.mutable.Set[TypeRep[_]]()
-
+  
   analysis += statement {
-    case sym -> ArrayNew(_) =>
+//    case sym -> dsl"new Array($_)" =>
+    case sym -> dsl"new Array[Any]($_)" =>
       val innerType = sym.tp.typeArguments(0)
       if (innerType.isRecord)
         potentialTypes += innerType
@@ -140,12 +144,14 @@ class ColumnStoreTransformer(override val IR: LegoBaseExp)
     }
   }
 
-  analysis += rule {
-    case ArrayUpdate(arr, _, UnacceptableUpdateValue(_)) =>
-      val innerType = arr.tp.typeArguments(0)
-      if (innerType.isRecord)
-        forbiddenTypes += innerType
-      ()
+  {
+    analysis += rule {
+      case dsl"($arr: Array[Any])($_) = ${UnacceptableUpdateValue(_)}" =>
+        val innerType = arr.tp.typeArguments(0)
+        if (innerType.isRecord)
+          forbiddenTypes += innerType
+        ()
+    }
   }
 
   def computeColumnarTypes(): Unit = {
@@ -167,7 +173,9 @@ class ColumnStoreTransformer(override val IR: LegoBaseExp)
   }
 
   rewrite += rule {
-    case an @ ArrayNew(size) if shouldBeColumnarized(an.tp.typeArguments(0)) => {
+//    case an @ ArrayNew(size) if shouldBeColumnarized(an.tp.typeArguments(0)) => {
+//    case dsl"new Array[Any]($size) as $an" if shouldBeColumnarized(an.tp.typeArguments(0)) => {
+    case an @ dsl"new Array[Any]($size)" if shouldBeColumnarized(an.tp.typeArguments(0)) => {
       val elemType = an.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
       val structDef = getStructDef(elemType).get
       val newElems = structDef.fields.map(el =>
@@ -179,7 +187,7 @@ class ColumnStoreTransformer(override val IR: LegoBaseExp)
   }
 
   rewrite += rule {
-    case au @ ArrayUpdate(arr, idx, value) if shouldBeColumnarized(arr.tp.typeArguments(0)) =>
+    case au @ dsl"(($arr: Array[Any])($idx) = $value)" if shouldBeColumnarized(arr.tp.typeArguments(0)) =>
       val elemType = arr.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
       val structDef = getStructDef(elemType).get
       for (el <- structDef.fields) {
@@ -208,12 +216,12 @@ class ColumnStoreTransformer(override val IR: LegoBaseExp)
         }
         column(idx) = v
       }
-      unit(())
+      dsl"()"
   }
 
   rewrite += statement {
     /* Nodes returning struct nodes -- convert them to a reference to column store */
-    case sym -> (aa @ ArrayApply(arr, idx)) if shouldBeColumnarized(sym.tp) =>
+    case sym -> (aa @ dsl"($arr: Array[Any])($idx)") if shouldBeColumnarized(sym.tp) =>
       val tpe = sym.tp.asInstanceOf[RecordType[Any]]
       val newElems = List(PardisStructArg(COLUMN_STORE_POINTER, false, apply(arr)), PardisStructArg(INDEX, false, apply(idx)))
       val rTpe = elemColumnStoreType(tpe.tag)
