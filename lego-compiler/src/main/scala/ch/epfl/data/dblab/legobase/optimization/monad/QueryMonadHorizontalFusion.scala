@@ -89,7 +89,7 @@ class QueryMonadHorizontalFusion(override val IR: LegoBaseExp) extends RuleBased
   override def transformStmWithNewSym(stm: Stm[_]): to.Stm[_] = stm match {
     case Stm(sym, rhs) =>
       val newdef = transformDef(rhs)(sym.tp)
-      to.findSymbol(newdef)(newdef.tp) match {
+      to.IRReifier.findSymbol(newdef)(newdef.tp) match {
         case Some(existingSym) =>
           subst += sym -> existingSym
           to.Stm(existingSym, newdef)(existingSym.tp)
