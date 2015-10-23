@@ -156,9 +156,9 @@ class StatisticsEstimator(override val IR: LegoBaseExp, val schema: Schema) exte
     estimatedSize;
   }
 
-  analysis += rule {
-    case po @ PrintOpNew(parent, _, _) if !analyzed =>
-      analyzeQuery(po);
+  analysis += statement {
+    case sym -> PrintOpNew(parent, _, _) if !analyzed =>
+      analyzeQuery(sym);
       analyzed = true;
   }
 }
