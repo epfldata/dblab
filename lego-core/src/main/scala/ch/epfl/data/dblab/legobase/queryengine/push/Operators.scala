@@ -9,7 +9,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.Set
 import scala.collection.mutable.TreeSet
 import GenericEngine._
-import sc.pardis.annotations.{ deep, metadeep, dontInline, needs }
+import sc.pardis.annotations.{ deep, metadeep, dontInline, needs, :: }
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
 import scala.reflect.ClassTag
 
@@ -131,7 +131,7 @@ object MultiMap {
  * HashMap of the aggregate operator
  * @param aggFuncs the aggregate functions used in the aggregate operator
  */
-@needs[(HashMap[Any, Any], AGGRecord[_])]
+@needs[HashMap[Any, Any] :: AGGRecord[_]]
 @deep class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B])(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
   val hm = HashMap[B, AGGRecord[B]]() //Array[Double]]()
   // val hm = new pardis.shallow.scalalib.collection.HashMapOptimal[B, AGGRecord[B]]() {
@@ -279,7 +279,7 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
  * in the MultiMap of the window operator.
  */
 // @deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: MultiMap.Set[A] => C) extends Operator[WindowRecord[B, C]] {
-@needs[(scala.collection.mutable.MultiMap[Any, Any], Set[_])]
+@needs[scala.collection.mutable.MultiMap[Any, Any] :: Set[_]]
 @deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: Set[A] => C) extends Operator[WindowRecord[B, C]] {
   val hm = MultiMap[B, A]
 

@@ -3,7 +3,7 @@ package dblab.legobase
 package storagemanager
 
 import utils.Utilities._
-import sc.pardis.annotations.{ deep, metadeep, dontLift, dontInline, needs }
+import sc.pardis.annotations.{ deep, metadeep, dontLift, dontInline, needs, :: }
 import queryengine._
 import tpch._
 import schema._
@@ -24,7 +24,7 @@ import scala.reflect._
   thisComponent = "ch.epfl.data.dblab.legobase.deep.DeepDSL")
 class MetaInfo
 
-@needs[(K2DBScanner, Array[_], OptimalString)]
+@needs[K2DBScanner :: Array[_] :: OptimalString]
 @deep
 trait Loader
 
