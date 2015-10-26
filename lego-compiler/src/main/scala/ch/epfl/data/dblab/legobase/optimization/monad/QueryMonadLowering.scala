@@ -20,7 +20,7 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
   import IR._
 
   def array_filter[T: TypeRep](array: Rep[Array[T]], p: Rep[T => Boolean]): Rep[Array[T]] = {
-    val Def(Lambda(pred, _, _)) = p
+    val Def(IR.Lambda(pred, _, _)) = p
     val size = __newVarNamed[Int](unit(0), "arraySize")
     array_foreach(array, (elem: Rep[T]) => __ifThenElse(pred(elem),
       __assign(size, readVar(size) + unit(1)), unit()))
@@ -50,7 +50,7 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
   // }
 
   def array_map[T: TypeRep, S: TypeRep](array: Rep[Array[T]], f: Rep[T => S]): Rep[Array[S]] = {
-    val Def(Lambda(func, _, _)) = f
+    val Def(IR.Lambda(func, _, _)) = f
     val size = __newVarNamed[Int](unit(0), "arraySize")
     val resultArray = __newArray[S](array.length)
     val counter = __newVarNamed[Int](unit(0), "arrayCounter")
@@ -105,7 +105,7 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
   rewrite += rule {
     case QueryForeach(monad, f) =>
       val array = apply(monad).asInstanceOf[Rep[Array[Any]]]
-      val Def(Lambda(func, _, _)) = f
+      val Def(IR.Lambda(func, _, _)) = f
       array_foreach(array, func)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
   }
 

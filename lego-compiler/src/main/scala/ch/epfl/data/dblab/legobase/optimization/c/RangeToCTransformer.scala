@@ -43,6 +43,6 @@ class RangeToCTransformer(override val IR: LegoBaseExp) extends RecursiveRuleBas
   }
   rewrite += rule {
     case RangeForeach(Def(RangeNew(start, end, step)), Def(Lambda(f, i1, o))) =>
-      PardisFor(start, end, step, i1.asInstanceOf[Expression[Int]], reifyBlock({ o }).asInstanceOf[PardisBlock[Unit]])
+      PardisFor(start, end, step, i1.asInstanceOf[Expression[Int]], reifyBlock({ o.asInstanceOf[PardisBlock[Unit]] }))
   }
 }
