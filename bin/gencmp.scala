@@ -18,7 +18,7 @@ def file(s: String): File = new File(s)
 def uri(s: String): URI = new URI(s)
 
 val numQueries = 22
-val queryNums = (6 to numQueries)
+val queryNums = (1 to numQueries)
 
 def genc(outputDir: String, compareDir: Option[String] = None, gen: Boolean = true) {
   
@@ -53,15 +53,20 @@ def genc(outputDir: String, compareDir: Option[String] = None, gen: Boolean = tr
   compareDir foreach { compareDir =>
   	var totLines = 0
   	
+  	val compareDirName = compareDir split "/" last
+  	
+  	val cmpDir = file(s"$outputDir/cmp_$compareDirName")
+  	
+  	if (cmpDir exists) (cmpDir ** "*").get foreach (f => s"rm $f" !)
+	  else s"mkdir $cmpDir" !
+	
   	for (i <- queryNums) {
   		println(s"Comparing Q$i.c ...")
   		
-	  	val cmp = file(s"$outputDir/cmp$i")
+	  	val cmp = file(s"$cmpDir/cmp$i")
 	  	
 	  	if (cmp exists) s"rm $cmp" !
 	  	
-	  	"touch $cmp" !
-  	
   		s"diff $outputDir/Q$i.c $compareDir/Q$i.c" #>> cmp !
   		
 	  	val cmpLines = scala.io.Source.fromFile(cmp).getLines.toArray
