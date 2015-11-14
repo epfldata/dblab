@@ -122,11 +122,11 @@ object TPCHCompiler extends TPCHRunner {
       } catch {
         case _: Throwable => System.err.println(s"Config file `$propName` does not exist!")
       }
-      val argsString = prop_.getProperty(s"tpch.Q$queryNumber")
+      val argsString = prop_.getProperty(s"tpch.$query")
       if (argsString == null) {
         throw new Exception(s"${OptimalSetting.flagName} cannot be used for query $queryNumber, because there is no optimal combiniation defined for it=.")
       }
-      prop_.getProperty(s"tpch.Q$queryNumber").split(" ").toList
+      argsString.split(" ").toList
     }
     val validatedSettings = settings.validate()
 
