@@ -148,7 +148,7 @@ object TPCHSchema {
     val ordersTable = {
       val O_ORDERKEY: Attribute = "O_ORDERKEY" -> IntType
       val O_COMMENT = Attribute("O_COMMENT", VarCharType(79), List(Compressed))
-      val O_ORDERPRIORITY = Attribute("O_ORDERPRIORITY", VarCharType(15), List(Compressed))
+      val O_ORDERPRIORITY = Attribute("O_ORDERPRIORITY", VarCharType(15))
 
       new Table("ORDERS", List(
         O_ORDERKEY,
