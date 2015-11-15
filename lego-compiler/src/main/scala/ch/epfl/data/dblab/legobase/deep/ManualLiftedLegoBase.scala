@@ -14,7 +14,11 @@ import pardis.effects._
 import ch.epfl.data.dblab.legobase.queryengine.push._
 
 /** A polymorphic embedding cake containing manually lifted methods and classes */
-trait ManualLiftedLegoBase extends OrderingOps with ManifestOps with sc.pardis.deep.scalalib.collection.RichIntOps with sc.pardis.deep.scalalib.ByteComponent with sc.pardis.deep.scalalib.collection.ContOps with sc.pardis.deep.scalalib.ScalaPredef { this: DeepDSL =>
+trait ManualLiftedLegoBase extends OrderingOps with ManifestOps
+  with sc.pardis.deep.scalalib.collection.RichIntOps with sc.pardis.deep.scalalib.ByteComponent
+  with sc.pardis.deep.scalalib.collection.ContOps with sc.pardis.deep.scalalib.collection.ArrayBufferComponent
+  with sc.pardis.deep.scalalib.collection.RangeComponent with dblab.legobase.deep.queryengine.AGGRecordComponent
+  with sc.pardis.deep.scalalib.ScalaPredef with sc.pardis.deep.scalalib.io.PrintStreamComponent { this: DeepDSL =>
   // TODO these methods should be automatically lifted using Purgatory
   object Console {
     def err: Rep[PrintStream] = consoleErr()
