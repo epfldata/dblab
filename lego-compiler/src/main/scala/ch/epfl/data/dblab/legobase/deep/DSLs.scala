@@ -16,8 +16,7 @@ import dblab.legobase.deep.tpch._
 /** A polymophic embedding cake which chains all other cakes together */
 class LegoBaseExp
   extends InliningLegoBase
-  with LegoBaseCLang
-  with ch.epfl.data.sc.cscala.deep.DeepCScala
+  with CScalaDSL
   with BaseQuasiExp {
   /**
    * Keeps the link between the lowered symbols and the original (higher level) symbol node definition
@@ -37,47 +36,25 @@ class LegoBaseExp
   }
 }
 
+trait CScalaDSL extends ScalaCoreDSL
+  with LegoBaseCLang
+  with ch.epfl.data.sc.cscala.deep.DeepCScala
+
 trait ScalaCoreDSL extends CharComponent
   with DoubleComponent
   with IntComponent
   with LongComponent
   with BooleanComponent
-  // with DoublePartialEvaluation
-  // with IntPartialEvaluation
-  // with LongPartialEvaluation
-  // with BooleanPartialEvaluation
   with ArrayComponent
   with SeqComponent
   with PrintStreamComponent
-  // with Q1GRPRecordComponent
-  // with Q3GRPRecordComponent
-  // with Q7GRPRecordComponent
-  // with Q9GRPRecordComponent
-  // with Q10GRPRecordComponent
-  // with Q13IntRecordComponent
-  // with Q16GRPRecord1Component
-  // with Q16GRPRecord2Component
-  // with Q18GRPRecordComponent
-  // with Q20GRPRecordComponent
-  // with GenericEngineComponent
-  // with LINEITEMRecordComponent
-  // with SUPPLIERRecordComponent
-  // with PARTSUPPRecordComponent
-  // with REGIONRecordComponent
-  // with NATIONRecordComponent
-  // with PARTRecordComponent
-  // with CUSTOMERRecordComponent
-  // with ORDERSRecordComponent
   with OptimalStringComponent
-  // with LoaderComponent
   with K2DBScannerComponent
   with IntegerComponent
   with HashMapComponent
   with SetComponent
   with TreeSetComponent
   with ArrayBufferComponent
-  // with ManualLiftedLegoBase
-  // with QueryComponent
   with Tuple2Component
   with Tuple3Component
   with Tuple4Component
@@ -85,11 +62,6 @@ trait ScalaCoreDSL extends CharComponent
   with MultiMapComponent
   with OptionComponent
   with StringComponent
-// with SynthesizedQueriesComponent
-// with TPCHLoaderComponent
-// with monad.GroupedQueryComponent
-// with monad.QueryComponent
-// with monad.JoinableQueryComponent
 
 trait ScalaCoreDSLPartialEvaluation extends ScalaCoreDSL
   with DoublePartialEvaluation
@@ -97,3 +69,31 @@ trait ScalaCoreDSLPartialEvaluation extends ScalaCoreDSL
   with LongPartialEvaluation
   with BooleanPartialEvaluation
 
+trait QOpDSL extends queryengine.push.OperatorsComponent
+  with AGGRecordComponent
+  with WindowRecordComponent
+  with GenericEngineComponent
+  with LoaderComponent { this: DeepDSL =>
+}
+
+// TODO remove the dependacy of Loader on ManualLifted so that there is no more
+// need for the self type.
+trait QMonadDSL extends GenericEngineComponent
+  with LoaderComponent
+  with monad.GroupedQueryComponent
+  with monad.QueryComponent
+  with monad.JoinableQueryComponent { this: DeepDSL =>
+}
+
+trait TPCHQueries extends QueryComponent
+  with TPCHLoaderComponent
+  with TPCHRecords
+  with SynthesizedQueriesComponent { this: DeepDSL =>
+}
+
+/** A polymorphic embedding cake which chains all components needed for TPCH queries */
+trait DeepDSL extends QOpDSL
+  with QMonadDSL
+  with ManualLiftedLegoBase
+  with TPCHQueries
+  with ScalaCoreDSLPartialEvaluation
