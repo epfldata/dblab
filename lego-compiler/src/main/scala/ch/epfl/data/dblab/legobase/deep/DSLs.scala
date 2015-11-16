@@ -6,6 +6,7 @@ import sc.pardis.quasi.anf.BaseQuasiExp
 import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.deep._
+import sc.pardis.language._
 import sc.pardis.deep.scalalib._
 import sc.pardis.deep.scalalib.collection._
 import sc.pardis.deep.scalalib.io._
@@ -97,3 +98,7 @@ trait DeepDSL extends QOpDSL
   with ManualLiftedLegoBase
   with TPCHQueries
   with ScalaCoreDSLPartialEvaluation
+
+case object MCHLanguage extends Language(MCLanguage)
+case object MCLanguage extends Language(ScalaCoreLanguage)
+case object QMonadLanguage extends Language

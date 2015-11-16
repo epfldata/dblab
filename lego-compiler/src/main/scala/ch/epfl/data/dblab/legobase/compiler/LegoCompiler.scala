@@ -33,6 +33,8 @@ class LegoCompiler(val DSL: LegoBaseExp,
   def outputFile: String =
     if (settings.nameIsWithFlag)
       settings.args.filter(_.startsWith("+")).map(_.drop(1)).sorted.mkString("_") + "_" + settings.queryName
+    else if (settings.hasOptimizationLevel)
+      settings.queryName + "_L" + settings.getOptimizationLevel
     else
       settings.queryName
 
