@@ -14,6 +14,7 @@ import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
 import sc.pardis.compiler._
+import sc.pardis.language._
 
 /**
  * The class which is responsible for wiring together different parts of the compilation pipeline
@@ -48,7 +49,7 @@ class LegoCompiler(val DSL: LegoBaseExp,
     }
   }
 
-  override def irToProgram = if (settings.targetLanguage == CCodeGeneration) {
+  override def irToProgram = if (settings.targetLanguage == CCoreLanguage) {
     IRToCProgram(DSL)
   } else {
     IRToProgram(DSL)
@@ -117,9 +118,6 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   // pipeline += TreeDumper(true)
 
-  if (settings.stringCompression) pipeline += new StringDictionaryTransformer(DSL, schema)
-  // pipeline += TreeDumper(false)
-
   if (settings.hashMapLowering || settings.hashMapNoCollision) {
     if (settings.hashMapLowering) {
       pipeline += new sc.pardis.deep.scalalib.collection.MultiMapOptimalTransformation(DSL)
@@ -154,6 +152,9 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
     pipeline += new BlockFlattening(DSL) // should not be needed!
   }
+
+  if (settings.stringCompression) pipeline += new StringDictionaryTransformer(DSL, schema)
+  // pipeline += TreeDumper(false)
 
   if (settings.partitioning) {
     // pipeline += TreeDumper(false)
@@ -207,14 +208,14 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   // pipeline += TreeDumper(false)
 
-  if (settings.targetLanguage == CCodeGeneration) pipeline += new CTransformersPipeline(settings)
+  if (settings.targetLanguage == CCoreLanguage) pipeline += new CTransformersPipeline(settings)
 
   pipeline += DCECLang //NEVER REMOVE!!!!
 
   pipeline += TreeDumper(true)
 
   val codeGenerator =
-    if (settings.targetLanguage == CCodeGeneration) {
+    if (settings.targetLanguage == CCoreLanguage) {
       if (settings.noLetBinding)
         new LegoCASTGenerator(DSL, outputFile, true)
       else

@@ -2,7 +2,7 @@ package ch.epfl.data
 package dblab.legobase
 package compiler
 
-import Config._
+import sc.pardis.language._
 
 /**
  * Handles the setting parameters which are passed as the main arguments of the program.
@@ -22,7 +22,7 @@ class Settings(val args: List[String]) {
       throw new Exception("It's impossible to lower Sets without lowering HashMap and MultiMap!")
     if (hashMapLowering && hashMapNoCollision)
       throw new Exception(s"${HashMapNoCollisionSetting.flagName} and ${HashMapToSetSetting.flagName} cannot be chained together.")
-    if (hasSetting(LargeOutputHoistingSetting) && targetLanguage != CCodeGeneration) {
+    if (hasSetting(LargeOutputHoistingSetting) && targetLanguage != CCoreLanguage) {
       throw new Exception(s"${LargeOutputHoistingSetting.flagName} is only available for C Code Generation.")
     }
     if (pointerStore && oldCArrayHandling) {
@@ -64,10 +64,10 @@ class Settings(val args: List[String]) {
   def nameIsWithFlag: Boolean = hasSetting(OutputNameWithFlagSetting)
   def onlyLoading: Boolean = hasSetting(OnlyLoaderSetting)
   def chooseOptimal: Boolean = hasSetting(OptimalSetting)
-  def targetLanguage: CodeGenerationLang = if (hasSetting(ScalaCGSetting))
-    ScalaCodeGeneration
+  def targetLanguage: Language = if (hasSetting(ScalaCGSetting))
+    ScalaCoreLanguage
   else
-    CCodeGeneration
+    CCoreLanguage
   def queryMonadLowering: Boolean = hasSetting(QueryMonadLoweringSetting)
   def queryMonadCPS: Boolean = hasSetting(QueryMonadCPSSetting)
   def queryMonadOptimization: Boolean = hasSetting(QueryMonadOptSetting)
