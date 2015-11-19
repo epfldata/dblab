@@ -13,7 +13,7 @@ class Settings(val args: List[String]) {
   /**
    * Produces an optimal combination of optimization flags
    */
-  var optimalArgsHandler: (() => List[String]) = _
+  var optimalArgsHandler: ((String) => List[String]) = _
 
   def validate(): Settings = {
     for (arg <- args.filter(a => a.startsWith("+") || a.startsWith("-")).filter(arg => !Settings.ALL_SETTINGS.exists(_.matches(arg)))) {
@@ -29,10 +29,15 @@ class Settings(val args: List[String]) {
     if (pointerStore && oldCArrayHandling) {
       throw new Exception(s"${PointerStoreSetting.flagName} and ${CArrayAsStructSetting.flagName} cannot be chained together.")
     }
-    if (chooseOptimal) {
+    if (chooseOptimal || chooseCompliant) {
       if (optimalArgsHandler == null)
         throw new Exception(s"${OptimalSetting.flagName} cannot be used for it, because there is no optimal handler defined for it.")
-      val newArgs = optimalArgsHandler()
+      val propName =
+        if (chooseCompliant)
+          "config/compliant.properties"
+        else
+          "config/optimal.properties"
+      val newArgs = optimalArgsHandler(propName)
       // TODO rewrite using OptimizationLevelSetting
       val LEVELS_PREFIX = "-levels="
       val levels = args.find(a => a.startsWith(LEVELS_PREFIX)).map(_.substring(LEVELS_PREFIX.length).toInt).getOrElse(4)
@@ -47,8 +52,14 @@ class Settings(val args: List[String]) {
       }
       val filteredArgs = newArgs.map(a =>
         a -> Settings.ALL_SETTINGS.find(_.matches(a)).get.asInstanceOf[OptimizationSetting]).filter(a => available(a._2)).map(_._1)
-      System.out.println(s"${Console.GREEN}Info${Console.RESET}: the arguments `${filteredArgs.mkString(" ")}` used!")
-      new Settings(args.filter(a => !OptimalSetting.matches(a)) ++ filteredArgs).validate()
+      val levelSpecificArgs =
+        if (levels == 1) {
+          (PointerStoreSetting :: NoSingletonHashMapSetting :: NoFieldRemovalSetting :: Nil).map(_.fullFlagName) ++ filteredArgs
+        } else {
+          filteredArgs
+        }
+      System.out.println(s"${Console.GREEN}Info${Console.RESET}: the arguments `${levelSpecificArgs.mkString(" ")}` used!")
+      new Settings(args.filter(a => !OptimalSetting.matches(a) && !CompliantSetting.matches(a)) ++ levelSpecificArgs).validate()
     } else {
       this
     }
@@ -79,6 +90,7 @@ class Settings(val args: List[String]) {
   def nameIsWithFlag: Boolean = hasSetting(OutputNameWithFlagSetting)
   def onlyLoading: Boolean = hasSetting(OnlyLoaderSetting)
   def chooseOptimal: Boolean = hasSetting(OptimalSetting)
+  def chooseCompliant: Boolean = hasSetting(CompliantSetting)
   def targetLanguage: Language = if (hasSetting(ScalaCGSetting))
     ScalaCoreLanguage
   else
@@ -121,6 +133,7 @@ object Settings {
     OutputNameWithFlagSetting,
     OnlyLoaderSetting,
     OptimalSetting,
+    CompliantSetting,
     ScalaCGSetting,
     QueryMonadLoweringSetting,
     QueryMonadCPSSetting,
@@ -268,7 +281,9 @@ case object OutputNameWithFlagSetting extends OptionSetting("name-with-flag",
 case object OnlyLoaderSetting extends OptionSetting("only-load",
   "Generates only the loader of a query")
 case object OptimalSetting extends OptionSetting("optimal",
-  "Considers an optimal combiniation of optimization flags")
+  "Considers the best combiniation of optimization flags")
+case object CompliantSetting extends OptionSetting("compliant",
+  "Considers the best compliant combiniation of optimization flags")
 case object ScalaCGSetting extends OptionSetting("scala",
   "Generates Scala code instead of C code")
 case object OptimizationLevelSetting extends OptionSetting("levels",

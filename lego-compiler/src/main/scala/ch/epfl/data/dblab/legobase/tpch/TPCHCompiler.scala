@@ -114,9 +114,8 @@ object TPCHCompiler extends TPCHRunner {
         }
       }
 
-    settings.optimalArgsHandler = () => {
+    settings.optimalArgsHandler = (propName: String) => {
       val prop_ = new java.util.Properties
-      val propName = "config/optimal.properties"
       try {
         prop_.load(new java.io.FileInputStream(propName))
       } catch {
