@@ -117,6 +117,7 @@ class LegoCGenerator(val outputFileName: String, override val verbose: Boolean =
   }
 
   import sc.cscala.deep.GArrayHeaderIRs._
+  import sc.pardis.deep.scalalib.ArrayIRs.ArrayApplyObject
 
   /**
    * Generates the code for the given function definition node
@@ -127,6 +128,12 @@ class LegoCGenerator(val outputFileName: String, override val verbose: Boolean =
   override def functionNodeToDocument(fun: FunctionNode[_]) = fun match {
     case GArrayHeaderG_array_indexObject(array, i) =>
       "g_array_index(" :: expToDocument(array) :: ", " :: CUtils.pardisTypeToString(fun.tp) :: ", " :: expToDocument(i) :: ")"
+    case ArrayApplyObject(Def(LiftedSeq(elems))) =>
+      "{" :: elems.map(expToDocument).mkDocument(", ") :: "}"
+    case _ if fun.name.startsWith("unary_") /*&& fun.argss.size == 1 && fun.argss.head.size == 1*/ =>
+      val name = fun.name.substring("unary_".length)
+      val arg = fun.caller.get
+      doc"$name($arg)"
     case _ => super.functionNodeToDocument(fun)
   }
 }

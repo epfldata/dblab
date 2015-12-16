@@ -9,66 +9,99 @@ import sc.pardis.optimization._
 import deep._
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
+import sc.pardis.utils.Graph
 
 /**
  * Factory for creating instances of [[HashMapHoist]]
  */
 object HashMapHoist extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    new HashMapHoist(context.asInstanceOf[LoweringLegoBase]).optimize(block)
+    new HashMapHoist(context.asInstanceOf[LegoBaseExp]).optimize(block)
   }
 }
 
+// TODO consider rewriting it using the new transformation framework.
 /**
- * Transforms `new HashMap`s inside the part which runs the query into buffers which are allocated
- * at the loading time.
+ * Hoists `new HashMap`s and `new MultiMap`s from the query processing part
+ * into the loading time.
+ *
+ * Example:
+ * {{{
+ *    // Loading Time
+ *    loadTables()
+ *    // Query Processing Time
+ *    val hm = new HashMap
+ *    val mm = new MultiMap
+ *    processQuery()
+ * }}}
+ * is converted to:
+ * {{{
+ *    // Loading Time
+ *    loadTables()
+ *    val hm = new HashMap
+ *    val mm = new MultiMap
+ *    // Query Processing Time
+ *    processQuery()
+ * }}}
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[LoweringLegoBase](IR) {
+class HashMapHoist(override val IR: LegoBaseExp) extends Optimizer[LegoBaseExp](IR) {
   import IR._
   import CNodes._
   import CTypes._
 
-  /* If you want to disable this optimization, set this flag to `false` */
-  val enabled = true
-
+  /**
+   * First, in the analysis phase, it collects the statements constructing a HashMap
+   * or MultiMap. Furthermore, it looks for the dependent statements, since hoisting
+   * statements without hoisting the dependent statements makes the program incorrect.
+   * Second, all hoisted statements are scheduled in the right order.
+   * Finally, the scheduled statements are moved to the loading part and are removed
+   * from the query processing time.
+   */
   def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     do {
-      foundFlag = false
+      newStatementHoisted = false
       traverseBlock(node)
-    } while (foundFlag)
-    // System.out.println(s"all hoisted stms before: $hoistedStatements")
+    } while (newStatementHoisted)
     scheduleHoistedStatements()
-    // System.out.println(s"all hoisted stms after: $hoistedStatements")
     transformProgram(node)
   }
 
   var startCollecting = false
-  var foundFlag = false
-  // specifies the depth level statement with respect to the source anchor
+  var newStatementHoisted = false
+  /**
+   * Specifies the nesting level of the statements that we are traversing over.
+   */
   var depthLevel = 0
   val hoistedStatements = collection.mutable.ArrayBuffer[Stm[Any]]()
+  // TODO check if we can remove this one?
   val currentHoistedStatements = collection.mutable.ArrayBuffer[Stm[Any]]()
+  /**
+   * Contains the list of symbols that we should find their dependency in the next
+   * analysis iteration.
+   */
   val workList = collection.mutable.Set[Sym[Any]]()
 
+  /**
+   * Schedules the statments that should be hoisted.
+   */
   def scheduleHoistedStatements() {
-    // TODO it's not generic, for the statements with nodes without children it does not work
-    // if (!hoistedStatements.forall(stm => stm.rhs.funArgs.isEmpty)) {
-    //   val dependenceGraphEdges = for (stm1 <- hoistedStatements; stm2 <- hoistedStatements if (stm1 != stm2 && getDependencies(stm1.rhs).contains(stm2.sym))) yield (stm2 -> stm1)
-    //   hoistedStatements.clear()
-    //   hoistedStatements ++= sc.pardis.utils.Graph.tsort(dependenceGraphEdges)
-    // }
-    val result = sc.pardis.utils.Graph.schedule(hoistedStatements.toList, (stm1: Stm[Any], stm2: Stm[Any]) => getDependencies(stm2.rhs).contains(stm1.sym))
+    val result = Graph.schedule(hoistedStatements.toList, (stm1: Stm[Any], stm2: Stm[Any]) =>
+      getDependencies(stm2.rhs).contains(stm1.sym))
     hoistedStatements.clear()
     hoistedStatements ++= result
   }
 
-  def getDependencies(node: Def[_]): List[Sym[Any]] = node.funArgs.filter(_.isInstanceOf[Sym[Any]]).map(_.asInstanceOf[Sym[Any]])
+  /**
+   * Returns the symbols that the given definition is dependent on them.
+   */
+  def getDependencies(node: Def[_]): List[Sym[Any]] =
+    node.funArgs.filter(_.isInstanceOf[Sym[Any]]).map(_.asInstanceOf[Sym[Any]])
 
   override def traverseDef(node: Def[_]): Unit = node match {
     case GenericEngineRunQueryObject(b) => {
-      startCollecting = enabled
+      startCollecting = true
       depthLevel = 0
       currentHoistedStatements.clear()
       traverseBlock(b)
@@ -84,27 +117,25 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
     depthLevel -= 1
   }
 
+  /**
+   * Gathers the statements that should be hoisted.
+   */
   override def traverseStm(stm: Stm[_]): Unit = stm match {
     case Stm(sym, rhs) => {
       def hoistStatement() {
         currentHoistedStatements += stm.asInstanceOf[Stm[Any]]
         workList ++= getDependencies(rhs)
-        foundFlag = true
+        newStatementHoisted = true
       }
       rhs match {
-        case HashMapNew3(hashFunc, size) if startCollecting && !hoistedStatements.contains(stm) => {
-          hoistStatement()
-        }
-        case HashMapNew4(hashFunc, size) if startCollecting && !hoistedStatements.contains(stm) => {
-          hoistStatement()
-        }
         case HashMapNew() if startCollecting && !hoistedStatements.contains(stm) => {
-          // System.out.println("hm new found!")
           hoistStatement()
         }
         case MultiMapNew() if startCollecting && !hoistedStatements.contains(stm) => {
           hoistStatement()
         }
+        case ArrayNew(Def(ReadVar(_))) =>
+          super.traverseStm(stm)
         case ArrayNew(_) if startCollecting && depthLevel == 1 && !hoistedStatements.contains(stm) => {
           hoistStatement()
         }
@@ -117,20 +148,24 @@ class HashMapHoist(override val IR: LoweringLegoBase) extends Optimizer[Lowering
     }
   }
 
-  override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] = if (hoistedStatements.contains(stm.asInstanceOf[Stm[Any]])) Nil else super.transformStmToMultiple(stm)
+  /**
+   * Removes the hoisted statements from the query processing time.
+   */
+  override def transformStmToMultiple(stm: Stm[_]): List[to.Stm[_]] =
+    if (hoistedStatements.contains(stm.asInstanceOf[Stm[Any]]))
+      Nil
+    else
+      super.transformStmToMultiple(stm)
 
+  /**
+   * Reifies the hoisted statements in the loading time.
+   */
   override def transformDef[T: PardisType](node: Def[T]): to.Def[T] = (node match {
-    // Profiling and utils functions mapping
     case GenericEngineRunQueryObject(b) =>
-      //Console.err.printf(unit("New place for hash maps\n"))
       for (stm <- hoistedStatements) {
-        // System.out.println(s"reflecting $stm!")
         reflectStm(stm)
       }
-      startCollecting = enabled
       val newBlock = transformBlock(b)
-      startCollecting = false
-      // System.out.println(newBlock.tp)
       GenericEngineRunQueryObject(newBlock)(newBlock.tp)
     case _ => super.transformDef(node)
   }).asInstanceOf[to.Def[T]]

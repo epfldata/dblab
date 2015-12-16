@@ -22,8 +22,8 @@ import sc.cscala.GLibTypes._
 /**
  * Common trait for all C transformers.
  */
-trait CTransformer extends TopDownTransformerTraverser[LoweringLegoBase] {
-  val IR: LoweringLegoBase
+trait CTransformer extends TopDownTransformerTraverser[LegoBaseExp] {
+  val IR: LegoBaseExp
   import IR._
   import CNodes._
 

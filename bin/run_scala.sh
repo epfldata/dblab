@@ -19,7 +19,7 @@ done
 cd ..
 echo "Now running them"
 for (( i = $START; i <= $END; i+=1 )); do
-    $SCALA_PATH/scala -J-Xmx2g -J-Xms2g -classpath generator-out/bin/Q$i:$CPATH ch.epfl.data.legobase.Q$i $1 $2 "Q"$i
+    $SCALA_PATH/scala -J-Xmx2g -J-Xms2g -classpath generator-out/bin/Q$i:$CPATH ch.epfl.data.dblab.legobase.Q$i $1 $2 "Q"$i
 done
 cd - 1> /dev/null 2> /dev/null
 echo "Done!"

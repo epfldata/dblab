@@ -1,6 +1,7 @@
 package ch.epfl.data
 package dblab.legobase
 package deep
+package tpch
 
 import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
@@ -13,22 +14,7 @@ import dblab.legobase.deep.storagemanager._
 import dblab.legobase.deep.tpch._
 
 /** A polymorphic embedding cake which chains all components needed for TPCH queries */
-trait DeepDSL extends queryengine.push.OperatorsComponent
-  with AGGRecordComponent
-  with WindowRecordComponent
-  with CharComponent
-  with DoubleComponent
-  with IntComponent
-  with LongComponent
-  with BooleanComponent
-  with DoublePartialEvaluation
-  with IntPartialEvaluation
-  with LongPartialEvaluation
-  with BooleanPartialEvaluation
-  with ArrayComponent
-  with SeqComponent
-  with PrintStreamComponent
-  with Q1GRPRecordComponent
+trait TPCHRecords extends Q1GRPRecordComponent
   with Q3GRPRecordComponent
   with Q7GRPRecordComponent
   with Q9GRPRecordComponent
@@ -38,7 +24,6 @@ trait DeepDSL extends queryengine.push.OperatorsComponent
   with Q16GRPRecord2Component
   with Q18GRPRecordComponent
   with Q20GRPRecordComponent
-  with GenericEngineComponent
   with LINEITEMRecordComponent
   with SUPPLIERRecordComponent
   with PARTSUPPRecordComponent
@@ -47,19 +32,3 @@ trait DeepDSL extends queryengine.push.OperatorsComponent
   with PARTRecordComponent
   with CUSTOMERRecordComponent
   with ORDERSRecordComponent
-  with OptimalStringComponent
-  with LoaderComponent
-  with K2DBScannerComponent
-  with IntegerComponent
-  with HashMapComponent
-  with SetComponent
-  with TreeSetComponent
-  with ArrayBufferComponent
-  with ManualLiftedLegoBase
-  with QueryComponent
-  with Tuple2Component
-  with MultiMapComponent
-  with OptionComponent
-  with SynthesizedQueriesComponent
-  with TPCHLoaderComponent
-

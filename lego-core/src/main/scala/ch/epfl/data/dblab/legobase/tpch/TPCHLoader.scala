@@ -3,7 +3,7 @@ package dblab.legobase
 package tpch
 
 import utils.Utilities._
-import sc.pardis.annotations.{ deep, metadeep, dontLift, dontInline, needs }
+import sc.pardis.annotations.{ deep, metadeep, dontLift, dontInline, needs, :: }
 import queryengine._
 import tpch._
 import schema._
@@ -25,7 +25,7 @@ import scala.reflect._""",
   thisComponent = "ch.epfl.data.dblab.legobase.deep.DeepDSL")
 class MetaInfoLoader
 
-@needs[(K2DBScanner, Array[_], REGIONRecord, PARTSUPPRecord, PARTRecord, NATIONRecord, SUPPLIERRecord, LINEITEMRecord, ORDERSRecord, CUSTOMERRecord, OptimalString, Loader, Table)]
+@needs[K2DBScanner :: Array[_] :: REGIONRecord :: PARTSUPPRecord :: PARTRecord :: NATIONRecord :: SUPPLIERRecord :: LINEITEMRecord :: ORDERSRecord :: CUSTOMERRecord :: OptimalString :: Loader :: Table]
 @deep
 trait TPCHLoader
 
@@ -43,19 +43,19 @@ object TPCHLoader {
 
   import Loader.loadTable
 
-  def loadRegion() = loadTable[REGIONRecord](getTable("REGION"))(classTag[REGIONRecord])
+  def loadRegion() = loadTable[REGIONRecord](getTable("REGION"))
 
-  def loadPartsupp() = loadTable[PARTSUPPRecord](getTable("PARTSUPP"))(classTag[PARTSUPPRecord])
+  def loadPartsupp() = loadTable[PARTSUPPRecord](getTable("PARTSUPP"))
 
-  def loadPart() = loadTable[PARTRecord](getTable("PART"))(classTag[PARTRecord])
+  def loadPart() = loadTable[PARTRecord](getTable("PART"))
 
-  def loadNation() = loadTable[NATIONRecord](getTable("NATION"))(classTag[NATIONRecord])
+  def loadNation() = loadTable[NATIONRecord](getTable("NATION"))
 
-  def loadSupplier() = loadTable[SUPPLIERRecord](getTable("SUPPLIER"))(classTag[SUPPLIERRecord])
+  def loadSupplier() = loadTable[SUPPLIERRecord](getTable("SUPPLIER"))
 
-  def loadLineitem() = loadTable[LINEITEMRecord](getTable("LINEITEM"))(classTag[LINEITEMRecord])
+  def loadLineitem() = loadTable[LINEITEMRecord](getTable("LINEITEM"))
 
-  def loadOrders() = loadTable[ORDERSRecord](getTable("ORDERS"))(classTag[ORDERSRecord])
+  def loadOrders() = loadTable[ORDERSRecord](getTable("ORDERS"))
 
-  def loadCustomer() = loadTable[CUSTOMERRecord](getTable("CUSTOMER"))(classTag[CUSTOMERRecord])
+  def loadCustomer() = loadTable[CUSTOMERRecord](getTable("CUSTOMER"))
 }

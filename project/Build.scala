@@ -21,8 +21,8 @@ object LegoBuild extends Build {
     libraryDependencies ++= Seq(
       "junit" % "junit-dep" % "4.10" % "test",
       "org.scalatest" % "scalatest_2.11" % "2.2.0" % "test",
-      "org.scala-lang"         %  "scala-reflect" % "2.11.2",
-      "org.scala-lang" % "scala-compiler" % "2.11.2" % "optional"
+      "org.scala-lang"         %  "scala-reflect" % scala_version,
+      "org.scala-lang" % "scala-compiler" % scala_version % "optional"
     ),
 
     // add scalac options (verbose deprecation warnings)
@@ -35,7 +35,7 @@ object LegoBuild extends Build {
     // testing
     parallelExecution in Test := false,
     fork in Test := false,
-    scalaVersion := "2.11.2"
+    scalaVersion := scala_version
   )
 
   def formattingPreferences = {
@@ -45,6 +45,8 @@ object LegoBuild extends Build {
     .setPreference(AlignParameters, true)
     .setPreference(AlignSingleLineCaseStatements, true)
   }
+  val scala_version = "2.11.7"
+  val sc_version = "0.1.0-SNAPSHOT"
 
   // addCommandAlias("test-gen", ";project legocompiler; project root; clean")
 
@@ -61,12 +63,13 @@ object LegoBuild extends Build {
    settings = defaults ++ purgatorySettings ++  Seq(
      name := "lego-core",
      scalacOptions ++= Seq("-optimize"),
-     libraryDependencies += "ch.epfl.data" % "sc-pardis-library_2.11" % "0.1-SNAPSHOT"))
+     libraryDependencies += "ch.epfl.data" % "sc-pardis-library_2.11" % sc_version))
   lazy val legocompiler = Project(id = "lego-compiler", base = file("lego-compiler"), settings = defaults ++ Seq(name := "lego-compiler",
       libraryDependencies ++= Seq(//"ch.epfl.lamp" % "scala-yinyang_2.11" % "0.2.0-SNAPSHOT",
-        "ch.epfl.data" % "sc-pardis-compiler_2.11" % "0.1-SNAPSHOT",
-        "ch.epfl.data" % "sc-c-scala-lib_2.11" % "0.1-SNAPSHOT",
-        "ch.epfl.data" % "sc-c-scala-deep_2.11" % "0.1-SNAPSHOT"
+        "ch.epfl.data" % "sc-pardis-compiler_2.11" % sc_version,
+        "ch.epfl.data" % "sc-c-scala-lib_2.11" % sc_version,
+        "ch.epfl.data" % "sc-c-scala-deep_2.11" % sc_version,
+        "ch.epfl.data" % "sc-pardis-quasi_2.11" % sc_version
         ),
       generate_test <<= inputTask { (argTask: TaskKey[Seq[String]]) =>
         (argTask, sourceDirectory in Test, fullClasspath in Compile, runner in Compile, streams) map { (args, srcDir, cp, r, s) =>

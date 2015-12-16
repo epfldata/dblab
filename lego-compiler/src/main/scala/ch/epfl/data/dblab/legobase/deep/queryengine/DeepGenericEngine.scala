@@ -55,8 +55,6 @@ object GenericEngineIRs extends Base {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = GenericEngineType
     val name = "GenericEngine"
     val typeArguments = Nil
-
-    val typeTag = scala.reflect.runtime.universe.typeTag[GenericEngine]
   }
   implicit val typeGenericEngine: TypeRep[GenericEngine] = GenericEngineType
   // case classes

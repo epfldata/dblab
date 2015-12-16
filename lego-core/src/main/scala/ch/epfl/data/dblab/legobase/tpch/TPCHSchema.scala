@@ -148,7 +148,7 @@ object TPCHSchema {
     val ordersTable = {
       val O_ORDERKEY: Attribute = "O_ORDERKEY" -> IntType
       val O_COMMENT = Attribute("O_COMMENT", VarCharType(79), List(Compressed))
-      val O_ORDERPRIORITY = Attribute("O_ORDERPRIORITY", VarCharType(15), List(Compressed))
+      val O_ORDERPRIORITY = Attribute("O_ORDERPRIORITY", VarCharType(15))
 
       new Table("ORDERS", List(
         O_ORDERKEY,
@@ -168,6 +168,8 @@ object TPCHSchema {
 
     val tpchSchema = new Schema(List(lineItemTable, regionTable, nationTable, supplierTable, partTable, partsuppTable, customerTable, ordersTable))
 
+    val YEARS = 7
+
     // Register all statistics here
     tpchSchema.stats += "CARDINALITY_ORDERS" -> ordersTable.rowCount
     tpchSchema.stats += "CARDINALITY_CUSTOMER" -> customerTable.rowCount
@@ -178,7 +180,12 @@ object TPCHSchema {
     tpchSchema.stats += "CARDINALITY_NATION" -> nationTable.rowCount
     tpchSchema.stats += "CARDINALITY_REGION" -> regionTable.rowCount
 
-    tpchSchema.stats += "DISTINCT_L_SHIPMODE" -> 7
+    tpchSchema.stats += "CARDINALITY_Q1GRP" -> 4
+    tpchSchema.stats += "CARDINALITY_Q3GRP" -> ordersTable.rowCount / 100
+    tpchSchema.stats += "CARDINALITY_Q9GRP" -> nationTable.rowCount * YEARS
+    tpchSchema.stats += "CARDINALITY_Q10GRP" -> customerTable.rowCount
+
+    tpchSchema.stats += "DISTINCT_L_SHIPMODE" -> YEARS
     tpchSchema.stats += "DISTINCT_L_RETURNFLAG" -> 3
     tpchSchema.stats += "DISTINCT_L_LINESTATUS" -> 2
     tpchSchema.stats += "DISTINCT_L_ORDERKEY" -> ordersTable.rowCount * 5
@@ -187,7 +194,7 @@ object TPCHSchema {
     tpchSchema.stats += "DISTINCT_N_NAME" -> nationTable.rowCount
     tpchSchema.stats += "DISTINCT_N_NATIONKEY" -> nationTable.rowCount
     tpchSchema.stats += "DISTINCT_O_SHIPPRIORITY" -> 1
-    tpchSchema.stats += "DISTINCT_O_ORDERDATE" -> 365 * 7 // 7-whole years
+    tpchSchema.stats += "DISTINCT_O_ORDERDATE" -> 365 * YEARS
     tpchSchema.stats += "DISTINCT_O_ORDERPRIORITY" -> 5
     tpchSchema.stats += "DISTINCT_O_ORDERKEY" -> ordersTable.rowCount * 5
     tpchSchema.stats += "DISTINCT_O_CUSTKEY" -> customerTable.rowCount
@@ -210,7 +217,7 @@ object TPCHSchema {
     tpchSchema.stats += "CONFLICT_C_NATIONKEY" -> customerTable.rowCount / 20
     tpchSchema.stats += "CONFLICT_S_NATIONKEY" -> supplierTable.rowCount / 20
 
-    tpchSchema.stats += "NUM_YEARS_ALL_DATES" -> 7
+    tpchSchema.stats += "NUM_YEARS_ALL_DATES" -> YEARS
 
     tpchSchema
   }

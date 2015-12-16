@@ -8,11 +8,13 @@ import deep._
 import prettyprinter._
 import optimization._
 import optimization.c._
+import optimization.monad._
 import sc.pardis.optimization._
 import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
 import sc.pardis.compiler._
+import sc.pardis.language._
 
 /**
  * The class which is responsible for wiring together different parts of the compilation pipeline
@@ -24,13 +26,15 @@ import sc.pardis.compiler._
  * @param schema the given schema information
  * @param runnerClassName the name of the runner class which is used in Scala code generation
  */
-class LegoCompiler(val DSL: LoweringLegoBase,
+class LegoCompiler(val DSL: LegoBaseExp,
                    val settings: Settings,
                    val schema: Schema,
-                   val runnerClassName: String) extends Compiler[LoweringLegoBase] {
+                   val runnerClassName: String) extends Compiler[LegoBaseExp] {
   def outputFile: String =
     if (settings.nameIsWithFlag)
       settings.args.filter(_.startsWith("+")).map(_.drop(1)).sorted.mkString("_") + "_" + settings.queryName
+    else if (settings.hasOptimizationLevel)
+      settings.queryName + "_L" + settings.getOptimizationLevel
     else
       settings.queryName
 
@@ -40,14 +44,14 @@ class LegoCompiler(val DSL: LoweringLegoBase,
     if (reportCompilationTime) {
       val block = utils.Utilities.time(DSL.reifyBlock(program), "Reification")
       val optimizedBlock = utils.Utilities.time(optimize(block), "Optimization")
-      val irProgram = irToPorgram.createProgram(optimizedBlock)
+      val irProgram = irToProgram.createProgram(optimizedBlock)
       utils.Utilities.time(codeGenerator.generate(irProgram, outputFile), "Code Generation")
     } else {
       super.compile(program, outputFile)
     }
   }
 
-  override def irToPorgram = if (settings.targetLanguage == CCodeGeneration) {
+  override def irToProgram = if (settings.targetLanguage == CCoreLanguage) {
     IRToCProgram(DSL)
   } else {
     IRToProgram(DSL)
@@ -59,11 +63,13 @@ class LegoCompiler(val DSL: LoweringLegoBase,
    * the field removal causes the program to be wrong
    */
   //TODO-GEN Remove gen and make string compression transformer dependant on removing unnecessary fields.
-  def shouldRemoveUnusedFields = settings.stringCompression || (settings.hashMapPartitioning ||
+  def shouldRemoveUnusedFields = settings.forceFieldRemoval || settings.queryMonadLowering || settings.stringCompression || (settings.hashMapPartitioning ||
     (
       settings.hashMapLowering && (settings.setToArray || settings.setToLinkedList))) && !settings.noFieldRemoval
 
   pipeline += new StatisticsEstimator(DSL, schema)
+
+  // pipeline += TreeDumper(false)
 
   pipeline += LBLowering(shouldRemoveUnusedFields)
   // pipeline += TreeDumper(false)
@@ -71,27 +77,48 @@ class LegoCompiler(val DSL: LoweringLegoBase,
   pipeline += DCE
   pipeline += PartiallyEvaluate
 
-  // pipeline += PartiallyEvaluate
+  if (settings.queryMonadLowering) {
+    if (settings.queryMonadOptimization) {
+      pipeline += new QueryMonadOptimization(settings)
+    }
+    pipeline += DCE
+    if (settings.queryMonadCPS) {
+      pipeline += new QueryMonadCPSLowering(schema, DSL)
+    } else {
+      pipeline += new QueryMonadLowering(schema, DSL)
+    }
+    pipeline += TreeDumper(true)
+    pipeline += ParameterPromotion
+    pipeline += DCE
+    pipeline += PartiallyEvaluate
+  } else {
+    // pipeline += PartiallyEvaluate
+  }
+
   pipeline += HashMapHoist
+
   if (!settings.noSingletonHashMap)
     pipeline += SingletonHashMapToValueTransformer
 
   if (settings.hashMapToArray) {
     pipeline += ConstSizeArrayToLocalVars
     pipeline += DCE
-    // pipeline += TreeDumper(true)
+    // pipeline += TreeDumper(false)
     pipeline += new HashMapTo1DArray(DSL)
   }
 
   if (settings.hashMapPartitioning) {
-    pipeline += new HashMapPartitioningTransformer(DSL, schema)
+    pipeline += new HashMapGrouping(DSL, schema)
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE
+    // if (settings.queryMonadLowering) {
+    //   pipeline += new ScalaArrayToCCommon(DSL)
+    //   pipeline += DCE
+    // }
   }
 
-  if (settings.stringCompression) pipeline += new StringDictionaryTransformer(DSL, schema)
-  // pipeline += TreeDumper(false)
+  // pipeline += TreeDumper(true)
 
   if (settings.hashMapLowering || settings.hashMapNoCollision) {
     if (settings.hashMapLowering) {
@@ -106,7 +133,7 @@ class LegoCompiler(val DSL: LoweringLegoBase,
     pipeline += DCE
 
     if (settings.setToLinkedList) {
-      pipeline += SetLinkedListTransformation
+      pipeline += new SetToLinkedListTransformation(DSL)
       if (settings.containerFlattenning) {
         pipeline += ContainerFlatTransformer
       }
@@ -114,7 +141,7 @@ class LegoCompiler(val DSL: LoweringLegoBase,
     }
 
     if (settings.setToArray) {
-      pipeline += new SetArrayTransformation(DSL, schema)
+      pipeline += new SetToArrayTransformation(DSL, schema)
     }
     if (settings.setToLinkedList || settings.setToArray || settings.hashMapNoCollision) {
       pipeline += AssertTransformer(TypeAssertion(t => !t.isInstanceOf[DSL.SetType[_]]))
@@ -128,10 +155,13 @@ class LegoCompiler(val DSL: LoweringLegoBase,
     pipeline += new BlockFlattening(DSL) // should not be needed!
   }
 
+  if (settings.stringCompression) pipeline += new StringDictionaryTransformer(DSL, schema)
+  // pipeline += TreeDumper(false)
+
   if (settings.partitioning) {
-    pipeline += TreeDumper(false)
+    // pipeline += TreeDumper(false)
     pipeline += new WhileToRangeForeachTransformer(DSL)
-    pipeline += new ArrayPartitioning(DSL, schema)
+    pipeline += new IntroduceHashIndexForRangeLookup(DSL, schema)
     pipeline += DCE
   }
 
@@ -140,12 +170,11 @@ class LegoCompiler(val DSL: LoweringLegoBase,
 
   if (settings.constArray) {
     pipeline += ConstSizeArrayToLocalVars
-    // pipeline += SingletonArrayToValueTransformer
   }
 
   if (settings.columnStore) {
 
-    pipeline += new ColumnStoreTransformer(DSL, settings)
+    pipeline += new ColumnStoreTransformer(DSL)
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
 
@@ -157,7 +186,17 @@ class LegoCompiler(val DSL: LoweringLegoBase,
     pipeline += DCE
   }
 
+  if (settings.queryMonadLowering) {
+    if (!settings.mallocHoisting) {
+      pipeline += new ScalaArrayToCCommon(DSL)
+      pipeline += DCE
+    }
+    pipeline += new Tuple2Lowering(DSL)
+  }
+
   if (settings.mallocHoisting) {
+    pipeline += new ScalaArrayToCCommon(DSL)
+    pipeline += DCE
     pipeline += new MemoryAllocationHoist(DSL, schema)
   }
 
@@ -169,12 +208,16 @@ class LegoCompiler(val DSL: LoweringLegoBase,
     pipeline += new LargeOutputPrintHoister(DSL, schema)
   }
 
-  if (settings.targetLanguage == CCodeGeneration) pipeline += new CTransformersPipeline(settings)
+  // pipeline += TreeDumper(false)
+
+  if (settings.targetLanguage == CCoreLanguage) pipeline += new CTransformersPipeline(settings)
 
   pipeline += DCECLang //NEVER REMOVE!!!!
 
+  pipeline += TreeDumper(true)
+
   val codeGenerator =
-    if (settings.targetLanguage == CCodeGeneration) {
+    if (settings.targetLanguage == CCoreLanguage) {
       if (settings.noLetBinding)
         new LegoCASTGenerator(DSL, outputFile, true)
       else

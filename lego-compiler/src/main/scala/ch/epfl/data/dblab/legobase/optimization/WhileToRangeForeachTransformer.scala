@@ -10,100 +10,106 @@ import deep._
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
+import sc.pardis.quasi.anf._
+import quasi._
 
 /**
  * A transformer which rewrites while loops whenever possible to for expressions.
  *
+ * As an example the following program:
+ * {{{
+ *     var i = 0
+ *     while(i < size) {
+ *       f(i)
+ *       i += 1
+ *     }
+ * }}}
+ * is converted into
+ * {{{
+ *     for(j <- 0 until size) {
+ *       f(j)
+ *     }
+ * }}}
+ *
+ * Preconditions:
+ * a) There should be no further mutation into the variable `i` in `f(i)`.
+ * b) There should be no use of the variable `i` outside of the loop.
+ * c) The while loop can only iterate ascendingly.
+ * d) The step counter can be every positive number.
+ *
+ * Additional transformations:
+ * As we are using administrative normal form (ANF), we are placing a let-binding for
+ * every read of a mutable variable. This means that every read from the variable `i`
+ * is associated with a new symbol. These symbols in `f(i)` should be substituted
+ * by the range index `j`.
+ * Moreover, our system ensures that the programs in ANF will not have any issues
+ * with name conflicits. Hence, even if in the inital program another variable is
+ * defined with the name `i` in the block of f(i), our engine distinguishes them
+ * with different symbols.
+ *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class WhileToRangeForeachTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
-  import IR._
+class WhileToRangeForeachTransformer(override val IR: LegoBaseExp) extends RuleBasedTransformer[LegoBaseExp](IR)
+  with WhileRangeProcessing {
+  import IR.{ Range => _, Binding => _, _ }
 
-  object RangeCondition {
-    def unapply(block: Block[Boolean]): Option[(Var[Int], Rep[Int])] = {
-      val resultNode = block.stmts.find(stm => stm.sym == block.res).get.rhs
-      resultNode match {
-        case Boolean$amp$amp(Constant(true), block2) => RangeCondition.unapply(block2)
-        case Int$less1(Def(ReadVar(v)), size)        => Some(v -> size)
-        case _                                       => None
-      }
-    }
-  }
-
-  object RangeStep {
-    def unapply(block: Block[Unit]): Option[(Var[Int], Rep[Int])] = block.stmts.last.rhs match {
-      case Assign(v, Def(Int$plus2(Def(ReadVar(v2)), step))) if v == v2 => Some(v2 -> step)
-      case _ => None
-    }
-  }
-
-  // def isConditionForCheckingSize(block: Block[Boolean]): Boolean = {
-  //   val resultNode = block.stmts.find(stm => stm.sym == block.res).get.rhs
-  //   resultNode match {
-  //     case Boolean$amp$amp(Constant(true), block2) => isConditionForCheckingSize(block2)
-  //     case Int$less3(Def(ReadVar(v)), size)        => true
-  //     case _                                       => false
-  //   }
-  // }
-
-  case class WhileInfo(whileSym: Rep[Unit], whileNode: While, variable: Var[Int], size: Rep[Int], step: Rep[Int])
-
+  /**
+   * Keeps the list of while loops that should be converted
+   */
   val convertedWhiles = scala.collection.mutable.ArrayBuffer[WhileInfo]()
-  val startConds = scala.collection.mutable.Map[Var[Int], Rep[Int]]()
-  val fillingPhase = scala.collection.mutable.Map[Var[Any], Rep[Int]]()
-  def shouldBeConverted[T](whileSym: Rep[T]): Boolean = convertedWhiles.exists(_.whileSym == whileSym)
-  def varShouldBeRemoved[T](variable: Var[T]): Boolean = convertedWhiles.exists(_.variable == variable)
+  /**
+   * Specifies that we are in the transformed while loop body and the iterating variable
+   * of the while loop should be substituted by the index of foreach which is given
+   */
+  val substituteVarInsideLoopBody = scala.collection.mutable.Map[Var[Any], Rep[Int]]()
+
+  def whileShouldBeConverted[T](whileSym: Rep[T]): Boolean =
+    convertedWhiles.exists(_.whileSym == whileSym)
+
+  def varCorrespondsToRangeWhile[T](variable: Var[T]): Boolean =
+    convertedWhiles.exists(_.variable == variable)
+
+  // TODO precondition (b) is not checked yet.
 
   analysis += statement {
-    case sym -> (node @ While(RangeCondition(variable1, size), RangeStep(variable2, step))) if variable1 == variable2 =>
-      // val isForEach = isConditionForCheckingSize(cond)
-      convertedWhiles += WhileInfo(sym.asInstanceOf[Rep[Unit]], node, variable1, size, step)
-      // System.out.println(s"$sym -> $variable1, $size")
+    case sym -> (node @ dsl"""while(${ RangeCondition(indexVariable, size) }) 
+                                $block""") if rangeIndexMutatedOnce(block, indexVariable) &&
+      rangeIndexMutatesItselfAtTheEnd(block, indexVariable) =>
+      val RangeStep(_, step) = block
+      convertedWhiles += WhileInfo(sym.asInstanceOf[Rep[Unit]], node.asInstanceOf[While], indexVariable, size, step)
       ()
   }
 
-  rewrite += remove {
-    case ReadVar(v) if varShouldBeRemoved(v) && !fillingPhase.contains(v) =>
-      ()
-  }
+  // The order of the application of the following rules does not matter. 
 
   rewrite += rule {
-    case ReadVar(v) if varShouldBeRemoved(v) && fillingPhase.contains(v) =>
-      fillingPhase(v)
+    case ReadVar(v) if varCorrespondsToRangeWhile(v) && substituteVarInsideLoopBody.contains(v) =>
+      substituteVarInsideLoopBody(v)
   }
 
   rewrite += remove {
-    case Assign(v, _) if varShouldBeRemoved(v) =>
+    case Assign(v, _) if varCorrespondsToRangeWhile(v) =>
       ()
   }
 
-  analysis += statement {
-    case sym -> NewVar(e) =>
-      startConds += Var(sym.asInstanceOf[Rep[Var[Int]]]) -> e.asInstanceOf[Rep[Int]]
+  rewrite += remove {
+    case ReadVar(v) if varCorrespondsToRangeWhile(v) && !substituteVarInsideLoopBody.contains(v) =>
       ()
   }
-
-  // rewrite += remove {
-  //   case node @ NewVar(e) if convertedWhiles.exists(_.variable.e.correspondingNode == node) =>
-  //     // startConds += Var(sym.asInstanceOf[Rep[Var[Int]]]) -> e.asInstanceOf[Rep[Int]]
-  //     // val flag = varShouldBeRemoved(Var(sym.asInstanceOf[Rep[Var[Any]]]))
-  //     System.out.println(s"var sym: $node -> ")
-  //     ()
-  // }
 
   rewrite += statement {
-    case sym -> While(cond, body) if shouldBeConverted(sym) =>
+    case sym -> dsl"while($cond) $body" if whileShouldBeConverted(sym) =>
       val whileInfo = convertedWhiles.find(_.whileSym == sym).get
-      // System.out.println(s"startCond: $startConds")
-      // System.out.println(s"whileInfo: $whileInfo")
-      val start = startConds(whileInfo.variable)
-      // we assume step = 1
-      Range(start, whileInfo.size).foreach {
-        __lambda { (i: Rep[Int]) =>
-          fillingPhase += whileInfo.variable -> i
-          body.stmts.foreach(transformStm)
-          unit(())
-        }
+
+      def foreachFunction: Rep[Int => Unit] = {
+        // implicitly injects __lambda here
+        (i: Rep[Int]) =>
+          {
+            substituteVarInsideLoopBody += whileInfo.variable -> i
+            // Triggers rewriting the statements inside the while loop
+            inlineBlock(body)
+          }
       }
+      dsl"""new Range(${whileInfo.start}, ${whileInfo.size}, ${whileInfo.step}).foreach($foreachFunction)"""
   }
 }

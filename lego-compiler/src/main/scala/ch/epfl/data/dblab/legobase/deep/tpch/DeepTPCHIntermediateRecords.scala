@@ -20,7 +20,7 @@ trait Q1GRPRecordOps extends Base {
     def L_RETURNFLAG: Rep[Char] = q1GRPRecord_Field_L_RETURNFLAG(self)
   }
   object Q1GRPRecord {
-
+    def apply(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]): Rep[Q1GRPRecord] = q1GRPRecordApplyObject(L_RETURNFLAG, L_LINESTATUS)
   }
   // constructors
   def __newQ1GRPRecord(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]): Rep[Q1GRPRecord] = q1GRPRecordNew(L_RETURNFLAG, L_LINESTATUS)
@@ -33,26 +33,27 @@ trait Q1GRPRecordOps extends Base {
   type Q1GRPRecord_Field_L_LINESTATUS = Q1GRPRecordIRs.Q1GRPRecord_Field_L_LINESTATUS
   val Q1GRPRecord_Field_L_RETURNFLAG = Q1GRPRecordIRs.Q1GRPRecord_Field_L_RETURNFLAG
   type Q1GRPRecord_Field_L_RETURNFLAG = Q1GRPRecordIRs.Q1GRPRecord_Field_L_RETURNFLAG
+  val Q1GRPRecordApplyObject = Q1GRPRecordIRs.Q1GRPRecordApplyObject
+  type Q1GRPRecordApplyObject = Q1GRPRecordIRs.Q1GRPRecordApplyObject
   // method definitions
   def q1GRPRecordNew(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]): Rep[Q1GRPRecord] = Q1GRPRecordNew(L_RETURNFLAG, L_LINESTATUS)
   def q1GRPRecordGetField(self: Rep[Q1GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q1GRPRecordGetField(self, key)
   def q1GRPRecord_Field_L_LINESTATUS(self: Rep[Q1GRPRecord]): Rep[Char] = Q1GRPRecord_Field_L_LINESTATUS(self)
   def q1GRPRecord_Field_L_RETURNFLAG(self: Rep[Q1GRPRecord]): Rep[Char] = Q1GRPRecord_Field_L_RETURNFLAG(self)
+  def q1GRPRecordApplyObject(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]): Rep[Q1GRPRecord] = Q1GRPRecordApplyObject(L_RETURNFLAG, L_LINESTATUS)
   type Q1GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q1GRPRecord
 }
 object Q1GRPRecordIRs extends Base {
   // Type representation
-  case object Q1GRPRecordType extends TypeRep[Q1GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q1GRPRecordType
-    val name = "Q1GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q1GRPRecord]
+  case object Q1GRPRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q1GRPRecord](scala.reflect.runtime.universe.typeOf[Q1GRPRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ1GRPRecord: TypeRep[Q1GRPRecord] = Q1GRPRecordType
   // case classes
   case class Q1GRPRecordNew(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]) extends ConstructorDef[Q1GRPRecord](List(), "Q1GRPRecord", List(List(L_RETURNFLAG, L_LINESTATUS))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q1GRPRecordGetField(self: Rep[Q1GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -63,11 +64,11 @@ object Q1GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Char = {
+    override def partiallyEvaluate(children: Any*): Char = {
       val self = children(0).asInstanceOf[Q1GRPRecord]
       self.L_LINESTATUS
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -75,11 +76,17 @@ object Q1GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Char = {
+    override def partiallyEvaluate(children: Any*): Char = {
       val self = children(0).asInstanceOf[Q1GRPRecord]
       self.L_RETURNFLAG
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
+
+  }
+
+  case class Q1GRPRecordApplyObject(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]) extends FunctionDef[Q1GRPRecord](None, "Q1GRPRecord.apply", List(List(L_RETURNFLAG, L_LINESTATUS))) {
+    override def curriedConstructor = (copy _).curried
+    override def isPure = true
 
   }
 
@@ -118,7 +125,7 @@ trait Q3GRPRecordOps extends Base {
     def L_ORDERKEY: Rep[Int] = q3GRPRecord_Field_L_ORDERKEY(self)
   }
   object Q3GRPRecord {
-
+    def apply(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = q3GRPRecordApplyObject(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
   }
   // constructors
   def __newQ3GRPRecord(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = q3GRPRecordNew(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
@@ -133,27 +140,28 @@ trait Q3GRPRecordOps extends Base {
   type Q3GRPRecord_Field_O_ORDERDATE = Q3GRPRecordIRs.Q3GRPRecord_Field_O_ORDERDATE
   val Q3GRPRecord_Field_L_ORDERKEY = Q3GRPRecordIRs.Q3GRPRecord_Field_L_ORDERKEY
   type Q3GRPRecord_Field_L_ORDERKEY = Q3GRPRecordIRs.Q3GRPRecord_Field_L_ORDERKEY
+  val Q3GRPRecordApplyObject = Q3GRPRecordIRs.Q3GRPRecordApplyObject
+  type Q3GRPRecordApplyObject = Q3GRPRecordIRs.Q3GRPRecordApplyObject
   // method definitions
   def q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = Q3GRPRecordNew(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
   def q3GRPRecordGetField(self: Rep[Q3GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q3GRPRecordGetField(self, key)
   def q3GRPRecord_Field_O_SHIPPRIORITY(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_O_SHIPPRIORITY(self)
   def q3GRPRecord_Field_O_ORDERDATE(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_O_ORDERDATE(self)
   def q3GRPRecord_Field_L_ORDERKEY(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_L_ORDERKEY(self)
+  def q3GRPRecordApplyObject(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = Q3GRPRecordApplyObject(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
   type Q3GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q3GRPRecord
 }
 object Q3GRPRecordIRs extends Base {
   // Type representation
-  case object Q3GRPRecordType extends TypeRep[Q3GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q3GRPRecordType
-    val name = "Q3GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q3GRPRecord]
+  case object Q3GRPRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q3GRPRecord](scala.reflect.runtime.universe.typeOf[Q3GRPRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ3GRPRecord: TypeRep[Q3GRPRecord] = Q3GRPRecordType
   // case classes
   case class Q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]) extends ConstructorDef[Q3GRPRecord](List(), "Q3GRPRecord", List(List(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q3GRPRecordGetField(self: Rep[Q3GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -164,11 +172,11 @@ object Q3GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q3GRPRecord]
       self.O_SHIPPRIORITY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -176,11 +184,11 @@ object Q3GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q3GRPRecord]
       self.O_ORDERDATE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -188,11 +196,17 @@ object Q3GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q3GRPRecord]
       self.L_ORDERKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
+
+  }
+
+  case class Q3GRPRecordApplyObject(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]) extends FunctionDef[Q3GRPRecord](None, "Q3GRPRecord.apply", List(List(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY))) {
+    override def curriedConstructor = (copy _).curried
+    override def isPure = true
 
   }
 
@@ -235,7 +249,7 @@ trait Q7GRPRecordOps extends Base with OptimalStringOps {
     def SUPP_NATION: Rep[OptimalString] = q7GRPRecord_Field_SUPP_NATION(self)
   }
   object Q7GRPRecord {
-
+    def apply(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]): Rep[Q7GRPRecord] = q7GRPRecordApplyObject(SUPP_NATION, CUST_NATION, L_YEAR)
   }
   // constructors
   def __newQ7GRPRecord(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]): Rep[Q7GRPRecord] = q7GRPRecordNew(SUPP_NATION, CUST_NATION, L_YEAR)
@@ -250,28 +264,29 @@ trait Q7GRPRecordOps extends Base with OptimalStringOps {
   type Q7GRPRecord_Field_CUST_NATION = Q7GRPRecordIRs.Q7GRPRecord_Field_CUST_NATION
   val Q7GRPRecord_Field_SUPP_NATION = Q7GRPRecordIRs.Q7GRPRecord_Field_SUPP_NATION
   type Q7GRPRecord_Field_SUPP_NATION = Q7GRPRecordIRs.Q7GRPRecord_Field_SUPP_NATION
+  val Q7GRPRecordApplyObject = Q7GRPRecordIRs.Q7GRPRecordApplyObject
+  type Q7GRPRecordApplyObject = Q7GRPRecordIRs.Q7GRPRecordApplyObject
   // method definitions
   def q7GRPRecordNew(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]): Rep[Q7GRPRecord] = Q7GRPRecordNew(SUPP_NATION, CUST_NATION, L_YEAR)
   def q7GRPRecordGetField(self: Rep[Q7GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q7GRPRecordGetField(self, key)
   def q7GRPRecord_Field_L_YEAR(self: Rep[Q7GRPRecord]): Rep[Int] = Q7GRPRecord_Field_L_YEAR(self)
   def q7GRPRecord_Field_CUST_NATION(self: Rep[Q7GRPRecord]): Rep[OptimalString] = Q7GRPRecord_Field_CUST_NATION(self)
   def q7GRPRecord_Field_SUPP_NATION(self: Rep[Q7GRPRecord]): Rep[OptimalString] = Q7GRPRecord_Field_SUPP_NATION(self)
+  def q7GRPRecordApplyObject(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]): Rep[Q7GRPRecord] = Q7GRPRecordApplyObject(SUPP_NATION, CUST_NATION, L_YEAR)
   type Q7GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q7GRPRecord
 }
 object Q7GRPRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object Q7GRPRecordType extends TypeRep[Q7GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q7GRPRecordType
-    val name = "Q7GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q7GRPRecord]
+  case object Q7GRPRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q7GRPRecord](scala.reflect.runtime.universe.typeOf[Q7GRPRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ7GRPRecord: TypeRep[Q7GRPRecord] = Q7GRPRecordType
   // case classes
   case class Q7GRPRecordNew(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]) extends ConstructorDef[Q7GRPRecord](List(), "Q7GRPRecord", List(List(SUPP_NATION, CUST_NATION, L_YEAR))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q7GRPRecordGetField(self: Rep[Q7GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -282,11 +297,11 @@ object Q7GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q7GRPRecord]
       self.L_YEAR
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -294,11 +309,11 @@ object Q7GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q7GRPRecord]
       self.CUST_NATION
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -306,11 +321,17 @@ object Q7GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q7GRPRecord]
       self.SUPP_NATION
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
+
+  }
+
+  case class Q7GRPRecordApplyObject(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]) extends FunctionDef[Q7GRPRecord](None, "Q7GRPRecord.apply", List(List(SUPP_NATION, CUST_NATION, L_YEAR))) {
+    override def curriedConstructor = (copy _).curried
+    override def isPure = true
 
   }
 
@@ -352,7 +373,7 @@ trait Q9GRPRecordOps extends Base with OptimalStringOps {
     def NATION: Rep[OptimalString] = q9GRPRecord_Field_NATION(self)
   }
   object Q9GRPRecord {
-
+    def apply(NATION: Rep[OptimalString], O_YEAR: Rep[Int]): Rep[Q9GRPRecord] = q9GRPRecordApplyObject(NATION, O_YEAR)
   }
   // constructors
   def __newQ9GRPRecord(NATION: Rep[OptimalString], O_YEAR: Rep[Int]): Rep[Q9GRPRecord] = q9GRPRecordNew(NATION, O_YEAR)
@@ -365,27 +386,28 @@ trait Q9GRPRecordOps extends Base with OptimalStringOps {
   type Q9GRPRecord_Field_O_YEAR = Q9GRPRecordIRs.Q9GRPRecord_Field_O_YEAR
   val Q9GRPRecord_Field_NATION = Q9GRPRecordIRs.Q9GRPRecord_Field_NATION
   type Q9GRPRecord_Field_NATION = Q9GRPRecordIRs.Q9GRPRecord_Field_NATION
+  val Q9GRPRecordApplyObject = Q9GRPRecordIRs.Q9GRPRecordApplyObject
+  type Q9GRPRecordApplyObject = Q9GRPRecordIRs.Q9GRPRecordApplyObject
   // method definitions
   def q9GRPRecordNew(NATION: Rep[OptimalString], O_YEAR: Rep[Int]): Rep[Q9GRPRecord] = Q9GRPRecordNew(NATION, O_YEAR)
   def q9GRPRecordGetField(self: Rep[Q9GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q9GRPRecordGetField(self, key)
   def q9GRPRecord_Field_O_YEAR(self: Rep[Q9GRPRecord]): Rep[Int] = Q9GRPRecord_Field_O_YEAR(self)
   def q9GRPRecord_Field_NATION(self: Rep[Q9GRPRecord]): Rep[OptimalString] = Q9GRPRecord_Field_NATION(self)
+  def q9GRPRecordApplyObject(NATION: Rep[OptimalString], O_YEAR: Rep[Int]): Rep[Q9GRPRecord] = Q9GRPRecordApplyObject(NATION, O_YEAR)
   type Q9GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q9GRPRecord
 }
 object Q9GRPRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object Q9GRPRecordType extends TypeRep[Q9GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q9GRPRecordType
-    val name = "Q9GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q9GRPRecord]
+  case object Q9GRPRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q9GRPRecord](scala.reflect.runtime.universe.typeOf[Q9GRPRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ9GRPRecord: TypeRep[Q9GRPRecord] = Q9GRPRecordType
   // case classes
   case class Q9GRPRecordNew(NATION: Rep[OptimalString], O_YEAR: Rep[Int]) extends ConstructorDef[Q9GRPRecord](List(), "Q9GRPRecord", List(List(NATION, O_YEAR))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q9GRPRecordGetField(self: Rep[Q9GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -396,11 +418,11 @@ object Q9GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q9GRPRecord]
       self.O_YEAR
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -408,11 +430,17 @@ object Q9GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q9GRPRecord]
       self.NATION
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
+
+  }
+
+  case class Q9GRPRecordApplyObject(NATION: Rep[OptimalString], O_YEAR: Rep[Int]) extends FunctionDef[Q9GRPRecord](None, "Q9GRPRecord.apply", List(List(NATION, O_YEAR))) {
+    override def curriedConstructor = (copy _).curried
+    override def isPure = true
 
   }
 
@@ -455,7 +483,7 @@ trait Q10GRPRecordOps extends Base with OptimalStringOps {
     def C_CUSTKEY: Rep[Int] = q10GRPRecord_Field_C_CUSTKEY(self)
   }
   object Q10GRPRecord {
-
+    def apply(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[Q10GRPRecord] = q10GRPRecordApplyObject(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT)
   }
   // constructors
   def __newQ10GRPRecord(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[Q10GRPRecord] = q10GRPRecordNew(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT)
@@ -478,6 +506,8 @@ trait Q10GRPRecordOps extends Base with OptimalStringOps {
   type Q10GRPRecord_Field_C_NAME = Q10GRPRecordIRs.Q10GRPRecord_Field_C_NAME
   val Q10GRPRecord_Field_C_CUSTKEY = Q10GRPRecordIRs.Q10GRPRecord_Field_C_CUSTKEY
   type Q10GRPRecord_Field_C_CUSTKEY = Q10GRPRecordIRs.Q10GRPRecord_Field_C_CUSTKEY
+  val Q10GRPRecordApplyObject = Q10GRPRecordIRs.Q10GRPRecordApplyObject
+  type Q10GRPRecordApplyObject = Q10GRPRecordIRs.Q10GRPRecordApplyObject
   // method definitions
   def q10GRPRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[Q10GRPRecord] = Q10GRPRecordNew(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT)
   def q10GRPRecordGetField(self: Rep[Q10GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q10GRPRecordGetField(self, key)
@@ -488,22 +518,21 @@ trait Q10GRPRecordOps extends Base with OptimalStringOps {
   def q10GRPRecord_Field_C_ACCTBAL(self: Rep[Q10GRPRecord]): Rep[Double] = Q10GRPRecord_Field_C_ACCTBAL(self)
   def q10GRPRecord_Field_C_NAME(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_NAME(self)
   def q10GRPRecord_Field_C_CUSTKEY(self: Rep[Q10GRPRecord]): Rep[Int] = Q10GRPRecord_Field_C_CUSTKEY(self)
+  def q10GRPRecordApplyObject(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[Q10GRPRecord] = Q10GRPRecordApplyObject(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT)
   type Q10GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q10GRPRecord
 }
 object Q10GRPRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object Q10GRPRecordType extends TypeRep[Q10GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q10GRPRecordType
-    val name = "Q10GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q10GRPRecord]
+  case object Q10GRPRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q10GRPRecord](scala.reflect.runtime.universe.typeOf[Q10GRPRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ10GRPRecord: TypeRep[Q10GRPRecord] = Q10GRPRecordType
   // case classes
   case class Q10GRPRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends ConstructorDef[Q10GRPRecord](List(), "Q10GRPRecord", List(List(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q10GRPRecordGetField(self: Rep[Q10GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -514,11 +543,11 @@ object Q10GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q10GRPRecord]
       self.C_COMMENT
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -526,11 +555,11 @@ object Q10GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q10GRPRecord]
       self.C_ADDRESS
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -538,11 +567,11 @@ object Q10GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q10GRPRecord]
       self.N_NAME
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -550,11 +579,11 @@ object Q10GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q10GRPRecord]
       self.C_PHONE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -562,11 +591,11 @@ object Q10GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Double = {
+    override def partiallyEvaluate(children: Any*): Double = {
       val self = children(0).asInstanceOf[Q10GRPRecord]
       self.C_ACCTBAL
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -574,11 +603,11 @@ object Q10GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q10GRPRecord]
       self.C_NAME
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -586,11 +615,17 @@ object Q10GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q10GRPRecord]
       self.C_CUSTKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
+
+  }
+
+  case class Q10GRPRecordApplyObject(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends FunctionDef[Q10GRPRecord](None, "Q10GRPRecord.apply", List(List(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT))) {
+    override def curriedConstructor = (copy _).curried
+    override def isPure = true
 
   }
 
@@ -648,7 +683,7 @@ trait Q13IntRecordOps extends Base {
     def count: Rep[Int] = q13IntRecord_Field_Count(self)
   }
   object Q13IntRecord {
-
+    def apply(count: Rep[Int]): Rep[Q13IntRecord] = q13IntRecordApplyObject(count)
   }
   // constructors
   def __newQ13IntRecord(count: Rep[Int]): Rep[Q13IntRecord] = q13IntRecordNew(count)
@@ -661,26 +696,27 @@ trait Q13IntRecordOps extends Base {
   type Q13IntRecord_Field_Count__eq = Q13IntRecordIRs.Q13IntRecord_Field_Count__eq
   val Q13IntRecord_Field_Count = Q13IntRecordIRs.Q13IntRecord_Field_Count
   type Q13IntRecord_Field_Count = Q13IntRecordIRs.Q13IntRecord_Field_Count
+  val Q13IntRecordApplyObject = Q13IntRecordIRs.Q13IntRecordApplyObject
+  type Q13IntRecordApplyObject = Q13IntRecordIRs.Q13IntRecordApplyObject
   // method definitions
   def q13IntRecordNew(count: Rep[Int]): Rep[Q13IntRecord] = Q13IntRecordNew(count)
   def q13IntRecordGetField(self: Rep[Q13IntRecord], key: Rep[String]): Rep[Option[Any]] = Q13IntRecordGetField(self, key)
   def q13IntRecord_Field_Count_$eq(self: Rep[Q13IntRecord], x$1: Rep[Int]): Rep[Unit] = Q13IntRecord_Field_Count__eq(self, x$1)
   def q13IntRecord_Field_Count(self: Rep[Q13IntRecord]): Rep[Int] = Q13IntRecord_Field_Count(self)
+  def q13IntRecordApplyObject(count: Rep[Int]): Rep[Q13IntRecord] = Q13IntRecordApplyObject(count)
   type Q13IntRecord = ch.epfl.data.dblab.legobase.tpch.Q13IntRecord
 }
 object Q13IntRecordIRs extends Base {
   // Type representation
-  case object Q13IntRecordType extends TypeRep[Q13IntRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q13IntRecordType
-    val name = "Q13IntRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q13IntRecord]
+  case object Q13IntRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q13IntRecord](scala.reflect.runtime.universe.typeOf[Q13IntRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ13IntRecord: TypeRep[Q13IntRecord] = Q13IntRecordType
   // case classes
   case class Q13IntRecordNew(count: Rep[Int]) extends ConstructorDef[Q13IntRecord](List(), "Q13IntRecord", List(List(count))) {
     override def curriedConstructor = (copy _)
+    override def isPure = true
+
   }
 
   case class Q13IntRecordGetField(self: Rep[Q13IntRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -693,6 +729,12 @@ object Q13IntRecordIRs extends Base {
 
   case class Q13IntRecord_Field_Count(self: Rep[Q13IntRecord]) extends FieldGetter[Int](self, "count") {
     override def curriedConstructor = (copy _)
+  }
+
+  case class Q13IntRecordApplyObject(count: Rep[Int]) extends FunctionDef[Q13IntRecord](None, "Q13IntRecord.apply", List(List(count))) {
+    override def curriedConstructor = (copy _)
+    override def isPure = true
+
   }
 
   type Q13IntRecord = ch.epfl.data.dblab.legobase.tpch.Q13IntRecord
@@ -723,7 +765,7 @@ trait Q16GRPRecord1Ops extends Base with OptimalStringOps {
     def P_BRAND: Rep[OptimalString] = q16GRPRecord1_Field_P_BRAND(self)
   }
   object Q16GRPRecord1 {
-
+    def apply(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]): Rep[Q16GRPRecord1] = q16GRPRecord1ApplyObject(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY)
   }
   // constructors
   def __newQ16GRPRecord1(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]): Rep[Q16GRPRecord1] = q16GRPRecord1New(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY)
@@ -740,6 +782,8 @@ trait Q16GRPRecord1Ops extends Base with OptimalStringOps {
   type Q16GRPRecord1_Field_P_TYPE = Q16GRPRecord1IRs.Q16GRPRecord1_Field_P_TYPE
   val Q16GRPRecord1_Field_P_BRAND = Q16GRPRecord1IRs.Q16GRPRecord1_Field_P_BRAND
   type Q16GRPRecord1_Field_P_BRAND = Q16GRPRecord1IRs.Q16GRPRecord1_Field_P_BRAND
+  val Q16GRPRecord1ApplyObject = Q16GRPRecord1IRs.Q16GRPRecord1ApplyObject
+  type Q16GRPRecord1ApplyObject = Q16GRPRecord1IRs.Q16GRPRecord1ApplyObject
   // method definitions
   def q16GRPRecord1New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]): Rep[Q16GRPRecord1] = Q16GRPRecord1New(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY)
   def q16GRPRecord1GetField(self: Rep[Q16GRPRecord1], key: Rep[String]): Rep[Option[Any]] = Q16GRPRecord1GetField(self, key)
@@ -747,22 +791,21 @@ trait Q16GRPRecord1Ops extends Base with OptimalStringOps {
   def q16GRPRecord1_Field_P_SIZE(self: Rep[Q16GRPRecord1]): Rep[Int] = Q16GRPRecord1_Field_P_SIZE(self)
   def q16GRPRecord1_Field_P_TYPE(self: Rep[Q16GRPRecord1]): Rep[OptimalString] = Q16GRPRecord1_Field_P_TYPE(self)
   def q16GRPRecord1_Field_P_BRAND(self: Rep[Q16GRPRecord1]): Rep[OptimalString] = Q16GRPRecord1_Field_P_BRAND(self)
+  def q16GRPRecord1ApplyObject(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]): Rep[Q16GRPRecord1] = Q16GRPRecord1ApplyObject(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY)
   type Q16GRPRecord1 = ch.epfl.data.dblab.legobase.tpch.Q16GRPRecord1
 }
 object Q16GRPRecord1IRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object Q16GRPRecord1Type extends TypeRep[Q16GRPRecord1] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q16GRPRecord1Type
-    val name = "Q16GRPRecord1"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q16GRPRecord1]
+  case object Q16GRPRecord1Type extends ch.epfl.data.sc.pardis.types.ReflectionType[Q16GRPRecord1](scala.reflect.runtime.universe.typeOf[Q16GRPRecord1]) {
+    override def isRecord = true
   }
   implicit val typeQ16GRPRecord1: TypeRep[Q16GRPRecord1] = Q16GRPRecord1Type
   // case classes
   case class Q16GRPRecord1New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]) extends ConstructorDef[Q16GRPRecord1](List(), "Q16GRPRecord1", List(List(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q16GRPRecord1GetField(self: Rep[Q16GRPRecord1], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -773,11 +816,11 @@ object Q16GRPRecord1IRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q16GRPRecord1]
       self.PS_SUPPKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -785,11 +828,11 @@ object Q16GRPRecord1IRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q16GRPRecord1]
       self.P_SIZE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -797,11 +840,11 @@ object Q16GRPRecord1IRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q16GRPRecord1]
       self.P_TYPE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -809,11 +852,17 @@ object Q16GRPRecord1IRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q16GRPRecord1]
       self.P_BRAND
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
+
+  }
+
+  case class Q16GRPRecord1ApplyObject(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]) extends FunctionDef[Q16GRPRecord1](None, "Q16GRPRecord1.apply", List(List(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY))) {
+    override def curriedConstructor = (copy _).curried
+    override def isPure = true
 
   }
 
@@ -860,7 +909,7 @@ trait Q16GRPRecord2Ops extends Base with OptimalStringOps {
     def P_BRAND: Rep[OptimalString] = q16GRPRecord2_Field_P_BRAND(self)
   }
   object Q16GRPRecord2 {
-
+    def apply(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]): Rep[Q16GRPRecord2] = q16GRPRecord2ApplyObject(P_BRAND, P_TYPE, P_SIZE)
   }
   // constructors
   def __newQ16GRPRecord2(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]): Rep[Q16GRPRecord2] = q16GRPRecord2New(P_BRAND, P_TYPE, P_SIZE)
@@ -875,28 +924,29 @@ trait Q16GRPRecord2Ops extends Base with OptimalStringOps {
   type Q16GRPRecord2_Field_P_TYPE = Q16GRPRecord2IRs.Q16GRPRecord2_Field_P_TYPE
   val Q16GRPRecord2_Field_P_BRAND = Q16GRPRecord2IRs.Q16GRPRecord2_Field_P_BRAND
   type Q16GRPRecord2_Field_P_BRAND = Q16GRPRecord2IRs.Q16GRPRecord2_Field_P_BRAND
+  val Q16GRPRecord2ApplyObject = Q16GRPRecord2IRs.Q16GRPRecord2ApplyObject
+  type Q16GRPRecord2ApplyObject = Q16GRPRecord2IRs.Q16GRPRecord2ApplyObject
   // method definitions
   def q16GRPRecord2New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]): Rep[Q16GRPRecord2] = Q16GRPRecord2New(P_BRAND, P_TYPE, P_SIZE)
   def q16GRPRecord2GetField(self: Rep[Q16GRPRecord2], key: Rep[String]): Rep[Option[Any]] = Q16GRPRecord2GetField(self, key)
   def q16GRPRecord2_Field_P_SIZE(self: Rep[Q16GRPRecord2]): Rep[Int] = Q16GRPRecord2_Field_P_SIZE(self)
   def q16GRPRecord2_Field_P_TYPE(self: Rep[Q16GRPRecord2]): Rep[OptimalString] = Q16GRPRecord2_Field_P_TYPE(self)
   def q16GRPRecord2_Field_P_BRAND(self: Rep[Q16GRPRecord2]): Rep[OptimalString] = Q16GRPRecord2_Field_P_BRAND(self)
+  def q16GRPRecord2ApplyObject(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]): Rep[Q16GRPRecord2] = Q16GRPRecord2ApplyObject(P_BRAND, P_TYPE, P_SIZE)
   type Q16GRPRecord2 = ch.epfl.data.dblab.legobase.tpch.Q16GRPRecord2
 }
 object Q16GRPRecord2IRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object Q16GRPRecord2Type extends TypeRep[Q16GRPRecord2] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q16GRPRecord2Type
-    val name = "Q16GRPRecord2"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q16GRPRecord2]
+  case object Q16GRPRecord2Type extends ch.epfl.data.sc.pardis.types.ReflectionType[Q16GRPRecord2](scala.reflect.runtime.universe.typeOf[Q16GRPRecord2]) {
+    override def isRecord = true
   }
   implicit val typeQ16GRPRecord2: TypeRep[Q16GRPRecord2] = Q16GRPRecord2Type
   // case classes
   case class Q16GRPRecord2New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]) extends ConstructorDef[Q16GRPRecord2](List(), "Q16GRPRecord2", List(List(P_BRAND, P_TYPE, P_SIZE))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q16GRPRecord2GetField(self: Rep[Q16GRPRecord2], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -907,11 +957,11 @@ object Q16GRPRecord2IRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q16GRPRecord2]
       self.P_SIZE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -919,11 +969,11 @@ object Q16GRPRecord2IRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q16GRPRecord2]
       self.P_TYPE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -931,11 +981,17 @@ object Q16GRPRecord2IRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q16GRPRecord2]
       self.P_BRAND
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
+
+  }
+
+  case class Q16GRPRecord2ApplyObject(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]) extends FunctionDef[Q16GRPRecord2](None, "Q16GRPRecord2.apply", List(List(P_BRAND, P_TYPE, P_SIZE))) {
+    override def curriedConstructor = (copy _).curried
+    override def isPure = true
 
   }
 
@@ -980,7 +1036,7 @@ trait Q18GRPRecordOps extends Base with OptimalStringOps {
     def C_NAME: Rep[OptimalString] = q18GRPRecord_Field_C_NAME(self)
   }
   object Q18GRPRecord {
-
+    def apply(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = q18GRPRecordApplyObject(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
   }
   // constructors
   def __newQ18GRPRecord(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = q18GRPRecordNew(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
@@ -999,6 +1055,8 @@ trait Q18GRPRecordOps extends Base with OptimalStringOps {
   type Q18GRPRecord_Field_C_CUSTKEY = Q18GRPRecordIRs.Q18GRPRecord_Field_C_CUSTKEY
   val Q18GRPRecord_Field_C_NAME = Q18GRPRecordIRs.Q18GRPRecord_Field_C_NAME
   type Q18GRPRecord_Field_C_NAME = Q18GRPRecordIRs.Q18GRPRecord_Field_C_NAME
+  val Q18GRPRecordApplyObject = Q18GRPRecordIRs.Q18GRPRecordApplyObject
+  type Q18GRPRecordApplyObject = Q18GRPRecordIRs.Q18GRPRecordApplyObject
   // method definitions
   def q18GRPRecordNew(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = Q18GRPRecordNew(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
   def q18GRPRecordGetField(self: Rep[Q18GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q18GRPRecordGetField(self, key)
@@ -1007,22 +1065,21 @@ trait Q18GRPRecordOps extends Base with OptimalStringOps {
   def q18GRPRecord_Field_O_ORDERKEY(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_O_ORDERKEY(self)
   def q18GRPRecord_Field_C_CUSTKEY(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_C_CUSTKEY(self)
   def q18GRPRecord_Field_C_NAME(self: Rep[Q18GRPRecord]): Rep[OptimalString] = Q18GRPRecord_Field_C_NAME(self)
+  def q18GRPRecordApplyObject(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = Q18GRPRecordApplyObject(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
   type Q18GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q18GRPRecord
 }
 object Q18GRPRecordIRs extends Base {
   import OptimalStringIRs._
   // Type representation
-  case object Q18GRPRecordType extends TypeRep[Q18GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q18GRPRecordType
-    val name = "Q18GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q18GRPRecord]
+  case object Q18GRPRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q18GRPRecord](scala.reflect.runtime.universe.typeOf[Q18GRPRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ18GRPRecord: TypeRep[Q18GRPRecord] = Q18GRPRecordType
   // case classes
   case class Q18GRPRecordNew(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]) extends ConstructorDef[Q18GRPRecord](List(), "Q18GRPRecord", List(List(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q18GRPRecordGetField(self: Rep[Q18GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -1033,11 +1090,11 @@ object Q18GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Double = {
+    override def partiallyEvaluate(children: Any*): Double = {
       val self = children(0).asInstanceOf[Q18GRPRecord]
       self.O_TOTALPRICE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1045,11 +1102,11 @@ object Q18GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q18GRPRecord]
       self.O_ORDERDATE
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1057,11 +1114,11 @@ object Q18GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q18GRPRecord]
       self.O_ORDERKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1069,11 +1126,11 @@ object Q18GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q18GRPRecord]
       self.C_CUSTKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1081,11 +1138,17 @@ object Q18GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): OptimalString = {
+    override def partiallyEvaluate(children: Any*): OptimalString = {
       val self = children(0).asInstanceOf[Q18GRPRecord]
       self.C_NAME
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
+
+  }
+
+  case class Q18GRPRecordApplyObject(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]) extends FunctionDef[Q18GRPRecord](None, "Q18GRPRecord.apply", List(List(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE))) {
+    override def curriedConstructor = (copy _).curried
+    override def isPure = true
 
   }
 
@@ -1136,7 +1199,7 @@ trait Q20GRPRecordOps extends Base {
     def PS_PARTKEY: Rep[Int] = q20GRPRecord_Field_PS_PARTKEY(self)
   }
   object Q20GRPRecord {
-
+    def apply(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]): Rep[Q20GRPRecord] = q20GRPRecordApplyObject(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY)
   }
   // constructors
   def __newQ20GRPRecord(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]): Rep[Q20GRPRecord] = q20GRPRecordNew(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY)
@@ -1151,27 +1214,28 @@ trait Q20GRPRecordOps extends Base {
   type Q20GRPRecord_Field_PS_SUPPKEY = Q20GRPRecordIRs.Q20GRPRecord_Field_PS_SUPPKEY
   val Q20GRPRecord_Field_PS_PARTKEY = Q20GRPRecordIRs.Q20GRPRecord_Field_PS_PARTKEY
   type Q20GRPRecord_Field_PS_PARTKEY = Q20GRPRecordIRs.Q20GRPRecord_Field_PS_PARTKEY
+  val Q20GRPRecordApplyObject = Q20GRPRecordIRs.Q20GRPRecordApplyObject
+  type Q20GRPRecordApplyObject = Q20GRPRecordIRs.Q20GRPRecordApplyObject
   // method definitions
   def q20GRPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]): Rep[Q20GRPRecord] = Q20GRPRecordNew(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY)
   def q20GRPRecordGetField(self: Rep[Q20GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q20GRPRecordGetField(self, key)
   def q20GRPRecord_Field_PS_AVAILQTY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_AVAILQTY(self)
   def q20GRPRecord_Field_PS_SUPPKEY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_SUPPKEY(self)
   def q20GRPRecord_Field_PS_PARTKEY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_PARTKEY(self)
+  def q20GRPRecordApplyObject(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]): Rep[Q20GRPRecord] = Q20GRPRecordApplyObject(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY)
   type Q20GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q20GRPRecord
 }
 object Q20GRPRecordIRs extends Base {
   // Type representation
-  case object Q20GRPRecordType extends TypeRep[Q20GRPRecord] {
-    def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = Q20GRPRecordType
-    val name = "Q20GRPRecord"
-    val typeArguments = Nil
-    override val isRecord = true
-    val typeTag = scala.reflect.runtime.universe.typeTag[Q20GRPRecord]
+  case object Q20GRPRecordType extends ch.epfl.data.sc.pardis.types.ReflectionType[Q20GRPRecord](scala.reflect.runtime.universe.typeOf[Q20GRPRecord]) {
+    override def isRecord = true
   }
   implicit val typeQ20GRPRecord: TypeRep[Q20GRPRecord] = Q20GRPRecordType
   // case classes
   case class Q20GRPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]) extends ConstructorDef[Q20GRPRecord](List(), "Q20GRPRecord", List(List(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY))) {
     override def curriedConstructor = (copy _).curried
+    override def isPure = true
+
   }
 
   case class Q20GRPRecordGetField(self: Rep[Q20GRPRecord], key: Rep[String]) extends FunctionDef[Option[Any]](Some(self), "getField", List(List(key))) {
@@ -1182,11 +1246,11 @@ object Q20GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q20GRPRecord]
       self.PS_AVAILQTY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1194,11 +1258,11 @@ object Q20GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q20GRPRecord]
       self.PS_SUPPKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
 
   }
 
@@ -1206,11 +1270,17 @@ object Q20GRPRecordIRs extends Base {
     override def curriedConstructor = (copy _)
     override def isPure = true
 
-    override def partialEvaluate(children: Any*): Int = {
+    override def partiallyEvaluate(children: Any*): Int = {
       val self = children(0).asInstanceOf[Q20GRPRecord]
       self.PS_PARTKEY
     }
-    override def partialEvaluable: Boolean = true
+    override def partiallyEvaluable: Boolean = true
+
+  }
+
+  case class Q20GRPRecordApplyObject(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]) extends FunctionDef[Q20GRPRecord](None, "Q20GRPRecord.apply", List(List(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY))) {
+    override def curriedConstructor = (copy _).curried
+    override def isPure = true
 
   }
 

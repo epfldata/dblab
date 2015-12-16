@@ -16,7 +16,7 @@ import sc.cscala.GLibTypes._
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class ScalaScannerToCFScanfTransformer(override val IR: LoweringLegoBase) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class ScalaScannerToCFScanfTransformer(override val IR: LegoBaseExp) extends RuleBasedTransformer[LegoBaseExp](IR) {
   import IR._
   import CNodes._
   import CTypes._

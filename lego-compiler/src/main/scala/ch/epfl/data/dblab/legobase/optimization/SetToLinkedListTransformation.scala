@@ -12,14 +12,62 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.deep.scalalib._
 import sc.pardis.deep.scalalib.collection._
 
-object SetLinkedListTransformation extends TransformerHandler {
-  def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    new SetLinkedListTransformation(context.asInstanceOf[LoweringLegoBase]).optimize(block)
-  }
+object SetToLinkedListTransformation {
+  type Lang = SetOps with ContOps with ArrayOps with IntOps with BooleanOps with OptionOps
 }
 
-class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with Tuple2Component with ArrayComponent with IntComponent with BooleanComponent with ContOps with ManualLiftedLegoBase](
-  override val IR: Lang) extends sc.pardis.optimization.RecursiveRuleBasedTransformer[Lang](IR)
+import SetToLinkedListTransformation.Lang
+
+/**
+ * Converts a Set collection, which there is no duplicate element inserted into it,
+ * to a linked list.
+ * To check how this transformation is implemented take a look at the implementation
+ * of [[sc.pardis.shallow.scalalib.collection.SetLinkedList]]. Purgatory automatically
+ * generates the skeleton of the core part of this transformation out of the shallow
+ * implementation.
+ *
+ * Example:
+ * {{{
+ *    val elements: Collection[A] = // some collection of elements of type A
+ *    val set = Set[A]()
+ *    for(elem <- elements) {
+ *      set += elem
+ *    }
+ *    ...
+ *    for(e <- set) { // desugared into `set.foreach(e => ...)`
+ *      process(e)
+ *    }
+ * }}}
+ * is converted into:
+ * {{{
+ *    val elements: Collection[A] = // some collection of elements of type A
+ *    var setLinkedList = new Container[A](null)
+ *    for(elem <- elements) {
+ *      if (setLinkedList == null) {
+ *        setLinkedList = new Container(elem, null)
+ *      } else {
+ *        val prevNext = setLinkedList.next
+ *        val current = new Cont(elem, prevNext)
+ *        setLinkedList.next = current
+ *      }
+ *    }
+ *    ...
+ *    var current = setLinkedList
+ *    while (current != null) {
+ *      val next = current.next
+ *      process(current.elem)
+ *      current = next
+ *    }
+ * }}}
+ *
+ * Precondition:
+ * The elements inserted into the set should not have any duplication. Otherwise,
+ * this transformation does not work correctly. There is no analysis phase involved
+ * for check this contraint, which means it should be made sure by the user.
+ */
+class SetToLinkedListTransformation(
+  override val IR: Lang)
+  extends sc.pardis.deep.scalalib.collection.SetLinkedListTransformation(IR)
   with ArrayEscapeLowering[Lang]
   with VarEscapeLowering[Lang]
   with Tuple2EscapeLowering[Lang]
@@ -27,11 +75,10 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
   with LambdaEscapeLowering[Lang]
   with RuleBasedLowering[Lang] {
   import IR._
-  type Rep[T] = IR.Rep[T]
-  type Var[T] = IR.Var[T]
 
-  class A
-
+  /**
+   * The list of Set symbols that are lowered
+   */
   val loweredSets = scala.collection.mutable.ArrayBuffer[Rep[Any]]()
 
   def mustBeLowered[T](sym: Rep[T]): Boolean =
@@ -49,214 +96,61 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
     }
   }).asInstanceOf[PardisType[Any]]
 
-  private implicit class SetRep1[A](self: Rep[Set[A]]) {
-    implicit val typeA = transformType(self.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-    def headCont_=(x$1: Rep[Cont[A]]): Rep[Unit] = {
-      // __assign(headContMap(self), x$1)
-      // val v = Var(self.asInstanceOf[Rep[Var[Cont[A]]]])
-      // __assign(v, x$1)
-      // System.out.println(s"assigning to headCont $self ${apply(self)} ${apply(x$1)}")
-      // printf(unit(s"assigning to headCont $self ${apply(self)} ${apply(x$1)} ${self.correspondingNode}"))
-      self match {
-        case Def(ReadVar(v)) =>
-          // System.out.println(s"with var $v ${apply(v.e)} ${v.e.correspondingNode}")
-          v.e match {
-            case Def(NewVar(Def(ArrayApply(arr, i)))) => {
-              // printf(unit(s"arr update ${apply(arr)} ${apply(i)} ${apply(x$1)}"))
-              arr.asInstanceOf[Rep[Array[Cont[A]]]](i) = x$1
-            }
-            case _ => ()
-          }
-          __assign(v.asInstanceOf[Var[Cont[A]]], x$1)
-        case Def(ArrayApply(arr, i)) =>
-          arr.asInstanceOf[Rep[Array[Cont[A]]]](i) = x$1
-        case Def(OptionGet(Def(OptionApplyObject(Def(ArrayApply(arr, i)))))) =>
-          arr.asInstanceOf[Rep[Array[Cont[A]]]](i) = x$1
-        case _ =>
-          System.out.println(s"Assigning Default ${apply(self)}, ${apply(self).correspondingNode}")
-          val v = Var(self.asInstanceOf[Rep[Var[Cont[A]]]])
-          __assign(v, x$1)
-        // new SetRep1(apply(self).asInstanceOf[Rep[Set[A]]]).headCont_=(x$1)
-      }
-    }
-    def headCont: Rep[Cont[A]] = {
-      // val v = headContMap(self).asInstanceOf[Var[Cont[A]]]
-      // __readVar(v).asInstanceOf[Rep[Cont[A]]]
-      // val v = Var(self.asInstanceOf[Rep[Var[Cont[A]]]])
-      // __readVar(v).asInstanceOf[Rep[Cont[A]]]
-      self match {
-        case Def(ReadVar(v)) => {
-          v.e match {
-            case Def(NewVar(arrApp @ Def(ArrayApply(arr, i)))) => apply(arrApp).asInstanceOf[Rep[Cont[A]]]
-            case _ => __readVar(v.asInstanceOf[Var[Cont[A]]])
-          }
-          // System.out.println(s"reading $v $self")
+  /*
+   * As a Set is directly lowered into a local variable, instead of first lowering
+   * it into a record and then promoting the field of that record to local variable,
+   * while we are updating or accessing the head of the lowered linked list, 
+   * we have to take care of the cases handled by scalar replacement optimizations.
+   * The following two methods are responsible for handling this task.
+   */
 
+  override def set_Field_HeadCont_$eq[A](self: Rep[Set[A]],
+                                         x$1: Rep[Cont[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = {
+    self match {
+      case Def(ReadVar(v)) =>
+        v.e match {
+          case Def(NewVar(Def(ArrayApply(arr, i)))) => {
+            arr.asInstanceOf[Rep[Array[Cont[A]]]](i) = x$1
+          }
+          case _ => ()
         }
-        case _ =>
-          // val v = Var(self.asInstanceOf[Rep[Var[Cont[A]]]])
-          // __readVar(v).asInstanceOf[Rep[Cont[A]]]
-          self.asInstanceOf[Rep[Cont[A]]]
-      }
+        __assign(v.asInstanceOf[Var[Cont[A]]], x$1)
+      case Def(ArrayApply(arr, i)) =>
+        arr.asInstanceOf[Rep[Array[Cont[A]]]](i) = x$1
+      case Def(OptionGet(Def(OptionApplyObject(Def(ArrayApply(arr, i)))))) =>
+        arr.asInstanceOf[Rep[Array[Cont[A]]]](i) = x$1
+      case _ =>
+        val v = Var(self.asInstanceOf[Rep[Var[Cont[A]]]])
+        __assign(v, x$1)
     }
   }
-
-  // Set
+  override def set_Field_HeadCont[A](self: Rep[Set[A]])(implicit typeA: TypeRep[A]): Rep[Cont[A]] = {
+    self match {
+      case Def(ReadVar(v)) => {
+        v.e match {
+          case Def(NewVar(arrApp @ Def(ArrayApply(arr, i)))) =>
+            apply(arrApp).asInstanceOf[Rep[Cont[A]]]
+          case _ => __readVar(v.asInstanceOf[Var[Cont[A]]])
+        }
+      }
+      case _ =>
+        self.asInstanceOf[Rep[Cont[A]]]
+    }
+  }
 
   analysis += statement {
     case sym -> (node @ SetApplyObject2()) => {
       addToLowered(sym)
-      // System.out.println(s"sym $sym added to sets")
       ()
     }
-  }
-
-  rewrite += statement {
-    case sym -> (node @ SetNew()) =>
-
-      implicit val typeA = transformType(node.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-
-      // headContMap(sym) = __newVar[Cont[A]](unit(null))
-
-      unit(null.asInstanceOf[Any])(node.tp.asInstanceOf[TypeRep[Any]])
   }
 
   rewrite += statement {
     case sym -> (node @ SetApplyObject2()) =>
       implicit val typeA = transformType(node.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
 
-      // headContMap(sym) = __newVar[Cont[A]](unit(null))
-
-      // unit(null.asInstanceOf[Any])(node.tp.asInstanceOf[TypeRep[Any]])
-      // System.out.println(s"handling $sym added to sets")
-      // readVar(__newVar[Cont[A]](unit(null)))
-      // readVar(__newVar[Cont[A]](__newCont(unit(null), unit(null))))
       val newCont = __newCont(unit[A](null), unit[Cont[A]](null))
       readVar(__newVarNamed[Cont[A]](newCont, "newSet"))
-  }
-
-  def __newSetLinkedList[A]()(implicit typeA: TypeRep[A]): Rep[Set[A]] = SetNew[A]()
-
-  rewrite += rule {
-    case node @ Set$plus$eq(nodeself, nodeelem) if mustBeLowered(nodeself) =>
-
-      val self = nodeself.asInstanceOf[Rep[Set[A]]]
-      val elem = nodeelem.asInstanceOf[Rep[A]]
-      implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-
-      {
-        // val prevHead: this.Rep[ch.epfl.data.sc.pardis.shallow.scalalib.collection.Cont[A]] = self.headCont;
-        // // printf(unit(s"set+=, prevHead: $prevHead"))
-        // self.headCont_$eq(__newCont(elem, prevHead))
-
-        val prevHead: this.Rep[ch.epfl.data.sc.pardis.shallow.scalalib.collection.Cont[A]] = self.headCont;
-        __ifThenElse(infix_==(prevHead, unit(null)), {
-          self.headCont_$eq(__newCont(elem, unit(null)))
-        }, {
-          val prevNext = prevHead.next
-          val c = __newCont(elem, prevNext)
-          prevHead.next = c
-          // self.headCont_$eq(c)
-        })
-
-        // val prevHead: this.Rep[ch.epfl.data.sc.pardis.shallow.scalalib.collection.Cont[A]] = self.headCont;
-        // printf(unit(s"set+=, prevHead: $prevHead"))
-        // self.headCont_$eq(__newCont(elem, unit(null)))
-      }
-  }
-
-  rewrite += rule {
-    case node @ SetForeach(nodeself, nodef) if mustBeLowered(nodeself) =>
-
-      val self = nodeself.asInstanceOf[Rep[Set[A]]]
-      val f = nodef.asInstanceOf[Rep[((A) => Unit)]]
-      implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-
-      {
-        var current: this.Var[ch.epfl.data.sc.pardis.shallow.scalalib.collection.Cont[A]] = __newVarNamed(self.headCont, "current");
-        __whileDo(infix_$bang$eq(__readVar(current), unit(null)), {
-          val next: this.Rep[ch.epfl.data.sc.pardis.shallow.scalalib.collection.Cont[A]] = __readVar(current).next;
-          __app[A, Unit](f).apply(__readVar(current).elem);
-          __assign(current, next)
-        })
-      }
-  }
-
-  rewrite += rule {
-    case node @ SetRetain(nodeself, nodep) if mustBeLowered(nodeself) =>
-
-      val self = nodeself.asInstanceOf[Rep[Set[A]]]
-      val p = nodep.asInstanceOf[Rep[((A) => Boolean)]]
-      implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-
-      {
-        var prev: this.Var[ch.epfl.data.sc.pardis.shallow.scalalib.collection.Cont[A]] = __newVarNamed(infix_asInstanceOf[ch.epfl.data.sc.pardis.shallow.scalalib.collection.Cont[A]](unit(null)), "prev");
-        var current: this.Var[ch.epfl.data.sc.pardis.shallow.scalalib.collection.Cont[A]] = __newVarNamed(self.headCont, "current");
-        __whileDo(infix_$bang$eq(__readVar(current), unit(null)), {
-          __ifThenElse(__app[A, Boolean](p).apply(__readVar(current).elem).unary_$bang, __ifThenElse(infix_$eq$eq(self.headCont, __readVar(current)), self.headCont_$eq(unit(null)), unit(())), {
-            __ifThenElse(infix_$bang$eq(__readVar(prev), unit(null)), __readVar(prev).next_$eq(__readVar(current)), unit(()));
-            __ifThenElse(infix_$eq$eq(self.headCont, unit(null)), self.headCont_$eq(__readVar(current)), unit(()));
-            __assign(prev, __readVar(current))
-          });
-          __assign(current, __readVar(current).next)
-        })
-      }
-  }
-
-  rewrite += rule {
-    case node @ SetExists(nodeself, nodep) if mustBeLowered(nodeself) =>
-
-      val self = nodeself.asInstanceOf[Rep[Set[A]]]
-      val p = nodep.asInstanceOf[Rep[((A) => Boolean)]]
-      implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-
-      {
-        var current: this.Var[ch.epfl.data.sc.pardis.shallow.scalalib.collection.Cont[A]] = __newVarNamed(self.headCont, "current");
-        var found: this.Var[Boolean] = __newVarNamed(unit(false), "found");
-        __whileDo(infix_$bang$eq(__readVar(current), unit(null)).$amp$amp(__readVar(found).unary_$bang), {
-          __ifThenElse(__app[A, Boolean](p).apply(__readVar(current).elem), __assign(found, unit(true)), unit(()));
-          __assign(current, __readVar(current).next)
-        });
-        __readVar(found)
-      }
-  }
-
-  rewrite += rule {
-    case node @ SetHead(nodeself) if mustBeLowered(nodeself) =>
-
-      val self = nodeself.asInstanceOf[Rep[Set[A]]]
-      implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-
-      self.headCont.elem
-  }
-
-  rewrite += rule {
-    case node @ SetFoldLeft(nodeself, nodez, nodeop) if mustBeLowered(nodeself) =>
-      class B
-      val self = nodeself.asInstanceOf[Rep[Set[A]]]
-      val z = nodez.asInstanceOf[Rep[B]]
-      val op = nodeop.asInstanceOf[Rep[((B, A) => B)]]
-      implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-      implicit val typeB = transformType(z.tp).asInstanceOf[TypeRep[B]]
-
-      {
-        var acc: this.Var[B] = __newVarNamed(z, "acc");
-        self.foreach(__lambda(((e: this.Rep[A]) => __assign(acc, __app[B, A, B](op).apply(__readVar(acc), e)))));
-        __readVar(acc)
-      }
-  }
-
-  rewrite += rule {
-    case node @ SetSize(nodeself) if mustBeLowered(nodeself) =>
-
-      val self = nodeself.asInstanceOf[Rep[Set[A]]]
-      implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-
-      {
-        var s: this.Var[Int] = __newVarNamed(unit(0), "s");
-        self.foreach(__lambda(((e: this.Rep[A]) => __assign(s, __readVar(s).$plus(unit(1))))));
-        __readVar(s)
-      }
   }
 
   // TODO cmp handling should be automatically generated
@@ -268,6 +162,9 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
 
       implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
       implicit val typeB = transformType(f.tp.typeArguments(1)).asInstanceOf[TypeRep[B]]
+
+      val MIR = IR.asInstanceOf[ManualLiftedLegoBase]
+      import MIR.{ OrderingRep, OrderingOps }
 
       val cmp = OrderingRep[B]
 
@@ -284,21 +181,4 @@ class SetLinkedListTransformation[Lang <: SetComponent with OptionComponent with
         __readVar(min)
       }
   }
-
-  rewrite += rule {
-    case node @ SetFind(nodeself, nodep) if mustBeLowered(nodeself) =>
-
-      val self = nodeself.asInstanceOf[Rep[Set[A]]]
-      val p = nodep.asInstanceOf[Rep[((A) => Boolean)]]
-      implicit val typeA = transformType(nodeself.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
-
-      {
-        var current: this.Var[ch.epfl.data.sc.pardis.shallow.scalalib.collection.Cont[A]] = __newVarNamed(self.headCont, "current");
-        var found: this.Var[Boolean] = __newVarNamed(unit(false), "found");
-        __whileDo(infix_$bang$eq(__readVar(current), unit(null)).$amp$amp(__readVar(found).unary_$bang), __ifThenElse(__app[A, Boolean](p).apply(__readVar(current).elem), __assign(found, unit(true)), __assign(current, __readVar(current).next)));
-        __ifThenElse(__readVar(found).unary_$bang, Option.apply[A](infix_asInstanceOf[A](unit(null))), Option.apply[A](__readVar(current).elem))
-      }
-  }
-
 }
-

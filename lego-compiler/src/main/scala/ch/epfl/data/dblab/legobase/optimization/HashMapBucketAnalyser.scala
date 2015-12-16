@@ -14,7 +14,7 @@ import sc.pardis.deep.scalalib._
 import sc.pardis.deep.scalalib.collection._
 
 /**
- * An analyser for computing the number of necessary buckets
+ * An analyser for computing the number of necessary buckets for a HashMap
  */
 trait HashMapBucketAnalyser[Lang <: HashMapOps] { this: RuleBasedTransformer[Lang] =>
   val IR: Lang

@@ -1,6 +1,8 @@
 package ch.epfl.data
 package dblab.legobase
 
+import sc.pardis.language._
+
 /**
  * A module containing configurations for running queries.
  */
@@ -12,10 +14,5 @@ object Config {
   /** Number of the repetitions of running a query */
   val numRuns: scala.Int = 1
   /* Code generation info */
-  var codeGenLang: CodeGenerationLang = CCodeGeneration
+  var codeGenLang: Language = CCoreLanguage
 }
-
-// TODO move to sc
-sealed trait CodeGenerationLang
-case object CCodeGeneration extends CodeGenerationLang
-case object ScalaCodeGeneration extends CodeGenerationLang

@@ -2,6 +2,8 @@ package ch.epfl.data
 package dblab.legobase
 package optimization
 
+import ch.epfl.data.sc.pardis.quasi.TypeParameters._
+
 import scala.language.implicitConversions
 import sc.pardis.ir._
 import reflect.runtime.universe.{ TypeTag, Type }
@@ -10,16 +12,69 @@ import deep._
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
-
-// TODO there should be no need for queryNumber thanks to Schema information
+import quasi._
 
 /**
  * Transforms row layout representation to columnar layout representation.
  *
+ * Example:
+ * {{{
+ *    // RecordA { fieldA: Int, fieldB: String }
+ *    val array = new Array[RecordA](size)
+ *    for(i <- 0 until size) {
+ *      val elem = array(i)
+ *      process(elem.fieldA, elem.fieldB)
+ *    }
+ * }}}
+ * is converted to:
+ * {{{
+ *    // ColumnStoreOfRecordA {
+ *    //   arrayOfFieldA: Int,
+ *    //   arrayOfFieldB: String
+ *    // }
+ *    val csArray = ColumnStoreOfRecordA {
+ *      val arrayOfFieldA = new Array[Int](size)
+ *      val arrayOfFieldB = new Array[String](size)
+ *    }
+ *    // RowOfRecordA {
+ *    //   columnStorePointer: ColumnStoreOfRecordA,
+ *    //   index: Int
+ *    // }
+ *    for(i <- 0 until size) {
+ *      val csElem = RowOfRecordA {
+ *        val columnStorePointer = csArray
+ *        val index = i
+ *      }
+ *      val elemFieldA = csElem.columnStorePointer.arrayOfFieldA(csElem.index)
+ *      val elemFieldB = csElem.columnStorePointer.arrayOfFieldB(csElem.index)
+ *      process(elemFieldA, elemFieldB)
+ *    }
+ * }}}
+ *
+ * If this optimization is combined with ParameterPromotion, the abstraction of
+ * `ColumnStoreOfRecordA` and `RowOfRecordA` will be removed.
+ * The previous example is converted to the following program:
+ * {{{
+ *    val arrayOfFieldA = new Array[Int](size)
+ *    val arrayOfFieldB = new Array[String](size)
+ *    for(i <- 0 until size) {
+ *      val elemFieldA = arrayOfFieldA(i)
+ *      val elemFieldB = arrayOfFieldB(i)
+ *      process(elemFieldA, elemFieldB)
+ *    }
+ * }}}
+ *
+ * Precondition:
+ * The elements of the array of records that we would like to convert, should not
+ * be set to a null value.
+ * Also, the elements of such array should be set to the value of a mutable variable.
+ *
+ *
  * @param IR the polymorphic embedding trait which contains the reified program.
- * @param settings the compiler settings provided as command line arguments (TODO should be removed)
  */
-class ColumnStoreTransformer(override val IR: LoweringLegoBase, val settings: compiler.Settings) extends RuleBasedTransformer[LoweringLegoBase](IR) with StructCollector[LoweringLegoBase] {
+class ColumnStoreTransformer(override val IR: LegoBaseExp)
+  extends RuleBasedTransformer[LegoBaseExp](IR)
+  with StructCollector[LegoBaseExp] {
   import IR._
 
   def shouldBeColumnarized[T](tp: PardisType[T]): Boolean =
@@ -48,13 +103,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val settings: co
     def columnStoreOf = s"$CSTORE_OF_PREFIX$className"
   }
 
-  // case class StructArrayUpdate[T](arr: Rep[Array[T]], index: Rep[Int], struct: Option[Struct[T]])
-
-  // val structArrayUpdates = scala.collection.mutable.Map[Rep[Any], StructArrayUpdate[Any]]()
-
-  // def structHasArrayUpdate[T](sym: Rep[T]): Boolean = structArrayUpdates.contains(sym.asInstanceOf[Rep[Any]])
-
-  override def transformType[T: PardisType]: PardisType[Any] = ({
+  override def transformType[T: PardisType]: PardisType[Any] = {
     val tp = typeRep[T]
     if (tp.isArray) {
       if (shouldBeColumnarized(tp.typeArguments(0))) {
@@ -65,33 +114,15 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val settings: co
       val structDef = getStructDef(tp).get
       elemColumnStoreType(structDef.tag)
     } else super.transformType[T]
-  })
-
-  // analysis += rule {
-  //   case au @ ArrayUpdate(arr, idx, value) if shouldBeColumnarized(arr.tp.typeArguments(0)) =>
-  //     val structNode = value match {
-  //       case Def(struct: Struct[Any]) => Some(struct)
-  //       case _                        => None
-  //     }
-  //     structArrayUpdates += value -> StructArrayUpdate(arr, idx, structNode)
-  //     ()
-  // }
-
-  // rewrite += statement {
-  //   case sym -> (ps @ PardisStruct(_, _, _)) if shouldBeColumnarized(ps.tp) && structHasArrayUpdate(sym) =>
-  //     val StructArrayUpdate(arr, idx, _) = structArrayUpdates(sym)
-  //     val tpe = sym.tp.asInstanceOf[RecordType[Any]]
-  //     val newElems = List(PardisStructArg(COLUMN_STORE_POINTER, false, apply(arr)), PardisStructArg(INDEX, false, idx))
-  //     val rTpe = elemColumnStoreType(tpe.tag)
-  //     struct[Any](newElems: _*)(rTpe)
-  // }
+  }
 
   val potentialTypes = scala.collection.mutable.Set[TypeRep[_]]()
   val forbiddenTypes = scala.collection.mutable.Set[TypeRep[_]]()
   val columnarTypes = scala.collection.mutable.Set[TypeRep[_]]()
-
+  
   analysis += statement {
-    case sym -> ArrayNew(_) =>
+//    case sym -> dsl"new Array($_)" =>
+    case sym -> dsl"new Array[Any]($_)" =>
       val innerType = sym.tp.typeArguments(0)
       if (innerType.isRecord)
         potentialTypes += innerType
@@ -113,12 +144,14 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val settings: co
     }
   }
 
-  analysis += rule {
-    case ArrayUpdate(arr, _, UnacceptableUpdateValue(_)) =>
-      val innerType = arr.tp.typeArguments(0)
-      if (innerType.isRecord)
-        forbiddenTypes += innerType
-      ()
+  {
+    analysis += rule {
+      case dsl"($arr: Array[Any])($_) = ${UnacceptableUpdateValue(_)}" =>
+        val innerType = arr.tp.typeArguments(0)
+        if (innerType.isRecord)
+          forbiddenTypes += innerType
+        ()
+    }
   }
 
   def computeColumnarTypes(): Unit = {
@@ -135,53 +168,32 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val settings: co
   }
 
   rewrite += remove {
-    case (ps @ PardisStruct(_, _, _)) if shouldBeColumnarized(ps.tp) =>
+    case (ps @ Struct(_, _, _)) if shouldBeColumnarized(ps.tp) =>
       ()
   }
 
   rewrite += rule {
-    case an @ ArrayNew(size) if shouldBeColumnarized(an.tp.typeArguments(0)) => {
+//    case an @ ArrayNew(size) if shouldBeColumnarized(an.tp.typeArguments(0)) => {
+//    case dsl"new Array[Any]($size) as $an" if shouldBeColumnarized(an.tp.typeArguments(0)) => {
+    case an @ dsl"new Array[Any]($size)" if shouldBeColumnarized(an.tp.typeArguments(0)) => {
       val elemType = an.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
       val structDef = getStructDef(elemType).get
-      val newElems = structDef.fields.map(el => PardisStructArg(el.name.arrayOf, true, arrayNew(size)(el.tpe)))
+      val newElems = structDef.fields.map(el =>
+        PardisStructArg(el.name.arrayOf, true, arrayNew(size)(el.tpe)))
       val newTag = tableColumnStoreTag(structDef.tag)
       val newType = tableColumnStoreType(newTag)
-      // PardisStruct(newTag, newElems, Nil)(newType)
       struct(newElems: _*)(newType)
     }
   }
 
   rewrite += rule {
-    case au @ ArrayUpdate(arr, idx, value) if shouldBeColumnarized(arr.tp.typeArguments(0)) =>
+    case au @ dsl"(($arr: Array[Any])($idx) = $value)" if shouldBeColumnarized(arr.tp.typeArguments(0)) =>
       val elemType = arr.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
-      // System.out.println(s"${scala.Console.RED}$value$structArrayUpdates${scala.Console.RESET}")
       val structDef = getStructDef(elemType).get
       for (el <- structDef.fields) {
         class ColumnType
         implicit val columnType = el.tpe.asInstanceOf[TypeRep[ColumnType]]
         val column = field[Array[ColumnType]](apply(arr), el.name.arrayOf)
-        // val v = apply(value) match {
-
-        //   // case Def(struct: Struct[_]) if struct.elems.exists(e => e.name == el.name) =>
-        //   //   struct.elems.find(e => e.name == el.name).get.init.asInstanceOf[Rep[ColumnType]]
-        //   case _ if structHasArrayUpdate(value) && structArrayUpdates(value).struct.nonEmpty =>
-        //     val StructArrayUpdate(_, _, struct) = structArrayUpdates(value)
-        //     struct.get.elems.find(e => e.name == el.name).get.init.asInstanceOf[Rep[ColumnType]]
-        //   case sym @ Def(struct) if sym.tp.name.startsWith(ROW_OF_PREFIX) =>
-        //     val newTag = StructTags.ClassTag[Any](sym.tp.name.substring(ROW_OF_PREFIX.length).columnStoreOf)
-        //     class ColumnStorePointerType
-        //     implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
-        //     val columnStorePointer = field[ColumnStorePointerType](apply(value), COLUMN_STORE_POINTER)
-        //     val column = field[Array[ColumnType]](columnStorePointer, el.name.arrayOf)
-        //     val index = if (structArrayUpdates.contains(value.asInstanceOf[Rep[Any]])) {
-        //       idx
-        //     } else {
-        //       field[Int](apply(value), INDEX)
-        //     }
-        //     column(index)
-        //   case s @ Def(node) =>
-        //     throw new Exception(s"Cannot handle the node $node for column store")
-        // }
         val struct = apply(value) match {
           case Def(s: Struct[Any]) => s
           case v =>
@@ -201,28 +213,15 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val settings: co
             val column = field[Array[ColumnType]](columnStorePointer, el.name.arrayOf)
             val idx = field[Int](apply(value), INDEX)
             column(idx)
-          // case Some(s @ Def(node)) =>
-          //   throw new Exception(s"Cannot handle the node $node for column store")
         }
-
-        // val v = apply(value) match {
-        //   case Def(s: Struct[_]) => s.elems.find(e => e.name == el.name) match {
-        //     case Some(e) => e.init.asInstanceOf[Rep[ColumnType]]
-        //     case None    => throw new Exception(s"could not find any element for $s with name `${el.name}`")
-        //   }
-        //   case va @ Def(ReadVar(_)) => {
-        //     val res = apply(StructImmutableField[ColumnType](va, el.name))
-        //     toAtom(res)
-        //   }
-        // }
         column(idx) = v
       }
-      unit(())
+      dsl"()"
   }
 
   rewrite += statement {
     /* Nodes returning struct nodes -- convert them to a reference to column store */
-    case sym -> (aa @ ArrayApply(arr, idx)) if shouldBeColumnarized(sym.tp) =>
+    case sym -> (aa @ dsl"($arr: Array[Any])($idx)") if shouldBeColumnarized(sym.tp) =>
       val tpe = sym.tp.asInstanceOf[RecordType[Any]]
       val newElems = List(PardisStructArg(COLUMN_STORE_POINTER, false, apply(arr)), PardisStructArg(INDEX, false, apply(idx)))
       val rTpe = elemColumnStoreType(tpe.tag)
@@ -230,7 +229,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val settings: co
   }
 
   rewrite += rule {
-    case psif @ PardisStructImmutableField(s, f) if shouldBeColumnarized(s.tp) =>
+    case psif @ StructImmutableField(s, f) if shouldBeColumnarized(s.tp) =>
       val structDef = getStructDef(s.tp).get
       class ColumnType
       implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]
@@ -244,7 +243,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val settings: co
   }
 
   rewrite += rule {
-    case psif @ PardisStructFieldGetter(s, f) if shouldBeColumnarized(s.tp) =>
+    case psif @ StructFieldGetter(s, f) if shouldBeColumnarized(s.tp) =>
       val structDef = getStructDef(s.tp).get
       class ColumnType
       implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]
@@ -258,7 +257,7 @@ class ColumnStoreTransformer(override val IR: LoweringLegoBase, val settings: co
   }
 
   rewrite += rule {
-    case psif @ PardisStructFieldSetter(s, f, v) if shouldBeColumnarized(s.tp) =>
+    case psif @ StructFieldSetter(s, f, v) if shouldBeColumnarized(s.tp) =>
       val structDef = getStructDef(s.tp).get
       class ColumnType
       implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]

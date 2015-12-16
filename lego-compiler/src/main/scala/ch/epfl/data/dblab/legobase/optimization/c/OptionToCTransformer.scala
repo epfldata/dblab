@@ -8,12 +8,13 @@ import sc.pardis.optimization._
 import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
 
+// TODO add an anlysis phase to check the soundness of this optimization
 /**
  * Removes the abstraction overhead of Options.
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class OptionToCTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+class OptionToCTransformer(override val IR: LegoBaseExp) extends RecursiveRuleBasedTransformer[LegoBaseExp](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._

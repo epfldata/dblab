@@ -26,7 +26,7 @@ import sc.pardis.types.PardisTypeImplicits._
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class RangeToCTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+class RangeToCTransformer(override val IR: LegoBaseExp) extends RecursiveRuleBasedTransformer[LegoBaseExp](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._
@@ -43,6 +43,6 @@ class RangeToCTransformer(override val IR: LoweringLegoBase) extends RecursiveRu
   }
   rewrite += rule {
     case RangeForeach(Def(RangeNew(start, end, step)), Def(Lambda(f, i1, o))) =>
-      PardisFor(start, end, step, i1.asInstanceOf[Expression[Int]], reifyBlock({ o }).asInstanceOf[PardisBlock[Unit]])
+      PardisFor(start, end, step, i1.asInstanceOf[Expression[Int]], reifyBlock({ o.asInstanceOf[PardisBlock[Unit]] }))
   }
 }

@@ -17,7 +17,7 @@ import scala.language.existentials
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class HashEqualsFuncsToCTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer with StructCollector[LoweringLegoBase] {
+class HashEqualsFuncsToCTransformer(override val IR: LegoBaseExp) extends RecursiveRuleBasedTransformer[LegoBaseExp](IR) with CTransformer with StructCollector[LegoBaseExp] {
   import IR._
   import CNodes._
   import CTypes._
@@ -48,7 +48,7 @@ class HashEqualsFuncsToCTransformer(override val IR: LoweringLegoBase) extends R
         try {
           getStructDef(ttp).get
         } catch {
-          case ex => throw new Exception(s"${e1.tp} is not a record type in $e1 and the node ${e1.correspondingNode} => ${ex}")
+          case ex: Throwable => throw new Exception(s"${e1.tp} is not a record type in $e1 and the node ${e1.correspondingNode} => ${ex}")
         }
       }
       // System.out.println(structDef.fields)

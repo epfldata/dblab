@@ -22,7 +22,7 @@ import sc.cscala.GLibTypes._
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+class ScalaCollectionsToGLibTransfomer(override val IR: LegoBaseExp) extends RecursiveRuleBasedTransformer[LegoBaseExp](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._
@@ -54,12 +54,6 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   }
 
   /* HashMap Operations */
-  rewrite += rule {
-    case nm @ HashMapNew3(_, _) =>
-      apply(HashMapNew()(nm.typeA, ArrayBufferType(nm.typeB)))
-    case nm @ HashMapNew4(_, _) =>
-      apply(HashMapNew()(nm.typeA, nm.typeB))
-  }
   rewrite += rule {
     case nm @ HashMapNew() =>
       if (nm.typeA == DoubleType || nm.typeA == PointerType(DoubleType)) {
@@ -95,25 +89,49 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   rewrite += rule {
     case ma @ HashMapApply(map, k) =>
       val key = if (ma.typeA == DoubleType || ma.typeA == PointerType(DoubleType)) CLang.&(apply(k)) else apply(k)
+
       g_hash_table_lookup(map.asInstanceOf[Rep[LPointer[GHashTable]]], key.asInstanceOf[Rep[gconstpointer]])
   }
   rewrite += rule {
     case mu @ HashMapUpdate(map, k, value) =>
       val key = if (mu.typeA == DoubleType || mu.typeA == PointerType(DoubleType)) allocDoubleKey(apply(k)) else apply(k)
+      // for handling the case of positive integers that the value NULL is mixed with 0
+      val newValue =
+        if (mu.typeB == IntType)
+          value.asInstanceOf[Rep[Int]] + unit(1)
+        else
+          value
       g_hash_table_insert(map.asInstanceOf[Rep[LPointer[GHashTable]]],
         key.asInstanceOf[Rep[gconstpointer]],
-        value.asInstanceOf[Rep[gpointer]])
+        newValue.asInstanceOf[Rep[gpointer]])
+  }
+  def elemType[T](tp: TypeRep[T]): TypeRep[Any] = {
+    if (tp.isPrimitive) {
+      transformType(tp).asInstanceOf[TypeRep[Any]]
+    } else {
+      typePointer(transformType(tp)).asInstanceOf[TypeRep[Any]]
+    }
   }
   rewrite += rule {
     case hmgu @ HashMapGetOrElseUpdate(map, key, value) =>
-      val ktp = typePointer(transformType(hmgu.typeA)).asInstanceOf[TypeRep[Any]]
-      val vtp = typePointer(transformType(hmgu.typeB)).asInstanceOf[TypeRep[Any]]
+      val ktp = elemType(hmgu.typeA)
+      val vtp = elemType(hmgu.typeB)
       val v = toAtom(transformDef(HashMapApply(map, key)(ktp, vtp))(vtp))(vtp)
+      // what happends if the value associated to the key is zero?
+      // g_hash_table_lookup does not distinguish between NULL and zero!
+      // we will take care of it here.
+      // However, here we're assuming that always: value >= 0
       __ifThenElse(infix_==(v, unit(null)), {
         val res = inlineBlock(apply(value))
         toAtom(HashMapUpdate(map, key, res)(ktp, vtp))
         res
-      }, v)(v.tp)
+      }, {
+        if (hmgu.typeB == IntType)
+          v.asInstanceOf[Rep[Int]] - unit(1)
+        else
+          v
+      })(v.tp)
+
   }
   rewrite += rule {
     case mr @ HashMapRemove(map, key) =>
@@ -207,18 +225,24 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
       val found = set.find(fun)
       found.nonEmpty
   }
+  // rewrite += statement {
+  //   case sym -> SetFoldLeft(s, z, f) =>
+  //     val typeA = sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
+  //     val typeB = sym.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
   rewrite += rule {
     case sfl @ SetFoldLeft(s, z, f) =>
-      val elemType = if (sfl.typeA.isRecord) typeLPointer(sfl.typeA) else sfl.typeA
-      val state = __newVar(z)(sfl.typeB)
+      val typeA = sfl.typeA
+      val typeB = sfl.typeB
+      val elemType = if (typeA.isRecord) typeLPointer(typeA) else typeA
+      val state = __newVar(z)(typeB)
       val l = __newVar(CLang.*(s.asInstanceOf[Rep[LPointer[LPointer[GList]]]]))
       __whileDo(__readVar(l) __!= CLang.NULL[GList], {
         val elem = infix_asInstanceOf(g_list_nth_data(readVar(l), unit(0)))(elemType)
-        val newState = inlineFunction(f, __readVar(state)(sfl.typeB), elem)
-        __assign(state, newState)(sfl.typeB)
+        val newState = inlineFunction(f, __readVar(state)(typeB), elem)
+        __assign(state, newState)(typeB)
         __assign(l, g_list_next(readVar(l)))
       })
-      __readVar(state)(sfl.typeB)
+      __readVar(state)(typeB)
   }
   rewrite += rule {
     case SetSize(s) =>
@@ -290,8 +314,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
   rewrite += rule {
     case TreeSetSize(t) => g_tree_nnodes(t.asInstanceOf[Rep[LPointer[GTree]]])
   }
-  rewrite += rule {
-    case op @ TreeSetHead(t) =>
+  rewrite += statement {
+    case sym -> (op @ TreeSetHead(t)) =>
       // def treeHead[A: PardisType, B: PardisType] = doLambda3((s1: Rep[A], s2: Rep[A], s3: Rep[Pointer[B]]) => {
       //   pointer_assign_content(s3.asInstanceOf[Expression[Pointer[Any]]], s2)
       def treeHead[T: TypeRep] = doLambda3((s1: Rep[gpointer], s2: Rep[gpointer], s3: Rep[gpointer]) => {
@@ -299,7 +323,8 @@ class ScalaCollectionsToGLibTransfomer(override val IR: LoweringLegoBase) extend
         unit(1)
       })
       class X
-      implicit val elemType = transformType(if (op.typeA.isRecord) typeLPointer(op.typeA) else op.typeA).asInstanceOf[TypeRep[X]]
+      val opTypeA = sym.tp
+      implicit val elemType = transformType(if (opTypeA.isRecord) typeLPointer(opTypeA) else opTypeA).asInstanceOf[TypeRep[X]]
       val init = CLang.NULL[Any]
       g_tree_foreach(t.asInstanceOf[Rep[LPointer[GTree]]], (treeHead(elemType)).asInstanceOf[Rep[LPointer[(gpointer, gpointer, gpointer) => Int]]], CLang.&(init).asInstanceOf[Rep[gpointer]])
       init.asInstanceOf[Rep[LPointer[Any]]]

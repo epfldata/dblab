@@ -13,7 +13,7 @@ import sc.pardis.optimization._
 object LBLowering {
   def apply(removeUnusedFields: Boolean) = new TransformerHandler {
     def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-      val lbContext = context.asInstanceOf[LoweringLegoBase]
+      val lbContext = context.asInstanceOf[LegoBaseExp]
       val lbLowering = new LBLowering(lbContext, lbContext, removeUnusedFields)
       val newBlock = lbLowering.lower(block)
       new LBLoweringPostProcess(lbContext, lbLowering).optimize(newBlock)
@@ -21,7 +21,25 @@ object LBLowering {
   }
 }
 
-class LBLowering(override val from: LoweringLegoBase, override val to: LoweringLegoBase, val removeUnusedFields: Boolean) extends Lowering[LoweringLegoBase, LoweringLegoBase](from, to) {
+/**
+ * Lowers the query operators as well as the case class records for the relation
+ * records and intermediate records to structs.
+ * Furthermore, while lowering the case class records, finds the fields that are
+ * unused and if `removeUnusedFields` is true, removes them.
+ * For example:
+ * {{{
+ *    val rec = new Record { var fieldA: Int, val fieldB: String }
+ *    rec.fieldA = 2
+ *    // fieldB is not used
+ * }}}
+ * is converted to:
+ * {{{
+ *    val rec = new Record { var fieldA: Int }
+ *    rec.fieldA = 2
+ *    // fieldB is not used
+ * }}}
+ */
+class LBLowering(override val from: LegoBaseExp, override val to: LegoBaseExp, val removeUnusedFields: Boolean) extends Lowering[LegoBaseExp, LegoBaseExp](from, to) {
   import from._
 
   // override val lowerStructs: Boolean = false
@@ -35,16 +53,17 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
   var phase: Phase = _
 
   val fieldsAccessed = collection.mutable.Map[StructTags.StructTag[_], ArrayBuffer[String]]()
+  val notSeenDynamicRecordTypes = collection.mutable.Set[TypeRep[Any]]()
 
   def getRegisteredFieldsOfType[A](t: PardisType[A]): List[String] = {
     val registeredFields = t match {
       case DynamicCompositeRecordType(l, r) =>
-        manifestTags(getType(t)) match {
+        getTag(t) match {
           case tag @ StructTags.CompositeTag(la, ra, ltag, rtag) =>
             getRegisteredFieldsOfType(l).map(la + _) ++ getRegisteredFieldsOfType(r).map(ra + _)
         }
       case _ =>
-        manifestTags.get(getType(t)).flatMap(x => fieldsAccessed.get(x)) match {
+        manifestTags.get(t.asInstanceOf[TypeRep[Any]]).flatMap(x => fieldsAccessed.get(x)) match {
           case Some(x) => x
           case None    => List()
         }
@@ -55,19 +74,23 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
   def registerField[A](t: PardisType[A], field: String): Unit = {
     t match {
       case DynamicCompositeRecordType(l, r) =>
-        manifestTags(getType(t)) match {
-          case tag @ StructTags.CompositeTag(la, ra, ltag, rtag) =>
-            val lstruct = structs(ltag)
-            val rstruct = structs(rtag)
+        manifestTags.get(t.asInstanceOf[TypeRep[Any]]) match {
+          case Some(tag @ StructTags.CompositeTag(la, ra, ltag, rtag)) =>
+            // val lstruct = structs(ltag)
+            // val rstruct = structs(rtag)
             if (field.startsWith(la)) {
               registerField(l, field.substring(la.size))
             }
             if (field.startsWith(ra)) {
               registerField(r, field.substring(ra.size))
             }
+          case _ =>
+            notSeenDynamicRecordTypes += t.asInstanceOf[TypeRep[Any]]
+            registerField(l, field)
+            registerField(r, field)
         }
       case _ =>
-        manifestTags.get(getType(t)) match {
+        manifestTags.get(t.asInstanceOf[TypeRep[Any]]) match {
           case Some(tag) => structs.get(tag) match {
             case Some(s) =>
               val l = fieldsAccessed.getOrElseUpdate(tag, new ArrayBuffer())
@@ -98,16 +121,47 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
     case ConcatDynamic(self, record2, leftAlias, rightAlias) if phase == FieldUsagePhase => {
       val Constant(la: String) = leftAlias
       val Constant(ra: String) = rightAlias
-      val leftTag = getTag(getType(self.tp))
-      val rightTag = getTag(getType(record2.tp))
+      val leftTag = getTag(self.tp)
+      val rightTag = getTag(record2.tp)
+      // TODO rewrite using getElems method
       val concatTag = StructTags.CompositeTag[Any, Any](la, ra, leftTag, rightTag)
       val regFields = getRegisteredFieldsOfType(self.tp) ++ getRegisteredFieldsOfType(record2.tp)
       def fieldIsRegistered(f: StructElemInformation): Boolean = regFields.contains(f.name) || !removeUnusedFields
       val newElems = getStructElems(leftTag).filter(fieldIsRegistered).map(x => StructElemInformation(la + x.name, x.tpe, x.mutable)) ++ getStructElems(rightTag).filter(fieldIsRegistered).map(x => StructElemInformation(ra + x.name, x.tpe, x.mutable))
       structs += concatTag -> newElems
-      manifestTags += getType(node.tp) -> concatTag
+      manifestTags += node.tp.asInstanceOf[TypeRep[Any]] -> concatTag
     }
     case _ => super.traverseDef(node)
+  }
+
+  def getElems[T](tp: TypeRep[T], aliasing: String = ""): Seq[StructElemInformation] = {
+    val tag = getTag(tp)
+    val regFields = getRegisteredFieldsOfType(tp)
+    def fieldIsRegistered(f: StructElemInformation): Boolean = regFields.contains(f.name) || !removeUnusedFields
+    getStructElems(tag).filter(fieldIsRegistered).map(x => StructElemInformation(aliasing + x.name, x.tpe, x.mutable))
+  }
+
+  def computeConcatTypeEtc(): Unit = {
+    def types[T: TypeRep]: List[TypeRep[Any]] = {
+      typeRep[T] match {
+        case DynamicCompositeRecordType(l, r) => types(l) ++ types(r)
+        case t: TypeRep[Any]                  => List(t)
+      }
+    }
+    val sorted = notSeenDynamicRecordTypes.toList.sortBy(x => types(x).size)
+    for (tp <- sorted) {
+      val dtp = tp.asInstanceOf[DynamicCompositeRecordType[_, _]]
+      val (lt, rt) = dtp.leftType -> dtp.rightType
+      val leftTag = getTag(lt)
+      val rightTag = getTag(rt)
+      System.err.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: No tag found for type $tp. Hence assuming no aliasing!")
+      val concatTag = StructTags.CompositeTag[Any, Any]("", "", leftTag, rightTag)
+      val newElems = getElems(lt) ++ getElems(rt)
+      // System.out.println(s"concatTag $tp -> $concatTag -> $newElems")
+      structs += concatTag -> newElems
+      manifestTags += tp.asInstanceOf[TypeRep[Any]] -> concatTag
+    }
+    // System.out.println(s"sorted ${sorted.mkString("\n")}")
   }
 
   override def lower[T: TypeRep](node: Block[T]): to.Block[T] = {
@@ -116,6 +170,9 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
     phase = FieldUsagePhase
     traverseBlock(node)
     phase = OtherPhase
+    // System.out.println(s"tags: $manifestTags")
+    // System.out.println(s"dtypes: $notSeenDynamicRecordTypes")
+    computeConcatTypeEtc()
     val res = transformProgram(node)
     res
   }
@@ -137,12 +194,12 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
       super.transformDef(PardisStruct(tag, newFields, Nil)(ps.tp))(ps.tp)
     case ConcatDynamic(record1, record2, leftAlias, rightAlias) if lowerStructs => {
       val tp = node.tp.asInstanceOf[TypeRep[(Any, Any)]]
-      val leftTag = getTag(getType(record1.tp))
-      val rightTag = getTag(getType(record2.tp))
+      val leftTag = getTag(record1.tp)
+      val rightTag = getTag(record2.tp)
       val Constant(la: String) = leftAlias
       val Constant(ra: String) = rightAlias
       val concatTag = StructTags.CompositeTag[Any, Any](la, ra, leftTag, rightTag)
-      def getElems[T](exp: Rep[T]): Seq[StructElemInformation] = getStructElems(manifestTags(getType(exp.tp)))
+      def getElems[T](exp: Rep[T]): Seq[StructElemInformation] = getStructElems(getTag(exp.tp))
       val elems = getStructElems(concatTag)
       case class ElemInfo[T](name: String, rec: Rep[T], tp: TypeRep[Any])
       val regFields = getRegisteredFieldsOfType(record1.tp) ++ getRegisteredFieldsOfType(record2.tp)
@@ -310,13 +367,13 @@ class LBLowering(override val from: LoweringLegoBase, override val to: LoweringL
   }
 }
 
-class LBLoweringPostProcess(override val IR: LoweringLegoBase, val lbLowering: LBLowering) extends RuleBasedTransformer[LoweringLegoBase](IR) {
+class LBLoweringPostProcess(override val IR: LegoBaseExp, val lbLowering: LBLowering) extends RuleBasedTransformer[LegoBaseExp](IR) {
   import IR._
 
   rewrite += statement {
     case sym -> StructImmutableField(obj, name) if sym.tp.isRecord && !sym.tp.isInstanceOf[RecordType[_]] =>
-      import lbLowering.{ createTag, getType }
-      val tag = createTag(getType(sym.tp))
+      import lbLowering.{ createTag }
+      val tag = createTag(sym.tp)
       val newTp = new RecordType(tag, Some(sym.tp.asInstanceOf[TypeRep[Any]])).asInstanceOf[TypeRep[Any]]
       field(obj, name)(newTp)
   }

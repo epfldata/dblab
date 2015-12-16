@@ -9,7 +9,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.Set
 import scala.collection.mutable.TreeSet
 import GenericEngine._
-import sc.pardis.annotations.{ deep, metadeep, dontInline, needs }
+import sc.pardis.annotations.{ deep, metadeep, dontInline, needs, :: }
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
 import scala.reflect.ClassTag
 
@@ -131,7 +131,7 @@ object MultiMap {
  * HashMap of the aggregate operator
  * @param aggFuncs the aggregate functions used in the aggregate operator
  */
-@needs[(HashMap[Any, Any], AGGRecord[_])]
+@needs[HashMap[Any, Any] :: AGGRecord[_]]
 @deep class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B])(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
   val hm = HashMap[B, AGGRecord[B]]() //Array[Double]]()
   // val hm = new pardis.shallow.scalalib.collection.HashMapOptimal[B, AGGRecord[B]]() {
@@ -214,6 +214,7 @@ object MultiMap {
   def consume(tuple: Record) { sortedTree += tuple.asInstanceOf[A] }
 }
 
+// TODO do we need joinCond? Can't we infer it from leftHash and rightHash?
 /**
  * Hash Join Operator
  *
@@ -221,7 +222,7 @@ object MultiMap {
  * @param rightParent the right parent operator of this operator
  * @param leftAlias the String that should be prepended to the field names of the records
  * of the left operator
- * @param leftAlias the String that should be prepended to the field names of the records
+ * @param rightAlias the String that should be prepended to the field names of the records
  * of the right operator
  * @param joinCond the join condition
  * @param leftHash the hashing function used to convert the values of the records of the
@@ -278,7 +279,7 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
  * in the MultiMap of the window operator.
  */
 // @deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: MultiMap.Set[A] => C) extends Operator[WindowRecord[B, C]] {
-@needs[(scala.collection.mutable.MultiMap[Any, Any], Set[_])]
+@needs[scala.collection.mutable.MultiMap[Any, Any] :: Set[_]]
 @deep class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: Set[A] => C) extends Operator[WindowRecord[B, C]] {
   val hm = MultiMap[B, A]
 
@@ -352,7 +353,7 @@ class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator
  * @param rightParent the right parent operator of this operator
  * @param leftAlias the String that should be prepended to the field names of the records
  * of the left operator
- * @param leftAlias the String that should be prepended to the field names of the records
+ * @param rightAlias the String that should be prepended to the field names of the records
  * of the right operator
  * @param joinCond the join condition
  */

@@ -15,7 +15,7 @@ import scala.language.implicitConversions
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
-class OptimalStringToCTransformer(override val IR: LoweringLegoBase) extends RecursiveRuleBasedTransformer[LoweringLegoBase](IR) with CTransformer {
+class OptimalStringToCTransformer(override val IR: LegoBaseExp) extends RecursiveRuleBasedTransformer[LegoBaseExp](IR) with CTransformer {
   import IR._
   import CNodes._
   import CTypes._
