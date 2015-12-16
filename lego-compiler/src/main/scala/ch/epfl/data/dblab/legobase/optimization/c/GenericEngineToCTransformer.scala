@@ -21,7 +21,7 @@ class GenericEngineToCTransformer(override val IR: LegoBaseExp, val settings: co
   import CNodes._
   import CTypes._
 
-  val initTimer = infix_asInstanceOf[TimeVal](unit(0))
+  def initTimer = infix_asInstanceOf[TimeVal](unit(0))
 
   case class Timer(diff: Rep[TimeVal], start: Rep[TimeVal], end: Rep[TimeVal])
   def createTimeVal: Rep[TimeVal] = readVar(__newVar(initTimer))
