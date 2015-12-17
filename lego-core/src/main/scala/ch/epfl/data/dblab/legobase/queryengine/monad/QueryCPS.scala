@@ -3,7 +3,7 @@ package dblab.legobase
 package queryengine
 package monad
 
-import sc.pardis.annotations.{ deep, noImplementation, needsCircular, dontLift, needs, reflect, pure, transformation }
+import sc.pardis.annotations.{ deep, needsCircular, dontLift, needs, reflect, pure, transformation }
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
 import push.MultiMap
 import scala.collection.mutable.MultiMap

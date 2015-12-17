@@ -10,6 +10,7 @@ import pardis.deep._
 import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
+
 trait Q1GRPRecordOps extends Base {
   // Type representation
   val Q1GRPRecordType = Q1GRPRecordIRs.Q1GRPRecordType
@@ -95,9 +96,7 @@ object Q1GRPRecordIRs extends Base {
 trait Q1GRPRecordImplicits extends Q1GRPRecordOps {
   // Add implicit conversions here!
 }
-trait Q1GRPRecordImplementations extends Q1GRPRecordOps {
-
-}
+trait Q1GRPRecordComponent extends Q1GRPRecordOps with Q1GRPRecordImplicits {}
 
 trait Q1GRPRecordPartialEvaluation extends Q1GRPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -113,7 +112,7 @@ trait Q1GRPRecordPartialEvaluation extends Q1GRPRecordComponent with BasePartial
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait Q1GRPRecordComponent extends Q1GRPRecordOps with Q1GRPRecordImplicits {}
+
 trait Q3GRPRecordOps extends Base {
   // Type representation
   val Q3GRPRecordType = Q3GRPRecordIRs.Q3GRPRecordType
@@ -215,9 +214,7 @@ object Q3GRPRecordIRs extends Base {
 trait Q3GRPRecordImplicits extends Q3GRPRecordOps {
   // Add implicit conversions here!
 }
-trait Q3GRPRecordImplementations extends Q3GRPRecordOps {
-
-}
+trait Q3GRPRecordComponent extends Q3GRPRecordOps with Q3GRPRecordImplicits {}
 
 trait Q3GRPRecordPartialEvaluation extends Q3GRPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -237,7 +234,7 @@ trait Q3GRPRecordPartialEvaluation extends Q3GRPRecordComponent with BasePartial
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait Q3GRPRecordComponent extends Q3GRPRecordOps with Q3GRPRecordImplicits {}
+
 trait Q7GRPRecordOps extends Base with OptimalStringOps {
   // Type representation
   val Q7GRPRecordType = Q7GRPRecordIRs.Q7GRPRecordType
@@ -340,9 +337,7 @@ object Q7GRPRecordIRs extends Base {
 trait Q7GRPRecordImplicits extends Q7GRPRecordOps {
   // Add implicit conversions here!
 }
-trait Q7GRPRecordImplementations extends Q7GRPRecordOps {
-
-}
+trait Q7GRPRecordComponent extends Q7GRPRecordOps with Q7GRPRecordImplicits {}
 
 trait Q7GRPRecordPartialEvaluation extends Q7GRPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -362,7 +357,7 @@ trait Q7GRPRecordPartialEvaluation extends Q7GRPRecordComponent with BasePartial
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait Q7GRPRecordComponent extends Q7GRPRecordOps with Q7GRPRecordImplicits {}
+
 trait Q9GRPRecordOps extends Base with OptimalStringOps {
   // Type representation
   val Q9GRPRecordType = Q9GRPRecordIRs.Q9GRPRecordType
@@ -449,9 +444,7 @@ object Q9GRPRecordIRs extends Base {
 trait Q9GRPRecordImplicits extends Q9GRPRecordOps {
   // Add implicit conversions here!
 }
-trait Q9GRPRecordImplementations extends Q9GRPRecordOps {
-
-}
+trait Q9GRPRecordComponent extends Q9GRPRecordOps with Q9GRPRecordImplicits {}
 
 trait Q9GRPRecordPartialEvaluation extends Q9GRPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -467,7 +460,7 @@ trait Q9GRPRecordPartialEvaluation extends Q9GRPRecordComponent with BasePartial
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait Q9GRPRecordComponent extends Q9GRPRecordOps with Q9GRPRecordImplicits {}
+
 trait Q10GRPRecordOps extends Base with OptimalStringOps {
   // Type representation
   val Q10GRPRecordType = Q10GRPRecordIRs.Q10GRPRecordType
@@ -634,9 +627,7 @@ object Q10GRPRecordIRs extends Base {
 trait Q10GRPRecordImplicits extends Q10GRPRecordOps {
   // Add implicit conversions here!
 }
-trait Q10GRPRecordImplementations extends Q10GRPRecordOps {
-
-}
+trait Q10GRPRecordComponent extends Q10GRPRecordOps with Q10GRPRecordImplicits {}
 
 trait Q10GRPRecordPartialEvaluation extends Q10GRPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -672,7 +663,7 @@ trait Q10GRPRecordPartialEvaluation extends Q10GRPRecordComponent with BaseParti
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait Q10GRPRecordComponent extends Q10GRPRecordOps with Q10GRPRecordImplicits {}
+
 trait Q13IntRecordOps extends Base {
   // Type representation
   val Q13IntRecordType = Q13IntRecordIRs.Q13IntRecordType
@@ -742,9 +733,7 @@ object Q13IntRecordIRs extends Base {
 trait Q13IntRecordImplicits extends Q13IntRecordOps {
   // Add implicit conversions here!
 }
-trait Q13IntRecordImplementations extends Q13IntRecordOps {
-
-}
+trait Q13IntRecordComponent extends Q13IntRecordOps with Q13IntRecordImplicits {}
 
 trait Q13IntRecordPartialEvaluation extends Q13IntRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -752,7 +741,7 @@ trait Q13IntRecordPartialEvaluation extends Q13IntRecordComponent with BaseParti
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait Q13IntRecordComponent extends Q13IntRecordOps with Q13IntRecordImplicits {}
+
 trait Q16GRPRecord1Ops extends Base with OptimalStringOps {
   // Type representation
   val Q16GRPRecord1Type = Q16GRPRecord1IRs.Q16GRPRecord1Type
@@ -871,9 +860,7 @@ object Q16GRPRecord1IRs extends Base {
 trait Q16GRPRecord1Implicits extends Q16GRPRecord1Ops {
   // Add implicit conversions here!
 }
-trait Q16GRPRecord1Implementations extends Q16GRPRecord1Ops {
-
-}
+trait Q16GRPRecord1Component extends Q16GRPRecord1Ops with Q16GRPRecord1Implicits {}
 
 trait Q16GRPRecord1PartialEvaluation extends Q16GRPRecord1Component with BasePartialEvaluation {
   // Immutable field inlining 
@@ -897,7 +884,7 @@ trait Q16GRPRecord1PartialEvaluation extends Q16GRPRecord1Component with BasePar
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait Q16GRPRecord1Component extends Q16GRPRecord1Ops with Q16GRPRecord1Implicits {}
+
 trait Q16GRPRecord2Ops extends Base with OptimalStringOps {
   // Type representation
   val Q16GRPRecord2Type = Q16GRPRecord2IRs.Q16GRPRecord2Type
@@ -1000,9 +987,7 @@ object Q16GRPRecord2IRs extends Base {
 trait Q16GRPRecord2Implicits extends Q16GRPRecord2Ops {
   // Add implicit conversions here!
 }
-trait Q16GRPRecord2Implementations extends Q16GRPRecord2Ops {
-
-}
+trait Q16GRPRecord2Component extends Q16GRPRecord2Ops with Q16GRPRecord2Implicits {}
 
 trait Q16GRPRecord2PartialEvaluation extends Q16GRPRecord2Component with BasePartialEvaluation {
   // Immutable field inlining 
@@ -1022,7 +1007,7 @@ trait Q16GRPRecord2PartialEvaluation extends Q16GRPRecord2Component with BasePar
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait Q16GRPRecord2Component extends Q16GRPRecord2Ops with Q16GRPRecord2Implicits {}
+
 trait Q18GRPRecordOps extends Base with OptimalStringOps {
   // Type representation
   val Q18GRPRecordType = Q18GRPRecordIRs.Q18GRPRecordType
@@ -1157,9 +1142,7 @@ object Q18GRPRecordIRs extends Base {
 trait Q18GRPRecordImplicits extends Q18GRPRecordOps {
   // Add implicit conversions here!
 }
-trait Q18GRPRecordImplementations extends Q18GRPRecordOps {
-
-}
+trait Q18GRPRecordComponent extends Q18GRPRecordOps with Q18GRPRecordImplicits {}
 
 trait Q18GRPRecordPartialEvaluation extends Q18GRPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -1187,7 +1170,7 @@ trait Q18GRPRecordPartialEvaluation extends Q18GRPRecordComponent with BaseParti
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait Q18GRPRecordComponent extends Q18GRPRecordOps with Q18GRPRecordImplicits {}
+
 trait Q20GRPRecordOps extends Base {
   // Type representation
   val Q20GRPRecordType = Q20GRPRecordIRs.Q20GRPRecordType
@@ -1289,9 +1272,7 @@ object Q20GRPRecordIRs extends Base {
 trait Q20GRPRecordImplicits extends Q20GRPRecordOps {
   // Add implicit conversions here!
 }
-trait Q20GRPRecordImplementations extends Q20GRPRecordOps {
-
-}
+trait Q20GRPRecordComponent extends Q20GRPRecordOps with Q20GRPRecordImplicits {}
 
 trait Q20GRPRecordPartialEvaluation extends Q20GRPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -1311,4 +1292,4 @@ trait Q20GRPRecordPartialEvaluation extends Q20GRPRecordComponent with BaseParti
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait Q20GRPRecordComponent extends Q20GRPRecordOps with Q20GRPRecordImplicits {}
+

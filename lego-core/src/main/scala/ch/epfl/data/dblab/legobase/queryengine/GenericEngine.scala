@@ -5,7 +5,6 @@ package queryengine
 import sc.pardis.annotations._
 import queryengine.push._
 
-@noImplementation
 @deep
 @needs[sc.pardis.shallow.OptimalString]
 trait GenericEngine

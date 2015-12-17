@@ -3,14 +3,13 @@ package dblab.legobase
 package queryengine
 package monad
 
-import sc.pardis.annotations.{ deep, noImplementation, needsCircular, dontLift, needs, reflect, pure, direct, :: }
+import sc.pardis.annotations.{ deep, needsCircular, dontLift, needs, reflect, pure, direct, :: }
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
 import push.MultiMap
 import scala.collection.mutable.MultiMap
 import scala.collection.mutable.ArrayBuffer
 
 @deep
-@noImplementation
 @needs[List[_] :: Array[_]]
 @needsCircular[GroupedQuery[_, _]]
 class Query[T](private val underlying: List[T]) {
@@ -76,7 +75,6 @@ object Query {
 }
 
 @deep
-@noImplementation
 @needs[Query[_] :: List[_]]
 @needsCircular[GroupedQuery[_, _]]
 class JoinableQuery[T <: Record](private val underlying: List[T]) {
@@ -125,7 +123,6 @@ class JoinableQuery[T <: Record](private val underlying: List[T]) {
 }
 
 @deep
-@noImplementation
 @needs[Tuple2[_, _] :: Query[_] :: Map[_, _] :: List[_]]
 class GroupedQuery[K, V](private val underlying: Map[K, List[V]]) {
   @pure def mapValues[S](f: Query[V] => S): Query[(K, S)] =

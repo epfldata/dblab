@@ -13,7 +13,6 @@ import sc.pardis.annotations._
  *
  * @param filename the input file name
  */
-@noImplementation
 @deep
 class K2DBScanner(filename: String) {
   @dontLift private var byteRead: Int = 0
