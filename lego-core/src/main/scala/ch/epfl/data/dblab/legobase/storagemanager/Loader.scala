@@ -3,7 +3,7 @@ package dblab.legobase
 package storagemanager
 
 import utils.Utilities._
-import sc.pardis.annotations.{ deep, metadeep, dontLift, dontInline, needs, :: }
+import sc.pardis.annotations.{ deep, metadeep, dontLift, dontInline, needs, ::, onlineInliner }
 import queryengine._
 import tpch._
 import schema._
@@ -26,6 +26,7 @@ class MetaInfo
 
 @needs[K2DBScanner :: Array[_] :: OptimalString]
 @deep
+@onlineInliner
 trait Loader
 
 /**

@@ -10,6 +10,7 @@ import pardis.deep._
 import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
+
 trait LINEITEMRecordOps extends Base with OptimalStringOps {
   // Type representation
   val LINEITEMRecordType = LINEITEMRecordIRs.LINEITEMRecordType
@@ -320,9 +321,7 @@ object LINEITEMRecordIRs extends Base {
 trait LINEITEMRecordImplicits extends LINEITEMRecordOps {
   // Add implicit conversions here!
 }
-trait LINEITEMRecordImplementations extends LINEITEMRecordOps {
-
-}
+trait LINEITEMRecordComponent extends LINEITEMRecordOps with LINEITEMRecordImplicits {}
 
 trait LINEITEMRecordPartialEvaluation extends LINEITEMRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -394,7 +393,7 @@ trait LINEITEMRecordPartialEvaluation extends LINEITEMRecordComponent with BaseP
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait LINEITEMRecordComponent extends LINEITEMRecordOps with LINEITEMRecordImplicits {}
+
 trait ORDERSRecordOps extends Base with OptimalStringOps {
   // Type representation
   val ORDERSRecordType = ORDERSRecordIRs.ORDERSRecordType
@@ -593,9 +592,7 @@ object ORDERSRecordIRs extends Base {
 trait ORDERSRecordImplicits extends ORDERSRecordOps {
   // Add implicit conversions here!
 }
-trait ORDERSRecordImplementations extends ORDERSRecordOps {
-
-}
+trait ORDERSRecordComponent extends ORDERSRecordOps with ORDERSRecordImplicits {}
 
 trait ORDERSRecordPartialEvaluation extends ORDERSRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -639,7 +636,7 @@ trait ORDERSRecordPartialEvaluation extends ORDERSRecordComponent with BaseParti
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait ORDERSRecordComponent extends ORDERSRecordOps with ORDERSRecordImplicits {}
+
 trait CUSTOMERRecordOps extends Base with OptimalStringOps {
   // Type representation
   val CUSTOMERRecordType = CUSTOMERRecordIRs.CUSTOMERRecordType
@@ -822,9 +819,7 @@ object CUSTOMERRecordIRs extends Base {
 trait CUSTOMERRecordImplicits extends CUSTOMERRecordOps {
   // Add implicit conversions here!
 }
-trait CUSTOMERRecordImplementations extends CUSTOMERRecordOps {
-
-}
+trait CUSTOMERRecordComponent extends CUSTOMERRecordOps with CUSTOMERRecordImplicits {}
 
 trait CUSTOMERRecordPartialEvaluation extends CUSTOMERRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -864,7 +859,7 @@ trait CUSTOMERRecordPartialEvaluation extends CUSTOMERRecordComponent with BaseP
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait CUSTOMERRecordComponent extends CUSTOMERRecordOps with CUSTOMERRecordImplicits {}
+
 trait SUPPLIERRecordOps extends Base with OptimalStringOps {
   // Type representation
   val SUPPLIERRecordType = SUPPLIERRecordIRs.SUPPLIERRecordType
@@ -1031,9 +1026,7 @@ object SUPPLIERRecordIRs extends Base {
 trait SUPPLIERRecordImplicits extends SUPPLIERRecordOps {
   // Add implicit conversions here!
 }
-trait SUPPLIERRecordImplementations extends SUPPLIERRecordOps {
-
-}
+trait SUPPLIERRecordComponent extends SUPPLIERRecordOps with SUPPLIERRecordImplicits {}
 
 trait SUPPLIERRecordPartialEvaluation extends SUPPLIERRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -1069,7 +1062,7 @@ trait SUPPLIERRecordPartialEvaluation extends SUPPLIERRecordComponent with BaseP
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait SUPPLIERRecordComponent extends SUPPLIERRecordOps with SUPPLIERRecordImplicits {}
+
 trait PARTSUPPRecordOps extends Base with OptimalStringOps {
   // Type representation
   val PARTSUPPRecordType = PARTSUPPRecordIRs.PARTSUPPRecordType
@@ -1204,9 +1197,7 @@ object PARTSUPPRecordIRs extends Base {
 trait PARTSUPPRecordImplicits extends PARTSUPPRecordOps {
   // Add implicit conversions here!
 }
-trait PARTSUPPRecordImplementations extends PARTSUPPRecordOps {
-
-}
+trait PARTSUPPRecordComponent extends PARTSUPPRecordOps with PARTSUPPRecordImplicits {}
 
 trait PARTSUPPRecordPartialEvaluation extends PARTSUPPRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -1234,7 +1225,7 @@ trait PARTSUPPRecordPartialEvaluation extends PARTSUPPRecordComponent with BaseP
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait PARTSUPPRecordComponent extends PARTSUPPRecordOps with PARTSUPPRecordImplicits {}
+
 trait REGIONRecordOps extends Base with OptimalStringOps {
   // Type representation
   val REGIONRecordType = REGIONRecordIRs.REGIONRecordType
@@ -1337,9 +1328,7 @@ object REGIONRecordIRs extends Base {
 trait REGIONRecordImplicits extends REGIONRecordOps {
   // Add implicit conversions here!
 }
-trait REGIONRecordImplementations extends REGIONRecordOps {
-
-}
+trait REGIONRecordComponent extends REGIONRecordOps with REGIONRecordImplicits {}
 
 trait REGIONRecordPartialEvaluation extends REGIONRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -1359,7 +1348,7 @@ trait REGIONRecordPartialEvaluation extends REGIONRecordComponent with BaseParti
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait REGIONRecordComponent extends REGIONRecordOps with REGIONRecordImplicits {}
+
 trait NATIONRecordOps extends Base with OptimalStringOps {
   // Type representation
   val NATIONRecordType = NATIONRecordIRs.NATIONRecordType
@@ -1478,9 +1467,7 @@ object NATIONRecordIRs extends Base {
 trait NATIONRecordImplicits extends NATIONRecordOps {
   // Add implicit conversions here!
 }
-trait NATIONRecordImplementations extends NATIONRecordOps {
-
-}
+trait NATIONRecordComponent extends NATIONRecordOps with NATIONRecordImplicits {}
 
 trait NATIONRecordPartialEvaluation extends NATIONRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -1504,7 +1491,7 @@ trait NATIONRecordPartialEvaluation extends NATIONRecordComponent with BaseParti
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait NATIONRecordComponent extends NATIONRecordOps with NATIONRecordImplicits {}
+
 trait PARTRecordOps extends Base with OptimalStringOps {
   // Type representation
   val PARTRecordType = PARTRecordIRs.PARTRecordType
@@ -1703,9 +1690,7 @@ object PARTRecordIRs extends Base {
 trait PARTRecordImplicits extends PARTRecordOps {
   // Add implicit conversions here!
 }
-trait PARTRecordImplementations extends PARTRecordOps {
-
-}
+trait PARTRecordComponent extends PARTRecordOps with PARTRecordImplicits {}
 
 trait PARTRecordPartialEvaluation extends PARTRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -1749,4 +1734,4 @@ trait PARTRecordPartialEvaluation extends PARTRecordComponent with BasePartialEv
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait PARTRecordComponent extends PARTRecordOps with PARTRecordImplicits {}
+

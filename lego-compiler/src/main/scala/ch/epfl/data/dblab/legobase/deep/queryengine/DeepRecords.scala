@@ -10,6 +10,7 @@ import pardis.deep._
 import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
+
 trait AGGRecordOps extends Base {
   // Type representation
   val AGGRecordType = AGGRecordIRs.AGGRecordType
@@ -96,9 +97,7 @@ object AGGRecordIRs extends Base {
 trait AGGRecordImplicits extends AGGRecordOps {
   // Add implicit conversions here!
 }
-trait AGGRecordImplementations extends AGGRecordOps {
-
-}
+trait AGGRecordComponent extends AGGRecordOps with AGGRecordImplicits {}
 
 trait AGGRecordPartialEvaluation extends AGGRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -114,7 +113,7 @@ trait AGGRecordPartialEvaluation extends AGGRecordComponent with BasePartialEval
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait AGGRecordComponent extends AGGRecordOps with AGGRecordImplicits {}
+
 trait WindowRecordOps extends Base {
   // Type representation
   val WindowRecordType = WindowRecordIRs.WindowRecordType
@@ -201,9 +200,7 @@ object WindowRecordIRs extends Base {
 trait WindowRecordImplicits extends WindowRecordOps {
   // Add implicit conversions here!
 }
-trait WindowRecordImplementations extends WindowRecordOps {
-
-}
+trait WindowRecordComponent extends WindowRecordOps with WindowRecordImplicits {}
 
 trait WindowRecordPartialEvaluation extends WindowRecordComponent with BasePartialEvaluation {
   // Immutable field inlining 
@@ -219,4 +216,4 @@ trait WindowRecordPartialEvaluation extends WindowRecordComponent with BaseParti
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait WindowRecordComponent extends WindowRecordOps with WindowRecordImplicits {}
+

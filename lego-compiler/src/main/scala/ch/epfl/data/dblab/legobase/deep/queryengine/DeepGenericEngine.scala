@@ -10,6 +10,7 @@ import pardis.deep._
 import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
+
 trait GenericEngineOps extends Base with OptimalStringOps {
   // Type representation
   val GenericEngineType = GenericEngineIRs.GenericEngineType
@@ -83,10 +84,12 @@ object GenericEngineIRs extends Base {
 trait GenericEngineImplicits extends GenericEngineOps {
   // Add implicit conversions here!
 }
+trait GenericEngineComponent extends GenericEngineOps with GenericEngineImplicits {}
+
 trait GenericEnginePartialEvaluation extends GenericEngineComponent with BasePartialEvaluation {
   // Immutable field inlining 
 
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait GenericEngineComponent extends GenericEngineOps with GenericEngineImplicits {}
+

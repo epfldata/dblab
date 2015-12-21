@@ -3,7 +3,7 @@ package dblab.legobase
 package tpch
 
 import utils.Utilities._
-import sc.pardis.annotations.{ deep, metadeep, dontLift, dontInline, needs, :: }
+import sc.pardis.annotations.{ deep, metadeep, dontLift, dontInline, needs, ::, onlineInliner }
 import queryengine._
 import tpch._
 import schema._
@@ -27,6 +27,7 @@ class MetaInfoLoader
 
 @needs[K2DBScanner :: Array[_] :: REGIONRecord :: PARTSUPPRecord :: PARTRecord :: NATIONRecord :: SUPPLIERRecord :: LINEITEMRecord :: ORDERSRecord :: CUSTOMERRecord :: OptimalString :: Loader :: Table]
 @deep
+@onlineInliner
 trait TPCHLoader
 
 /**

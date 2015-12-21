@@ -10,6 +10,7 @@ import pardis.deep._
 import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
+
 trait QueryOps extends Base with ListOps with ArrayOps { this: GroupedQueryOps =>
   // Type representation
   val QueryType = QueryIRs.QueryType
@@ -310,6 +311,8 @@ object QueryIRs extends Base {
 trait QueryImplicits extends QueryOps { this: GroupedQueryOps =>
   // Add implicit conversions here!
 }
+trait QueryComponent extends QueryOps with QueryImplicits { this: GroupedQueryOps => }
+
 trait QueryPartialEvaluation extends QueryComponent with BasePartialEvaluation { this: GroupedQueryOps =>
   // Immutable field inlining 
   override def query_Field_Underlying[T](self: Rep[Query[T]])(implicit typeT: TypeRep[T]): Rep[List[T]] = self match {
@@ -320,7 +323,7 @@ trait QueryPartialEvaluation extends QueryComponent with BasePartialEvaluation {
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait QueryComponent extends QueryOps with QueryImplicits { this: GroupedQueryOps => }
+
 trait JoinableQueryOps extends Base with QueryOps with ListOps { this: GroupedQueryOps =>
   // Type representation
   val JoinableQueryType = JoinableQueryIRs.JoinableQueryType
@@ -387,6 +390,8 @@ object JoinableQueryIRs extends Base {
 trait JoinableQueryImplicits extends JoinableQueryOps { this: GroupedQueryOps =>
   // Add implicit conversions here!
 }
+trait JoinableQueryComponent extends JoinableQueryOps with JoinableQueryImplicits { this: GroupedQueryOps => }
+
 trait JoinableQueryPartialEvaluation extends JoinableQueryComponent with BasePartialEvaluation { this: GroupedQueryOps =>
   // Immutable field inlining 
   override def joinableQuery_Field_Underlying[T <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[JoinableQuery[T]])(implicit typeT: TypeRep[T]): Rep[List[T]] = self match {
@@ -397,7 +402,7 @@ trait JoinableQueryPartialEvaluation extends JoinableQueryComponent with BasePar
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait JoinableQueryComponent extends JoinableQueryOps with JoinableQueryImplicits { this: GroupedQueryOps => }
+
 trait GroupedQueryOps extends Base with Tuple2Ops with QueryOps with MapOps with ListOps {
   // Type representation
   val GroupedQueryType = GroupedQueryIRs.GroupedQueryType
@@ -466,6 +471,8 @@ object GroupedQueryIRs extends Base {
 trait GroupedQueryImplicits extends GroupedQueryOps {
   // Add implicit conversions here!
 }
+trait GroupedQueryComponent extends GroupedQueryOps with GroupedQueryImplicits {}
+
 trait GroupedQueryPartialEvaluation extends GroupedQueryComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def groupedQuery_Field_Underlying[K, V](self: Rep[GroupedQuery[K, V]])(implicit typeK: TypeRep[K], typeV: TypeRep[V]): Rep[Map[K, List[V]]] = self match {
@@ -476,4 +483,4 @@ trait GroupedQueryPartialEvaluation extends GroupedQueryComponent with BaseParti
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait GroupedQueryComponent extends GroupedQueryOps with GroupedQueryImplicits {}
+

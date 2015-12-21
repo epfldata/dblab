@@ -10,6 +10,7 @@ import pardis.deep._
 import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
+
 trait K2DBScannerOps extends Base {
   // Type representation
   val K2DBScannerType = K2DBScannerIRs.K2DBScannerType
@@ -112,6 +113,8 @@ object K2DBScannerIRs extends Base {
 trait K2DBScannerImplicits extends K2DBScannerOps {
   // Add implicit conversions here!
 }
+trait K2DBScannerComponent extends K2DBScannerOps with K2DBScannerImplicits {}
+
 trait K2DBScannerPartialEvaluation extends K2DBScannerComponent with BasePartialEvaluation {
   // Immutable field inlining 
   override def k2DBScanner_Field_Filename(self: Rep[K2DBScanner]): Rep[String] = self match {
@@ -122,4 +125,4 @@ trait K2DBScannerPartialEvaluation extends K2DBScannerComponent with BasePartial
   // Mutable field inlining 
   // Pure function partial evaluation
 }
-trait K2DBScannerComponent extends K2DBScannerOps with K2DBScannerImplicits {}
+

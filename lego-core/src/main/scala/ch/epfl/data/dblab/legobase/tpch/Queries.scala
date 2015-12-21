@@ -9,7 +9,7 @@ import queryengine._
  */
 // import queryengine.volcano._
 import queryengine.push._
-import sc.pardis.annotations.{ deep, metadeep, dontLift, dontInline }
+import sc.pardis.annotations.{ deep, metadeep, dontLift, dontInline, onlineInliner }
 import tpch.TPCHLoader._
 import GenericEngine._
 // import queryengine.TPCHRelations._
@@ -26,6 +26,7 @@ import queryengine.monad.Query
 class MetaInfo
 
 @deep
+@onlineInliner
 trait Queries
 
 /**
