@@ -260,8 +260,15 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
 
   // TODO should be moved to SC?
   def ordering_minus[T: TypeRep](num1: Rep[T], num2: Rep[T]): Rep[Int] = typeRep[T] match {
-    case IntType    => num1.asInstanceOf[Rep[Int]] - num2.asInstanceOf[Rep[Int]]
-    case DoubleType => (num1.asInstanceOf[Rep[Double]] - num2.asInstanceOf[Rep[Double]]).toInt
+    case IntType => num1.asInstanceOf[Rep[Int]] - num2.asInstanceOf[Rep[Int]]
+    case DoubleType =>
+      val a = num1.asInstanceOf[Rep[Double]]
+      val b = num2.asInstanceOf[Rep[Double]]
+      __ifThenElse(a > b,
+        unit(1),
+        __ifThenElse(a < b,
+          unit(-1),
+          unit(0)))
     case StringType => (num1, num2) match {
       case (Def(OptimalStringString(str1)), Def(OptimalStringString(str2))) => str1 diff str2
       case (str1: Rep[String], str2: Rep[String])                           => str1 diff str2
