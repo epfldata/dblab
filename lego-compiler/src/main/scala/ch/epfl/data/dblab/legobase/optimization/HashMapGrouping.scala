@@ -77,7 +77,8 @@ import scala.collection.mutable
  * @param IR the polymorphic embedding trait which contains the reified program.
  */
 class HashMapGrouping(override val IR: LegoBaseExp,
-                      val schema: Schema)
+                      val schema: Schema,
+                      val compliant: Boolean = false)
   extends RuleBasedTransformer[LegoBaseExp](IR)
   with WhileRangeProcessing {
   import IR.{ __struct_field => _, __block => _, _ }
@@ -126,8 +127,14 @@ class HashMapGrouping(override val IR: LegoBaseExp,
       case _                                      => false
     }
     def isAnti: Boolean = isPotentiallyAnti && isPotentiallyWindow
-    def shouldBePartitioned: Boolean =
-      isPartitioned && (leftRelationInfo.nonEmpty || rightRelationInfo.nonEmpty)
+    def shouldBePartitioned: Boolean = {
+      val result = isPartitioned && (leftRelationInfo.nonEmpty || rightRelationInfo.nonEmpty)
+      if (compliant)
+        result && partitionedRelationInfo.reuseOriginal1DArray && partitionedRelationInfo.is1D
+      else
+        result
+    }
+
     def partitionedRelationInfo: RelationInfo = (leftRelationInfo, rightRelationInfo) match {
       case _ if isAnti        => rightRelationInfo.get
       case (Some(v), None)    => v
@@ -569,7 +576,8 @@ class HashMapGrouping(override val IR: LegoBaseExp,
   }
 
   rewrite += removeStatement {
-    case sym -> Lambda(_, _, _) if multiMapsInfo.exists(_._2.collectionForeachLambda.exists(_ == sym)) =>
+    case sym -> Lambda(_, _, _) if multiMapsInfo.exists(x => x._2.shouldBePartitioned &&
+      x._2.collectionForeachLambda.exists(_ == sym)) =>
       ()
   }
 
@@ -705,6 +713,7 @@ class HashMapGrouping(override val IR: LegoBaseExp,
     if (partitionedRelationInfo.is1D) {
       //System.out.println(s"${scala.Console.BLUE}1D Array!!!${scala.Console.RESET}")
       if (partitionedRelationInfo.reuseOriginal1DArray) {
+        System.out.println(s"${scala.Console.BLUE}1D Original Array!!!${scala.Console.RESET}")
         partitionedRelationInfo.partitionedArray = originalArray
       } else {
         val partitionedArray = __newArray[InnerType](buckets)
