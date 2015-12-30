@@ -118,8 +118,8 @@ class LegoCGenerator(val outputFileName: String, override val verbose: Boolean =
 
   override def getHeader(): Document = super.getHeader() :/: doc"""#include "pardis_clib.h" """
 
-  import sc.cscala.deep.GArrayHeaderIRs._
-  import sc.pardis.deep.scalalib.ArrayIRs.ArrayApplyObject
+  import sc.cscala.deep.GArrayHeaderIRs.GArrayHeaderG_array_indexObject
+  import sc.pardis.deep.scalalib.ArrayIRs._
 
   /**
    * Generates the code for the given function definition node
@@ -132,10 +132,10 @@ class LegoCGenerator(val outputFileName: String, override val verbose: Boolean =
       "g_array_index(" :: expToDocument(array) :: ", " :: pardisTypeToString(fun.tp) :: ", " :: expToDocument(i) :: ")"
     case ArrayApplyObject(Def(LiftedSeq(elems))) =>
       "{" :: elems.map(expToDocument).mkDocument(", ") :: "}"
-    case _ if fun.name.startsWith("unary_") /*&& fun.argss.size == 1 && fun.argss.head.size == 1*/ =>
-      val name = fun.name.substring("unary_".length)
-      val arg = fun.caller.get
-      doc"$name($arg)"
+    case ArrayApply(arr, index) =>
+      doc"$arr[$index]"
+    case ArrayUpdate(arr, index, value) =>
+      doc"$arr[$index] = $value"
     case _ => super.functionNodeToDocument(fun)
   }
 }
