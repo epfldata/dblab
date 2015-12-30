@@ -18,7 +18,7 @@ trait ManualLiftedLegoBase extends OrderingOps with ManifestOps
   with sc.pardis.deep.scalalib.collection.RichIntOps with sc.pardis.deep.scalalib.ByteComponent
   with sc.pardis.deep.scalalib.collection.ContOps with sc.pardis.deep.scalalib.collection.ArrayBufferComponent
   with sc.pardis.deep.scalalib.collection.RangeComponent with dblab.legobase.deep.queryengine.AGGRecordComponent
-  with sc.pardis.deep.scalalib.ScalaPredef with sc.pardis.deep.scalalib.io.PrintStreamComponent { this: DeepDSL =>
+  with sc.pardis.deep.scalalib.ScalaPredefOps with sc.pardis.deep.scalalib.io.PrintStreamComponent { this: DeepDSL =>
   // TODO these methods should be automatically lifted using Purgatory
   object Console {
     def err: Rep[PrintStream] = consoleErr()
