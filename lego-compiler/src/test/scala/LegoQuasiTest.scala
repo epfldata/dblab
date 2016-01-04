@@ -14,24 +14,23 @@ class LegoQuasiTest extends FlatSpec with ShouldMatchers {
   implicit val IR = new LegoBaseExp {}
 
   "int comparsion" should "work" in {
-    val exp = {
+    val exp = IR.reifyBlock {
       import IR._
       val x = __newVar(unit(2))
       // val y = GenericEngine.parseDate(unit("1998-09-02"));
       val y = Loader.fileLineCount(unit("tmp"))
       readVar(x) < y
     }
-    exp match {
+    exp.res match {
       case dsl"($x: Int) < ($y: Int)" =>
     }
   }
 
   "vars" should "work" in {
-    val exp = {
+    val exp = IR.reifyBlock {
       import IR._
-      val x: Var[Int] = __newVar(unit(2))
-      __readVar(x)
+      dsl"var x = 2; x"
     }
-    println(exp.tp)
+    assert(exp.tp == IR.IntType)
   }
 }
