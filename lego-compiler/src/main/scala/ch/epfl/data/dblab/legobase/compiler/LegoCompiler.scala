@@ -84,6 +84,8 @@ class LegoCompiler(val DSL: LegoBaseExp,
     pipeline += DCE
     if (settings.queryMonadCPS) {
       pipeline += new QueryMonadCPSLowering(schema, DSL)
+    } else if (settings.queryMonadIterator) {
+      // pipeline += new QueryMonadIteratorLowering(schema, DSL)
     } else {
       pipeline += new QueryMonadLowering(schema, DSL)
     }
