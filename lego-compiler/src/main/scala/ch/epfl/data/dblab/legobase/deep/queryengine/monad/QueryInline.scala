@@ -5,7 +5,7 @@ package deep.queryengine.monad
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.ir._
 
-trait QueryInline extends QueryOps with sc.pardis.deep.scalalib.ScalaPredef { this: GroupedQueryOps =>
+trait QueryInline extends QueryOps with sc.pardis.deep.scalalib.ScalaPredefOps { this: GroupedQueryOps =>
   override def queryPrintRows[T](self: Rep[Query[T]], printFunc: Rep[((T) => Unit)], limit: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Unit] = {
     val query = limit match {
       case Constant(-1) => self

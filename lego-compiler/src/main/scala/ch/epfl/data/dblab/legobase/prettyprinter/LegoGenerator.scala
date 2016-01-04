@@ -106,7 +106,7 @@ class LegoScalaASTGenerator(val IR: Base, override val shallow: Boolean = false,
  * definitions. For example, in the case of defining mutable variables an appropriate comment in front
  * of that variable definition.
  */
-class LegoCGenerator(val outputFileName: String, override val verbose: Boolean = true) extends CCodeGenerator /* with BooleanCCodeGen */ {
+class LegoCGenerator(val outputFileName: String, override val verbose: Boolean = true) extends CCodeGenerator with ScalaCoreCCodeGen /* with BooleanCCodeGen */ {
   /**
    * Generates the code for the IR of the given program
    *
@@ -116,10 +116,9 @@ class LegoCGenerator(val outputFileName: String, override val verbose: Boolean =
     generate(program, outputFileName)
   }
 
-  override def getHeader(): Document = super.getHeader() :/: doc"""#include "pardis_clib.h" """
+  override def header: Document = super.header :/: doc"""#include "pardis_clib.h" """
 
-  import sc.cscala.deep.GArrayHeaderIRs._
-  import sc.pardis.deep.scalalib.ArrayIRs.ArrayApplyObject
+  import sc.cscala.deep.GArrayHeaderIRs.GArrayHeaderG_array_indexObject
 
   /**
    * Generates the code for the given function definition node
@@ -129,13 +128,7 @@ class LegoCGenerator(val outputFileName: String, override val verbose: Boolean =
    */
   override def functionNodeToDocument(fun: FunctionNode[_]) = fun match {
     case GArrayHeaderG_array_indexObject(array, i) =>
-      "g_array_index(" :: expToDocument(array) :: ", " :: pardisTypeToString(fun.tp) :: ", " :: expToDocument(i) :: ")"
-    case ArrayApplyObject(Def(LiftedSeq(elems))) =>
-      "{" :: elems.map(expToDocument).mkDocument(", ") :: "}"
-    case _ if fun.name.startsWith("unary_") /*&& fun.argss.size == 1 && fun.argss.head.size == 1*/ =>
-      val name = fun.name.substring("unary_".length)
-      val arg = fun.caller.get
-      doc"$name($arg)"
+      doc"g_array_index($array, ${fun.tp}, $i)"
     case _ => super.functionNodeToDocument(fun)
   }
 }

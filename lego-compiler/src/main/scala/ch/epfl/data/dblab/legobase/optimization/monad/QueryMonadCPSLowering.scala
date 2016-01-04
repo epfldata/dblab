@@ -121,7 +121,7 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
 
     def hashJoin2[S: TypeRep, R: TypeRep, Res: TypeRep](q2: QueryCPS[S])(leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryCPS[Res] = (k: Rep[Res] => Rep[Unit]) => {
       assert(typeRep[Res].isInstanceOf[RecordType[_]])
-      System.out.println(s"hashJoin called!!!")
+      // System.out.println(s"hashJoin called!!!")
       val hm = __newMultiMap[R, T]()
       foreach((elem: Rep[T]) => {
         hm.addBinding(leftHash(elem), elem)
@@ -144,37 +144,15 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
 
     def groupByMapValues[K: TypeRep, S: TypeRep](par: Rep[T => K], pred: Option[Rep[T => Boolean]])(func: Rep[Array[T] => S]): QueryCPS[(K, S)] = (k: (Rep[(K, S)]) => Rep[Unit]) => {
       type V = T
-      def sizeByCardinality: Int = schema.stats.getCardinalityOrElse(typeRep[K].name, 8).toInt
-      val max_partitions = par match {
-        case Def(Lambda(_, i, Block(stmts, Def(StructImmutableField(struct, name))))) if i == struct && stmts.size == 1 =>
-          schema.stats.getDistinctAttrValuesOrElse(name, sizeByCardinality)
-        case _ =>
-          sizeByCardinality
-      }
 
-      System.out.println(typeRep[K] + "-" + max_partitions)
-      // val MAX_SIZE = unit(4000)
-      val MAX_SIZE = unit(max_partitions)
-      val keyIndex = __newHashMap[K, Int]()
-      val keyRevertIndex = __newArray[K](MAX_SIZE)
+      val monad = cpsMap.find(_._2 == this).get._1
+
+      // System.out.println(s"HERE!$monad")
+
+      val GroupByResult(array, keyRevertIndex, eachBucketSize, _, keyIndex) =
+        groupByResults(monad).asInstanceOf[GroupByResult[K, V]]
+
       val lastIndex = __newVarNamed(unit(0), "lastIndex")
-      val array = __newArray[Array[V]](MAX_SIZE)
-      // TODO generalize
-      schema.stats += "QS_MEM_ARRAY_LINEITEM" -> 4
-      schema.stats += "QS_MEM_ARRAY_DOUBLE" -> 4
-      val eachBucketSize = __newArray[Int](MAX_SIZE)
-      // FIXME if we use .count it will regenerate the same loop until before groupBy
-      // val arraySize = this.count / MAX_SIZE * unit(4)
-      val thisSize = unit(schema.stats.getCardinalityOrElse(typeRep[T].name, 1 << 25).toInt)
-      val arraySize = thisSize / MAX_SIZE * unit(8)
-      Range(unit(0), MAX_SIZE).foreach {
-        __lambda { i =>
-          // val arraySize = originalArray.length
-          // val arraySize = unit(128)
-          array(i) = __newArray[V](arraySize)
-          eachBucketSize(i) = unit(0)
-        }
-      }
 
       // printf(unit("start!"))
       foreach((elem: Rep[V]) => {
@@ -209,6 +187,47 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
     }
   }
 
+  case class GroupByResult[K, V](partitionedArray: Rep[Array[Array[V]]], keyRevertIndex: Rep[Array[K]],
+                                 eachBucketSize: Rep[Array[Int]], partitions: Rep[Int], keyIndex: Rep[HashMap[K, Int]])
+
+  val groupByResults = scala.collection.mutable.Map[Rep[Any], GroupByResult[Any, Any]]()
+
+  def initGroupByArray[T: TypeRep, K: TypeRep](monad: Rep[Query[T]], par: Rep[T => K]): GroupByResult[K, T] = {
+    type V = T
+    def sizeByCardinality: Int = schema.stats.getCardinalityOrElse(typeRep[K].name, 8).toInt
+    val max_partitions = par match {
+      case Def(Lambda(_, i, Block(stmts, Def(StructImmutableField(struct, name))))) if i == struct && stmts.size == 1 =>
+        schema.stats.getDistinctAttrValuesOrElse(name, sizeByCardinality)
+      case _ =>
+        sizeByCardinality
+    }
+
+    // System.out.println(typeRep[K] + "-" + max_partitions)
+    // val MAX_SIZE = unit(4000)
+    val MAX_SIZE = unit(max_partitions)
+    val keyIndex = __newHashMap[K, Int]()
+    val keyRevertIndex = __newArray[K](MAX_SIZE)
+    val lastIndex = __newVarNamed(unit(0), "lastIndex")
+    val array = __newArray[Array[V]](MAX_SIZE)
+    // TODO generalize
+    schema.stats += "QS_MEM_ARRAY_LINEITEM" -> 4
+    schema.stats += "QS_MEM_ARRAY_DOUBLE" -> 4
+    val eachBucketSize = __newArray[Int](MAX_SIZE)
+    // FIXME if we use .count it will regenerate the same loop until before groupBy
+    // val arraySize = this.count / MAX_SIZE * unit(4)
+    val thisSize = unit(schema.stats.getCardinalityOrElse(typeRep[T].name, 1 << 25).toInt)
+    val arraySize = thisSize / MAX_SIZE * unit(8)
+    Range(unit(0), MAX_SIZE).foreach {
+      __lambda { i =>
+        // val arraySize = originalArray.length
+        // val arraySize = unit(128)
+        array(i) = __newArray[V](arraySize)
+        eachBucketSize(i) = unit(0)
+      }
+    }
+    GroupByResult(array, keyRevertIndex, eachBucketSize, MAX_SIZE, keyIndex)
+  }
+
   object QueryCPS {
     def apply[T: TypeRep](arr: Rep[Array[T]]): QueryCPS[T] =
       QueryCPS { (k: Rep[T] => Rep[Unit]) =>
@@ -221,9 +240,9 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
   }
 
   implicit def queryToCps[T](sym: Rep[Query[T]]): QueryCPS[T] = {
-    System.out.println(s"finding cps for $sym")
+    // System.out.println(s"finding cps for $sym")
     val cps = cpsMap(sym.asInstanceOf[Rep[Any]]).asInstanceOf[QueryCPS[T]]
-    System.out.println(s"tp associated to sym $sym is: ${cps.tp}")
+    // System.out.println(s"tp associated to sym $sym is: ${cps.tp}")
     cps
   }
 
@@ -336,6 +355,36 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
   rewrite += removeStatement {
     case (sym -> Lambda(_, _, _)) if mapValuesFuncs.contains(sym) =>
       ()
+  }
+
+  case class GroupByInfo[K, V](monad: Rep[Query[V]], pred: Option[Rep[V => Boolean]], par: Rep[V => K])
+  val groupBysInfo = scala.collection.mutable.Map[Rep[Any], GroupByInfo[Any, Any]]()
+
+  object QueryGroupByAll {
+    def unapply(groupedMonad: Def[Any]): Option[GroupByInfo[Any, Any]] = groupedMonad match {
+      case QueryGroupBy(monad, par)               => Some(GroupByInfo(monad, None, par))
+      case QueryFilteredGroupBy(monad, pred, par) => Some(GroupByInfo(monad, Some(pred), par))
+      case _                                      => None
+    }
+  }
+
+  analysis += statement {
+    case sym -> QueryGroupByAll(info) => {
+      // System.out.println(info)
+      groupBysInfo += sym -> info
+      ()
+    }
+  }
+
+  rewrite += rule {
+    case GenericEngineRunQueryObject(b) =>
+      for ((key, groupByInfo) <- groupBysInfo) {
+        val groupByResult = initGroupByArray(groupByInfo.monad, groupByInfo.par)(
+          groupByInfo.par.tp.typeArguments(0).asInstanceOf[TypeRep[Any]], groupByInfo.par.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
+        groupByResults(groupByInfo.monad) = groupByResult
+      }
+      val newBlock = transformBlock(b)(b.tp)
+      GenericEngineRunQueryObject(newBlock)(newBlock.tp)
   }
 
   // TODO: Separate groupBy and mapValues
