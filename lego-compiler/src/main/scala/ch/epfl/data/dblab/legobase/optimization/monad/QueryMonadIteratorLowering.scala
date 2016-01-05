@@ -81,6 +81,47 @@ class QueryMonadIteratorLowering(val schema: Schema, override val IR: LegoBaseEx
 
     // FIXME
     // def filter(p: Rep[T => Boolean]): QueryIterator[T] = self
+    // def filter(p: Rep[T => Boolean]): QueryIterator[T] = new QueryIterator[T] {
+    //   type Source = self.Source
+    //   implicit def sourceType: TypeRep[Source] = self.sourceType
+
+    //   def source: Rep[Source] = self.source
+
+    //   val hd = __newVar[T](zeroValue[T])
+    //   val curTail = __newVar[Source](zeroValue[Source])
+
+    //   def atEnd(s: Rep[Source]): Rep[Boolean] = self.atEnd(s) || {
+    //     val tmpAtEnd = __newVar(unit(false))
+    //     val tmpSource = __newVar(s)
+    //     val nextAndRest = self.next(tmpSource)
+    //     val tmpHd = __newVar(nextAndRest._1)
+    //     val tmpRest = __newVar(nextAndRest._2)
+
+    //     __whileDo(!(readVar(tmpAtEnd) || p(tmpHd)), {
+    //       __assign(tmpSource, tmpRest)
+    //       __ifThenElse(self.atEnd(tmpSource),
+    //         __assign(tmpAtEnd, unit(true)), {
+    //           val nextAndRest2 = self.next(tmpSource)
+    //           __assign(tmpHd, nextAndRest2._1)
+    //           __assign(tmpRest, nextAndRest2._2)
+    //         })
+    //     })
+    //     __assign(hd, tmpHd)
+    //     __assign(curTail, tmpRest)
+    //     readVar(tmpAtEnd)
+    //   }
+    //   def next(s: Rep[Source]): Rep[(T, Source)] = {
+    //     val isAtEnd = atEnd(s)
+    //     val resE = __ifThenElse(isAtEnd,
+    //       zeroValue[T],
+    //       readVar(hd))
+    //     val resS = __ifThenElse(isAtEnd,
+    //       zeroValue[Source],
+    //       readVar(curTail))
+    //     Tuple2(resE, resS)
+    //   }
+    // }
+
     def filter(p: Rep[T => Boolean]): QueryIterator[T] = new QueryIterator[T] {
       type Source = self.Source
       implicit def sourceType: TypeRep[Source] = self.sourceType
@@ -88,37 +129,50 @@ class QueryMonadIteratorLowering(val schema: Schema, override val IR: LegoBaseEx
       def source: Rep[Source] = self.source
 
       val hd = __newVar[T](zeroValue[T])
-      var curTail = __newVar[Source](zeroValue[Source])
+      val curTail = __newVar[Source](zeroValue[Source])
+      val tmpAtEnd = __newVar(unit(false))
 
-      def atEnd(s: Rep[Source]): Rep[Boolean] = self.atEnd(s) || {
-        val tmpAtEnd = __newVar(unit(false))
-        val tmpSource = __newVar(s)
-        val nextAndRest = self.next(tmpSource)
-        val tmpHd = __newVar(nextAndRest._1)
-        val tmpRest = __newVar(nextAndRest._2)
+      sealed trait LastCalledFunction
+      case object NothingYet extends LastCalledFunction
+      case object AtEnd extends LastCalledFunction
+      case object Next extends LastCalledFunction
 
-        __whileDo(!(readVar(tmpAtEnd) || p(tmpHd)), {
-          __assign(tmpSource, tmpRest)
-          __ifThenElse(self.atEnd(tmpSource),
-            __assign(tmpAtEnd, unit(true)), {
-              val nextAndRest2 = self.next(tmpSource)
-              __assign(tmpHd, nextAndRest2._1)
-              __assign(tmpRest, nextAndRest2._2)
+      var lastCalledFunction: LastCalledFunction = NothingYet
+
+      def atEnd(s: Rep[Source]): Rep[Boolean] = lastCalledFunction match {
+        case NothingYet =>
+          lastCalledFunction = AtEnd
+          self.atEnd(s) || readVar(tmpAtEnd) || {
+            val tmpSource = __newVar(s)
+            val nextAndRest = self.next(tmpSource)
+            val tmpHd = __newVar(nextAndRest._1)
+            val tmpRest = __newVar(nextAndRest._2)
+
+            __whileDo(!(readVar(tmpAtEnd) || p(tmpHd)), {
+              __assign(tmpSource, tmpRest)
+              __ifThenElse(self.atEnd(tmpSource), {
+                __assign(tmpAtEnd, unit(true))
+                __assign(tmpHd, zeroValue[T])
+                __assign(tmpRest, zeroValue[Source])
+              }, {
+                val nextAndRest2 = self.next(tmpSource)
+                __assign(tmpHd, nextAndRest2._1)
+                __assign(tmpRest, nextAndRest2._2)
+              })
             })
-        })
-        __assign(hd, tmpHd)
-        __assign(curTail, tmpRest)
-        readVar(tmpAtEnd)
+            __assign(hd, tmpHd)
+            __assign(curTail, tmpRest)
+            readVar(tmpAtEnd)
+          }
+        case AtEnd => readVar(tmpAtEnd)
+        case Next  => throw new Exception("atEnd after next is not considered yet!")
       }
-      def next(s: Rep[Source]): Rep[(T, Source)] = {
-        val isAtEnd = atEnd(s)
-        val resE = __ifThenElse(isAtEnd,
-          zeroValue[T],
-          readVar(hd))
-        val resS = __ifThenElse(isAtEnd,
-          zeroValue[Source],
-          readVar(curTail))
-        Tuple2(resE, resS)
+
+      def next(s: Rep[Source]): Rep[(T, Source)] = lastCalledFunction match {
+        case NothingYet => throw new Exception("next before atEnd is not considered yet!")
+        case AtEnd =>
+          Tuple2(readVar(hd), readVar(curTail))
+        case Next => throw new Exception("next after next is not considered yet!")
       }
     }
     // def count: Rep[Int] = {

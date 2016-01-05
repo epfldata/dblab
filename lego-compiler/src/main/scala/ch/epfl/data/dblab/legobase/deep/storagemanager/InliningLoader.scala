@@ -56,10 +56,8 @@ trait InliningLoader extends storagemanager.LoaderImplementations with schema.Sc
           case VarCharType(len) => Loader.loadString(len, ldr)
         })
 
-      reflectedMethod.apply(values: _*) match {
-        case rec: Rep[R] => arr(i) = rec
-        case _           => throw new ClassCastException
-      }
+      val rec = reflectedMethod.apply(values: _*).asInstanceOf[Rep[R]]
+      arr(i) = rec
       __assign(i, (i: Rep[Int]) + unit(1))
     })
     arr
