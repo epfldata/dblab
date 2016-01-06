@@ -266,7 +266,8 @@ case object QueryMonadCPSSetting extends OptimizationSetting("monad-cps",
   QMonadLanguage)
 case object QueryMonadIteratorSetting extends OptimizationSetting("monad-iterator",
   "Enables Query Monad Iterator Lowering",
-  QMonadLanguage)
+  QMonadLanguage,
+  "Very experimental!")
 case object QueryMonadOptSetting extends OptimizationSetting("monad-opt",
   "Enables Query Monad Optimizations",
   QMonadLanguage)

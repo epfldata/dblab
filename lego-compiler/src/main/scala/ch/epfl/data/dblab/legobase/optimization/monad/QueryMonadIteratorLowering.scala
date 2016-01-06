@@ -238,21 +238,32 @@ class QueryMonadIteratorLowering(val schema: Schema, override val IR: LegoBaseEx
     //     readVar(minResult)
     //   }
 
-    //   def sortBy[S: TypeRep](sortFunction: Rep[T => S]): QueryIterator[T] = (k: Rep[T] => Rep[Unit]) => {
-    //     // TODO generalize
-    //     val treeSet = __newTreeSet2(Ordering[T](__lambda { (x, y) =>
-    //       QML.ordering_minus(inlineFunction(sortFunction, x), inlineFunction(sortFunction, y))
-    //     }))
-    //     foreach((elem: Rep[T]) => {
-    //       treeSet += elem
-    //       unit()
-    //     })
-    //     Range(unit(0), treeSet.size).foreach(__lambda { i =>
-    //       val elem = treeSet.head
-    //       treeSet -= elem
-    //       k(elem)
-    //     })
-    //   }
+    // def sortBy[S: TypeRep](sortFunction: Rep[T => S]): QueryIterator[T] = self
+
+    def sortBy[S: TypeRep](sortFunction: Rep[T => S]): QueryIterator[T] = new QueryIterator[T] {
+      type Source = Int
+      def sourceType: TypeRep[Source] = typeRep[Int]
+
+      val (treeSet, size) = {
+        val treeSet = __newTreeSet2(Ordering[T](__lambda { (x, y) =>
+          QML.ordering_minus(inlineFunction(sortFunction, x), inlineFunction(sortFunction, y))
+        }))
+        self.foreach((elem: Rep[T]) => {
+          treeSet += elem
+          unit()
+        })
+        (treeSet, treeSet.size)
+      }
+
+      def source: Rep[Source] = unit(0)
+
+      def atEnd(s: Rep[Source]): Rep[Boolean] = s >= size
+      def next(s: Rep[Source]): Rep[(T, Source)] = {
+        val elem = treeSet.head
+        treeSet -= elem
+        Tuple2(elem, s + unit(1))
+      }
+    }
 
     //   def hashJoin2[S: TypeRep, R: TypeRep, Res: TypeRep](q2: QueryIterator[S])(leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryIterator[Res] = (k: Rep[Res] => Rep[Unit]) => {
     //     assert(typeRep[Res].isInstanceOf[RecordType[_]])
@@ -277,91 +288,98 @@ class QueryMonadIteratorLowering(val schema: Schema, override val IR: LegoBaseEx
     //     })
     //   }
 
-    //   def groupByMapValues[K: TypeRep, S: TypeRep](par: Rep[T => K], pred: Option[Rep[T => Boolean]])(func: Rep[Array[T] => S]): QueryIterator[(K, S)] = (k: (Rep[(K, S)]) => Rep[Unit]) => {
-    //     type V = T
+    def groupByMapValues[K: TypeRep, S: TypeRep](par: Rep[T => K], pred: Option[Rep[T => Boolean]])(func: Rep[Array[T] => S]): QueryIterator[(K, S)] = new QueryIterator[(K, S)] {
+      type V = T
+      type Source = Int
+      def sourceType: TypeRep[Source] = typeRep[Int]
 
-    //     val monad = iteratorMap.find(_._2 == this).get._1
+      val (groupByResult, partitions) = {
+        val monad = iteratorMap.find(_._2 == self).get._1
 
-    //     // System.out.println(s"HERE!$monad")
+        System.out.println(s"HERE!$monad")
+        val groupByResult = groupByResults(monad).asInstanceOf[GroupByResult[K, V]]
 
-    //     val GroupByResult(array, keyRevertIndex, eachBucketSize, _, keyIndex) =
-    //       groupByResults(monad).asInstanceOf[GroupByResult[K, V]]
+        val GroupByResult(array, keyRevertIndex, eachBucketSize, _, keyIndex) =
+          groupByResult
 
-    //     val lastIndex = __newVarNamed(unit(0), "lastIndex")
+        val lastIndex = __newVarNamed(unit(0), "lastIndex")
 
-    //     // printf(unit("start!"))
-    //     foreach((elem: Rep[V]) => {
-    //       // val key = par(elem)
-    //       val cond = pred.map(p => inlineFunction(p, elem)).getOrElse(unit(true))
-    //       __ifThenElse(cond, {
-    //         val key = inlineFunction(par, elem)
-    //         val bucket = keyIndex.getOrElseUpdate(key, {
-    //           keyRevertIndex(readVar(lastIndex)) = key
-    //           __assign(lastIndex, readVar(lastIndex) + unit(1))
-    //           readVar(lastIndex) - unit(1)
-    //         })
-    //         array(bucket)(eachBucketSize(bucket)) = elem
-    //         eachBucketSize(bucket) += unit(1)
-    //       }, unit())
-    //     })
+        // printf(unit("start!"))
+        self.foreach((elem: Rep[V]) => {
+          // val key = par(elem)
+          val cond = pred.map(p => inlineFunction(p, elem)).getOrElse(unit(true))
+          __ifThenElse(cond, {
+            val key = inlineFunction(par, elem)
+            val bucket = keyIndex.getOrElseUpdate(key, {
+              keyRevertIndex(readVar(lastIndex)) = key
+              __assign(lastIndex, readVar(lastIndex) + unit(1))
+              readVar(lastIndex) - unit(1)
+            })
+            array(bucket)(eachBucketSize(bucket)) = elem
+            eachBucketSize(bucket) += unit(1)
+          }, unit())
+        })
+        (groupByResult, readVar(lastIndex))
+      }
 
-    //     val partitions = lastIndex
+      def source: Rep[Source] = unit(0)
 
-    //     Range(unit(0), partitions).foreach {
-    //       __lambda { i =>
-    //         // val arr = array_dropRight(array(i), eachBucketSize(i))
-    //         val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
-    //         // System.out.println(s"arr size ${arr.size} bucket size ${eachBucketSize(i)}")
-    //         val key = keyRevertIndex(i)
-    //         val Def(Lambda(_, input, _)) = func
-    //         iteratorMap += input -> QueryIterator(arr).asInstanceOf[QueryIterator[Any]]
-    //         val newValue = inlineFunction(func, arr)
-    //         k(Tuple2(key, newValue))
-    //       }
-    //     }
-    //   }
+      def atEnd(s: Rep[Source]): Rep[Boolean] = s >= partitions
+      def next(s: Rep[Source]): Rep[((K, S), Source)] = {
+        val GroupByResult(array, keyRevertIndex, eachBucketSize, _, _) =
+          groupByResult
+        val i = s
+        val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
+        // System.out.println(s"arr size ${arr.size} bucket size ${eachBucketSize(i)}")
+        val key = keyRevertIndex(i)
+        val Def(Lambda(_, input, _)) = func
+        iteratorMap += input -> QueryIterator(arr).asInstanceOf[QueryIterator[Any]]
+        val newValue = inlineFunction(func, arr)
+        Tuple2(Tuple2(key, newValue), s + unit(1))
+      }
+    }
   }
 
-  // case class GroupByResult[K, V](partitionedArray: Rep[Array[Array[V]]], keyRevertIndex: Rep[Array[K]],
-  //                                eachBucketSize: Rep[Array[Int]], partitions: Rep[Int], keyIndex: Rep[HashMap[K, Int]])
+  case class GroupByResult[K, V](partitionedArray: Rep[Array[Array[V]]], keyRevertIndex: Rep[Array[K]],
+                                 eachBucketSize: Rep[Array[Int]], partitions: Rep[Int], keyIndex: Rep[HashMap[K, Int]])
 
-  // val groupByResults = scala.collection.mutable.Map[Rep[Any], GroupByResult[Any, Any]]()
+  val groupByResults = scala.collection.mutable.Map[Rep[Any], GroupByResult[Any, Any]]()
 
-  // def initGroupByArray[T: TypeRep, K: TypeRep](monad: Rep[Query[T]], par: Rep[T => K]): GroupByResult[K, T] = {
-  //   type V = T
-  //   def sizeByCardinality: Int = schema.stats.getCardinalityOrElse(typeRep[K].name, 8).toInt
-  //   val max_partitions = par match {
-  //     case Def(Lambda(_, i, Block(stmts, Def(StructImmutableField(struct, name))))) if i == struct && stmts.size == 1 =>
-  //       schema.stats.getDistinctAttrValuesOrElse(name, sizeByCardinality)
-  //     case _ =>
-  //       sizeByCardinality
-  //   }
+  def initGroupByArray[T: TypeRep, K: TypeRep](monad: Rep[Query[T]], par: Rep[T => K]): GroupByResult[K, T] = {
+    type V = T
+    def sizeByCardinality: Int = schema.stats.getCardinalityOrElse(typeRep[K].name, 8).toInt
+    val max_partitions = par match {
+      case Def(Lambda(_, i, Block(stmts, Def(StructImmutableField(struct, name))))) if i == struct && stmts.size == 1 =>
+        schema.stats.getDistinctAttrValuesOrElse(name, sizeByCardinality)
+      case _ =>
+        sizeByCardinality
+    }
 
-  //   // System.out.println(typeRep[K] + "-" + max_partitions)
-  //   // val MAX_SIZE = unit(4000)
-  //   val MAX_SIZE = unit(max_partitions)
-  //   val keyIndex = __newHashMap[K, Int]()
-  //   val keyRevertIndex = __newArray[K](MAX_SIZE)
-  //   val lastIndex = __newVarNamed(unit(0), "lastIndex")
-  //   val array = __newArray[Array[V]](MAX_SIZE)
-  //   // TODO generalize
-  //   schema.stats += "QS_MEM_ARRAY_LINEITEM" -> 4
-  //   schema.stats += "QS_MEM_ARRAY_DOUBLE" -> 4
-  //   val eachBucketSize = __newArray[Int](MAX_SIZE)
-  //   // FIXME if we use .count it will regenerate the same loop until before groupBy
-  //   // val arraySize = this.count / MAX_SIZE * unit(4)
-  //   val thisSize = unit(schema.stats.getCardinalityOrElse(typeRep[T].name, 1 << 25).toInt)
-  //   val arraySize = thisSize / MAX_SIZE * unit(8)
-  //   Range(unit(0), MAX_SIZE).foreach {
-  //     __lambda { i =>
-  //       // val arraySize = originalArray.length
-  //       // val arraySize = unit(128)
-  //       array(i) = __newArray[V](arraySize)
-  //       eachBucketSize(i) = unit(0)
-  //     }
-  //   }
-  //   GroupByResult(array, keyRevertIndex, eachBucketSize, MAX_SIZE, keyIndex)
-  // }
+    // System.out.println(typeRep[K] + "-" + max_partitions)
+    // val MAX_SIZE = unit(4000)
+    val MAX_SIZE = unit(max_partitions)
+    val keyIndex = __newHashMap[K, Int]()
+    val keyRevertIndex = __newArray[K](MAX_SIZE)
+    val lastIndex = __newVarNamed(unit(0), "lastIndex")
+    val array = __newArray[Array[V]](MAX_SIZE)
+    // TODO generalize
+    schema.stats += "QS_MEM_ARRAY_LINEITEM" -> 4
+    schema.stats += "QS_MEM_ARRAY_DOUBLE" -> 4
+    val eachBucketSize = __newArray[Int](MAX_SIZE)
+    // FIXME if we use .count it will regenerate the same loop until before groupBy
+    // val arraySize = this.count / MAX_SIZE * unit(4)
+    val thisSize = unit(schema.stats.getCardinalityOrElse(typeRep[T].name, 1 << 25).toInt)
+    val arraySize = thisSize / MAX_SIZE * unit(8)
+    Range(unit(0), MAX_SIZE).foreach {
+      __lambda { i =>
+        // val arraySize = originalArray.length
+        // val arraySize = unit(128)
+        array(i) = __newArray[V](arraySize)
+        eachBucketSize(i) = unit(0)
+      }
+    }
+    GroupByResult(array, keyRevertIndex, eachBucketSize, MAX_SIZE, keyIndex)
+  }
 
   object QueryIterator {
     def apply[T: TypeRep](arr: Rep[Array[T]]): QueryIterator[T] = new QueryIterator[T] {
@@ -414,17 +432,18 @@ class QueryMonadIteratorLowering(val schema: Schema, override val IR: LegoBaseEx
 
   rewrite += statement {
     case sym -> QueryForeach(monad, f) =>
-      val cps = queryToIterator(monad).foreach(i => inlineFunction(f, i)).asInstanceOf[QueryIterator[Any]]
+      // val cps = queryToIterator(monad).foreach(i => inlineFunction(f, i)).asInstanceOf[QueryIterator[Any]]
+      // iteratorMap += sym -> cps
+      // sym
+      queryToIterator(monad).foreach(i => inlineFunction(f, i))
+  }
+
+  rewrite += statement {
+    case sym -> QuerySortBy(monad, f) =>
+      val cps = monad.sortBy(f)(f.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
       iteratorMap += sym -> cps
       sym
   }
-
-  // rewrite += statement {
-  //   case sym -> QuerySortBy(monad, f) =>
-  //     val cps = monad.sortBy(f)(f.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
-  //     iteratorMap += sym -> cps
-  //     sym
-  // }
 
   // rewrite += rule {
   //   case QueryMinBy(monad, by) =>
@@ -488,61 +507,62 @@ class QueryMonadIteratorLowering(val schema: Schema, override val IR: LegoBaseEx
   //   }
   // }
 
-  // val mapValuesFuncs = scala.collection.mutable.ArrayBuffer[Rep[Query[Any] => Any]]()
+  val mapValuesFuncs = scala.collection.mutable.ArrayBuffer[Rep[Query[Any] => Any]]()
 
-  // analysis += statement {
-  //   case sym -> GroupedQueryMapValues(groupedMonad, func) =>
-  //     mapValuesFuncs += func
-  //     ()
-  // }
+  analysis += statement {
+    case sym -> GroupedQueryMapValues(groupedMonad, func) =>
+      mapValuesFuncs += func
+      ()
+  }
 
-  // rewrite += removeStatement {
-  //   case (sym -> Lambda(_, _, _)) if mapValuesFuncs.contains(sym) =>
-  //     ()
-  // }
+  rewrite += removeStatement {
+    case (sym -> Lambda(_, _, _)) if mapValuesFuncs.contains(sym) =>
+      ()
+  }
 
-  // case class GroupByInfo[K, V](monad: Rep[Query[V]], pred: Option[Rep[V => Boolean]], par: Rep[V => K])
-  // val groupBysInfo = scala.collection.mutable.Map[Rep[Any], GroupByInfo[Any, Any]]()
+  case class GroupByInfo[K, V](monad: Rep[Query[V]], pred: Option[Rep[V => Boolean]], par: Rep[V => K])
+  val groupBysInfo = scala.collection.mutable.Map[Rep[Any], GroupByInfo[Any, Any]]()
 
-  // object QueryGroupByAll {
-  //   def unapply(groupedMonad: Def[Any]): Option[GroupByInfo[Any, Any]] = groupedMonad match {
-  //     case QueryGroupBy(monad, par)               => Some(GroupByInfo(monad, None, par))
-  //     case QueryFilteredGroupBy(monad, pred, par) => Some(GroupByInfo(monad, Some(pred), par))
-  //     case _                                      => None
-  //   }
-  // }
+  object QueryGroupByAll {
+    def unapply(groupedMonad: Def[Any]): Option[GroupByInfo[Any, Any]] = groupedMonad match {
+      case QueryGroupBy(monad, par)               => Some(GroupByInfo(monad, None, par))
+      case QueryFilteredGroupBy(monad, pred, par) => Some(GroupByInfo(monad, Some(pred), par))
+      case _                                      => None
+    }
+  }
 
-  // analysis += statement {
-  //   case sym -> QueryGroupByAll(info) => {
-  //     // System.out.println(info)
-  //     groupBysInfo += sym -> info
-  //     ()
-  //   }
-  // }
+  analysis += statement {
+    case sym -> QueryGroupByAll(info) => {
+      // System.out.println(info)
+      groupBysInfo += sym -> info
+      ()
+    }
+  }
 
-  // rewrite += rule {
-  //   case GenericEngineRunQueryObject(b) =>
-  //     for ((key, groupByInfo) <- groupBysInfo) {
-  //       val groupByResult = initGroupByArray(groupByInfo.monad, groupByInfo.par)(
-  //         groupByInfo.par.tp.typeArguments(0).asInstanceOf[TypeRep[Any]], groupByInfo.par.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
-  //       groupByResults(groupByInfo.monad) = groupByResult
-  //     }
-  //     val newBlock = transformBlock(b)(b.tp)
-  //     GenericEngineRunQueryObject(newBlock)(newBlock.tp)
-  // }
+  rewrite += rule {
+    case GenericEngineRunQueryObject(b) =>
+      for ((key, groupByInfo) <- groupBysInfo) {
+        val groupByResult = initGroupByArray(groupByInfo.monad, groupByInfo.par)(
+          groupByInfo.par.tp.typeArguments(0).asInstanceOf[TypeRep[Any]], groupByInfo.par.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
+        groupByResults(groupByInfo.monad) = groupByResult
+        System.out.println(s"ADDED ${groupByInfo.monad}!")
+      }
+      val newBlock = transformBlock(b)(b.tp)
+      GenericEngineRunQueryObject(newBlock)(newBlock.tp)
+  }
 
-  // // TODO: Separate groupBy and mapValues
-  // rewrite += statement {
-  //   case sym -> GroupedQueryMapValues(groupedMonad, func) =>
-  //     val (monad, pred, par) = groupedMonad match {
-  //       case Def(QueryFilteredGroupBy(monad, pred, par)) => (monad, Some(pred), par)
-  //       case Def(QueryGroupBy(monad, par))               => (monad, None, par)
-  //     }
-  //     implicit val typeK = groupedMonad.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
-  //     implicit val typeV = groupedMonad.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-  //     implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-  //     val cps = monad.groupByMapValues(par, pred)(func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeS)
-  //     iteratorMap += sym -> cps.asInstanceOf[QueryIterator[Any]]
-  //     sym
-  // }
+  // TODO: Separate groupBy and mapValues
+  rewrite += statement {
+    case sym -> GroupedQueryMapValues(groupedMonad, func) =>
+      val (monad, pred, par) = groupedMonad match {
+        case Def(QueryFilteredGroupBy(monad, pred, par)) => (monad, Some(pred), par)
+        case Def(QueryGroupBy(monad, par))               => (monad, None, par)
+      }
+      implicit val typeK = groupedMonad.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
+      implicit val typeV = groupedMonad.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
+      implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
+      val cps = monad.groupByMapValues(par, pred)(func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeS)
+      iteratorMap += sym -> cps.asInstanceOf[QueryIterator[Any]]
+      sym
+  }
 }
