@@ -334,6 +334,7 @@ class IntroduceHashIndexForRangeLookup(override val IR: LegoBaseExp, val schema:
 
   analysis += statement {
     case sym -> dsl"Range($start, $end).foreach($f)" => {
+      import scala.language.existentials
       val Def(Lambda(_, i, body)) = f
       val unitSym = sym.asInstanceOf[Rep[Unit]]
       possibleRangeFors += unitSym

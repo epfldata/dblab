@@ -51,16 +51,8 @@ class Tuple2Lowering[Lang <: LegoBaseExp](override val IR: Lang)
   class A1
   class A2
 
-  object Tuple2Create {
-    def unapply[T](d: Def[T]): Option[(Rep[Any], Rep[Any])] = d match {
-      case Tuple2ApplyObject(_1, _2) => Some(_1 -> _2)
-      case Tuple2New(_1, _2)         => Some(_1 -> _2)
-      case _                         => None
-    }
-  }
-
   rewrite += statement {
-    case sym -> (node @ Tuple2Create(_1, _2)) if mayBeLowered(sym) =>
+    case sym -> (node @ Tuple2New(_1, _2)) if mayBeLowered(sym) =>
 
       implicit val typeA1 = transformType(node.tp.typeArguments(0)).asInstanceOf[TypeRep[A1]]
       implicit val typeA2 = transformType(node.tp.typeArguments(1)).asInstanceOf[TypeRep[A2]]

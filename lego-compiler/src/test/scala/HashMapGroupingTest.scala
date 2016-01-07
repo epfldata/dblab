@@ -84,25 +84,24 @@ class HashMapGroupingTest extends FlatSpec with ShouldMatchers {
     newExp match {
       // TODO needs more support from the quasi-quote engine
       case dsl"""__block{ 
+        val lineitemArray = new Array[LINEITEMRecord](100000)
+        val ordersArray = new Array[ORDERSRecord](1000)
+        val ordersPartArray = new Array[ORDERSRecord]($partSize)
         var lineitemIndex = 0
-        val lineitemArray = ($lineitemArray: Array[LINEITEMRecord])
-        val ordersArray = ($ordersArray: Array[ORDERSRecord])
-        while(lineitemIndex < lineitemArray.length) {
-          val elem = lineitemArray(lineitemIndex)
+        while(lineitemIndex < 100000) {
+          val elem = lineitemArray(lineitemIndex) as $elem
           val key = __struct_field[Int](elem, "L_ORDERKEY")
-          val relem = ordersArray(key)
+          val relem = ordersPartArray(key) as $relem
           val rkey = __struct_field[Int](relem, "O_ORDERKEY")
-          val equalityCheck = rkey == key
           // TODO needs println to be quasi-lifted
-          // if(rkey == key) {
-          //   println(elem)
-          //   println(relem)
-          // } 
+          if(rkey == key) {
+            $tb
+          }
           lineitemIndex += 1
         }
       }""" =>
-        assert(lineitemArray.tp.typeArguments(0).name == "LINEITEMRecord")
-        assert(ordersArray.tp.typeArguments(0).name == "ORDERSRecord")
+        assert(elem.tp.name == "LINEITEMRecord")
+        assert(relem.tp.name == "ORDERSRecord")
     }
   }
 }

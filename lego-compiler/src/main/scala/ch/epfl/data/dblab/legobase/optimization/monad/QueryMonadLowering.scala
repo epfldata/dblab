@@ -251,10 +251,10 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
 
   object TupleNCreate {
     def unapply[T](exp: Rep[T]): Option[scala.Seq[Rep[Any]]] = exp match {
-      case Def(Tuple2ApplyObject(x, y))       => Some(scala.Seq(x, y))
-      case Def(Tuple3ApplyObject(x, y, z))    => Some(scala.Seq(x, y, z))
-      case Def(Tuple4ApplyObject(x, y, z, t)) => Some(scala.Seq(x, y, z, t))
-      case _                                  => None
+      case Def(Tuple2New(x, y))       => Some(scala.Seq(x, y))
+      case Def(Tuple3New(x, y, z))    => Some(scala.Seq(x, y, z))
+      case Def(Tuple4New(x, y, z, t)) => Some(scala.Seq(x, y, z, t))
+      case _                          => None
     }
   }
 
@@ -270,8 +270,12 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
           unit(-1),
           unit(0)))
     case StringType => (num1, num2) match {
-      case (Def(OptimalStringString(str1)), Def(OptimalStringString(str2))) => str1 diff str2
-      case (str1: Rep[String], str2: Rep[String])                           => str1 diff str2
+      case (Def(OptimalStringString(str1)), Def(OptimalStringString(str2))) =>
+        str1 diff str2
+      case _ =>
+        val str1 = num1.asInstanceOf[Rep[String]]
+        val str2 = num2.asInstanceOf[Rep[String]]
+        str1 diff str2
     }
     case TupleNType(tps) => {
       val TupleNCreate(elems1) = num1

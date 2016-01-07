@@ -57,6 +57,7 @@ class QueryMonadCPSLoweringTest extends FlatSpec with ShouldMatchers {
       }
     }
     val newExp = transform(exp)
-    println(newExp)
+    // println(newExp)
+    // TODO
   }
 }

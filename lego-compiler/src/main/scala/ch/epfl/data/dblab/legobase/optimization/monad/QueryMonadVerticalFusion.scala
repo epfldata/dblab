@@ -41,7 +41,8 @@ class QueryMonadVerticalFusion(override val IR: LegoBaseExp) extends RuleBasedTr
   }
 
   rewrite += rule {
-    case QuerySum(Def(QueryMap(monad, f: Rep[T => S]))) =>
+    case QuerySum(Def(QueryMap(monad, fun))) =>
+      val f = fun.asInstanceOf[Rep[T => S]]
       implicit val typeT = f.tp.typeArguments(0).asInstanceOf[TypeRep[T]]
       implicit val typeS = f.tp.typeArguments(1).asInstanceOf[TypeRep[S]]
       apply(monad).asInstanceOf[Rep[Query[T]]].foldLeft(zero[S])(__lambda { (acc, cur) =>
@@ -114,7 +115,8 @@ class QueryMonadVerticalFusion(override val IR: LegoBaseExp) extends RuleBasedTr
   }
 
   rewrite += rule {
-    case QueryAvg(monadMap @ Def(QueryMap(monad, f: Rep[T => S]))) =>
+    case QueryAvg(monadMap @ Def(QueryMap(monad, fun))) =>
+      val f = fun.asInstanceOf[Rep[T => S]]
       implicit val typeT = f.tp.typeArguments(0).asInstanceOf[TypeRep[T]]
       implicit val typeS = f.tp.typeArguments(1).asInstanceOf[TypeRep[S]]
       // TODO generalize

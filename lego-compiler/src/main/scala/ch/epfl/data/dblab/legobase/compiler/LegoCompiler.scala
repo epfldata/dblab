@@ -63,7 +63,7 @@ class LegoCompiler(val DSL: LegoBaseExp,
    * the field removal causes the program to be wrong
    */
   //TODO-GEN Remove gen and make string compression transformer dependant on removing unnecessary fields.
-  def shouldRemoveUnusedFields = settings.forceFieldRemoval || settings.queryMonadLowering || settings.stringCompression || (settings.hashMapPartitioning ||
+  def shouldRemoveUnusedFields = settings.forceFieldRemoval || settings.stringCompression || (settings.queryMonadLowering || settings.hashMapPartitioning ||
     (
       settings.hashMapLowering && (settings.setToArray || settings.setToLinkedList))) && !settings.noFieldRemoval
 
@@ -84,6 +84,8 @@ class LegoCompiler(val DSL: LegoBaseExp,
     pipeline += DCE
     if (settings.queryMonadCPS) {
       pipeline += new QueryMonadCPSLowering(schema, DSL)
+    } else if (settings.queryMonadIterator) {
+      pipeline += new QueryMonadIteratorLowering(schema, DSL)
     } else {
       pipeline += new QueryMonadLowering(schema, DSL)
     }
