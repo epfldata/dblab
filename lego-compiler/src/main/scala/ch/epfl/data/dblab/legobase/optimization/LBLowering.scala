@@ -145,11 +145,12 @@ class LBLowering(override val from: LegoBaseExp, override val to: LegoBaseExp, v
     def types[T: TypeRep]: List[TypeRep[Any]] = {
       typeRep[T] match {
         case DynamicCompositeRecordType(l, r) => types(l) ++ types(r)
-        case t: TypeRep[Any]                  => List(t)
+        case t: TypeRep[_]                    => List(t.asInstanceOf[TypeRep[Any]])
       }
     }
     val sorted = notSeenDynamicRecordTypes.toList.sortBy(x => types(x).size)
     for (tp <- sorted) {
+      import scala.language.existentials
       val dtp = tp.asInstanceOf[DynamicCompositeRecordType[_, _]]
       val (lt, rt) = dtp.leftType -> dtp.rightType
       val leftTag = getTag(lt)
