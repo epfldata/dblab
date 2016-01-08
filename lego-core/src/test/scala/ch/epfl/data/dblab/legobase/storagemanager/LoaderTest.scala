@@ -1,7 +1,10 @@
-import ch.epfl.data.dblab.legobase.storagemanager._
-import ch.epfl.data.dblab.legobase.LBString
-import ch.epfl.data.dblab.legobase.tpch.TPCHSchema
+package ch.epfl.data
+package dblab.legobase
+package storagemanager
+
+import tpch.TPCHSchema
 import org.scalatest._
+import Matchers._
 
 case class PARTRecord(
   val P_PARTKEY: Int,
@@ -15,19 +18,20 @@ case class PARTRecord(
   val P_COMMENT: LBString)
 
 class LoaderTest extends FlatSpec {
-  val DATAPATH = System.getenv("LEGO_DATA_FOLDER")
-  if (DATAPATH != null) {
-    "Loader" should "load PART table with SF0.1 correctly" in {
-      // Change path to test
-      val partTable = TPCHSchema.getSchema(s"$DATAPATH/sf0.1", 0.1).tables.find(t => t.name == "PART").get
-      val records = Loader.loadTable[PARTRecord](partTable)
+  TPCHData.getDataFolder() match {
+    case Some(datapath) =>
+      "Loader" should "load PART table with SF0.1 correctly" in {
+        // Change path to test
+        val partTable = TPCHSchema.getSchema(datapath, 0.1).tables.find(t => t.name == "PART").get
+        val records = Loader.loadTable[PARTRecord](partTable)
 
-      assert(records.size == 20000)
-      assert(records(0).P_PARTKEY == 1)
-      assert(records(19999).P_RETAILPRICE == 920.00)
+        records.size should be(20000)
+        records(0).P_PARTKEY should be(1)
+        records(19999).P_RETAILPRICE should be(920.00)
+      }
+    case None => TPCHData.getEnvironmentVariable() match {
+      case Some(path) => println(s"Tests could not run because $path is not a valid directory.")
+      case None       => println("Tests could not run because the environment variable `LEGO_DATA_FOLDER` does not exist.")
     }
-  } else {
-    println("Tests could not run because the environment variable `LEGO_DATA_FOLDER` does not exist.")
   }
-
 }
