@@ -18,4 +18,14 @@ object TPCHData {
       }
     })
   }
+  def runOnData(runner: String => Unit): Unit = {
+    getDataFolder() match {
+      case Some(datapath) =>
+        runner(datapath)
+      case None => getEnvironmentVariable() match {
+        case Some(path) => println(s"Tests could not run because $path is not a valid directory.")
+        case None       => println("Tests could not run because the environment variable `LEGO_DATA_FOLDER` does not exist.")
+      }
+    }
+  }
 }
