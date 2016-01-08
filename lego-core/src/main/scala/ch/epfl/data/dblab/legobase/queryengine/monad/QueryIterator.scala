@@ -7,6 +7,7 @@ import sc.pardis.annotations.{ deep, needsCircular, dontLift, needs, reflect, pu
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
 import push.MultiMap
 import scala.collection.mutable.MultiMap
+import scala.collection.mutable.HashMap
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.TreeSet
 import scala.language.implicitConversions
@@ -73,29 +74,38 @@ abstract class QueryIterator[T, Source] { self =>
     foreach(e => res = num.plus(res, e))
     res
   }
-  // @pure def count: Int = {
-  //   var size = 0
-  //   foreach(e => size += 1)
-  //   size
-  // }
-  // @pure def avg(implicit num: Fractional[T]): T =
-  //   num.div(sum, num.fromInt(count))
-  // @pure def groupBy[K](par: T => K): GroupedQueryIterator[K, T] =
-  //   new GroupedQueryIterator(this, par)
+  @pure def count: Int = {
+    var size = 0
+    foreach(e => size += 1)
+    size
+  }
+  @pure def avg(implicit num: Fractional[T]): T =
+    num.div(sum, num.fromInt(count))
+  @pure def groupBy[K](par: T => K): GroupedQueryIterator[K, T, Source] =
+    new GroupedQueryIterator(this, par)
   // @pure def filteredGroupBy[K](pred: T => Boolean, par: T => K): GroupedQueryIterator[K, T] =
   //   filter(pred).groupBy(par)
-  // @dontLift def sortBy[S](f: T => S)(implicit ord: Ordering[S]): QueryIterator[T] = (k: T => Unit) => {
-  //   val sortedTree = new TreeSet()(
-  //     new Ordering[T] {
-  //       def compare(o1: T, o2: T) = ord.compare(f(o1), f(o2))
-  //     })
-  //   foreach(e => sortedTree += e)
-  //   while (sortedTree.size != 0) {
-  //     val elem = sortedTree.head
-  //     sortedTree -= elem
-  //     k(elem)
-  //   }
-  // }
+  @dontLift def sortBy[S](f: T => S)(implicit ord: Ordering[S]): QueryIterator[T, Int] = new QueryIterator[T, Int] {
+    val (treeSet, size) = {
+      val treeSet = new TreeSet()(
+        new Ordering[T] {
+          def compare(o1: T, o2: T) = ord.compare(f(o1), f(o2))
+        })
+      self.foreach((elem: T) => {
+        treeSet += elem
+      })
+      (treeSet, treeSet.size)
+    }
+
+    def source = 0
+
+    def atEnd(s: Int): Boolean = s >= size
+    def next(s: Int): (T, Int) = {
+      val elem = treeSet.head
+      treeSet -= elem
+      Tuple2(elem, s + 1)
+    }
+  }
 
   // @pure def sortByReverse[S](f: T => S)(implicit ord: Ordering[S]): Query[T] =
   //   new Query(underlying.sortBy(f).reverse)
@@ -194,16 +204,62 @@ object QueryIterator {
 //   }
 // }
 
-// class GroupedQueryIterator[K, V](underlying: QueryIterator[V], par: V => K) {
-//   @pure def mapValues[S](f: QueryIterator[V] => S): QueryIterator[(K, S)] = (k: ((K, S)) => Unit) => {
-//     val hm = MultiMap[K, V]
-//     for (elem <- underlying) {
-//       hm.addBinding(par(elem), elem)
-//     }
-//     hm.foreach {
-//       case (key, set) =>
-//         val value = f(QueryIterator(set.asInstanceOf[scala.collection.mutable.HashSet[Any]].toArray.asInstanceOf[Array[V]]))
-//         k((key, value))
-//     }
-//   }
-// }
+case class GroupByResult[K, V](partitionedArray: Array[Array[V]], keyRevertIndex: Array[K],
+                               eachBucketSize: Array[Int], partitions: Int, keyIndex: HashMap[K, Int])
+
+class GroupedQueryIterator[K, V, Source1](underlying: QueryIterator[V, Source1], par: V => K) {
+  def getGroupByResult: GroupByResult[K, V] = {
+    val max_partitions = 12
+    val MAX_SIZE = max_partitions
+    val keyIndex = new HashMap[K, Int]()
+    val keyRevertIndex = new Array[Any](MAX_SIZE).asInstanceOf[Array[K]]
+    var lastIndex = 0
+    val array = new Array[Array[Any]](MAX_SIZE).asInstanceOf[Array[Array[V]]]
+    val eachBucketSize = new Array[Int](MAX_SIZE)
+    val thisSize = 1 << 25
+    val arraySize = thisSize / MAX_SIZE * 8
+    Range(0, MAX_SIZE).foreach { i =>
+      // val arraySize = originalArray.length
+      // val arraySize = 128
+      array(i) = new Array[Any](arraySize).asInstanceOf[Array[V]] // discovered a funny scalac bug!
+      eachBucketSize(i) = 0
+    }
+    GroupByResult(array, keyRevertIndex, eachBucketSize, MAX_SIZE, keyIndex)
+    // ???
+  }
+
+  @pure def mapValues[S](func: QueryIterator[V, Int] => S): QueryIterator[(K, S), Int] = new QueryIterator[(K, S), Int] {
+
+    val (groupByResult, partitions) = {
+      val groupByResult = getGroupByResult
+      val GroupByResult(array, keyRevertIndex, eachBucketSize, _, keyIndex) =
+        groupByResult
+      var lastIndex = 0
+
+      underlying.foreach((elem: V) => {
+        val key = par(elem)
+        val bucket = keyIndex.getOrElseUpdate(key, {
+          keyRevertIndex(lastIndex) = key
+          lastIndex = lastIndex + 1
+          lastIndex - 1
+        })
+        array(bucket)(eachBucketSize(bucket)) = elem
+        eachBucketSize(bucket) += 1
+      })
+      (groupByResult, lastIndex)
+    }
+
+    def source: Int = 0
+
+    def atEnd(s: Int): Boolean = s >= partitions
+    def next(s: Int): ((K, S), Int) = {
+      val GroupByResult(array, keyRevertIndex, eachBucketSize, _, _) =
+        groupByResult
+      val i = s
+      val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
+      val key = keyRevertIndex(i)
+      val newValue = func(QueryIterator(arr))
+      Tuple2(Tuple2(key, newValue), s + 1)
+    }
+  }
+}
