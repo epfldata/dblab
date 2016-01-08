@@ -28,3 +28,5 @@ tree_debug_dump.txt
 result.csv
 *.out.*
 run_config.cfg
+
+tpchdata/

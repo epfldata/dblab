@@ -1,5 +1,6 @@
 DBLAB
 ======
+[![Build Status](https://travis-ci.org/epfldata/dblab.svg)](https://travis-ci.org/epfldata/dblab)
 
 DBLAB is a framework for building database systems by high-level programming, 
 and getting really good performance nevertheless. This is achieved by a new DSL

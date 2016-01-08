@@ -1,0 +1,6 @@
+language: scala
+scala:
+   - 2.11.7
+script:
+  - source bin/download_sf0.1.sh
+  - sbt ++$TRAVIS_SCALA_VERSION embedAll test
