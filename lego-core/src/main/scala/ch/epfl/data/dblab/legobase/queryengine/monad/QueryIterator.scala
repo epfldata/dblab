@@ -120,15 +120,15 @@ abstract class QueryIterator[T, Source] { self =>
   //   })
   // }
 
-  // @pure def minBy[S](f: T => S)(implicit ord: Ordering[S]): T = {
-  //   var minResult: T = null.asInstanceOf[T]
-  //   foreach(e => {
-  //     if (minResult == null || ord.compare(f(minResult), f(e)) > 0) {
-  //       minResult = e
-  //     }
-  //   })
-  //   minResult
-  // }
+  @pure def minBy[S](f: T => S)(implicit ord: Ordering[S]): T = {
+    var minResult: T = null.asInstanceOf[T]
+    foreach(e => {
+      if (minResult == null || ord.compare(f(minResult), f(e)) > 0) {
+        minResult = e
+      }
+    })
+    minResult
+  }
 
   def printRows(printFunc: T => Unit, limit: Int): Unit = {
     var rows = 0
@@ -263,9 +263,9 @@ case class GroupByResult[K, V](partitionedArray: Array[Array[V]], keyRevertIndex
 
 class GroupedQueryIterator[K, V, Source1](underlying: QueryIterator[V, Source1], par: V => K) {
   def getGroupByResult: GroupByResult[K, V] = {
-    // val max_partitions = 12
+    val max_partitions = 50
     // Q3
-    val max_partitions = 150000
+    // val max_partitions = 150000
     val MAX_SIZE = max_partitions
     val keyIndex = new HashMap[K, Int]()
     val keyRevertIndex = new Array[Any](MAX_SIZE).asInstanceOf[Array[K]]
