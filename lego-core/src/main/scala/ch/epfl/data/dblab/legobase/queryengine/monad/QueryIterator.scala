@@ -161,9 +161,28 @@ object QueryIterator {
     def next(ts: Int) = Tuple2(arr(ts), ts + 1)
 
   }
+  def apply[T](set: scala.collection.mutable.Set[T]): SetIterator[T] = new SetIterator[T](set)
   // @dontLift implicit def apply[T](k: (T => Unit) => Unit): QueryIterator[T] = new QueryIterator[T] {
   //   def foreach(f: T => Unit): Unit = k(f)
   // }
+}
+
+class SetIterator[T](set: scala.collection.mutable.Set[T]) extends QueryIterator[T, Unit] { self =>
+  var currentSet: scala.collection.mutable.Set[T] = set
+  def source = ()
+
+  def atEnd(ts: Unit) = currentSet.isEmpty
+  def next(ts: Unit) = {
+    val elem = currentSet.head
+    currentSet = currentSet.tail
+    Tuple2(elem, ())
+  }
+
+  def withFilter(p: T => Boolean): SetIterator[T] = new SetIterator[T](set) {
+    val underlying = self.filter(p)
+    override def atEnd(ts: Unit) = underlying.atEnd(())
+    override def next(ts: Unit) = underlying.next(())
+  }
 }
 
 // object JoinableQueryIterator {
@@ -181,12 +200,12 @@ class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryI
     }
     var nextSource: Source2 = null.asInstanceOf[Source2]
     var tmpAtEnd = false
-    var iterator: Iterator[T] = null
-    // var leftElem = null.asInstanceOf[T]
+    var iterator: SetIterator[T] = null
+    var leftElem = null.asInstanceOf[T]
     var rightElem = null.asInstanceOf[S]
 
     def atEnd(ts: Source2) = q2.atEnd(ts) || tmpAtEnd || {
-      if (iterator == null || !iterator.hasNext) {
+      if (iterator == null || iterator.atEnd(())) {
         var tmpSource = ts
         val nextAndRest = q2.next(tmpSource)
         var tmpHd = nextAndRest._1
@@ -206,9 +225,10 @@ class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryI
             rightElem = elem
             val key = rightHash(elem)
             hm.get(key) foreach { tmpBuffer =>
-              iterator = tmpBuffer.filter(bufElem => joinCond(bufElem, elem)).iterator
-              if (iterator.hasNext) {
+              iterator = QueryIterator(tmpBuffer).withFilter(bufElem => joinCond(bufElem, elem))
+              if (!iterator.atEnd(())) {
                 leftElemFound = true
+                leftElem = iterator.next(())._1
               }
             }
           }
@@ -216,10 +236,11 @@ class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryI
         nextSource = tmpSource
         tmpAtEnd
       } else {
+        leftElem = iterator.next(())._1
         false
       }
     }
-    def next(ts: Source2) = iterator.next.concatenateDynamic(rightElem) -> nextSource
+    def next(ts: Source2) = leftElem.concatenateDynamic(rightElem) -> nextSource
   }
 
   // def leftHashSemiJoin[S <: Record, R](q2: QueryIterator[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): QueryIterator[T] = (k: T => Unit) => {
@@ -242,7 +263,9 @@ case class GroupByResult[K, V](partitionedArray: Array[Array[V]], keyRevertIndex
 
 class GroupedQueryIterator[K, V, Source1](underlying: QueryIterator[V, Source1], par: V => K) {
   def getGroupByResult: GroupByResult[K, V] = {
-    val max_partitions = 12
+    // val max_partitions = 12
+    // Q3
+    val max_partitions = 150000
     val MAX_SIZE = max_partitions
     val keyIndex = new HashMap[K, Int]()
     val keyRevertIndex = new Array[Any](MAX_SIZE).asInstanceOf[Array[K]]
