@@ -11,4 +11,7 @@ package object monad {
 
   implicit def queryCPSToJoinableQueryCPS[T <: Record](q: QueryCPS[T]): JoinableQueryCPS[T] =
     new JoinableQueryCPS(q)
+
+  implicit def queryIteratorToJoinableQueryIterator[T <: Record, Source](q: QueryIterator[T, Source]): JoinableQueryIterator[T, Source] =
+    new JoinableQueryIterator(q)
 }

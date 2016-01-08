@@ -170,39 +170,72 @@ object QueryIterator {
 
 // }
 
-// class JoinableQueryIterator[T <: Record](private val underlying: QueryIterator[T]) {
-//   def hashJoin[S <: Record, R](q2: QueryIterator[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): QueryIterator[DynamicCompositeRecord[T, S]] = (k: DynamicCompositeRecord[T, S] => Unit) => {
-//     val hm = MultiMap[R, T]
-//     for (elem <- underlying) {
-//       hm.addBinding(leftHash(elem), elem)
-//     }
-//     for (elem <- q2) {
-//       val key = rightHash(elem)
-//       hm.get(key) foreach { tmpBuffer =>
-//         tmpBuffer foreach { bufElem =>
-//           if (joinCond(bufElem, elem)) {
-//             val newElem = bufElem.concatenateDynamic(elem)
-//             k(newElem)
-//           }
-//         }
-//       }
-//     }
-//   }
+class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryIterator[T, Source1]) {
+  def hashJoin[S <: Record, R, Source2](q2: QueryIterator[S, Source2])(leftHash: T => R)(rightHash: S => R)(
+    joinCond: (T, S) => Boolean): QueryIterator[DynamicCompositeRecord[T, S], Source2] = new QueryIterator[DynamicCompositeRecord[T, S], Source2] {
+    def source = q2.source
 
-//   def leftHashSemiJoin[S <: Record, R](q2: QueryIterator[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): QueryIterator[T] = (k: T => Unit) => {
-//     val hm = MultiMap[R, S]
-//     for (elem <- q2) {
-//       hm.addBinding(rightHash(elem), elem)
-//     }
-//     for (elem <- underlying) {
-//       val key = leftHash(elem)
-//       hm.get(key) foreach { tmpBuffer =>
-//         if (tmpBuffer.exists(bufElem => joinCond(elem, bufElem)))
-//           k(elem)
-//       }
-//     }
-//   }
-// }
+    val hm = MultiMap[R, T]
+    for (elem <- underlying) {
+      hm.addBinding(leftHash(elem), elem)
+    }
+    var nextSource: Source2 = null.asInstanceOf[Source2]
+    var tmpAtEnd = false
+    var iterator: Iterator[T] = null
+    // var leftElem = null.asInstanceOf[T]
+    var rightElem = null.asInstanceOf[S]
+
+    def atEnd(ts: Source2) = q2.atEnd(ts) || tmpAtEnd || {
+      if (iterator == null || !iterator.hasNext) {
+        var tmpSource = ts
+        val nextAndRest = q2.next(tmpSource)
+        var tmpHd = nextAndRest._1
+        var tmpRest = nextAndRest._2
+        var leftElemFound = false
+        while (!tmpAtEnd && !leftElemFound) {
+          tmpSource = tmpRest
+          if (q2.atEnd(tmpSource)) {
+            tmpAtEnd = true
+            tmpHd = null.asInstanceOf[S]
+            tmpRest = null.asInstanceOf[Source2]
+          } else {
+            val nextAndRest2 = q2.next(tmpSource)
+            tmpHd = nextAndRest2._1
+            tmpRest = nextAndRest2._2
+            val elem = tmpHd
+            rightElem = elem
+            val key = rightHash(elem)
+            hm.get(key) foreach { tmpBuffer =>
+              iterator = tmpBuffer.filter(bufElem => joinCond(bufElem, elem)).iterator
+              if (iterator.hasNext) {
+                leftElemFound = true
+              }
+            }
+          }
+        }
+        nextSource = tmpSource
+        tmpAtEnd
+      } else {
+        false
+      }
+    }
+    def next(ts: Source2) = iterator.next.concatenateDynamic(rightElem) -> nextSource
+  }
+
+  // def leftHashSemiJoin[S <: Record, R](q2: QueryIterator[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): QueryIterator[T] = (k: T => Unit) => {
+  //   val hm = MultiMap[R, S]
+  //   for (elem <- q2) {
+  //     hm.addBinding(rightHash(elem), elem)
+  //   }
+  //   for (elem <- underlying) {
+  //     val key = leftHash(elem)
+  //     hm.get(key) foreach { tmpBuffer =>
+  //       if (tmpBuffer.exists(bufElem => joinCond(elem, bufElem)))
+  //         k(elem)
+  //     }
+  //   }
+  // }
+}
 
 case class GroupByResult[K, V](partitionedArray: Array[Array[V]], keyRevertIndex: Array[K],
                                eachBucketSize: Array[Int], partitions: Int, keyIndex: HashMap[K, Int])
