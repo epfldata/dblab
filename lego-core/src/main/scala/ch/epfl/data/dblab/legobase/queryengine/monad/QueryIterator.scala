@@ -243,6 +243,31 @@ class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryI
     def next(ts: Source2) = leftElem.concatenateDynamic(rightElem) -> nextSource
   }
 
+  def leftHashSemiJoin[S <: Record, R, Source2](q2: QueryIterator[S, Source2])(leftHash: T => R)(rightHash: S => R)(
+    joinCond: (T, S) => Boolean): QueryIterator[T, Source1] = new QueryIterator[T, Source1] {
+    val hm = MultiMap[R, S]
+    for (elem <- q2) {
+      hm.addBinding(rightHash(elem), elem)
+    }
+
+    val leftIterator = underlying.filter(t => {
+      val k = leftHash(t)
+      hm.get(k).exists(buf =>
+        buf.exists(e => joinCond(t, e)))
+    })
+
+    def source = leftIterator.source
+    def atEnd(ts: Source1): Boolean = leftIterator.atEnd(ts)
+    def next(ts: Source1) = leftIterator.next(ts)
+    // for (elem <- underlying) {
+    //   val key = leftHash(elem)
+    //   hm.get(key) foreach { tmpBuffer =>
+    //     if (tmpBuffer.exists(bufElem => joinCond(elem, bufElem)))
+    //       k(elem)
+    //   }
+    // }
+  }
+
   // def leftHashSemiJoin[S <: Record, R](q2: QueryIterator[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): QueryIterator[T] = (k: T => Unit) => {
   //   val hm = MultiMap[R, S]
   //   for (elem <- q2) {
