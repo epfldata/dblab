@@ -175,13 +175,13 @@ class QueryMonadIteratorLowering(val schema: Schema, override val IR: LegoBaseEx
         case Next => throw new Exception("next after next is not considered yet!")
       }
     }
-    // def count: Rep[Int] = {
-    //   val size = __newVarNamed[Int](unit(0), "size")
-    //   foreach(e => {
-    //     __assign(size, readVar(size) + unit(1))
-    //   })
-    //   readVar(size)
-    // }
+    def count: Rep[Int] = {
+      val size = __newVarNamed[Int](unit(0), "size")
+      foreach(e => {
+        __assign(size, readVar(size) + unit(1))
+      })
+      readVar(size)
+    }
 
     // def avg: Rep[T] = {
     //   assert(typeRep[T] == DoubleType)
@@ -450,10 +450,10 @@ class QueryMonadIteratorLowering(val schema: Schema, override val IR: LegoBaseEx
   //     queryToIterator(monad).minBy(by)(by.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
   // }
 
-  // rewrite += rule {
-  //   case QueryCount(monad) =>
-  //     queryToIterator(monad).count
-  // }
+  rewrite += rule {
+    case QueryCount(monad) =>
+      queryToIterator(monad).count
+  }
 
   // rewrite += rule {
   //   case QueryAvg(monad) =>
