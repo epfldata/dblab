@@ -71,6 +71,7 @@ object LegoBuild extends Build {
         "ch.epfl.data" % "sc-c-scala-deep_2.11" % sc_version,
         "ch.epfl.data" % "sc-pardis-quasi_2.11" % sc_version
         ),
+      mainClass in Compile := Some("ch.epfl.data.dblab.legobase.tpch.TPCHCompiler"),
       generate_test <<= inputTask { (argTask: TaskKey[Seq[String]]) =>
         (argTask, sourceDirectory in Test, fullClasspath in Compile, runner in Compile, streams) map { (args, srcDir, cp, r, s) =>
           if(args(2).startsWith("Q")) {
