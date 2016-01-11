@@ -121,7 +121,13 @@ class LegoCGenerator(val outputFileName: String, val settings: Settings, overrid
   override def header: Document = super.header :/: doc"""#include "pardis_clib.h" """ ::
     {
       if (settings.profile)
-        Document.break :: doc"""#include <papi.h>""" :/: doc"#define NUM_EVENTS 4"
+        Document.break :: doc"""#include <papi.h>""" :/: doc"""#define NUM_EVENTS 7
+int event[NUM_EVENTS] = {PAPI_TOT_INS, PAPI_TOT_CYC, PAPI_BR_MSP, 
+  PAPI_L1_DCM, PAPI_L2_DCA, PAPI_BR_INS,
+  PAPI_REF_CYC
+   };
+long long values[NUM_EVENTS];
+"""
       else
         Document.empty
     }
@@ -141,9 +147,6 @@ class LegoCGenerator(val outputFileName: String, val settings: Settings, overrid
       doc"g_array_index($array, ${fun.tp}, $i)"
     case PAPIStart() =>
       doc"""
-int event[NUM_EVENTS] = {PAPI_TOT_INS, PAPI_TOT_CYC, PAPI_BR_MSP, PAPI_L1_DCM };
-long long values[NUM_EVENTS];
-
 /* Start counting events */
 if (PAPI_start_counters(event, NUM_EVENTS) != PAPI_OK) {
     fprintf(stderr, "PAPI_start_counters - FAILED$BN");
@@ -161,7 +164,15 @@ printf("Total instructions: %lld$BN", values[0]);
 printf("Total cycles: %lld$BN", values[1]);
 printf("Instr per cycle: %2.3f$BN", (double)values[0] / (double) values[1]);
 printf("Branches mispredicted: %lld$BN", values[2]);
-printf("L1 Cache misses: %lld$BN", values[3]);
+printf("L1 data cache misses: %lld$BN", values[3]);
+printf("L2 data cache access: %lld$BN", values[4]);
+printf("Branch instructions: %lld$BN", values[5]);
+printf("Branch missprediction rate: %.6f$BN", (double)values[2] / (double)values[5]);
+printf("Total ref cycles: %lld$BN", values[6]);
+// printf("L1 data cache miss rate: %.6f$BN",  (double)values[3]/(double)(values[6]+values[7]));
+// printf("L2 data cache misses: %lld$BN", values[8]);
+// printf("L2 data cache accesses: %lld$BN", values[9]);
+// printf("L1 data cache miss rate: %.6f$BN",  (double)values[8]/(double)values[9]);
 
 /* Stop counting events */
 if (PAPI_stop_counters(values, NUM_EVENTS) != PAPI_OK) {
