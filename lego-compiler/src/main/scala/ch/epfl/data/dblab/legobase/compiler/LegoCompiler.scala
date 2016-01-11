@@ -221,9 +221,9 @@ class LegoCompiler(val DSL: LegoBaseExp,
   val codeGenerator =
     if (settings.targetLanguage == CCoreLanguage) {
       if (settings.noLetBinding)
-        new LegoCASTGenerator(DSL, outputFile, true)
+        new LegoCASTGenerator(DSL, outputFile, settings, true)
       else
-        new LegoCGenerator(outputFile, true)
+        new LegoCGenerator(outputFile, settings, true)
     } else {
       if (settings.noLetBinding)
         new LegoScalaASTGenerator(DSL, false, outputFile, runnerClassName)

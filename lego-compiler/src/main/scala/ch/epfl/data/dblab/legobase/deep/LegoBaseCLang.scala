@@ -6,6 +6,8 @@ import sc.pardis.ir._
 import sc.pardis.types._
 import dblab.legobase.deep._
 
+import sc.pardis.types.PardisTypeImplicits._
+
 /**
  * A polymorphic embedding cake containing information related to C language
  */
@@ -25,4 +27,13 @@ trait LegoBaseCLang extends DeepDSL with CFunctions { this: Base =>
       case _                                   => super.structName(m)
     }
   }
+  def papi_start(): Rep[Unit] = PAPIStart()
+  def papi_end(): Rep[Unit] = PAPIEnd()
+}
+
+case class PAPIStart() extends FunctionNode[Unit](None, "???", Nil) {
+  override def rebuild(children: PardisFunArg*) = PAPIStart()
+}
+case class PAPIEnd() extends FunctionNode[Unit](None, "???", Nil) {
+  override def rebuild(children: PardisFunArg*) = PAPIEnd()
 }

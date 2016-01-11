@@ -89,6 +89,7 @@ class Settings(val args: List[String]) {
   def noSingletonHashMap: Boolean = hasSetting(NoSingletonHashMapSetting)
   def nameIsWithFlag: Boolean = hasSetting(OutputNameWithFlagSetting)
   def onlyLoading: Boolean = hasSetting(OnlyLoaderSetting)
+  def profile: Boolean = hasSetting(ProfileSetting)
   def chooseOptimal: Boolean = hasSetting(OptimalSetting)
   def chooseCompliant: Boolean = hasSetting(CompliantSetting)
   def targetLanguage: Language = if (hasSetting(ScalaCGSetting))
@@ -133,6 +134,7 @@ object Settings {
     NoSingletonHashMapSetting,
     OutputNameWithFlagSetting,
     OnlyLoaderSetting,
+    ProfileSetting,
     OptimalSetting,
     CompliantSetting,
     ScalaCGSetting,
@@ -286,6 +288,8 @@ case object OutputNameWithFlagSetting extends OptionSetting("name-with-flag",
   "Appends the optimization flags to the name of files")
 case object OnlyLoaderSetting extends OptionSetting("only-load",
   "Generates only the loader of a query")
+case object ProfileSetting extends OptionSetting("profile",
+  "Generates profiling information by using the PAPI tool")
 case object OptimalSetting extends OptionSetting("optimal",
   "Considers the best combiniation of optimization flags")
 case object CompliantSetting extends OptionSetting("compliant",

@@ -7,6 +7,8 @@ import sc.pardis.ir._
 import sc.pardis.prettyprinter._
 import scala.language.implicitConversions
 import sc.pardis.deep.scalalib._
+import compiler.Settings
+import deep.{ PAPIStart, PAPIEnd }
 
 /**
  * The class responsible for Scala code generation in ANF.
@@ -106,7 +108,7 @@ class LegoScalaASTGenerator(val IR: Base, override val shallow: Boolean = false,
  * definitions. For example, in the case of defining mutable variables an appropriate comment in front
  * of that variable definition.
  */
-class LegoCGenerator(val outputFileName: String, override val verbose: Boolean = true) extends CCodeGenerator with ScalaCoreCCodeGen /* with BooleanCCodeGen */ {
+class LegoCGenerator(val outputFileName: String, val settings: Settings, override val verbose: Boolean = true) extends CCodeGenerator with ScalaCoreCCodeGen /* with BooleanCCodeGen */ {
   /**
    * Generates the code for the IR of the given program
    *
@@ -116,9 +118,17 @@ class LegoCGenerator(val outputFileName: String, override val verbose: Boolean =
     generate(program, outputFileName)
   }
 
-  override def header: Document = super.header :/: doc"""#include "pardis_clib.h" """
+  override def header: Document = super.header :/: doc"""#include "pardis_clib.h" """ ::
+    {
+      if (settings.profile)
+        Document.break :: doc"""#include <papi.h>""" :/: doc"#define NUM_EVENTS 4"
+      else
+        Document.empty
+    }
 
   import sc.cscala.deep.GArrayHeaderIRs.GArrayHeaderG_array_indexObject
+
+  val BN = "\\n"
 
   /**
    * Generates the code for the given function definition node
@@ -129,6 +139,35 @@ class LegoCGenerator(val outputFileName: String, override val verbose: Boolean =
   override def functionNodeToDocument(fun: FunctionNode[_]) = fun match {
     case GArrayHeaderG_array_indexObject(array, i) =>
       doc"g_array_index($array, ${fun.tp}, $i)"
+    case PAPIStart() =>
+      doc"""
+int event[NUM_EVENTS] = {PAPI_TOT_INS, PAPI_TOT_CYC, PAPI_BR_MSP, PAPI_L1_DCM };
+long long values[NUM_EVENTS];
+
+/* Start counting events */
+if (PAPI_start_counters(event, NUM_EVENTS) != PAPI_OK) {
+    fprintf(stderr, "PAPI_start_counters - FAILED$BN");
+    exit(1);
+}"""
+    case PAPIEnd() =>
+      doc"""
+/* Read the counters */
+if (PAPI_read_counters(values, NUM_EVENTS) != PAPI_OK) {
+    fprintf(stderr, "PAPI_read_counters - FAILED$BN");
+    exit(1);
+}
+
+printf("Total instructions: %lld$BN", values[0]);
+printf("Total cycles: %lld$BN", values[1]);
+printf("Instr per cycle: %2.3f$BN", (double)values[0] / (double) values[1]);
+printf("Branches mispredicted: %lld$BN", values[2]);
+printf("L1 Cache misses: %lld$BN", values[3]);
+
+/* Stop counting events */
+if (PAPI_stop_counters(values, NUM_EVENTS) != PAPI_OK) {
+    fprintf(stderr, "PAPI_stoped_counters - FAILED$BN");
+    exit(1);
+}"""
     case _ => super.functionNodeToDocument(fun)
   }
 }
@@ -147,4 +186,5 @@ class LegoCGenerator(val outputFileName: String, override val verbose: Boolean =
  */
 class LegoCASTGenerator(val IR: Base,
                         override val outputFileName: String,
-                        override val verbose: Boolean = true) extends LegoCGenerator(outputFileName, verbose) with CASTCodeGenerator[Base]
+                        override val settings: Settings,
+                        override val verbose: Boolean = true) extends LegoCGenerator(outputFileName, settings, verbose) with CASTCodeGenerator[Base]
