@@ -38,6 +38,25 @@ class Query[T](private val underlying: List[T]) {
   @pure def sortBy[S](f: T => S)(implicit ord: Ordering[S]): Query[T] =
     new Query(underlying.sortBy(f))
 
+  // for verification purposes
+  @dontLift def isSortedBy[S](f: T => S)(implicit ord: Ordering[S]): Boolean = {
+    underlying match {
+      case Nil => true
+      case hd :: tail =>
+        var current = hd
+        var rest = tail
+        while (rest.nonEmpty) {
+          val tmp = rest.head
+          if (ord.compare(f(current), f(tmp)) > 0) {
+            return false
+          }
+          current = tmp
+          rest = rest.tail
+        }
+        true
+    }
+  }
+
   @pure def sortByReverse[S](f: T => S)(implicit ord: Ordering[S]): Query[T] =
     new Query(underlying.sortBy(f).reverse)
 
@@ -98,6 +117,56 @@ class JoinableQuery[T <: Record](private val underlying: List[T]) {
         tmpBuffer foreach { bufElem =>
           if (joinCond(bufElem, elem)) {
             res += bufElem.concatenateDynamic(elem)
+          }
+        }
+      }
+    }
+    new Query(res.toList)
+  }
+  def mergeJoin[S <: Record](q2: Query[S])(ord: (T, S) => Int)(joinCond: (T, S) => Boolean): Query[DynamicCompositeRecord[T, S]] = {
+    val res = ArrayBuffer[DynamicCompositeRecord[T, S]]()
+    val leftArr = underlying.asInstanceOf[List[Record]].toArray.asInstanceOf[Array[T]]
+    val leftSize = leftArr.length
+    var leftIndex = 0
+    def leftElem = leftArr(leftIndex)
+    val rightArr = q2.getList.asInstanceOf[List[Record]].toArray.asInstanceOf[Array[S]]
+    val rightSize = rightArr.length
+    var rightIndex = 0
+    def rightElem = rightArr(rightIndex)
+    while (leftIndex < leftSize && rightIndex < rightSize) {
+      val cmp = ord(leftElem, rightElem)
+      if (cmp < 0) {
+        leftIndex += 1
+      } else if (cmp > 0) {
+        rightIndex += 1
+      } else {
+        // assert(joinCond(leftElem, rightElem))
+        // res += leftElem.concatenateDynamic(rightElem)
+        // leftIndex += 1
+        // var hitNumber = 0
+        // rightIndex += 1
+        val le = leftElem
+        val re = rightElem
+        // leftIndex += 1
+        val leftBucket = ArrayBuffer[T]()
+        while (leftIndex < leftSize && joinCond(leftElem, re)) {
+          leftBucket += leftElem
+          leftIndex += 1
+          // hitNumber += 1
+        }
+
+        // rightIndex += 1
+        val rightBucket = ArrayBuffer[S]()
+        while (rightIndex < rightSize && joinCond(le, rightElem)) {
+          rightBucket += rightElem
+          rightIndex += 1
+          // hitNumber += 1
+        }
+        // assert(hitNumber == 2)
+        for (x1 <- leftBucket) {
+          for (x2 <- rightBucket) {
+            assert(joinCond(x1, x2))
+            res += x1.concatenateDynamic(x2)
           }
         }
       }
