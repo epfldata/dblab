@@ -43,8 +43,11 @@ class QueryTest extends FlatSpec {
     Query(b2List).isSortedBy(x => (x.j, x.d)) should be(true)
   }
 
-  // FIXME
-  // "hash join iterator" should "work in simple case" in {
-  //   hashJoinQueryIterator(aList, bList) should be(4)
-  // }
+  "hash join" should "work in simple case" in {
+    hashJoinQuery(aList, bList) should be(4)
+  }
+
+  "hash join iterator" should "work in simple case" in {
+    hashJoinQueryIterator(aList, bList) should be(4)
+  }
 }

@@ -207,25 +207,20 @@ class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryI
     def atEnd(ts: Source2) = q2.atEnd(ts) || tmpAtEnd || {
       if (iterator == null || iterator.atEnd(())) {
         var tmpSource = ts
-        val nextAndRest = q2.next(tmpSource)
-        var tmpHd = nextAndRest._1
-        var tmpRest = nextAndRest._2
         var leftElemFound = false
         while (!tmpAtEnd && !leftElemFound) {
-          tmpSource = tmpRest
           if (q2.atEnd(tmpSource)) {
             tmpAtEnd = true
-            tmpHd = null.asInstanceOf[S]
-            tmpRest = null.asInstanceOf[Source2]
           } else {
             val nextAndRest2 = q2.next(tmpSource)
-            tmpHd = nextAndRest2._1
-            tmpRest = nextAndRest2._2
+            val tmpHd = nextAndRest2._1
+            tmpSource = nextAndRest2._2
             val elem = tmpHd
             rightElem = elem
             val key = rightHash(elem)
             hm.get(key) foreach { tmpBuffer =>
-              iterator = QueryIterator(tmpBuffer).withFilter(bufElem => joinCond(bufElem, elem))
+              iterator = QueryIterator(tmpBuffer.filter(bufElem => joinCond(bufElem, elem)))
+              //QueryIterator(tmpBuffer).withFilter(bufElem => joinCond(bufElem, elem))
               if (!iterator.atEnd(())) {
                 leftElemFound = true
                 leftElem = iterator.next(())._1
@@ -288,9 +283,11 @@ case class GroupByResult[K, V](partitionedArray: Array[Array[V]], keyRevertIndex
 
 class GroupedQueryIterator[K, V, Source1](underlying: QueryIterator[V, Source1], par: V => K) {
   def getGroupByResult: GroupByResult[K, V] = {
-    val max_partitions = 50
+    // val max_partitions = 50
     // Q3
     // val max_partitions = 150000
+    // Q9
+    val max_partitions = 25 * 7
     val MAX_SIZE = max_partitions
     val keyIndex = new HashMap[K, Int]()
     val keyRevertIndex = new Array[Any](MAX_SIZE).asInstanceOf[Array[K]]
