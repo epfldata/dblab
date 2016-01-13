@@ -659,7 +659,7 @@ object Queries {
   }
 
   // adapted from http://www.qdpma.com/tpch/TPCH100_Query_plans.html
-  def Q9_functional_p2(numRuns: Int) {
+  @dontLift def Q9_functional_p2(numRuns: Int) {
     // import queryengine.monad.{ QueryIterator => Query }
     val partTable = Query(loadPart())
     val nationTable = Query(loadNation())
