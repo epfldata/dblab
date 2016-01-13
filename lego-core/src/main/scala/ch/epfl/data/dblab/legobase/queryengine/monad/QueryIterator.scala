@@ -252,55 +252,59 @@ class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryI
       var ts2: Source2 = _
       var nextJoinElem: DynamicCompositeRecord[T, S] = _
       var iterator: SetIterator[DynamicCompositeRecord[T, S]] = null
-      // var tmpAtEnd = false // keeps if the two sources are at the end or not
+      var tmpAtEnd = false // keeps if the two sources are at the end or not
       def atEnd(ts: (Source1, Source2)) = {
         ts1 = ts._1
         ts2 = ts._2
-        q1.atEnd(ts1) || q2.atEnd(ts2) || {
+        tmpAtEnd || {
           if (iterator == null || iterator.atEnd(())) {
             var found = false
-            while (!q1.atEnd(ts1) && !q2.atEnd(ts2) && !found) {
-              val ((ne1, ns1), (ne2, ns2)) = q1.next(ts1) -> q2.next(ts2)
-              val cmp = ord(ne1, ne2)
-              if (cmp < 0) {
-                ts1 = ns1
-              } else if (cmp > 0) {
-                ts2 = ns2
+            while (!tmpAtEnd && !found) {
+              if (q1.atEnd(ts1) || q2.atEnd(ts2)) {
+                tmpAtEnd = true
               } else {
-                val le = ne1
-                val re = ne2
-                // leftIndex += 1
-                val leftBucket = ArrayBuffer[T]()
-                var leftElem = le
-                while (!q1.atEnd(ts1) && joinCond(leftElem, re)) {
-                  leftBucket += leftElem
-                  val (_1, _2) = q1.next(ts1)
-                  leftElem = _1
-                  ts1 = _2
-                  // hitNumber += 1
-                }
-
-                // rightIndex += 1
-                val rightBucket = ArrayBuffer[S]()
-                var rightElem = re
-                while (!q2.atEnd(ts2) && joinCond(le, rightElem)) {
-                  rightBucket += rightElem
-                  val (_1, _2) = q2.next(ts2)
-                  rightElem = _1
-                  ts2 = _2
-                  // hitNumber += 1
-                }
-                // assert(hitNumber == 2)
-                val res = scala.collection.mutable.Set[DynamicCompositeRecord[T, S]]()
-                for (x1 <- leftBucket) {
-                  for (x2 <- rightBucket) {
-                    assert(joinCond(x1, x2))
-                    res += x1.concatenateDynamic(x2)
+                val ((ne1, ns1), (ne2, ns2)) = q1.next(ts1) -> q2.next(ts2)
+                val cmp = ord(ne1, ne2)
+                if (cmp < 0) {
+                  ts1 = ns1
+                } else if (cmp > 0) {
+                  ts2 = ns2
+                } else {
+                  val le = ne1
+                  val re = ne2
+                  // leftIndex += 1
+                  val leftBucket = ArrayBuffer[T]()
+                  var leftElem = le
+                  while (!q1.atEnd(ts1) && joinCond(leftElem, re)) {
+                    leftBucket += leftElem
+                    val (_1, _2) = q1.next(ts1)
+                    leftElem = _1
+                    ts1 = _2
+                    // hitNumber += 1
                   }
+
+                  // rightIndex += 1
+                  val rightBucket = ArrayBuffer[S]()
+                  var rightElem = re
+                  while (!q2.atEnd(ts2) && joinCond(le, rightElem)) {
+                    rightBucket += rightElem
+                    val (_1, _2) = q2.next(ts2)
+                    rightElem = _1
+                    ts2 = _2
+                    // hitNumber += 1
+                  }
+                  // assert(hitNumber == 2)
+                  val res = scala.collection.mutable.Set[DynamicCompositeRecord[T, S]]()
+                  for (x1 <- leftBucket) {
+                    for (x2 <- rightBucket) {
+                      assert(joinCond(x1, x2))
+                      res += x1.concatenateDynamic(x2)
+                    }
+                  }
+                  found = true
+                  iterator = QueryIterator(res)
+                  nextJoinElem = iterator.next(())._1
                 }
-                found = true
-                iterator = QueryIterator(res)
-                nextJoinElem = iterator.next(())._1
               }
             }
             !found
