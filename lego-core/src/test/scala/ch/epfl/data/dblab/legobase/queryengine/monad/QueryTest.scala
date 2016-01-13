@@ -20,6 +20,7 @@ class QueryTest extends FlatSpec {
 
   def mergeJoinQueryIterator(al: List[A], bl: List[B]): Double =
     QueryIterator(al.toArray).mergeJoin(QueryIterator(bl.toArray))((x, y) => x.i - y.j)((x, y) => x.i == y.j).map(_.d[Double]).sum
+  // { QueryIterator(al.toArray).mergeJoin(QueryIterator(bl.toArray))((x, y) => x.i - y.j)((x, y) => x.i == y.j).foreach(println); println(">>>"); 3 }
 
   def hashJoinQuery(al: List[A], bl: List[B]): Double =
     Query(al).hashJoin(Query(bl))(_.i)(_.j)((x, y) => x.i == y.j).map(_.d[Double]).sum

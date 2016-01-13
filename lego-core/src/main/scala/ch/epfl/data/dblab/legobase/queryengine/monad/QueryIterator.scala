@@ -272,27 +272,47 @@ class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryI
                 } else {
                   val le = ne1
                   val re = ne2
+                  ts1 = ns1
+                  ts2 = ns2
                   // leftIndex += 1
                   val leftBucket = ArrayBuffer[T]()
                   var leftElem = le
-                  while (!q1.atEnd(ts1) && joinCond(leftElem, re)) {
+                  var leftEnd = false
+                  var ots1 = ts1
+                  while (!leftEnd && joinCond(leftElem, re)) {
                     leftBucket += leftElem
-                    val (_1, _2) = q1.next(ts1)
-                    leftElem = _1
-                    ts1 = _2
+                    if (q1.atEnd(ts1)) {
+                      leftEnd = true
+                    } else {
+                      val (_1, _2) = q1.next(ts1)
+                      leftElem = _1
+                      ots1 = ts1
+                      ts1 = _2
+                    }
                     // hitNumber += 1
                   }
+                  ts1 = ots1
+                  // println(s"left: $leftBucket, leftElem: $leftElem")
 
                   // rightIndex += 1
                   val rightBucket = ArrayBuffer[S]()
                   var rightElem = re
-                  while (!q2.atEnd(ts2) && joinCond(le, rightElem)) {
+                  var rightEnd = false
+                  var ots2 = ts2
+                  while (!rightEnd && joinCond(le, rightElem)) {
                     rightBucket += rightElem
-                    val (_1, _2) = q2.next(ts2)
-                    rightElem = _1
-                    ts2 = _2
+                    if (q2.atEnd(ts2)) {
+                      rightEnd = true
+                    } else {
+                      val (_1, _2) = q2.next(ts2)
+                      rightElem = _1
+                      ots2 = ts2
+                      ts2 = _2
+                    }
                     // hitNumber += 1
                   }
+                  ts2 = ots2
+                  // println(s"right: $rightBucket")
                   // assert(hitNumber == 2)
                   val res = scala.collection.mutable.Set[DynamicCompositeRecord[T, S]]()
                   for (x1 <- leftBucket) {
@@ -302,6 +322,7 @@ class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryI
                     }
                   }
                   found = true
+                  // println(s"res: $res")
                   iterator = QueryIterator(res)
                   nextJoinElem = iterator.next(())._1
                 }

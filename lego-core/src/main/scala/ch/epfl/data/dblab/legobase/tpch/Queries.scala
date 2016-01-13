@@ -625,7 +625,7 @@ object Queries {
   }
 
   def Q9_functional(numRuns: Int) {
-    import queryengine.monad.{ QueryIterator => Query }
+    // import queryengine.monad.{ QueryIterator => Query }
     val partTable = Query(loadPart())
     val nationTable = Query(loadNation())
     val ordersTable = Query(loadOrders())
