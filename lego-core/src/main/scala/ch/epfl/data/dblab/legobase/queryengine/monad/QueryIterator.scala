@@ -198,13 +198,14 @@ class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryI
     for (elem <- underlying) {
       hm.addBinding(leftHash(elem), elem)
     }
+
     var nextSource: Source2 = null.asInstanceOf[Source2]
     var tmpAtEnd = false
     var iterator: SetIterator[T] = null
     var leftElem = null.asInstanceOf[T]
     var rightElem = null.asInstanceOf[S]
 
-    def atEnd(ts: Source2) = q2.atEnd(ts) || tmpAtEnd || {
+    def atEnd(ts: Source2) = /*q2.atEnd(ts) || */ tmpAtEnd || {
       if (iterator == null || iterator.atEnd(())) {
         var tmpSource = ts
         var leftElemFound = false
@@ -221,6 +222,7 @@ class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryI
             hm.get(key) foreach { tmpBuffer =>
               iterator = QueryIterator(tmpBuffer.filter(bufElem => joinCond(bufElem, elem)))
               //QueryIterator(tmpBuffer).withFilter(bufElem => joinCond(bufElem, elem))
+              // println(s"set iterator $iterator")
               if (!iterator.atEnd(())) {
                 leftElemFound = true
                 leftElem = iterator.next(())._1
@@ -228,9 +230,11 @@ class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryI
             }
           }
         }
+        // println(s"got left elem $leftElem")
         nextSource = tmpSource
         tmpAtEnd
       } else {
+        // println(s"got left elem next $leftElem")
         leftElem = iterator.next(())._1
         false
       }

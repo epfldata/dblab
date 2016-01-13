@@ -50,4 +50,10 @@ class QueryTest extends FlatSpec {
   "hash join iterator" should "work in simple case" in {
     hashJoinQueryIterator(aList, bList) should be(4)
   }
+
+  val b3List = List(B(1, 1.3))
+
+  "hash join iterator" should "work in a bit more complicated case" in {
+    hashJoinQueryIterator(a2List, b3List) should be(2.6)
+  }
 }

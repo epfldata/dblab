@@ -62,7 +62,7 @@ object LegoBuild extends Build {
   lazy val lego_core       = Project(id = "lego-core",        base = file("lego-core"),
    settings = defaults ++ purgatorySettings ++  Seq(
      name := "lego-core",
-     scalacOptions ++= Seq("-optimize"),
+     scalacOptions ++= Seq("-optimize", "–nowarn"),
      libraryDependencies += "ch.epfl.data" % "sc-pardis-library_2.11" % sc_version))
   lazy val legocompiler = Project(id = "lego-compiler", base = file("lego-compiler"), settings = defaults ++ Seq(name := "lego-compiler",
       libraryDependencies ++= Seq(//"ch.epfl.lamp" % "scala-yinyang_2.11" % "0.2.0-SNAPSHOT",
