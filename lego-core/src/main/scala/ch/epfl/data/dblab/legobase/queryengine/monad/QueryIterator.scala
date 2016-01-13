@@ -139,11 +139,12 @@ abstract class QueryIterator[T, Source] { self =>
         rows += 1
       }
     } else {
-      for (e <- this) {
-        if (rows < limit) {
-          printFunc(e)
-          rows += 1
-        }
+      var s = source
+      while (!atEnd(s) && rows < limit) {
+        val n = next(s)
+        printFunc(n._1)
+        s = n._2
+        rows += 1
       }
     }
     printf("(%d rows)\n", rows)
@@ -241,6 +242,78 @@ class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryI
     }
     def next(ts: Source2) = leftElem.concatenateDynamic(rightElem) -> nextSource
   }
+
+  def mergeJoin[S <: Record, Source2](q2: QueryIterator[S, Source2])(
+    ord: (T, S) => Int)(joinCond: (T, S) => Boolean): QueryIterator[DynamicCompositeRecord[T, S], (Source1, Source2)] =
+    new QueryIterator[DynamicCompositeRecord[T, S], (Source1, Source2)] {
+      val q1 = underlying
+      def source = (q1.source, q2.source)
+      var ts1: Source1 = _
+      var ts2: Source2 = _
+      var nextJoinElem: DynamicCompositeRecord[T, S] = _
+      var iterator: SetIterator[DynamicCompositeRecord[T, S]] = null
+      // var tmpAtEnd = false // keeps if the two sources are at the end or not
+      def atEnd(ts: (Source1, Source2)) = {
+        ts1 = ts._1
+        ts2 = ts._2
+        q1.atEnd(ts1) || q2.atEnd(ts2) || {
+          if (iterator == null || iterator.atEnd(())) {
+            var found = false
+            while (!q1.atEnd(ts1) && !q2.atEnd(ts2) && !found) {
+              val ((ne1, ns1), (ne2, ns2)) = q1.next(ts1) -> q2.next(ts2)
+              val cmp = ord(ne1, ne2)
+              if (cmp < 0) {
+                ts1 = ns1
+              } else if (cmp > 0) {
+                ts2 = ns2
+              } else {
+                val le = ne1
+                val re = ne2
+                // leftIndex += 1
+                val leftBucket = ArrayBuffer[T]()
+                var leftElem = le
+                while (!q1.atEnd(ts1) && joinCond(leftElem, re)) {
+                  leftBucket += leftElem
+                  val (_1, _2) = q1.next(ts1)
+                  leftElem = _1
+                  ts1 = _2
+                  // hitNumber += 1
+                }
+
+                // rightIndex += 1
+                val rightBucket = ArrayBuffer[S]()
+                var rightElem = re
+                while (!q2.atEnd(ts2) && joinCond(le, rightElem)) {
+                  rightBucket += rightElem
+                  val (_1, _2) = q2.next(ts2)
+                  rightElem = _1
+                  ts2 = _2
+                  // hitNumber += 1
+                }
+                // assert(hitNumber == 2)
+                val res = scala.collection.mutable.Set[DynamicCompositeRecord[T, S]]()
+                for (x1 <- leftBucket) {
+                  for (x2 <- rightBucket) {
+                    assert(joinCond(x1, x2))
+                    res += x1.concatenateDynamic(x2)
+                  }
+                }
+                found = true
+                iterator = QueryIterator(res)
+                nextJoinElem = iterator.next(())._1
+              }
+            }
+            !found
+          } else {
+            nextJoinElem = iterator.next(())._1
+            false
+          }
+        }
+      }
+      def next(ts: (Source1, Source2)) = {
+        nextJoinElem -> (ts1 -> ts2)
+      }
+    }
 
   def leftHashSemiJoin[S <: Record, R, Source2](q2: QueryIterator[S, Source2])(leftHash: T => R)(rightHash: S => R)(
     joinCond: (T, S) => Boolean): QueryIterator[T, Source1] = new QueryIterator[T, Source1] {
