@@ -67,6 +67,7 @@ object Queries {
   }
 
   def Q1_functional(numRuns: Int) {
+    // import queryengine.monad.{ QueryIterator => Query }
     // def Q1(numRuns: Int) {
     val lineitemTable = Query(loadLineitem())
     for (i <- 0 until numRuns) {
@@ -164,6 +165,7 @@ object Queries {
   }
 
   def Q2_functional(numRuns: Int) {
+    // import queryengine.monad.{ QueryIterator => Query }
     val partTable = Query(loadPart())
     val partsuppTable = Query(loadPartsupp())
     val nationTable = Query(loadNation())
@@ -265,6 +267,7 @@ object Queries {
   }
 
   def Q3_functional(numRuns: Int) {
+    // import queryengine.monad.{ QueryIterator => Query }
     val lineitemTable = Query(loadLineitem())
     val ordersTable = Query(loadOrders())
     val customerTable = Query(loadCustomer())
@@ -318,6 +321,7 @@ object Queries {
   }
 
   def Q4_functional(numRuns: Int) {
+    // import queryengine.monad.{ QueryIterator => Query }
     val lineitemTable = Query(loadLineitem())
     val ordersTable = Query(loadOrders())
     for (i <- 0 until numRuns) {
@@ -385,6 +389,7 @@ object Queries {
   }
 
   def Q5_functional(numRuns: Int) {
+    // import queryengine.monad.{ QueryIterator => Query }
     val nationTable = Query(loadNation())
     val regionTable = Query(loadRegion())
     val supplierTable = Query(loadSupplier())
@@ -620,6 +625,42 @@ object Queries {
   }
 
   def Q9_functional(numRuns: Int) {
+    import queryengine.monad.{ QueryIterator => Query }
+    val partTable = Query(loadPart())
+    val nationTable = Query(loadNation())
+    val ordersTable = Query(loadOrders())
+    val partsuppTable = Query(loadPartsupp())
+    val supplierTable = Query(loadSupplier())
+    val lineitemTable = Query(loadLineitem())
+    // val li = loadLineitem()
+    // val lineitemTable = Query(Array(li(78821), li(98999)))
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val ghost = parseString("ghost")
+        val soNation = nationTable
+        val soSupplier = supplierTable
+        val soLineitem = lineitemTable
+        val soPart = partTable.filter(x => x.P_NAME.containsSlice(ghost))
+        val soPartsupp = partsuppTable
+        val soOrders = ordersTable
+        val hj1 = soLineitem.hashJoin(soPart)(x => x.L_PARTKEY)(x => x.P_PARTKEY)((x, y) => x.L_PARTKEY == y.P_PARTKEY)
+        val hj2 = hj1.hashJoin(soSupplier)(x => x.L_SUPPKEY[Int])(x => x.S_SUPPKEY)((x, y) => x.L_SUPPKEY[Int] == y.S_SUPPKEY)
+        val hj3 = hj2.hashJoin(soNation)(x => x.S_NATIONKEY[Int])(x => x.N_NATIONKEY)((x, y) => x.S_NATIONKEY[Int] == y.N_NATIONKEY)
+        // printf("%d!", hj1.count)
+        // hj1.printRows(kv => printf("%s\n", kv.toString), -1)
+        val hj4 = soPartsupp.hashJoin(hj3)(x => x.PS_PARTKEY)(x => x.L_PARTKEY[Int])((x, y) => x.PS_PARTKEY == y.L_PARTKEY[Int] && x.PS_SUPPKEY == y.L_SUPPKEY[Int])
+        val hj5 = hj4.hashJoin(soOrders)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)((x, y) => x.L_ORDERKEY[Int] == y.O_ORDERKEY)
+        val aggOp = hj5.groupBy(x => new Q9GRPRecord(x.N_NAME[LBString], dateToYear(x.O_ORDERDATE[Int]))).mapValues(_.map(t =>
+          ((t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))) - ((1.0 * t.PS_SUPPLYCOST[Double]) * t.L_QUANTITY[Double])).sum)
+        val sortOp = aggOp.sortBy(x => (x._1.NATION.string, -x._1.O_YEAR))
+        sortOp.printRows(kv => printf("%s|%d|%.4f\n", kv._1.NATION.string, kv._1.O_YEAR, kv._2), -1)
+      })
+    }
+  }
+
+  // adapted from http://www.qdpma.com/tpch/TPCH100_Query_plans.html
+  def Q9_functional_p2(numRuns: Int) {
+    // import queryengine.monad.{ QueryIterator => Query }
     val partTable = Query(loadPart())
     val nationTable = Query(loadNation())
     val ordersTable = Query(loadOrders())
@@ -638,9 +679,25 @@ object Queries {
         val hj1 = soLineitem.hashJoin(soPart)(x => x.L_PARTKEY)(x => x.P_PARTKEY)((x, y) => x.L_PARTKEY == y.P_PARTKEY)
         val hj2 = hj1.hashJoin(soSupplier)(x => x.L_SUPPKEY[Int])(x => x.S_SUPPKEY)((x, y) => x.L_SUPPKEY[Int] == y.S_SUPPKEY)
         val hj3 = hj2.hashJoin(soNation)(x => x.S_NATIONKEY[Int])(x => x.N_NATIONKEY)((x, y) => x.S_NATIONKEY[Int] == y.N_NATIONKEY)
-        val hj4 = soPartsupp.hashJoin(hj3)(x => x.PS_PARTKEY)(x => x.L_PARTKEY[Int])((x, y) => x.PS_PARTKEY == y.L_PARTKEY[Int] && x.PS_SUPPKEY == y.L_SUPPKEY[Int])
-        val hj5 = hj4.hashJoin(soOrders)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)((x, y) => x.L_ORDERKEY[Int] == y.O_ORDERKEY)
-        val aggOp = hj5.groupBy(x => new Q9GRPRecord(x.N_NAME[LBString], dateToYear(x.O_ORDERDATE[Int]))).mapValues(_.map(t =>
+        val shj3 = hj3.sortBy(x => x.L_ORDERKEY[Int])
+        val mj4 = shj3.mergeJoin(soOrders)((x, y) => x.L_ORDERKEY[Int] - y.O_ORDERKEY)((x, y) => x.L_ORDERKEY[Int] == y.O_ORDERKEY)
+        val smj4 = mj4.sortBy(x => (x.L_PARTKEY[Int], x.L_SUPPKEY[Int]))
+        // println(mj4.count)
+        // println(smj4.count)
+        // println(soPartsupp.isSortedBy(x => (x.PS_PARTKEY, x.PS_SUPPKEY)))
+        val sortedPartsupp = soPartsupp.sortBy(x => (x.PS_PARTKEY, x.PS_SUPPKEY))
+        // println(sortedPartsupp.isSortedBy(x => (x.PS_PARTKEY, x.PS_SUPPKEY)))
+        val mj5 = smj4.mergeJoin(sortedPartsupp)((x, y) => {
+          val pk = x.L_PARTKEY[Int] - y.PS_PARTKEY
+          if (pk == 0)
+            x.L_SUPPKEY[Int] - y.PS_SUPPKEY
+          else
+            pk
+        })((x, y) => x.L_PARTKEY[Int] == y.PS_PARTKEY && y.PS_SUPPKEY == x.L_SUPPKEY[Int])
+        // val hj5 = smj4.hashJoin(soPartsupp)(_.L_PARTKEY[Int])(_.PS_PARTKEY)((x, y) => x.L_PARTKEY[Int] == y.PS_PARTKEY && y.PS_SUPPKEY == x.L_SUPPKEY[Int])
+        // println(mj5.count)
+        // println(hj5.count)
+        val aggOp = mj5.groupBy(x => new Q9GRPRecord(x.N_NAME[LBString], dateToYear(x.O_ORDERDATE[Int]))).mapValues(_.map(t =>
           ((t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))) - ((1.0 * t.PS_SUPPLYCOST[Double]) * t.L_QUANTITY[Double])).sum)
         val sortOp = aggOp.sortBy(x => (x._1.NATION.string, -x._1.O_YEAR))
         sortOp.printRows(kv => printf("%s|%d|%.4f\n", kv._1.NATION.string, kv._1.O_YEAR, kv._2), -1)
@@ -904,6 +961,7 @@ object Queries {
   }
 
   def Q14_functional(numRuns: Int) {
+    // import queryengine.monad.{ QueryIterator => Query }
     val lineitemTable = Query(loadLineitem())
     val partTable = Query(loadPart())
     for (i <- 0 until numRuns) {
