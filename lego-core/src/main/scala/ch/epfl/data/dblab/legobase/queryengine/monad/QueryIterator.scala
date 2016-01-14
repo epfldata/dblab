@@ -89,11 +89,21 @@ abstract class QueryIterator[T, Source] { self =>
     val (treeSet, size) = {
       val treeSet = new TreeSet()(
         new Ordering[T] {
-          def compare(o1: T, o2: T) = ord.compare(f(o1), f(o2))
+          def compare(o1: T, o2: T) = {
+            val res = ord.compare(f(o1), f(o2))
+            if (res == 0) {
+              -1
+            } else {
+              res
+            }
+          }
         })
+      // var count = 0
       self.foreach((elem: T) => {
         treeSet += elem
+        // count += 1
       })
+      // println(count)
       (treeSet, treeSet.size)
     }
 
@@ -101,7 +111,7 @@ abstract class QueryIterator[T, Source] { self =>
 
     // var lastIndex = -1
     // var lastElem: T = _
-    println(size)
+    // println(size)
 
     def atEnd(s: Int): Boolean = s >= size
     def next(s: Int): (T, Int) = {
@@ -160,7 +170,13 @@ abstract class QueryIterator[T, Source] { self =>
     printf("(%d rows)\n", rows)
   }
 
-  // @pure def getList: List[T] = ???
+  @pure def getList: List[T] = {
+    var res = ArrayBuffer[T]()
+    for (e <- this) {
+      res += e
+    }
+    res.toList
+  }
 }
 
 object QueryIterator {
@@ -362,7 +378,7 @@ class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryI
                     // hitNumber += 1
                   }
                   // ts1 = ots1
-                  println(s"left: $leftBucket, leftElem: $leftElem")
+                  // println(s"left: $leftBucket, leftElem: $leftElem")
 
                   // rightIndex += 1
                   val rightBucket = ArrayBuffer[S]()
@@ -384,7 +400,7 @@ class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryI
                     // hitNumber += 1
                   }
                   // ts2 = ots2
-                  println(s"right: $rightBucket, rightElem: $rightElem")
+                  // println(s"right: $rightBucket, rightElem: $rightElem")
                   // assert(hitNumber == 2)
                   val res = scala.collection.mutable.Set[DynamicCompositeRecord[T, S]]()
                   for (x1 <- leftBucket) {

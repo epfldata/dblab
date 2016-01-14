@@ -54,6 +54,18 @@ class QueryTest extends FlatSpec {
     mergeJoinQueryIterator(a2List, b2List) should be(6)
   }
 
+  val nonSortedList = List(A(1, "one"), A(3, "three"), A(2, "two-1"), A(2, "two-2"))
+
+  "sort by iterator" should "work in distinct case" in {
+    QueryIterator(nonSortedList.dropRight(1).toArray).sortBy(_.i).getList should be
+    (List(A(1, "one"), A(2, "two-1"), A(3, "three")))
+  }
+
+  "sort by iterator" should "work in duplicated case" in {
+    QueryIterator(nonSortedList.toArray).sortBy(_.i).getList should be
+    (List(A(1, "one"), A(2, "two-1"), A(2, "two-2"), A(3, "three")))
+  }
+
   "is sorted by" should "work for sorted list" in {
     Query(aList).isSortedBy(_.i) should be(true)
     Query(b2List).isSortedBy(x => (x.j, x.d)) should be(true)
