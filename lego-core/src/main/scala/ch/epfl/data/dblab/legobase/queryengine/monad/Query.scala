@@ -48,6 +48,7 @@ class Query[T](private val underlying: List[T]) {
         while (rest.nonEmpty) {
           val tmp = rest.head
           if (ord.compare(f(current), f(tmp)) > 0) {
+            // println(s"caused by $current and $tmp")
             return false
           }
           current = tmp

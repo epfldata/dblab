@@ -682,11 +682,14 @@ object Queries {
         val shj3 = hj3.sortBy(x => x.L_ORDERKEY[Int])
         val mj4 = shj3.mergeJoin(soOrders)((x, y) => x.L_ORDERKEY[Int] - y.O_ORDERKEY)((x, y) => x.L_ORDERKEY[Int] == y.O_ORDERKEY)
         val smj4 = mj4.sortBy(x => (x.L_PARTKEY[Int], x.L_SUPPKEY[Int]))
-        // println(mj4.count)
         // println(smj4.count)
+        // shj3.printRows(x => println(x), -1)
+        // println(hj1.count)
         // println(soPartsupp.isSortedBy(x => (x.PS_PARTKEY, x.PS_SUPPKEY)))
         val sortedPartsupp = soPartsupp.sortBy(x => (x.PS_PARTKEY, x.PS_SUPPKEY))
-        // println(sortedPartsupp.isSortedBy(x => (x.PS_PARTKEY, x.PS_SUPPKEY)))
+        // println(sortedPartsupp.count)
+        // println(soPartsupp.isSortedBy(x => (x.PS_PARTKEY, x.PS_SUPPKEY)))
+        // println(soPartsupp.getList)
         val mj5 = smj4.mergeJoin(sortedPartsupp)((x, y) => {
           val pk = x.L_PARTKEY[Int] - y.PS_PARTKEY
           if (pk == 0)
