@@ -680,9 +680,9 @@ object Queries {
         val hj2 = hj1.hashJoin(soSupplier)(x => x.L_SUPPKEY[Int])(x => x.S_SUPPKEY)((x, y) => x.L_SUPPKEY[Int] == y.S_SUPPKEY)
         val hj3 = hj2.hashJoin(soNation)(x => x.S_NATIONKEY[Int])(x => x.N_NATIONKEY)((x, y) => x.S_NATIONKEY[Int] == y.N_NATIONKEY)
         val shj3 = hj3.sortBy(x => x.L_ORDERKEY[Int])
-        val mj4 = shj3.mergeJoin(soOrders)((x, y) => x.L_ORDERKEY[Int] - y.O_ORDERKEY)((x, y) => x.L_ORDERKEY[Int] == y.O_ORDERKEY)
+        val mj4 = soOrders.mergeJoin(shj3)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY[Int])((x, y) => x.O_ORDERKEY == y.L_ORDERKEY[Int])
         val smj4 = mj4.sortBy(x => (x.L_PARTKEY[Int], x.L_SUPPKEY[Int]))
-        // println(smj4.count)
+        // println(mj4.count)
         // shj3.printRows(x => println(x), -1)
         // println(hj1.count)
         // println(soPartsupp.isSortedBy(x => (x.PS_PARTKEY, x.PS_SUPPKEY)))
@@ -690,13 +690,13 @@ object Queries {
         // println(sortedPartsupp.count)
         // println(soPartsupp.isSortedBy(x => (x.PS_PARTKEY, x.PS_SUPPKEY)))
         // println(soPartsupp.getList)
-        val mj5 = smj4.mergeJoin(sortedPartsupp)((x, y) => {
-          val pk = x.L_PARTKEY[Int] - y.PS_PARTKEY
+        val mj5 = sortedPartsupp.mergeJoin(smj4)((x, y) => {
+          val pk = x.PS_PARTKEY - y.L_PARTKEY[Int]
           if (pk == 0)
-            x.L_SUPPKEY[Int] - y.PS_SUPPKEY
+            x.PS_SUPPKEY - y.L_SUPPKEY[Int]
           else
             pk
-        })((x, y) => x.L_PARTKEY[Int] == y.PS_PARTKEY && y.PS_SUPPKEY == x.L_SUPPKEY[Int])
+        })((x, y) => x.PS_PARTKEY == y.L_PARTKEY[Int] && x.PS_SUPPKEY == y.L_SUPPKEY[Int])
         // val hj5 = smj4.hashJoin(soPartsupp)(_.L_PARTKEY[Int])(_.PS_PARTKEY)((x, y) => x.L_PARTKEY[Int] == y.PS_PARTKEY && y.PS_SUPPKEY == x.L_SUPPKEY[Int])
         // println(mj5.count)
         // println(hj5.count)

@@ -124,6 +124,8 @@ class JoinableQuery[T <: Record](private val underlying: List[T]) {
     }
     new Query(res.toList)
   }
+
+  // Works only in the case of 1-N relation
   def mergeJoin[S <: Record](q2: Query[S])(ord: (T, S) => Int)(joinCond: (T, S) => Boolean): Query[DynamicCompositeRecord[T, S]] = {
     val res = ArrayBuffer[DynamicCompositeRecord[T, S]]()
     val leftArr = underlying.asInstanceOf[List[Record]].toArray.asInstanceOf[Array[T]]
@@ -141,35 +143,36 @@ class JoinableQuery[T <: Record](private val underlying: List[T]) {
       } else if (cmp > 0) {
         rightIndex += 1
       } else {
-        // assert(joinCond(leftElem, rightElem))
-        // res += leftElem.concatenateDynamic(rightElem)
-        // leftIndex += 1
-        // var hitNumber = 0
-        // rightIndex += 1
-        val le = leftElem
-        val re = rightElem
-        // leftIndex += 1
-        val leftBucket = ArrayBuffer[T]()
-        while (leftIndex < leftSize && joinCond(leftElem, re)) {
-          leftBucket += leftElem
-          leftIndex += 1
-          // hitNumber += 1
-        }
+        assert(joinCond(leftElem, rightElem))
+        // println(s"here! $leftElem & $rightElem")
+        res += leftElem.concatenateDynamic(rightElem)
+        // // leftIndex += 1
+        // // var hitNumber = 0
+        rightIndex += 1
+        // val le = leftElem
+        // val re = rightElem
+        // // leftIndex += 1
+        // val leftBucket = ArrayBuffer[T]()
+        // while (leftIndex < leftSize && joinCond(leftElem, re)) {
+        //   leftBucket += leftElem
+        //   leftIndex += 1
+        //   // hitNumber += 1
+        // }
 
-        // rightIndex += 1
-        val rightBucket = ArrayBuffer[S]()
-        while (rightIndex < rightSize && joinCond(le, rightElem)) {
-          rightBucket += rightElem
-          rightIndex += 1
-          // hitNumber += 1
-        }
-        // assert(hitNumber == 2)
-        for (x1 <- leftBucket) {
-          for (x2 <- rightBucket) {
-            assert(joinCond(x1, x2))
-            res += x1.concatenateDynamic(x2)
-          }
-        }
+        // // rightIndex += 1
+        // val rightBucket = ArrayBuffer[S]()
+        // while (rightIndex < rightSize && joinCond(le, rightElem)) {
+        //   rightBucket += rightElem
+        //   rightIndex += 1
+        //   // hitNumber += 1
+        // }
+        // // assert(hitNumber == 2)
+        // for (x1 <- leftBucket) {
+        //   for (x2 <- rightBucket) {
+        //     assert(joinCond(x1, x2))
+        //     res += x1.concatenateDynamic(x2)
+        //   }
+        // }
       }
     }
     new Query(res.toList)
