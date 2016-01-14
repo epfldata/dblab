@@ -99,20 +99,21 @@ abstract class QueryIterator[T, Source] { self =>
 
     def source = 0
 
-    var lastIndex = -1
-    var lastElem: T = _
+    // var lastIndex = -1
+    // var lastElem: T = _
+    println(size)
 
     def atEnd(s: Int): Boolean = s >= size
     def next(s: Int): (T, Int) = {
-      if (lastIndex != s) {
-        val elem = treeSet.head
-        treeSet -= elem
-        lastElem = elem
-        lastIndex = s
-        Tuple2(elem, s + 1)
-      } else {
-        Tuple2(lastElem, s + 1)
-      }
+      // if (lastIndex != s) {
+      val elem = treeSet.head
+      treeSet -= elem
+      // lastElem = elem
+      // lastIndex = s
+      Tuple2(elem, s + 1)
+      // } else {
+      //   Tuple2(lastElem, s + 1)
+      // }
     }
   }
 
