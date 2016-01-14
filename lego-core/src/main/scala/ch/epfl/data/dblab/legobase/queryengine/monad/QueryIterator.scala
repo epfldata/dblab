@@ -91,7 +91,7 @@ abstract class QueryIterator[T, Source] { self =>
         new Ordering[T] {
           def compare(o1: T, o2: T) = {
             val res = ord.compare(f(o1), f(o2))
-            if (res == 0) {
+            if (res == 0 && o1 != o2) {
               -1
             } else {
               res
