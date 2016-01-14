@@ -259,69 +259,131 @@ class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryI
       def source = (q1.source, q2.source)
       var ts1: Source1 = _
       var ts2: Source2 = _
+      var elem1: T = _
+      var elem2: S = _
+      var leftEnd: Boolean = false
+      var rightEnd: Boolean = false
       var nextJoinElem: DynamicCompositeRecord[T, S] = _
       var iterator: SetIterator[DynamicCompositeRecord[T, S]] = null
       var tmpAtEnd = false // keeps if the two sources are at the end or not
+      def proceedLeft(): Unit = {
+        // if (elem1 == null) {
+        //   ts1 = q1.source
+        //   q1.atEnd(ts1)
+        // }
+        // val (ne1, ns1) = q1.next(ts1)
+        // elem1 = ne1
+        // ts1 = ns1
+        // if (q1.atEnd(ts1)) {
+        //   leftEnd = true
+        // }
+        // if (elem1 == null) {
+        //   ts1 = q1.source
+
+        // }
+        if (q1.atEnd(ts1)) {
+          leftEnd = true
+        } else {
+          val (ne1, ns1) = q1.next(ts1)
+          elem1 = ne1
+          ts1 = ns1
+        }
+      }
+      def proceedRight(): Unit = {
+        // if (elem2 == null) {
+        //   ts2 = q2.source
+        //   q2.atEnd(ts2)
+        // }
+        // val (ne2, ns2) = q2.next(ts2)
+        // elem2 = ne2
+        // ts2 = ns2
+        // if (q2.atEnd(ts2)) {
+        //   rightEnd = true
+        // }
+        // if (elem2 == null) {
+        //   ts2 = q2.source
+        // }
+        if (q2.atEnd(ts2)) {
+          rightEnd = true
+        } else {
+          val (ne2, ns2) = q2.next(ts2)
+          elem2 = ne2
+          ts2 = ns2
+        }
+      }
       def atEnd(ts: (Source1, Source2)) = {
-        ts1 = ts._1
-        ts2 = ts._2
+        // ts1 = ts._1
+        // ts2 = ts._2
         tmpAtEnd || {
           if (iterator == null || iterator.atEnd(())) {
+            if (elem1 == null && elem2 == null) {
+              ts1 = q1.source
+              ts2 = q2.source
+              proceedLeft()
+              proceedRight()
+            }
             var found = false
             while (!tmpAtEnd && !found) {
-              if (q1.atEnd(ts1) || q2.atEnd(ts2)) {
+              if (leftEnd || rightEnd) {
                 tmpAtEnd = true
               } else {
-                val ((ne1, ns1), (ne2, ns2)) = q1.next(ts1) -> q2.next(ts2)
+                // val ((ne1, ns1), (ne2, ns2)) = q1.next(ts1) -> q2.next(ts2)
+                val (ne1, ne2) = elem1 -> elem2
                 val cmp = ord(ne1, ne2)
                 if (cmp < 0) {
-                  ts1 = ns1
+                  // ts1 = ns1
+                  proceedLeft()
                 } else if (cmp > 0) {
-                  ts2 = ns2
+                  // ts2 = ns2
+                  proceedRight()
                 } else {
                   val le = ne1
                   val re = ne2
-                  ts1 = ns1
-                  ts2 = ns2
+                  // ts1 = ns1
+                  // ts2 = ns2
                   // leftIndex += 1
                   val leftBucket = ArrayBuffer[T]()
-                  var leftElem = le
-                  var leftEnd = false
-                  var ots1 = ts1
+                  // var leftElem = le
+                  // var leftEnd = false
+                  // var ots1 = ts1
+                  def leftElem = elem1
                   while (!leftEnd && joinCond(leftElem, re)) {
                     leftBucket += leftElem
-                    if (q1.atEnd(ts1)) {
-                      leftEnd = true
-                    } else {
-                      val (_1, _2) = q1.next(ts1)
-                      leftElem = _1
-                      ots1 = ts1
-                      ts1 = _2
-                    }
+                    proceedLeft()
+                    // if (q1.atEnd(ts1)) {
+                    //   leftEnd = true
+                    // } else {
+                    //   val (_1, _2) = q1.next(ts1)
+                    //   leftElem = _1
+                    //   ots1 = ts1
+                    //   ts1 = _2
+                    // }
                     // hitNumber += 1
                   }
-                  ts1 = ots1
-                  // println(s"left: $leftBucket, leftElem: $leftElem")
+                  // ts1 = ots1
+                  println(s"left: $leftBucket, leftElem: $leftElem")
 
                   // rightIndex += 1
                   val rightBucket = ArrayBuffer[S]()
-                  var rightElem = re
-                  var rightEnd = false
-                  var ots2 = ts2
+                  // var rightElem = re
+                  // var rightEnd = false
+                  // var ots2 = ts2
+                  def rightElem = elem2
                   while (!rightEnd && joinCond(le, rightElem)) {
                     rightBucket += rightElem
-                    if (q2.atEnd(ts2)) {
-                      rightEnd = true
-                    } else {
-                      val (_1, _2) = q2.next(ts2)
-                      rightElem = _1
-                      ots2 = ts2
-                      ts2 = _2
-                    }
+                    proceedRight()
+                    // if (q2.atEnd(ts2)) {
+                    //   rightEnd = true
+                    // } else {
+                    //   val (_1, _2) = q2.next(ts2)
+                    //   rightElem = _1
+                    //   ots2 = ts2
+                    //   ts2 = _2
+                    // }
                     // hitNumber += 1
                   }
-                  ts2 = ots2
-                  // println(s"right: $rightBucket")
+                  // ts2 = ots2
+                  println(s"right: $rightBucket, rightElem: $rightElem")
                   // assert(hitNumber == 2)
                   val res = scala.collection.mutable.Set[DynamicCompositeRecord[T, S]]()
                   for (x1 <- leftBucket) {
