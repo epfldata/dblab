@@ -32,12 +32,13 @@ object SyntheticQueries extends TPCHRunner {
     }
     Config.checkResults = false
     settings = new Settings(args.toList)
-    val years = 1992 to 1998 // 1996
+    val years = 1992 to // 1998 
+      1996
     val months = 1 to 12 map (x => if (x < 10) s"0$x" else x.toString)
     val dates = for (y <- years; m <- months) yield s"$y-$m-01"
     // val days = 1 to 30 map (x => if (x < 10) s"0$x" else x.toString)
     // val dates = for (d <- days) yield s"1996-12-$d"
-    // val dates = List("1996-01-01")
+    // val dates = List("1998-01-01")
     for (d <- dates) {
       param = d
       run(args)
@@ -64,7 +65,9 @@ object SyntheticQueries extends TPCHRunner {
     def selection = dsl"""
       val constantDate1: Int = parseDate($startDate)
       val constantDate2: Int = parseDate("1997-01-01")
-      $lineitemTable.filter(x => x.L_SHIPDATE >= constantDate1) //.filter(x => x.L_SHIPDATE >= constantDate1 && (x.L_SHIPDATE < constantDate2 && (x.L_DISCOUNT >= 0.08 && (x.L_DISCOUNT <= 0.1 && (x.L_QUANTITY < 24)))))
+      $lineitemTable
+        .filter(x => x.L_SHIPDATE >= constantDate1 && (x.L_SHIPDATE < constantDate2 && (x.L_DISCOUNT >= 0.08 && (x.L_DISCOUNT <= 0.1 && (x.L_QUANTITY < 24))))) 
+        //.filter(x => x.L_SHIPDATE >= constantDate1)
       """
     def selectivity = dsl"""
         val filtered = $selection
