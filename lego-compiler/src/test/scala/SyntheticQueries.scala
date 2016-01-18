@@ -32,8 +32,8 @@ object SyntheticQueries extends TPCHRunner {
     }
     Config.checkResults = false
     settings = new Settings(args.toList)
-    val years = 1992 to // 1998 
-      1996
+    val years = 1992 to 1998
+    // 1996
     val months = 1 to 12 map (x => if (x < 10) s"0$x" else x.toString)
     val dates = for (y <- years; m <- months) yield s"$y-$m-01"
     // val days = 1 to 30 map (x => if (x < 10) s"0$x" else x.toString)
@@ -66,18 +66,22 @@ object SyntheticQueries extends TPCHRunner {
       val constantDate1: Int = parseDate($startDate)
       val constantDate2: Int = parseDate("1997-01-01")
       $lineitemTable
-        .filter(x => x.L_SHIPDATE >= constantDate1 && (x.L_SHIPDATE < constantDate2 && (x.L_DISCOUNT >= 0.08 && (x.L_DISCOUNT <= 0.1 && (x.L_QUANTITY < 24))))) 
-        //.filter(x => x.L_SHIPDATE >= constantDate1)
+        //.filter(x => x.L_SHIPDATE >= constantDate1 && (x.L_SHIPDATE < constantDate2 && (x.L_DISCOUNT >= 0.08 && (x.L_DISCOUNT <= 0.1 && (x.L_QUANTITY < 24))))) 
+        .filter(x => x.L_SHIPDATE >= constantDate1)
       """
     def selectivity = dsl"""
         val filtered = $selection
         val original = $lineitemTable
         filtered.count.asInstanceOf[Double] / original.count
       """
+    val oneAgg = false
+    // val oneAgg = true
     dsl"""
       printf($startDate)
       printf("\nselectivity: %f\n", $selectivity)
-      printf("==========\n")
+      printf("==========\n")"""
+    if (oneAgg)
+      dsl"""
         runQuery {
           val result = {
             val filtered = $selection
@@ -91,6 +95,26 @@ object SyntheticQueries extends TPCHRunner {
         }
       printf("==========\n")
       """
+    else
+      dsl"""
+        runQuery {
+          val filtered = $selection
+          var sumResult = 0.0
+          var sumResult2 = 0.0
+          var sumResult3 = 0.0
+          for(t <- filtered) {
+            sumResult += t.L_EXTENDEDPRICE * t.L_DISCOUNT
+            sumResult2 += t.L_DISCOUNT
+            sumResult3 += t.L_EXTENDEDPRICE
+          }
+          val r1 = sumResult
+          val r2 = sumResult2
+          val r3 = sumResult3
+          printf("%.4f, %.4f, %.4f\n", r1, r2, r3)
+        }
+      printf("==========\n")
+      """
+
     // }
     context.unit(())
   }
