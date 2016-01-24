@@ -208,6 +208,7 @@ class QueryMonadIteratorLowering(val schema: Schema, override val IR: LegoBaseEx
       })
       readVar(sumResult).asInstanceOf[Rep[T]]
     }
+
     def leftHashSemiJoin2[S: TypeRep, R: TypeRep](q2: QueryIterator[S])(
       leftHash: Rep[T] => Rep[R])(
         rightHash: Rep[S] => Rep[R])(

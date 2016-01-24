@@ -28,12 +28,13 @@ object SyntheticQueries extends TPCHRunner {
   // val oneAgg = true
 
   def datesGenerator: List[String] = {
-    val years = 1992 to 1998
+    // val years = 1992 to 1998
     // 1996
-    val months = (1 to 12 by 2) map (x => if (x < 10) s"0$x" else x.toString)
-    val dates = for (y <- years; m <- months) yield s"$y-$m-01"
-    // val days = 1 to 30 map (x => if (x < 10) s"0$x" else x.toString)
+    // val months = (1 to 12 by 2) map (x => if (x < 10) s"0$x" else x.toString)
+    // val dates = for (y <- years; m <- months) yield s"$y-$m-01"
+    val days = 1 to 30 map (x => if (x < 10) s"0$x" else x.toString)
     // val dates = for (d <- days) yield s"1996-12-$d"
+    val dates = for (d <- days) yield s"1998-11-$d"
     // val dates = List("1998-01-01")
     dates.toList
   }
