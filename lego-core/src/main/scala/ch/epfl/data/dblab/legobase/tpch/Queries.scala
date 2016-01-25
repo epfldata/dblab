@@ -897,8 +897,8 @@ object Queries {
     }
   }
 
-  @dontLift def Q12_functional_p2(numRuns: Int) {
-    import queryengine.monad.{ QueryIterator => Query }
+  def Q12_functional_p2(numRuns: Int) {
+    // import queryengine.monad.{ QueryIterator => Query }
     val lineitemTable = Query(loadLineitem())
     val ordersTable = Query(loadOrders())
     for (i <- 0 until numRuns) {
@@ -909,8 +909,8 @@ object Queries {
         val constantDate2 = parseDate("1994-01-01")
         val so2 = lineitemTable.filter(x =>
           x.L_RECEIPTDATE < constantDate && x.L_COMMITDATE < constantDate && x.L_SHIPDATE < constantDate && x.L_SHIPDATE < x.L_COMMITDATE && x.L_COMMITDATE < x.L_RECEIPTDATE && x.L_RECEIPTDATE >= constantDate2 && (x.L_SHIPMODE === mail || x.L_SHIPMODE === ship))
-        val jo = ordersTable.hashJoin(so2)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
-        // val jo = ordersTable.mergeJoin(so2)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
+        // val jo = ordersTable.hashJoin(so2)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
+        val jo = ordersTable.mergeJoin(so2)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
         val URGENT = parseString("1-URGENT")
         val HIGH = parseString("2-HIGH")
         val aggOp = jo.groupBy(x => x.L_SHIPMODE[LBString]).mapValues(list =>
