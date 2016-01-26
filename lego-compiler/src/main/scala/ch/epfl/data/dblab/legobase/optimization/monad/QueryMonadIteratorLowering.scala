@@ -13,6 +13,7 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 import scala.collection.mutable
+import quasi._
 
 /**
  * Lowers query monad operations using continuation-passing style.
@@ -235,6 +236,84 @@ class QueryMonadIteratorLowering(val schema: Schema, override val IR: LegoBaseEx
       def atEnd(ts: Rep[Source]): Rep[Boolean] = leftIterator.atEnd(ts)
       def next(ts: Rep[Source]) = leftIterator.next(ts)
     }
+
+    def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryIterator[S])(
+      ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryIterator[Res] =
+      new QueryIterator[Res] {
+        val q1 = self
+        type Source1 = q1.Source
+        type Source2 = q2.Source
+        type Source = (q1.Source, q2.Source)
+        import q1.{ sourceType => q1SourceType }
+        import q2.{ sourceType => q2SourceType }
+        def sourceType: TypeRep[Source] = Tuple2Type(q1.sourceType, q2.sourceType)
+        def source = Tuple2(q1.source, q2.source)
+        val ts1: Var[Source1] = __newVar[Source1](zeroValue[Source1])
+        val ts2: Var[Source2] = __newVar[Source2](zeroValue[Source2])
+        val elem1: Var[T] = __newVar[T](zeroValue[T])
+        val elem2: Var[S] = __newVar[S](zeroValue[S])
+        val leftEnd: Var[Boolean] = __newVar[Boolean](unit(false))
+        val rightEnd: Var[Boolean] = __newVar[Boolean](unit(false))
+        val nextJoinElem: Var[Res] = __newVar[Res](zeroValue[Res])
+        val tmpAtEnd: Var[Boolean] = __newVar[Boolean](unit(false)) // keeps if the two sources are at the end or not
+        def proceedLeft(): Rep[Unit] = {
+          dsl"""
+          if (${q1.atEnd(ts1)}) {
+            $leftEnd = true
+          } else {
+            val q1Next = ${q1.next(ts1)}
+            val ne1 = q1Next._1
+            val ns1 = q1Next._2
+            $elem1 = ne1
+            $ts1 = ns1
+          }
+          """
+        }
+        def proceedRight(): Rep[Unit] = {
+          dsl"""
+          if (${q2.atEnd(ts2)}) {
+            $rightEnd = true
+          } else {
+            val q2Next = ${q2.next(ts2)}
+            $elem2 = q2Next._1
+            $ts2 = q2Next._2
+          }
+          """
+        }
+        def atEnd(ts: Rep[(Source1, Source2)]) = {
+          dsl"""
+          $tmpAtEnd || {
+            if ($elem1 == ${unit(null)} && $elem2 == ${unit(null)}) {
+              $ts1 = ${q1.source}
+              $ts2 = ${q2.source}
+              ${proceedLeft()}
+              ${proceedRight()}
+            }
+            var found = false
+            while (!$tmpAtEnd && !found) {
+              if ($leftEnd || $rightEnd) {
+                $tmpAtEnd = true
+              } else {
+                val cmp = ${ord(elem1, elem2)}
+                if (cmp < 0) {
+                  ${proceedLeft()}
+                } else if (cmp > 0) {
+                  ${proceedRight()}
+                } else {
+                  $nextJoinElem = ${concat_records[T, S, Res](elem1, elem2)}
+                  ${proceedRight()}
+                  found = true
+                }
+              }
+            }
+            !found
+          }
+          """
+        }
+        def next(ts: Rep[(Source1, Source2)]) = {
+          Tuple2(nextJoinElem, Tuple2(ts1, ts2))
+        }
+      }
 
     //   def minBy[S: TypeRep](by: Rep[T => S]): Rep[T] = {
     //     val minResult = __newVarNamed[T](unit(null).asInstanceOf[Rep[T]], "minResult")
@@ -560,6 +639,18 @@ class QueryMonadIteratorLowering(val schema: Schema, override val IR: LegoBaseEx
   //     sym
   //   }
   // }
+
+  rewrite += statement {
+    case sym -> JoinableQueryMergeJoin(monad1, monad2, ord, joinCond) => {
+      val Def(JoinableQueryNew(Def(QueryGetList(m1)))) = monad1
+      val Def(Lambda2(or, _, _, _)) = ord
+      val Def(Lambda2(jc, _, _, _)) = joinCond
+      val cps = m1.mergeJoin2(monad2)(or)(jc)(monad2.tp.typeArguments(0).asInstanceOf[TypeRep[Record]],
+        sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
+      iteratorMap += sym -> cps.asInstanceOf[QueryIterator[Any]]
+      sym
+    }
+  }
 
   val mapValuesFuncs = scala.collection.mutable.ArrayBuffer[Rep[Query[Any] => Any]]()
 
