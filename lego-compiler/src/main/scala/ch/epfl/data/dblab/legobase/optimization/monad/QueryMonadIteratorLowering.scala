@@ -141,7 +141,7 @@ class QueryMonadIteratorLowering(val schema: Schema, override val IR: LegoBaseEx
       var lastCalledFunction: LastCalledFunction = NothingYet
 
       def atEnd(s: Rep[Source]): Rep[Boolean] = lastCalledFunction match {
-        case NothingYet =>
+        case NothingYet | AtEnd =>
           lastCalledFunction = AtEnd
           self.atEnd(s) || readVar(tmpAtEnd) || {
             val tmpSource = __newVar(s)
@@ -165,8 +165,9 @@ class QueryMonadIteratorLowering(val schema: Schema, override val IR: LegoBaseEx
             __assign(curTail, tmpRest)
             readVar(tmpAtEnd)
           }
-        case AtEnd => readVar(tmpAtEnd)
-        case Next  => throw new Exception("atEnd after next is not considered yet!")
+        // case AtEnd => //readVar(tmpAtEnd)
+        //   throw new Exception("atEnd after atEnd is not considered yet!")
+        case Next => throw new Exception("atEnd after next is not considered yet!")
       }
 
       def next(s: Rep[Source]): Rep[(T, Source)] = lastCalledFunction match {
