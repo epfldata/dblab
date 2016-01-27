@@ -65,16 +65,22 @@ object SyntheticQueries extends TPCHRunner {
     import dblab.legobase.queryengine.monad.Query
     import dblab.legobase.tpch.TPCHLoader._
     import dblab.legobase.queryengine.GenericEngine._
-    dsl"""
-      val lineitemTable = Query(loadLineitem())
-      val ordersTable = Query(loadOrders())
-      runQuery({
+    val lineitemTable = dsl"""Query(loadLineitem())"""
+    // val endDate = "1995-01-01"
+    val endDate = "1998-12-01"
+    def selection = dsl"""
         val mail = parseString("MAIL")
         val ship = parseString("SHIP")
-        val constantDate = parseDate("1995-01-01")
+        val constantDate = parseDate($endDate)
         val constantDate2 = parseDate("1994-01-01")
-        val so2 = lineitemTable.filter(x =>
+        val so2 = $lineitemTable.filter(x =>
           x.L_RECEIPTDATE < constantDate && x.L_COMMITDATE < constantDate && x.L_SHIPDATE < constantDate && x.L_SHIPDATE < x.L_COMMITDATE && x.L_COMMITDATE < x.L_RECEIPTDATE && x.L_RECEIPTDATE >= constantDate2 && (x.L_SHIPMODE === mail || x.L_SHIPMODE === ship))
+        so2
+    """
+    dsl"""
+      val ordersTable = Query(loadOrders())
+      runQuery({
+        val so2 = $selection
         val jo = ordersTable.mergeJoin(so2)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
         val URGENT = parseString("1-URGENT")
         val HIGH = parseString("2-HIGH")
@@ -85,6 +91,14 @@ object SyntheticQueries extends TPCHRunner {
           printf("%s|%d|%d\n", kv._1.string, kv._2(0), kv._2(1)), -1)
       })
     """
+    // if (ONE_LOADER_FOR_ALL) {
+    //   for (d <- datesGenerator) {
+    //     generateQueryForStartDate(d)
+    //   }
+    //   context.unit()
+    // } else {
+    //   generateQueryForStartDate(param)
+    // }
   }
 
   def query6(numRuns: Int): context.Rep[Unit] = {
