@@ -61,6 +61,32 @@ object SyntheticQueries extends TPCHRunner {
 
   implicit val context = new LegoBaseExp {}
 
+  def query12_p2(numRuns: Int): context.Rep[Unit] = {
+    import dblab.legobase.queryengine.monad.Query
+    import dblab.legobase.tpch.TPCHLoader._
+    import dblab.legobase.queryengine.GenericEngine._
+    dsl"""
+      val lineitemTable = Query(loadLineitem())
+      val ordersTable = Query(loadOrders())
+      runQuery({
+        val mail = parseString("MAIL")
+        val ship = parseString("SHIP")
+        val constantDate = parseDate("1995-01-01")
+        val constantDate2 = parseDate("1994-01-01")
+        val so2 = lineitemTable.filter(x =>
+          x.L_RECEIPTDATE < constantDate && x.L_COMMITDATE < constantDate && x.L_SHIPDATE < constantDate && x.L_SHIPDATE < x.L_COMMITDATE && x.L_COMMITDATE < x.L_RECEIPTDATE && x.L_RECEIPTDATE >= constantDate2 && (x.L_SHIPMODE === mail || x.L_SHIPMODE === ship))
+        val jo = ordersTable.mergeJoin(so2)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
+        val URGENT = parseString("1-URGENT")
+        val HIGH = parseString("2-HIGH")
+        val aggOp = jo.groupBy(x => x.L_SHIPMODE[LBString]).mapValues(list =>
+          Array(list.filter(t => t.O_ORDERPRIORITY[LBString] === URGENT || t.O_ORDERPRIORITY[LBString] === HIGH).count,
+            list.filter(t => t.O_ORDERPRIORITY[LBString] =!= URGENT && t.O_ORDERPRIORITY[LBString] =!= HIGH).count))
+        aggOp.printRows(kv =>
+          printf("%s|%d|%d\n", kv._1.string, kv._2(0), kv._2(1)), -1)
+      })
+    """
+  }
+
   def query6(numRuns: Int): context.Rep[Unit] = {
     import dblab.legobase.queryengine.monad.Query
     import dblab.legobase.tpch.TPCHLoader._
@@ -133,8 +159,10 @@ object SyntheticQueries extends TPCHRunner {
   def executeQuery(query: String, schema: Schema): Unit = {
     System.out.println(s"\nRunning $query!")
 
-    val (queryNumber, queryFunction) =
-      (5, () => query6(1))
+    val (queryNumber, queryFunction) = query match {
+      case "Q6_functional"     => (6, () => query6(1))
+      case "Q12_functional_p2" => (12, () => query12_p2(1))
+    }
 
     val validatedSettings = settings.validate()
 
