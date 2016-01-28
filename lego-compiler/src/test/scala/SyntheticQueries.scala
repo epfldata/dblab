@@ -23,7 +23,7 @@ object SyntheticQueries extends TPCHRunner {
 
   var settings: Settings = _
 
-  val ONE_LOADER_FOR_ALL = true
+  val ONE_LOADER_FOR_ALL = false
   val oneAgg = false
   // val oneAgg = true
 
@@ -32,9 +32,10 @@ object SyntheticQueries extends TPCHRunner {
     // 1996
     // val months = (1 to 12 by 2) map (x => if (x < 10) s"0$x" else x.toString)
     // val dates = for (y <- years; m <- months) yield s"$y-$m-01"
-    val days = 1 to 30 map (x => if (x < 10) s"0$x" else x.toString)
+    // val days = 1 to 30 map (x => if (x < 10) s"0$x" else x.toString)
     // val dates = for (d <- days) yield s"1996-12-$d"
-    val dates = for (d <- days) yield s"1998-11-$d"
+    // val dates = for (d <- days) yield s"1998-11-$d"
+    val dates = for (y <- List(4, 5, 6, 7, 8); m <- if (y == 4) List(7) else List(1, 7)) yield s"199$y-0$m-01"
     // val dates = List("1998-01-01")
     dates.toList
   }
@@ -66,39 +67,55 @@ object SyntheticQueries extends TPCHRunner {
     import dblab.legobase.tpch.TPCHLoader._
     import dblab.legobase.queryengine.GenericEngine._
     val lineitemTable = dsl"""Query(loadLineitem())"""
-    // val endDate = "1995-01-01"
-    val endDate = "1998-12-01"
-    def selection = dsl"""
-        val mail = parseString("MAIL")
-        val ship = parseString("SHIP")
-        val constantDate = parseDate($endDate)
-        val constantDate2 = parseDate("1994-01-01")
-        val so2 = $lineitemTable.filter(x =>
-          x.L_RECEIPTDATE < constantDate && x.L_COMMITDATE < constantDate && x.L_SHIPDATE < constantDate && x.L_SHIPDATE < x.L_COMMITDATE && x.L_COMMITDATE < x.L_RECEIPTDATE && x.L_RECEIPTDATE >= constantDate2 && (x.L_SHIPMODE === mail || x.L_SHIPMODE === ship))
-        so2
-    """
-    dsl"""
-      val ordersTable = Query(loadOrders())
-      runQuery({
-        val so2 = $selection
-        val jo = ordersTable.mergeJoin(so2)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
-        val URGENT = parseString("1-URGENT")
-        val HIGH = parseString("2-HIGH")
-        val aggOp = jo.groupBy(x => x.L_SHIPMODE[LBString]).mapValues(list =>
-          Array(list.filter(t => t.O_ORDERPRIORITY[LBString] === URGENT || t.O_ORDERPRIORITY[LBString] === HIGH).count,
-            list.filter(t => t.O_ORDERPRIORITY[LBString] =!= URGENT && t.O_ORDERPRIORITY[LBString] =!= HIGH).count))
-        aggOp.printRows(kv =>
-          printf("%s|%d|%d\n", kv._1.string, kv._2(0), kv._2(1)), -1)
-      })
-    """
-    // if (ONE_LOADER_FOR_ALL) {
-    //   for (d <- datesGenerator) {
-    //     generateQueryForStartDate(d)
-    //   }
-    //   context.unit()
-    // } else {
-    //   generateQueryForStartDate(param)
-    // }
+    val ordersTable = dsl"Query(loadOrders())"
+    // val endDate = "1994-07-01"
+    // val endDate = "1998-12-01"
+    val hasFilter = true
+    def generateQueryForEndDate(endDate: String): context.Rep[Unit] = {
+      def selection = if (hasFilter)
+        dsl"""
+          val mail = parseString("MAIL")
+          val ship = parseString("SHIP")
+          val constantDate = parseDate($endDate)
+          val constantDate2 = parseDate("1994-01-01")
+          val so2 = $lineitemTable.filter(x =>
+            x.L_RECEIPTDATE < constantDate && x.L_COMMITDATE < constantDate && x.L_SHIPDATE < constantDate && x.L_SHIPDATE < x.L_COMMITDATE && x.L_COMMITDATE < x.L_RECEIPTDATE && x.L_RECEIPTDATE >= constantDate2 && (x.L_SHIPMODE === mail || x.L_SHIPMODE === ship))
+          so2
+        """
+      else
+        lineitemTable
+      def selectivity = dsl"""
+          val filtered = $selection
+          val original = $lineitemTable
+          filtered.count.asInstanceOf[Double] / original.count
+        """
+      dsl"""
+        printf($endDate)
+        printf("\nselectivity: %f\n", $selectivity)
+        printf("==========\n")"""
+      dsl"""
+        runQuery({
+          val so2 = $selection
+          val jo = $ordersTable.mergeJoin(so2)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
+          val URGENT = parseString("1-URGENT")
+          val HIGH = parseString("2-HIGH")
+          val aggOp = jo.groupBy(x => x.L_SHIPMODE[LBString]).mapValues(list =>
+            Array(list.filter(t => t.O_ORDERPRIORITY[LBString] === URGENT || t.O_ORDERPRIORITY[LBString] === HIGH).count,
+              list.filter(t => t.O_ORDERPRIORITY[LBString] =!= URGENT && t.O_ORDERPRIORITY[LBString] =!= HIGH).count))
+          aggOp.printRows(kv =>
+            printf("%s|%d|%d-", kv._1.string, kv._2(0), kv._2(1)), -1)
+        })
+      """
+    }
+    assert(!ONE_LOADER_FOR_ALL)
+    if (ONE_LOADER_FOR_ALL) {
+      for (d <- datesGenerator) {
+        generateQueryForEndDate(d)
+      }
+      context.unit()
+    } else {
+      generateQueryForEndDate(param)
+    }
   }
 
   def query6(numRuns: Int): context.Rep[Unit] = {
