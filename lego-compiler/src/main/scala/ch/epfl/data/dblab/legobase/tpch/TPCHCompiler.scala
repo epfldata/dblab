@@ -59,14 +59,40 @@ object TPCHCompiler extends TPCHRunner {
   def main(args: Array[String]) {
     args.toList match {
       case List("interactive") =>
+        System.out.println("*** Interactive Mode ***")
+        System.out.println("Available commands:")
+        System.out.println("  warm-up")
+        System.out.println("    Warms up the underlying just-in-time (JIT) compiler")
+        System.out.println("  all-tpch <data_folder> <scaling_factor_number>")
+        System.out.println("    Generates the most optimized C code of all TPCH queries")
+        System.out.println("  compile <data_folder> <scaling_factor_number> <queries> <options>")
+        System.out.println("    Compiles the given query using the given arguments")
+        System.out.println("  exit")
+        System.out.println("    Exits the interactive mode")
         val sc = new java.util.Scanner(System.in)
         var exit = false
-        while (sc.hasNext && !exit) {
+        val CMD_PREFIX = ">> "
+        System.out.print(CMD_PREFIX)
+        while (!exit && sc.hasNext) {
           val str = sc.nextLine
-          if (str == "exit") {
-            exit = true
-          } else {
-            parseArgs(str.split(" "))
+          str match {
+            case "exit" => exit = true
+            case "warm-up" =>
+              for (i <- 1 to 10) {
+                System.out.println(s"Warming up ($i)")
+                parseArgs(Array("dummy", "1", "Q16", "-optimal"))
+              }
+            case _ if str.startsWith("all-tpch ") =>
+              val Array(_, folder, sf) = str.split(" ")
+              parseArgs(Array(folder, sf, "Q1_functional", "-optimal"))
+              for (q <- 2 to 22) {
+                parseArgs(Array(folder, sf, s"Q$q", "-optimal"))
+              }
+            case _ if str.startsWith("compile ") => parseArgs(str.split(" ").tail)
+            case _                               => System.out.println(s"Command $str not available!")
+          }
+          if (!exit) {
+            System.out.print(CMD_PREFIX)
           }
         }
       case _ => parseArgs(args)
