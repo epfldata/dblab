@@ -75,18 +75,39 @@ object TPCHCompiler extends TPCHRunner {
         System.out.print(CMD_PREFIX)
         while (!exit && sc.hasNext) {
           val str = sc.nextLine
+          def compileOptimizedQuery(folder: String, sf: String, query: String): Unit = {
+            utils.Utilities.time({
+              turnOffConsoleOutput {
+                parseArgs(Array(folder, sf, query, "-optimal"))
+              }
+            }, s"Compilation of $query")
+          }
+          def turnOffConsoleOutput[T](e: => T): T = {
+            import java.io.PrintStream
+            val outOriginal = new PrintStream(System.out);
+            val errOriginal = new PrintStream(System.err);
+            System.setOut(new PrintStream("compilation-out.out.txt"))
+            System.setErr(new PrintStream("compilation-err.out.txt"))
+            val res = e
+            System.setOut(outOriginal)
+            System.setErr(errOriginal)
+            res
+          }
           str match {
             case "exit" => exit = true
             case "warm-up" =>
-              for (i <- 1 to 10) {
+              for (i <- 1 to 25) {
                 System.out.println(s"Warming up ($i)")
-                parseArgs(Array("dummy", "1", "Q16", "-optimal"))
+                compileOptimizedQuery("dummy", "1", "Q16")
+                compileOptimizedQuery("dummy", "1", "Q2_functional")
               }
+              // To reset book-keepings in SC
+              ExpressionSymbol.globalId = 0
             case _ if str.startsWith("all-tpch ") =>
               val Array(_, folder, sf) = str.split(" ")
-              parseArgs(Array(folder, sf, "Q1_functional", "-optimal"))
+              compileOptimizedQuery(folder, sf, "Q1_functional")
               for (q <- 2 to 22) {
-                parseArgs(Array(folder, sf, s"Q$q", "-optimal"))
+                compileOptimizedQuery(folder, sf, s"Q$q")
               }
             case _ if str.startsWith("compile ") => parseArgs(str.split(" ").tail)
             case _                               => System.out.println(s"Command $str not available!")
