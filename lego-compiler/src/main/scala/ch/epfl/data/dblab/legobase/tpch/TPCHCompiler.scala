@@ -30,7 +30,7 @@ object TPCHCompiler extends TPCHRunner {
 
   var settings: Settings = _
 
-  def main(args: Array[String]) {
+  def parseArgs(args: Array[String]): Unit = {
     if (args.length < 3) {
       import Settings._
       System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
@@ -49,11 +49,28 @@ object TPCHCompiler extends TPCHRunner {
       // System.out.println("""  Synthesized queries:
       //       Q12S[_C]_N: N is the number of fields of the Lineitem table which should be used.
       // """)
-      System.exit(0)
+    } else {
+      Config.checkResults = false
+      settings = new Settings(args.toList)
+      run(args)
     }
-    Config.checkResults = false
-    settings = new Settings(args.toList)
-    run(args)
+  }
+
+  def main(args: Array[String]) {
+    args.toList match {
+      case List("interactive") =>
+        val sc = new java.util.Scanner(System.in)
+        var exit = false
+        while (sc.hasNext && !exit) {
+          val str = sc.nextLine
+          if (str == "exit") {
+            exit = true
+          } else {
+            parseArgs(str.split(" "))
+          }
+        }
+      case _ => parseArgs(args)
+    }
   }
 
   /**

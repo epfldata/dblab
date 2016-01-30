@@ -42,10 +42,12 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   override def compile[T: PardisType](program: => Expression[T], outputFile: String): Unit = {
     if (reportCompilationTime) {
-      val block = utils.Utilities.time(DSL.reifyBlock(program), "Reification")
-      val optimizedBlock = utils.Utilities.time(optimize(block), "Optimization")
-      val irProgram = irToProgram.createProgram(optimizedBlock)
-      utils.Utilities.time(codeGenerator.generate(irProgram, outputFile), "Code Generation")
+      utils.Utilities.time({
+        val block = utils.Utilities.time(DSL.reifyBlock(program), "Reification")
+        val optimizedBlock = utils.Utilities.time(optimize(block), "Optimization")
+        val irProgram = irToProgram.createProgram(optimizedBlock)
+        utils.Utilities.time(codeGenerator.generate(irProgram, outputFile), "Code Generation")
+      }, "Total compilation time")
     } else {
       super.compile(program, outputFile)
     }
