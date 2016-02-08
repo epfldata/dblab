@@ -162,6 +162,11 @@ class LegoCompiler(val DSL: LegoBaseExp,
   if (settings.stringCompression) pipeline += new StringDictionaryTransformer(DSL, schema)
   // pipeline += TreeDumper(false)
 
+  if (settings.whileToForLoop) {
+    pipeline += new WhileToRangeForeachTransformer(DSL)
+    pipeline += DCE
+  }
+
   if (settings.partitioning) {
     // pipeline += TreeDumper(false)
     pipeline += new WhileToRangeForeachTransformer(DSL)

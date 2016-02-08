@@ -74,6 +74,7 @@ class Settings(val args: List[String]) {
   def columnStore: Boolean = hasSetting(ColumnStoreSetting)
   def partitioning: Boolean = hasSetting(ArrayPartitioningSetting)
   def hashMapPartitioning: Boolean = hasSetting(HashMapPartitioningSetting)
+  def whileToForLoop: Boolean = hasSetting(WhileToForSetting)
   def mallocHoisting: Boolean = hasSetting(MallocHoistSetting)
   def constArray: Boolean = hasSetting(ConstantSizeArraySetting)
   def stringCompression: Boolean = hasSetting(StringDictionarySetting)
@@ -121,6 +122,7 @@ object Settings {
     PointerStoreSetting,
     ArrayPartitioningSetting,
     HashMapPartitioningSetting,
+    WhileToForSetting,
     MallocHoistSetting,
     ConstantSizeArraySetting,
     StringDictionarySetting,
@@ -222,6 +224,9 @@ case object ArrayPartitioningSetting extends OptimizationSetting("part",
   MCHLanguage)
 case object HashMapPartitioningSetting extends OptimizationSetting("hm-part",
   "Converts MultiMaps into partitioned arrays",
+  MCHLanguage)
+case object WhileToForSetting extends OptimizationSetting("while2for",
+  "Converts While Loops into For Loops",
   MCHLanguage)
 case object MallocHoistSetting extends OptimizationSetting("malloc-hoist",
   "Hoists malloc statements outside of the critical path",
