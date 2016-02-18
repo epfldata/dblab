@@ -216,7 +216,7 @@ object TPCHSchema {
     tpchSchema.stats.conflicts("PS_PARTKEY") = 16
     tpchSchema.stats.conflicts("P_PARTKEY") = 4
     tpchSchema.stats.conflicts("L_PARTKEY") = 64
-    tpchSchema.stats.conflicts("L_ORDERKEY") = 16
+    tpchSchema.stats.conflicts("L_ORDERKEY") = 8
     tpchSchema.stats.conflicts("C_NATIONKEY") = customerTable.rowCount / 20
     tpchSchema.stats.conflicts("S_NATIONKEY") = supplierTable.rowCount / 20
 

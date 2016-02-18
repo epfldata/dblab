@@ -111,7 +111,7 @@ class ConstSizeArrayToLocalVars(override val IR: LegoBaseExp) extends RecursiveR
    * The maximum threshould which is used for identifying the constant size
    * arrays that should be converted to local variables.
    */
-  val SIZE_THRESHOLD = 10
+  val SIZE_THRESHOLD = 8
 
   /**
    * Identifies the array symbols that should be converted to local variables.
