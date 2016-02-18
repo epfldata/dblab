@@ -52,7 +52,7 @@ case class Statistics() {
   case class Dependency(name: String, func: Double => Double)
   private val statsDependencyMap = new scala.collection.mutable.HashMap[String, Dependency]()
   private def format(name: String) = name.replaceAll("Record", "").replaceAll("Type", "").
-    replaceAll("\\(", "_").replaceAll("\\)", "").replaceAll(",", "_").toUpperCase()
+    replaceAll("\\(", "_").replaceAll("\\)", "").replaceAll("\\[", "_").replaceAll("\\]", "").replaceAll("\\ ", "").replaceAll("\\[", "").replaceAll(",", "_").toUpperCase()
 
   def +=(nameAndValue: (String, Double)) = statsMap += (format(nameAndValue._1) -> nameAndValue._2)
   def +=(name: String, value: Double) = statsMap += (format(name) -> value)
