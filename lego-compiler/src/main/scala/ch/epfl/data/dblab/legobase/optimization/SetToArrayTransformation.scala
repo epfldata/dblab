@@ -119,9 +119,12 @@ class SetToArrayTransformation(
     case sym -> (node @ SetApplyObject2()) =>
       implicit val typeA = transformType(node.tp.typeArguments(0)).asInstanceOf[TypeRep[A]]
 
+      val bucketSize = schema.stats.conflicts(typeA.name).getOrElse(256)
+      // val bucketSize = 256
+
       __new[Set[A]](
         ("maxSize", true, unit[Int](0)),
-        ("array", false, __newArray[A](unit(256))))
+        ("array", false, __newArray[A](unit(bucketSize))))
   }
 
   // TODO cmp handling should be automatically generated

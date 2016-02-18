@@ -213,9 +213,10 @@ object TPCHSchema {
     tpchSchema.stats += "DISTINCT_C_NATIONKEY" -> nationTable.rowCount
     tpchSchema.stats += "DISTINCT_R_REGIONKEY" -> 5
 
-    tpchSchema.stats += "CONFLICT_L_ORDERKEY" -> 16
-    tpchSchema.stats += "CONFLICT_C_NATIONKEY" -> customerTable.rowCount / 20
-    tpchSchema.stats += "CONFLICT_S_NATIONKEY" -> supplierTable.rowCount / 20
+    tpchSchema.stats.conflicts("P_PARTKEY") = 4
+    tpchSchema.stats.conflicts("L_ORDERKEY") = 16
+    tpchSchema.stats.conflicts("C_NATIONKEY") = customerTable.rowCount / 20
+    tpchSchema.stats.conflicts("S_NATIONKEY") = supplierTable.rowCount / 20
 
     tpchSchema.stats += "NUM_YEARS_ALL_DATES" -> YEARS
 

@@ -111,9 +111,9 @@ case class Statistics() {
     getLargestCardinality().toInt // TODO-GEN: Make this return the cardinality of the corresponding table
   })
 
-  val CONFLICT_PREFIX = "CONFLICT_"
+  private val CONFLICT_PREFIX = "CONFLICT_"
 
-  def getConflictsAttr(attrName: String): Option[Int] = statsMap.get(CONFLICT_PREFIX + attrName).map(_.toInt)
+  def conflicts = new AttributeHandler(CONFLICT_PREFIX)
 
   def getEstimatedNumObjectsForType(typeName: String): Double = statsMap.get(QS_MEM_PREFIX + format(typeName)) match {
     case Some(v) => v
@@ -142,6 +142,11 @@ case class Statistics() {
     case None =>
       System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics value for QS_OUTPUT_SIZE_ESTIMATION not found. Returning largest cardinality to compensate.")
       getLargestCardinality().toInt // This is more than enough for all practical cases encountered so far
+  }
+
+  class AttributeHandler(prefix: String) {
+    def update(attrName: String, value: Long): Unit = statsMap(prefix + format(attrName)) = value.toInt
+    def apply(attrName: String): Option[Int] = statsMap.get(prefix + format(attrName)).map(_.toInt)
   }
 }
 

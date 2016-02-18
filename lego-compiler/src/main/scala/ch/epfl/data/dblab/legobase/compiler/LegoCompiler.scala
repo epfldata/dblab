@@ -126,7 +126,7 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   if (settings.hashMapLowering || settings.hashMapNoCollision) {
     if (settings.hashMapLowering) {
-      pipeline += new sc.pardis.deep.scalalib.collection.MultiMapOptimalTransformation(DSL)
+      pipeline += new MultiMapToSetTransformation(DSL, schema)
       pipeline += new HashMapToSetTransformation(DSL, schema)
     }
     if (settings.hashMapNoCollision) {
