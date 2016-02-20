@@ -34,6 +34,9 @@ trait Loader
  */
 object Loader {
 
+  @dontLift
+  val cachedTables = collection.mutable.HashMap[Table, Array[_]]()
+
   @dontInline
   def getFullPath(fileName: String): String = Config.datapath + fileName
 
@@ -60,44 +63,51 @@ object Loader {
 
   @dontInline
   def loadTable[R](table: Table)(implicit c: ClassTag[R]): Array[R] = {
-    val size = fileLineCount(table.resourceLocator)
-    val arr = new Array[R](size)
-    val ldr = new K2DBScanner(table.resourceLocator)
-    val recordType = currentMirror.staticClass(c.runtimeClass.getName).asType.toTypeConstructor
+    if (Config.cacheLoading && cachedTables.contains(table)) {
+      System.out.println(s"Loading cached ${table.name}!")
+      cachedTables(table).asInstanceOf[Array[R]]
+    } else {
+      val size = fileLineCount(table.resourceLocator)
+      val arr = new Array[R](size)
+      val ldr = new K2DBScanner(table.resourceLocator)
+      val recordType = currentMirror.staticClass(c.runtimeClass.getName).asType.toTypeConstructor
 
-    val classMirror = currentMirror.reflectClass(recordType.typeSymbol.asClass)
-    val constr = recordType.decl(termNames.CONSTRUCTOR).asMethod
-    val recordArguments = recordType.member(termNames.CONSTRUCTOR).asMethod.paramLists.head map {
-      p => (p.name.decodedName.toString, p.typeSignature)
-    }
-
-    val arguments = recordArguments.map {
-      case (name, tpe) =>
-        (name, tpe, table.attributes.find(a => a.name == name) match {
-          case Some(a) => a
-          case None    => throw new Exception(s"No attribute found with the name `$name` in the table ${table.name}")
-        })
-    }
-
-    var i = 0
-    while (i < size && ldr.hasNext()) {
-      val values = arguments.map(arg =>
-        arg._3.dataType match {
-          case IntType          => ldr.next_int
-          case DoubleType       => ldr.next_double
-          case CharType         => ldr.next_char
-          case DateType         => ldr.next_date
-          case VarCharType(len) => loadString(len, ldr)
-        })
-
-      classMirror.reflectConstructor(constr).apply(values: _*) match {
-        case rec: R => arr(i) = rec
-        case _      => throw new ClassCastException
+      val classMirror = currentMirror.reflectClass(recordType.typeSymbol.asClass)
+      val constr = recordType.decl(termNames.CONSTRUCTOR).asMethod
+      val recordArguments = recordType.member(termNames.CONSTRUCTOR).asMethod.paramLists.head map {
+        p => (p.name.decodedName.toString, p.typeSignature)
       }
-      i += 1
-    }
-    arr
 
+      val arguments = recordArguments.map {
+        case (name, tpe) =>
+          (name, tpe, table.attributes.find(a => a.name == name) match {
+            case Some(a) => a
+            case None    => throw new Exception(s"No attribute found with the name `$name` in the table ${table.name}")
+          })
+      }
+
+      var i = 0
+      while (i < size && ldr.hasNext()) {
+        val values = arguments.map(arg =>
+          arg._3.dataType match {
+            case IntType          => ldr.next_int
+            case DoubleType       => ldr.next_double
+            case CharType         => ldr.next_char
+            case DateType         => ldr.next_date
+            case VarCharType(len) => loadString(len, ldr)
+          })
+
+        classMirror.reflectConstructor(constr).apply(values: _*) match {
+          case rec: R => arr(i) = rec
+          case _      => throw new ClassCastException
+        }
+        i += 1
+      }
+      if (Config.cacheLoading) {
+        cachedTables(table) = arr
+      }
+      arr
+    }
     //TODO update statistics
   }
 }
