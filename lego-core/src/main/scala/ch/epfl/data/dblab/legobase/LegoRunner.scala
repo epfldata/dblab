@@ -78,9 +78,11 @@ trait LegoRunner {
               System.exit(0)
             } else System.out.println("CHECK RESULT FOR QUERY " + currQuery + ": [OK]")
           } else {
-            System.out.println("Reference result file not found. Skipping checking of result")
-            System.out.println("Execution results:")
-            System.out.println(resq)
+            System.out.println(s"Reference result file '$resultFileName' not found. Skipping checking of result")
+            if (Config.printResult) {
+              System.out.println("Execution results:")
+              System.out.println(resq)
+            }
           }
         }
       }

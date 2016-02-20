@@ -15,6 +15,8 @@ object Config {
   val cacheLoading: Boolean = true
   /** Number of the repetitions of running a query */
   val numRuns: scala.Int = 5
-  /* Code generation info */
+  /** Specifies if the output should be printed or not */
+  val printResult = false
+  /** Code generation info */
   var codeGenLang: Language = CCoreLanguage
 }
