@@ -94,7 +94,10 @@ class HashMapGrouping(override val IR: LegoBaseExp,
     def numBuckets: Rep[Int] =
       unit(schema.stats.getDistinctAttrValues(partitioningField))
     def bucketSize: Rep[Int] =
-      unit(schema.stats.getConflictsAttr(partitioningField).getOrElse(1 << 10))
+      unit(schema.stats.conflicts(partitioningField).getOrElse({
+        System.out.println(s"${scala.Console.RED}Number of partitions based on $partitioningField overestimated!${scala.Console.RESET}")
+        1 << 10
+      }))
     def is1D: Boolean =
       schema.findTableByType(tpe).exists(table =>
         table.primaryKey.exists(pk =>

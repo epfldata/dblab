@@ -11,8 +11,12 @@ object Config {
   var checkResults = true
   /** Specifies the location of data files. */
   var datapath: java.lang.String = null
+  /** Cache the loaded tables so that the same table is not loaded several times */
+  val cacheLoading: Boolean = true
   /** Number of the repetitions of running a query */
-  val numRuns: scala.Int = 1
-  /* Code generation info */
+  val numRuns: scala.Int = 5
+  /** Specifies if the output should be printed or not */
+  val printResult = false
+  /** Code generation info */
   var codeGenLang: Language = CCoreLanguage
 }

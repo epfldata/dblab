@@ -53,7 +53,11 @@ class GenericEngineToCTransformer(override val IR: LegoBaseExp, val settings: co
       } else {
         val Timer(diff, start, end) = createTimer
         gettimeofday(&(start))
+        if (settings.profile)
+          papi_start()
         inlineBlock(apply(b))
+        if (settings.profile)
+          papi_end()
         gettimeofday(&(end))
         val tm = timeval_subtract(&(diff), &(end), &(start))
         printf(unit("Generated code run in %ld milliseconds.\n"), tm)

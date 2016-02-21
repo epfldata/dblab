@@ -13,6 +13,7 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 import scala.collection.mutable
+import quasi._
 
 /**
  * Lowers query monad operations using continuation-passing style.
@@ -101,6 +102,31 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
         })
       })
       readVar(minResult)
+    }
+
+    def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryCPS[S])(
+      ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryCPS[Res] = (k: Rep[Res] => Rep[Unit]) => {
+      val sizeByCardinality: Int = schema.stats.getCardinalityOrElse(typeRep[T].name, 1 << 24).toInt
+      val arr = __newArray[T](unit(sizeByCardinality))
+      val size = __newVarNamed[Int](unit(0), "arraySize")
+      foreach((elem: Rep[T]) => {
+        dsl"""
+           $arr($size) = $elem
+           $size = $size + 1
+        """
+      })
+      val leftSize = (size: Rep[Int])
+      val leftIndex = __newVarNamed(unit(0), "leftIndex")
+      q2.foreach((elem: Rep[S]) => {
+        dsl"""
+          while($leftIndex < $leftSize && ${ord(arr(leftIndex), elem)} < 0) {
+            $leftIndex = $leftIndex + 1
+          }
+          if($leftIndex < $leftSize && ${ord(arr(leftIndex), elem)} == 0) {
+            ${k(concat_records[T, S, Res](arr(leftIndex), elem))}
+          }
+        """
+      })
     }
 
     def sortBy[S: TypeRep](sortFunction: Rep[T => S]): QueryCPS[T] = (k: Rep[T] => Rep[Unit]) => {
@@ -338,6 +364,18 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: LegoBaseExp) ex
       val Def(Lambda2(jc, _, _, _)) = joinCond
       val cps = m1.hashJoin2(monad2)(lh)(rh)(jc)(monad2.tp.typeArguments(0).asInstanceOf[TypeRep[Record]],
         leftHash.tp.typeArguments(1).asInstanceOf[TypeRep[Any]],
+        sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
+      cpsMap += sym -> cps.asInstanceOf[QueryCPS[Any]]
+      sym
+    }
+  }
+
+  rewrite += statement {
+    case sym -> JoinableQueryMergeJoin(monad1, monad2, ord, joinCond) => {
+      val Def(JoinableQueryNew(Def(QueryGetList(m1)))) = monad1
+      val Def(Lambda2(or, _, _, _)) = ord
+      val Def(Lambda2(jc, _, _, _)) = joinCond
+      val cps = m1.mergeJoin2(monad2)(or)(jc)(monad2.tp.typeArguments(0).asInstanceOf[TypeRep[Record]],
         sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
       cpsMap += sym -> cps.asInstanceOf[QueryCPS[Any]]
       sym

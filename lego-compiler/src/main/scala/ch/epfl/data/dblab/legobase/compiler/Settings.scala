@@ -74,6 +74,7 @@ class Settings(val args: List[String]) {
   def columnStore: Boolean = hasSetting(ColumnStoreSetting)
   def partitioning: Boolean = hasSetting(ArrayPartitioningSetting)
   def hashMapPartitioning: Boolean = hasSetting(HashMapPartitioningSetting)
+  def whileToForLoop: Boolean = hasSetting(WhileToForSetting)
   def mallocHoisting: Boolean = hasSetting(MallocHoistSetting)
   def constArray: Boolean = hasSetting(ConstantSizeArraySetting)
   def stringCompression: Boolean = hasSetting(StringDictionarySetting)
@@ -89,6 +90,7 @@ class Settings(val args: List[String]) {
   def noSingletonHashMap: Boolean = hasSetting(NoSingletonHashMapSetting)
   def nameIsWithFlag: Boolean = hasSetting(OutputNameWithFlagSetting)
   def onlyLoading: Boolean = hasSetting(OnlyLoaderSetting)
+  def profile: Boolean = hasSetting(ProfileSetting)
   def chooseOptimal: Boolean = hasSetting(OptimalSetting)
   def chooseCompliant: Boolean = hasSetting(CompliantSetting)
   def targetLanguage: Language = if (hasSetting(ScalaCGSetting))
@@ -120,6 +122,7 @@ object Settings {
     PointerStoreSetting,
     ArrayPartitioningSetting,
     HashMapPartitioningSetting,
+    WhileToForSetting,
     MallocHoistSetting,
     ConstantSizeArraySetting,
     StringDictionarySetting,
@@ -133,6 +136,7 @@ object Settings {
     NoSingletonHashMapSetting,
     OutputNameWithFlagSetting,
     OnlyLoaderSetting,
+    ProfileSetting,
     OptimalSetting,
     CompliantSetting,
     ScalaCGSetting,
@@ -221,6 +225,9 @@ case object ArrayPartitioningSetting extends OptimizationSetting("part",
 case object HashMapPartitioningSetting extends OptimizationSetting("hm-part",
   "Converts MultiMaps into partitioned arrays",
   MCHLanguage)
+case object WhileToForSetting extends OptimizationSetting("while2for",
+  "Converts While Loops into For Loops",
+  MCHLanguage)
 case object MallocHoistSetting extends OptimizationSetting("malloc-hoist",
   "Hoists malloc statements outside of the critical path",
   ScalaCoreLanguage)
@@ -286,6 +293,8 @@ case object OutputNameWithFlagSetting extends OptionSetting("name-with-flag",
   "Appends the optimization flags to the name of files")
 case object OnlyLoaderSetting extends OptionSetting("only-load",
   "Generates only the loader of a query")
+case object ProfileSetting extends OptionSetting("profile",
+  "Generates profiling information by using the PAPI tool")
 case object OptimalSetting extends OptionSetting("optimal",
   "Considers the best combiniation of optimization flags")
 case object CompliantSetting extends OptionSetting("compliant",

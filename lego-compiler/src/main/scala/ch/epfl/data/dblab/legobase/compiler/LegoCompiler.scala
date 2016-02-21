@@ -42,10 +42,12 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   override def compile[T: PardisType](program: => Expression[T], outputFile: String): Unit = {
     if (reportCompilationTime) {
-      val block = utils.Utilities.time(DSL.reifyBlock(program), "Reification")
-      val optimizedBlock = utils.Utilities.time(optimize(block), "Optimization")
-      val irProgram = irToProgram.createProgram(optimizedBlock)
-      utils.Utilities.time(codeGenerator.generate(irProgram, outputFile), "Code Generation")
+      utils.Utilities.time({
+        val block = utils.Utilities.time(DSL.reifyBlock(program), "Reification")
+        val optimizedBlock = utils.Utilities.time(optimize(block), "Optimization")
+        val irProgram = irToProgram.createProgram(optimizedBlock)
+        utils.Utilities.time(codeGenerator.generate(irProgram, outputFile), "Code Generation")
+      }, "Total compilation time")
     } else {
       super.compile(program, outputFile)
     }
@@ -124,7 +126,7 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   if (settings.hashMapLowering || settings.hashMapNoCollision) {
     if (settings.hashMapLowering) {
-      pipeline += new sc.pardis.deep.scalalib.collection.MultiMapOptimalTransformation(DSL)
+      pipeline += new MultiMapToSetTransformation(DSL, schema)
       pipeline += new HashMapToSetTransformation(DSL, schema)
     }
     if (settings.hashMapNoCollision) {
@@ -159,6 +161,11 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   if (settings.stringCompression) pipeline += new StringDictionaryTransformer(DSL, schema)
   // pipeline += TreeDumper(false)
+
+  if (settings.whileToForLoop) {
+    pipeline += new WhileToRangeForeachTransformer(DSL)
+    pipeline += DCE
+  }
 
   if (settings.partitioning) {
     // pipeline += TreeDumper(false)
@@ -221,9 +228,9 @@ class LegoCompiler(val DSL: LegoBaseExp,
   val codeGenerator =
     if (settings.targetLanguage == CCoreLanguage) {
       if (settings.noLetBinding)
-        new LegoCASTGenerator(DSL, outputFile, true)
+        new LegoCASTGenerator(DSL, outputFile, settings, true)
       else
-        new LegoCGenerator(outputFile, true)
+        new LegoCGenerator(outputFile, settings, true)
     } else {
       if (settings.noLetBinding)
         new LegoScalaASTGenerator(DSL, false, outputFile, runnerClassName)
