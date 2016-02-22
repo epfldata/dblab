@@ -10,30 +10,42 @@ import scala.collection.mutable.MultiMap
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.TreeSet
 import scala.language.implicitConversions
+import QueryCPS.build
 
 // @reflect[Query[_]]
 // @transformation
 abstract class QueryCPS[T] {
-  @pure def map[S](f: T => S): QueryCPS[S] = (k: S => Unit) => {
-    foreach(e => k(f(e)))
+  @pure def map[S](f: T => S): QueryCPS[S] = build { k =>
+    for (e <- this) {
+      k(f(e))
+    }
   }
-  @pure def filter(p: T => Boolean): QueryCPS[T] = (k: T => Unit) => {
-    foreach(e => if (p(e)) k(e))
+  @pure def filter(p: T => Boolean): QueryCPS[T] = build { k =>
+    for (e <- this) {
+      if (p(e))
+        k(e)
+    }
   }
   @pure def foldLeft[S](z: S)(f: (S, T) => S): S = {
     var res = z
-    foreach(e => res = f(res, e))
+    for (e <- this) {
+      res = f(res, e)
+    }
     res
   }
   def foreach(f: T => Unit): Unit
   @pure def sum(implicit num: Numeric[T]): T = {
     var res = num.zero
-    foreach(e => res = num.plus(res, e))
+    for (e <- this) {
+      res = num.plus(res, e)
+    }
     res
   }
   @pure def count: Int = {
     var size = 0
-    foreach(e => size += 1)
+    for (e <- this) {
+      size += 1
+    }
     size
   }
   @pure def avg(implicit num: Fractional[T]): T =
@@ -45,12 +57,14 @@ abstract class QueryCPS[T] {
   // def groupByMapValues[K, S](par: T => K)(f: Query[T] => S): Query[(K, T)] = {
   //   groupBy(par).mapValues(f)
   // }
-  @dontLift def sortBy[S](f: T => S)(implicit ord: Ordering[S]): QueryCPS[T] = (k: T => Unit) => {
+  @dontLift def sortBy[S](f: T => S)(implicit ord: Ordering[S]): QueryCPS[T] = build { k =>
     val sortedTree = new TreeSet()(
       new Ordering[T] {
         def compare(o1: T, o2: T) = ord.compare(f(o1), f(o2))
       })
-    foreach(e => sortedTree += e)
+    for (e <- this) {
+      sortedTree += e
+    }
     while (sortedTree.size != 0) {
       val elem = sortedTree.head
       sortedTree -= elem
@@ -61,23 +75,23 @@ abstract class QueryCPS[T] {
   // @pure def sortByReverse[S](f: T => S)(implicit ord: Ordering[S]): Query[T] =
   //   new Query(underlying.sortBy(f).reverse)
 
-  @pure def take(i: Int): QueryCPS[T] = (k: T => Unit) => {
+  @pure def take(i: Int): QueryCPS[T] = build { k =>
     var count = 0
-    foreach(e => {
+    for (e <- this) {
       if (count < i) {
         k(e)
         count += 1
       }
-    })
+    }
   }
 
   @pure def minBy[S](f: T => S)(implicit ord: Ordering[S]): T = {
     var minResult: T = null.asInstanceOf[T]
-    foreach(e => {
+    for (e <- this) {
       if (minResult == null || ord.compare(f(minResult), f(e)) > 0) {
         minResult = e
       }
-    })
+    }
     minResult
   }
 
@@ -105,10 +119,11 @@ abstract class QueryCPS[T] {
 
 object QueryCPS {
   // def apply[T](underlying: List[T]): QueryCPS[T] = new Query(underlying)
-  @dontLift def apply[T](underlying: Array[T]): QueryCPS[T] = (k: T => Unit) => {
-    underlying.foreach(k)
+  @dontLift def apply[T](underlying: Array[T]): QueryCPS[T] = build { k =>
+    for (e <- underlying)
+      k(e)
   }
-  @dontLift implicit def apply[T](k: (T => Unit) => Unit): QueryCPS[T] = new QueryCPS[T] {
+  @dontLift def build[T](k: (T => Unit) => Unit): QueryCPS[T] = new QueryCPS[T] {
     def foreach(f: T => Unit): Unit = k(f)
   }
 }
@@ -118,7 +133,7 @@ object JoinableQueryCPS {
 }
 
 class JoinableQueryCPS[T <: Record](private val underlying: QueryCPS[T]) {
-  def hashJoin[S <: Record, R](q2: QueryCPS[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): QueryCPS[DynamicCompositeRecord[T, S]] = (k: DynamicCompositeRecord[T, S] => Unit) => {
+  def hashJoin[S <: Record, R](q2: QueryCPS[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): QueryCPS[DynamicCompositeRecord[T, S]] = build { k =>
     val hm = MultiMap[R, T]
     for (elem <- underlying) {
       hm.addBinding(leftHash(elem), elem)
@@ -136,7 +151,7 @@ class JoinableQueryCPS[T <: Record](private val underlying: QueryCPS[T]) {
     }
   }
 
-  def leftHashSemiJoin[S <: Record, R](q2: QueryCPS[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): QueryCPS[T] = (k: T => Unit) => {
+  def leftHashSemiJoin[S <: Record, R](q2: QueryCPS[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): QueryCPS[T] = build { k =>
     val hm = MultiMap[R, S]
     for (elem <- q2) {
       hm.addBinding(rightHash(elem), elem)
@@ -152,7 +167,7 @@ class JoinableQueryCPS[T <: Record](private val underlying: QueryCPS[T]) {
 }
 
 class GroupedQueryCPS[K, V](underlying: QueryCPS[V], par: V => K) {
-  @pure def mapValues[S](f: QueryCPS[V] => S): QueryCPS[(K, S)] = (k: ((K, S)) => Unit) => {
+  @pure def mapValues[S](f: QueryCPS[V] => S): QueryCPS[(K, S)] = build { k =>
     val hm = MultiMap[K, V]
     for (elem <- underlying) {
       hm.addBinding(par(elem), elem)
