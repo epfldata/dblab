@@ -15,6 +15,20 @@ class QueryTest extends FlatSpec {
   val aList = List(A(1, "one"), A(2, "two"))
   val bList = List(B(1, 1.5), B(2, 2.5), B(3, 3.5))
 
+  def mapSumQueryUnfold(al: List[A]): Int =
+    QueryUnfold(al.toArray).map(_.i).sum
+
+  def filterMapSumQueryUnfold(bl: List[B]): Int =
+    QueryUnfold(bl.toArray).filter(_.d < 3).map(_.j).sum
+
+  "map.sum unfold" should "work" in {
+    mapSumQueryUnfold(aList) should be(3)
+  }
+
+  "filter.map.sum unfold" should "work" in {
+    filterMapSumQueryUnfold(bList) should be(3)
+  }
+
   def mergeJoinQuery(al: List[A], bl: List[B]): Double =
     Query(al).mergeJoin(Query(bl))((x, y) => x.i - y.j)((x, y) => x.i == y.j).map(_.d[Double]).sum
 
