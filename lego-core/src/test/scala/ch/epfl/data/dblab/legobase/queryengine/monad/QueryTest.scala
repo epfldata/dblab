@@ -77,8 +77,18 @@ class QueryTest extends FlatSpec {
     (List(A(1, "one"), A(2, "two-1"), A(3, "three")))
   }
 
+  "sort by unfold" should "work in distinct case" in {
+    QueryUnfold(nonSortedList.dropRight(1).toArray).sortBy(_.i).getList should be
+    (List(A(1, "one"), A(2, "two-1"), A(3, "three")))
+  }
+
   "sort by iterator" should "work in duplicated case" in {
     QueryIterator(nonSortedList.toArray).sortBy(_.i).getList should be
+    (List(A(1, "one"), A(2, "two-1"), A(2, "two-2"), A(3, "three")))
+  }
+
+  "sort by unfold" should "work in duplicated case" in {
+    QueryUnfold(nonSortedList.toArray).sortBy(_.i).getList should be
     (List(A(1, "one"), A(2, "two-1"), A(2, "two-2"), A(3, "three")))
   }
 

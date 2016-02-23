@@ -50,6 +50,14 @@ abstract class QueryUnfold[T] { self =>
     }
   }
 
+  @pure def foldLeft[S](z: S)(f: (S, T) => S): S = {
+    var res = z
+    for (e <- this) {
+      res = f(res, e)
+    }
+    res
+  }
+
   @pure def sum(implicit num: Numeric[T]): T = {
     var res = num.zero
     for (e <- this) {
@@ -66,51 +74,10 @@ abstract class QueryUnfold[T] { self =>
   }
   @pure def avg(implicit num: Fractional[T]): T =
     num.div(sum, num.fromInt(count))
-  // @pure def groupBy[K](par: T => K): GroupedQueryUnfold[K, T, Source] =
-  //   new GroupedQueryUnfold(this, par)
-  // // @pure def filteredGroupBy[K](pred: T => Boolean, par: T => K): GroupedQueryUnfold[K, T] =
-  // //   filter(pred).groupBy(par)
-  // @dontLift def sortBy[S](f: T => S)(implicit ord: Ordering[S]): QueryUnfold[T, Int] = new QueryUnfold[T, Int] {
-  //   val (treeSet, size) = {
-  //     val treeSet = new TreeSet()(
-  //       new Ordering[T] {
-  //         def compare(o1: T, o2: T) = {
-  //           val res = ord.compare(f(o1), f(o2))
-  //           if (res == 0 && o1 != o2) {
-  //             -1
-  //           } else {
-  //             res
-  //           }
-  //         }
-  //       })
-  //     // var count = 0
-  //     self.foreach((elem: T) => {
-  //       treeSet += elem
-  //       // count += 1
-  //     })
-  //     // println(count)
-  //     (treeSet, treeSet.size)
-  //   }
-
-  //   def source = 0
-
-  //   // var lastIndex = -1
-  //   // var lastElem: T = _
-  //   // println(size)
-
-  //   def atEnd(s: Int): Boolean = s >= size
-  //   def next(s: Int): (T, Int) = {
-  //     // if (lastIndex != s) {
-  //     val elem = treeSet.head
-  //     treeSet -= elem
-  //     // lastElem = elem
-  //     // lastIndex = s
-  //     Tuple2(elem, s + 1)
-  //     // } else {
-  //     //   Tuple2(lastElem, s + 1)
-  //     // }
-  //   }
-  // }
+  @pure def groupBy[K](par: T => K): GroupedQueryUnfold[K, T] =
+    new GroupedQueryUnfold(this, par)
+  // @pure def filteredGroupBy[K](pred: T => Boolean, par: T => K): GroupedQueryUnfold[K, T] =
+  //   filter(pred).groupBy(par)
 
   def sortBy[S](f: T => S)(implicit ord: Ordering[S]): QueryUnfold[T] = {
     val (treeSet, size) = {
@@ -156,15 +123,15 @@ abstract class QueryUnfold[T] { self =>
   //   })
   // }
 
-  // @pure def minBy[S](f: T => S)(implicit ord: Ordering[S]): T = {
-  //   var minResult: T = null.asInstanceOf[T]
-  //   foreach(e => {
-  //     if (minResult == null || ord.compare(f(minResult), f(e)) > 0) {
-  //       minResult = e
-  //     }
-  //   })
-  //   minResult
-  // }
+  @pure def minBy[S](f: T => S)(implicit ord: Ordering[S]): T = {
+    var minResult: T = null.asInstanceOf[T]
+    for (e <- this) {
+      if (minResult == null || ord.compare(f(minResult), f(e)) > 0) {
+        minResult = e
+      }
+    }
+    minResult
+  }
 
   def printRows(printFunc: T => Unit, limit: Int): Unit = {
     var rows = 0
@@ -186,13 +153,13 @@ abstract class QueryUnfold[T] { self =>
     printf("(%d rows)\n", rows)
   }
 
-  // @pure def getList: List[T] = {
-  //   var res = ArrayBuffer[T]()
-  //   for (e <- this) {
-  //     res += e
-  //   }
-  //   res.toList
-  // }
+  @pure def getList: List[T] = {
+    var res = ArrayBuffer[T]()
+    for (e <- this) {
+      res += e
+    }
+    res.toList
+  }
 }
 
 object QueryUnfold {
@@ -369,66 +336,68 @@ object QueryUnfold {
 //   }
 // }
 
-// case class GroupByResult[K, V](partitionedArray: Array[Array[V]], keyRevertIndex: Array[K],
-//                                eachBucketSize: Array[Int], partitions: Int, keyIndex: HashMap[K, Int])
+class GroupedQueryUnfold[K, V](underlying: QueryUnfold[V], par: V => K) {
+  def getGroupByResult: GroupByResult[K, V] = {
+    val max_partitions = 50
+    // Q3
+    // val max_partitions = 150000
+    // Q9
+    // val max_partitions = 25 * 7
+    val MAX_SIZE = max_partitions
+    val keyIndex = new HashMap[K, Int]()
+    val keyRevertIndex = new Array[Any](MAX_SIZE).asInstanceOf[Array[K]]
+    var lastIndex = 0
+    val array = new Array[Array[Any]](MAX_SIZE).asInstanceOf[Array[Array[V]]]
+    val eachBucketSize = new Array[Int](MAX_SIZE)
+    // val thisSize = 1 << 25
+    val thisSize = 1 << 22
+    val arraySize = thisSize / MAX_SIZE * 8
+    Range(0, MAX_SIZE).foreach { i =>
+      // val arraySize = originalArray.length
+      // val arraySize = 128
+      array(i) = new Array[Any](arraySize).asInstanceOf[Array[V]] // discovered a funny scalac bug!
+      eachBucketSize(i) = 0
+    }
+    GroupByResult(array, keyRevertIndex, eachBucketSize, MAX_SIZE, keyIndex)
+    // ???
+  }
 
-// class GroupedQueryUnfold[K, V, Source1](underlying: QueryUnfold[V, Source1], par: V => K) {
-//   def getGroupByResult: GroupByResult[K, V] = {
-//     // val max_partitions = 50
-//     // Q3
-//     // val max_partitions = 150000
-//     // Q9
-//     val max_partitions = 25 * 7
-//     val MAX_SIZE = max_partitions
-//     val keyIndex = new HashMap[K, Int]()
-//     val keyRevertIndex = new Array[Any](MAX_SIZE).asInstanceOf[Array[K]]
-//     var lastIndex = 0
-//     val array = new Array[Array[Any]](MAX_SIZE).asInstanceOf[Array[Array[V]]]
-//     val eachBucketSize = new Array[Int](MAX_SIZE)
-//     val thisSize = 1 << 25
-//     val arraySize = thisSize / MAX_SIZE * 8
-//     Range(0, MAX_SIZE).foreach { i =>
-//       // val arraySize = originalArray.length
-//       // val arraySize = 128
-//       array(i) = new Array[Any](arraySize).asInstanceOf[Array[V]] // discovered a funny scalac bug!
-//       eachBucketSize(i) = 0
-//     }
-//     GroupByResult(array, keyRevertIndex, eachBucketSize, MAX_SIZE, keyIndex)
-//     // ???
-//   }
+  @pure def mapValues[S](func: QueryUnfold[V] => S): QueryUnfold[(K, S)] = {
 
-//   @pure def mapValues[S](func: QueryUnfold[V, Int] => S): QueryUnfold[(K, S), Int] = new QueryUnfold[(K, S), Int] {
+    val (groupByResult, partitions) = {
+      val groupByResult = getGroupByResult
+      val GroupByResult(array, keyRevertIndex, eachBucketSize, _, keyIndex) =
+        groupByResult
+      var lastIndex = 0
 
-//     val (groupByResult, partitions) = {
-//       val groupByResult = getGroupByResult
-//       val GroupByResult(array, keyRevertIndex, eachBucketSize, _, keyIndex) =
-//         groupByResult
-//       var lastIndex = 0
+      underlying.foreach((elem: V) => {
+        val key = par(elem)
+        val bucket = keyIndex.getOrElseUpdate(key, {
+          keyRevertIndex(lastIndex) = key
+          lastIndex = lastIndex + 1
+          lastIndex - 1
+        })
+        array(bucket)(eachBucketSize(bucket)) = elem
+        eachBucketSize(bucket) += 1
+      })
+      (groupByResult, lastIndex)
+    }
 
-//       underlying.foreach((elem: V) => {
-//         val key = par(elem)
-//         val bucket = keyIndex.getOrElseUpdate(key, {
-//           keyRevertIndex(lastIndex) = key
-//           lastIndex = lastIndex + 1
-//           lastIndex - 1
-//         })
-//         array(bucket)(eachBucketSize(bucket)) = elem
-//         eachBucketSize(bucket) += 1
-//       })
-//       (groupByResult, lastIndex)
-//     }
+    var index: Int = 0
 
-//     def source: Int = 0
-
-//     def atEnd(s: Int): Boolean = s >= partitions
-//     def next(s: Int): ((K, S), Int) = {
-//       val GroupByResult(array, keyRevertIndex, eachBucketSize, _, _) =
-//         groupByResult
-//       val i = s
-//       val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
-//       val key = keyRevertIndex(i)
-//       val newValue = func(QueryUnfold(arr))
-//       Tuple2(Tuple2(key, newValue), s + 1)
-//     }
-//   }
-// }
+    destroy { () =>
+      if (index >= partitions) {
+        underlying.NULL
+      } else {
+        val GroupByResult(array, keyRevertIndex, eachBucketSize, _, _) =
+          groupByResult
+        val i = index
+        index += 1
+        val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
+        val key = keyRevertIndex(i)
+        val newValue = func(QueryUnfold(arr))
+        key -> newValue
+      }
+    }
+  }
+}
