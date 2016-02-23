@@ -14,7 +14,7 @@ object Config {
   /** Cache the loaded tables so that the same table is not loaded several times */
   val cacheLoading: Boolean = true
   /** Number of the repetitions of running a query */
-  val numRuns: scala.Int = 5
+  val numRuns: scala.Int = 1
   /** Specifies if the output should be printed or not */
   val printResult = false
   /** Code generation info */
