@@ -39,40 +39,7 @@ abstract class QueryUnfold[T] { self =>
     }
     elem
   }
-  // @pure def filter(p: T => Boolean): QueryUnfold[T, Source] = new QueryUnfold[T, Source] {
-  //   def zeroValue[TP]: TP = null.asInstanceOf[TP]
-  //   var hd = zeroValue[T]
-  //   var curTail = zeroValue[Source]
-  //   var tmpAtEnd = false
-  //   def source = self.source
-  //   def atEnd(s: Source): Boolean = self.atEnd(s) || tmpAtEnd || {
-  //     var tmpSource = s
-  //     val nextAndRest = self.next(tmpSource)
-  //     var tmpHd = nextAndRest._1
-  //     var tmpRest = nextAndRest._2
-  //     while (!(tmpAtEnd || p(tmpHd))) {
-  //       tmpSource = tmpRest
-  //       if (self.atEnd(tmpSource)) {
-  //         tmpAtEnd = true
-  //         tmpHd = zeroValue[T]
-  //         tmpRest = zeroValue[Source]
-  //       } else {
-  //         val nextAndRest2 = self.next(tmpSource)
-  //         tmpHd = nextAndRest2._1
-  //         tmpRest = nextAndRest2._2
-  //       }
-  //     }
-  //     hd = tmpHd
-  //     curTail = tmpRest
-  //     tmpAtEnd
-  //   }
-  //   def next(s: Source): (T, Source) = (hd, curTail)
-  // }
-  // @pure def foldLeft[S](z: S)(f: (S, T) => S): S = {
-  //   var res = z
-  //   foreach(e => res = f(res, e))
-  //   res
-  // }
+
   def foreach(f: T => Unit): Unit = {
     var elem: T = NULL
     while ({
@@ -90,13 +57,15 @@ abstract class QueryUnfold[T] { self =>
     }
     res
   }
-  // @pure def count: Int = {
-  //   var size = 0
-  //   foreach(e => size += 1)
-  //   size
-  // }
-  // @pure def avg(implicit num: Fractional[T]): T =
-  //   num.div(sum, num.fromInt(count))
+  @pure def count: Int = {
+    var size = 0
+    for (e <- this) {
+      size += 1
+    }
+    size
+  }
+  @pure def avg(implicit num: Fractional[T]): T =
+    num.div(sum, num.fromInt(count))
   // @pure def groupBy[K](par: T => K): GroupedQueryUnfold[K, T, Source] =
   //   new GroupedQueryUnfold(this, par)
   // // @pure def filteredGroupBy[K](pred: T => Boolean, par: T => K): GroupedQueryUnfold[K, T] =
@@ -143,6 +112,37 @@ abstract class QueryUnfold[T] { self =>
   //   }
   // }
 
+  def sortBy[S](f: T => S)(implicit ord: Ordering[S]): QueryUnfold[T] = {
+    val (treeSet, size) = {
+      val treeSet = new TreeSet()(
+        new Ordering[T] {
+          def compare(o1: T, o2: T) = {
+            val res = ord.compare(f(o1), f(o2))
+            if (res == 0 && o1 != o2) {
+              -1
+            } else {
+              res
+            }
+          }
+        })
+      for (elem <- this) {
+        treeSet += elem
+      }
+      (treeSet, treeSet.size)
+    }
+    var index = 0
+    destroy { () =>
+      if (index >= size)
+        NULL
+      else {
+        index += 1
+        val elem = treeSet.head
+        treeSet -= elem
+        elem
+      }
+    }
+  }
+
   // @pure def sortByReverse[S](f: T => S)(implicit ord: Ordering[S]): Query[T] =
   //   new Query(underlying.sortBy(f).reverse)
 
@@ -166,25 +166,25 @@ abstract class QueryUnfold[T] { self =>
   //   minResult
   // }
 
-  // def printRows(printFunc: T => Unit, limit: Int): Unit = {
-  //   var rows = 0
-  //   if (limit == -1) {
-  //     for (e <- this) {
-  //       // printf(format, elems.map(_(e)): _*)
-  //       printFunc(e)
-  //       rows += 1
-  //     }
-  //   } else {
-  //     var s = source
-  //     while (!atEnd(s) && rows < limit) {
-  //       val n = next(s)
-  //       printFunc(n._1)
-  //       s = n._2
-  //       rows += 1
-  //     }
-  //   }
-  //   printf("(%d rows)\n", rows)
-  // }
+  def printRows(printFunc: T => Unit, limit: Int): Unit = {
+    var rows = 0
+    if (limit == -1) {
+      for (e <- this) {
+        printFunc(e)
+        rows += 1
+      }
+    } else {
+      var elem: T = NULL
+      while (rows < limit && {
+        elem = next()
+        elem
+      } != NULL) {
+        printFunc(elem)
+        rows += 1
+      }
+    }
+    printf("(%d rows)\n", rows)
+  }
 
   // @pure def getList: List[T] = {
   //   var res = ArrayBuffer[T]()
