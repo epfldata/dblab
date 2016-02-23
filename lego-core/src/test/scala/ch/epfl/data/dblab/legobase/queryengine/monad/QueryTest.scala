@@ -36,6 +36,9 @@ class QueryTest extends FlatSpec {
     QueryIterator(al.toArray).mergeJoin(QueryIterator(bl.toArray))((x, y) => x.i - y.j)((x, y) => x.i == y.j).map(_.d[Double]).sum
   // { QueryIterator(al.toArray).mergeJoin(QueryIterator(bl.toArray))((x, y) => x.i - y.j)((x, y) => x.i == y.j).foreach(println); println(">>>"); 3 }
 
+  def mergeJoinQueryUnfold(al: List[A], bl: List[B]): Double =
+    QueryUnfold(al.toArray).mergeJoin(QueryUnfold(bl.toArray))((x, y) => x.i - y.j)((x, y) => x.i == y.j).map(_.d[Double]).sum
+
   def hashJoinQuery(al: List[A], bl: List[B]): Double =
     Query(al).hashJoin(Query(bl))(_.i)(_.j)((x, y) => x.i == y.j).map(_.d[Double]).sum
 
@@ -63,6 +66,14 @@ class QueryTest extends FlatSpec {
 
   "merge join iterator" should "work in duplication case" in {
     mergeJoinQueryIterator(aList, b2List) should be(4)
+  }
+
+  "merge join unfold" should "work in simple case" in {
+    mergeJoinQueryUnfold(aList, bList) should be(4)
+  }
+
+  "merge join unfold" should "work in duplication case" in {
+    mergeJoinQueryUnfold(aList, b2List) should be(4)
   }
 
   /* Merge-Join no longer works for N-M case!*/

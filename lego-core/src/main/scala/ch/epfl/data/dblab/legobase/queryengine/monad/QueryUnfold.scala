@@ -248,6 +248,46 @@ class JoinableQueryUnfold[T <: Record](private val underlying: QueryUnfold[T]) {
     }
   }
 
+  def mergeJoin[S <: Record](q2: QueryUnfold[S])(
+    ord: (T, S) => Int)(joinCond: (T, S) => Boolean): QueryUnfold[DynamicCompositeRecord[T, S]] = {
+    var elem1: T = NULL
+    var elem2: S = NULL
+    var nextJoinElem: DynamicCompositeRecord[T, S] = NULL
+    var atEnd: Boolean = false
+    def proceedLeft(): Unit = {
+      elem1 = underlying.next()
+      atEnd ||= elem1 == NULL
+    }
+    def proceedRight(): Unit = {
+      elem2 = q2.next()
+      atEnd ||= elem2 == NULL
+    }
+    proceedLeft()
+    proceedRight()
+    underlying.destroy { () =>
+
+      var found: Boolean = false
+
+      while (!found && !atEnd) {
+        val (ne1, ne2) = elem1 -> elem2
+        val cmp = ord(ne1, ne2)
+        if (cmp < 0) {
+          proceedLeft()
+        } else {
+          proceedRight()
+          if (cmp == 0) {
+            nextJoinElem = ne1.concatenateDynamic(ne2)
+            found = true
+          }
+        }
+      }
+      if (atEnd && !found)
+        NULL
+      else
+        nextJoinElem
+    }
+  }
+
   //   def mergeJoin[S <: Record, Source2](q2: QueryUnfold[S, Source2])(
   //     ord: (T, S) => Int)(joinCond: (T, S) => Boolean): QueryUnfold[DynamicCompositeRecord[T, S], (Source1, Source2)] =
   //     new QueryUnfold[DynamicCompositeRecord[T, S], (Source1, Source2)] {
