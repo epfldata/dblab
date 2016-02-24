@@ -17,6 +17,7 @@ import storagemanager._
 import queryengine.monad.Query
 // import queryengine.monad.{ QueryOptimized => Query }
 // import queryengine.monad.{ QueryCPS => Query }
+// import queryengine.monad.{ QueryUnfold => Query }
 
 @metadeep(
   folder = "",
@@ -68,7 +69,6 @@ object Queries {
 
   def Q1_functional(numRuns: Int) {
     // import queryengine.monad.{ QueryIterator => Query }
-    // def Q1(numRuns: Int) {
     val lineitemTable = Query(loadLineitem())
     for (i <- 0 until numRuns) {
       runQuery {
@@ -109,9 +109,6 @@ object Queries {
           // })
           .sortBy(t =>
             t._1.L_RETURNFLAG.toInt * 128 + t._1.L_LINESTATUS.toInt)
-        // result.printRows("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n",
-        //   _._1.L_RETURNFLAG, _._1.L_LINESTATUS, _._2.apply(1), _._2.apply(2), _._2.apply(3), _._2.apply(4),
-        //   _._2.apply(6), _._2.apply(7), _._2.apply(8), _._2.apply(5))()
         result.printRows(kv => {
           printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n",
             kv._1.L_RETURNFLAG, kv._1.L_LINESTATUS, kv._2.apply(1), kv._2.apply(2), kv._2.apply(3), kv._2.apply(4),
@@ -175,56 +172,18 @@ object Queries {
       runQuery {
         val africa = parseString("AFRICA")
         val tin = parseString("TIN")
-        // val partsuppScan = new ScanOp(partsuppTable)
-        // val supplierScan = new ScanOp(supplierTable)
         val jo1 = supplierTable.hashJoin(partsuppTable)(x => x.S_SUPPKEY)(x => x.PS_SUPPKEY)((x, y) => x.S_SUPPKEY == y.PS_SUPPKEY)
-        // val jo1 = new HashJoinOp(supplierScan, partsuppScan)((x, y) => x.S_SUPPKEY == y.PS_SUPPKEY)(x => x.S_SUPPKEY)(x => x.PS_SUPPKEY)
-        // val nationScan = new ScanOp(nationTable)
         val jo2 = nationTable.hashJoin(jo1)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])
-        // val jo2 = new HashJoinOp(nationScan, jo1)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])
-        // val partScan = new SelectOp(new ScanOp(partTable))(x => x.P_SIZE == 43 && x.P_TYPE.endsWith(tin))
         val partScan = partTable.filter(x => x.P_SIZE == 43 && x.P_TYPE.endsWith(tin))
         val jo3 = partScan.hashJoin(jo2)(x => x.P_PARTKEY)(x => x.PS_PARTKEY[Int])((x, y) => x.P_PARTKEY == y.PS_PARTKEY[Int])
-        // val jo3 = new HashJoinOp(partScan, jo2)((x, y) => x.P_PARTKEY == y.PS_PARTKEY[Int])(x => x.P_PARTKEY)(x => x.PS_PARTKEY[Int])
         val regionScan = regionTable.filter(_.R_NAME === africa)
-        // val regionScan = new SelectOp(new ScanOp(regionTable))(x => x.R_NAME === africa) //for comparing equality of LBString we should use === instead of ==
         val jo4 = regionScan.hashJoin(jo3)(x => x.R_REGIONKEY)(x => x.N_REGIONKEY[Int])((x, y) => x.R_REGIONKEY == y.N_REGIONKEY[Int])
-        // val jo4 = new HashJoinOp(regionScan, jo3)((x, y) => x.R_REGIONKEY == y.N_REGIONKEY[Int])(x => x.R_REGIONKEY)(x => x.N_REGIONKEY[Int])
         val wo = jo4.groupBy(x => x.P_PARTKEY[Int]).mapValues(x => x.minBy(y => y.PS_SUPPLYCOST[Double]))
-        // val wo = new WindowOp(jo4)(x => x.P_PARTKEY[Int])(x => x.minBy(y => y.PS_SUPPLYCOST[Double]))
         val so = wo.sortBy(x => (-x._2.S_ACCTBAL[Double], x._2.N_NAME[LBString].string, x._2.S_NAME[LBString].string, x._2.P_PARTKEY[Int]))
-        // val so = new SortOp(wo)((x, y) => {
-        //   if (x.wnd.S_ACCTBAL[Double] < y.wnd.S_ACCTBAL[Double]) 1
-        //   else if (x.wnd.S_ACCTBAL[Double] > y.wnd.S_ACCTBAL[Double]) -1
-        //   else {
-        //     var res = x.wnd.N_NAME[LBString] diff y.wnd.N_NAME[LBString]
-        //     if (res == 0) {
-        //       res = x.wnd.S_NAME[LBString] diff y.wnd.S_NAME[LBString]
-        //       if (res == 0) res = x.wnd.P_PARTKEY[Int] - y.wnd.P_PARTKEY[Int]
-        //     }
-        //     res
-        //   }
-        // })
-        // var rows = 0
-        // so.take(100).foreach { e =>
-        //   val kv = e._2
-        //   printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL[Double], (kv.S_NAME[LBString]).string, (kv.N_NAME[LBString]).string, kv.P_PARTKEY[Int], (kv.P_MFGR[LBString]).string, (kv.S_ADDRESS[LBString]).string, (kv.S_PHONE[LBString]).string, (kv.S_COMMENT[LBString]).string)
-        //   rows += 1
-        // }
-        // val resultRows = rows
-        // printf("(%d rows)\n", resultRows)
-        // so.printRows("%.2f|%s|%s|%d|%s|%s|%s|%s\n", _._2.S_ACCTBAL[Double], _._2.S_NAME[LBString].string, _._2.N_NAME[LBString].string, _._2.P_PARTKEY[Int],
-        //   _._2.P_MFGR[LBString].string, _._2.S_ADDRESS[LBString].string, _._2.S_PHONE[LBString].string, _._2.S_COMMENT[LBString].string)(100)
         so.printRows(e => {
           val kv = e._2
           printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL[Double], (kv.S_NAME[LBString]).string, (kv.N_NAME[LBString]).string, kv.P_PARTKEY[Int], (kv.P_MFGR[LBString]).string, (kv.S_ADDRESS[LBString]).string, (kv.S_PHONE[LBString]).string, (kv.S_COMMENT[LBString]).string)
         }, 100)
-        // val po = new PrintOp(so)(e => {
-        //   val kv = e.wnd
-        //   printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL[Double], (kv.S_NAME[LBString]).string, (kv.N_NAME[LBString]).string, kv.P_PARTKEY[Int], (kv.P_MFGR[LBString]).string, (kv.S_ADDRESS[LBString]).string, (kv.S_PHONE[LBString]).string, (kv.S_COMMENT[LBString]).string)
-        // }, 100)
-        // po.open
-        // po.next
         ()
       }
     }
@@ -283,15 +242,8 @@ object Queries {
         val aggOp = jo2.groupBy(x => new Q3GRPRecord(x.L_ORDERKEY[Int], x.O_ORDERDATE[Int], x.O_SHIPPRIORITY[Int])).mapValues(_.map(t => (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))).sum)
         val sortOp = aggOp.sortBy(x => (-x._2, x._1.O_ORDERDATE))
         var rows = 0
-        // sortOp.take(10).foreach(e => {
-        //   printf("%d|%.4f|%s|%d\n", e._1.L_ORDERKEY, e._2, dateToString(e._1.O_ORDERDATE), e._1.O_SHIPPRIORITY)
-        //   rows += 1
-        // })
-        // // there's an unknown bug (with the inference of IntType TypeRep) which needs the next line
-        // val resultRows = rows
         sortOp.printRows(e =>
           printf("%d|%.4f|%s|%d\n", e._1.L_ORDERKEY, e._2, dateToString(e._1.O_ORDERDATE), e._1.O_SHIPPRIORITY), 10)
-        // printf("(%d rows)\n", resultRows)
       }
     }
   }
@@ -333,14 +285,6 @@ object Queries {
         val hj = scanOrders.leftHashSemiJoin(scanLineitem)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
         val aggRes = hj.groupBy(x => x.O_ORDERPRIORITY).mapValues(_.count)
         val sortOp = aggRes.sortBy(_._1.string)
-        // var rows = 0
-        // sortOp.foreach { kv =>
-        //   printf("%s|%d\n", kv._1.string, kv._2)
-        //   rows += 1
-        // }
-        // // there's an unknown bug (with the inference of IntType TypeRep) which needs the next line
-        // val resultRows = rows
-        // printf("(%d rows)\n", resultRows)
         sortOp.printRows(kv =>
           printf("%s|%d\n", kv._1.string, kv._2), -1)
       })
@@ -402,51 +346,33 @@ object Queries {
         val constantDate1 = parseDate("1996-01-01")
         val constantDate2 = parseDate("1997-01-01")
         val asia = parseString("ASIA")
-        val scanRegion = //new SelectOp(new ScanOp(regionTable))(x => x.R_NAME === asia)
+        val scanRegion =
           regionTable.filter(x => x.R_NAME === asia)
-        val scanNation = //new ScanOp(nationTable)
+        val scanNation =
           nationTable
-        val scanLineitem = //new ScanOp(lineitemTable)
+        val scanLineitem =
           lineitemTable
-        val scanOrders = //new SelectOp(new ScanOp(ordersTable))(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE < constantDate2)
+        val scanOrders =
           ordersTable.filter(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE < constantDate2)
-        val scanCustomer = //new ScanOp(customerTable)
+        val scanCustomer =
           customerTable
-        val scanSupplier = //new ScanOp(supplierTable)
+        val scanSupplier =
           supplierTable
-        val jo1 = //new HashJoinOp(scanRegion, scanNation)((x, y) => x.R_REGIONKEY == y.N_REGIONKEY)(x => x.R_REGIONKEY)(x => x.N_REGIONKEY)
+        val jo1 =
           scanRegion.hashJoin(scanNation)(x => x.R_REGIONKEY)(x => x.N_REGIONKEY)((x, y) => x.R_REGIONKEY == y.N_REGIONKEY)
-        val jo2 = //new HashJoinOp(jo1, scanCustomer)((x, y) => x.N_NATIONKEY[Int] == y.C_NATIONKEY)(x => x.N_NATIONKEY[Int])(x => x.C_NATIONKEY)
+        val jo2 =
           jo1.hashJoin(scanCustomer)(x => x.N_NATIONKEY[Int])(x => x.C_NATIONKEY)((x, y) => x.N_NATIONKEY[Int] == y.C_NATIONKEY)
-        val jo3 = //new HashJoinOp(jo2, scanOrders)((x, y) => x.C_CUSTKEY[Int] == y.O_CUSTKEY)(x => x.C_CUSTKEY[Int])(x => x.O_CUSTKEY)
+        val jo3 =
           jo2.hashJoin(scanOrders)(x => x.C_CUSTKEY[Int])(x => x.O_CUSTKEY)((x, y) => x.C_CUSTKEY[Int] == y.O_CUSTKEY)
-        val jo4 = //new HashJoinOp(jo3, scanLineitem)((x, y) => x.O_ORDERKEY[Int] == y.L_ORDERKEY)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY)
+        val jo4 =
           jo3.hashJoin(scanLineitem)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY[Int] == y.L_ORDERKEY)
-        val jo5 = //new HashJoinOp(scanSupplier, jo4)((x, y) => x.S_SUPPKEY == y.L_SUPPKEY[Int] && y.N_NATIONKEY[Int] == x.S_NATIONKEY)(x => x.S_SUPPKEY)(x => x.L_SUPPKEY[Int])
+        val jo5 =
           scanSupplier.hashJoin(jo4)(x => x.S_SUPPKEY)(x => x.L_SUPPKEY[Int])((x, y) => x.S_SUPPKEY == y.L_SUPPKEY[Int] && y.N_NATIONKEY[Int] == x.S_NATIONKEY)
 
-        //val aggOp = new AggOp(jo5, 1)(x => x.N_NAME[LBString])(
-        // (t, currAgg) => { currAgg + t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]) })
         val aggOp = jo5.groupBy(x => x.N_NAME[LBString]).mapValues(list => list.map(t => t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])).sum)
         val sortOp = aggOp.sortBy(x => -x._2)
-        // val sortOp = new SortOp(aggOp)((x, y) => {
-        //   if (x.aggs(0) < y.aggs(0)) 1
-        //   else if (x.aggs(0) > y.aggs(0)) -1
-        //   else 0
-        // })
-        // val po = new PrintOp(sortOp)(kv => { printf("%s|%.4f\n", kv.key.string, kv.aggs(0)) }, -1)
-        // var rows = 0
-        // sortOp.foreach(kv => {
-        //   printf("%s|%.4f\n", kv._1.string, kv._2)
-        //   rows += 1
-        // })
-        // // there's an unknown bug (with the inference of IntType TypeRep) which needs the next line
-        // val resultRows = rows
-        // printf("(%d rows)\n", resultRows)
         sortOp.printRows(kv =>
           printf("%s|%.4f\n", kv._1.string, kv._2), -1)
-        // po.open
-        // po.next
         ()
       })
     }
@@ -597,9 +523,6 @@ object Queries {
         val soPart = new SelectOp(new ScanOp(partTable))(x => x.P_NAME.containsSlice(ghost))
         val soPartsupp = new ScanOp(partsuppTable)
         val soOrders = new ScanOp(ordersTable)
-        // val hj1 = new HashJoinOp(soNation, soSupplier)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY)
-        // val hj2 = new HashJoinOp(hj1, soLineitem)((x, y) => x.S_SUPPKEY[Int] == y.L_SUPPKEY)(x => x.S_SUPPKEY[Int])(x => x.L_SUPPKEY)
-        // val hj3 = new HashJoinOp(soPart, hj2)((x, y) => x.P_PARTKEY == y.L_PARTKEY[Int])(x => x.P_PARTKEY)(x => x.L_PARTKEY[Int])
         val hj1 = new HashJoinOp(soLineitem, soPart)((x, y) => x.L_PARTKEY == y.P_PARTKEY)(x => x.L_PARTKEY)(x => x.P_PARTKEY)
         val hj2 = new HashJoinOp(hj1, soSupplier)((x, y) => x.L_SUPPKEY[Int] == y.S_SUPPKEY)(x => x.L_SUPPKEY[Int])(x => x.S_SUPPKEY)
         val hj3 = new HashJoinOp(hj2, soNation)((x, y) => x.S_NATIONKEY[Int] == y.N_NATIONKEY)(x => x.S_NATIONKEY[Int])(x => x.N_NATIONKEY)
@@ -632,8 +555,6 @@ object Queries {
     val partsuppTable = Query(loadPartsupp())
     val supplierTable = Query(loadSupplier())
     val lineitemTable = Query(loadLineitem())
-    // val li = loadLineitem()
-    // val lineitemTable = Query(Array(li(78821), li(98999)))
     for (i <- 0 until numRuns) {
       runQuery({
         val ghost = parseString("ghost")
@@ -646,8 +567,6 @@ object Queries {
         val hj1 = soLineitem.hashJoin(soPart)(x => x.L_PARTKEY)(x => x.P_PARTKEY)((x, y) => x.L_PARTKEY == y.P_PARTKEY)
         val hj2 = hj1.hashJoin(soSupplier)(x => x.L_SUPPKEY[Int])(x => x.S_SUPPKEY)((x, y) => x.L_SUPPKEY[Int] == y.S_SUPPKEY)
         val hj3 = hj2.hashJoin(soNation)(x => x.S_NATIONKEY[Int])(x => x.N_NATIONKEY)((x, y) => x.S_NATIONKEY[Int] == y.N_NATIONKEY)
-        // printf("%d!", hj1.count)
-        // hj1.printRows(kv => printf("%s\n", kv.toString), -1)
         val hj4 = soPartsupp.hashJoin(hj3)(x => x.PS_PARTKEY)(x => x.L_PARTKEY[Int])((x, y) => x.PS_PARTKEY == y.L_PARTKEY[Int] && x.PS_SUPPKEY == y.L_SUPPKEY[Int])
         val hj5 = hj4.hashJoin(soOrders)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)((x, y) => x.L_ORDERKEY[Int] == y.O_ORDERKEY)
         val aggOp = hj5.groupBy(x => new Q9GRPRecord(x.N_NAME[LBString], dateToYear(x.O_ORDERDATE[Int]))).mapValues(_.map(t =>
@@ -682,14 +601,7 @@ object Queries {
         val shj3 = hj3.sortBy(x => x.L_ORDERKEY[Int])
         val mj4 = soOrders.mergeJoin(shj3)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY[Int])((x, y) => x.O_ORDERKEY == y.L_ORDERKEY[Int])
         val smj4 = mj4.sortBy(x => (x.L_PARTKEY[Int], x.L_SUPPKEY[Int]))
-        // println(mj4.count)
-        // shj3.printRows(x => println(x), -1)
-        // println(hj1.count)
-        // println(soPartsupp.isSortedBy(x => (x.PS_PARTKEY, x.PS_SUPPKEY)))
         val sortedPartsupp = soPartsupp.sortBy(x => (x.PS_PARTKEY, x.PS_SUPPKEY))
-        // println(sortedPartsupp.count)
-        // println(soPartsupp.isSortedBy(x => (x.PS_PARTKEY, x.PS_SUPPKEY)))
-        // println(soPartsupp.getList)
         val mj5 = sortedPartsupp.mergeJoin(smj4)((x, y) => {
           val pk = x.PS_PARTKEY - y.L_PARTKEY[Int]
           if (pk == 0)
@@ -697,9 +609,6 @@ object Queries {
           else
             pk
         })((x, y) => x.PS_PARTKEY == y.L_PARTKEY[Int] && x.PS_SUPPKEY == y.L_SUPPKEY[Int])
-        // val hj5 = smj4.hashJoin(soPartsupp)(_.L_PARTKEY[Int])(_.PS_PARTKEY)((x, y) => x.L_PARTKEY[Int] == y.PS_PARTKEY && y.PS_SUPPKEY == x.L_SUPPKEY[Int])
-        // println(mj5.count)
-        // println(hj5.count)
         val aggOp = mj5.groupBy(x => new Q9GRPRecord(x.N_NAME[LBString], dateToYear(x.O_ORDERDATE[Int]))).mapValues(_.map(t =>
           ((t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))) - ((1.0 * t.PS_SUPPLYCOST[Double]) * t.L_QUANTITY[Double])).sum)
         val sortOp = aggOp.sortBy(x => (x._1.NATION.string, -x._1.O_YEAR))
@@ -884,13 +793,6 @@ object Queries {
           Array(list.filter(t => t.O_ORDERPRIORITY[LBString] === URGENT || t.O_ORDERPRIORITY[LBString] === HIGH).count,
             list.filter(t => t.O_ORDERPRIORITY[LBString] =!= URGENT && t.O_ORDERPRIORITY[LBString] =!= HIGH).count))
         val sortOp = aggOp.sortBy(_._1.string)
-        // var rows = 0
-        // sortOp.foreach(kv => {
-        //   printf("%s|%d|%d\n", kv._1.string, kv._2(0), kv._2(1))
-        //   rows += 1
-        // })
-        // val resultRows = rows
-        // printf("(%d rows)\n", resultRows)
         sortOp.printRows(kv =>
           printf("%s|%d|%d\n", kv._1.string, kv._2(0), kv._2(1)), -1)
       })
@@ -917,13 +819,6 @@ object Queries {
           Array(list.filter(t => t.O_ORDERPRIORITY[LBString] === URGENT || t.O_ORDERPRIORITY[LBString] === HIGH).count,
             list.filter(t => t.O_ORDERPRIORITY[LBString] =!= URGENT && t.O_ORDERPRIORITY[LBString] =!= HIGH).count))
         val sortOp = aggOp.sortBy(_._1.string)
-        // var rows = 0
-        // sortOp.foreach(kv => {
-        //   printf("%s|%d|%d\n", kv._1.string, kv._2(0), kv._2(1))
-        //   rows += 1
-        // })
-        // val resultRows = rows
-        // printf("(%d rows)\n", resultRows)
         sortOp.printRows(kv =>
           printf("%s|%d|%d\n", kv._1.string, kv._2(0), kv._2(1)), -1)
       })

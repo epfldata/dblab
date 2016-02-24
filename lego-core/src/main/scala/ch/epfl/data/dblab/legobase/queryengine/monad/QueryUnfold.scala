@@ -78,8 +78,8 @@ abstract class QueryUnfold[T] { self =>
     num.div(sum, num.fromInt(count))
   @pure def groupBy[K](par: T => K): GroupedQueryUnfold[K, T] =
     new GroupedQueryUnfold(this, par)
-  // @pure def filteredGroupBy[K](pred: T => Boolean, par: T => K): GroupedQueryUnfold[K, T] =
-  //   filter(pred).groupBy(par)
+  @pure def filteredGroupBy[K](pred: T => Boolean, par: T => K): GroupedQueryUnfold[K, T] =
+    filter(pred).groupBy(par)
 
   def sortBy[S](f: T => S)(implicit ord: Ordering[S]): QueryUnfold[T] = {
     val (treeSet, size) = {
@@ -184,7 +184,7 @@ object QueryUnfold {
       index = 0
     }
   }
-  // def apply[T](set: scala.collection.mutable.Set[T]): SetIterator[T] = new SetIterator[T](set)
+  def apply[T](set: scala.collection.mutable.Set[T]): SetUnfold[T] = new SetUnfold[T](set)
 }
 
 class SetUnfold[T](set: scala.collection.mutable.Set[T]) extends QueryUnfold[T] { self =>
@@ -229,7 +229,7 @@ class JoinableQueryUnfold[T <: Record](private val underlying: QueryUnfold[T]) {
               joinCond(bufElem, t)
             }
             if (res) {
-              iterator = new SetUnfold(tmpBuffer).withFilter(e => joinCond(e, t))
+              iterator = QueryUnfold(tmpBuffer).withFilter(e => joinCond(e, t))
               leftElem = iterator.next
             }
             res
@@ -287,73 +287,6 @@ class JoinableQueryUnfold[T <: Record](private val underlying: QueryUnfold[T]) {
         nextJoinElem
     }
   }
-
-  //   def mergeJoin[S <: Record, Source2](q2: QueryUnfold[S, Source2])(
-  //     ord: (T, S) => Int)(joinCond: (T, S) => Boolean): QueryUnfold[DynamicCompositeRecord[T, S], (Source1, Source2)] =
-  //     new QueryUnfold[DynamicCompositeRecord[T, S], (Source1, Source2)] {
-  //       val q1 = underlying
-  //       def source = (q1.source, q2.source)
-  //       var ts1: Source1 = _
-  //       var ts2: Source2 = _
-  //       var elem1: T = _
-  //       var elem2: S = _
-  //       var leftEnd: Boolean = false
-  //       var rightEnd: Boolean = false
-  //       var nextJoinElem: DynamicCompositeRecord[T, S] = _
-  //       var tmpAtEnd = false // keeps if the two sources are at the end or not
-  //       def proceedLeft(): Unit = {
-  //         if (q1.atEnd(ts1)) {
-  //           leftEnd = true
-  //         } else {
-  //           val (ne1, ns1) = q1.next(ts1)
-  //           elem1 = ne1
-  //           ts1 = ns1
-  //         }
-  //       }
-  //       def proceedRight(): Unit = {
-  //         if (q2.atEnd(ts2)) {
-  //           rightEnd = true
-  //         } else {
-  //           val (ne2, ns2) = q2.next(ts2)
-  //           elem2 = ne2
-  //           ts2 = ns2
-  //         }
-  //       }
-  //       def atEnd(ts: (Source1, Source2)) = {
-  //         tmpAtEnd || {
-  //           if (elem1 == null && elem2 == null) {
-  //             ts1 = q1.source
-  //             ts2 = q2.source
-  //             proceedLeft()
-  //             proceedRight()
-  //           }
-  //           var found = false
-  //           while (!tmpAtEnd && !found) {
-  //             if (leftEnd || rightEnd) {
-  //               tmpAtEnd = true
-  //             } else {
-  //               val (ne1, ne2) = elem1 -> elem2
-  //               val cmp = ord(ne1, ne2)
-  //               if (cmp < 0) {
-  //                 proceedLeft()
-  //               } else if (cmp > 0) {
-  //                 proceedRight()
-  //               } else {
-  //                 val le = ne1
-  //                 val re = ne2
-  //                 nextJoinElem = le.concatenateDynamic(re)
-  //                 proceedRight()
-  //                 found = true
-  //               }
-  //             }
-  //           }
-  //           !found
-  //         }
-  //       }
-  //       def next(ts: (Source1, Source2)) = {
-  //         nextJoinElem -> (ts1 -> ts2)
-  //       }
-  //     }
 
   def leftHashSemiJoin[S <: Record, R](q2: QueryUnfold[S])(leftHash: T => R)(rightHash: S => R)(
     joinCond: (T, S) => Boolean): QueryUnfold[T] = {

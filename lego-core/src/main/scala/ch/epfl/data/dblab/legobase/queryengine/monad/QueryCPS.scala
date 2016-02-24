@@ -151,6 +151,9 @@ class JoinableQueryCPS[T <: Record](private val underlying: QueryCPS[T]) {
     }
   }
 
+  def mergeJoin[S <: Record](q2: QueryCPS[S])(
+    ord: (T, S) => Int)(joinCond: (T, S) => Boolean): QueryCPS[DynamicCompositeRecord[T, S]] = ???
+
   def leftHashSemiJoin[S <: Record, R](q2: QueryCPS[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): QueryCPS[T] = build { k =>
     val hm = MultiMap[R, S]
     for (elem <- q2) {
