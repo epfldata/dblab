@@ -62,6 +62,9 @@ class QueryTest extends FlatSpec {
   def hashJoinQueryIterator(al: List[A], bl: List[B]): Double =
     QueryIterator(al.toArray).hashJoin(QueryIterator(bl.toArray))(_.i)(_.j)((x, y) => x.i == y.j).map(_.d[Double]).sum
 
+  def hashJoinQueryStream(al: List[A], bl: List[B]): Double =
+    QueryStream(al.toArray).hashJoin(QueryStream(bl.toArray))(_.i)(_.j)((x, y) => x.i == y.j).map(_.d[Double]).sum
+
   "merge join" should "work in simple case" in {
     mergeJoinQuery(aList, bList) should be(4)
   }
@@ -141,9 +144,17 @@ class QueryTest extends FlatSpec {
     hashJoinQueryIterator(aList, bList) should be(4)
   }
 
+  "hash join stream" should "work in simple case" in {
+    hashJoinQueryStream(aList, bList) should be(4)
+  }
+
   val b3List = List(B(1, 1.3))
 
   "hash join iterator" should "work in a bit more complicated case" in {
     hashJoinQueryIterator(a2List, b3List) should be(2.6)
+  }
+
+  "hash join stream" should "work in a bit more complicated case" in {
+    hashJoinQueryStream(a2List, b3List) should be(2.6)
   }
 }

@@ -182,69 +182,80 @@ object QueryStream {
       index = 0
     }
   }
-  // def apply[T](set: scala.collection.mutable.Set[T]): SetUnfold[T] = new SetUnfold[T](set)
+  def apply[T](set: scala.collection.mutable.Set[T]): SetStream[T] = new SetStream[T](set)
 }
 
-// class SetUnfold[T](set: scala.collection.mutable.Set[T]) extends QueryStream[T] { self =>
-//   var currentSet: scala.collection.mutable.Set[T] = set
+class SetStream[T](set: scala.collection.mutable.Set[T]) extends QueryStream[T] { self =>
+  var currentSet: scala.collection.mutable.Set[T] = set
 
-//   def reset() = currentSet = set
-//   def next() = {
-//     if (currentSet.isEmpty) {
-//       NULL
-//     } else {
-//       val elem = currentSet.head
-//       currentSet = currentSet.tail
-//       elem
-//     }
-//   }
+  def reset() = currentSet = set
+  def stream() = {
+    if (currentSet.isEmpty) {
+      NULL
+    } else {
+      val elem = currentSet.head
+      currentSet = currentSet.tail
+      Some(elem)
+    }
+  }
 
-//   def withFilter(p: T => Boolean): SetUnfold[T] = new SetUnfold[T](set) {
-//     val underlying = self.filter(p)
-//     override def next() = underlying.next()
-//   }
-// }
+  def withFilter(p: T => Boolean): SetStream[T] = new SetStream[T](set) {
+    val underlying = self.filter(p)
+    override def stream() = underlying.stream()
+  }
+}
 
 class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
-  //   def hashJoin[S <: Record, R](q2: QueryStream[S])(leftHash: T => R)(rightHash: S => R)(
-  //     joinCond: (T, S) => Boolean): QueryStream[DynamicCompositeRecord[T, S]] = {
-  //     val hm = MultiMap[R, T]
-  //     for (elem <- underlying) {
-  //       hm.addBinding(leftHash(elem), elem)
-  //     }
-  //     var iterator: SetUnfold[T] = null
-  //     var prevRightElem: S = NULL
-  //     underlying.destroy { () =>
-  //       var leftElem: T = NULL
-  //       val rightElem = if (iterator == null || {
-  //         leftElem = iterator.next
-  //         leftElem
-  //       } == NULL) {
-  //         val re = q2 findFirst { t =>
-  //           val k = rightHash(t)
-  //           hm.get(k) exists { tmpBuffer =>
-  //             val res = tmpBuffer exists { bufElem =>
-  //               joinCond(bufElem, t)
-  //             }
-  //             if (res) {
-  //               iterator = QueryStream(tmpBuffer).withFilter(e => joinCond(e, t))
-  //               leftElem = iterator.next
-  //             }
-  //             res
-  //           }
-  //         }
-  //         prevRightElem = re
-  //         re
-  //       } else {
-  //         prevRightElem
-  //       }
-  //       if (rightElem == NULL) {
-  //         NULL
-  //       } else {
-  //         leftElem.concatenateDynamic(rightElem)
-  //       }
-  //     }
-  //   }
+  def hashJoin[S <: Record, R](q2: QueryStream[S])(leftHash: T => R)(rightHash: S => R)(
+    joinCond: (T, S) => Boolean): QueryStream[DynamicCompositeRecord[T, S]] = {
+    val hm = MultiMap[R, T]
+    for (elem <- underlying) {
+      hm.addBinding(leftHash(elem), elem)
+    }
+    var iterator: SetStream[T] = null
+    var prevRightElem: Option[S] = None
+    underlying.unstream { () =>
+      var leftElem: Option[T] = None
+      val rightElem = if (iterator == null || {
+        leftElem = iterator.stream()
+        leftElem
+      } == NULL) {
+        val re = {
+          val e2 = q2.stream()
+          e2 match {
+            case null => NULL
+            case Some(t) =>
+              val k = rightHash(t)
+              hm.get(k) match {
+                case Some(tmpBuffer) =>
+                  iterator = QueryStream(tmpBuffer).withFilter(e => joinCond(e, t))
+                  leftElem = iterator.stream()
+                  Some(t)
+                case None =>
+                  None
+              }
+            case None =>
+              None
+          }
+        }
+        prevRightElem = re
+        re
+      } else {
+        prevRightElem
+      }
+      if (rightElem == NULL) {
+        NULL
+      } else {
+        if (leftElem == NULL) {
+          None
+        } else {
+          for (e1 <- leftElem; e2 <- rightElem) yield {
+            e1.concatenateDynamic(e2)
+          }
+        }
+      }
+    }
+  }
 
   def mergeJoin[S <: Record](q2: QueryStream[S])(
     ord: (T, S) => Int)(joinCond: (T, S) => Boolean): QueryStream[DynamicCompositeRecord[T, S]] = {

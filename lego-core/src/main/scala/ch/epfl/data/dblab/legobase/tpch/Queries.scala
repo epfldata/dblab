@@ -18,6 +18,7 @@ import queryengine.monad.Query
 // import queryengine.monad.{ QueryOptimized => Query }
 // import queryengine.monad.{ QueryCPS => Query }
 // import queryengine.monad.{ QueryUnfold => Query }
+// import queryengine.monad.{ QueryStream => Query }
 
 @metadeep(
   folder = "",
@@ -905,6 +906,11 @@ object Queries {
             .filter(x => x.L_SHIPDATE >= constantDate2 && x.L_SHIPDATE < constantDate))(_.P_PARTKEY)(_.L_PARTKEY)((x, y) => x.P_PARTKEY == y.L_PARTKEY)
         val agg1 = joinResult.filter(_.P_TYPE[LBString].startsWith(promo)).map(t => (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))).sum
         val agg2 = joinResult.map(t => (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))).sum
+        // val (agg1, agg2) = joinResult.foldLeft(0.0, 0.0)((acc, t) => {
+        //   val e = t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])
+        //   val x = if (t.P_TYPE[LBString].startsWith(promo)) e else 0.0
+        //   (acc._1 + x, acc._2 + e)
+        // })
         val result = agg1 * 100 / agg2
         printf("%.4f\n", result)
         printf("(%d rows)\n", 1)
