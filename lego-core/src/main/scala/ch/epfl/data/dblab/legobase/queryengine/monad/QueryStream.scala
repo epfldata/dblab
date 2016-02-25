@@ -246,45 +246,52 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
   //     }
   //   }
 
-  //   def mergeJoin[S <: Record](q2: QueryStream[S])(
-  //     ord: (T, S) => Int)(joinCond: (T, S) => Boolean): QueryStream[DynamicCompositeRecord[T, S]] = {
-  //     var elem1: T = NULL
-  //     var elem2: S = NULL
-  //     var nextJoinElem: DynamicCompositeRecord[T, S] = NULL
-  //     var atEnd: Boolean = false
-  //     def proceedLeft(): Unit = {
-  //       elem1 = underlying.next()
-  //       atEnd ||= elem1 == NULL
-  //     }
-  //     def proceedRight(): Unit = {
-  //       elem2 = q2.next()
-  //       atEnd ||= elem2 == NULL
-  //     }
-  //     proceedLeft()
-  //     proceedRight()
-  //     underlying.destroy { () =>
-
-  //       var found: Boolean = false
-
-  //       while (!found && !atEnd) {
-  //         val (ne1, ne2) = elem1 -> elem2
-  //         val cmp = ord(ne1, ne2)
-  //         if (cmp < 0) {
-  //           proceedLeft()
-  //         } else {
-  //           proceedRight()
-  //           if (cmp == 0) {
-  //             nextJoinElem = ne1.concatenateDynamic(ne2)
-  //             found = true
-  //           }
-  //         }
-  //       }
-  //       if (atEnd && !found)
-  //         NULL
-  //       else
-  //         nextJoinElem
-  //     }
-  //   }
+  def mergeJoin[S <: Record](q2: QueryStream[S])(
+    ord: (T, S) => Int)(joinCond: (T, S) => Boolean): QueryStream[DynamicCompositeRecord[T, S]] = {
+    var elem1: Option[T] = None
+    var elem2: Option[S] = None
+    var atEnd: Boolean = false
+    def proceedLeft(): Unit = {
+      elem1 = underlying.stream()
+      atEnd ||= elem1 == NULL
+    }
+    def proceedRight(): Unit = {
+      elem2 = q2.stream()
+      atEnd ||= elem2 == NULL
+    }
+    underlying.unstream { () =>
+      if (atEnd) {
+        NULL
+      } else {
+        var leftShouldProceed: Boolean = false
+        var nextJoinElem: Option[DynamicCompositeRecord[T, S]] = None
+        elem1 match {
+          case Some(ne1) =>
+            elem2 match {
+              case Some(ne2) =>
+                val cmp = ord(ne1, ne2)
+                if (cmp < 0) {
+                  leftShouldProceed = true
+                } else {
+                  if (cmp == 0) {
+                    nextJoinElem = Some(ne1.concatenateDynamic(ne2))
+                  }
+                }
+              case None =>
+            }
+          case None =>
+            leftShouldProceed = true
+        }
+        if (leftShouldProceed) {
+          proceedLeft()
+          nextJoinElem
+        } else {
+          proceedRight()
+          nextJoinElem
+        }
+      }
+    }
+  }
 
   def leftHashSemiJoin[S <: Record, R](q2: QueryStream[S])(leftHash: T => R)(rightHash: S => R)(
     joinCond: (T, S) => Boolean): QueryStream[T] = {

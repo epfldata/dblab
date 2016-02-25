@@ -53,6 +53,9 @@ class QueryTest extends FlatSpec {
   def mergeJoinQueryUnfold(al: List[A], bl: List[B]): Double =
     QueryUnfold(al.toArray).mergeJoin(QueryUnfold(bl.toArray))((x, y) => x.i - y.j)((x, y) => x.i == y.j).map(_.d[Double]).sum
 
+  def mergeJoinQueryStream(al: List[A], bl: List[B]): Double =
+    QueryStream(al.toArray).mergeJoin(QueryStream(bl.toArray))((x, y) => x.i - y.j)((x, y) => x.i == y.j).map(_.d[Double]).sum
+
   def hashJoinQuery(al: List[A], bl: List[B]): Double =
     Query(al).hashJoin(Query(bl))(_.i)(_.j)((x, y) => x.i == y.j).map(_.d[Double]).sum
 
@@ -88,6 +91,14 @@ class QueryTest extends FlatSpec {
 
   "merge join unfold" should "work in duplication case" in {
     mergeJoinQueryUnfold(aList, b2List) should be(4)
+  }
+
+  "merge join stream" should "work in simple case" in {
+    mergeJoinQueryStream(aList, bList) should be(4)
+  }
+
+  "merge join stream" should "work in duplication case" in {
+    mergeJoinQueryStream(aList, b2List) should be(4)
   }
 
   /* Merge-Join no longer works for N-M case!*/
