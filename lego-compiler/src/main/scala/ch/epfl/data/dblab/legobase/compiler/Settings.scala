@@ -100,6 +100,7 @@ class Settings(val args: List[String]) {
   def queryMonadLowering: Boolean = hasSetting(QueryMonadLoweringSetting)
   def queryMonadCPS: Boolean = hasSetting(QueryMonadCPSSetting)
   def queryMonadIterator: Boolean = hasSetting(QueryMonadIteratorSetting)
+  def queryMonadStream: Boolean = hasSetting(QueryMonadStreamSetting)
   def queryMonadOptimization: Boolean = hasSetting(QueryMonadOptSetting)
   def queryMonadHoisting: Boolean = hasSetting(QueryMonadHoistingSetting)
 
@@ -142,6 +143,7 @@ object Settings {
     ScalaCGSetting,
     QueryMonadLoweringSetting,
     QueryMonadIteratorSetting,
+    QueryMonadStreamSetting,
     QueryMonadCPSSetting,
     QueryMonadOptSetting,
     ForceFieldRemovalSetting,
@@ -273,6 +275,10 @@ case object QueryMonadCPSSetting extends OptimizationSetting("monad-cps",
   QMonadLanguage)
 case object QueryMonadIteratorSetting extends OptimizationSetting("monad-iterator",
   "Enables Query Monad Iterator Lowering",
+  QMonadLanguage,
+  "Very experimental!")
+case object QueryMonadStreamSetting extends OptimizationSetting("monad-stream",
+  "Enables Query Monad Stream Lowering",
   QMonadLanguage,
   "Very experimental!")
 case object QueryMonadOptSetting extends OptimizationSetting("monad-opt",
