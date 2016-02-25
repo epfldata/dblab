@@ -48,6 +48,10 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
   implicit class StreamRep[T: TypeRep](self: Rep[Stream[T]]) {
     def map[S: TypeRep](f: Rep[T => S]): Rep[Stream[S]] = flatMap[S](x => Yield(inlineFunction(f, x)))
     def filter(p: Rep[T => Boolean]): Rep[Stream[T]] = flatMap[T](x => __ifThenElse(inlineFunction(p, x), Yield(x), Skip[T]))
+    def foreach(f: Rep[T] => Rep[Unit]): Rep[Unit] = dsl"""
+      if (!$isSkip)
+        ${f(element)}
+    """
     def flatMap[S: TypeRep](f: Rep[T] => Rep[Stream[S]]): Rep[Stream[S]] = dsl"""
       if ($isDone)
         ${Done[S]}
@@ -62,16 +66,16 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
     // def map2[S: TypeRep](f1: Rep[T => S], f2: Rep[() => S]): Rep[Stream[T]] = ???
   }
 
-  implicit class OptionRep1[T: TypeRep](self: Rep[Option[T]]) {
-    def map[S: TypeRep](f: Rep[T => S]): Rep[Option[S]] = dsl"""
-      if ($self == ${NULL[Option[S]]})
-        ${NULL[Option[S]]}
-      else if(${self.nonEmpty})
-        ${Option(f(self.get))}
-      else
-        ${None[S]}
-    """
-  }
+  // implicit class OptionRep1[T: TypeRep](self: Rep[Option[T]]) {
+  //   def map[S: TypeRep](f: Rep[T => S]): Rep[Option[S]] = dsl"""
+  //     if ($self == ${NULL[Option[S]]})
+  //       ${NULL[Option[S]]}
+  //     else if(${self.nonEmpty})
+  //       ${Option(f(self.get))}
+  //     else
+  //       ${None[S]}
+  //   """
+  // }
 
   abstract class QueryStream[T: TypeRep] { self =>
     val tp = typeRep[T]
@@ -81,7 +85,7 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
     // def source: Rep[Source]
 
     // def atEnd(s: Rep[Source]): Rep[Boolean]
-    def stream(): Rep[Option[T]]
+    def stream(): Rep[Stream[T]]
     def foreach(f: Rep[T] => Rep[Unit]): Rep[Unit] = {
       // dsl"""
       //   var elem: Option[T] = ${NULL[Option[T]]}
@@ -93,23 +97,19 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
       //       $f(e)
       //   }
       // """
-      val elem = __newVar[Option[T]](unit(null))
+      val elem = __newVar[Stream[T]](Done[T])
       __whileDo({
         dsl"""{
             $elem = ${stream()}; 
             $elem
-          } != ${NULL[Option[T]]}"""
+          } != ${Done[T]}"""
       }, {
-        readVar(elem).foreach {
-          __lambda { e =>
-            f(e)
-          }
-        }
+        readVar(elem).foreach(f)
       })
     }
 
     def map[S: TypeRep](f: Rep[T => S]): QueryStream[S] = new QueryStream[S] {
-      def stream(): Rep[Option[S]] = dsl"${self.stream()}.map($f)"
+      def stream(): Rep[Stream[S]] = dsl"${self.stream()}.map($f)"
     }
     // def map[S: TypeRep](f: Rep[T => S]): QueryStream[S] = new QueryStream[S] {
     //   type Source = self.Source
@@ -134,22 +134,23 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
     // }
 
     def filter(p: Rep[T => Boolean]): QueryStream[T] = new QueryStream[T] {
-      def stream(): Rep[Option[T]] = {
+      def stream(): Rep[Stream[T]] = {
         val elem = self.stream()
-        dsl"""
-          if ($elem == ${NULL[Option[T]]})
-            ${NULL[Option[T]]}
-          else if(${elem.nonEmpty}) {
-            val e = ${elem.get}
-            if($p(e)) {
-              elem
-            } else {
-              ${None[T]}
-            }
-          }
-          else
-            ${None[T]}
-        """
+        // dsl"""
+        //   if ($elem == ${NULL[Option[T]]})
+        //     ${NULL[Option[T]]}
+        //   else if(${elem.nonEmpty}) {
+        //     val e = ${elem.get}
+        //     if($p(e)) {
+        //       elem
+        //     } else {
+        //       ${None[T]}
+        //     }
+        //   }
+        //   else
+        //     ${None[T]}
+        // """
+        elem.filter(p)
       }
     }
 
@@ -591,13 +592,13 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
   object QueryStream {
     def apply[T: TypeRep](arr: Rep[Array[T]]): QueryStream[T] = new QueryStream[T] {
       val index = __newVarNamed[Int](unit(0), "index")
-      def stream(): Rep[Option[T]] =
+      def stream(): Rep[Stream[T]] =
         dsl"""
           if ($index >= $arr.length)
-            ${NULL[Option[T]]}
+            ${Done[T]}
           else {
             $index = $index + 1
-            ${Option(arr(dsl"$index - 1"))}
+            ${Yield(arr(dsl"$index - 1"))}
           }
         """
     }
