@@ -32,6 +32,21 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
     infix_asInstanceOf(unit(v)(tp))(tp)
   }
 
+  implicit def streamType[T: TypeRep]: TypeRep[Stream[T]] = new RecordType(StructTags.ClassTag[Stream[T]]("Stream" + typeRep[T].name), scala.None)
+
+  class Stream[T] {
+    def map[S](f: T => S): Stream[S] = ???
+    def filter(p: T => Boolean): Stream[T] = ???
+  }
+  def Done[T: TypeRep]: Rep[Stream[T]] = NULL[Stream[T]]
+  def Skip[T]: Rep[Stream[T]] = ???
+  def Yield[T: TypeRep](e: Rep[T]): Rep[Stream[T]] = ???
+
+  implicit class StreamRep[T: TypeRep](self: Rep[Stream[T]]) {
+    def map[S: TypeRep](f: Rep[T => S]): Rep[Stream[S]] = ???
+    def filter(p: Rep[T => Boolean]): Rep[Stream[T]] = ???
+  }
+
   implicit class OptionRep1[T: TypeRep](self: Rep[Option[T]]) {
     def map[S: TypeRep](f: Rep[T => S]): Rep[Option[S]] = dsl"""
       if ($self == ${NULL[Option[S]]})
