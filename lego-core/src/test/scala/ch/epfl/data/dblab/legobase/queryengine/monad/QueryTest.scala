@@ -29,6 +29,20 @@ class QueryTest extends FlatSpec {
     filterMapSumQueryUnfold(bList) should be(3)
   }
 
+  def mapSumQueryStream(al: List[A]): Int =
+    QueryStream(al.toArray).map(_.i).sum
+
+  def filterMapSumQueryStream(bl: List[B]): Int =
+    QueryStream(bl.toArray).filter(_.d < 3).map(_.j).sum
+
+  "map.sum stream" should "work" in {
+    mapSumQueryStream(aList) should be(3)
+  }
+
+  "filter.map.sum stream" should "work" in {
+    filterMapSumQueryStream(bList) should be(3)
+  }
+
   def mergeJoinQuery(al: List[A], bl: List[B]): Double =
     Query(al).mergeJoin(Query(bl))((x, y) => x.i - y.j)((x, y) => x.i == y.j).map(_.d[Double]).sum
 

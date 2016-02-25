@@ -63,50 +63,50 @@ abstract class QueryStream[T] { self =>
     }
     res
   }
-  // @pure def count: Int = {
-  //   var size = 0
-  //   for (e <- this) {
-  //     size += 1
-  //   }
-  //   size
-  // }
-  // @pure def avg(implicit num: Fractional[T]): T =
-  //   num.div(sum, num.fromInt(count))
-  // @pure def groupBy[K](par: T => K): GroupedQueryStream[K, T] =
-  //   new GroupedQueryStream(this, par)
+  @pure def count: Int = {
+    var size = 0
+    for (e <- this) {
+      size += 1
+    }
+    size
+  }
+  @pure def avg(implicit num: Fractional[T]): T =
+    num.div(sum, num.fromInt(count))
+  @pure def groupBy[K](par: T => K): GroupedQueryStream[K, T] =
+    new GroupedQueryStream(this, par)
   // @pure def filteredGroupBy[K](pred: T => Boolean, par: T => K): GroupedQueryStream[K, T] =
   //   filter(pred).groupBy(par)
 
-  // def sortBy[S](f: T => S)(implicit ord: Ordering[S]): QueryStream[T] = {
-  //   val (treeSet, size) = {
-  //     val treeSet = new TreeSet()(
-  //       new Ordering[T] {
-  //         def compare(o1: T, o2: T) = {
-  //           val res = ord.compare(f(o1), f(o2))
-  //           if (res == 0 && o1 != o2) {
-  //             -1
-  //           } else {
-  //             res
-  //           }
-  //         }
-  //       })
-  //     for (elem <- this) {
-  //       treeSet += elem
-  //     }
-  //     (treeSet, treeSet.size)
-  //   }
-  //   var index = 0
-  //   destroy { () =>
-  //     if (index >= size)
-  //       NULL
-  //     else {
-  //       index += 1
-  //       val elem = treeSet.head
-  //       treeSet -= elem
-  //       elem
-  //     }
-  //   }
-  // }
+  def sortBy[S](f: T => S)(implicit ord: Ordering[S]): QueryStream[T] = {
+    val (treeSet, size) = {
+      val treeSet = new TreeSet()(
+        new Ordering[T] {
+          def compare(o1: T, o2: T) = {
+            val res = ord.compare(f(o1), f(o2))
+            if (res == 0 && o1 != o2) {
+              -1
+            } else {
+              res
+            }
+          }
+        })
+      for (elem <- this) {
+        treeSet += elem
+      }
+      (treeSet, treeSet.size)
+    }
+    var index = 0
+    unstream { () =>
+      if (index >= size)
+        NULL
+      else {
+        index += 1
+        val elem = treeSet.head
+        treeSet -= elem
+        Some(elem)
+      }
+    }
+  }
 
   // // @pure def sortByReverse[S](f: T => S)(implicit ord: Ordering[S]): Query[T] =
   // //   new Query(underlying.sortBy(f).reverse)
@@ -121,35 +121,37 @@ abstract class QueryStream[T] { self =>
   // //   })
   // // }
 
-  // @pure def minBy[S](f: T => S)(implicit ord: Ordering[S]): T = {
-  //   var minResult: T = null.asInstanceOf[T]
-  //   for (e <- this) {
-  //     if (minResult == null || ord.compare(f(minResult), f(e)) > 0) {
-  //       minResult = e
-  //     }
-  //   }
-  //   minResult
-  // }
+  @pure def minBy[S](f: T => S)(implicit ord: Ordering[S]): T = {
+    var minResult: T = null.asInstanceOf[T]
+    for (e <- this) {
+      if (minResult == null || ord.compare(f(minResult), f(e)) > 0) {
+        minResult = e
+      }
+    }
+    minResult
+  }
 
-  // def printRows(printFunc: T => Unit, limit: Int): Unit = {
-  //   var rows = 0
-  //   if (limit == -1) {
-  //     for (e <- this) {
-  //       printFunc(e)
-  //       rows += 1
-  //     }
-  //   } else {
-  //     var elem: T = NULL
-  //     while (rows < limit && {
-  //       elem = next()
-  //       elem
-  //     } != NULL) {
-  //       printFunc(elem)
-  //       rows += 1
-  //     }
-  //   }
-  //   printf("(%d rows)\n", rows)
-  // }
+  def printRows(printFunc: T => Unit, limit: Int): Unit = {
+    var rows = 0
+    if (limit == -1) {
+      for (e <- this) {
+        printFunc(e)
+        rows += 1
+      }
+    } else {
+      var elem: Option[T] = NULL
+      while (rows < limit && {
+        elem = next()
+        elem
+      } != NULL) {
+        for (e <- elem) {
+          printFunc(e)
+          rows += 1
+        }
+      }
+    }
+    printf("(%d rows)\n", rows)
+  }
 
   // @pure def getList: List[T] = {
   //   var res = ArrayBuffer[T]()
@@ -302,68 +304,68 @@ object QueryStream {
 //   }
 // }
 
-// class GroupedQueryStream[K, V](underlying: QueryStream[V], par: V => K) {
-//   def getGroupByResult: GroupByResult[K, V] = {
-//     val max_partitions = 50
-//     // Q3
-//     // val max_partitions = 150000
-//     // Q9
-//     // val max_partitions = 25 * 7
-//     val MAX_SIZE = max_partitions
-//     val keyIndex = new HashMap[K, Int]()
-//     val keyRevertIndex = new Array[Any](MAX_SIZE).asInstanceOf[Array[K]]
-//     var lastIndex = 0
-//     val array = new Array[Array[Any]](MAX_SIZE).asInstanceOf[Array[Array[V]]]
-//     val eachBucketSize = new Array[Int](MAX_SIZE)
-//     // val thisSize = 1 << 25
-//     val thisSize = 1 << 22
-//     val arraySize = thisSize / MAX_SIZE * 8
-//     Range(0, MAX_SIZE).foreach { i =>
-//       // val arraySize = originalArray.length
-//       // val arraySize = 128
-//       array(i) = new Array[Any](arraySize).asInstanceOf[Array[V]] // discovered a funny scalac bug!
-//       eachBucketSize(i) = 0
-//     }
-//     GroupByResult(array, keyRevertIndex, eachBucketSize, MAX_SIZE, keyIndex)
-//     // ???
-//   }
+class GroupedQueryStream[K, V](underlying: QueryStream[V], par: V => K) {
+  def getGroupByResult: GroupByResult[K, V] = {
+    val max_partitions = 50
+    // Q3
+    // val max_partitions = 150000
+    // Q9
+    // val max_partitions = 25 * 7
+    val MAX_SIZE = max_partitions
+    val keyIndex = new HashMap[K, Int]()
+    val keyRevertIndex = new Array[Any](MAX_SIZE).asInstanceOf[Array[K]]
+    var lastIndex = 0
+    val array = new Array[Array[Any]](MAX_SIZE).asInstanceOf[Array[Array[V]]]
+    val eachBucketSize = new Array[Int](MAX_SIZE)
+    // val thisSize = 1 << 25
+    val thisSize = 1 << 22
+    val arraySize = thisSize / MAX_SIZE * 8
+    Range(0, MAX_SIZE).foreach { i =>
+      // val arraySize = originalArray.length
+      // val arraySize = 128
+      array(i) = new Array[Any](arraySize).asInstanceOf[Array[V]] // discovered a funny scalac bug!
+      eachBucketSize(i) = 0
+    }
+    GroupByResult(array, keyRevertIndex, eachBucketSize, MAX_SIZE, keyIndex)
+    // ???
+  }
 
-//   @pure def mapValues[S](func: QueryStream[V] => S): QueryStream[(K, S)] = {
+  @pure def mapValues[S](func: QueryStream[V] => S): QueryStream[(K, S)] = {
 
-//     val (groupByResult, partitions) = {
-//       val groupByResult = getGroupByResult
-//       val GroupByResult(array, keyRevertIndex, eachBucketSize, _, keyIndex) =
-//         groupByResult
-//       var lastIndex = 0
+    val (groupByResult, partitions) = {
+      val groupByResult = getGroupByResult
+      val GroupByResult(array, keyRevertIndex, eachBucketSize, _, keyIndex) =
+        groupByResult
+      var lastIndex = 0
 
-//       underlying.foreach((elem: V) => {
-//         val key = par(elem)
-//         val bucket = keyIndex.getOrElseUpdate(key, {
-//           keyRevertIndex(lastIndex) = key
-//           lastIndex = lastIndex + 1
-//           lastIndex - 1
-//         })
-//         array(bucket)(eachBucketSize(bucket)) = elem
-//         eachBucketSize(bucket) += 1
-//       })
-//       (groupByResult, lastIndex)
-//     }
+      for (elem <- underlying) {
+        val key = par(elem)
+        val bucket = keyIndex.getOrElseUpdate(key, {
+          keyRevertIndex(lastIndex) = key
+          lastIndex = lastIndex + 1
+          lastIndex - 1
+        })
+        array(bucket)(eachBucketSize(bucket)) = elem
+        eachBucketSize(bucket) += 1
+      }
+      (groupByResult, lastIndex)
+    }
 
-//     var index: Int = 0
+    var index: Int = 0
 
-//     underlying.destroy { () =>
-//       if (index >= partitions) {
-//         NULL
-//       } else {
-//         val GroupByResult(array, keyRevertIndex, eachBucketSize, _, _) =
-//           groupByResult
-//         val i = index
-//         index += 1
-//         val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
-//         val key = keyRevertIndex(i)
-//         val newValue = func(QueryStream(arr))
-//         key -> newValue
-//       }
-//     }
-//   }
-// }
+    underlying.unstream { () =>
+      if (index >= partitions) {
+        NULL
+      } else {
+        val GroupByResult(array, keyRevertIndex, eachBucketSize, _, _) =
+          groupByResult
+        val i = index
+        index += 1
+        val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
+        val key = keyRevertIndex(i)
+        val newValue = func(QueryStream(arr))
+        Some(key -> newValue)
+      }
+    }
+  }
+}
