@@ -16,17 +16,17 @@ import QueryStream.NULL
 // @reflect[Query[_]]
 // @transformation
 abstract class QueryStream[T] { self =>
-  def next(): Option[T]
+  def stream(): Option[T]
   def reset(): Unit
   @pure def map[S](f: T => S): QueryStream[S] = unstream { () =>
-    val elem = next()
+    val elem = stream()
     if (elem == NULL)
       NULL
     else
       elem.map(f)
   }
   @pure def filter(p: T => Boolean): QueryStream[T] = unstream { () =>
-    val elem = next()
+    val elem = stream()
     if (elem == NULL)
       NULL
     else
@@ -40,7 +40,7 @@ abstract class QueryStream[T] { self =>
     reset()
     var elem: Option[T] = NULL
     while ({
-      elem = next()
+      elem = stream()
       elem
     } != NULL) {
       for (e <- elem)
@@ -74,8 +74,8 @@ abstract class QueryStream[T] { self =>
     num.div(sum, num.fromInt(count))
   @pure def groupBy[K](par: T => K): GroupedQueryStream[K, T] =
     new GroupedQueryStream(this, par)
-  // @pure def filteredGroupBy[K](pred: T => Boolean, par: T => K): GroupedQueryStream[K, T] =
-  //   filter(pred).groupBy(par)
+  @pure def filteredGroupBy[K](pred: T => Boolean, par: T => K): GroupedQueryStream[K, T] =
+    filter(pred).groupBy(par)
 
   def sortBy[S](f: T => S)(implicit ord: Ordering[S]): QueryStream[T] = {
     val (treeSet, size) = {
@@ -141,7 +141,7 @@ abstract class QueryStream[T] { self =>
     } else {
       var elem: Option[T] = NULL
       while (rows < limit && {
-        elem = next()
+        elem = stream()
         elem
       } != NULL) {
         for (e <- elem) {
@@ -153,16 +153,16 @@ abstract class QueryStream[T] { self =>
     printf("(%d rows)\n", rows)
   }
 
-  // @pure def getList: List[T] = {
-  //   var res = ArrayBuffer[T]()
-  //   for (e <- this) {
-  //     res += e
-  //   }
-  //   res.toList
-  // }
+  @pure def getList: List[T] = {
+    var res = ArrayBuffer[T]()
+    for (e <- this) {
+      res += e
+    }
+    res.toList
+  }
 
   def unstream[T](n: () => Option[T]): QueryStream[T] = new QueryStream[T] {
-    def next(): Option[T] = n()
+    def stream(): Option[T] = n()
     def reset(): Unit = self.reset()
   }
 }
@@ -171,7 +171,7 @@ object QueryStream {
   def NULL[S]: S = null.asInstanceOf[S]
   @dontLift def apply[T](arr: Array[T]): QueryStream[T] = new QueryStream[T] {
     var index = 0
-    def next(): Option[T] =
+    def stream(): Option[T] =
       if (index >= arr.length)
         NULL
       else {
@@ -205,104 +205,104 @@ object QueryStream {
 //   }
 // }
 
-// class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
-//   def hashJoin[S <: Record, R](q2: QueryStream[S])(leftHash: T => R)(rightHash: S => R)(
-//     joinCond: (T, S) => Boolean): QueryStream[DynamicCompositeRecord[T, S]] = {
-//     val hm = MultiMap[R, T]
-//     for (elem <- underlying) {
-//       hm.addBinding(leftHash(elem), elem)
-//     }
-//     var iterator: SetUnfold[T] = null
-//     var prevRightElem: S = NULL
-//     underlying.destroy { () =>
-//       var leftElem: T = NULL
-//       val rightElem = if (iterator == null || {
-//         leftElem = iterator.next
-//         leftElem
-//       } == NULL) {
-//         val re = q2 findFirst { t =>
-//           val k = rightHash(t)
-//           hm.get(k) exists { tmpBuffer =>
-//             val res = tmpBuffer exists { bufElem =>
-//               joinCond(bufElem, t)
-//             }
-//             if (res) {
-//               iterator = QueryStream(tmpBuffer).withFilter(e => joinCond(e, t))
-//               leftElem = iterator.next
-//             }
-//             res
-//           }
-//         }
-//         prevRightElem = re
-//         re
-//       } else {
-//         prevRightElem
-//       }
-//       if (rightElem == NULL) {
-//         NULL
-//       } else {
-//         leftElem.concatenateDynamic(rightElem)
-//       }
-//     }
-//   }
+class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
+  //   def hashJoin[S <: Record, R](q2: QueryStream[S])(leftHash: T => R)(rightHash: S => R)(
+  //     joinCond: (T, S) => Boolean): QueryStream[DynamicCompositeRecord[T, S]] = {
+  //     val hm = MultiMap[R, T]
+  //     for (elem <- underlying) {
+  //       hm.addBinding(leftHash(elem), elem)
+  //     }
+  //     var iterator: SetUnfold[T] = null
+  //     var prevRightElem: S = NULL
+  //     underlying.destroy { () =>
+  //       var leftElem: T = NULL
+  //       val rightElem = if (iterator == null || {
+  //         leftElem = iterator.next
+  //         leftElem
+  //       } == NULL) {
+  //         val re = q2 findFirst { t =>
+  //           val k = rightHash(t)
+  //           hm.get(k) exists { tmpBuffer =>
+  //             val res = tmpBuffer exists { bufElem =>
+  //               joinCond(bufElem, t)
+  //             }
+  //             if (res) {
+  //               iterator = QueryStream(tmpBuffer).withFilter(e => joinCond(e, t))
+  //               leftElem = iterator.next
+  //             }
+  //             res
+  //           }
+  //         }
+  //         prevRightElem = re
+  //         re
+  //       } else {
+  //         prevRightElem
+  //       }
+  //       if (rightElem == NULL) {
+  //         NULL
+  //       } else {
+  //         leftElem.concatenateDynamic(rightElem)
+  //       }
+  //     }
+  //   }
 
-//   def mergeJoin[S <: Record](q2: QueryStream[S])(
-//     ord: (T, S) => Int)(joinCond: (T, S) => Boolean): QueryStream[DynamicCompositeRecord[T, S]] = {
-//     var elem1: T = NULL
-//     var elem2: S = NULL
-//     var nextJoinElem: DynamicCompositeRecord[T, S] = NULL
-//     var atEnd: Boolean = false
-//     def proceedLeft(): Unit = {
-//       elem1 = underlying.next()
-//       atEnd ||= elem1 == NULL
-//     }
-//     def proceedRight(): Unit = {
-//       elem2 = q2.next()
-//       atEnd ||= elem2 == NULL
-//     }
-//     proceedLeft()
-//     proceedRight()
-//     underlying.destroy { () =>
+  //   def mergeJoin[S <: Record](q2: QueryStream[S])(
+  //     ord: (T, S) => Int)(joinCond: (T, S) => Boolean): QueryStream[DynamicCompositeRecord[T, S]] = {
+  //     var elem1: T = NULL
+  //     var elem2: S = NULL
+  //     var nextJoinElem: DynamicCompositeRecord[T, S] = NULL
+  //     var atEnd: Boolean = false
+  //     def proceedLeft(): Unit = {
+  //       elem1 = underlying.next()
+  //       atEnd ||= elem1 == NULL
+  //     }
+  //     def proceedRight(): Unit = {
+  //       elem2 = q2.next()
+  //       atEnd ||= elem2 == NULL
+  //     }
+  //     proceedLeft()
+  //     proceedRight()
+  //     underlying.destroy { () =>
 
-//       var found: Boolean = false
+  //       var found: Boolean = false
 
-//       while (!found && !atEnd) {
-//         val (ne1, ne2) = elem1 -> elem2
-//         val cmp = ord(ne1, ne2)
-//         if (cmp < 0) {
-//           proceedLeft()
-//         } else {
-//           proceedRight()
-//           if (cmp == 0) {
-//             nextJoinElem = ne1.concatenateDynamic(ne2)
-//             found = true
-//           }
-//         }
-//       }
-//       if (atEnd && !found)
-//         NULL
-//       else
-//         nextJoinElem
-//     }
-//   }
+  //       while (!found && !atEnd) {
+  //         val (ne1, ne2) = elem1 -> elem2
+  //         val cmp = ord(ne1, ne2)
+  //         if (cmp < 0) {
+  //           proceedLeft()
+  //         } else {
+  //           proceedRight()
+  //           if (cmp == 0) {
+  //             nextJoinElem = ne1.concatenateDynamic(ne2)
+  //             found = true
+  //           }
+  //         }
+  //       }
+  //       if (atEnd && !found)
+  //         NULL
+  //       else
+  //         nextJoinElem
+  //     }
+  //   }
 
-//   def leftHashSemiJoin[S <: Record, R](q2: QueryStream[S])(leftHash: T => R)(rightHash: S => R)(
-//     joinCond: (T, S) => Boolean): QueryStream[T] = {
-//     val hm = MultiMap[R, S]
-//     for (elem <- q2) {
-//       hm.addBinding(rightHash(elem), elem)
-//     }
-//     val leftIterator = underlying.filter(t => {
-//       val k = leftHash(t)
-//       hm.get(k).exists(buf =>
-//         buf.exists(e => joinCond(t, e)))
-//     })
+  def leftHashSemiJoin[S <: Record, R](q2: QueryStream[S])(leftHash: T => R)(rightHash: S => R)(
+    joinCond: (T, S) => Boolean): QueryStream[T] = {
+    val hm = MultiMap[R, S]
+    for (elem <- q2) {
+      hm.addBinding(rightHash(elem), elem)
+    }
+    val leftIterator = underlying.filter(t => {
+      val k = leftHash(t)
+      hm.get(k).exists(buf =>
+        buf.exists(e => joinCond(t, e)))
+    })
 
-//     underlying.destroy { () =>
-//       leftIterator.next()
-//     }
-//   }
-// }
+    underlying.unstream { () =>
+      leftIterator.stream()
+    }
+  }
+}
 
 class GroupedQueryStream[K, V](underlying: QueryStream[V], par: V => K) {
   def getGroupByResult: GroupByResult[K, V] = {
