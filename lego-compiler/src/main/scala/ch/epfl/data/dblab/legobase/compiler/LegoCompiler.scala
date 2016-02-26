@@ -90,6 +90,8 @@ class LegoCompiler(val DSL: LegoBaseExp,
       pipeline += new QueryMonadIteratorLowering(schema, DSL)
     } else if (settings.queryMonadStream) {
       pipeline += new QueryMonadStreamLowering(schema, DSL)
+      pipeline += new CoreLanguageToC(DSL)
+      pipeline += new ParameterPromotionWithVar(DSL)
     } else {
       pipeline += new QueryMonadLowering(schema, DSL)
     }
