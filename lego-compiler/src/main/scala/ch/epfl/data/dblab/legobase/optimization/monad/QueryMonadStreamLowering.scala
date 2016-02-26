@@ -313,6 +313,60 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
     //   def next(ts: Rep[Source]) = leftStream.next(ts)
     // }
 
+    def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryStream[S])(
+      ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryStream[Res] =
+      new QueryStream[Res] {
+        val elem1 = __newVarNamed[Stream[T]](Skip[T], "elemLeft")
+        val elem2 = __newVarNamed[Stream[S]](Skip[S], "elemRight")
+        def getLeft: Rep[T] = readVar(elem1).element
+        def getRight: Rep[S] = readVar(elem2).element
+        val atEnd = __newVarNamed(unit(false), "atEnd")
+        def proceedLeft(): Unit = {
+          dsl"""
+            $elem1 = ${self.stream()}
+            $atEnd = $atEnd || ${readVar(elem1).isDone}
+          """
+        }
+        def proceedRight(): Unit = {
+          dsl"""
+            $elem2 = ${q2.stream()}
+            $atEnd = $atEnd || ${readVar(elem2).isDone}
+          """
+        }
+        def stream(): Rep[Stream[Res]] =
+          dsl"""
+          if($atEnd) {
+            ${Done[Res]}
+          } else {
+            var leftShouldProceed: Boolean = false
+            var nextJoinElem: Stream[Res] = ${Skip[Res]}
+            if(!${readVar(elem1).isSkip}) {
+              if(!${readVar(elem2).isSkip}) {
+                val cmp = ${ord(getLeft, getRight)}
+                if (cmp < 0) {
+                  leftShouldProceed = true
+                } else {
+                  if (cmp == 0) {
+                    nextJoinElem = ${Yield(concat_records[T, S, Res](getLeft, getRight))}
+                  }
+                }
+              } else {
+
+              }
+            } else {
+              leftShouldProceed = true
+            }
+            if (leftShouldProceed) {
+              ${proceedLeft()}
+              nextJoinElem
+            } else {
+              ${proceedRight()}
+              nextJoinElem
+            }
+          }
+      """
+      }
+
     // def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryStream[S])(
     //   ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryStream[Res] =
     //   new QueryStream[Res] {
@@ -690,9 +744,9 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
   //     sym
   // }
 
-  // rewrite += remove {
-  //   case JoinableQueryNew(joinMonad) => ()
-  // }
+  rewrite += remove {
+    case JoinableQueryNew(joinMonad) => ()
+  }
 
   // rewrite += remove {
   //   case QueryGetList(monad) => ()
@@ -725,17 +779,17 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
   //   }
   // }
 
-  // rewrite += statement {
-  //   case sym -> JoinableQueryMergeJoin(monad1, monad2, ord, joinCond) => {
-  //     val Def(JoinableQueryNew(Def(QueryGetList(m1)))) = monad1
-  //     val Def(Lambda2(or, _, _, _)) = ord
-  //     val Def(Lambda2(jc, _, _, _)) = joinCond
-  //     val cps = m1.mergeJoin2(monad2)(or)(jc)(monad2.tp.typeArguments(0).asInstanceOf[TypeRep[Record]],
-  //       sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
-  //     streamMap += sym -> cps.asInstanceOf[QueryStream[Any]]
-  //     sym
-  //   }
-  // }
+  rewrite += statement {
+    case sym -> JoinableQueryMergeJoin(monad1, monad2, ord, joinCond) => {
+      val Def(JoinableQueryNew(Def(QueryGetList(m1)))) = monad1
+      val Def(Lambda2(or, _, _, _)) = ord
+      val Def(Lambda2(jc, _, _, _)) = joinCond
+      val cps = m1.mergeJoin2(monad2)(or)(jc)(monad2.tp.typeArguments(0).asInstanceOf[TypeRep[Record]],
+        sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
+      streamMap += sym -> cps.asInstanceOf[QueryStream[Any]]
+      sym
+    }
+  }
 
   val mapValuesFuncs = scala.collection.mutable.ArrayBuffer[Rep[Query[Any] => Any]]()
 
