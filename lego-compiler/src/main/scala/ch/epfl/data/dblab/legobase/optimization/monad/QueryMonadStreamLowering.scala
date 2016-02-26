@@ -40,10 +40,12 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
     // def flatMap[S](f: T => Stream[S]) = ???
     // def map2[S](f1: T => S, f2: () => S): Stream[S] = ???
   }
-  def Done[T: TypeRep]: Rep[Stream[T]] = NULL[Stream[T]]
-  def newStream[T: TypeRep](element: Rep[T], isSkip: Rep[Boolean]): Rep[Stream[T]] = __new[Stream[T]](("element", false, element), ("isSkip", false, isSkip))
-  def Skip[T: TypeRep]: Rep[Stream[T]] = newStream(NULL[T], unit(true))
-  def Yield[T: TypeRep](e: Rep[T]): Rep[Stream[T]] = newStream(e, unit(false))
+  def Done[T: TypeRep]: Rep[Stream[T]] = newStream(NULL[T], unit(false), unit(true))
+  def newStream[T: TypeRep](element: Rep[T], isSkip: Rep[Boolean], isDone: Rep[Boolean]): Rep[Stream[T]] = __new[Stream[T]](("element", false, element),
+    ("isSkip", false, isSkip),
+    ("isDone", false, isDone))
+  def Skip[T: TypeRep]: Rep[Stream[T]] = newStream(NULL[T], unit(true), unit(false))
+  def Yield[T: TypeRep](e: Rep[T]): Rep[Stream[T]] = newStream(e, unit(false), unit(false))
 
   implicit class StreamRep[T: TypeRep](self: Rep[Stream[T]]) {
     def map[S: TypeRep](f: Rep[T => S]): Rep[Stream[S]] = flatMap[S](x => Yield(inlineFunction(f, x)))
@@ -61,7 +63,7 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
         ${f(element)}
     """
     def isSkip: Rep[Boolean] = field[Boolean](self, "isSkip")
-    def isDone: Rep[Boolean] = dsl"$self == ${Done[T]}"
+    def isDone: Rep[Boolean] = field[Boolean](self, "isDone")
     def element: Rep[T] = field[T](self, "element")
     // def map2[S: TypeRep](f1: Rep[T => S], f2: Rep[() => S]): Rep[Stream[T]] = ???
   }
@@ -101,8 +103,8 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
       __whileDo({
         dsl"""{
             $elem = ${stream()}; 
-            $elem
-          } != ${Done[T]}"""
+            !${readVar(elem).isDone}
+          }"""
       }, {
         readVar(elem).foreach(f)
       })
