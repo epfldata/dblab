@@ -7,12 +7,14 @@ import java.io.BufferedReader
 import java.text.SimpleDateFormat
 
 import sc.pardis.annotations._
+import sc.pardis.shallow.OptimalString
 
 /**
  * A Scanner defined for reading from files.
  *
  * @param filename the input file name
  */
+@needs[OptimalString]
 @deep
 class K2DBScanner(filename: String) {
   @dontLift private var byteRead: Int = 0
@@ -79,6 +81,22 @@ class K2DBScanner(filename: String) {
       cnt += 1
     }
     cnt
+  }
+
+  @dontLift private val buffer = new Array[Byte](1 << 10)
+
+  def next_string: OptimalString = {
+    java.util.Arrays.fill(buffer, 0.toByte)
+    byteRead = br.read()
+    var cnt = 0
+    while (br.ready() && (byteRead != delimiter) && (byteRead != '\n')) {
+      buffer(cnt) = byteRead.asInstanceOf[Byte]
+      byteRead = br.read()
+      cnt += 1
+    }
+    val resultArray = new Array[Byte](cnt + 1)
+    System.arraycopy(buffer, 0, resultArray, 0, cnt + 1);
+    new OptimalString(resultArray)
   }
 
   def next_date: Int = {
