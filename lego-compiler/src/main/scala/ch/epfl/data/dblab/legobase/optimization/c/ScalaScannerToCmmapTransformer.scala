@@ -110,7 +110,7 @@ class ScalaScannerToCmmapTransformer(override val IR: LegoBaseExp, val settings:
         pointer_increase(s)
       })
       val size = pointer_minus(s, readVar(begin))
-      val array = __newArray[Char](size + unit(1)).asInstanceOf[Rep[Pointer[Char]]]
+      val array = __newOptimalString(__newArray[Byte](size + unit(1))).asInstanceOf[Rep[Pointer[Char]]]
       strncpy(array, readVar(begin), size)
       // pointer_assign_content(array, size, unit('\u0000'))
       // buf(size) = unit('\u0000')
