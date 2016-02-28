@@ -185,14 +185,15 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
     val eachBucketSize = __newArray[Int](MAX_SIZE)
     Range(unit(0), MAX_SIZE).foreach {
       __lambda { i =>
-        val arraySize = originalArray.length / MAX_SIZE * unit(8)
+        // val arraySize = originalArray.length * unit(3) / MAX_SIZE
         // val arraySize = originalArray.length
         // val arraySize = unit(128)
-        array(i) = __newArray[V](arraySize)
+        // array(i) = __newArray[V](arraySize)
         eachBucketSize(i) = unit(0)
       }
     }
-
+    val bucketNumbers = __newArray[Int](originalArray.length)
+    val index = __newVar(unit(0))
     // printf(unit("start!"))
     array_foreach(originalArray, (elem: Rep[V]) => {
       // val key = par(elem)
@@ -204,10 +205,32 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
           __assign(lastIndex, readVar(lastIndex) + unit(1))
           readVar(lastIndex) - unit(1)
         })
+        bucketNumbers(readVar(index)) = bucket
+        // array(bucket)(eachBucketSize(bucket)) = elem
+        eachBucketSize(bucket) += unit(1)
+
+      }, unit())
+      __assign(index, readVar(index) + unit(1))
+    })
+    __assign(index, unit(0))
+    Range(unit(0), MAX_SIZE).foreach {
+      __lambda { i =>
+        val arraySize = eachBucketSize(i)
+        array(i) = __newArray[V](arraySize)
+        eachBucketSize(i) = 0
+      }
+    }
+    array_foreach(originalArray, (elem: Rep[V]) => {
+      // val key = par(elem)
+      val cond = pred.map(p => inlineFunction(p, elem)).getOrElse(unit(true))
+      __ifThenElse(cond, {
+        val bucket = bucketNumbers(readVar(index))
         array(bucket)(eachBucketSize(bucket)) = elem
         eachBucketSize(bucket) += unit(1)
       }, unit())
+      __assign(index, readVar(index) + unit(1))
     })
+
     GroupByResult(array, keyRevertIndex, eachBucketSize, lastIndex)
   }
 
