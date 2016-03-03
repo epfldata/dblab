@@ -162,6 +162,16 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
   case class GroupByResult[K, V](partitionedArray: Rep[Array[Array[V]]], keyRevertIndex: Rep[Array[K]], eachBucketSize: Rep[Array[Int]], partitions: Rep[Int])
   val groupByResults = scala.collection.mutable.Map[Rep[Any], GroupByResult[Any, Any]]()
 
+  def updateStatisticsGroupBy[K: TypeRep, V: TypeRep](max_partitions: Long): Unit = {
+    for (tp <- List(typeRep[Array[V]], typeRep[Array[Double]], typeRep[(K, Array[Double])], typeRep[Array[(K, Array[Double])]])) {
+      // System.out.println(s"ADDED ${tp.name} -> $max_partitions")
+      schema.stats.querySpecificCardinalities += (tp.name, max_partitions)
+    }
+    // TODO generalize
+    // schema.stats += "QS_MEM_ARRAY_LINEITEM" -> 4
+    // schema.stats += "QS_MEM_ARRAY_DOUBLE" -> 4
+  }
+
   def queryGroupBy[K: TypeRep, V: TypeRep](monad: Rep[Query[V]], pred: Option[Rep[V => Boolean]], par: Rep[V => K]): GroupByResult[K, V] = {
     val originalArray = apply(monad).asInstanceOf[Rep[Array[V]]]
     def sizeByCardinality: Int = schema.stats.getCardinalityOrElse(typeRep[K].name, 8).toInt
@@ -179,9 +189,9 @@ class QueryMonadLowering(val schema: Schema, override val IR: LegoBaseExp) exten
     val keyRevertIndex = __newArray[K](MAX_SIZE)
     val lastIndex = __newVarNamed(unit(0), "lastIndex")
     val array = __newArray[Array[V]](MAX_SIZE)
-    // TODO generalize
-    schema.stats += "QS_MEM_ARRAY_LINEITEM" -> 4
-    schema.stats += "QS_MEM_ARRAY_DOUBLE" -> 4
+
+    updateStatisticsGroupBy[K, V](max_partitions)
+
     val eachBucketSize = __newArray[Int](MAX_SIZE)
     Range(unit(0), MAX_SIZE).foreach {
       __lambda { i =>

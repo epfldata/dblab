@@ -46,8 +46,13 @@ case class AutoIncrement(attribute: Attribute) extends Constraint
 case class Continuous(attribute: Attribute, offset: Int) extends Constraint
 object Compressed extends Constraint
 
+// FIXME make the return types for the values consistent (i.e. all of them Long or Double!)
 // TODO-GEN: Move this to its own file
 case class Statistics() {
+  private val QS_MEM_PREFIX = "QS_MEM_"
+  private val CONFLICT_PREFIX = "CONFLICT_"
+  private val CARDINALITY_PREFIX = "CARDINALITY_"
+  private val DISTINCT_PREFIX = "DISTINCT_"
   private val statsMap = new scala.collection.mutable.HashMap[String, Double]()
   case class Dependency(name: String, func: Double => Double)
   private val statsDependencyMap = new scala.collection.mutable.HashMap[String, Dependency]()
@@ -64,10 +69,19 @@ case class Statistics() {
     // System.out.println(s"dep added from ${format(name1)} to ${format(name2)}")
   }
 
-  def getCardinalityOrElse(tableName: String, value: => Double): Double = statsMap.get("CARDINALITY_" + format(tableName)) match {
-    case Some(stat) => stat
-    case None       => value
-  }
+  // def getCardinalityOrElse(tableName: String, value: => Double): Double = statsMap.get(CARDINALITY_PREFIX + format(tableName)) match {
+  //   case Some(stat) => stat
+  //   case None       => value
+  // }
+
+  def getCardinalityOrElse(tableName: String, value: => Double): Double =
+    getEstimatedNumObjectsForTypeOrElse(tableName, {
+      statsMap.get(CARDINALITY_PREFIX + format(tableName)) match {
+        case Some(stat) => stat
+        case None       => value
+      }
+
+    })
 
   def getCardinality(tableName: String) = getCardinalityOrElse(tableName, {
     // This means that the statistics module has been asked for either a) a table that does not exist
@@ -80,12 +94,10 @@ case class Statistics() {
 
   def getLargestCardinality() = {
     statsMap.foldLeft(1.0)((max, kv) => {
-      if (kv._1.startsWith("CARDINALITY") && kv._2 > max) kv._2
+      if (kv._1.startsWith(CARDINALITY_PREFIX) && kv._2 > max) kv._2
       else max
     })
   }
-
-  val QS_MEM_PREFIX = "QS_MEM_"
 
   // TODO-GEN: The three following functions assume 1-N schemas. We have to make this explicit
   def getJoinOutputEstimation(tableNames: List[String]): Double = {
@@ -101,27 +113,33 @@ case class Statistics() {
     System.out.println("Returning largest cardinality to compensate. This may lead to degraded performance due to unnecessarily large memory pool allocations.")
   }
 
-  def getDistinctAttrValuesOrElse(attrName: String, value: => Int): Int = statsMap.get("DISTINCT_" + attrName) match {
+  def getDistinctAttrValuesOrElse(attrName: String, value: => Int): Int = distinctAttributes(attrName) match {
     case Some(stat) => stat.toInt
     case None       => value
   }
 
+  @deprecated("dangerous, use `distinctAttributes` instead", "")
   def getDistinctAttrValues(attrName: String): Int = getDistinctAttrValuesOrElse(attrName, {
-    warningPerformance("DISTINCT_" + attrName)
+    warningPerformance("In `getDistinctAttrValues` " + DISTINCT_PREFIX + attrName)
     getLargestCardinality().toInt // TODO-GEN: Make this return the cardinality of the corresponding table
   })
 
-  private val CONFLICT_PREFIX = "CONFLICT_"
-
   def conflicts = new AttributeHandler(CONFLICT_PREFIX)
+  def cardinalities = new AttributeHandler(CARDINALITY_PREFIX)
+  def querySpecificCardinalities = new AttributeHandler(QS_MEM_PREFIX)
+  def distinctAttributes = new AttributeHandler(DISTINCT_PREFIX)
 
-  def getEstimatedNumObjectsForType(typeName: String): Double = statsMap.get(QS_MEM_PREFIX + format(typeName)) match {
+  def getEstimatedNumObjectsForType(typeName: String): Double = getEstimatedNumObjectsForTypeOrElse(typeName, {
+    warningPerformance(QS_MEM_PREFIX + format(typeName))
+    getLargestCardinality()
+  })
+
+  def getEstimatedNumObjectsForTypeOrElse(typeName: String, value: => Double): Double = statsMap.get(QS_MEM_PREFIX + format(typeName)) match {
     case Some(v) => v
     case None => statsDependencyMap.get(format(typeName)) match {
-      case Some(Dependency(name, func)) => func(getEstimatedNumObjectsForType(name))
+      case Some(Dependency(name, func)) => func(getEstimatedNumObjectsForTypeOrElse(name, value))
       case None =>
-        warningPerformance(QS_MEM_PREFIX + format(typeName))
-        getLargestCardinality()
+        value
     }
   }
 
@@ -146,6 +164,10 @@ case class Statistics() {
 
   class AttributeHandler(prefix: String) {
     def update(attrName: String, value: Long): Unit = statsMap(prefix + format(attrName)) = value.toInt
+    def +=(attrName: String, value: Long): Unit = apply(attrName) match {
+      case Some(v) => update(attrName, v + value.toInt)
+      case None    => update(attrName, value)
+    }
     def apply(attrName: String): Option[Int] = statsMap.get(prefix + format(attrName)).map(_.toInt)
   }
 }
