@@ -10,9 +10,7 @@ Installation
 By default, the latest binary version of SC is published and the installation is handled automatically by sbt.
 
 However, if you have access to the [source of SC](https://github.com/epfldata/sc) you can manually install 
-by following these steps.
-
-If you have access to the sc repository, follow these steps:
+by following these steps:
 
 1. Clone this project and checkout to the desired branch. 
 
