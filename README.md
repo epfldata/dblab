@@ -14,10 +14,20 @@ DBLAB currently only contains the implementation of a single-core main-memory
 analytical database engine. While the names in the code base suggest that
 this is LegoBase (published at VLDB 2014), the code in this repository 
 is an entirely new development based on the lessons learned from VLDB 2014,
-sharing no common code with the previous system. [LegoBase Interpreter](lego-core)
+sharing no common code with the previous system. 
+
+Project Structure
+-----------------
+[LegoBase Interpreter](lego-core)
 hosts the query interpreter and the runtime libraries of LegoBase. 
+
 [LegoBase Compiler](lego-compiler) hosts the transformers and compilation pipeline of 
 LegoBase.
+
+
+
+Roadmap
+-------
 
 The roadmap for DBLAB includes the open-source release of a second DBMS, a 
 main-memory OLTP system, in the summer of 2016. Subsequently to this, we will
