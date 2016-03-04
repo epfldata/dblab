@@ -39,35 +39,40 @@ class StatisticsEstimator(override val IR: LegoBaseExp, val schema: Schema) exte
     })
   }
 
-  def estimateCardinalityFromExpression(expr: Rep[Any], defaultEstimation: Int): Int = expr match {
-    case Def(GenericEngineDateToYearObject(_)) => schema.stats.getNumYearsAllDates()
+  def estimateCardinalityFromExpression(expr: Rep[Any]): Option[Int] = expr match {
+    case Def(GenericEngineDateToYearObject(_)) => Some(schema.stats.getNumYearsAllDates())
+    case Def(ifa: ImmutableFieldAccess[_])     => schema.stats.distinctAttributes(getUnaliasedStructFieldName(ifa.field))
     case _ =>
       System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics Estimator cannot accurately estimate cardinality for node " + expr.correspondingNode + ". Returning default estimation. This may lead to degraded performance due to unnecessarily large memory pool allocations. ")
-      defaultEstimation
+      None
   }
 
   def estimateCardinalityFromFunction(fun: Rep[Any], defaultEstimation: Int): Int = {
-    fun match {
+    val cardinality = fun match {
       case Def(PardisLambda(_, _, Block(b, Constant(string)))) =>
-        1
-      case Def(PardisLambda(_, _, Block(b, Def(PardisStructImmutableField(f, name))))) =>
-        schema.stats.getDistinctAttrValues(name).toInt
-      // TODO-GEN: This is here, because the PardisStructImmutableField does not capture all field accesses. Is this a BUG or intended?
+        Some(1)
       case Def(PardisLambda(_, _, Block(b, res))) if res.correspondingNode.isInstanceOf[FieldDef[_]] =>
         val fieldName = res.correspondingNode.asInstanceOf[FieldDef[_]].field
-        schema.stats.getDistinctAttrValues(fieldName).toInt
+        schema.stats.distinctAttributes(fieldName)
       case Def(PardisLambda(_, _, Block(b, res))) if res.correspondingNode.isInstanceOf[ConstructorDef[_]] =>
         val structArgs = res.correspondingNode.asInstanceOf[ConstructorDef[_]].argss.flatten
-        val structArgsCombinations = structArgs.foldLeft(1.0)((cnt, attr) => attr match {
-          // basically estimate all possible combinations
-          case Def(ifa: ImmutableFieldAccess[_]) => cnt * schema.stats.getDistinctAttrValues(getUnaliasedStructFieldName(ifa.field))
-          case _                                 => cnt * estimateCardinalityFromExpression(attr.asInstanceOf[Expression[_]], defaultEstimation) // account for an expression
-        }).toInt
-
-        // If parent sends less tuples that the estimated possible combinations, then choose the estimation of parent
-        Math.min(defaultEstimation, structArgsCombinations).toInt
+        val cardinalities = structArgs.map(a => estimateCardinalityFromExpression(a.asInstanceOf[Rep[Any]]))
+        if (cardinalities.forall(_.nonEmpty)) {
+          // Converted to Double because if the numbers are big, the computation gets wrong in the case of using Int
+          val structArgsCombinations = cardinalities.flatMap(_.map(_.toDouble)).product
+          if (defaultEstimation > structArgsCombinations)
+            Some(structArgsCombinations.toInt)
+          else
+            None
+        } else {
+          None
+        }
       case Def(PardisLambda(_, _, Block(b, res))) =>
-        estimateCardinalityFromExpression(res, defaultEstimation)
+        estimateCardinalityFromExpression(res)
+    }
+    cardinality match {
+      case Some(c) => c
+      case None    => defaultEstimation
     }
   }
 
@@ -95,24 +100,26 @@ class StatisticsEstimator(override val IR: LegoBaseExp, val schema: Schema) exte
 
       case ao @ AggOpNew(parent, _, grp, _) =>
         val parentES = analyzeQuery(parent)
-        val numDistinctVals = estimateCardinalityFromFunction(grp, parentES)
+        val numDistinctVals = {
+          val key = grp.tp.typeArguments(1).name
+          schema.stats.cardinalities(key) match {
+            case Some(card) => card
+            case None       => estimateCardinalityFromFunction(grp, parentES)
+          }
+        }
 
         // Handle additional estimations per function type
         grp match {
-          case Def(PardisLambda(_, _, Block(b, Constant(string))))                                       =>
-          case Def(PardisLambda(_, _, Block(b, Def(PardisStructImmutableField(f, name)))))               =>
-          case Def(PardisLambda(_, _, Block(b, res))) if res.correspondingNode.isInstanceOf[FieldDef[_]] =>
-          case Def(PardisLambda(_, _, Block(b, res))) if res.correspondingNode.isInstanceOf[ConstructorDef[_]] =>
+          case Def(PardisLambda(_, _, Block(b, Def(_: ConstructorDef[_])))) =>
             // In this case, the key is a record itself. In this case, estimate how many such keys will be created
-            schema.stats increase ("QS_MEM_" + ao.typeB) -> parentES // Because we will create that many records independent of the output size
-          case Def(PardisLambda(_, _, Block(b, res))) =>
+            schema.stats.querySpecificCardinalities += (ao.typeB.toString, parentES)
+          case _ =>
         }
 
         // Estimate that the following number of aggregate records and aggregate arrays will be created
-        schema.stats increase ("QS_MEM_AGG_" + ao.typeB) -> numDistinctVals
-        schema.stats increase "QS_MEM_ARRAY_DOUBLE" -> numDistinctVals
+        schema.stats.querySpecificCardinalities += ("AGG_" + ao.typeB, numDistinctVals)
+        schema.stats.querySpecificCardinalities += ("ARRAY_DOUBLE", numDistinctVals)
         numDistinctVals.toInt
-
       case wo @ WindowOpNew(parent, grp, _) =>
         val parentES = analyzeQuery(parent)
         val numDistinctVals = estimateCardinalityFromFunction(grp, parentES)
