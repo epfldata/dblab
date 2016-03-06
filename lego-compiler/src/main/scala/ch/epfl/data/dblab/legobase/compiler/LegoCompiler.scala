@@ -103,7 +103,8 @@ class LegoCompiler(val DSL: LegoBaseExp,
     // pipeline += PartiallyEvaluate
   }
 
-  pipeline += HashMapHoist
+  if (!settings.noDSHoist)
+    pipeline += HashMapHoist
 
   if (!settings.noSingletonHashMap)
     pipeline += SingletonHashMapToValueTransformer

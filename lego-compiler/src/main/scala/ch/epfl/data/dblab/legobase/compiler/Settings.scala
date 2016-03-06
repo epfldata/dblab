@@ -54,7 +54,7 @@ class Settings(val args: List[String]) {
         a -> Settings.ALL_SETTINGS.find(_.matches(a)).get.asInstanceOf[OptimizationSetting]).filter(a => available(a._2)).map(_._1)
       val levelSpecificArgs =
         if (levels == 1) {
-          (PointerStoreSetting :: NoSingletonHashMapSetting :: NoFieldRemovalSetting :: Nil).map(_.fullFlagName) ++ filteredArgs
+          (PointerStoreSetting :: NoSingletonHashMapSetting :: NoDSHoistSetting :: NoFieldRemovalSetting :: Nil).map(_.fullFlagName) ++ filteredArgs
         } else {
           filteredArgs
         }
@@ -88,6 +88,7 @@ class Settings(val args: List[String]) {
   def noFieldRemoval: Boolean = hasSetting(NoFieldRemovalSetting)
   def forceFieldRemoval: Boolean = hasSetting(ForceFieldRemovalSetting)
   def noSingletonHashMap: Boolean = hasSetting(NoSingletonHashMapSetting)
+  def noDSHoist: Boolean = hasSetting(NoDSHoistSetting)
   def nameIsWithFlag: Boolean = hasSetting(OutputNameWithFlagSetting)
   def onlyLoading: Boolean = hasSetting(OnlyLoaderSetting)
   def profile: Boolean = hasSetting(ProfileSetting)
@@ -135,6 +136,7 @@ object Settings {
     LargeOutputHoistingSetting,
     NoFieldRemovalSetting,
     NoSingletonHashMapSetting,
+    NoDSHoistSetting,
     OutputNameWithFlagSetting,
     OnlyLoaderSetting,
     ProfileSetting,
@@ -265,6 +267,10 @@ case object NoFieldRemovalSetting extends OptimizationSetting("no-field-rem",
   "Deoptimization!")
 case object NoSingletonHashMapSetting extends OptimizationSetting("no-sing-hm",
   "Disables the singleton hashmap optimization",
+  MCHLanguage,
+  "Deoptimization!")
+case object NoDSHoistSetting extends OptimizationSetting("no-ds-hoist",
+  "Disables the data-structure hoisting optimization",
   MCHLanguage,
   "Deoptimization!")
 case object QueryMonadLoweringSetting extends OptimizationSetting("monad-lowering",
