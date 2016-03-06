@@ -26,6 +26,8 @@ case class Attribute(name: String, dataType: Tpe, constraints: List[Constraint] 
 }
 object Attribute {
   implicit def tuple2ToAttribute(nameAndType: (String, Tpe)): Attribute = Attribute(nameAndType._1, nameAndType._2)
+  implicit def tuple2oftuple2ToAttribute(nameAndTypeAndConstraints: ((String, Tpe), List[Constraint])): Attribute =
+    Attribute(nameAndTypeAndConstraints._1._1, nameAndTypeAndConstraints._1._2, nameAndTypeAndConstraints._2)
 }
 
 sealed trait Constraint
