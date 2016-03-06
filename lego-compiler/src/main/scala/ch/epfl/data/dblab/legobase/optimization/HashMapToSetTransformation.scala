@@ -91,3 +91,24 @@ class HashMapToSetTransformation(override val IR: LegoBaseExp, val schema: Schem
         unit(1 << 20)
     }
 }
+
+class HashMapToSetWithMallocTransformation(override val IR: LegoBaseExp, val schema: Schema)
+  extends HashMapOptimalTransformation(IR)
+  with StructCollector[HashMapOps with SetOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops]
+  with HashMapBucketAnalyser[HashMapOps with SetOps with RangeOps with ArrayOps with OptionOps with IntOps with Tuple2Ops] {
+  import IR._
+  /**
+   * Specifies the function that is used for extracting the key from the value.
+   * Keep in mind that the assumption for this transformation is that the value
+   * contains the value of key. Hence there is no need to store the key together
+   * with the value, and storing only value is enough.
+   */
+  override def hashMapExtractKey[A, B](self: Rep[HashMap[A, B]], value: Rep[B])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[A] = typeB match {
+    case t if t.isRecord && t.name.startsWith("AGGRecord") => {
+      val structDef = getStructDef(t)
+      val fieldType = structDef.map(sd => sd.fields.find(_.name == "key").get.tpe.asInstanceOf[TypeRep[A]]).getOrElse(typeA)
+      field[A](value, "key")(fieldType)
+    }
+    case t => throw new Exception(s"does not know how to extract key for type $t")
+  }
+}

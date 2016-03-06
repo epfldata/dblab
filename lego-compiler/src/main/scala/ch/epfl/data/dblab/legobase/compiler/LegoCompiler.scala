@@ -103,8 +103,7 @@ class LegoCompiler(val DSL: LegoBaseExp,
     // pipeline += PartiallyEvaluate
   }
 
-  if (!settings.noDSHoist)
-    pipeline += HashMapHoist
+  pipeline += HashMapHoist
 
   if (!settings.noSingletonHashMap)
     pipeline += SingletonHashMapToValueTransformer
@@ -132,7 +131,10 @@ class LegoCompiler(val DSL: LegoBaseExp,
   if (settings.hashMapLowering || settings.hashMapNoCollision) {
     if (settings.hashMapLowering) {
       pipeline += new MultiMapToSetTransformation(DSL, schema)
-      pipeline += new HashMapToSetTransformation(DSL, schema)
+      if (!settings.noDSHoist)
+        pipeline += new HashMapToSetTransformation(DSL, schema)
+      else
+        pipeline += new HashMapToSetWithMallocTransformation(DSL, schema)
     }
     if (settings.hashMapNoCollision) {
       pipeline += new HashMapNoCollisionTransformation(DSL, schema)
