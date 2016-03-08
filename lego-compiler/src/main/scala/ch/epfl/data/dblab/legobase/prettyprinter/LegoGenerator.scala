@@ -4,6 +4,7 @@ package prettyprinter
 
 import sc.pardis.utils.document._
 import sc.pardis.ir._
+import CNodes._
 import sc.pardis.prettyprinter._
 import scala.language.implicitConversions
 import sc.pardis.deep.scalalib._
@@ -144,6 +145,14 @@ int event[NUM_EVENTS] = {PAPI_L1_DCM, PAPI_L2_DCM, PAPI_L2_DCA,
   import sc.cscala.deep.GArrayHeaderIRs.GArrayHeaderG_array_indexObject
 
   val BN = "\\n"
+
+  override def nodeToDocument(node: PardisNode[_]): Document = node match {
+    case sz @ SizeOf() => {
+      val typeDoc: Document = tpeToDocument(sz.typeA)
+      "sizeof(" :: typeDoc :: ")"
+    }
+    case _ => super.nodeToDocument(node)
+  }
 
   /**
    * Generates the code for the given function definition node

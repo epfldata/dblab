@@ -88,6 +88,10 @@ class LegoCompiler(val DSL: LegoBaseExp,
       pipeline += new QueryMonadCPSLowering(schema, DSL)
     } else if (settings.queryMonadIterator) {
       pipeline += new QueryMonadIteratorLowering(schema, DSL)
+    } else if (settings.queryMonadStream) {
+      pipeline += new QueryMonadStreamLowering(schema, DSL)
+      pipeline += new CoreLanguageToC(DSL)
+      pipeline += new ParameterPromotionWithVar(DSL)
     } else {
       pipeline += new QueryMonadLowering(schema, DSL)
     }
@@ -127,7 +131,10 @@ class LegoCompiler(val DSL: LegoBaseExp,
   if (settings.hashMapLowering || settings.hashMapNoCollision) {
     if (settings.hashMapLowering) {
       pipeline += new MultiMapToSetTransformation(DSL, schema)
-      pipeline += new HashMapToSetTransformation(DSL, schema)
+      if (!settings.noDSHoist)
+        pipeline += new HashMapToSetTransformation(DSL, schema)
+      else
+        pipeline += new HashMapToSetWithMallocTransformation(DSL, schema)
     }
     if (settings.hashMapNoCollision) {
       pipeline += new HashMapNoCollisionTransformation(DSL, schema)

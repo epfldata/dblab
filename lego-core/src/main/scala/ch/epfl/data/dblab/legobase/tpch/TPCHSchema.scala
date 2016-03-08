@@ -72,7 +72,7 @@ object TPCHSchema {
 
       new Table("SUPPLIER", List(
         sk,
-        ("S_NAME" -> VarCharType(25)),
+        "S_NAME" -> VarCharType(25),
         ("S_ADDRESS" -> VarCharType(40)),
         "S_NATIONKEY" -> IntType,
         ("S_PHONE" -> VarCharType(15)),
@@ -94,7 +94,7 @@ object TPCHSchema {
 
       new Table("PART", List(
         P_PARTKEY,
-        ("P_NAME" -> VarCharType(55)),
+        "P_NAME" -> VarCharType(55),
         P_MFGR,
         P_BRAND,
         P_TYPE,
@@ -184,6 +184,7 @@ object TPCHSchema {
     tpchSchema.stats += "CARDINALITY_Q3GRP" -> ordersTable.rowCount / 100
     tpchSchema.stats += "CARDINALITY_Q9GRP" -> nationTable.rowCount * YEARS
     tpchSchema.stats += "CARDINALITY_Q10GRP" -> customerTable.rowCount
+    tpchSchema.stats += "CARDINALITY_Q20GRP" -> supplierTable.rowCount
 
     tpchSchema.stats += "DISTINCT_L_SHIPMODE" -> YEARS
     tpchSchema.stats += "DISTINCT_L_RETURNFLAG" -> 3

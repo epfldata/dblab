@@ -35,8 +35,8 @@ object SyntheticQueries extends TPCHRunner {
     // val days = 1 to 30 map (x => if (x < 10) s"0$x" else x.toString)
     // val dates = for (d <- days) yield s"1996-12-$d"
     // val dates = for (d <- days) yield s"1998-11-$d"
-    val dates = for (y <- List(4, 5, 6, 7, 8); m <- if (y == 4) List(7) else List(1, 7)) yield s"199$y-0$m-01"
-    // val dates = List("1998-01-01")
+    // val dates = for (y <- List(4, 5, 6, 7, 8); m <- if (y == 4) List(7) else List(1, 7)) yield s"199$y-0$m-01"
+    val dates = List("1998-01-01")
     dates.toList
   }
 
@@ -118,6 +118,22 @@ object SyntheticQueries extends TPCHRunner {
     }
   }
 
+  def querySimple(numRuns: Int): context.Rep[Unit] = {
+    import dblab.legobase.queryengine.monad.Query
+    import dblab.legobase.tpch.TPCHLoader._
+    import dblab.legobase.queryengine.GenericEngine._
+    dsl"""
+      val result = {
+        var sumResult = 0.0
+        for(t <- Query(loadLineitem())) {
+          sumResult += t.L_EXTENDEDPRICE
+        }
+        sumResult
+      }
+      printf("%d", result)
+      """
+  }
+
   def query6(numRuns: Int): context.Rep[Unit] = {
     import dblab.legobase.queryengine.monad.Query
     import dblab.legobase.tpch.TPCHLoader._
@@ -191,6 +207,7 @@ object SyntheticQueries extends TPCHRunner {
     System.out.println(s"\nRunning $query!")
 
     val (queryNumber, queryFunction) = query match {
+      case "QSimple"           => (0, () => querySimple(1))
       case "Q6_functional"     => (6, () => query6(1))
       case "Q12_functional_p2" => (12, () => query12_p2(1))
     }

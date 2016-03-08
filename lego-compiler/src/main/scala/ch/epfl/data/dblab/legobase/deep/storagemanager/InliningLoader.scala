@@ -49,11 +49,12 @@ trait InliningLoader extends storagemanager.LoaderImplementations with schema.Sc
     __whileDo(((i: Rep[Int]) < size) && ldr.hasNext(), {
       val values = arguments.map(arg =>
         arg._3.dataType match {
-          case IntType          => ldr.next_int
-          case DoubleType       => ldr.next_double
-          case CharType         => ldr.next_char
-          case DateType         => ldr.next_date
-          case VarCharType(len) => Loader.loadString(len, ldr)
+          case IntType    => ldr.next_int
+          case DoubleType => ldr.next_double
+          case CharType   => ldr.next_char
+          case DateType   => ldr.next_date
+          case VarCharType(len) => //Loader.loadString(len, ldr)
+            ldr.next_string
         })
 
       val rec = reflectedMethod.apply(values: _*).asInstanceOf[Rep[R]]

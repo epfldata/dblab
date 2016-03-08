@@ -46,6 +46,9 @@ class CTransformersPipeline(val settings: compiler.Settings) extends Transformer
     pipeline += new RangeToCTransformer(context)
     pipeline += new ScalaConstructsToCTranformer(context, settings.ifAggressive)
     pipeline += new BlockFlattening(context)
+    if (settings.profile) {
+      pipeline += new MallocProfiler(context)
+    }
     pipeline(context)(b)
   }
 }

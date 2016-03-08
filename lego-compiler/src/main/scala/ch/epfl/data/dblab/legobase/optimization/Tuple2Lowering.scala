@@ -19,7 +19,7 @@ import sc.pardis.deep.scalalib.collection._
 class Tuple2Lowering[Lang <: LegoBaseExp](override val IR: Lang)
   extends sc.pardis.optimization.RecursiveRuleBasedTransformer[Lang](IR)
   with ArrayEscapeLowering[Lang]
-  with VarEscapeLowering[Lang]
+  // with VarEscapeLowering[Lang]
   with LambdaEscapeLowering[Lang]
   with RuleBasedLowering[Lang] {
   import IR._
@@ -50,6 +50,48 @@ class Tuple2Lowering[Lang <: LegoBaseExp](override val IR: Lang)
 
   class A1
   class A2
+
+  val loweredEscapeVars = scala.collection.mutable.ArrayBuffer[Rep[Any]]()
+
+  analysis += statement {
+    case sym -> NewVar(v) if mustBeLowered(v) => {
+      loweredEscapeVars += sym
+      ()
+    }
+  }
+
+  analysis += statement {
+    case sym -> ReadVar(v) if loweredEscapeVars.contains(v.e) => {
+      addToLowered(sym)
+      ()
+    }
+  }
+
+  rewrite += statement {
+    case sym -> NewVar(nodev) if loweredEscapeVars.contains(sym) => {
+      class B
+      val v = nodev.asInstanceOf[Rep[B]]
+      implicit val typeB = lowerType(sym.tp.typeArguments(0)).asInstanceOf[TypeRep[B]]
+      val e = __newVarNamed[B](apply(v), sym.name).e
+      e.asInstanceOf[Rep[Any]]
+    }
+  }
+
+  rewrite += statement {
+    case sym -> ReadVar(nodev) if mustBeLowered(sym) => {
+      class B
+      implicit val typeB = lowerType(sym.tp).asInstanceOf[TypeRep[B]]
+      val v = Var(apply(nodev.e)).asInstanceOf[Var[B]]
+      readVar(v).asInstanceOf[Rep[Any]]
+    }
+  }
+
+  analysis += statement {
+    case sym -> Assign(v, rhs) if mustBeLowered(rhs) => {
+      loweredEscapeVars += v.e
+      ()
+    }
+  }
 
   rewrite += statement {
     case sym -> (node @ Tuple2New(_1, _2)) if mayBeLowered(sym) =>

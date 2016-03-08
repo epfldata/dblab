@@ -11,7 +11,7 @@ import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
 
-trait K2DBScannerOps extends Base {
+trait K2DBScannerOps extends Base with OptimalStringOps {
   // Type representation
   val K2DBScannerType = K2DBScannerIRs.K2DBScannerType
   implicit val typeK2DBScanner: TypeRep[K2DBScanner] = K2DBScannerType
@@ -21,6 +21,7 @@ trait K2DBScannerOps extends Base {
     def next_char(): Rep[Char] = k2DBScannerNext_char(self)
     def next(buf: Rep[Array[Byte]])(implicit overload1: Overloaded1): Rep[Int] = k2DBScannerNext1(self, buf)
     def next(buf: Rep[Array[Byte]], offset: Rep[Int])(implicit overload2: Overloaded2): Rep[Int] = k2DBScannerNext2(self, buf, offset)
+    def next_string: Rep[OptimalString] = k2DBScannerNext_string(self)
     def next_date: Rep[Int] = k2DBScannerNext_date(self)
     def hasNext(): Rep[Boolean] = k2DBScannerHasNext(self)
     def filename: Rep[String] = k2DBScanner_Field_Filename(self)
@@ -43,6 +44,8 @@ trait K2DBScannerOps extends Base {
   type K2DBScannerNext1 = K2DBScannerIRs.K2DBScannerNext1
   val K2DBScannerNext2 = K2DBScannerIRs.K2DBScannerNext2
   type K2DBScannerNext2 = K2DBScannerIRs.K2DBScannerNext2
+  val K2DBScannerNext_string = K2DBScannerIRs.K2DBScannerNext_string
+  type K2DBScannerNext_string = K2DBScannerIRs.K2DBScannerNext_string
   val K2DBScannerNext_date = K2DBScannerIRs.K2DBScannerNext_date
   type K2DBScannerNext_date = K2DBScannerIRs.K2DBScannerNext_date
   val K2DBScannerHasNext = K2DBScannerIRs.K2DBScannerHasNext
@@ -56,12 +59,14 @@ trait K2DBScannerOps extends Base {
   def k2DBScannerNext_char(self: Rep[K2DBScanner]): Rep[Char] = K2DBScannerNext_char(self)
   def k2DBScannerNext1(self: Rep[K2DBScanner], buf: Rep[Array[Byte]]): Rep[Int] = K2DBScannerNext1(self, buf)
   def k2DBScannerNext2(self: Rep[K2DBScanner], buf: Rep[Array[Byte]], offset: Rep[Int]): Rep[Int] = K2DBScannerNext2(self, buf, offset)
+  def k2DBScannerNext_string(self: Rep[K2DBScanner]): Rep[OptimalString] = K2DBScannerNext_string(self)
   def k2DBScannerNext_date(self: Rep[K2DBScanner]): Rep[Int] = K2DBScannerNext_date(self)
   def k2DBScannerHasNext(self: Rep[K2DBScanner]): Rep[Boolean] = K2DBScannerHasNext(self)
   def k2DBScanner_Field_Filename(self: Rep[K2DBScanner]): Rep[String] = K2DBScanner_Field_Filename(self)
   type K2DBScanner = ch.epfl.data.dblab.legobase.storagemanager.K2DBScanner
 }
 object K2DBScannerIRs extends Base {
+  import OptimalStringIRs._
   // Type representation
   case object K2DBScannerType extends TypeRep[K2DBScanner] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = K2DBScannerType
@@ -92,6 +97,10 @@ object K2DBScannerIRs extends Base {
 
   case class K2DBScannerNext2(self: Rep[K2DBScanner], buf: Rep[Array[Byte]], offset: Rep[Int]) extends FunctionDef[Int](Some(self), "next", List(List(buf, offset))) {
     override def curriedConstructor = (copy _).curried
+  }
+
+  case class K2DBScannerNext_string(self: Rep[K2DBScanner]) extends FunctionDef[OptimalString](Some(self), "next_string", List()) {
+    override def curriedConstructor = (copy _)
   }
 
   case class K2DBScannerNext_date(self: Rep[K2DBScanner]) extends FunctionDef[Int](Some(self), "next_date", List()) {

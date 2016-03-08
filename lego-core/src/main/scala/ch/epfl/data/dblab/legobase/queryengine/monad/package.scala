@@ -14,4 +14,10 @@ package object monad {
 
   implicit def queryIteratorToJoinableQueryIterator[T <: Record, Source](q: QueryIterator[T, Source]): JoinableQueryIterator[T, Source] =
     new JoinableQueryIterator(q)
+
+  implicit def queryUnfoldToJoinableQueryUnfold[T <: Record](q: QueryUnfold[T]): JoinableQueryUnfold[T] =
+    new JoinableQueryUnfold(q)
+
+  implicit def queryStreamToJoinableQueryStream[T <: Record](q: QueryStream[T]): JoinableQueryStream[T] =
+    new JoinableQueryStream(q)
 }

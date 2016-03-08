@@ -746,19 +746,40 @@ class HashMapGrouping(override val IR: LegoBaseExp,
         partitionedRelationInfo.count = partitionedCount
         Range(unit(0), buckets).foreach {
           __lambda { i =>
-            partitionedArray(i) = __newArray[InnerType](partitionedRelationInfo.bucketSize)
+            // partitionedArray(i) = __newArray[InnerType](partitionedRelationInfo.bucketSize)
+            partitionedCount(i) = unit(0)
           }
         }
         val index = __newVarNamed[Int](unit(0), "partIndex")
+        // val bucketNumbers = __newArray[Int](originalArray.length)
         array_foreach(originalArray, {
           (e: Rep[InnerType]) =>
             // TODO needs a better way of computing the index of each object
             val pkey = field[Int](e, partitionedRelationInfo.partitioningField) % buckets
+            // bucketNumbers(readVar(index)) = pkey
+            // val currIndex = partitionedCount(pkey)
+            // val partitionedArrayBucket = partitionedArray(pkey)
+            // partitionedArrayBucket(currIndex) = e
+            partitionedCount(pkey) += unit(1)
+            // __assign(index, readVar(index) + unit(1))
+            dsl"$index = $index+1"
+        })
+        Range(unit(0), buckets).foreach {
+          __lambda { i =>
+            val arraySize = partitionedCount(i)
+            partitionedArray(i) = __newArray[InnerType](arraySize)
+            partitionedCount(i) = unit(0)
+          }
+        }
+        dsl"$index = 0"
+        array_foreach(originalArray, {
+          (e: Rep[InnerType]) =>
+            val pkey = field[Int](e, partitionedRelationInfo.partitioningField) % buckets
+            // val pkey = bucketNumbers(readVar(index))
             val currIndex = partitionedCount(pkey)
             val partitionedArrayBucket = partitionedArray(pkey)
             partitionedArrayBucket(currIndex) = e
-            partitionedCount(pkey) = currIndex + unit(1)
-            // __assign(index, readVar(index) + unit(1))
+            partitionedCount(pkey) += unit(1)
             dsl"$index = $index+1"
         })
       }

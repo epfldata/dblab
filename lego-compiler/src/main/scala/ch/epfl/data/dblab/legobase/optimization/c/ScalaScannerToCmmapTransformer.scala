@@ -104,6 +104,27 @@ class ScalaScannerToCmmapTransformer(override val IR: LegoBaseExp, val settings:
   }
 
   rewrite += rule {
+    case nn @ K2DBScannerNext_string(s) =>
+      val begin = __newVar[Pointer[Char]](s)
+      __whileDo((*(s) __!= unit('|')) && (*(s) __!= unit('\n')), {
+        pointer_increase(s)
+      })
+      val size = pointer_minus(s, readVar(begin))
+      val array = __newOptimalString(__newArray[Byte](size + unit(1))).asInstanceOf[Rep[Pointer[Char]]]
+      strncpy(array, readVar(begin), size)
+      // pointer_assign_content(array, size, unit('\u0000'))
+      // buf(size) = unit('\u0000')
+      if (settings.oldCArrayHandling)
+        pointer_assign_content(array, size, unit('\u0000'))
+      else
+        // buf(size - 1) = unit('\u0000')
+        // buf(size) = unit('\u0000')
+        ()
+      pointer_increase(s) // skip '|'
+      array
+  }
+
+  rewrite += rule {
     case K2DBScannerHasNext(s) => infix_!=(*(s), unit('\u0000'))
 
   }

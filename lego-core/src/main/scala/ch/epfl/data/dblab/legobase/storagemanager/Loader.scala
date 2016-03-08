@@ -40,10 +40,11 @@ object Loader {
   @dontInline
   def getFullPath(fileName: String): String = Config.datapath + fileName
 
-  def loadString(size: Int, s: K2DBScanner) = {
+  def loadString(size: Int, s: K2DBScanner): OptimalString = {
     val NAME = new Array[Byte](size + 1)
     s.next(NAME)
     new OptimalString(NAME.filter(y => y != 0))
+    // s.next_string
   }
 
   @dontInline
@@ -90,11 +91,12 @@ object Loader {
       while (i < size && ldr.hasNext()) {
         val values = arguments.map(arg =>
           arg._3.dataType match {
-            case IntType          => ldr.next_int
-            case DoubleType       => ldr.next_double
-            case CharType         => ldr.next_char
-            case DateType         => ldr.next_date
-            case VarCharType(len) => loadString(len, ldr)
+            case IntType    => ldr.next_int
+            case DoubleType => ldr.next_double
+            case CharType   => ldr.next_char
+            case DateType   => ldr.next_date
+            case VarCharType(len) => //loadString(len, ldr)
+              ldr.next_string
           })
 
         classMirror.reflectConstructor(constr).apply(values: _*) match {
