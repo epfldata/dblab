@@ -11,38 +11,50 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.TreeSet
 import scala.language.implicitConversions
-import QueryStream.NULL
+
+sealed trait Stream[+T] {
+  def map[S](f: T => S): Stream[S] = flatMap(x => Stream(f(x)))
+  def filter(p: T => Boolean): Stream[T] = flatMap(x => if (p(x)) Stream(x) else Skip)
+  def flatMap[S](f: T => Stream[S]): Stream[S] = this match {
+    case Done     => Done
+    case Skip     => Skip
+    case Yield(v) => f(v)
+  }
+  def foreach(f: T => Unit): Unit = this match {
+    case Done     =>
+    case Skip     =>
+    case Yield(v) => f(v)
+  }
+  def isDone = this == Done
+  def isSkip = this == Skip
+}
+
+object Stream {
+  def apply[T](v: T): Stream[T] = Yield(v)
+}
+
+case object Done extends Stream[Nothing]
+case object Skip extends Stream[Nothing]
+case class Yield[+T](value: T) extends Stream[T]
 
 // @reflect[Query[_]]
 // @transformation
 abstract class QueryStream[T] { self =>
-  def stream(): Option[T]
+  def stream(): Stream[T]
   def reset(): Unit
   @pure def map[S](f: T => S): QueryStream[S] = unstream { () =>
-    val elem = stream()
-    if (elem == NULL)
-      NULL
-    else
-      elem.map(f)
+    stream().map(f)
   }
   @pure def filter(p: T => Boolean): QueryStream[T] = unstream { () =>
-    val elem = stream()
-    if (elem == NULL)
-      NULL
-    else
-      // elem.flatMap(x => if (p(x)) Some(x) else None)
-      elem match {
-        case Some(x) if p(x) => Some(x)
-        case _               => None
-      }
+    stream().filter(p)
   }
   def foreach(f: T => Unit): Unit = {
     reset()
-    var elem: Option[T] = NULL
+    var elem: Stream[T] = Done
     while ({
       elem = stream()
-      elem
-    } != NULL) {
+      !elem.isDone
+    }) {
       for (e <- elem)
         f(e)
     }
@@ -98,12 +110,12 @@ abstract class QueryStream[T] { self =>
     var index = 0
     unstream { () =>
       if (index >= size)
-        NULL
+        Done
       else {
         index += 1
         val elem = treeSet.head
         treeSet -= elem
-        Some(elem)
+        Stream(elem)
       }
     }
   }
@@ -139,11 +151,11 @@ abstract class QueryStream[T] { self =>
         rows += 1
       }
     } else {
-      var elem: Option[T] = NULL
+      var elem: Stream[T] = Done
       while (rows < limit && {
         elem = stream()
-        elem
-      } != NULL) {
+        !elem.isDone
+      }) {
         for (e <- elem) {
           printFunc(e)
           rows += 1
@@ -161,22 +173,21 @@ abstract class QueryStream[T] { self =>
     res.toList
   }
 
-  def unstream[T](n: () => Option[T]): QueryStream[T] = new QueryStream[T] {
-    def stream(): Option[T] = n()
+  def unstream[T](n: () => Stream[T]): QueryStream[T] = new QueryStream[T] {
+    def stream(): Stream[T] = n()
     def reset(): Unit = self.reset()
   }
 }
 
 object QueryStream {
-  def NULL[S]: S = null.asInstanceOf[S]
   @dontLift def apply[T](arr: Array[T]): QueryStream[T] = new QueryStream[T] {
     var index = 0
-    def stream(): Option[T] =
+    def stream(): Stream[T] =
       if (index >= arr.length)
-        NULL
+        Done
       else {
         index += 1
-        Some(arr(index - 1))
+        Stream(arr(index - 1))
       }
     def reset(): Unit = {
       index = 0
@@ -191,11 +202,11 @@ class SetStream[T](set: scala.collection.mutable.Set[T]) extends QueryStream[T] 
   def reset() = currentSet = set
   def stream() = {
     if (currentSet.isEmpty) {
-      NULL
+      Done
     } else {
       val elem = currentSet.head
       currentSet = currentSet.tail
-      Some(elem)
+      Stream(elem)
     }
   }
 
@@ -213,29 +224,29 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
       hm.addBinding(leftHash(elem), elem)
     }
     var iterator: SetStream[T] = null
-    var prevRightElem: Option[S] = None
+    var prevRightElem: Stream[S] = Done
     underlying.unstream { () =>
-      var leftElem: Option[T] = None
+      var leftElem: Stream[T] = Skip
       val rightElem = if (iterator == null || {
         leftElem = iterator.stream()
-        leftElem
-      } == NULL) {
+        leftElem.isDone
+      }) {
         val re = {
           val e2 = q2.stream()
           e2 match {
-            case null => NULL
-            case Some(t) =>
+            case Done => Done
+            case Yield(t) =>
               val k = rightHash(t)
               hm.get(k) match {
                 case Some(tmpBuffer) =>
                   iterator = QueryStream(tmpBuffer).withFilter(e => joinCond(e, t))
                   leftElem = iterator.stream()
-                  Some(t)
+                  Stream(t)
                 case None =>
-                  None
+                  Skip
               }
-            case None =>
-              None
+            case Skip =>
+              Skip
           }
         }
         prevRightElem = re
@@ -243,11 +254,11 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
       } else {
         prevRightElem
       }
-      if (rightElem == NULL) {
-        NULL
+      if (rightElem.isDone) {
+        Done
       } else {
-        if (leftElem == NULL) {
-          None
+        if (leftElem.isSkip) {
+          Skip
         } else {
           for (e1 <- leftElem; e2 <- rightElem) yield {
             e1.concatenateDynamic(e2)
@@ -259,38 +270,38 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
 
   def mergeJoin[S <: Record](q2: QueryStream[S])(
     ord: (T, S) => Int)(joinCond: (T, S) => Boolean): QueryStream[DynamicCompositeRecord[T, S]] = {
-    var elem1: Option[T] = None
-    var elem2: Option[S] = None
+    var elem1: Stream[T] = Skip
+    var elem2: Stream[S] = Skip
     var atEnd: Boolean = false
     def proceedLeft(): Unit = {
       elem1 = underlying.stream()
-      atEnd ||= elem1 == NULL
+      atEnd ||= elem1.isDone
     }
     def proceedRight(): Unit = {
       elem2 = q2.stream()
-      atEnd ||= elem2 == NULL
+      atEnd ||= elem2.isDone
     }
     underlying.unstream { () =>
       if (atEnd) {
-        NULL
+        Done
       } else {
         var leftShouldProceed: Boolean = false
-        var nextJoinElem: Option[DynamicCompositeRecord[T, S]] = None
+        var nextJoinElem: Stream[DynamicCompositeRecord[T, S]] = Skip
         elem1 match {
-          case Some(ne1) =>
+          case Yield(ne1) =>
             elem2 match {
-              case Some(ne2) =>
+              case Yield(ne2) =>
                 val cmp = ord(ne1, ne2)
                 if (cmp < 0) {
                   leftShouldProceed = true
                 } else {
                   if (cmp == 0) {
-                    nextJoinElem = Some(ne1.concatenateDynamic(ne2))
+                    nextJoinElem = Stream(ne1.concatenateDynamic(ne2))
                   }
                 }
-              case None =>
+              case Skip =>
             }
-          case None =>
+          case Skip =>
             leftShouldProceed = true
         }
         if (leftShouldProceed) {
@@ -373,7 +384,7 @@ class GroupedQueryStream[K, V](underlying: QueryStream[V], par: V => K) {
 
     underlying.unstream { () =>
       if (index >= partitions) {
-        NULL
+        Done
       } else {
         val GroupByResult(array, keyRevertIndex, eachBucketSize, _, _) =
           groupByResult
@@ -382,7 +393,7 @@ class GroupedQueryStream[K, V](underlying: QueryStream[V], par: V => K) {
         val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
         val key = keyRevertIndex(i)
         val newValue = func(QueryStream(arr))
-        Some(key -> newValue)
+        Stream(key -> newValue)
       }
     }
   }
