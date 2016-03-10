@@ -15,14 +15,11 @@ import scala.language.implicitConversions
 sealed trait Stream[+T] {
   def map[S](f: T => S): Stream[S] = flatMap(x => Stream(f(x)))
   def filter(p: T => Boolean): Stream[T] = flatMap(x => if (p(x)) Stream(x) else Skip)
-  def flatMap[S](f: T => Stream[S]): Stream[S] = this match {
-    case Done     => Done
-    case Skip     => Skip
-    case Yield(v) => f(v)
-  }
-  def foreach(f: T => Unit): Unit = this match {
-    case Done     =>
-    case Skip     =>
+  def flatMap[S](f: T => Stream[S]): Stream[S] = semiFold[Stream[S]](() => Done, () => Skip, f)
+  def foreach(f: T => Unit): Unit = semiFold[Unit](() => (), () => (), f)
+  def semiFold[S](done: () => S, skip: () => S, f: T => S): S = this match {
+    case Done     => done()
+    case Skip     => skip()
     case Yield(v) => f(v)
   }
   def isDone = this == Done
@@ -50,13 +47,17 @@ abstract class QueryStream[T] { self =>
   }
   def foreach(f: T => Unit): Unit = {
     reset()
-    var elem: Stream[T] = Done
-    while ({
-      elem = stream()
-      !elem.isDone
-    }) {
-      for (e <- elem)
-        f(e)
+    // var elem: Stream[T] = Done
+    // while ({
+    //   elem = stream()
+    //   !elem.isDone
+    // }) {
+    //   for (e <- elem)
+    //     f(e)
+    // }
+    var done = false
+    while (!done) {
+      stream().semiFold(() => done = true, () => (), f)
     }
   }
 
@@ -151,16 +152,28 @@ abstract class QueryStream[T] { self =>
         rows += 1
       }
     } else {
-      var elem: Stream[T] = Done
-      while (rows < limit && {
-        elem = stream()
-        !elem.isDone
-      }) {
-        for (e <- elem) {
+      // var elem: Stream[T] = Done
+      // while (rows < limit && {
+      //   elem = stream()
+      //   !elem.isDone
+      // }) {
+      //   for (e <- elem) {
+      //     printFunc(e)
+      //     rows += 1
+      //   }
+      // }
+      var done = false
+      while (rows < limit && !done) {
+        stream().semiFold({ () =>
+          done = true
+        }, { () =>
+          ()
+        }, { e =>
           printFunc(e)
           rows += 1
-        }
+        })
       }
+
     }
     printf("(%d rows)\n", rows)
   }
