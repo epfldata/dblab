@@ -94,8 +94,8 @@ class K2DBScanner(filename: String) {
       byteRead = br.read()
       cnt += 1
     }
-    val resultArray = new Array[Byte](cnt + 1)
-    System.arraycopy(buffer, 0, resultArray, 0, cnt + 1);
+    val resultArray = new Array[Byte](cnt)
+    System.arraycopy(buffer, 0, resultArray, 0, cnt)
     new OptimalString(resultArray)
   }
 
