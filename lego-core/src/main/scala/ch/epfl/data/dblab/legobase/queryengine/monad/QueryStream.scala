@@ -224,7 +224,7 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
       hm.addBinding(leftHash(elem), elem)
     }
     var iterator: SetStream[T] = null
-    var prevRightElem: Stream[S] = Done
+    var prevRightElem: Stream[S] = Skip
     underlying.unstream { () =>
       var leftElem: Stream[T] = Skip
       val rightElem = if (iterator == null || {
@@ -257,7 +257,7 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
       if (rightElem.isDone) {
         Done
       } else {
-        if (leftElem.isSkip) {
+        if (leftElem.isDone) {
           Skip
         } else {
           for (e1 <- leftElem; e2 <- rightElem) yield {
