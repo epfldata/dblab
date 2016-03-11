@@ -46,25 +46,32 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
   def Skip[T: TypeRep]: Rep[Stream[T]] = newStream(NULL[T], unit(true), unit(false))
   def Yield[T: TypeRep](e: Rep[T]): Rep[Stream[T]] = newStream(e, unit(false), unit(false))
 
-  implicit class StreamRep[T: TypeRep](self: Rep[Stream[T]]) {
+  abstract class StreamOps[T: TypeRep] {
     def map[S: TypeRep](f: Rep[T => S]): Rep[Stream[S]] = flatMap[S](x => Yield(inlineFunction(f, x)))
     def filter(p: Rep[T => Boolean]): Rep[Stream[T]] = flatMap[T](x => __ifThenElse(inlineFunction(p, x), Yield(x), Skip[T]))
-    def foreach(f: Rep[T] => Rep[Unit]): Rep[Unit] = dsl"""
-      if (!$isSkip)
-        ${f(element)}
-    """
-    def flatMap[S: TypeRep](f: Rep[T] => Rep[Stream[S]]): Rep[Stream[S]] = dsl"""
+    def foreach(f: Rep[T] => Rep[Unit]): Rep[Unit] = semiFold[Unit](
+      () => unit(),
+      () => unit(),
+      f)
+    def flatMap[S: TypeRep](f: Rep[T] => Rep[Stream[S]]): Rep[Stream[S]] = semiFold[Stream[S]](
+      () => Done[S],
+      () => Skip[S],
+      f)
+    def semiFold[S: TypeRep](done: () => Rep[S], skip: () => Rep[S], f: Rep[T] => Rep[S]): Rep[S]
+  }
+
+  implicit class StreamRep[T: TypeRep](self: Rep[Stream[T]]) extends StreamOps[T] {
+    def semiFold[S: TypeRep](done: () => Rep[S], skip: () => Rep[S], f: Rep[T] => Rep[S]): Rep[S] = dsl"""
       if ($isDone)
-        ${Done[S]}
+        ${done()}
       else if($isSkip)
-        ${Skip[S]}
+        ${skip()}
       else
         ${f(element)}
     """
     def isSkip: Rep[Boolean] = field[Boolean](self, "isSkip")
     def isDone: Rep[Boolean] = field[Boolean](self, "isDone")
     def element: Rep[T] = field[T](self, "element")
-    // def map2[S: TypeRep](f1: Rep[T => S], f2: Rep[() => S]): Rep[Stream[T]] = ???
   }
 
   // implicit class OptionRep1[T: TypeRep](self: Rep[Option[T]]) {
@@ -98,15 +105,21 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
       //       $f(e)
       //   }
       // """
-      val elem = __newVar[Stream[T]](Done[T])
-      __whileDo({
-        dsl"""{
-            $elem = ${stream()}; 
-            !${readVar(elem).isDone}
-          }"""
-      }, {
-        readVar(elem).foreach(f)
-      })
+      // val elem = __newVar[Stream[T]](Done[T])
+      // __whileDo({
+      //   dsl"""{
+      //       $elem = ${stream()}; 
+      //       !${readVar(elem).isDone}
+      //     }"""
+      // }, {
+      //   readVar(elem).foreach(f)
+      // })
+      val done = __newVar(unit(false))
+      dsl"""
+        while(!$done) {
+          ${stream().semiFold(() => dsl"$done = true", () => dsl"()", f)}
+        }
+      """
     }
 
     def map[S: TypeRep](f: Rep[T => S]): QueryStream[S] = new QueryStream[S] {
