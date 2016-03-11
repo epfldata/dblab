@@ -225,13 +225,10 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
           val e2 = q2.stream()
           prevRightElem = e2.flatMap(t => {
             val k = rightHash(t)
-            hm.get(k) match {
-              case Some(tmpBuffer) =>
-                iterator = QueryStream(tmpBuffer).withFilter(e => joinCond(e, t))
-                Stream(t)
-              case None =>
-                Skip
-            }
+            hm.get(k).fold[Stream[S]](Skip)(tmpBuffer => {
+              iterator = QueryStream(tmpBuffer).withFilter(e => joinCond(e, t))
+              Stream(t)
+            })
           })
           prevRightElem.flatMap(_ => Skip)
         },
