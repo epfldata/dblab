@@ -22,8 +22,6 @@ sealed trait Stream[+T] {
     case Skip     => skip()
     case Yield(v) => f(v)
   }
-  def isDone = this == Done
-  def isSkip = this == Skip
 }
 
 object Stream {
@@ -47,14 +45,6 @@ abstract class QueryStream[T] { self =>
   }
   def foreach(f: T => Unit): Unit = {
     reset()
-    // var elem: Stream[T] = Done
-    // while ({
-    //   elem = stream()
-    //   !elem.isDone
-    // }) {
-    //   for (e <- elem)
-    //     f(e)
-    // }
     var done = false
     while (!done) {
       stream().semiFold(() => done = true, () => (), f)
@@ -152,16 +142,6 @@ abstract class QueryStream[T] { self =>
         rows += 1
       }
     } else {
-      // var elem: Stream[T] = Done
-      // while (rows < limit && {
-      //   elem = stream()
-      //   !elem.isDone
-      // }) {
-      //   for (e <- elem) {
-      //     printFunc(e)
-      //     rows += 1
-      //   }
-      // }
       var done = false
       while (rows < limit && !done) {
         stream().semiFold({ () =>
@@ -236,48 +216,29 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
     for (elem <- underlying) {
       hm.addBinding(leftHash(elem), elem)
     }
-    var iterator: SetStream[T] = null
+    var iterator: SetStream[T] = QueryStream(scala.collection.mutable.Set[T]())
     var prevRightElem: Stream[S] = Skip
     underlying.unstream { () =>
-      var leftElem: Stream[T] = Skip
-      val rightElem = if (iterator == null || {
-        leftElem = iterator.stream()
-        leftElem.isDone
-      }) {
-        val re = {
+      val leftElem = iterator.stream()
+      leftElem.semiFold(
+        () => {
           val e2 = q2.stream()
-          e2 match {
-            case Done => Done
-            case Yield(t) =>
-              val k = rightHash(t)
-              hm.get(k) match {
-                case Some(tmpBuffer) =>
-                  iterator = QueryStream(tmpBuffer).withFilter(e => joinCond(e, t))
-                  leftElem = iterator.stream()
-                  Stream(t)
-                case None =>
-                  Skip
-              }
-            case Skip =>
-              Skip
-          }
-        }
-        prevRightElem = re
-        re
-      } else {
-        prevRightElem
-      }
-      if (rightElem.isDone) {
-        Done
-      } else {
-        if (leftElem.isDone) {
-          Skip
-        } else {
-          for (e1 <- leftElem; e2 <- rightElem) yield {
-            e1.concatenateDynamic(e2)
-          }
-        }
-      }
+          prevRightElem = e2.flatMap(t => {
+            val k = rightHash(t)
+            hm.get(k) match {
+              case Some(tmpBuffer) =>
+                iterator = QueryStream(tmpBuffer).withFilter(e => joinCond(e, t))
+                Stream(t)
+              case None =>
+                Skip
+            }
+          })
+          prevRightElem.flatMap(_ => Skip)
+        },
+        () => Skip,
+        e1 => for (e2 <- prevRightElem) yield {
+          e1.concatenateDynamic(e2)
+        })
     }
   }
 
@@ -286,24 +247,26 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
     var elem1: Stream[T] = Skip
     var elem2: Stream[S] = Skip
     var atEnd: Boolean = false
-    def proceedLeft(): Unit = {
-      elem1 = underlying.stream()
-      atEnd ||= elem1.isDone
-    }
-    def proceedRight(): Unit = {
-      elem2 = q2.stream()
-      atEnd ||= elem2.isDone
-    }
     underlying.unstream { () =>
       if (atEnd) {
         Done
       } else {
         var leftShouldProceed: Boolean = false
         var nextJoinElem: Stream[DynamicCompositeRecord[T, S]] = Skip
-        elem1 match {
-          case Yield(ne1) =>
-            elem2 match {
-              case Yield(ne2) =>
+        elem1.semiFold(
+          () => atEnd = true,
+          () => {
+            leftShouldProceed = true
+            elem2.semiFold(
+              () => atEnd = true,
+              () => (),
+              _ => ())
+          },
+          ne1 => {
+            elem2.semiFold(
+              () => atEnd = true,
+              () => (),
+              ne2 => {
                 val cmp = ord(ne1, ne2)
                 if (cmp < 0) {
                   leftShouldProceed = true
@@ -312,18 +275,14 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
                     nextJoinElem = Stream(ne1.concatenateDynamic(ne2))
                   }
                 }
-              case Skip =>
-            }
-          case Skip =>
-            leftShouldProceed = true
-        }
+              })
+          })
         if (leftShouldProceed) {
-          proceedLeft()
-          nextJoinElem
+          elem1 = underlying.stream()
         } else {
-          proceedRight()
-          nextJoinElem
+          elem2 = q2.stream()
         }
+        nextJoinElem
       }
     }
   }
