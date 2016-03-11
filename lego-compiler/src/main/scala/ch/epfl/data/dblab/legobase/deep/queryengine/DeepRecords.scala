@@ -11,6 +11,9 @@ import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
 
+import ch.epfl.data.sc.pardis.quasi.anf.{ BaseExt, BaseExtIR }
+import ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag
+
 trait AGGRecordOps extends Base {
   // Type representation
   val AGGRecordType = AGGRecordIRs.AGGRecordType
@@ -108,6 +111,62 @@ trait AGGRecordPartialEvaluation extends AGGRecordComponent with BasePartialEval
   // Pure function partial evaluation
 }
 
+// QUASI GENERATED CODE:
+
+object AGGRecordQuasiNodes extends BaseExtIR {
+  import AGGRecordIRs._
+  // case classes
+  case class AGGRecordNewExt[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit val paramB: MaybeParamTag[B]) extends FunctionDef[AGGRecordNew[B], AGGRecord[B]] {
+    override def nodeUnapply(t: AGGRecordNew[B]): Option[Product] = (AGGRecordNew.unapply(t): Option[Product]) map { r =>
+      paramB.define(t.typeB)
+      r
+    }
+  }
+  case class AGGRecordGetFieldExt[B](self: Rep[AGGRecord[B]], key: Rep[String])(implicit val paramB: MaybeParamTag[B]) extends FunctionDef[AGGRecordGetField[B], Option[Any]] {
+    override def nodeUnapply(t: AGGRecordGetField[B]): Option[Product] = (AGGRecordGetField.unapply(t): Option[Product]) map { r =>
+      paramB.define(t.typeB)
+      r
+    }
+  }
+  case class AGGRecord_Field_AggsExt[B](self: Rep[AGGRecord[B]])(implicit val paramB: MaybeParamTag[B]) extends FunctionDef[AGGRecord_Field_Aggs[B], Array[Double]] {
+    override def nodeUnapply(t: AGGRecord_Field_Aggs[B]): Option[Product] = (AGGRecord_Field_Aggs.unapply(t): Option[Product]) map { r =>
+      paramB.define(t.typeB)
+      r
+    }
+  }
+  case class AGGRecord_Field_KeyExt[B](self: Rep[AGGRecord[B]])(implicit val paramB: MaybeParamTag[B]) extends FunctionDef[AGGRecord_Field_Key[B], B] {
+    override def nodeUnapply(t: AGGRecord_Field_Key[B]): Option[Product] = (AGGRecord_Field_Key.unapply(t): Option[Product]) map { r =>
+      paramB.define(t.typeB)
+      r
+    }
+  }
+  type AGGRecord[B] = ch.epfl.data.dblab.legobase.queryengine.AGGRecord[B]
+}
+
+trait AGGRecordExtOps extends BaseExt {
+
+  import AGGRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  implicit class AGGRecordRep[B](self: Rep[AGGRecord[B]])(implicit paramB: MaybeParamTag[B]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = aGGRecordGetField[B](self, key)(paramB)
+    def aggs: Rep[Array[Double]] = aGGRecord_Field_Aggs[B](self)(paramB)
+    def key: Rep[B] = aGGRecord_Field_Key[B](self)(paramB)
+  }
+  object AGGRecord {
+    def apply[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit paramB: MaybeParamTag[B]): Rep[AGGRecord[B]] = aGGRecordApplyObject[B](key, aggs)(paramB)
+  }
+  // constructors
+  def __newAGGRecord[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit paramB: MaybeParamTag[B]): Rep[AGGRecord[B]] = aGGRecordNew[B](key, aggs)(paramB)
+
+  // method definitions
+  def aGGRecordApplyObject[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit paramB: MaybeParamTag[B]): Rep[AGGRecord[B]] = { __newAGGRecord[B](key, aggs) }
+  def aGGRecordNew[B](key: Rep[B], aggs: Rep[Array[Double]])(implicit paramB: MaybeParamTag[B]): Rep[AGGRecord[B]] = AGGRecordNewExt[B](key, aggs)
+  def aGGRecordGetField[B](self: Rep[AGGRecord[B]], key: Rep[String])(implicit paramB: MaybeParamTag[B]): Rep[Option[Any]] = AGGRecordGetFieldExt[B](self, key)
+  def aGGRecord_Field_Aggs[B](self: Rep[AGGRecord[B]])(implicit paramB: MaybeParamTag[B]): Rep[Array[Double]] = AGGRecord_Field_AggsExt[B](self)
+  def aGGRecord_Field_Key[B](self: Rep[AGGRecord[B]])(implicit paramB: MaybeParamTag[B]): Rep[B] = AGGRecord_Field_KeyExt[B](self)
+  type AGGRecord[B] = ch.epfl.data.dblab.legobase.queryengine.AGGRecord[B]
+}
+
 trait WindowRecordOps extends Base {
   // Type representation
   val WindowRecordType = WindowRecordIRs.WindowRecordType
@@ -203,5 +262,65 @@ trait WindowRecordPartialEvaluation extends WindowRecordComponent with BaseParti
 
   // Mutable field inlining 
   // Pure function partial evaluation
+}
+
+// QUASI GENERATED CODE:
+
+object WindowRecordQuasiNodes extends BaseExtIR {
+  import WindowRecordIRs._
+  // case classes
+  case class WindowRecordNewExt[B, C](key: Rep[B], wnd: Rep[C])(implicit val paramB: MaybeParamTag[B], val paramC: MaybeParamTag[C]) extends FunctionDef[WindowRecordNew[B, C], WindowRecord[B, C]] {
+    override def nodeUnapply(t: WindowRecordNew[B, C]): Option[Product] = (WindowRecordNew.unapply(t): Option[Product]) map { r =>
+      paramB.define(t.typeB)
+      paramC.define(t.typeC)
+      r
+    }
+  }
+  case class WindowRecordGetFieldExt[B, C](self: Rep[WindowRecord[B, C]], key: Rep[String])(implicit val paramB: MaybeParamTag[B], val paramC: MaybeParamTag[C]) extends FunctionDef[WindowRecordGetField[B, C], Option[Any]] {
+    override def nodeUnapply(t: WindowRecordGetField[B, C]): Option[Product] = (WindowRecordGetField.unapply(t): Option[Product]) map { r =>
+      paramB.define(t.typeB)
+      paramC.define(t.typeC)
+      r
+    }
+  }
+  case class WindowRecord_Field_WndExt[B, C](self: Rep[WindowRecord[B, C]])(implicit val paramB: MaybeParamTag[B], val paramC: MaybeParamTag[C]) extends FunctionDef[WindowRecord_Field_Wnd[B, C], C] {
+    override def nodeUnapply(t: WindowRecord_Field_Wnd[B, C]): Option[Product] = (WindowRecord_Field_Wnd.unapply(t): Option[Product]) map { r =>
+      paramB.define(t.typeB)
+      paramC.define(t.typeC)
+      r
+    }
+  }
+  case class WindowRecord_Field_KeyExt[B, C](self: Rep[WindowRecord[B, C]])(implicit val paramB: MaybeParamTag[B], val paramC: MaybeParamTag[C]) extends FunctionDef[WindowRecord_Field_Key[B, C], B] {
+    override def nodeUnapply(t: WindowRecord_Field_Key[B, C]): Option[Product] = (WindowRecord_Field_Key.unapply(t): Option[Product]) map { r =>
+      paramB.define(t.typeB)
+      paramC.define(t.typeC)
+      r
+    }
+  }
+  type WindowRecord[B, C] = ch.epfl.data.dblab.legobase.queryengine.WindowRecord[B, C]
+}
+
+trait WindowRecordExtOps extends BaseExt {
+
+  import WindowRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  implicit class WindowRecordRep[B, C](self: Rep[WindowRecord[B, C]])(implicit paramB: MaybeParamTag[B], paramC: MaybeParamTag[C]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = windowRecordGetField[B, C](self, key)(paramB, paramC)
+    def wnd: Rep[C] = windowRecord_Field_Wnd[B, C](self)(paramB, paramC)
+    def key: Rep[B] = windowRecord_Field_Key[B, C](self)(paramB, paramC)
+  }
+  object WindowRecord {
+    def apply[B, C](key: Rep[B], wnd: Rep[C])(implicit paramB: MaybeParamTag[B], paramC: MaybeParamTag[C]): Rep[WindowRecord[B, C]] = windowRecordApplyObject[B, C](key, wnd)(paramB, paramC)
+  }
+  // constructors
+  def __newWindowRecord[B, C](key: Rep[B], wnd: Rep[C])(implicit paramB: MaybeParamTag[B], paramC: MaybeParamTag[C]): Rep[WindowRecord[B, C]] = windowRecordNew[B, C](key, wnd)(paramB, paramC)
+
+  // method definitions
+  def windowRecordApplyObject[B, C](key: Rep[B], wnd: Rep[C])(implicit paramB: MaybeParamTag[B], paramC: MaybeParamTag[C]): Rep[WindowRecord[B, C]] = { __newWindowRecord[B, C](key, wnd) }
+  def windowRecordNew[B, C](key: Rep[B], wnd: Rep[C])(implicit paramB: MaybeParamTag[B], paramC: MaybeParamTag[C]): Rep[WindowRecord[B, C]] = WindowRecordNewExt[B, C](key, wnd)
+  def windowRecordGetField[B, C](self: Rep[WindowRecord[B, C]], key: Rep[String])(implicit paramB: MaybeParamTag[B], paramC: MaybeParamTag[C]): Rep[Option[Any]] = WindowRecordGetFieldExt[B, C](self, key)
+  def windowRecord_Field_Wnd[B, C](self: Rep[WindowRecord[B, C]])(implicit paramB: MaybeParamTag[B], paramC: MaybeParamTag[C]): Rep[C] = WindowRecord_Field_WndExt[B, C](self)
+  def windowRecord_Field_Key[B, C](self: Rep[WindowRecord[B, C]])(implicit paramB: MaybeParamTag[B], paramC: MaybeParamTag[C]): Rep[B] = WindowRecord_Field_KeyExt[B, C](self)
+  type WindowRecord[B, C] = ch.epfl.data.dblab.legobase.queryengine.WindowRecord[B, C]
 }
 

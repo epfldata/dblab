@@ -53,10 +53,12 @@ object LegoBuild extends Build {
   val generate_test = InputKey[Unit]("generate-test")
   // val test_run = InputKey[Unit]("test-run")
 
-  def purgatorySettings = Seq(
+  def purgatorySettings = generatorSettings ++ Seq(
     outputFolder := "lego-compiler/src/main/scala/ch/epfl/data/dblab/legobase/deep",
     inputPackage := "ch.epfl.data.dblab.legobase",
-    outputPackage := "ch.epfl.data.dblab.legobase.deep") ++ generatorSettings
+    outputPackage := "ch.epfl.data.dblab.legobase.deep",
+    generatePlugins += "ch.epfl.data.sc.purgatory.generator.QuasiGenerator",
+    pluginLibraries += "ch.epfl.data" % "sc-purgatory-quasi_2.11" % sc_version) 
 
   lazy val lego            = Project(id = "root",             base = file("."), settings = defaults) aggregate (lego_core, legocompiler)
   lazy val lego_core       = Project(id = "lego-core",        base = file("lego-core"),

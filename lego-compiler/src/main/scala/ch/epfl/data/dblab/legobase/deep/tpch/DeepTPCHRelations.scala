@@ -11,6 +11,9 @@ import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
 
+import ch.epfl.data.sc.pardis.quasi.anf.{ BaseExt, BaseExtIR }
+import ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag
+
 trait LINEITEMRecordOps extends Base with OptimalStringOps {
   // Type representation
   val LINEITEMRecordType = LINEITEMRecordIRs.LINEITEMRecordType
@@ -388,6 +391,158 @@ trait LINEITEMRecordPartialEvaluation extends LINEITEMRecordComponent with BaseP
   // Pure function partial evaluation
 }
 
+// QUASI GENERATED CODE:
+
+object LINEITEMRecordQuasiNodes extends BaseExtIR {
+  import LINEITEMRecordIRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class LINEITEMRecordNewExt(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]) extends FunctionDef[LINEITEMRecordNew, LINEITEMRecord] {
+    override def nodeUnapply(t: LINEITEMRecordNew): Option[Product] = (LINEITEMRecordNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecordGetFieldExt(self: Rep[LINEITEMRecord], key: Rep[String]) extends FunctionDef[LINEITEMRecordGetField, Option[Any]] {
+    override def nodeUnapply(t: LINEITEMRecordGetField): Option[Product] = (LINEITEMRecordGetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_COMMENTExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_COMMENT, OptimalString] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_COMMENT): Option[Product] = (LINEITEMRecord_Field_L_COMMENT.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_SHIPMODEExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_SHIPMODE, OptimalString] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_SHIPMODE): Option[Product] = (LINEITEMRecord_Field_L_SHIPMODE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_SHIPINSTRUCTExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_SHIPINSTRUCT, OptimalString] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_SHIPINSTRUCT): Option[Product] = (LINEITEMRecord_Field_L_SHIPINSTRUCT.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_RECEIPTDATEExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_RECEIPTDATE, Int] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_RECEIPTDATE): Option[Product] = (LINEITEMRecord_Field_L_RECEIPTDATE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_COMMITDATEExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_COMMITDATE, Int] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_COMMITDATE): Option[Product] = (LINEITEMRecord_Field_L_COMMITDATE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_SHIPDATEExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_SHIPDATE, Int] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_SHIPDATE): Option[Product] = (LINEITEMRecord_Field_L_SHIPDATE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_LINESTATUSExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_LINESTATUS, Char] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_LINESTATUS): Option[Product] = (LINEITEMRecord_Field_L_LINESTATUS.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_RETURNFLAGExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_RETURNFLAG, Char] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_RETURNFLAG): Option[Product] = (LINEITEMRecord_Field_L_RETURNFLAG.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_TAXExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_TAX, Double] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_TAX): Option[Product] = (LINEITEMRecord_Field_L_TAX.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_DISCOUNTExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_DISCOUNT, Double] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_DISCOUNT): Option[Product] = (LINEITEMRecord_Field_L_DISCOUNT.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_EXTENDEDPRICEExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_EXTENDEDPRICE, Double] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_EXTENDEDPRICE): Option[Product] = (LINEITEMRecord_Field_L_EXTENDEDPRICE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_QUANTITYExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_QUANTITY, Double] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_QUANTITY): Option[Product] = (LINEITEMRecord_Field_L_QUANTITY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_LINENUMBERExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_LINENUMBER, Int] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_LINENUMBER): Option[Product] = (LINEITEMRecord_Field_L_LINENUMBER.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_SUPPKEYExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_SUPPKEY, Int] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_SUPPKEY): Option[Product] = (LINEITEMRecord_Field_L_SUPPKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_PARTKEYExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_PARTKEY, Int] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_PARTKEY): Option[Product] = (LINEITEMRecord_Field_L_PARTKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class LINEITEMRecord_Field_L_ORDERKEYExt(self: Rep[LINEITEMRecord]) extends FunctionDef[LINEITEMRecord_Field_L_ORDERKEY, Int] {
+    override def nodeUnapply(t: LINEITEMRecord_Field_L_ORDERKEY): Option[Product] = (LINEITEMRecord_Field_L_ORDERKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type LINEITEMRecord = ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord
+}
+
+trait LINEITEMRecordExtOps extends BaseExt with OptimalStringExtOps {
+
+  import LINEITEMRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class LINEITEMRecordRep(self: Rep[LINEITEMRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = lINEITEMRecordGetField(self, key)
+    def L_COMMENT: Rep[OptimalString] = lINEITEMRecord_Field_L_COMMENT(self)
+    def L_SHIPMODE: Rep[OptimalString] = lINEITEMRecord_Field_L_SHIPMODE(self)
+    def L_SHIPINSTRUCT: Rep[OptimalString] = lINEITEMRecord_Field_L_SHIPINSTRUCT(self)
+    def L_RECEIPTDATE: Rep[Int] = lINEITEMRecord_Field_L_RECEIPTDATE(self)
+    def L_COMMITDATE: Rep[Int] = lINEITEMRecord_Field_L_COMMITDATE(self)
+    def L_SHIPDATE: Rep[Int] = lINEITEMRecord_Field_L_SHIPDATE(self)
+    def L_LINESTATUS: Rep[Char] = lINEITEMRecord_Field_L_LINESTATUS(self)
+    def L_RETURNFLAG: Rep[Char] = lINEITEMRecord_Field_L_RETURNFLAG(self)
+    def L_TAX: Rep[Double] = lINEITEMRecord_Field_L_TAX(self)
+    def L_DISCOUNT: Rep[Double] = lINEITEMRecord_Field_L_DISCOUNT(self)
+    def L_EXTENDEDPRICE: Rep[Double] = lINEITEMRecord_Field_L_EXTENDEDPRICE(self)
+    def L_QUANTITY: Rep[Double] = lINEITEMRecord_Field_L_QUANTITY(self)
+    def L_LINENUMBER: Rep[Int] = lINEITEMRecord_Field_L_LINENUMBER(self)
+    def L_SUPPKEY: Rep[Int] = lINEITEMRecord_Field_L_SUPPKEY(self)
+    def L_PARTKEY: Rep[Int] = lINEITEMRecord_Field_L_PARTKEY(self)
+    def L_ORDERKEY: Rep[Int] = lINEITEMRecord_Field_L_ORDERKEY(self)
+  }
+  object LINEITEMRecord {
+    def apply(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = lINEITEMRecordApplyObject(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
+  }
+  // constructors
+  def __newLINEITEMRecord(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = lINEITEMRecordNew(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
+
+  // method definitions
+  def lINEITEMRecordApplyObject(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = { __newLINEITEMRecord(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT) }
+  def lINEITEMRecordNew(L_ORDERKEY: Rep[Int], L_PARTKEY: Rep[Int], L_SUPPKEY: Rep[Int], L_LINENUMBER: Rep[Int], L_QUANTITY: Rep[Double], L_EXTENDEDPRICE: Rep[Double], L_DISCOUNT: Rep[Double], L_TAX: Rep[Double], L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char], L_SHIPDATE: Rep[Int], L_COMMITDATE: Rep[Int], L_RECEIPTDATE: Rep[Int], L_SHIPINSTRUCT: Rep[OptimalString], L_SHIPMODE: Rep[OptimalString], L_COMMENT: Rep[OptimalString]): Rep[LINEITEMRecord] = LINEITEMRecordNewExt(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT)
+  def lINEITEMRecordGetField(self: Rep[LINEITEMRecord], key: Rep[String]): Rep[Option[Any]] = LINEITEMRecordGetFieldExt(self, key)
+  def lINEITEMRecord_Field_L_COMMENT(self: Rep[LINEITEMRecord]): Rep[OptimalString] = LINEITEMRecord_Field_L_COMMENTExt(self)
+  def lINEITEMRecord_Field_L_SHIPMODE(self: Rep[LINEITEMRecord]): Rep[OptimalString] = LINEITEMRecord_Field_L_SHIPMODEExt(self)
+  def lINEITEMRecord_Field_L_SHIPINSTRUCT(self: Rep[LINEITEMRecord]): Rep[OptimalString] = LINEITEMRecord_Field_L_SHIPINSTRUCTExt(self)
+  def lINEITEMRecord_Field_L_RECEIPTDATE(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_RECEIPTDATEExt(self)
+  def lINEITEMRecord_Field_L_COMMITDATE(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_COMMITDATEExt(self)
+  def lINEITEMRecord_Field_L_SHIPDATE(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_SHIPDATEExt(self)
+  def lINEITEMRecord_Field_L_LINESTATUS(self: Rep[LINEITEMRecord]): Rep[Char] = LINEITEMRecord_Field_L_LINESTATUSExt(self)
+  def lINEITEMRecord_Field_L_RETURNFLAG(self: Rep[LINEITEMRecord]): Rep[Char] = LINEITEMRecord_Field_L_RETURNFLAGExt(self)
+  def lINEITEMRecord_Field_L_TAX(self: Rep[LINEITEMRecord]): Rep[Double] = LINEITEMRecord_Field_L_TAXExt(self)
+  def lINEITEMRecord_Field_L_DISCOUNT(self: Rep[LINEITEMRecord]): Rep[Double] = LINEITEMRecord_Field_L_DISCOUNTExt(self)
+  def lINEITEMRecord_Field_L_EXTENDEDPRICE(self: Rep[LINEITEMRecord]): Rep[Double] = LINEITEMRecord_Field_L_EXTENDEDPRICEExt(self)
+  def lINEITEMRecord_Field_L_QUANTITY(self: Rep[LINEITEMRecord]): Rep[Double] = LINEITEMRecord_Field_L_QUANTITYExt(self)
+  def lINEITEMRecord_Field_L_LINENUMBER(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_LINENUMBERExt(self)
+  def lINEITEMRecord_Field_L_SUPPKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_SUPPKEYExt(self)
+  def lINEITEMRecord_Field_L_PARTKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_PARTKEYExt(self)
+  def lINEITEMRecord_Field_L_ORDERKEY(self: Rep[LINEITEMRecord]): Rep[Int] = LINEITEMRecord_Field_L_ORDERKEYExt(self)
+  type LINEITEMRecord = ch.epfl.data.dblab.legobase.tpch.LINEITEMRecord
+}
+
 trait ORDERSRecordOps extends Base with OptimalStringOps {
   // Type representation
   val ORDERSRecordType = ORDERSRecordIRs.ORDERSRecordType
@@ -625,6 +780,109 @@ trait ORDERSRecordPartialEvaluation extends ORDERSRecordComponent with BaseParti
   // Pure function partial evaluation
 }
 
+// QUASI GENERATED CODE:
+
+object ORDERSRecordQuasiNodes extends BaseExtIR {
+  import ORDERSRecordIRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class ORDERSRecordNewExt(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Char], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]) extends FunctionDef[ORDERSRecordNew, ORDERSRecord] {
+    override def nodeUnapply(t: ORDERSRecordNew): Option[Product] = (ORDERSRecordNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class ORDERSRecordGetFieldExt(self: Rep[ORDERSRecord], key: Rep[String]) extends FunctionDef[ORDERSRecordGetField, Option[Any]] {
+    override def nodeUnapply(t: ORDERSRecordGetField): Option[Product] = (ORDERSRecordGetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class ORDERSRecord_Field_O_COMMENTExt(self: Rep[ORDERSRecord]) extends FunctionDef[ORDERSRecord_Field_O_COMMENT, OptimalString] {
+    override def nodeUnapply(t: ORDERSRecord_Field_O_COMMENT): Option[Product] = (ORDERSRecord_Field_O_COMMENT.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class ORDERSRecord_Field_O_SHIPPRIORITYExt(self: Rep[ORDERSRecord]) extends FunctionDef[ORDERSRecord_Field_O_SHIPPRIORITY, Int] {
+    override def nodeUnapply(t: ORDERSRecord_Field_O_SHIPPRIORITY): Option[Product] = (ORDERSRecord_Field_O_SHIPPRIORITY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class ORDERSRecord_Field_O_CLERKExt(self: Rep[ORDERSRecord]) extends FunctionDef[ORDERSRecord_Field_O_CLERK, OptimalString] {
+    override def nodeUnapply(t: ORDERSRecord_Field_O_CLERK): Option[Product] = (ORDERSRecord_Field_O_CLERK.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class ORDERSRecord_Field_O_ORDERPRIORITYExt(self: Rep[ORDERSRecord]) extends FunctionDef[ORDERSRecord_Field_O_ORDERPRIORITY, OptimalString] {
+    override def nodeUnapply(t: ORDERSRecord_Field_O_ORDERPRIORITY): Option[Product] = (ORDERSRecord_Field_O_ORDERPRIORITY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class ORDERSRecord_Field_O_ORDERDATEExt(self: Rep[ORDERSRecord]) extends FunctionDef[ORDERSRecord_Field_O_ORDERDATE, Int] {
+    override def nodeUnapply(t: ORDERSRecord_Field_O_ORDERDATE): Option[Product] = (ORDERSRecord_Field_O_ORDERDATE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class ORDERSRecord_Field_O_TOTALPRICEExt(self: Rep[ORDERSRecord]) extends FunctionDef[ORDERSRecord_Field_O_TOTALPRICE, Double] {
+    override def nodeUnapply(t: ORDERSRecord_Field_O_TOTALPRICE): Option[Product] = (ORDERSRecord_Field_O_TOTALPRICE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class ORDERSRecord_Field_O_ORDERSTATUSExt(self: Rep[ORDERSRecord]) extends FunctionDef[ORDERSRecord_Field_O_ORDERSTATUS, Char] {
+    override def nodeUnapply(t: ORDERSRecord_Field_O_ORDERSTATUS): Option[Product] = (ORDERSRecord_Field_O_ORDERSTATUS.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class ORDERSRecord_Field_O_CUSTKEYExt(self: Rep[ORDERSRecord]) extends FunctionDef[ORDERSRecord_Field_O_CUSTKEY, Int] {
+    override def nodeUnapply(t: ORDERSRecord_Field_O_CUSTKEY): Option[Product] = (ORDERSRecord_Field_O_CUSTKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class ORDERSRecord_Field_O_ORDERKEYExt(self: Rep[ORDERSRecord]) extends FunctionDef[ORDERSRecord_Field_O_ORDERKEY, Int] {
+    override def nodeUnapply(t: ORDERSRecord_Field_O_ORDERKEY): Option[Product] = (ORDERSRecord_Field_O_ORDERKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type ORDERSRecord = ch.epfl.data.dblab.legobase.tpch.ORDERSRecord
+}
+
+trait ORDERSRecordExtOps extends BaseExt with OptimalStringExtOps {
+
+  import ORDERSRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class ORDERSRecordRep(self: Rep[ORDERSRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = oRDERSRecordGetField(self, key)
+    def O_COMMENT: Rep[OptimalString] = oRDERSRecord_Field_O_COMMENT(self)
+    def O_SHIPPRIORITY: Rep[Int] = oRDERSRecord_Field_O_SHIPPRIORITY(self)
+    def O_CLERK: Rep[OptimalString] = oRDERSRecord_Field_O_CLERK(self)
+    def O_ORDERPRIORITY: Rep[OptimalString] = oRDERSRecord_Field_O_ORDERPRIORITY(self)
+    def O_ORDERDATE: Rep[Int] = oRDERSRecord_Field_O_ORDERDATE(self)
+    def O_TOTALPRICE: Rep[Double] = oRDERSRecord_Field_O_TOTALPRICE(self)
+    def O_ORDERSTATUS: Rep[Char] = oRDERSRecord_Field_O_ORDERSTATUS(self)
+    def O_CUSTKEY: Rep[Int] = oRDERSRecord_Field_O_CUSTKEY(self)
+    def O_ORDERKEY: Rep[Int] = oRDERSRecord_Field_O_ORDERKEY(self)
+  }
+  object ORDERSRecord {
+    def apply(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Char], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = oRDERSRecordApplyObject(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
+  }
+  // constructors
+  def __newORDERSRecord(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Char], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = oRDERSRecordNew(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
+
+  // method definitions
+  def oRDERSRecordApplyObject(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Char], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = { __newORDERSRecord(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT) }
+  def oRDERSRecordNew(O_ORDERKEY: Rep[Int], O_CUSTKEY: Rep[Int], O_ORDERSTATUS: Rep[Char], O_TOTALPRICE: Rep[Double], O_ORDERDATE: Rep[Int], O_ORDERPRIORITY: Rep[OptimalString], O_CLERK: Rep[OptimalString], O_SHIPPRIORITY: Rep[Int], O_COMMENT: Rep[OptimalString]): Rep[ORDERSRecord] = ORDERSRecordNewExt(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT)
+  def oRDERSRecordGetField(self: Rep[ORDERSRecord], key: Rep[String]): Rep[Option[Any]] = ORDERSRecordGetFieldExt(self, key)
+  def oRDERSRecord_Field_O_COMMENT(self: Rep[ORDERSRecord]): Rep[OptimalString] = ORDERSRecord_Field_O_COMMENTExt(self)
+  def oRDERSRecord_Field_O_SHIPPRIORITY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_SHIPPRIORITYExt(self)
+  def oRDERSRecord_Field_O_CLERK(self: Rep[ORDERSRecord]): Rep[OptimalString] = ORDERSRecord_Field_O_CLERKExt(self)
+  def oRDERSRecord_Field_O_ORDERPRIORITY(self: Rep[ORDERSRecord]): Rep[OptimalString] = ORDERSRecord_Field_O_ORDERPRIORITYExt(self)
+  def oRDERSRecord_Field_O_ORDERDATE(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_ORDERDATEExt(self)
+  def oRDERSRecord_Field_O_TOTALPRICE(self: Rep[ORDERSRecord]): Rep[Double] = ORDERSRecord_Field_O_TOTALPRICEExt(self)
+  def oRDERSRecord_Field_O_ORDERSTATUS(self: Rep[ORDERSRecord]): Rep[Char] = ORDERSRecord_Field_O_ORDERSTATUSExt(self)
+  def oRDERSRecord_Field_O_CUSTKEY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_CUSTKEYExt(self)
+  def oRDERSRecord_Field_O_ORDERKEY(self: Rep[ORDERSRecord]): Rep[Int] = ORDERSRecord_Field_O_ORDERKEYExt(self)
+  type ORDERSRecord = ch.epfl.data.dblab.legobase.tpch.ORDERSRecord
+}
+
 trait CUSTOMERRecordOps extends Base with OptimalStringOps {
   // Type representation
   val CUSTOMERRecordType = CUSTOMERRecordIRs.CUSTOMERRecordType
@@ -842,6 +1100,102 @@ trait CUSTOMERRecordPartialEvaluation extends CUSTOMERRecordComponent with BaseP
   // Pure function partial evaluation
 }
 
+// QUASI GENERATED CODE:
+
+object CUSTOMERRecordQuasiNodes extends BaseExtIR {
+  import CUSTOMERRecordIRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class CUSTOMERRecordNewExt(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends FunctionDef[CUSTOMERRecordNew, CUSTOMERRecord] {
+    override def nodeUnapply(t: CUSTOMERRecordNew): Option[Product] = (CUSTOMERRecordNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class CUSTOMERRecordGetFieldExt(self: Rep[CUSTOMERRecord], key: Rep[String]) extends FunctionDef[CUSTOMERRecordGetField, Option[Any]] {
+    override def nodeUnapply(t: CUSTOMERRecordGetField): Option[Product] = (CUSTOMERRecordGetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class CUSTOMERRecord_Field_C_COMMENTExt(self: Rep[CUSTOMERRecord]) extends FunctionDef[CUSTOMERRecord_Field_C_COMMENT, OptimalString] {
+    override def nodeUnapply(t: CUSTOMERRecord_Field_C_COMMENT): Option[Product] = (CUSTOMERRecord_Field_C_COMMENT.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class CUSTOMERRecord_Field_C_MKTSEGMENTExt(self: Rep[CUSTOMERRecord]) extends FunctionDef[CUSTOMERRecord_Field_C_MKTSEGMENT, OptimalString] {
+    override def nodeUnapply(t: CUSTOMERRecord_Field_C_MKTSEGMENT): Option[Product] = (CUSTOMERRecord_Field_C_MKTSEGMENT.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class CUSTOMERRecord_Field_C_ACCTBALExt(self: Rep[CUSTOMERRecord]) extends FunctionDef[CUSTOMERRecord_Field_C_ACCTBAL, Double] {
+    override def nodeUnapply(t: CUSTOMERRecord_Field_C_ACCTBAL): Option[Product] = (CUSTOMERRecord_Field_C_ACCTBAL.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class CUSTOMERRecord_Field_C_PHONEExt(self: Rep[CUSTOMERRecord]) extends FunctionDef[CUSTOMERRecord_Field_C_PHONE, OptimalString] {
+    override def nodeUnapply(t: CUSTOMERRecord_Field_C_PHONE): Option[Product] = (CUSTOMERRecord_Field_C_PHONE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class CUSTOMERRecord_Field_C_NATIONKEYExt(self: Rep[CUSTOMERRecord]) extends FunctionDef[CUSTOMERRecord_Field_C_NATIONKEY, Int] {
+    override def nodeUnapply(t: CUSTOMERRecord_Field_C_NATIONKEY): Option[Product] = (CUSTOMERRecord_Field_C_NATIONKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class CUSTOMERRecord_Field_C_ADDRESSExt(self: Rep[CUSTOMERRecord]) extends FunctionDef[CUSTOMERRecord_Field_C_ADDRESS, OptimalString] {
+    override def nodeUnapply(t: CUSTOMERRecord_Field_C_ADDRESS): Option[Product] = (CUSTOMERRecord_Field_C_ADDRESS.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class CUSTOMERRecord_Field_C_NAMEExt(self: Rep[CUSTOMERRecord]) extends FunctionDef[CUSTOMERRecord_Field_C_NAME, OptimalString] {
+    override def nodeUnapply(t: CUSTOMERRecord_Field_C_NAME): Option[Product] = (CUSTOMERRecord_Field_C_NAME.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class CUSTOMERRecord_Field_C_CUSTKEYExt(self: Rep[CUSTOMERRecord]) extends FunctionDef[CUSTOMERRecord_Field_C_CUSTKEY, Int] {
+    override def nodeUnapply(t: CUSTOMERRecord_Field_C_CUSTKEY): Option[Product] = (CUSTOMERRecord_Field_C_CUSTKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type CUSTOMERRecord = ch.epfl.data.dblab.legobase.tpch.CUSTOMERRecord
+}
+
+trait CUSTOMERRecordExtOps extends BaseExt with OptimalStringExtOps {
+
+  import CUSTOMERRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class CUSTOMERRecordRep(self: Rep[CUSTOMERRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = cUSTOMERRecordGetField(self, key)
+    def C_COMMENT: Rep[OptimalString] = cUSTOMERRecord_Field_C_COMMENT(self)
+    def C_MKTSEGMENT: Rep[OptimalString] = cUSTOMERRecord_Field_C_MKTSEGMENT(self)
+    def C_ACCTBAL: Rep[Double] = cUSTOMERRecord_Field_C_ACCTBAL(self)
+    def C_PHONE: Rep[OptimalString] = cUSTOMERRecord_Field_C_PHONE(self)
+    def C_NATIONKEY: Rep[Int] = cUSTOMERRecord_Field_C_NATIONKEY(self)
+    def C_ADDRESS: Rep[OptimalString] = cUSTOMERRecord_Field_C_ADDRESS(self)
+    def C_NAME: Rep[OptimalString] = cUSTOMERRecord_Field_C_NAME(self)
+    def C_CUSTKEY: Rep[Int] = cUSTOMERRecord_Field_C_CUSTKEY(self)
+  }
+  object CUSTOMERRecord {
+    def apply(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[CUSTOMERRecord] = cUSTOMERRecordApplyObject(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT)
+  }
+  // constructors
+  def __newCUSTOMERRecord(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[CUSTOMERRecord] = cUSTOMERRecordNew(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT)
+
+  // method definitions
+  def cUSTOMERRecordApplyObject(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[CUSTOMERRecord] = { __newCUSTOMERRecord(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT) }
+  def cUSTOMERRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_NATIONKEY: Rep[Int], C_PHONE: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_MKTSEGMENT: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[CUSTOMERRecord] = CUSTOMERRecordNewExt(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT)
+  def cUSTOMERRecordGetField(self: Rep[CUSTOMERRecord], key: Rep[String]): Rep[Option[Any]] = CUSTOMERRecordGetFieldExt(self, key)
+  def cUSTOMERRecord_Field_C_COMMENT(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_COMMENTExt(self)
+  def cUSTOMERRecord_Field_C_MKTSEGMENT(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_MKTSEGMENTExt(self)
+  def cUSTOMERRecord_Field_C_ACCTBAL(self: Rep[CUSTOMERRecord]): Rep[Double] = CUSTOMERRecord_Field_C_ACCTBALExt(self)
+  def cUSTOMERRecord_Field_C_PHONE(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_PHONEExt(self)
+  def cUSTOMERRecord_Field_C_NATIONKEY(self: Rep[CUSTOMERRecord]): Rep[Int] = CUSTOMERRecord_Field_C_NATIONKEYExt(self)
+  def cUSTOMERRecord_Field_C_ADDRESS(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_ADDRESSExt(self)
+  def cUSTOMERRecord_Field_C_NAME(self: Rep[CUSTOMERRecord]): Rep[OptimalString] = CUSTOMERRecord_Field_C_NAMEExt(self)
+  def cUSTOMERRecord_Field_C_CUSTKEY(self: Rep[CUSTOMERRecord]): Rep[Int] = CUSTOMERRecord_Field_C_CUSTKEYExt(self)
+  type CUSTOMERRecord = ch.epfl.data.dblab.legobase.tpch.CUSTOMERRecord
+}
+
 trait SUPPLIERRecordOps extends Base with OptimalStringOps {
   // Type representation
   val SUPPLIERRecordType = SUPPLIERRecordIRs.SUPPLIERRecordType
@@ -1039,6 +1393,95 @@ trait SUPPLIERRecordPartialEvaluation extends SUPPLIERRecordComponent with BaseP
   // Pure function partial evaluation
 }
 
+// QUASI GENERATED CODE:
+
+object SUPPLIERRecordQuasiNodes extends BaseExtIR {
+  import SUPPLIERRecordIRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class SUPPLIERRecordNewExt(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]) extends FunctionDef[SUPPLIERRecordNew, SUPPLIERRecord] {
+    override def nodeUnapply(t: SUPPLIERRecordNew): Option[Product] = (SUPPLIERRecordNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class SUPPLIERRecordGetFieldExt(self: Rep[SUPPLIERRecord], key: Rep[String]) extends FunctionDef[SUPPLIERRecordGetField, Option[Any]] {
+    override def nodeUnapply(t: SUPPLIERRecordGetField): Option[Product] = (SUPPLIERRecordGetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class SUPPLIERRecord_Field_S_COMMENTExt(self: Rep[SUPPLIERRecord]) extends FunctionDef[SUPPLIERRecord_Field_S_COMMENT, OptimalString] {
+    override def nodeUnapply(t: SUPPLIERRecord_Field_S_COMMENT): Option[Product] = (SUPPLIERRecord_Field_S_COMMENT.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class SUPPLIERRecord_Field_S_ACCTBALExt(self: Rep[SUPPLIERRecord]) extends FunctionDef[SUPPLIERRecord_Field_S_ACCTBAL, Double] {
+    override def nodeUnapply(t: SUPPLIERRecord_Field_S_ACCTBAL): Option[Product] = (SUPPLIERRecord_Field_S_ACCTBAL.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class SUPPLIERRecord_Field_S_PHONEExt(self: Rep[SUPPLIERRecord]) extends FunctionDef[SUPPLIERRecord_Field_S_PHONE, OptimalString] {
+    override def nodeUnapply(t: SUPPLIERRecord_Field_S_PHONE): Option[Product] = (SUPPLIERRecord_Field_S_PHONE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class SUPPLIERRecord_Field_S_NATIONKEYExt(self: Rep[SUPPLIERRecord]) extends FunctionDef[SUPPLIERRecord_Field_S_NATIONKEY, Int] {
+    override def nodeUnapply(t: SUPPLIERRecord_Field_S_NATIONKEY): Option[Product] = (SUPPLIERRecord_Field_S_NATIONKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class SUPPLIERRecord_Field_S_ADDRESSExt(self: Rep[SUPPLIERRecord]) extends FunctionDef[SUPPLIERRecord_Field_S_ADDRESS, OptimalString] {
+    override def nodeUnapply(t: SUPPLIERRecord_Field_S_ADDRESS): Option[Product] = (SUPPLIERRecord_Field_S_ADDRESS.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class SUPPLIERRecord_Field_S_NAMEExt(self: Rep[SUPPLIERRecord]) extends FunctionDef[SUPPLIERRecord_Field_S_NAME, OptimalString] {
+    override def nodeUnapply(t: SUPPLIERRecord_Field_S_NAME): Option[Product] = (SUPPLIERRecord_Field_S_NAME.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class SUPPLIERRecord_Field_S_SUPPKEYExt(self: Rep[SUPPLIERRecord]) extends FunctionDef[SUPPLIERRecord_Field_S_SUPPKEY, Int] {
+    override def nodeUnapply(t: SUPPLIERRecord_Field_S_SUPPKEY): Option[Product] = (SUPPLIERRecord_Field_S_SUPPKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type SUPPLIERRecord = ch.epfl.data.dblab.legobase.tpch.SUPPLIERRecord
+}
+
+trait SUPPLIERRecordExtOps extends BaseExt with OptimalStringExtOps {
+
+  import SUPPLIERRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class SUPPLIERRecordRep(self: Rep[SUPPLIERRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = sUPPLIERRecordGetField(self, key)
+    def S_COMMENT: Rep[OptimalString] = sUPPLIERRecord_Field_S_COMMENT(self)
+    def S_ACCTBAL: Rep[Double] = sUPPLIERRecord_Field_S_ACCTBAL(self)
+    def S_PHONE: Rep[OptimalString] = sUPPLIERRecord_Field_S_PHONE(self)
+    def S_NATIONKEY: Rep[Int] = sUPPLIERRecord_Field_S_NATIONKEY(self)
+    def S_ADDRESS: Rep[OptimalString] = sUPPLIERRecord_Field_S_ADDRESS(self)
+    def S_NAME: Rep[OptimalString] = sUPPLIERRecord_Field_S_NAME(self)
+    def S_SUPPKEY: Rep[Int] = sUPPLIERRecord_Field_S_SUPPKEY(self)
+  }
+  object SUPPLIERRecord {
+    def apply(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]): Rep[SUPPLIERRecord] = sUPPLIERRecordApplyObject(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT)
+  }
+  // constructors
+  def __newSUPPLIERRecord(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]): Rep[SUPPLIERRecord] = sUPPLIERRecordNew(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT)
+
+  // method definitions
+  def sUPPLIERRecordApplyObject(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]): Rep[SUPPLIERRecord] = { __newSUPPLIERRecord(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT) }
+  def sUPPLIERRecordNew(S_SUPPKEY: Rep[Int], S_NAME: Rep[OptimalString], S_ADDRESS: Rep[OptimalString], S_NATIONKEY: Rep[Int], S_PHONE: Rep[OptimalString], S_ACCTBAL: Rep[Double], S_COMMENT: Rep[OptimalString]): Rep[SUPPLIERRecord] = SUPPLIERRecordNewExt(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL, S_COMMENT)
+  def sUPPLIERRecordGetField(self: Rep[SUPPLIERRecord], key: Rep[String]): Rep[Option[Any]] = SUPPLIERRecordGetFieldExt(self, key)
+  def sUPPLIERRecord_Field_S_COMMENT(self: Rep[SUPPLIERRecord]): Rep[OptimalString] = SUPPLIERRecord_Field_S_COMMENTExt(self)
+  def sUPPLIERRecord_Field_S_ACCTBAL(self: Rep[SUPPLIERRecord]): Rep[Double] = SUPPLIERRecord_Field_S_ACCTBALExt(self)
+  def sUPPLIERRecord_Field_S_PHONE(self: Rep[SUPPLIERRecord]): Rep[OptimalString] = SUPPLIERRecord_Field_S_PHONEExt(self)
+  def sUPPLIERRecord_Field_S_NATIONKEY(self: Rep[SUPPLIERRecord]): Rep[Int] = SUPPLIERRecord_Field_S_NATIONKEYExt(self)
+  def sUPPLIERRecord_Field_S_ADDRESS(self: Rep[SUPPLIERRecord]): Rep[OptimalString] = SUPPLIERRecord_Field_S_ADDRESSExt(self)
+  def sUPPLIERRecord_Field_S_NAME(self: Rep[SUPPLIERRecord]): Rep[OptimalString] = SUPPLIERRecord_Field_S_NAMEExt(self)
+  def sUPPLIERRecord_Field_S_SUPPKEY(self: Rep[SUPPLIERRecord]): Rep[Int] = SUPPLIERRecord_Field_S_SUPPKEYExt(self)
+  type SUPPLIERRecord = ch.epfl.data.dblab.legobase.tpch.SUPPLIERRecord
+}
+
 trait PARTSUPPRecordOps extends Base with OptimalStringOps {
   // Type representation
   val PARTSUPPRecordType = PARTSUPPRecordIRs.PARTSUPPRecordType
@@ -1196,6 +1639,81 @@ trait PARTSUPPRecordPartialEvaluation extends PARTSUPPRecordComponent with BaseP
   // Pure function partial evaluation
 }
 
+// QUASI GENERATED CODE:
+
+object PARTSUPPRecordQuasiNodes extends BaseExtIR {
+  import PARTSUPPRecordIRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class PARTSUPPRecordNewExt(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]) extends FunctionDef[PARTSUPPRecordNew, PARTSUPPRecord] {
+    override def nodeUnapply(t: PARTSUPPRecordNew): Option[Product] = (PARTSUPPRecordNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTSUPPRecordGetFieldExt(self: Rep[PARTSUPPRecord], key: Rep[String]) extends FunctionDef[PARTSUPPRecordGetField, Option[Any]] {
+    override def nodeUnapply(t: PARTSUPPRecordGetField): Option[Product] = (PARTSUPPRecordGetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTSUPPRecord_Field_PS_COMMENTExt(self: Rep[PARTSUPPRecord]) extends FunctionDef[PARTSUPPRecord_Field_PS_COMMENT, OptimalString] {
+    override def nodeUnapply(t: PARTSUPPRecord_Field_PS_COMMENT): Option[Product] = (PARTSUPPRecord_Field_PS_COMMENT.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTSUPPRecord_Field_PS_SUPPLYCOSTExt(self: Rep[PARTSUPPRecord]) extends FunctionDef[PARTSUPPRecord_Field_PS_SUPPLYCOST, Double] {
+    override def nodeUnapply(t: PARTSUPPRecord_Field_PS_SUPPLYCOST): Option[Product] = (PARTSUPPRecord_Field_PS_SUPPLYCOST.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTSUPPRecord_Field_PS_AVAILQTYExt(self: Rep[PARTSUPPRecord]) extends FunctionDef[PARTSUPPRecord_Field_PS_AVAILQTY, Int] {
+    override def nodeUnapply(t: PARTSUPPRecord_Field_PS_AVAILQTY): Option[Product] = (PARTSUPPRecord_Field_PS_AVAILQTY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTSUPPRecord_Field_PS_SUPPKEYExt(self: Rep[PARTSUPPRecord]) extends FunctionDef[PARTSUPPRecord_Field_PS_SUPPKEY, Int] {
+    override def nodeUnapply(t: PARTSUPPRecord_Field_PS_SUPPKEY): Option[Product] = (PARTSUPPRecord_Field_PS_SUPPKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTSUPPRecord_Field_PS_PARTKEYExt(self: Rep[PARTSUPPRecord]) extends FunctionDef[PARTSUPPRecord_Field_PS_PARTKEY, Int] {
+    override def nodeUnapply(t: PARTSUPPRecord_Field_PS_PARTKEY): Option[Product] = (PARTSUPPRecord_Field_PS_PARTKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type PARTSUPPRecord = ch.epfl.data.dblab.legobase.tpch.PARTSUPPRecord
+}
+
+trait PARTSUPPRecordExtOps extends BaseExt with OptimalStringExtOps {
+
+  import PARTSUPPRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class PARTSUPPRecordRep(self: Rep[PARTSUPPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = pARTSUPPRecordGetField(self, key)
+    def PS_COMMENT: Rep[OptimalString] = pARTSUPPRecord_Field_PS_COMMENT(self)
+    def PS_SUPPLYCOST: Rep[Double] = pARTSUPPRecord_Field_PS_SUPPLYCOST(self)
+    def PS_AVAILQTY: Rep[Int] = pARTSUPPRecord_Field_PS_AVAILQTY(self)
+    def PS_SUPPKEY: Rep[Int] = pARTSUPPRecord_Field_PS_SUPPKEY(self)
+    def PS_PARTKEY: Rep[Int] = pARTSUPPRecord_Field_PS_PARTKEY(self)
+  }
+  object PARTSUPPRecord {
+    def apply(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]): Rep[PARTSUPPRecord] = pARTSUPPRecordApplyObject(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT)
+  }
+  // constructors
+  def __newPARTSUPPRecord(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]): Rep[PARTSUPPRecord] = pARTSUPPRecordNew(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT)
+
+  // method definitions
+  def pARTSUPPRecordApplyObject(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]): Rep[PARTSUPPRecord] = { __newPARTSUPPRecord(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT) }
+  def pARTSUPPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int], PS_SUPPLYCOST: Rep[Double], PS_COMMENT: Rep[OptimalString]): Rep[PARTSUPPRecord] = PARTSUPPRecordNewExt(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT)
+  def pARTSUPPRecordGetField(self: Rep[PARTSUPPRecord], key: Rep[String]): Rep[Option[Any]] = PARTSUPPRecordGetFieldExt(self, key)
+  def pARTSUPPRecord_Field_PS_COMMENT(self: Rep[PARTSUPPRecord]): Rep[OptimalString] = PARTSUPPRecord_Field_PS_COMMENTExt(self)
+  def pARTSUPPRecord_Field_PS_SUPPLYCOST(self: Rep[PARTSUPPRecord]): Rep[Double] = PARTSUPPRecord_Field_PS_SUPPLYCOSTExt(self)
+  def pARTSUPPRecord_Field_PS_AVAILQTY(self: Rep[PARTSUPPRecord]): Rep[Int] = PARTSUPPRecord_Field_PS_AVAILQTYExt(self)
+  def pARTSUPPRecord_Field_PS_SUPPKEY(self: Rep[PARTSUPPRecord]): Rep[Int] = PARTSUPPRecord_Field_PS_SUPPKEYExt(self)
+  def pARTSUPPRecord_Field_PS_PARTKEY(self: Rep[PARTSUPPRecord]): Rep[Int] = PARTSUPPRecord_Field_PS_PARTKEYExt(self)
+  type PARTSUPPRecord = ch.epfl.data.dblab.legobase.tpch.PARTSUPPRecord
+}
+
 trait REGIONRecordOps extends Base with OptimalStringOps {
   // Type representation
   val REGIONRecordType = REGIONRecordIRs.REGIONRecordType
@@ -1311,6 +1829,67 @@ trait REGIONRecordPartialEvaluation extends REGIONRecordComponent with BaseParti
 
   // Mutable field inlining 
   // Pure function partial evaluation
+}
+
+// QUASI GENERATED CODE:
+
+object REGIONRecordQuasiNodes extends BaseExtIR {
+  import REGIONRecordIRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class REGIONRecordNewExt(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]) extends FunctionDef[REGIONRecordNew, REGIONRecord] {
+    override def nodeUnapply(t: REGIONRecordNew): Option[Product] = (REGIONRecordNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class REGIONRecordGetFieldExt(self: Rep[REGIONRecord], key: Rep[String]) extends FunctionDef[REGIONRecordGetField, Option[Any]] {
+    override def nodeUnapply(t: REGIONRecordGetField): Option[Product] = (REGIONRecordGetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class REGIONRecord_Field_R_COMMENTExt(self: Rep[REGIONRecord]) extends FunctionDef[REGIONRecord_Field_R_COMMENT, OptimalString] {
+    override def nodeUnapply(t: REGIONRecord_Field_R_COMMENT): Option[Product] = (REGIONRecord_Field_R_COMMENT.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class REGIONRecord_Field_R_NAMEExt(self: Rep[REGIONRecord]) extends FunctionDef[REGIONRecord_Field_R_NAME, OptimalString] {
+    override def nodeUnapply(t: REGIONRecord_Field_R_NAME): Option[Product] = (REGIONRecord_Field_R_NAME.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class REGIONRecord_Field_R_REGIONKEYExt(self: Rep[REGIONRecord]) extends FunctionDef[REGIONRecord_Field_R_REGIONKEY, Int] {
+    override def nodeUnapply(t: REGIONRecord_Field_R_REGIONKEY): Option[Product] = (REGIONRecord_Field_R_REGIONKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type REGIONRecord = ch.epfl.data.dblab.legobase.tpch.REGIONRecord
+}
+
+trait REGIONRecordExtOps extends BaseExt with OptimalStringExtOps {
+
+  import REGIONRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class REGIONRecordRep(self: Rep[REGIONRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = rEGIONRecordGetField(self, key)
+    def R_COMMENT: Rep[OptimalString] = rEGIONRecord_Field_R_COMMENT(self)
+    def R_NAME: Rep[OptimalString] = rEGIONRecord_Field_R_NAME(self)
+    def R_REGIONKEY: Rep[Int] = rEGIONRecord_Field_R_REGIONKEY(self)
+  }
+  object REGIONRecord {
+    def apply(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]): Rep[REGIONRecord] = rEGIONRecordApplyObject(R_REGIONKEY, R_NAME, R_COMMENT)
+  }
+  // constructors
+  def __newREGIONRecord(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]): Rep[REGIONRecord] = rEGIONRecordNew(R_REGIONKEY, R_NAME, R_COMMENT)
+
+  // method definitions
+  def rEGIONRecordApplyObject(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]): Rep[REGIONRecord] = { __newREGIONRecord(R_REGIONKEY, R_NAME, R_COMMENT) }
+  def rEGIONRecordNew(R_REGIONKEY: Rep[Int], R_NAME: Rep[OptimalString], R_COMMENT: Rep[OptimalString]): Rep[REGIONRecord] = REGIONRecordNewExt(R_REGIONKEY, R_NAME, R_COMMENT)
+  def rEGIONRecordGetField(self: Rep[REGIONRecord], key: Rep[String]): Rep[Option[Any]] = REGIONRecordGetFieldExt(self, key)
+  def rEGIONRecord_Field_R_COMMENT(self: Rep[REGIONRecord]): Rep[OptimalString] = REGIONRecord_Field_R_COMMENTExt(self)
+  def rEGIONRecord_Field_R_NAME(self: Rep[REGIONRecord]): Rep[OptimalString] = REGIONRecord_Field_R_NAMEExt(self)
+  def rEGIONRecord_Field_R_REGIONKEY(self: Rep[REGIONRecord]): Rep[Int] = REGIONRecord_Field_R_REGIONKEYExt(self)
+  type REGIONRecord = ch.epfl.data.dblab.legobase.tpch.REGIONRecord
 }
 
 trait NATIONRecordOps extends Base with OptimalStringOps {
@@ -1448,6 +2027,74 @@ trait NATIONRecordPartialEvaluation extends NATIONRecordComponent with BaseParti
 
   // Mutable field inlining 
   // Pure function partial evaluation
+}
+
+// QUASI GENERATED CODE:
+
+object NATIONRecordQuasiNodes extends BaseExtIR {
+  import NATIONRecordIRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class NATIONRecordNewExt(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]) extends FunctionDef[NATIONRecordNew, NATIONRecord] {
+    override def nodeUnapply(t: NATIONRecordNew): Option[Product] = (NATIONRecordNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class NATIONRecordGetFieldExt(self: Rep[NATIONRecord], key: Rep[String]) extends FunctionDef[NATIONRecordGetField, Option[Any]] {
+    override def nodeUnapply(t: NATIONRecordGetField): Option[Product] = (NATIONRecordGetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class NATIONRecord_Field_N_COMMENTExt(self: Rep[NATIONRecord]) extends FunctionDef[NATIONRecord_Field_N_COMMENT, OptimalString] {
+    override def nodeUnapply(t: NATIONRecord_Field_N_COMMENT): Option[Product] = (NATIONRecord_Field_N_COMMENT.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class NATIONRecord_Field_N_REGIONKEYExt(self: Rep[NATIONRecord]) extends FunctionDef[NATIONRecord_Field_N_REGIONKEY, Int] {
+    override def nodeUnapply(t: NATIONRecord_Field_N_REGIONKEY): Option[Product] = (NATIONRecord_Field_N_REGIONKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class NATIONRecord_Field_N_NAMEExt(self: Rep[NATIONRecord]) extends FunctionDef[NATIONRecord_Field_N_NAME, OptimalString] {
+    override def nodeUnapply(t: NATIONRecord_Field_N_NAME): Option[Product] = (NATIONRecord_Field_N_NAME.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class NATIONRecord_Field_N_NATIONKEYExt(self: Rep[NATIONRecord]) extends FunctionDef[NATIONRecord_Field_N_NATIONKEY, Int] {
+    override def nodeUnapply(t: NATIONRecord_Field_N_NATIONKEY): Option[Product] = (NATIONRecord_Field_N_NATIONKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type NATIONRecord = ch.epfl.data.dblab.legobase.tpch.NATIONRecord
+}
+
+trait NATIONRecordExtOps extends BaseExt with OptimalStringExtOps {
+
+  import NATIONRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class NATIONRecordRep(self: Rep[NATIONRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = nATIONRecordGetField(self, key)
+    def N_COMMENT: Rep[OptimalString] = nATIONRecord_Field_N_COMMENT(self)
+    def N_REGIONKEY: Rep[Int] = nATIONRecord_Field_N_REGIONKEY(self)
+    def N_NAME: Rep[OptimalString] = nATIONRecord_Field_N_NAME(self)
+    def N_NATIONKEY: Rep[Int] = nATIONRecord_Field_N_NATIONKEY(self)
+  }
+  object NATIONRecord {
+    def apply(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]): Rep[NATIONRecord] = nATIONRecordApplyObject(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT)
+  }
+  // constructors
+  def __newNATIONRecord(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]): Rep[NATIONRecord] = nATIONRecordNew(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT)
+
+  // method definitions
+  def nATIONRecordApplyObject(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]): Rep[NATIONRecord] = { __newNATIONRecord(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT) }
+  def nATIONRecordNew(N_NATIONKEY: Rep[Int], N_NAME: Rep[OptimalString], N_REGIONKEY: Rep[Int], N_COMMENT: Rep[OptimalString]): Rep[NATIONRecord] = NATIONRecordNewExt(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT)
+  def nATIONRecordGetField(self: Rep[NATIONRecord], key: Rep[String]): Rep[Option[Any]] = NATIONRecordGetFieldExt(self, key)
+  def nATIONRecord_Field_N_COMMENT(self: Rep[NATIONRecord]): Rep[OptimalString] = NATIONRecord_Field_N_COMMENTExt(self)
+  def nATIONRecord_Field_N_REGIONKEY(self: Rep[NATIONRecord]): Rep[Int] = NATIONRecord_Field_N_REGIONKEYExt(self)
+  def nATIONRecord_Field_N_NAME(self: Rep[NATIONRecord]): Rep[OptimalString] = NATIONRecord_Field_N_NAMEExt(self)
+  def nATIONRecord_Field_N_NATIONKEY(self: Rep[NATIONRecord]): Rep[Int] = NATIONRecord_Field_N_NATIONKEYExt(self)
+  type NATIONRecord = ch.epfl.data.dblab.legobase.tpch.NATIONRecord
 }
 
 trait PARTRecordOps extends Base with OptimalStringOps {
@@ -1685,5 +2332,108 @@ trait PARTRecordPartialEvaluation extends PARTRecordComponent with BasePartialEv
 
   // Mutable field inlining 
   // Pure function partial evaluation
+}
+
+// QUASI GENERATED CODE:
+
+object PARTRecordQuasiNodes extends BaseExtIR {
+  import PARTRecordIRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class PARTRecordNewExt(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]) extends FunctionDef[PARTRecordNew, PARTRecord] {
+    override def nodeUnapply(t: PARTRecordNew): Option[Product] = (PARTRecordNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTRecordGetFieldExt(self: Rep[PARTRecord], key: Rep[String]) extends FunctionDef[PARTRecordGetField, Option[Any]] {
+    override def nodeUnapply(t: PARTRecordGetField): Option[Product] = (PARTRecordGetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTRecord_Field_P_COMMENTExt(self: Rep[PARTRecord]) extends FunctionDef[PARTRecord_Field_P_COMMENT, OptimalString] {
+    override def nodeUnapply(t: PARTRecord_Field_P_COMMENT): Option[Product] = (PARTRecord_Field_P_COMMENT.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTRecord_Field_P_RETAILPRICEExt(self: Rep[PARTRecord]) extends FunctionDef[PARTRecord_Field_P_RETAILPRICE, Double] {
+    override def nodeUnapply(t: PARTRecord_Field_P_RETAILPRICE): Option[Product] = (PARTRecord_Field_P_RETAILPRICE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTRecord_Field_P_CONTAINERExt(self: Rep[PARTRecord]) extends FunctionDef[PARTRecord_Field_P_CONTAINER, OptimalString] {
+    override def nodeUnapply(t: PARTRecord_Field_P_CONTAINER): Option[Product] = (PARTRecord_Field_P_CONTAINER.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTRecord_Field_P_SIZEExt(self: Rep[PARTRecord]) extends FunctionDef[PARTRecord_Field_P_SIZE, Int] {
+    override def nodeUnapply(t: PARTRecord_Field_P_SIZE): Option[Product] = (PARTRecord_Field_P_SIZE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTRecord_Field_P_TYPEExt(self: Rep[PARTRecord]) extends FunctionDef[PARTRecord_Field_P_TYPE, OptimalString] {
+    override def nodeUnapply(t: PARTRecord_Field_P_TYPE): Option[Product] = (PARTRecord_Field_P_TYPE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTRecord_Field_P_BRANDExt(self: Rep[PARTRecord]) extends FunctionDef[PARTRecord_Field_P_BRAND, OptimalString] {
+    override def nodeUnapply(t: PARTRecord_Field_P_BRAND): Option[Product] = (PARTRecord_Field_P_BRAND.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTRecord_Field_P_MFGRExt(self: Rep[PARTRecord]) extends FunctionDef[PARTRecord_Field_P_MFGR, OptimalString] {
+    override def nodeUnapply(t: PARTRecord_Field_P_MFGR): Option[Product] = (PARTRecord_Field_P_MFGR.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTRecord_Field_P_NAMEExt(self: Rep[PARTRecord]) extends FunctionDef[PARTRecord_Field_P_NAME, OptimalString] {
+    override def nodeUnapply(t: PARTRecord_Field_P_NAME): Option[Product] = (PARTRecord_Field_P_NAME.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class PARTRecord_Field_P_PARTKEYExt(self: Rep[PARTRecord]) extends FunctionDef[PARTRecord_Field_P_PARTKEY, Int] {
+    override def nodeUnapply(t: PARTRecord_Field_P_PARTKEY): Option[Product] = (PARTRecord_Field_P_PARTKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type PARTRecord = ch.epfl.data.dblab.legobase.tpch.PARTRecord
+}
+
+trait PARTRecordExtOps extends BaseExt with OptimalStringExtOps {
+
+  import PARTRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class PARTRecordRep(self: Rep[PARTRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = pARTRecordGetField(self, key)
+    def P_COMMENT: Rep[OptimalString] = pARTRecord_Field_P_COMMENT(self)
+    def P_RETAILPRICE: Rep[Double] = pARTRecord_Field_P_RETAILPRICE(self)
+    def P_CONTAINER: Rep[OptimalString] = pARTRecord_Field_P_CONTAINER(self)
+    def P_SIZE: Rep[Int] = pARTRecord_Field_P_SIZE(self)
+    def P_TYPE: Rep[OptimalString] = pARTRecord_Field_P_TYPE(self)
+    def P_BRAND: Rep[OptimalString] = pARTRecord_Field_P_BRAND(self)
+    def P_MFGR: Rep[OptimalString] = pARTRecord_Field_P_MFGR(self)
+    def P_NAME: Rep[OptimalString] = pARTRecord_Field_P_NAME(self)
+    def P_PARTKEY: Rep[Int] = pARTRecord_Field_P_PARTKEY(self)
+  }
+  object PARTRecord {
+    def apply(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]): Rep[PARTRecord] = pARTRecordApplyObject(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT)
+  }
+  // constructors
+  def __newPARTRecord(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]): Rep[PARTRecord] = pARTRecordNew(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT)
+
+  // method definitions
+  def pARTRecordApplyObject(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]): Rep[PARTRecord] = { __newPARTRecord(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT) }
+  def pARTRecordNew(P_PARTKEY: Rep[Int], P_NAME: Rep[OptimalString], P_MFGR: Rep[OptimalString], P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], P_CONTAINER: Rep[OptimalString], P_RETAILPRICE: Rep[Double], P_COMMENT: Rep[OptimalString]): Rep[PARTRecord] = PARTRecordNewExt(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER, P_RETAILPRICE, P_COMMENT)
+  def pARTRecordGetField(self: Rep[PARTRecord], key: Rep[String]): Rep[Option[Any]] = PARTRecordGetFieldExt(self, key)
+  def pARTRecord_Field_P_COMMENT(self: Rep[PARTRecord]): Rep[OptimalString] = PARTRecord_Field_P_COMMENTExt(self)
+  def pARTRecord_Field_P_RETAILPRICE(self: Rep[PARTRecord]): Rep[Double] = PARTRecord_Field_P_RETAILPRICEExt(self)
+  def pARTRecord_Field_P_CONTAINER(self: Rep[PARTRecord]): Rep[OptimalString] = PARTRecord_Field_P_CONTAINERExt(self)
+  def pARTRecord_Field_P_SIZE(self: Rep[PARTRecord]): Rep[Int] = PARTRecord_Field_P_SIZEExt(self)
+  def pARTRecord_Field_P_TYPE(self: Rep[PARTRecord]): Rep[OptimalString] = PARTRecord_Field_P_TYPEExt(self)
+  def pARTRecord_Field_P_BRAND(self: Rep[PARTRecord]): Rep[OptimalString] = PARTRecord_Field_P_BRANDExt(self)
+  def pARTRecord_Field_P_MFGR(self: Rep[PARTRecord]): Rep[OptimalString] = PARTRecord_Field_P_MFGRExt(self)
+  def pARTRecord_Field_P_NAME(self: Rep[PARTRecord]): Rep[OptimalString] = PARTRecord_Field_P_NAMEExt(self)
+  def pARTRecord_Field_P_PARTKEY(self: Rep[PARTRecord]): Rep[Int] = PARTRecord_Field_P_PARTKEYExt(self)
+  type PARTRecord = ch.epfl.data.dblab.legobase.tpch.PARTRecord
 }
 

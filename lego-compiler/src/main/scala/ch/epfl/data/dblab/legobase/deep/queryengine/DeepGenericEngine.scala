@@ -11,6 +11,9 @@ import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
 
+import ch.epfl.data.sc.pardis.quasi.anf.{ BaseExt, BaseExtIR }
+import ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag
+
 trait GenericEngineOps extends Base with OptimalStringOps {
   // Type representation
   val GenericEngineType = GenericEngineIRs.GenericEngineType
@@ -91,5 +94,68 @@ trait GenericEnginePartialEvaluation extends GenericEngineComponent with BasePar
 
   // Mutable field inlining 
   // Pure function partial evaluation
+}
+
+// QUASI GENERATED CODE:
+
+object GenericEngineQuasiNodes extends BaseExtIR {
+  import GenericEngineIRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class GenericEngineRunQueryObjectExt[T](queryOutput: Block[T])(implicit val paramT: MaybeParamTag[T]) extends FunctionDef[GenericEngineRunQueryObject[T], T] {
+    override def nodeUnapply(t: GenericEngineRunQueryObject[T]): Option[Product] = (GenericEngineRunQueryObject.unapply(t): Option[Product]) map { r =>
+      paramT.define(t.typeT)
+      r
+    }
+  }
+  case class GenericEngineDateToStringObjectExt(long: Rep[Int]) extends FunctionDef[GenericEngineDateToStringObject, String] {
+    override def nodeUnapply(t: GenericEngineDateToStringObject): Option[Product] = (GenericEngineDateToStringObject.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class GenericEngineDateToYearObjectExt(long: Rep[Int]) extends FunctionDef[GenericEngineDateToYearObject, Int] {
+    override def nodeUnapply(t: GenericEngineDateToYearObject): Option[Product] = (GenericEngineDateToYearObject.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class GenericEngineParseDateObjectExt(x: Rep[String]) extends FunctionDef[GenericEngineParseDateObject, Int] {
+    override def nodeUnapply(t: GenericEngineParseDateObject): Option[Product] = (GenericEngineParseDateObject.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class GenericEngineParseStringObjectExt(x: Rep[String]) extends FunctionDef[GenericEngineParseStringObject, OptimalString] {
+    override def nodeUnapply(t: GenericEngineParseStringObject): Option[Product] = (GenericEngineParseStringObject.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type GenericEngine = ch.epfl.data.dblab.legobase.queryengine.GenericEngine
+}
+
+trait GenericEngineExtOps extends BaseExt with OptimalStringExtOps {
+
+  import GenericEngineQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class GenericEngineRep(self: Rep[GenericEngine]) {
+  }
+  object GenericEngine {
+    def runQuery[T](query: => Rep[T])(implicit paramT: MaybeParamTag[T]): Rep[T] = genericEngineRunQueryObject[T](query)(paramT)
+    def dateToString(long: Rep[Int]): Rep[String] = genericEngineDateToStringObject(long)
+    def dateToYear(long: Rep[Int]): Rep[Int] = genericEngineDateToYearObject(long)
+    def parseDate(x: Rep[String]): Rep[Int] = genericEngineParseDateObject(x)
+    def parseString(x: Rep[String]): Rep[OptimalString] = genericEngineParseStringObject(x)
+  }
+  // constructors
+
+  // method definitions
+  def genericEngineRunQueryObject[T](query: => Rep[T])(implicit paramT: MaybeParamTag[T]): Rep[T] = {
+    val queryOutput = reifyBlock(query)
+    GenericEngineRunQueryObjectExt[T](queryOutput)
+  }
+  def genericEngineDateToStringObject(long: Rep[Int]): Rep[String] = GenericEngineDateToStringObjectExt(long)
+  def genericEngineDateToYearObject(long: Rep[Int]): Rep[Int] = GenericEngineDateToYearObjectExt(long)
+  def genericEngineParseDateObject(x: Rep[String]): Rep[Int] = GenericEngineParseDateObjectExt(x)
+  def genericEngineParseStringObject(x: Rep[String]): Rep[OptimalString] = GenericEngineParseStringObjectExt(x)
+  type GenericEngine = ch.epfl.data.dblab.legobase.queryengine.GenericEngine
 }
 

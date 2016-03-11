@@ -15,6 +15,9 @@ import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
 
+import ch.epfl.data.sc.pardis.quasi.anf.{ BaseExt, BaseExtIR }
+import ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag
+
 trait TPCHLoaderOps extends Base with K2DBScannerOps with ArrayOps with REGIONRecordOps with PARTSUPPRecordOps with PARTRecordOps with NATIONRecordOps with SUPPLIERRecordOps with LINEITEMRecordOps with ORDERSRecordOps with CUSTOMERRecordOps with OptimalStringOps with LoaderOps with TableOps { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =>
   // Type representation
   val TPCHLoaderType = TPCHLoaderIRs.TPCHLoaderType

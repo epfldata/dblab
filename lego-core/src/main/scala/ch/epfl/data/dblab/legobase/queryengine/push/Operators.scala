@@ -9,7 +9,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.Set
 import scala.collection.mutable.TreeSet
 import GenericEngine._
-import sc.pardis.annotations.{ deep, metadeep, dontInline, needs, ::, onlineInliner }
+import sc.pardis.annotations.{ deep, metadeep, dontInline, needs, ::, onlineInliner, noDeepExt }
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
 import scala.reflect.ClassTag
 
@@ -24,6 +24,7 @@ class MetaInfo
  * The common class for all query operators in push-engine.
  */
 @deep
+@noDeepExt
 @onlineInliner
 abstract class Operator[+A] {
   def open()
@@ -49,6 +50,7 @@ object MultiMap {
  * as input
  */
 @deep
+@noDeepExt
 @onlineInliner
 class ScanOp[A](table: Array[A]) extends Operator[A] {
   var i = 0
@@ -81,6 +83,7 @@ class ScanOp[A](table: Array[A]) extends Operator[A] {
  * results. It has the same effect as LIMIT clause in SQL.
  */
 @deep
+@noDeepExt
 @onlineInliner
 class PrintOp[A](parent: Operator[A])(printFunc: A => Unit, limit: Int) extends Operator[A] { self =>
   var numRows = (0)
@@ -118,6 +121,7 @@ class PrintOp[A](parent: Operator[A])(printFunc: A => Unit, limit: Int) extends 
  * the same effect as WHERE clause in SQL.
  */
 @deep
+@noDeepExt
 @onlineInliner
 class SelectOp[A](parent: Operator[A])(selectPred: A => Boolean) extends Operator[A] {
   def open() {
@@ -141,6 +145,7 @@ class SelectOp[A](parent: Operator[A])(selectPred: A => Boolean) extends Operato
  */
 @needs[HashMap[Any, Any] :: AGGRecord[_]]
 @deep
+@noDeepExt
 @onlineInliner
 class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B])(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
   val hm = HashMap[B, AGGRecord[B]]() //Array[Double]]()
@@ -190,6 +195,7 @@ class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B])(v
  * @param mapFuncs the mapping functions used in the map operator
  */
 @deep
+@noDeepExt
 @onlineInliner
 class MapOp[A](parent: Operator[A])(mapFuncs: Function1[A, Unit]*) extends Operator[A] {
   def reset { parent.reset }
@@ -209,6 +215,7 @@ class MapOp[A](parent: Operator[A])(mapFuncs: Function1[A, Unit]*) extends Opera
  */
 @needs[TreeSet[Any]]
 @deep
+@noDeepExt
 @onlineInliner
 class SortOp[A](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends Operator[A] {
   val sortedTree = new TreeSet()(
@@ -246,6 +253,7 @@ class SortOp[A](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends
  */
 @needs[scala.collection.mutable.MultiMap[Any, Any]]
 @deep
+@noDeepExt
 @onlineInliner
 class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String, rightAlias: String)(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   def this(leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) = this(leftParent, rightParent, "", "")(joinCond)(leftHash)(rightHash)
@@ -293,9 +301,11 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
  * @param grp the function which converts the values to a key that is used
  * in the MultiMap of the window operator.
  */
-// @deep @onlineInliner class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: MultiMap.Set[A] => C) extends Operator[WindowRecord[B, C]] {
+// @deep @noDeepExt @onlineInliner 
+// class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: MultiMap.Set[A] => C) extends Operator[WindowRecord[B, C]] {
 @needs[scala.collection.mutable.MultiMap[Any, Any] :: Set[_]]
 @deep
+@noDeepExt
 @onlineInliner
 class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: Set[A] => C) extends Operator[WindowRecord[B, C]] {
   val hm = MultiMap[B, A]
@@ -333,6 +343,7 @@ class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf:
  */
 @needs[scala.collection.mutable.MultiMap[Any, Any]]
 @deep
+@noDeepExt
 @onlineInliner
 class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   @inline var mode: scala.Int = 0
@@ -376,6 +387,7 @@ class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator
  * @param joinCond the join condition
  */
 @deep
+@noDeepExt
 @onlineInliner
 class NestedLoopsJoinOp[A <: Record, B <: Record](leftParent: Operator[A], rightParent: Operator[B], leftAlias: String = "", rightAlias: String = "")(joinCond: (A, B) => Boolean) extends Operator[DynamicCompositeRecord[A, B]] {
   @inline var mode: scala.Int = 0
@@ -409,6 +421,7 @@ class NestedLoopsJoinOp[A <: Record, B <: Record](leftParent: Operator[A], right
  * @param parent the parent operator of this operator
  */
 @deep
+@noDeepExt
 @onlineInliner
 class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   var result = null.asInstanceOf[A]
@@ -445,6 +458,7 @@ class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
  */
 @needs[scala.collection.mutable.MultiMap[Any, Any]]
 @deep
+@noDeepExt
 @onlineInliner // class HashJoinAnti[A, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
 class HashJoinAnti[A: Manifest, B, C](leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) extends Operator[A] {
   @inline var mode: scala.Int = 0
@@ -491,6 +505,7 @@ class HashJoinAnti[A: Manifest, B, C](leftParent: Operator[A], rightParent: Oper
  */
 @needs[Array[Any]]
 @deep
+@noDeepExt
 @onlineInliner
 class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
   var size = 0
@@ -533,6 +548,7 @@ class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
  */
 @needs[scala.collection.mutable.MultiMap[Any, Any]]
 @deep
+@noDeepExt
 @onlineInliner
 class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
   @inline var mode: scala.Int = 0

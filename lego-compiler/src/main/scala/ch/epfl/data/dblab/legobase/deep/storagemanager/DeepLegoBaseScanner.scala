@@ -11,6 +11,9 @@ import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
 
+import ch.epfl.data.sc.pardis.quasi.anf.{ BaseExt, BaseExtIR }
+import ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag
+
 trait K2DBScannerOps extends Base with OptimalStringOps {
   // Type representation
   val K2DBScannerType = K2DBScannerIRs.K2DBScannerType
@@ -133,5 +136,99 @@ trait K2DBScannerPartialEvaluation extends K2DBScannerComponent with BasePartial
 
   // Mutable field inlining 
   // Pure function partial evaluation
+}
+
+// QUASI GENERATED CODE:
+
+object K2DBScannerQuasiNodes extends BaseExtIR {
+  import K2DBScannerIRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class K2DBScannerNewExt(filename: Rep[String]) extends FunctionDef[K2DBScannerNew, K2DBScanner] {
+    override def nodeUnapply(t: K2DBScannerNew): Option[Product] = (K2DBScannerNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class K2DBScannerNext_intExt(self: Rep[K2DBScanner]) extends FunctionDef[K2DBScannerNext_int, Int] {
+    override def nodeUnapply(t: K2DBScannerNext_int): Option[Product] = (K2DBScannerNext_int.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class K2DBScannerNext_doubleExt(self: Rep[K2DBScanner]) extends FunctionDef[K2DBScannerNext_double, Double] {
+    override def nodeUnapply(t: K2DBScannerNext_double): Option[Product] = (K2DBScannerNext_double.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class K2DBScannerNext_charExt(self: Rep[K2DBScanner]) extends FunctionDef[K2DBScannerNext_char, Char] {
+    override def nodeUnapply(t: K2DBScannerNext_char): Option[Product] = (K2DBScannerNext_char.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class K2DBScannerNext1Ext(self: Rep[K2DBScanner], buf: Rep[Array[Byte]]) extends FunctionDef[K2DBScannerNext1, Int] {
+    override def nodeUnapply(t: K2DBScannerNext1): Option[Product] = (K2DBScannerNext1.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class K2DBScannerNext2Ext(self: Rep[K2DBScanner], buf: Rep[Array[Byte]], offset: Rep[Int]) extends FunctionDef[K2DBScannerNext2, Int] {
+    override def nodeUnapply(t: K2DBScannerNext2): Option[Product] = (K2DBScannerNext2.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class K2DBScannerNext_stringExt(self: Rep[K2DBScanner]) extends FunctionDef[K2DBScannerNext_string, OptimalString] {
+    override def nodeUnapply(t: K2DBScannerNext_string): Option[Product] = (K2DBScannerNext_string.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class K2DBScannerNext_dateExt(self: Rep[K2DBScanner]) extends FunctionDef[K2DBScannerNext_date, Int] {
+    override def nodeUnapply(t: K2DBScannerNext_date): Option[Product] = (K2DBScannerNext_date.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class K2DBScannerHasNextExt(self: Rep[K2DBScanner]) extends FunctionDef[K2DBScannerHasNext, Boolean] {
+    override def nodeUnapply(t: K2DBScannerHasNext): Option[Product] = (K2DBScannerHasNext.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class K2DBScanner_Field_FilenameExt(self: Rep[K2DBScanner]) extends FunctionDef[K2DBScanner_Field_Filename, String] {
+    override def nodeUnapply(t: K2DBScanner_Field_Filename): Option[Product] = (K2DBScanner_Field_Filename.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type K2DBScanner = ch.epfl.data.dblab.legobase.storagemanager.K2DBScanner
+}
+
+trait K2DBScannerExtOps extends BaseExt with OptimalStringExtOps {
+
+  import K2DBScannerQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class K2DBScannerRep(self: Rep[K2DBScanner]) {
+    def next_int(): Rep[Int] = k2DBScannerNext_int(self)
+    def next_double(): Rep[Double] = k2DBScannerNext_double(self)
+    def next_char(): Rep[Char] = k2DBScannerNext_char(self)
+    def next(buf: Rep[Array[Byte]])(implicit overload1: Overloaded1): Rep[Int] = k2DBScannerNext1(self, buf)
+    def next(buf: Rep[Array[Byte]], offset: Rep[Int])(implicit overload2: Overloaded2): Rep[Int] = k2DBScannerNext2(self, buf, offset)
+    def next_string: Rep[OptimalString] = k2DBScannerNext_string(self)
+    def next_date: Rep[Int] = k2DBScannerNext_date(self)
+    def hasNext(): Rep[Boolean] = k2DBScannerHasNext(self)
+    def filename: Rep[String] = k2DBScanner_Field_Filename(self)
+  }
+  object K2DBScanner {
+  }
+  // constructors
+  def __newK2DBScanner(filename: Rep[String]): Rep[K2DBScanner] = k2DBScannerNew(filename)
+
+  // method definitions
+  def k2DBScannerNew(filename: Rep[String]): Rep[K2DBScanner] = K2DBScannerNewExt(filename)
+  def k2DBScannerNext_int(self: Rep[K2DBScanner]): Rep[Int] = K2DBScannerNext_intExt(self)
+  def k2DBScannerNext_double(self: Rep[K2DBScanner]): Rep[Double] = K2DBScannerNext_doubleExt(self)
+  def k2DBScannerNext_char(self: Rep[K2DBScanner]): Rep[Char] = K2DBScannerNext_charExt(self)
+  def k2DBScannerNext1(self: Rep[K2DBScanner], buf: Rep[Array[Byte]]): Rep[Int] = K2DBScannerNext1Ext(self, buf)
+  def k2DBScannerNext2(self: Rep[K2DBScanner], buf: Rep[Array[Byte]], offset: Rep[Int]): Rep[Int] = K2DBScannerNext2Ext(self, buf, offset)
+  def k2DBScannerNext_string(self: Rep[K2DBScanner]): Rep[OptimalString] = K2DBScannerNext_stringExt(self)
+  def k2DBScannerNext_date(self: Rep[K2DBScanner]): Rep[Int] = K2DBScannerNext_dateExt(self)
+  def k2DBScannerHasNext(self: Rep[K2DBScanner]): Rep[Boolean] = K2DBScannerHasNextExt(self)
+  def k2DBScanner_Field_Filename(self: Rep[K2DBScanner]): Rep[String] = K2DBScanner_Field_FilenameExt(self)
+  type K2DBScanner = ch.epfl.data.dblab.legobase.storagemanager.K2DBScanner
 }
 

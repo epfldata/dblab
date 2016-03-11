@@ -15,7 +15,10 @@ import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
 
-trait LoaderOps extends Base with K2DBScannerOps with ArrayOps with OptimalStringOps { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =>
+import ch.epfl.data.sc.pardis.quasi.anf.{ BaseExt, BaseExtIR }
+import ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag
+
+trait LoaderOps extends Base with K2DBScannerOps with ArrayOps with OptimalStringOps with StringOps with NumericOps { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =>
   // Type representation
   val LoaderType = LoaderIRs.LoaderType
   implicit val typeLoader: TypeRep[Loader] = LoaderType
@@ -50,6 +53,8 @@ object LoaderIRs extends Base {
   import K2DBScannerIRs._
   import ArrayIRs._
   import OptimalStringIRs._
+  import StringIRs._
+  import NumericIRs._
   // Type representation
   case object LoaderType extends TypeRep[Loader] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LoaderType

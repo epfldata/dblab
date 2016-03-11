@@ -11,6 +11,9 @@ import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
 
+import ch.epfl.data.sc.pardis.quasi.anf.{ BaseExt, BaseExtIR }
+import ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag
+
 trait Q1GRPRecordOps extends Base {
   // Type representation
   val Q1GRPRecordType = Q1GRPRecordIRs.Q1GRPRecordType
@@ -105,6 +108,58 @@ trait Q1GRPRecordPartialEvaluation extends Q1GRPRecordComponent with BasePartial
 
   // Mutable field inlining 
   // Pure function partial evaluation
+}
+
+// QUASI GENERATED CODE:
+
+object Q1GRPRecordQuasiNodes extends BaseExtIR {
+  import Q1GRPRecordIRs._
+  // case classes
+  case class Q1GRPRecordNewExt(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]) extends FunctionDef[Q1GRPRecordNew, Q1GRPRecord] {
+    override def nodeUnapply(t: Q1GRPRecordNew): Option[Product] = (Q1GRPRecordNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q1GRPRecordGetFieldExt(self: Rep[Q1GRPRecord], key: Rep[String]) extends FunctionDef[Q1GRPRecordGetField, Option[Any]] {
+    override def nodeUnapply(t: Q1GRPRecordGetField): Option[Product] = (Q1GRPRecordGetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q1GRPRecord_Field_L_LINESTATUSExt(self: Rep[Q1GRPRecord]) extends FunctionDef[Q1GRPRecord_Field_L_LINESTATUS, Char] {
+    override def nodeUnapply(t: Q1GRPRecord_Field_L_LINESTATUS): Option[Product] = (Q1GRPRecord_Field_L_LINESTATUS.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q1GRPRecord_Field_L_RETURNFLAGExt(self: Rep[Q1GRPRecord]) extends FunctionDef[Q1GRPRecord_Field_L_RETURNFLAG, Char] {
+    override def nodeUnapply(t: Q1GRPRecord_Field_L_RETURNFLAG): Option[Product] = (Q1GRPRecord_Field_L_RETURNFLAG.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type Q1GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q1GRPRecord
+}
+
+trait Q1GRPRecordExtOps extends BaseExt {
+
+  import Q1GRPRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  implicit class Q1GRPRecordRep(self: Rep[Q1GRPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q1GRPRecordGetField(self, key)
+    def L_LINESTATUS: Rep[Char] = q1GRPRecord_Field_L_LINESTATUS(self)
+    def L_RETURNFLAG: Rep[Char] = q1GRPRecord_Field_L_RETURNFLAG(self)
+  }
+  object Q1GRPRecord {
+    def apply(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]): Rep[Q1GRPRecord] = q1GRPRecordApplyObject(L_RETURNFLAG, L_LINESTATUS)
+  }
+  // constructors
+  def __newQ1GRPRecord(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]): Rep[Q1GRPRecord] = q1GRPRecordNew(L_RETURNFLAG, L_LINESTATUS)
+
+  // method definitions
+  def q1GRPRecordApplyObject(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]): Rep[Q1GRPRecord] = { __newQ1GRPRecord(L_RETURNFLAG, L_LINESTATUS) }
+  def q1GRPRecordNew(L_RETURNFLAG: Rep[Char], L_LINESTATUS: Rep[Char]): Rep[Q1GRPRecord] = Q1GRPRecordNewExt(L_RETURNFLAG, L_LINESTATUS)
+  def q1GRPRecordGetField(self: Rep[Q1GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q1GRPRecordGetFieldExt(self, key)
+  def q1GRPRecord_Field_L_LINESTATUS(self: Rep[Q1GRPRecord]): Rep[Char] = Q1GRPRecord_Field_L_LINESTATUSExt(self)
+  def q1GRPRecord_Field_L_RETURNFLAG(self: Rep[Q1GRPRecord]): Rep[Char] = Q1GRPRecord_Field_L_RETURNFLAGExt(self)
+  type Q1GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q1GRPRecord
 }
 
 trait Q3GRPRecordOps extends Base {
@@ -221,6 +276,65 @@ trait Q3GRPRecordPartialEvaluation extends Q3GRPRecordComponent with BasePartial
 
   // Mutable field inlining 
   // Pure function partial evaluation
+}
+
+// QUASI GENERATED CODE:
+
+object Q3GRPRecordQuasiNodes extends BaseExtIR {
+  import Q3GRPRecordIRs._
+  // case classes
+  case class Q3GRPRecordNewExt(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]) extends FunctionDef[Q3GRPRecordNew, Q3GRPRecord] {
+    override def nodeUnapply(t: Q3GRPRecordNew): Option[Product] = (Q3GRPRecordNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q3GRPRecordGetFieldExt(self: Rep[Q3GRPRecord], key: Rep[String]) extends FunctionDef[Q3GRPRecordGetField, Option[Any]] {
+    override def nodeUnapply(t: Q3GRPRecordGetField): Option[Product] = (Q3GRPRecordGetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q3GRPRecord_Field_O_SHIPPRIORITYExt(self: Rep[Q3GRPRecord]) extends FunctionDef[Q3GRPRecord_Field_O_SHIPPRIORITY, Int] {
+    override def nodeUnapply(t: Q3GRPRecord_Field_O_SHIPPRIORITY): Option[Product] = (Q3GRPRecord_Field_O_SHIPPRIORITY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q3GRPRecord_Field_O_ORDERDATEExt(self: Rep[Q3GRPRecord]) extends FunctionDef[Q3GRPRecord_Field_O_ORDERDATE, Int] {
+    override def nodeUnapply(t: Q3GRPRecord_Field_O_ORDERDATE): Option[Product] = (Q3GRPRecord_Field_O_ORDERDATE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q3GRPRecord_Field_L_ORDERKEYExt(self: Rep[Q3GRPRecord]) extends FunctionDef[Q3GRPRecord_Field_L_ORDERKEY, Int] {
+    override def nodeUnapply(t: Q3GRPRecord_Field_L_ORDERKEY): Option[Product] = (Q3GRPRecord_Field_L_ORDERKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type Q3GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q3GRPRecord
+}
+
+trait Q3GRPRecordExtOps extends BaseExt {
+
+  import Q3GRPRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  implicit class Q3GRPRecordRep(self: Rep[Q3GRPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q3GRPRecordGetField(self, key)
+    def O_SHIPPRIORITY: Rep[Int] = q3GRPRecord_Field_O_SHIPPRIORITY(self)
+    def O_ORDERDATE: Rep[Int] = q3GRPRecord_Field_O_ORDERDATE(self)
+    def L_ORDERKEY: Rep[Int] = q3GRPRecord_Field_L_ORDERKEY(self)
+  }
+  object Q3GRPRecord {
+    def apply(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = q3GRPRecordApplyObject(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
+  }
+  // constructors
+  def __newQ3GRPRecord(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = q3GRPRecordNew(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
+
+  // method definitions
+  def q3GRPRecordApplyObject(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = { __newQ3GRPRecord(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY) }
+  def q3GRPRecordNew(L_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_SHIPPRIORITY: Rep[Int]): Rep[Q3GRPRecord] = Q3GRPRecordNewExt(L_ORDERKEY, O_ORDERDATE, O_SHIPPRIORITY)
+  def q3GRPRecordGetField(self: Rep[Q3GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q3GRPRecordGetFieldExt(self, key)
+  def q3GRPRecord_Field_O_SHIPPRIORITY(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_O_SHIPPRIORITYExt(self)
+  def q3GRPRecord_Field_O_ORDERDATE(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_O_ORDERDATEExt(self)
+  def q3GRPRecord_Field_L_ORDERKEY(self: Rep[Q3GRPRecord]): Rep[Int] = Q3GRPRecord_Field_L_ORDERKEYExt(self)
+  type Q3GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q3GRPRecord
 }
 
 trait Q7GRPRecordOps extends Base with OptimalStringOps {
@@ -340,6 +454,67 @@ trait Q7GRPRecordPartialEvaluation extends Q7GRPRecordComponent with BasePartial
   // Pure function partial evaluation
 }
 
+// QUASI GENERATED CODE:
+
+object Q7GRPRecordQuasiNodes extends BaseExtIR {
+  import Q7GRPRecordIRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class Q7GRPRecordNewExt(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]) extends FunctionDef[Q7GRPRecordNew, Q7GRPRecord] {
+    override def nodeUnapply(t: Q7GRPRecordNew): Option[Product] = (Q7GRPRecordNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q7GRPRecordGetFieldExt(self: Rep[Q7GRPRecord], key: Rep[String]) extends FunctionDef[Q7GRPRecordGetField, Option[Any]] {
+    override def nodeUnapply(t: Q7GRPRecordGetField): Option[Product] = (Q7GRPRecordGetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q7GRPRecord_Field_L_YEARExt(self: Rep[Q7GRPRecord]) extends FunctionDef[Q7GRPRecord_Field_L_YEAR, Int] {
+    override def nodeUnapply(t: Q7GRPRecord_Field_L_YEAR): Option[Product] = (Q7GRPRecord_Field_L_YEAR.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q7GRPRecord_Field_CUST_NATIONExt(self: Rep[Q7GRPRecord]) extends FunctionDef[Q7GRPRecord_Field_CUST_NATION, OptimalString] {
+    override def nodeUnapply(t: Q7GRPRecord_Field_CUST_NATION): Option[Product] = (Q7GRPRecord_Field_CUST_NATION.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q7GRPRecord_Field_SUPP_NATIONExt(self: Rep[Q7GRPRecord]) extends FunctionDef[Q7GRPRecord_Field_SUPP_NATION, OptimalString] {
+    override def nodeUnapply(t: Q7GRPRecord_Field_SUPP_NATION): Option[Product] = (Q7GRPRecord_Field_SUPP_NATION.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type Q7GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q7GRPRecord
+}
+
+trait Q7GRPRecordExtOps extends BaseExt with OptimalStringExtOps {
+
+  import Q7GRPRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class Q7GRPRecordRep(self: Rep[Q7GRPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q7GRPRecordGetField(self, key)
+    def L_YEAR: Rep[Int] = q7GRPRecord_Field_L_YEAR(self)
+    def CUST_NATION: Rep[OptimalString] = q7GRPRecord_Field_CUST_NATION(self)
+    def SUPP_NATION: Rep[OptimalString] = q7GRPRecord_Field_SUPP_NATION(self)
+  }
+  object Q7GRPRecord {
+    def apply(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]): Rep[Q7GRPRecord] = q7GRPRecordApplyObject(SUPP_NATION, CUST_NATION, L_YEAR)
+  }
+  // constructors
+  def __newQ7GRPRecord(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]): Rep[Q7GRPRecord] = q7GRPRecordNew(SUPP_NATION, CUST_NATION, L_YEAR)
+
+  // method definitions
+  def q7GRPRecordApplyObject(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]): Rep[Q7GRPRecord] = { __newQ7GRPRecord(SUPP_NATION, CUST_NATION, L_YEAR) }
+  def q7GRPRecordNew(SUPP_NATION: Rep[OptimalString], CUST_NATION: Rep[OptimalString], L_YEAR: Rep[Int]): Rep[Q7GRPRecord] = Q7GRPRecordNewExt(SUPP_NATION, CUST_NATION, L_YEAR)
+  def q7GRPRecordGetField(self: Rep[Q7GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q7GRPRecordGetFieldExt(self, key)
+  def q7GRPRecord_Field_L_YEAR(self: Rep[Q7GRPRecord]): Rep[Int] = Q7GRPRecord_Field_L_YEARExt(self)
+  def q7GRPRecord_Field_CUST_NATION(self: Rep[Q7GRPRecord]): Rep[OptimalString] = Q7GRPRecord_Field_CUST_NATIONExt(self)
+  def q7GRPRecord_Field_SUPP_NATION(self: Rep[Q7GRPRecord]): Rep[OptimalString] = Q7GRPRecord_Field_SUPP_NATIONExt(self)
+  type Q7GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q7GRPRecord
+}
+
 trait Q9GRPRecordOps extends Base with OptimalStringOps {
   // Type representation
   val Q9GRPRecordType = Q9GRPRecordIRs.Q9GRPRecordType
@@ -435,6 +610,60 @@ trait Q9GRPRecordPartialEvaluation extends Q9GRPRecordComponent with BasePartial
 
   // Mutable field inlining 
   // Pure function partial evaluation
+}
+
+// QUASI GENERATED CODE:
+
+object Q9GRPRecordQuasiNodes extends BaseExtIR {
+  import Q9GRPRecordIRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class Q9GRPRecordNewExt(NATION: Rep[OptimalString], O_YEAR: Rep[Int]) extends FunctionDef[Q9GRPRecordNew, Q9GRPRecord] {
+    override def nodeUnapply(t: Q9GRPRecordNew): Option[Product] = (Q9GRPRecordNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q9GRPRecordGetFieldExt(self: Rep[Q9GRPRecord], key: Rep[String]) extends FunctionDef[Q9GRPRecordGetField, Option[Any]] {
+    override def nodeUnapply(t: Q9GRPRecordGetField): Option[Product] = (Q9GRPRecordGetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q9GRPRecord_Field_O_YEARExt(self: Rep[Q9GRPRecord]) extends FunctionDef[Q9GRPRecord_Field_O_YEAR, Int] {
+    override def nodeUnapply(t: Q9GRPRecord_Field_O_YEAR): Option[Product] = (Q9GRPRecord_Field_O_YEAR.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q9GRPRecord_Field_NATIONExt(self: Rep[Q9GRPRecord]) extends FunctionDef[Q9GRPRecord_Field_NATION, OptimalString] {
+    override def nodeUnapply(t: Q9GRPRecord_Field_NATION): Option[Product] = (Q9GRPRecord_Field_NATION.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type Q9GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q9GRPRecord
+}
+
+trait Q9GRPRecordExtOps extends BaseExt with OptimalStringExtOps {
+
+  import Q9GRPRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class Q9GRPRecordRep(self: Rep[Q9GRPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q9GRPRecordGetField(self, key)
+    def O_YEAR: Rep[Int] = q9GRPRecord_Field_O_YEAR(self)
+    def NATION: Rep[OptimalString] = q9GRPRecord_Field_NATION(self)
+  }
+  object Q9GRPRecord {
+    def apply(NATION: Rep[OptimalString], O_YEAR: Rep[Int]): Rep[Q9GRPRecord] = q9GRPRecordApplyObject(NATION, O_YEAR)
+  }
+  // constructors
+  def __newQ9GRPRecord(NATION: Rep[OptimalString], O_YEAR: Rep[Int]): Rep[Q9GRPRecord] = q9GRPRecordNew(NATION, O_YEAR)
+
+  // method definitions
+  def q9GRPRecordApplyObject(NATION: Rep[OptimalString], O_YEAR: Rep[Int]): Rep[Q9GRPRecord] = { __newQ9GRPRecord(NATION, O_YEAR) }
+  def q9GRPRecordNew(NATION: Rep[OptimalString], O_YEAR: Rep[Int]): Rep[Q9GRPRecord] = Q9GRPRecordNewExt(NATION, O_YEAR)
+  def q9GRPRecordGetField(self: Rep[Q9GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q9GRPRecordGetFieldExt(self, key)
+  def q9GRPRecord_Field_O_YEAR(self: Rep[Q9GRPRecord]): Rep[Int] = Q9GRPRecord_Field_O_YEARExt(self)
+  def q9GRPRecord_Field_NATION(self: Rep[Q9GRPRecord]): Rep[OptimalString] = Q9GRPRecord_Field_NATIONExt(self)
+  type Q9GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q9GRPRecord
 }
 
 trait Q10GRPRecordOps extends Base with OptimalStringOps {
@@ -632,6 +861,95 @@ trait Q10GRPRecordPartialEvaluation extends Q10GRPRecordComponent with BaseParti
 
   // Mutable field inlining 
   // Pure function partial evaluation
+}
+
+// QUASI GENERATED CODE:
+
+object Q10GRPRecordQuasiNodes extends BaseExtIR {
+  import Q10GRPRecordIRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class Q10GRPRecordNewExt(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]) extends FunctionDef[Q10GRPRecordNew, Q10GRPRecord] {
+    override def nodeUnapply(t: Q10GRPRecordNew): Option[Product] = (Q10GRPRecordNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q10GRPRecordGetFieldExt(self: Rep[Q10GRPRecord], key: Rep[String]) extends FunctionDef[Q10GRPRecordGetField, Option[Any]] {
+    override def nodeUnapply(t: Q10GRPRecordGetField): Option[Product] = (Q10GRPRecordGetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q10GRPRecord_Field_C_COMMENTExt(self: Rep[Q10GRPRecord]) extends FunctionDef[Q10GRPRecord_Field_C_COMMENT, OptimalString] {
+    override def nodeUnapply(t: Q10GRPRecord_Field_C_COMMENT): Option[Product] = (Q10GRPRecord_Field_C_COMMENT.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q10GRPRecord_Field_C_ADDRESSExt(self: Rep[Q10GRPRecord]) extends FunctionDef[Q10GRPRecord_Field_C_ADDRESS, OptimalString] {
+    override def nodeUnapply(t: Q10GRPRecord_Field_C_ADDRESS): Option[Product] = (Q10GRPRecord_Field_C_ADDRESS.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q10GRPRecord_Field_N_NAMEExt(self: Rep[Q10GRPRecord]) extends FunctionDef[Q10GRPRecord_Field_N_NAME, OptimalString] {
+    override def nodeUnapply(t: Q10GRPRecord_Field_N_NAME): Option[Product] = (Q10GRPRecord_Field_N_NAME.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q10GRPRecord_Field_C_PHONEExt(self: Rep[Q10GRPRecord]) extends FunctionDef[Q10GRPRecord_Field_C_PHONE, OptimalString] {
+    override def nodeUnapply(t: Q10GRPRecord_Field_C_PHONE): Option[Product] = (Q10GRPRecord_Field_C_PHONE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q10GRPRecord_Field_C_ACCTBALExt(self: Rep[Q10GRPRecord]) extends FunctionDef[Q10GRPRecord_Field_C_ACCTBAL, Double] {
+    override def nodeUnapply(t: Q10GRPRecord_Field_C_ACCTBAL): Option[Product] = (Q10GRPRecord_Field_C_ACCTBAL.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q10GRPRecord_Field_C_NAMEExt(self: Rep[Q10GRPRecord]) extends FunctionDef[Q10GRPRecord_Field_C_NAME, OptimalString] {
+    override def nodeUnapply(t: Q10GRPRecord_Field_C_NAME): Option[Product] = (Q10GRPRecord_Field_C_NAME.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q10GRPRecord_Field_C_CUSTKEYExt(self: Rep[Q10GRPRecord]) extends FunctionDef[Q10GRPRecord_Field_C_CUSTKEY, Int] {
+    override def nodeUnapply(t: Q10GRPRecord_Field_C_CUSTKEY): Option[Product] = (Q10GRPRecord_Field_C_CUSTKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type Q10GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q10GRPRecord
+}
+
+trait Q10GRPRecordExtOps extends BaseExt with OptimalStringExtOps {
+
+  import Q10GRPRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class Q10GRPRecordRep(self: Rep[Q10GRPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q10GRPRecordGetField(self, key)
+    def C_COMMENT: Rep[OptimalString] = q10GRPRecord_Field_C_COMMENT(self)
+    def C_ADDRESS: Rep[OptimalString] = q10GRPRecord_Field_C_ADDRESS(self)
+    def N_NAME: Rep[OptimalString] = q10GRPRecord_Field_N_NAME(self)
+    def C_PHONE: Rep[OptimalString] = q10GRPRecord_Field_C_PHONE(self)
+    def C_ACCTBAL: Rep[Double] = q10GRPRecord_Field_C_ACCTBAL(self)
+    def C_NAME: Rep[OptimalString] = q10GRPRecord_Field_C_NAME(self)
+    def C_CUSTKEY: Rep[Int] = q10GRPRecord_Field_C_CUSTKEY(self)
+  }
+  object Q10GRPRecord {
+    def apply(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[Q10GRPRecord] = q10GRPRecordApplyObject(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT)
+  }
+  // constructors
+  def __newQ10GRPRecord(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[Q10GRPRecord] = q10GRPRecordNew(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT)
+
+  // method definitions
+  def q10GRPRecordApplyObject(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[Q10GRPRecord] = { __newQ10GRPRecord(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT) }
+  def q10GRPRecordNew(C_CUSTKEY: Rep[Int], C_NAME: Rep[OptimalString], C_ACCTBAL: Rep[Double], C_PHONE: Rep[OptimalString], N_NAME: Rep[OptimalString], C_ADDRESS: Rep[OptimalString], C_COMMENT: Rep[OptimalString]): Rep[Q10GRPRecord] = Q10GRPRecordNewExt(C_CUSTKEY, C_NAME, C_ACCTBAL, C_PHONE, N_NAME, C_ADDRESS, C_COMMENT)
+  def q10GRPRecordGetField(self: Rep[Q10GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q10GRPRecordGetFieldExt(self, key)
+  def q10GRPRecord_Field_C_COMMENT(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_COMMENTExt(self)
+  def q10GRPRecord_Field_C_ADDRESS(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_ADDRESSExt(self)
+  def q10GRPRecord_Field_N_NAME(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_N_NAMEExt(self)
+  def q10GRPRecord_Field_C_PHONE(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_PHONEExt(self)
+  def q10GRPRecord_Field_C_ACCTBAL(self: Rep[Q10GRPRecord]): Rep[Double] = Q10GRPRecord_Field_C_ACCTBALExt(self)
+  def q10GRPRecord_Field_C_NAME(self: Rep[Q10GRPRecord]): Rep[OptimalString] = Q10GRPRecord_Field_C_NAMEExt(self)
+  def q10GRPRecord_Field_C_CUSTKEY(self: Rep[Q10GRPRecord]): Rep[Int] = Q10GRPRecord_Field_C_CUSTKEYExt(self)
+  type Q10GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q10GRPRecord
 }
 
 trait Q13IntRecordOps extends Base {
@@ -843,6 +1161,74 @@ trait Q16GRPRecord1PartialEvaluation extends Q16GRPRecord1Component with BasePar
   // Pure function partial evaluation
 }
 
+// QUASI GENERATED CODE:
+
+object Q16GRPRecord1QuasiNodes extends BaseExtIR {
+  import Q16GRPRecord1IRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class Q16GRPRecord1NewExt(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]) extends FunctionDef[Q16GRPRecord1New, Q16GRPRecord1] {
+    override def nodeUnapply(t: Q16GRPRecord1New): Option[Product] = (Q16GRPRecord1New.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q16GRPRecord1GetFieldExt(self: Rep[Q16GRPRecord1], key: Rep[String]) extends FunctionDef[Q16GRPRecord1GetField, Option[Any]] {
+    override def nodeUnapply(t: Q16GRPRecord1GetField): Option[Product] = (Q16GRPRecord1GetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q16GRPRecord1_Field_PS_SUPPKEYExt(self: Rep[Q16GRPRecord1]) extends FunctionDef[Q16GRPRecord1_Field_PS_SUPPKEY, Int] {
+    override def nodeUnapply(t: Q16GRPRecord1_Field_PS_SUPPKEY): Option[Product] = (Q16GRPRecord1_Field_PS_SUPPKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q16GRPRecord1_Field_P_SIZEExt(self: Rep[Q16GRPRecord1]) extends FunctionDef[Q16GRPRecord1_Field_P_SIZE, Int] {
+    override def nodeUnapply(t: Q16GRPRecord1_Field_P_SIZE): Option[Product] = (Q16GRPRecord1_Field_P_SIZE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q16GRPRecord1_Field_P_TYPEExt(self: Rep[Q16GRPRecord1]) extends FunctionDef[Q16GRPRecord1_Field_P_TYPE, OptimalString] {
+    override def nodeUnapply(t: Q16GRPRecord1_Field_P_TYPE): Option[Product] = (Q16GRPRecord1_Field_P_TYPE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q16GRPRecord1_Field_P_BRANDExt(self: Rep[Q16GRPRecord1]) extends FunctionDef[Q16GRPRecord1_Field_P_BRAND, OptimalString] {
+    override def nodeUnapply(t: Q16GRPRecord1_Field_P_BRAND): Option[Product] = (Q16GRPRecord1_Field_P_BRAND.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type Q16GRPRecord1 = ch.epfl.data.dblab.legobase.tpch.Q16GRPRecord1
+}
+
+trait Q16GRPRecord1ExtOps extends BaseExt with OptimalStringExtOps {
+
+  import Q16GRPRecord1QuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class Q16GRPRecord1Rep(self: Rep[Q16GRPRecord1]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q16GRPRecord1GetField(self, key)
+    def PS_SUPPKEY: Rep[Int] = q16GRPRecord1_Field_PS_SUPPKEY(self)
+    def P_SIZE: Rep[Int] = q16GRPRecord1_Field_P_SIZE(self)
+    def P_TYPE: Rep[OptimalString] = q16GRPRecord1_Field_P_TYPE(self)
+    def P_BRAND: Rep[OptimalString] = q16GRPRecord1_Field_P_BRAND(self)
+  }
+  object Q16GRPRecord1 {
+    def apply(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]): Rep[Q16GRPRecord1] = q16GRPRecord1ApplyObject(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY)
+  }
+  // constructors
+  def __newQ16GRPRecord1(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]): Rep[Q16GRPRecord1] = q16GRPRecord1New(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY)
+
+  // method definitions
+  def q16GRPRecord1ApplyObject(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]): Rep[Q16GRPRecord1] = { __newQ16GRPRecord1(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY) }
+  def q16GRPRecord1New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int], PS_SUPPKEY: Rep[Int]): Rep[Q16GRPRecord1] = Q16GRPRecord1NewExt(P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY)
+  def q16GRPRecord1GetField(self: Rep[Q16GRPRecord1], key: Rep[String]): Rep[Option[Any]] = Q16GRPRecord1GetFieldExt(self, key)
+  def q16GRPRecord1_Field_PS_SUPPKEY(self: Rep[Q16GRPRecord1]): Rep[Int] = Q16GRPRecord1_Field_PS_SUPPKEYExt(self)
+  def q16GRPRecord1_Field_P_SIZE(self: Rep[Q16GRPRecord1]): Rep[Int] = Q16GRPRecord1_Field_P_SIZEExt(self)
+  def q16GRPRecord1_Field_P_TYPE(self: Rep[Q16GRPRecord1]): Rep[OptimalString] = Q16GRPRecord1_Field_P_TYPEExt(self)
+  def q16GRPRecord1_Field_P_BRAND(self: Rep[Q16GRPRecord1]): Rep[OptimalString] = Q16GRPRecord1_Field_P_BRANDExt(self)
+  type Q16GRPRecord1 = ch.epfl.data.dblab.legobase.tpch.Q16GRPRecord1
+}
+
 trait Q16GRPRecord2Ops extends Base with OptimalStringOps {
   // Type representation
   val Q16GRPRecord2Type = Q16GRPRecord2IRs.Q16GRPRecord2Type
@@ -958,6 +1344,67 @@ trait Q16GRPRecord2PartialEvaluation extends Q16GRPRecord2Component with BasePar
 
   // Mutable field inlining 
   // Pure function partial evaluation
+}
+
+// QUASI GENERATED CODE:
+
+object Q16GRPRecord2QuasiNodes extends BaseExtIR {
+  import Q16GRPRecord2IRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class Q16GRPRecord2NewExt(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]) extends FunctionDef[Q16GRPRecord2New, Q16GRPRecord2] {
+    override def nodeUnapply(t: Q16GRPRecord2New): Option[Product] = (Q16GRPRecord2New.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q16GRPRecord2GetFieldExt(self: Rep[Q16GRPRecord2], key: Rep[String]) extends FunctionDef[Q16GRPRecord2GetField, Option[Any]] {
+    override def nodeUnapply(t: Q16GRPRecord2GetField): Option[Product] = (Q16GRPRecord2GetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q16GRPRecord2_Field_P_SIZEExt(self: Rep[Q16GRPRecord2]) extends FunctionDef[Q16GRPRecord2_Field_P_SIZE, Int] {
+    override def nodeUnapply(t: Q16GRPRecord2_Field_P_SIZE): Option[Product] = (Q16GRPRecord2_Field_P_SIZE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q16GRPRecord2_Field_P_TYPEExt(self: Rep[Q16GRPRecord2]) extends FunctionDef[Q16GRPRecord2_Field_P_TYPE, OptimalString] {
+    override def nodeUnapply(t: Q16GRPRecord2_Field_P_TYPE): Option[Product] = (Q16GRPRecord2_Field_P_TYPE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q16GRPRecord2_Field_P_BRANDExt(self: Rep[Q16GRPRecord2]) extends FunctionDef[Q16GRPRecord2_Field_P_BRAND, OptimalString] {
+    override def nodeUnapply(t: Q16GRPRecord2_Field_P_BRAND): Option[Product] = (Q16GRPRecord2_Field_P_BRAND.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type Q16GRPRecord2 = ch.epfl.data.dblab.legobase.tpch.Q16GRPRecord2
+}
+
+trait Q16GRPRecord2ExtOps extends BaseExt with OptimalStringExtOps {
+
+  import Q16GRPRecord2QuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class Q16GRPRecord2Rep(self: Rep[Q16GRPRecord2]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q16GRPRecord2GetField(self, key)
+    def P_SIZE: Rep[Int] = q16GRPRecord2_Field_P_SIZE(self)
+    def P_TYPE: Rep[OptimalString] = q16GRPRecord2_Field_P_TYPE(self)
+    def P_BRAND: Rep[OptimalString] = q16GRPRecord2_Field_P_BRAND(self)
+  }
+  object Q16GRPRecord2 {
+    def apply(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]): Rep[Q16GRPRecord2] = q16GRPRecord2ApplyObject(P_BRAND, P_TYPE, P_SIZE)
+  }
+  // constructors
+  def __newQ16GRPRecord2(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]): Rep[Q16GRPRecord2] = q16GRPRecord2New(P_BRAND, P_TYPE, P_SIZE)
+
+  // method definitions
+  def q16GRPRecord2ApplyObject(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]): Rep[Q16GRPRecord2] = { __newQ16GRPRecord2(P_BRAND, P_TYPE, P_SIZE) }
+  def q16GRPRecord2New(P_BRAND: Rep[OptimalString], P_TYPE: Rep[OptimalString], P_SIZE: Rep[Int]): Rep[Q16GRPRecord2] = Q16GRPRecord2NewExt(P_BRAND, P_TYPE, P_SIZE)
+  def q16GRPRecord2GetField(self: Rep[Q16GRPRecord2], key: Rep[String]): Rep[Option[Any]] = Q16GRPRecord2GetFieldExt(self, key)
+  def q16GRPRecord2_Field_P_SIZE(self: Rep[Q16GRPRecord2]): Rep[Int] = Q16GRPRecord2_Field_P_SIZEExt(self)
+  def q16GRPRecord2_Field_P_TYPE(self: Rep[Q16GRPRecord2]): Rep[OptimalString] = Q16GRPRecord2_Field_P_TYPEExt(self)
+  def q16GRPRecord2_Field_P_BRAND(self: Rep[Q16GRPRecord2]): Rep[OptimalString] = Q16GRPRecord2_Field_P_BRANDExt(self)
+  type Q16GRPRecord2 = ch.epfl.data.dblab.legobase.tpch.Q16GRPRecord2
 }
 
 trait Q18GRPRecordOps extends Base with OptimalStringOps {
@@ -1117,6 +1564,81 @@ trait Q18GRPRecordPartialEvaluation extends Q18GRPRecordComponent with BaseParti
   // Pure function partial evaluation
 }
 
+// QUASI GENERATED CODE:
+
+object Q18GRPRecordQuasiNodes extends BaseExtIR {
+  import Q18GRPRecordIRs._
+  import OptimalStringQuasiNodes._
+  // case classes
+  case class Q18GRPRecordNewExt(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]) extends FunctionDef[Q18GRPRecordNew, Q18GRPRecord] {
+    override def nodeUnapply(t: Q18GRPRecordNew): Option[Product] = (Q18GRPRecordNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q18GRPRecordGetFieldExt(self: Rep[Q18GRPRecord], key: Rep[String]) extends FunctionDef[Q18GRPRecordGetField, Option[Any]] {
+    override def nodeUnapply(t: Q18GRPRecordGetField): Option[Product] = (Q18GRPRecordGetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q18GRPRecord_Field_O_TOTALPRICEExt(self: Rep[Q18GRPRecord]) extends FunctionDef[Q18GRPRecord_Field_O_TOTALPRICE, Double] {
+    override def nodeUnapply(t: Q18GRPRecord_Field_O_TOTALPRICE): Option[Product] = (Q18GRPRecord_Field_O_TOTALPRICE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q18GRPRecord_Field_O_ORDERDATEExt(self: Rep[Q18GRPRecord]) extends FunctionDef[Q18GRPRecord_Field_O_ORDERDATE, Int] {
+    override def nodeUnapply(t: Q18GRPRecord_Field_O_ORDERDATE): Option[Product] = (Q18GRPRecord_Field_O_ORDERDATE.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q18GRPRecord_Field_O_ORDERKEYExt(self: Rep[Q18GRPRecord]) extends FunctionDef[Q18GRPRecord_Field_O_ORDERKEY, Int] {
+    override def nodeUnapply(t: Q18GRPRecord_Field_O_ORDERKEY): Option[Product] = (Q18GRPRecord_Field_O_ORDERKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q18GRPRecord_Field_C_CUSTKEYExt(self: Rep[Q18GRPRecord]) extends FunctionDef[Q18GRPRecord_Field_C_CUSTKEY, Int] {
+    override def nodeUnapply(t: Q18GRPRecord_Field_C_CUSTKEY): Option[Product] = (Q18GRPRecord_Field_C_CUSTKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q18GRPRecord_Field_C_NAMEExt(self: Rep[Q18GRPRecord]) extends FunctionDef[Q18GRPRecord_Field_C_NAME, OptimalString] {
+    override def nodeUnapply(t: Q18GRPRecord_Field_C_NAME): Option[Product] = (Q18GRPRecord_Field_C_NAME.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type Q18GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q18GRPRecord
+}
+
+trait Q18GRPRecordExtOps extends BaseExt with OptimalStringExtOps {
+
+  import Q18GRPRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  import OptimalStringQuasiNodes._
+  implicit class Q18GRPRecordRep(self: Rep[Q18GRPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q18GRPRecordGetField(self, key)
+    def O_TOTALPRICE: Rep[Double] = q18GRPRecord_Field_O_TOTALPRICE(self)
+    def O_ORDERDATE: Rep[Int] = q18GRPRecord_Field_O_ORDERDATE(self)
+    def O_ORDERKEY: Rep[Int] = q18GRPRecord_Field_O_ORDERKEY(self)
+    def C_CUSTKEY: Rep[Int] = q18GRPRecord_Field_C_CUSTKEY(self)
+    def C_NAME: Rep[OptimalString] = q18GRPRecord_Field_C_NAME(self)
+  }
+  object Q18GRPRecord {
+    def apply(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = q18GRPRecordApplyObject(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
+  }
+  // constructors
+  def __newQ18GRPRecord(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = q18GRPRecordNew(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
+
+  // method definitions
+  def q18GRPRecordApplyObject(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = { __newQ18GRPRecord(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE) }
+  def q18GRPRecordNew(C_NAME: Rep[OptimalString], C_CUSTKEY: Rep[Int], O_ORDERKEY: Rep[Int], O_ORDERDATE: Rep[Int], O_TOTALPRICE: Rep[Double]): Rep[Q18GRPRecord] = Q18GRPRecordNewExt(C_NAME, C_CUSTKEY, O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE)
+  def q18GRPRecordGetField(self: Rep[Q18GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q18GRPRecordGetFieldExt(self, key)
+  def q18GRPRecord_Field_O_TOTALPRICE(self: Rep[Q18GRPRecord]): Rep[Double] = Q18GRPRecord_Field_O_TOTALPRICEExt(self)
+  def q18GRPRecord_Field_O_ORDERDATE(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_O_ORDERDATEExt(self)
+  def q18GRPRecord_Field_O_ORDERKEY(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_O_ORDERKEYExt(self)
+  def q18GRPRecord_Field_C_CUSTKEY(self: Rep[Q18GRPRecord]): Rep[Int] = Q18GRPRecord_Field_C_CUSTKEYExt(self)
+  def q18GRPRecord_Field_C_NAME(self: Rep[Q18GRPRecord]): Rep[OptimalString] = Q18GRPRecord_Field_C_NAMEExt(self)
+  type Q18GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q18GRPRecord
+}
+
 trait Q20GRPRecordOps extends Base {
   // Type representation
   val Q20GRPRecordType = Q20GRPRecordIRs.Q20GRPRecordType
@@ -1231,5 +1753,64 @@ trait Q20GRPRecordPartialEvaluation extends Q20GRPRecordComponent with BaseParti
 
   // Mutable field inlining 
   // Pure function partial evaluation
+}
+
+// QUASI GENERATED CODE:
+
+object Q20GRPRecordQuasiNodes extends BaseExtIR {
+  import Q20GRPRecordIRs._
+  // case classes
+  case class Q20GRPRecordNewExt(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]) extends FunctionDef[Q20GRPRecordNew, Q20GRPRecord] {
+    override def nodeUnapply(t: Q20GRPRecordNew): Option[Product] = (Q20GRPRecordNew.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q20GRPRecordGetFieldExt(self: Rep[Q20GRPRecord], key: Rep[String]) extends FunctionDef[Q20GRPRecordGetField, Option[Any]] {
+    override def nodeUnapply(t: Q20GRPRecordGetField): Option[Product] = (Q20GRPRecordGetField.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q20GRPRecord_Field_PS_AVAILQTYExt(self: Rep[Q20GRPRecord]) extends FunctionDef[Q20GRPRecord_Field_PS_AVAILQTY, Int] {
+    override def nodeUnapply(t: Q20GRPRecord_Field_PS_AVAILQTY): Option[Product] = (Q20GRPRecord_Field_PS_AVAILQTY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q20GRPRecord_Field_PS_SUPPKEYExt(self: Rep[Q20GRPRecord]) extends FunctionDef[Q20GRPRecord_Field_PS_SUPPKEY, Int] {
+    override def nodeUnapply(t: Q20GRPRecord_Field_PS_SUPPKEY): Option[Product] = (Q20GRPRecord_Field_PS_SUPPKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  case class Q20GRPRecord_Field_PS_PARTKEYExt(self: Rep[Q20GRPRecord]) extends FunctionDef[Q20GRPRecord_Field_PS_PARTKEY, Int] {
+    override def nodeUnapply(t: Q20GRPRecord_Field_PS_PARTKEY): Option[Product] = (Q20GRPRecord_Field_PS_PARTKEY.unapply(t): Option[Product]) map { r =>
+      r
+    }
+  }
+  type Q20GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q20GRPRecord
+}
+
+trait Q20GRPRecordExtOps extends BaseExt {
+
+  import Q20GRPRecordQuasiNodes._
+  import ch.epfl.data.sc.pardis.quasi.OverloadHackObj._
+  implicit class Q20GRPRecordRep(self: Rep[Q20GRPRecord]) {
+    def getField(key: Rep[String]): Rep[Option[Any]] = q20GRPRecordGetField(self, key)
+    def PS_AVAILQTY: Rep[Int] = q20GRPRecord_Field_PS_AVAILQTY(self)
+    def PS_SUPPKEY: Rep[Int] = q20GRPRecord_Field_PS_SUPPKEY(self)
+    def PS_PARTKEY: Rep[Int] = q20GRPRecord_Field_PS_PARTKEY(self)
+  }
+  object Q20GRPRecord {
+    def apply(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]): Rep[Q20GRPRecord] = q20GRPRecordApplyObject(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY)
+  }
+  // constructors
+  def __newQ20GRPRecord(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]): Rep[Q20GRPRecord] = q20GRPRecordNew(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY)
+
+  // method definitions
+  def q20GRPRecordApplyObject(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]): Rep[Q20GRPRecord] = { __newQ20GRPRecord(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY) }
+  def q20GRPRecordNew(PS_PARTKEY: Rep[Int], PS_SUPPKEY: Rep[Int], PS_AVAILQTY: Rep[Int]): Rep[Q20GRPRecord] = Q20GRPRecordNewExt(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY)
+  def q20GRPRecordGetField(self: Rep[Q20GRPRecord], key: Rep[String]): Rep[Option[Any]] = Q20GRPRecordGetFieldExt(self, key)
+  def q20GRPRecord_Field_PS_AVAILQTY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_AVAILQTYExt(self)
+  def q20GRPRecord_Field_PS_SUPPKEY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_SUPPKEYExt(self)
+  def q20GRPRecord_Field_PS_PARTKEY(self: Rep[Q20GRPRecord]): Rep[Int] = Q20GRPRecord_Field_PS_PARTKEYExt(self)
+  type Q20GRPRecord = ch.epfl.data.dblab.legobase.tpch.Q20GRPRecord
 }
 

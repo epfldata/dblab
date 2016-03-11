@@ -3,7 +3,7 @@ package dblab.legobase
 package queryengine
 package monad
 
-import sc.pardis.annotations.{ deep, needsCircular, dontLift, needs, reflect, pure, direct, :: }
+import sc.pardis.annotations.{ deep, needsCircular, dontLift, needs, reflect, pure, direct, ::, noDeepExt }
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
 import push.MultiMap
 import scala.collection.mutable.MultiMap
@@ -12,6 +12,7 @@ import scala.collection.mutable.ArrayBuffer
 @deep
 @needs[List[_] :: Array[_]]
 @needsCircular[GroupedQuery[_, _]]
+@noDeepExt
 class Query[T](private val underlying: List[T]) {
   def this(arr: Array[T]) = this(arr.toList)
   @pure def map[S](f: T => S): Query[S] =
@@ -97,6 +98,7 @@ object Query {
 @deep
 @needs[Query[_] :: List[_]]
 @needsCircular[GroupedQuery[_, _]]
+@noDeepExt
 class JoinableQuery[T <: Record](private val underlying: List[T]) {
   def hashJoin[S <: Record, R](q2: Query[S])(leftHash: T => R)(rightHash: S => R)(joinCond: (T, S) => Boolean): Query[DynamicCompositeRecord[T, S]] = {
     /* Naive implementation */
@@ -197,6 +199,7 @@ class JoinableQuery[T <: Record](private val underlying: List[T]) {
 
 @deep
 @needs[Tuple2[_, _] :: Query[_] :: Map[_, _] :: List[_]]
+@noDeepExt
 class GroupedQuery[K, V](private val underlying: Map[K, List[V]]) {
   @pure def mapValues[S](f: Query[V] => S): Query[(K, S)] =
     new Query(underlying.mapValues(l => f(new Query(l))).toList)

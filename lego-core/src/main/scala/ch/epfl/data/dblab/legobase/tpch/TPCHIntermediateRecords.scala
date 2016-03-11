@@ -2,7 +2,7 @@ package ch.epfl.data
 package dblab.legobase
 package tpch
 
-import sc.pardis.annotations.{ deep, needs }
+import sc.pardis.annotations.{ deep, needs, noDeepExt }
 import sc.pardis.shallow.{ CaseClassRecord, OptimalString }
 
 @deep case class Q1GRPRecord(
@@ -32,7 +32,7 @@ import sc.pardis.shallow.{ CaseClassRecord, OptimalString }
   val C_ADDRESS: LBString,
   val C_COMMENT: LBString) extends CaseClassRecord
 
-@deep case class Q13IntRecord(
+@deep @noDeepExt case class Q13IntRecord(
   var count: Int) extends CaseClassRecord
 
 @needs[OptimalString] @deep case class Q16GRPRecord1(
