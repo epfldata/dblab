@@ -16,7 +16,7 @@ import scala.collection.mutable
 import quasi._
 
 /**
- * Lowers query monad operations using continuation-passing style.
+ * Lowers query monad operations using the stream fusion technique.
  */
 class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp) extends RuleBasedTransformer[LegoBaseExp](IR) with StructProcessing[LegoBaseExp] {
   import IR._
@@ -326,58 +326,110 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
     //   def next(ts: Rep[Source]) = leftStream.next(ts)
     // }
 
+    // def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryStream[S])(
+    //   ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryStream[Res] =
+    //   new QueryStream[Res] {
+    //     val elem1 = __newVarNamed[Stream[T]](Skip[T], "elemLeft")
+    //     val elem2 = __newVarNamed[Stream[S]](Skip[S], "elemRight")
+    //     def getLeft: Rep[T] = readVar(elem1).element
+    //     def getRight: Rep[S] = readVar(elem2).element
+    //     val atEnd = __newVarNamed(unit(false), "atEnd")
+    //     def proceedLeft(): Unit = {
+    //       dsl"""
+    //         $elem1 = ${self.stream()}
+    //         $atEnd = $atEnd || ${readVar(elem1).isDone}
+    //       """
+    //     }
+    //     def proceedRight(): Unit = {
+    //       dsl"""
+    //         $elem2 = ${q2.stream()}
+    //         $atEnd = $atEnd || ${readVar(elem2).isDone}
+    //       """
+    //     }
+    //     def stream(): Rep[Stream[Res]] =
+    //       dsl"""
+    //       if($atEnd) {
+    //         ${Done[Res]}
+    //       } else {
+    //         var leftShouldProceed: Boolean = false
+    //         var nextJoinElem: Stream[Res] = ${Skip[Res]}
+    //         if(!${readVar(elem1).isSkip}) {
+    //           if(!${readVar(elem2).isSkip}) {
+    //             val cmp = ${ord(getLeft, getRight)}
+    //             if (cmp < 0) {
+    //               leftShouldProceed = true
+    //             } else {
+    //               if (cmp == 0) {
+    //                 nextJoinElem = ${Yield(concat_records[T, S, Res](getLeft, getRight))}
+    //               }
+    //             }
+    //           } else {
+
+    //           }
+    //         } else {
+    //           leftShouldProceed = true
+    //         }
+    //         if (leftShouldProceed) {
+    //           ${proceedLeft()}
+    //         } else {
+    //           ${proceedRight()}
+    //         }
+    //         nextJoinElem
+    //       }
+    //   """
+    //   }
+
     def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryStream[S])(
       ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryStream[Res] =
       new QueryStream[Res] {
         val elem1 = __newVarNamed[Stream[T]](Skip[T], "elemLeft")
         val elem2 = __newVarNamed[Stream[S]](Skip[S], "elemRight")
-        def getLeft: Rep[T] = readVar(elem1).element
-        def getRight: Rep[S] = readVar(elem2).element
         val atEnd = __newVarNamed(unit(false), "atEnd")
-        def proceedLeft(): Unit = {
+        def stream(): Rep[Stream[Res]] = {
+          val leftShouldProceed = __newVar(dsl"false")
+          val nextJoinElem = __newVar[Stream[Res]](Skip[Res])
           dsl"""
-            $elem1 = ${self.stream()}
-            $atEnd = $atEnd || ${readVar(elem1).isDone}
-          """
-        }
-        def proceedRight(): Unit = {
-          dsl"""
-            $elem2 = ${q2.stream()}
-            $atEnd = $atEnd || ${readVar(elem2).isDone}
-          """
-        }
-        def stream(): Rep[Stream[Res]] =
-          dsl"""
-          if($atEnd) {
-            ${Done[Res]}
-          } else {
-            var leftShouldProceed: Boolean = false
-            var nextJoinElem: Stream[Res] = ${Skip[Res]}
-            if(!${readVar(elem1).isSkip}) {
-              if(!${readVar(elem2).isSkip}) {
-                val cmp = ${ord(getLeft, getRight)}
-                if (cmp < 0) {
-                  leftShouldProceed = true
-                } else {
-                  if (cmp == 0) {
-                    nextJoinElem = ${Yield(concat_records[T, S, Res](getLeft, getRight))}
-                  }
-                }
+            if ($atEnd) {
+              ${Done[Res]}
+            } else {${
+            readVar(elem1).semiFold(
+              () => dsl"$atEnd = true",
+              () => {
+                dsl"$leftShouldProceed = true"
+                readVar(elem2).semiFold(
+                  () => dsl"$atEnd = true",
+                  () => dsl"()",
+                  _ => dsl"()")
+              },
+              ne1 => {
+                readVar(elem2).semiFold(
+                  () => dsl"$atEnd = true",
+                  () => dsl"()",
+                  ne2 => {
+                    val cmp = ord(ne1, ne2)
+                    dsl"""
+                      if ($cmp < 0) {
+                        $leftShouldProceed = true
+                      } else {
+                        if ($cmp == 0) {
+                          $nextJoinElem = ${Yield(concat_records[T, S, Res](ne1, ne2))}
+                        }
+                      }
+                      """
+                  })
+              })
+            dsl"""
+              if ($leftShouldProceed) {
+                $elem1 = ${self.stream()}
               } else {
-
+                $elem2 = ${q2.stream()}
               }
-            } else {
-              leftShouldProceed = true
-            }
-            if (leftShouldProceed) {
-              ${proceedLeft()}
-              nextJoinElem
-            } else {
-              ${proceedRight()}
-              nextJoinElem
-            }
+              $nextJoinElem
+              """
           }
+            }
       """
+        }
       }
 
     // def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryStream[S])(
