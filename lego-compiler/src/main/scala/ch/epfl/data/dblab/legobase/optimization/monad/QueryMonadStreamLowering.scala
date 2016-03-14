@@ -114,11 +114,31 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
       // }, {
       //   readVar(elem).foreach(f)
       // })
-      val done = __newVar(unit(false))
+      val done = __newVarNamed(unit(false), "done")
       dsl"""
         while(!$done) {
           ${stream().semiFold(() => dsl"$done = true", () => dsl"()", f)}
         }
+      """
+    }
+
+    def next(): Rep[Stream[T]] = {
+      val done = __newVarNamed(unit(false), "done")
+      val result = __newVarNamed[Stream[T]](Skip[T], "result")
+      dsl"""
+        while(!$done) {${
+        stream().semiFold(() =>
+          dsl"""
+                $done = true
+                $result = ${Done[T]}
+          """, () => dsl"()", e => {
+          dsl"""
+                $done = true
+                $result = ${Yield(e)}
+              """
+        })
+      }}
+        $result
       """
     }
 
@@ -392,17 +412,17 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: LegoBaseExp)
             if ($atEnd) {
               ${Done[Res]}
             } else {${
-            readVar(elem1).semiFold(
+            dsl"$elem1".semiFold(
               () => dsl"$atEnd = true",
               () => {
                 dsl"$leftShouldProceed = true"
-                readVar(elem2).semiFold(
+                dsl"$elem2".semiFold(
                   () => dsl"$atEnd = true",
                   () => dsl"()",
                   _ => dsl"()")
               },
               ne1 => {
-                readVar(elem2).semiFold(
+                dsl"$elem2".semiFold(
                   () => dsl"$atEnd = true",
                   () => dsl"()",
                   ne2 => {
