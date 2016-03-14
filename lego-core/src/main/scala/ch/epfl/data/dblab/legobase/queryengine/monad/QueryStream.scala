@@ -11,31 +11,72 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.TreeSet
 import scala.language.implicitConversions
+import Stream.buildS
 
-sealed trait Stream[+T] {
-  def map[S](f: T => S): Stream[S] = flatMap(x => Stream(f(x)))
-  def filter(p: T => Boolean): Stream[T] = flatMap(x => if (p(x)) Stream(x) else Skip)
-  def flatMap[S](f: T => Stream[S]): Stream[S] = semiFold[Stream[S]](() => Done, () => Skip, f)
-  def foreach(f: T => Unit): Unit = semiFold[Unit](() => (), () => (), f)
-  def semiFold[S](done: () => S, skip: () => S, f: T => S): S = this match {
-    case Done     => done()
-    case Skip     => skip()
-    case Yield(v) => f(v)
-  }
-}
-
-object Stream {
-  def apply[T](v: T): Stream[T] = Yield(v)
-}
+// sealed trait Stream[+T] {
+//   def map[S](f: T => S): Stream[S] = flatMap(x => Stream(f(x)))
+//   def filter(p: T => Boolean): Stream[T] = flatMap(x => if (p(x)) Stream(x) else Skip)
+//   def flatMap[S](f: T => Stream[S]): Stream[S] = semiFold[Stream[S]](() => Done, () => Skip, f)
+//   def foreach(f: T => Unit): Unit = semiFold[Unit](() => (), () => (), f)
+//   def semiFold[S](done: () => S, skip: () => S, f: T => S): S = this match {
+//     case Done     => done()
+//     case Skip     => skip()
+//     case Yield(v) => f(v)
+//   }
+// }
 
 case object Done extends Stream[Nothing]
 case object Skip extends Stream[Nothing]
 case class Yield[+T](value: T) extends Stream[T]
+// // case class LazyStream[S, T](f: (() => Stream[T], () => Stream[T], S => Stream[T]) => Stream[T]) extends Stream[T]
+
+sealed trait Stream[+T] {
+  def map[S](f: T => S): Stream[S] =
+    buildS { (done, skip, f1) =>
+      semiFold(done, skip, x => f1(f(x)))
+    }
+  def filter(p: T => Boolean): Stream[T] =
+    buildS { (done, skip, f1) =>
+      semiFold(done, skip, x => if (p(x)) skip() else f1(x))
+    }
+  def flatMap[S](f: T => Stream[S]): Stream[S] = semiFold[Stream[S]](() => Done, () => Skip, f)
+  def foreach(f: T => Unit): Unit = semiFold[Unit](() => (), () => (), f)
+  def semiFold[S](done: () => S, skip: () => S, f: T => S): S = ???
+  /* = this match {
+    case Done     => done()
+    case Skip     => skip()
+    case Yield(v) => f(v)
+  }*/
+}
+
+object Stream {
+  def apply[T](v: T): Stream[T] = Yield(v)
+  def buildS[T](builder: (() => _, () => _, T => _) => _): Stream[T] = new Stream[T] {
+    override def semiFold[S1](done: () => S1, skip: () => S1, f: T => S1): S1 =
+      builder.asInstanceOf[(() => S1, () => S1, T => S1) => S1](done, skip, f)
+  }
+  // def buildS[T](builder: (() => _, () => _, T => _) => _): Stream[T] =
+  //   builder.asInstanceOf[(() => Stream[T], () => Stream[T], T => Stream[T]) => Stream[T]](() => Done, () => Skip, e => Yield(e))
+}
 
 // @reflect[Query[_]]
 // @transformation
 abstract class QueryStream[T] { self =>
   def stream(): Stream[T]
+  // def next(): Stream[T] = {
+  //   var done = false
+  //   var result: Stream[T] = Skip
+  //   while (!done) {
+  //     stream().semiFold(() => {
+  //       done = true
+  //       result = Done
+  //     }, () => (), e => {
+  //       done = true
+  //       result = Yield(e)
+  //     })
+  //   }
+  //   result
+  // }
   def reset(): Unit
   @pure def map[S](f: T => S): QueryStream[S] = unstream { () =>
     stream().map(f)
@@ -175,13 +216,14 @@ abstract class QueryStream[T] { self =>
 object QueryStream {
   @dontLift def apply[T](arr: Array[T]): QueryStream[T] = new QueryStream[T] {
     var index = 0
-    def stream(): Stream[T] =
+    def stream(): Stream[T] = buildS { (done, skip, fun) =>
       if (index >= arr.length)
-        Done
+        done()
       else {
         index += 1
-        Stream(arr(index - 1))
+        fun(arr(index - 1))
       }
+    }
     def reset(): Unit = {
       index = 0
     }
@@ -193,13 +235,13 @@ class SetStream[T](set: scala.collection.mutable.Set[T]) extends QueryStream[T] 
   var currentSet: scala.collection.mutable.Set[T] = set
 
   def reset() = currentSet = set
-  def stream() = {
+  def stream() = buildS { (done, skip, fun) =>
     if (currentSet.isEmpty) {
-      Done
+      done()
     } else {
       val elem = currentSet.head
       currentSet = currentSet.tail
-      Stream(elem)
+      fun(elem)
     }
   }
 
@@ -244,11 +286,17 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
     var elem1: Stream[T] = Skip
     var elem2: Stream[S] = Skip
     var atEnd: Boolean = false
+    var leftShouldProceed: Boolean = false
     underlying.unstream { () =>
+      if (leftShouldProceed) {
+        elem1 = underlying.stream()
+      } else {
+        elem2 = q2.stream()
+      }
       if (atEnd) {
         Done
       } else {
-        var leftShouldProceed: Boolean = false
+        leftShouldProceed = false
         var nextJoinElem: Stream[DynamicCompositeRecord[T, S]] = Skip
         elem1.semiFold(
           () => atEnd = true,
@@ -274,11 +322,6 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
                 }
               })
           })
-        if (leftShouldProceed) {
-          elem1 = underlying.stream()
-        } else {
-          elem2 = q2.stream()
-        }
         nextJoinElem
       }
     }
@@ -352,17 +395,19 @@ class GroupedQueryStream[K, V](underlying: QueryStream[V], par: V => K) {
     var index: Int = 0
 
     underlying.unstream { () =>
-      if (index >= partitions) {
-        Done
-      } else {
-        val GroupByResult(array, keyRevertIndex, eachBucketSize, _, _) =
-          groupByResult
-        val i = index
-        index += 1
-        val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
-        val key = keyRevertIndex(i)
-        val newValue = func(QueryStream(arr))
-        Stream(key -> newValue)
+      buildS { (done, skip, fun) =>
+        if (index >= partitions) {
+          done()
+        } else {
+          val GroupByResult(array, keyRevertIndex, eachBucketSize, _, _) =
+            groupByResult
+          val i = index
+          index += 1
+          val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
+          val key = keyRevertIndex(i)
+          val newValue = func(QueryStream(arr))
+          fun(key -> newValue)
+        }
       }
     }
   }
