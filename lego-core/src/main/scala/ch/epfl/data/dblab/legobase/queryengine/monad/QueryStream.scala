@@ -37,16 +37,19 @@ sealed trait Stream[+T] {
     }
   def filter(p: T => Boolean): Stream[T] =
     buildS { (done, skip, f1) =>
-      semiFold(done, skip, x => if (p(x)) skip() else f1(x))
+      semiFold(done, skip, x => if (p(x)) f1(x) else skip())
     }
-  def flatMap[S](f: T => Stream[S]): Stream[S] = semiFold[Stream[S]](() => Done, () => Skip, f)
+  def flatMap[S](f: T => Stream[S]): Stream[S] =
+    buildS { (done, skip, yld) =>
+      semiFold(done, skip, x => f(x).semiFold(done, skip, yld))
+    }
   def foreach(f: T => Unit): Unit = semiFold[Unit](() => (), () => (), f)
   def semiFold[S](done: () => S, skip: () => S, f: T => S): S = ???
-  /* = this match {
-    case Done     => done()
-    case Skip     => skip()
-    case Yield(v) => f(v)
-  }*/
+  // this match {
+  //   case Done     => done()
+  //   case Skip     => skip()
+  //   case Yield(v) => f(v)
+  // }
 }
 
 object Stream {
@@ -283,46 +286,57 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
 
   def mergeJoin[S <: Record](q2: QueryStream[S])(
     ord: (T, S) => Int)(joinCond: (T, S) => Boolean): QueryStream[DynamicCompositeRecord[T, S]] = {
-    var elem1: Stream[T] = Skip
-    var elem2: Stream[S] = Skip
+    var elem1: Stream[T] = null
+    var elem2: Stream[S] = null
     var atEnd: Boolean = false
     var leftShouldProceed: Boolean = false
+    var init: Boolean = false
     underlying.unstream { () =>
-      if (leftShouldProceed) {
+      if (leftShouldProceed || !init) {
         elem1 = underlying.stream()
-      } else {
+      }
+      if (!leftShouldProceed || !init) {
         elem2 = q2.stream()
       }
-      if (atEnd) {
-        Done
-      } else {
-        leftShouldProceed = false
-        var nextJoinElem: Stream[DynamicCompositeRecord[T, S]] = Skip
-        elem1.semiFold(
-          () => atEnd = true,
-          () => {
-            leftShouldProceed = true
-            elem2.semiFold(
-              () => atEnd = true,
-              () => (),
-              _ => ())
-          },
-          ne1 => {
-            elem2.semiFold(
-              () => atEnd = true,
-              () => (),
-              ne2 => {
-                val cmp = ord(ne1, ne2)
-                if (cmp < 0) {
-                  leftShouldProceed = true
-                } else {
-                  if (cmp == 0) {
-                    nextJoinElem = Stream(ne1.concatenateDynamic(ne2))
+      init = true
+      buildS { (done, skip, yld) =>
+        if (atEnd) {
+          done()
+        } else {
+          leftShouldProceed = false
+          elem1.semiFold(
+            () => {
+              atEnd = true
+              done()
+            },
+            () => {
+              leftShouldProceed = true
+              skip()
+            },
+            ne1 => {
+              elem2.semiFold(
+                () => {
+                  atEnd = true
+                  done()
+                },
+                () => {
+                  skip()
+                },
+                ne2 => {
+                  val cmp = ord(ne1, ne2)
+                  if (cmp < 0) {
+                    leftShouldProceed = true
+                    skip()
+                  } else {
+                    if (cmp == 0) {
+                      yld(ne1.concatenateDynamic(ne2))
+                    } else {
+                      skip()
+                    }
                   }
-                }
-              })
-          })
-        nextJoinElem
+                })
+            })
+        }
       }
     }
   }
@@ -395,7 +409,7 @@ class GroupedQueryStream[K, V](underlying: QueryStream[V], par: V => K) {
     var index: Int = 0
 
     underlying.unstream { () =>
-      buildS { (done, skip, fun) =>
+      buildS { (done, skip, yld) =>
         if (index >= partitions) {
           done()
         } else {
@@ -406,7 +420,7 @@ class GroupedQueryStream[K, V](underlying: QueryStream[V], par: V => K) {
           val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
           val key = keyRevertIndex(i)
           val newValue = func(QueryStream(arr))
-          fun(key -> newValue)
+          yld(key -> newValue)
         }
       }
     }
