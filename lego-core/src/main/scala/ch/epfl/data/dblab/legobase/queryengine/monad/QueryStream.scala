@@ -261,25 +261,33 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
       hm.addBinding(leftHash(elem), elem)
     }
     var iterator: SetStream[T] = QueryStream(scala.collection.mutable.Set[T]())
-    var prevRightElem: Stream[S] = Skip
+    var prevRightElem: Stream[S] = null
     underlying.unstream { () =>
       val leftElem = iterator.stream()
-      leftElem.semiFold(
-        () => {
-          val e2 = q2.stream()
-          prevRightElem = e2.flatMap(t => {
-            val k = rightHash(t)
-            hm.get(k).fold[Stream[S]](Skip)(tmpBuffer => {
-              iterator = QueryStream(tmpBuffer).withFilter(e => joinCond(e, t))
-              Stream(t)
-            })
-          })
-          prevRightElem.flatMap(_ => Skip)
-        },
-        () => Skip,
-        e1 => for (e2 <- prevRightElem) yield {
-          e1.concatenateDynamic(e2)
-        })
+      buildS { (done, skip, yld) =>
+        leftElem.semiFold(
+          () => {
+            val e2 = q2.stream()
+            e2.semiFold(() =>
+              done(),
+              () =>
+                skip(),
+              t => {
+                val k = rightHash(t)
+                val result = hm.get(k).fold[Stream[S]](Skip)(tmpBuffer => {
+                  iterator = QueryStream(tmpBuffer).withFilter(e => joinCond(e, t))
+                  Yield(t)
+                })
+                prevRightElem = result
+                skip()
+              })
+          },
+          () => skip(),
+          e1 =>
+            prevRightElem.semiFold(() => done(),
+              () => skip(),
+              e2 => yld(e1.concatenateDynamic(e2))))
+      }
     }
   }
 
