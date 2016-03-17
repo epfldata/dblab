@@ -28,9 +28,9 @@ import Stream.buildS
 case object Done extends Stream[Nothing]
 case object Skip extends Stream[Nothing]
 case class Yield[+T](value: T) extends Stream[T]
-// // case class LazyStream[S, T](f: (() => Stream[T], () => Stream[T], S => Stream[T]) => Stream[T]) extends Stream[T]
+case class BuildStream[+T](builder: (() => _, () => _, T => _) => _) extends Stream[T]
 
-sealed trait Stream[+T] {
+sealed trait Stream[+T] { self =>
   def map[S](f: T => S): Stream[S] =
     buildS { (done, skip, f1) =>
       semiFold(done, skip, x => f1(f(x)))
@@ -44,20 +44,19 @@ sealed trait Stream[+T] {
       semiFold(done, skip, x => f(x).semiFold(done, skip, yld))
     }
   def foreach(f: T => Unit): Unit = semiFold[Unit](() => (), () => (), f)
-  def semiFold[S](done: () => S, skip: () => S, f: T => S): S = ???
-  // this match {
-  //   case Done     => done()
-  //   case Skip     => skip()
-  //   case Yield(v) => f(v)
-  // }
+  def materialize(): Stream[T] = semiFold(() => Done, () => Skip, Yield[T])
+  def semiFold[S](done: () => S, skip: () => S, f: T => S): S =
+    this match {
+      case Done                 => done()
+      case Skip                 => skip()
+      case Yield(v)             => f(v)
+      case BuildStream(builder) => builder(done, skip, f).asInstanceOf[S]
+    }
 }
 
 object Stream {
   def apply[T](v: T): Stream[T] = Yield(v)
-  def buildS[T](builder: (() => _, () => _, T => _) => _): Stream[T] = new Stream[T] {
-    override def semiFold[S1](done: () => S1, skip: () => S1, f: T => S1): S1 =
-      builder.asInstanceOf[(() => S1, () => S1, T => S1) => S1](done, skip, f)
-  }
+  def buildS[T](builder: (() => _, () => _, T => _) => _): Stream[T] = BuildStream(builder)
   // def buildS[T](builder: (() => _, () => _, T => _) => _): Stream[T] =
   //   builder.asInstanceOf[(() => Stream[T], () => Stream[T], T => Stream[T]) => Stream[T]](() => Done, () => Skip, e => Yield(e))
 }
@@ -293,10 +292,10 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
     var init: Boolean = false
     underlying.unstream { () =>
       if (leftShouldProceed || !init) {
-        elem1 = underlying.stream()
+        elem1 = underlying.stream().materialize()
       }
       if (!leftShouldProceed || !init) {
-        elem2 = q2.stream()
+        elem2 = q2.stream().materialize()
       }
       init = true
       buildS { (done, skip, yld) =>
