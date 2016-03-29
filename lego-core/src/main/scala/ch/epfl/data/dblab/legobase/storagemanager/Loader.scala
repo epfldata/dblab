@@ -21,9 +21,7 @@ import ch.epfl.data.dblab.legobase.schema._
 import scala.reflect._
 """,
   component = "",
-  thisComponent = "ch.epfl.data.dblab.legobase.deep.DeepDSL")
-class MetaInfo
-
+  thisComponent = "")
 @needs[K2DBScanner :: Array[_] :: OptimalString :: String :: Numeric[_]]
 @deep
 @noDeepExt
@@ -41,6 +39,7 @@ object Loader {
   @dontInline
   def getFullPath(fileName: String): String = Config.datapath + fileName
 
+  @dontInline
   def loadString(size: Int, s: K2DBScanner): OptimalString = {
     val NAME = new Array[Byte](size + 1)
     s.next(NAME)

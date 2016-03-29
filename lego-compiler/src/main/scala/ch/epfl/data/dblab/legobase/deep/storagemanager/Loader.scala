@@ -18,7 +18,7 @@ import pardis.deep.scalalib.io._
 import ch.epfl.data.sc.pardis.quasi.anf.{ BaseExt, BaseExtIR }
 import ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag
 
-trait LoaderOps extends Base with K2DBScannerOps with ArrayOps with OptimalStringOps with StringOps with NumericOps { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =>
+trait LoaderOps extends Base with K2DBScannerOps with ArrayOps with OptimalStringOps with StringOps with NumericOps {
   // Type representation
   val LoaderType = LoaderIRs.LoaderType
   implicit val typeLoader: TypeRep[Loader] = LoaderType
@@ -81,22 +81,16 @@ object LoaderIRs extends Base {
 
   type Loader = ch.epfl.data.dblab.legobase.storagemanager.Loader
 }
-trait LoaderImplicits extends LoaderOps { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =>
+trait LoaderImplicits extends LoaderOps {
   // Add implicit conversions here!
 }
-trait LoaderComponent extends LoaderOps with LoaderImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
+trait LoaderComponent extends LoaderOps with LoaderImplicits {}
 
-trait LoaderImplementations extends LoaderOps { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =>
-  override def loaderLoadStringObject(size: Rep[Int], s: Rep[K2DBScanner]): Rep[OptimalString] = {
-    {
-      val NAME: this.Rep[Array[Byte]] = __newArray[Byte](size.$plus(unit(1)));
-      s.next(NAME);
-      __newOptimalString(byteArrayOps(NAME).filter(__lambda(((y: this.Rep[Byte]) => infix_$bang$eq(y, unit(0))))))
-    }
-  }
+trait LoaderImplementations extends LoaderOps {
+
 }
 
-trait LoaderPartialEvaluation extends LoaderComponent with BasePartialEvaluation { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =>
+trait LoaderPartialEvaluation extends LoaderComponent with BasePartialEvaluation {
   // Immutable field inlining 
 
   // Mutable field inlining 
