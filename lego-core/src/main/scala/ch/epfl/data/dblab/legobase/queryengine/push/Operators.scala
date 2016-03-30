@@ -11,18 +11,21 @@ import scala.collection.mutable.TreeSet
 import GenericEngine._
 import sc.pardis.annotations.{ deep, metadeep, dontInline, needs, ::, onlineInliner, noDeepExt }
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
+import sc.pardis.shallow.scalalib.ScalaCore
 import scala.reflect.ClassTag
 
 @metadeep(
   folder = "",
-  header = "import ch.epfl.data.dblab.legobase.deep.queryengine._",
+  header = """import ch.epfl.data.dblab.legobase.deep._
+import ch.epfl.data.dblab.legobase.deep.queryengine._""",
   component = "OperatorsComponent",
-  thisComponent = "ch.epfl.data.dblab.legobase.deep.DeepDSL")
+  thisComponent = "OperatorsComponent")
 class MetaInfo
 
 /**
  * The common class for all query operators in push-engine.
  */
+@needs[ScalaCore]
 @deep
 @noDeepExt
 @onlineInliner
@@ -49,6 +52,7 @@ object MultiMap {
  * @param table an array of records which the scan operator receives
  * as input
  */
+@needs[Exception]
 @deep
 @noDeepExt
 @onlineInliner
@@ -303,7 +307,7 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
  */
 // @deep @noDeepExt @onlineInliner 
 // class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf: MultiMap.Set[A] => C) extends Operator[WindowRecord[B, C]] {
-@needs[scala.collection.mutable.MultiMap[Any, Any] :: Set[_]]
+@needs[scala.collection.mutable.MultiMap[_, _] :: Set[_] :: WindowRecord[_, _]]
 @deep
 @noDeepExt
 @onlineInliner
@@ -420,6 +424,7 @@ class NestedLoopsJoinOp[A <: Record, B <: Record](leftParent: Operator[A], right
  *
  * @param parent the parent operator of this operator
  */
+@needs[Exception]
 @deep
 @noDeepExt
 @onlineInliner

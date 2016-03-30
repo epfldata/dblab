@@ -18,7 +18,7 @@ trait ManualLiftedLegoBase extends OrderingOps with ManifestOps
   with sc.pardis.deep.scalalib.collection.RichIntOps with sc.pardis.deep.scalalib.ByteComponent
   with sc.pardis.deep.scalalib.collection.ContOps with sc.pardis.deep.scalalib.collection.ArrayBufferComponent
   with sc.pardis.deep.scalalib.collection.RangeComponent with dblab.legobase.deep.queryengine.AGGRecordComponent
-  with sc.pardis.deep.scalalib.ScalaPredefOps with sc.pardis.deep.scalalib.io.PrintStreamComponent { this: DeepDSL =>
+  with sc.pardis.deep.scalalib.ScalaPredefOps with sc.pardis.deep.scalalib.io.PrintStreamComponent with ExceptionOps { this: DeepDSL =>
   // TODO these methods should be automatically lifted using Purgatory
   object Console {
     def err: Rep[PrintStream] = consoleErr()
@@ -40,8 +40,6 @@ trait ManualLiftedLegoBase extends OrderingOps with ManifestOps
   override def printStreamPrintf(self: Rep[PrintStream], s: Rep[String], objs: Rep[Any]*): Rep[Unit] = {
     PrintStreamPrintf2(self, s, objs: _*)
   }
-
-  def __newException(msg: Rep[String]) = new Exception(msg.toString)
 
   // TODO this thing should be removed, ideally every literal should be lifted using YY
   // or should be added to the Implicits cake of generated deep embedding of Int
