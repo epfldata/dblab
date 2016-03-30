@@ -18,7 +18,7 @@ import pardis.deep.scalalib.io._
 import ch.epfl.data.sc.pardis.quasi.anf.{ BaseExt, BaseExtIR }
 import ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag
 
-trait TPCHLoaderOps extends Base with K2DBScannerOps with ArrayOps with REGIONRecordOps with PARTSUPPRecordOps with PARTRecordOps with NATIONRecordOps with SUPPLIERRecordOps with LINEITEMRecordOps with ORDERSRecordOps with CUSTOMERRecordOps with OptimalStringOps with LoaderOps with TableOps { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =>
+trait TPCHLoaderOps extends Base with K2DBScannerOps with ArrayOps with REGIONRecordOps with PARTSUPPRecordOps with PARTRecordOps with NATIONRecordOps with SUPPLIERRecordOps with LINEITEMRecordOps with ORDERSRecordOps with CUSTOMERRecordOps with OptimalStringOps with LoaderOps with TableOps {
   // Type representation
   val TPCHLoaderType = TPCHLoaderIRs.TPCHLoaderType
   implicit val typeTPCHLoader: TypeRep[TPCHLoader] = TPCHLoaderType
@@ -129,12 +129,12 @@ object TPCHLoaderIRs extends Base {
 
   type TPCHLoader = ch.epfl.data.dblab.legobase.tpch.TPCHLoader
 }
-trait TPCHLoaderImplicits extends TPCHLoaderOps { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =>
+trait TPCHLoaderImplicits extends TPCHLoaderOps {
   // Add implicit conversions here!
 }
-trait TPCHLoaderComponent extends TPCHLoaderOps with TPCHLoaderImplicits { this: ch.epfl.data.dblab.legobase.deep.DeepDSL => }
+trait TPCHLoaderComponent extends TPCHLoaderOps with TPCHLoaderImplicits {}
 
-trait TPCHLoaderImplementations extends TPCHLoaderOps { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =>
+trait TPCHLoaderImplementations extends TPCHLoaderOps {
   override def tPCHLoaderLoadRegionObject(): Rep[Array[REGIONRecord]] = {
     Loader.loadTable[ch.epfl.data.dblab.legobase.tpch.REGIONRecord](TPCHLoader.getTable(unit("REGION")))
   }
@@ -161,7 +161,7 @@ trait TPCHLoaderImplementations extends TPCHLoaderOps { this: ch.epfl.data.dblab
   }
 }
 
-trait TPCHLoaderPartialEvaluation extends TPCHLoaderComponent with BasePartialEvaluation { this: ch.epfl.data.dblab.legobase.deep.DeepDSL =>
+trait TPCHLoaderPartialEvaluation extends TPCHLoaderComponent with BasePartialEvaluation {
   // Immutable field inlining 
 
   // Mutable field inlining 

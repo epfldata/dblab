@@ -22,9 +22,7 @@ import ch.epfl.data.dblab.legobase.deep.storagemanager._
 import ch.epfl.data.dblab.legobase.deep.schema._
 import scala.reflect._""",
   component = "",
-  thisComponent = "ch.epfl.data.dblab.legobase.deep.DeepDSL")
-class MetaInfoLoader
-
+  thisComponent = "")
 @needs[K2DBScanner :: Array[_] :: REGIONRecord :: PARTSUPPRecord :: PARTRecord :: NATIONRecord :: SUPPLIERRecord :: LINEITEMRecord :: ORDERSRecord :: CUSTOMERRecord :: OptimalString :: Loader :: Table]
 @deep
 @onlineInliner
