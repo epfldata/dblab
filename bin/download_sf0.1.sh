@@ -3,4 +3,4 @@ wget https://www.dropbox.com/sh/16xmm2i8v5pmgdr/AADph8McDv8xe7katSkDjRKka?dl=1 -
 cd tpchdata/sf0.1
 unzip -o data.zip
 cd ../..
-export LEGO_DATA_FOLDER=tpchdata/sf0.1
+export DBLAB_DATA_FOLDER=tpchdata/sf0.1
