@@ -47,12 +47,18 @@ trait ScalaCoreDSL extends CharComponent
   with OrderingOps
   with ArrayExtraOps
   with TreeSetExtraOps
+  with CharExtraOps
 
-trait ScalaCoreDSLPartialEvaluation extends ScalaCoreDSL
+trait ScalaCoreDSLInlined extends ScalaCoreDSL
   with DoublePartialEvaluation
   with IntPartialEvaluation
   with LongPartialEvaluation
   with BooleanPartialEvaluation
+  with ArrayBufferInlined
+  with ArrayPartialEvaluation
+  with VarArgsInlined
+  with RangeInlined
+  with BaseInlined
 
 trait QPlanDSL extends queryengine.push.OperatorsComponent
   with AGGRecordComponent
@@ -60,16 +66,21 @@ trait QPlanDSL extends queryengine.push.OperatorsComponent
   with GenericEngineComponent
   with LoaderComponent
   with SchemaOps
+
+trait QPlanDSLInlined extends QPlanDSL
   with LoaderInlined
+  with queryengine.push.OperatorsInlined
 
 trait QMonadDSL extends GenericEngineComponent
   with LoaderComponent
   with monad.GroupedQueryComponent
   with monad.QueryComponent
   with monad.JoinableQueryComponent
-  with monad.QueryInlined
   with SchemaOps
+
+trait QMonadDSLInlined extends QMonadDSL
   with LoaderInlined
+  with monad.QueryInlined
 
 case object MCHLanguage extends Language(MCLanguage)
 case object MCLanguage extends Language(ScalaCoreLanguage)

@@ -18,8 +18,9 @@ import dblab.deep.storagemanager._
 /** A polymophic embedding cake which chains all other cakes together */
 abstract class QueryEngineExp
   extends CScalaDSL
-  with QPlanDSL
-  with QMonadDSL
+  with ScalaCoreDSLInlined
+  with QPlanDSLInlined
+  with QMonadDSLInlined
   with BaseQuasiExp {
   /**
    * Keeps the link between the lowered symbols and the original (higher level) symbol node definition
