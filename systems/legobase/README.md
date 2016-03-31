@@ -1,8 +1,8 @@
-Legobase Compiler
-=================
+LegoBase
+========
 
 LegoBase is an efficient query engine in Scala programming language. This project
-hosts the transformers and compilation pipeline of LegoBase.
+hosts the compilation pipeline of LegoBase.
 
 Installation
 ============
