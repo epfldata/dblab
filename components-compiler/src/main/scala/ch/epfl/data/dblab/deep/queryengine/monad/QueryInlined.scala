@@ -5,7 +5,7 @@ package deep.queryengine.monad
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.ir._
 
-trait QueryInlined extends QueryOps with sc.pardis.deep.scalalib.ScalaPredefOps { this: GroupedQueryOps =>
+trait QueryInlined extends QueryOps with sc.pardis.deep.scalalib.ScalaPredefOps with JoinableQueryOps { this: GroupedQueryOps =>
   override def queryPrintRows[T](self: Rep[Query[T]], printFunc: Rep[((T) => Unit)], limit: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Unit] = {
     val query = limit match {
       case Constant(-1) => self
@@ -24,4 +24,7 @@ trait QueryInlined extends QueryOps with sc.pardis.deep.scalalib.ScalaPredefOps 
     // res2: Seq[Manifest[Any]] = WrappedArray(Any, Any)
     printf(unit("(%d rows)\n"), readVar[Int](rows))
   }
+
+  def queryToJoinableQuery[T <: Record: TypeRep](q: Rep[Query[T]]): Rep[JoinableQuery[T]] =
+    __newJoinableQuery(q.getList)
 }

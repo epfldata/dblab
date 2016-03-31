@@ -2,6 +2,7 @@
 
 package ch.epfl.data.dblab.deep.queryengine.push
 import ch.epfl.data.dblab.deep._
+import ch.epfl.data.dblab.deep.common._
 import ch.epfl.data.dblab.deep.queryengine._
 import ch.epfl.data.sc.pardis
 import pardis.ir._

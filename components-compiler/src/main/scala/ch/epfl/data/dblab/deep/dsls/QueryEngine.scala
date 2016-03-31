@@ -16,8 +16,10 @@ import dblab.deep.queryengine._
 import dblab.deep.storagemanager._
 
 /** A polymophic embedding cake which chains all other cakes together */
-class DBLABEngineExp
+abstract class QueryEngineExp
   extends CScalaDSL
+  with QPlanDSL
+  with QMonadDSL
   with BaseQuasiExp {
   /**
    * Keeps the link between the lowered symbols and the original (higher level) symbol node definition
@@ -37,7 +39,7 @@ class DBLABEngineExp
   }
 }
 
-class DBLABEngineExt extends BaseQuasiExt
+abstract class QueryEngineExt extends BaseQuasiExt
   with NumericExtOps
   with ByteExtOps
   with SetExtOps

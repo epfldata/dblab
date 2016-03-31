@@ -17,6 +17,7 @@ import scala.reflect.ClassTag
 @metadeep(
   folder = "",
   header = """import ch.epfl.data.dblab.deep._
+import ch.epfl.data.dblab.deep.common._
 import ch.epfl.data.dblab.deep.queryengine._""",
   component = "OperatorsComponent",
   thisComponent = "OperatorsComponent")

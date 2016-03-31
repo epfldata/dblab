@@ -13,6 +13,8 @@ import sc.pardis.deep.scalalib.collection._
 import sc.pardis.deep.scalalib.io._
 import dblab.deep.queryengine._
 import dblab.deep.storagemanager._
+import dblab.deep.common._
+import dblab.deep.schema._
 
 trait CScalaDSL extends ScalaCoreDSL
   with CScalaExtra
@@ -40,6 +42,11 @@ trait ScalaCoreDSL extends CharComponent
   with MultiMapComponent
   with OptionComponent
   with StringComponent
+  with ContComponent
+  with RangeComponent
+  with OrderingOps
+  with ArrayExtraOps
+  with TreeSetExtraOps
 
 trait ScalaCoreDSLPartialEvaluation extends ScalaCoreDSL
   with DoublePartialEvaluation
@@ -47,19 +54,22 @@ trait ScalaCoreDSLPartialEvaluation extends ScalaCoreDSL
   with LongPartialEvaluation
   with BooleanPartialEvaluation
 
-trait QOpDSL extends queryengine.push.OperatorsComponent
+trait QPlanDSL extends queryengine.push.OperatorsComponent
   with AGGRecordComponent
   with WindowRecordComponent
   with GenericEngineComponent
-  with LoaderComponent {
-}
+  with LoaderComponent
+  with SchemaOps
+  with LoaderInlined
 
 trait QMonadDSL extends GenericEngineComponent
   with LoaderComponent
   with monad.GroupedQueryComponent
   with monad.QueryComponent
-  with monad.JoinableQueryComponent {
-}
+  with monad.JoinableQueryComponent
+  with monad.QueryInlined
+  with SchemaOps
+  with LoaderInlined
 
 case object MCHLanguage extends Language(MCLanguage)
 case object MCLanguage extends Language(ScalaCoreLanguage)
