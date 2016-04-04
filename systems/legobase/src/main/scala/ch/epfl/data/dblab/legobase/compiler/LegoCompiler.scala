@@ -1,14 +1,15 @@
 package ch.epfl.data
-package dblab.legobase
+package dblab
+package legobase
 package compiler
 
-import Config._
+import config.Config._
 import schema._
 import deep._
 import prettyprinter._
-import optimization._
-import optimization.c._
-import optimization.monad._
+import transformers._
+import transformers.c._
+import transformers.monad._
 import sc.pardis.optimization._
 import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
@@ -26,10 +27,10 @@ import sc.pardis.language._
  * @param schema the given schema information
  * @param runnerClassName the name of the runner class which is used in Scala code generation
  */
-class LegoCompiler(val DSL: LegoBaseExp,
+class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
                    val settings: Settings,
                    val schema: Schema,
-                   val runnerClassName: String) extends Compiler[LegoBaseExp] {
+                   val runnerClassName: String) extends Compiler[LegoBaseQueryEngineExp] {
   def outputFile: String =
     if (settings.nameIsWithFlag)
       settings.args.filter(_.startsWith("+")).map(_.drop(1)).sorted.mkString("_") + "_" + settings.queryName
@@ -73,7 +74,7 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   // pipeline += TreeDumper(false)
 
-  pipeline += LBLowering(shouldRemoveUnusedFields)
+  pipeline += RecordLowering(shouldRemoveUnusedFields)
   // pipeline += TreeDumper(false)
   pipeline += ParameterPromotion
   pipeline += DCE
@@ -81,7 +82,7 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   if (settings.queryMonadLowering) {
     if (settings.queryMonadOptimization) {
-      pipeline += new QueryMonadOptimization(settings)
+      pipeline += new QueryMonadOptimization(settings.queryMonadHoisting)
     }
     pipeline += DCE
     if (settings.queryMonadCPS) {
@@ -226,7 +227,7 @@ class LegoCompiler(val DSL: LegoBaseExp,
 
   // pipeline += TreeDumper(false)
 
-  if (settings.targetLanguage == CCoreLanguage) pipeline += new CTransformersPipeline(settings)
+  if (settings.targetLanguage == CCoreLanguage) pipeline += new CTransformersPipeline(settings.cSettings)
 
   pipeline += DCECLang //NEVER REMOVE!!!!
 
@@ -235,14 +236,14 @@ class LegoCompiler(val DSL: LegoBaseExp,
   val codeGenerator =
     if (settings.targetLanguage == CCoreLanguage) {
       if (settings.noLetBinding)
-        new LegoCASTGenerator(DSL, outputFile, settings, true)
+        new QueryEngineCASTGenerator(DSL, outputFile, settings.profile, true)
       else
-        new LegoCGenerator(outputFile, settings, true)
+        new QueryEngineCGenerator(outputFile, settings.profile, true)
     } else {
       if (settings.noLetBinding)
-        new LegoScalaASTGenerator(DSL, false, outputFile, runnerClassName)
+        new QueryEngineScalaASTGenerator(DSL, false, outputFile, runnerClassName)
       else
-        new LegoScalaGenerator(false, outputFile, runnerClassName)
+        new QueryEngineScalaGenerator(false, outputFile, runnerClassName)
     }
 
 }

@@ -1,21 +1,24 @@
 package ch.epfl.data
-package dblab.legobase
+package dblab
+package legobase
+package deep
 package quasi
 
 import org.scalatest.{ FlatSpec, ShouldMatchers }
 import prettyprinter._
-import optimization._
-import tpch._
-import compiler.TreeDumper
+import transformers._
+import dblab.benchmarks.tpch._
 import deep._
 import sc.pardis.optimization._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.quasi.anf._
 import schema._
+import legobase.deep.LegoBaseQueryEngineExp
+import config.Config
 
 class HashMapGroupingTest extends FlatSpec with ShouldMatchers {
 
-  implicit val IR = new LegoBaseExp {
+  implicit val IR = new LegoBaseQueryEngineExp {
   }
 
   import IR.Predef._
@@ -24,7 +27,7 @@ class HashMapGroupingTest extends FlatSpec with ShouldMatchers {
 
   def transform[T: TypeRep](block: Block[T]): Block[T] = {
     val pipeline = new TransformerPipeline()
-    pipeline += LBLowering(false)
+    pipeline += RecordLowering(false)
     pipeline += ParameterPromotion
     pipeline += DCE
     pipeline += PartiallyEvaluate

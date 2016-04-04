@@ -1,23 +1,25 @@
 package ch.epfl.data
-package dblab.legobase
+package dblab
+package legobase
+package deep
 package quasi
 
 import org.scalatest.{ FlatSpec, ShouldMatchers }
 import prettyprinter._
-import optimization._
-import optimization.monad._
-import tpch._
-import compiler.TreeDumper
-import deep._
+import transformers._
+import transformers.monad._
+import dblab.benchmarks.tpch._
 import sc.pardis.optimization._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.quasi.anf._
 import schema._
-import dblab.legobase.queryengine.monad._
+import dblab.queryengine.monad._
+import legobase.deep.LegoBaseQueryEngineExp
+import config.Config
 
 class QueryMonadCPSLoweringTest extends FlatSpec with ShouldMatchers {
 
-  implicit val IR = new LegoBaseExp {
+  implicit val IR = new LegoBaseQueryEngineExp {
   }
 
   import IR.Predef._
@@ -26,7 +28,7 @@ class QueryMonadCPSLoweringTest extends FlatSpec with ShouldMatchers {
 
   def transform[T: TypeRep](block: Block[T]): Block[T] = {
     val pipeline = new TransformerPipeline()
-    pipeline += LBLowering(false)
+    pipeline += RecordLowering(false)
     pipeline += ParameterPromotion
     pipeline += DCE
     pipeline += PartiallyEvaluate

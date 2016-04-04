@@ -1,9 +1,11 @@
 package ch.epfl.data
-package dblab.legobase
+package dblab
+package legobase
 package compiler
 
 import sc.pardis.language._
-import deep.{ QMonadLanguage, MCHLanguage, MCLanguage }
+import dblab.deep.dsls.{ QMonadLanguage, MCHLanguage, MCLanguage }
+import transformers.c.CTransformersPipelineSettings
 
 /**
  * Handles the setting parameters which are passed as the main arguments of the program.
@@ -109,6 +111,9 @@ class Settings(val args: List[String]) {
   def getOptimizationLevel: Int = args.find(a => OptimizationLevelSetting.matches(a)).get.substring("-levels=".size).toInt
 
   def queryName: String = args(2)
+
+  def cSettings: CTransformersPipelineSettings = CTransformersPipelineSettings(ifAggressive,
+    onlyLoading, profile, oldCArrayHandling, pointerStore, containerFlattenning)
 }
 
 /**

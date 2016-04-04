@@ -1,17 +1,22 @@
 package ch.epfl.data
-package dblab.legobase
+package dblab
+package legobase
 package tpch
 
 import compiler._
 import schema._
 import deep._
 import prettyprinter._
-import optimization._
+import transformers._
 import sc.pardis.optimization._
 import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
-import quasi._
+import deep.quasi._
+import legobase.deep.LegoBaseQueryEngineExp
+import dblab.benchmarks.tpch._
+import config.Config
+import sc.pardis.shallow.OptimalString
 
 /**
  * Generates synthetic queries produced using quasi quotes.
@@ -60,12 +65,12 @@ object SyntheticQueries extends TPCHRunner {
     }
   }
 
-  implicit val context = new LegoBaseExp {}
+  implicit val context = new LegoBaseQueryEngineExp {}
 
   def query12_p2(numRuns: Int): context.Rep[Unit] = {
-    import dblab.legobase.queryengine.monad.Query
-    import dblab.legobase.tpch.TPCHLoader._
-    import dblab.legobase.queryengine.GenericEngine._
+    import dblab.queryengine.monad.Query
+    import dblab.benchmarks.tpch.TPCHLoader._
+    import dblab.queryengine.GenericEngine._
     val lineitemTable = dsl"""Query(loadLineitem())"""
     val ordersTable = dsl"Query(loadOrders())"
     // val endDate = "1994-07-01"
@@ -99,9 +104,9 @@ object SyntheticQueries extends TPCHRunner {
           val jo = $ordersTable.mergeJoin(so2)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
           val URGENT = parseString("1-URGENT")
           val HIGH = parseString("2-HIGH")
-          val aggOp = jo.groupBy(x => x.L_SHIPMODE[LBString]).mapValues(list =>
-            Array(list.filter(t => t.O_ORDERPRIORITY[LBString] === URGENT || t.O_ORDERPRIORITY[LBString] === HIGH).count,
-              list.filter(t => t.O_ORDERPRIORITY[LBString] =!= URGENT && t.O_ORDERPRIORITY[LBString] =!= HIGH).count))
+          val aggOp = jo.groupBy(x => x.L_SHIPMODE[OptimalString]).mapValues(list =>
+            Array(list.filter(t => t.O_ORDERPRIORITY[OptimalString] === URGENT || t.O_ORDERPRIORITY[OptimalString] === HIGH).count,
+              list.filter(t => t.O_ORDERPRIORITY[OptimalString] =!= URGENT && t.O_ORDERPRIORITY[OptimalString] =!= HIGH).count))
           aggOp.printRows(kv =>
             printf("%s|%d|%d-", kv._1.string, kv._2(0), kv._2(1)), -1)
         })
@@ -119,9 +124,9 @@ object SyntheticQueries extends TPCHRunner {
   }
 
   def querySimple(numRuns: Int): context.Rep[Unit] = {
-    import dblab.legobase.queryengine.monad.Query
-    import dblab.legobase.tpch.TPCHLoader._
-    import dblab.legobase.queryengine.GenericEngine._
+    import dblab.queryengine.monad.Query
+    import dblab.benchmarks.tpch.TPCHLoader._
+    import dblab.queryengine.GenericEngine._
     dsl"""
       val result = {
         var sumResult = 0.0
@@ -135,9 +140,9 @@ object SyntheticQueries extends TPCHRunner {
   }
 
   def query6(numRuns: Int): context.Rep[Unit] = {
-    import dblab.legobase.queryengine.monad.Query
-    import dblab.legobase.tpch.TPCHLoader._
-    import dblab.legobase.queryengine.GenericEngine._
+    import dblab.queryengine.monad.Query
+    import dblab.benchmarks.tpch.TPCHLoader._
+    import dblab.queryengine.GenericEngine._
     val lineitemTable = dsl"""Query(loadLineitem())"""
 
     def generateQueryForStartDate(startDate: String): context.Rep[Unit] = {
@@ -214,7 +219,7 @@ object SyntheticQueries extends TPCHRunner {
 
     val validatedSettings = settings.validate()
 
-    val compiler = new LegoCompiler(context, validatedSettings, schema, "ch.epfl.data.dblab.legobase.tpch.TPCHRunner") {
+    val compiler = new LegoCompiler(context, validatedSettings, schema, "ch.epfl.data.dblab.benchmarks.tpch.TPCHRunner") {
       def postfix: String = s"sf${settings.args(1)}_${super.outputFile}"
       override def outputFile =
         if (ONE_LOADER_FOR_ALL)

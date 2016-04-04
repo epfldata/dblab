@@ -1,18 +1,21 @@
 package ch.epfl.data
-package dblab.legobase
+package dblab
+package legobase
+package deep
 package quasi
 
 import org.scalatest.{ FlatSpec, ShouldMatchers }
 import prettyprinter._
-import optimization._
+import transformers._
 import deep._
 import sc.pardis.optimization._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.quasi.anf._
+import legobase.deep.LegoBaseQueryEngineExp
 
 class WhileToRangeForeachTest extends FlatSpec with ShouldMatchers {
 
-  implicit val IR = new LegoBaseExp {}
+  implicit val IR = new LegoBaseQueryEngineExp {}
 
   "simple example" should "work" in {
     val exp = {
