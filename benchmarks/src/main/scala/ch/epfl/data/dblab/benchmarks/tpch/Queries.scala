@@ -10,7 +10,7 @@ import queryengine._
  */
 // import queryengine.volcano._
 import queryengine.push._
-import sc.pardis.annotations.{ deep, metadeep, dontLift, dontInline, onlineInliner, needs, noDeepExt }
+import sc.pardis.annotations.{ deep, metadeep, dontLift, dontInline, onlineInliner, needs, noDeepExt, :: }
 import sc.pardis.shallow.OptimalString
 import TPCHLoader._
 import GenericEngine._
@@ -26,9 +26,10 @@ import queryengine.monad.Query
   folder = "",
   header = "",
   component = "QueryComponent",
-  thisComponent = "ch.epfl.data.dblab.legobase.deep.DeepDSL")
+  thisComponent = "ch.epfl.data.dblab.deep.dsls.QueryEngineExp")
 class MetaInfo
 
+@needs[TPCHLoader :: Q1GRPRecord :: Q3GRPRecord :: Q7GRPRecord :: Q9GRPRecord :: Q10GRPRecord :: Q13IntRecord :: Q16GRPRecord1 :: Q16GRPRecord2 :: Q18GRPRecord :: Q20GRPRecord]
 @deep
 @onlineInliner
 @noDeepExt
