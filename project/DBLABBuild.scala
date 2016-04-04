@@ -48,7 +48,7 @@ object DBLABBuild extends Build {
   val scala_version = "2.11.7"
   val sc_version = "0.1.1-SNAPSHOT"
 
-  // addCommandAlias("test-gen", ";project legocompiler; project root; clean")
+  // addCommandAlias("test-gen", ";project legobase; project root; clean")
 
   val generate_test = InputKey[Unit]("generate-test")
   // val test_run = InputKey[Unit]("test-run")
@@ -82,15 +82,14 @@ object DBLABBuild extends Build {
      name := "dblab-benchmarks",
      scalacOptions ++= Seq("-optimize"))) dependsOn dblab_components
 
-  lazy val dblab            = Project(id = "root",             base = file("."), settings = defaults) aggregate (dblab_components, dblab_benchmarks, dblab_components_compiler)
+  lazy val dblab_benchmarks_compiler       = Project(id = "dblab-benchmarks-compiler",        base = file("benchmarks-compiler"),
+   settings = defaults ++ Seq(
+     name := "dblab-benchmarks-compiler")) dependsOn (dblab_benchmarks, dblab_components_compiler)
 
-  lazy val legocompiler = Project(id = "lego-compiler", base = file("lego-compiler"), settings = defaults ++ Seq(name := "lego-compiler",
-      libraryDependencies ++= Seq(//"ch.epfl.lamp" % "scala-yinyang_2.11" % "0.2.0-SNAPSHOT",
-        "ch.epfl.data" % "sc-pardis-compiler_2.11" % sc_version,
-        "ch.epfl.data" % "sc-c-scala-lib_2.11" % sc_version,
-        "ch.epfl.data" % "sc-c-scala-deep_2.11" % sc_version,
-        "ch.epfl.data" % "sc-pardis-quasi_2.11" % sc_version
-        ),
+  lazy val dblab            = Project(id = "root",             base = file("."), settings = defaults) aggregate (dblab_components, dblab_benchmarks, 
+    dblab_components_compiler, dblab_benchmarks_compiler, legobase)
+
+  lazy val legobase = Project(id = "legobase", base = file("systems/legobase"), settings = defaults ++ Seq(name := "legobase",
       mainClass in Compile := Some("ch.epfl.data.dblab.legobase.tpch.TPCHCompiler"),
       generate_test <<= inputTask { (argTask: TaskKey[Seq[String]]) =>
         (argTask, sourceDirectory in Test, fullClasspath in Compile, runner in Compile, streams) map { (args, srcDir, cp, r, s) =>
@@ -120,5 +119,5 @@ object DBLABBuild extends Build {
       //   Test,
       //   "ch.epfl.data.legobase.LEGO_QUERY"
       // ),
-      scalacOptions in Test ++= Seq("-optimize"))) dependsOn(dblab_components)
+      scalacOptions in Test ++= Seq("-optimize"))) dependsOn(dblab_benchmarks_compiler)
 }
