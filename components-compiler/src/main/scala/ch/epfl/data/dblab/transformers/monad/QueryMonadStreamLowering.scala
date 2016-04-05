@@ -15,6 +15,7 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 import scala.collection.mutable
 import quasi._
+import scala.language.existentials
 
 /**
  * Lowers query monad operations using the stream fusion technique.
@@ -71,11 +72,26 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
     def semiFold[S: TypeRep](done: () => Rep[S], skip: () => Rep[S], f: Rep[T] => Rep[S]): Rep[S]
   }
 
-  case class BuildStream[T](builder: (() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]) extends Stream[T]
+  // case class BuildStream[T](builder: (() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]) extends Stream[T]
+  case class BuildStream[T](builder: (() => Rep[BUILDRESULT], () => Rep[BUILDRESULT], Rep[T] => Rep[BUILDRESULT]) => Rep[BUILDRESULT]) extends Stream[T]
+
+  class BUILDRESULT
+
+  implicit def buildResultType: TypeRep[BUILDRESULT] = _buildResultType.asInstanceOf[TypeRep[BUILDRESULT]]
+
+  var _buildResultType: TypeRep[_] = typeRep[Unit]
+
+  def buildS[T: TypeRep](builder: (() => Rep[BUILDRESULT], () => Rep[BUILDRESULT], Rep[T] => Rep[BUILDRESULT]) => Rep[BUILDRESULT]): Rep[Stream[T]] = unit(BuildStream(builder))
+  // def buildS[T: TypeRep](builder: (() => Rep[BUILDRESULT], () => Rep[BUILDRESULT], Rep[T] => Rep[BUILDRESULT]) => Rep[BUILDRESULT]): Rep[Stream[T]] = {
+  //   _buildResultType = typeRep[Stream[T]]
+  //   builder.asInstanceOf[(() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]](() => Done[T], () => Skip[T], e => Yield[T](e))
+  // }
 
   // def buildS[T: TypeRep](builder: (() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]): Rep[Stream[T]] = unit(BuildStream(builder))
-  def buildS[T: TypeRep](builder: (() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]): Rep[Stream[T]] =
-    builder.asInstanceOf[(() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]](() => Done[T], () => Skip[T], e => Yield[T](e))
+  // def buildS[T: TypeRep](builder: (() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]): Rep[Stream[T]] =
+  //   builder.asInstanceOf[(() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]](() => Done[T], () => Skip[T], e => Yield[T](e))
+  // def buildS[T: TypeRep](builder: ((() => Rep[S], () => Rep[S], Rep[T] => Rep[S]) => Rep[S]) forSome { type S }): Rep[Stream[T]] =
+  //   builder.asInstanceOf[(() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]](() => Done[T], () => Skip[T], e => Yield[T](e))
 
   implicit class StreamRep[T: TypeRep](self: Rep[Stream[T]]) extends StreamOps[T] {
     def semiFold[S: TypeRep](done: () => Rep[S], skip: () => Rep[S], f: Rep[T] => Rep[S]): Rep[S] =
