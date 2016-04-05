@@ -48,21 +48,41 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
   def Yield[T: TypeRep](e: Rep[T]): Rep[Stream[T]] = newStream(e, unit(false), unit(false))
 
   abstract class StreamOps[T: TypeRep] {
-    def map[S: TypeRep](f: Rep[T => S]): Rep[Stream[S]] = flatMap[S](x => Yield(inlineFunction(f, x)))
-    def filter(p: Rep[T => Boolean]): Rep[Stream[T]] = flatMap[T](x => __ifThenElse(inlineFunction(p, x), Yield(x), Skip[T]))
+    def map[S: TypeRep](f: Rep[T => S]): Rep[Stream[S]] = //flatMap[S](x => Yield(inlineFunction(f, x)))
+      buildS { (done, skip, f1) =>
+        semiFold(done, skip, x => f1(inlineFunction(f, x)))
+      }
+    def filter(p: Rep[T => Boolean]): Rep[Stream[T]] = //flatMap[T](x => __ifThenElse(inlineFunction(p, x), Yield(x), Skip[T]))
+      buildS { (done, skip, yld) =>
+        semiFold(done, skip, x => __ifThenElse(inlineFunction(p, x), yld(x), skip()))
+      }
     def foreach(f: Rep[T] => Rep[Unit]): Rep[Unit] = semiFold[Unit](
       () => unit(),
       () => unit(),
       f)
-    def flatMap[S: TypeRep](f: Rep[T] => Rep[Stream[S]]): Rep[Stream[S]] = semiFold[Stream[S]](
-      () => Done[S],
-      () => Skip[S],
-      f)
+    def flatMap[S: TypeRep](f: Rep[T] => Rep[Stream[S]]): Rep[Stream[S]] =
+      // semiFold[Stream[S]](
+      //   () => Done[S],
+      //   () => Skip[S],
+      //   f)
+      buildS { (done, skip, yld) =>
+        semiFold(done, skip, x => f(x).semiFold(done, skip, yld))
+      }
     def semiFold[S: TypeRep](done: () => Rep[S], skip: () => Rep[S], f: Rep[T] => Rep[S]): Rep[S]
   }
 
+  case class BuildStream[T](builder: (() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]) extends Stream[T]
+
+  // def buildS[T: TypeRep](builder: (() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]): Rep[Stream[T]] = unit(BuildStream(builder))
+  def buildS[T: TypeRep](builder: (() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]): Rep[Stream[T]] =
+    builder.asInstanceOf[(() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]](() => Done[T], () => Skip[T], e => Yield[T](e))
+
   implicit class StreamRep[T: TypeRep](self: Rep[Stream[T]]) extends StreamOps[T] {
-    def semiFold[S: TypeRep](done: () => Rep[S], skip: () => Rep[S], f: Rep[T] => Rep[S]): Rep[S] = dsl"""
+    def semiFold[S: TypeRep](done: () => Rep[S], skip: () => Rep[S], f: Rep[T] => Rep[S]): Rep[S] =
+      self match {
+        case Constant(BuildStream(builder)) => builder.asInstanceOf[(() => Rep[S], () => Rep[S], Rep[T] => Rep[S]) => Rep[S]](done, skip, f)
+        case _ =>
+          dsl"""
       if ($isDone)
         ${done()}
       else if($isSkip)
@@ -70,6 +90,8 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
       else
         ${f(element)}
     """
+      }
+
     def isSkip: Rep[Boolean] = field[Boolean](self, "isSkip")
     def isDone: Rep[Boolean] = field[Boolean](self, "isDone")
     def element: Rep[T] = field[T](self, "element")
@@ -739,15 +761,17 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
   object QueryStream {
     def apply[T: TypeRep](arr: Rep[Array[T]]): QueryStream[T] = new QueryStream[T] {
       val index = __newVarNamed[Int](unit(0), "index")
-      def stream(): Rep[Stream[T]] =
+      def stream(): Rep[Stream[T]] = buildS { (done, skip, yld) =>
         dsl"""
           if ($index >= $arr.length)
-            ${Done[T]}
+            ${done()}
           else {
             $index = $index + 1
-            ${Yield(arr(dsl"$index - 1"))}
+            ${yld(arr(dsl"$index - 1"))}
           }
         """
+      }
+
     }
     // QueryStream { (k: Rep[T] => Rep[Unit]) =>
     //   QML.array_foreach_using_while(arr, k)
