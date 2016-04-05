@@ -69,6 +69,10 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
       buildS { (done, skip, yld) =>
         semiFold(done, skip, x => f(x).semiFold(done, skip, yld))
       }
+    def materialize(): Rep[Stream[T]] = {
+      _buildResultType = typeRep[Stream[T]]
+      semiFold(() => Done[T], () => Skip[T], Yield[T])
+    }
     def semiFold[S: TypeRep](done: () => Rep[S], skip: () => Rep[S], f: Rep[T] => Rep[S]): Rep[S]
   }
 
@@ -81,11 +85,14 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
 
   var _buildResultType: TypeRep[_] = typeRep[Unit]
 
-  def buildS[T: TypeRep](builder: (() => Rep[BUILDRESULT], () => Rep[BUILDRESULT], Rep[T] => Rep[BUILDRESULT]) => Rep[BUILDRESULT]): Rep[Stream[T]] = unit(BuildStream(builder))
   // def buildS[T: TypeRep](builder: (() => Rep[BUILDRESULT], () => Rep[BUILDRESULT], Rep[T] => Rep[BUILDRESULT]) => Rep[BUILDRESULT]): Rep[Stream[T]] = {
-  //   _buildResultType = typeRep[Stream[T]]
-  //   builder.asInstanceOf[(() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]](() => Done[T], () => Skip[T], e => Yield[T](e))
+  //   _buildResultType = typeRep[Unit]
+  //   unit(BuildStream(builder))
   // }
+  def buildS[T: TypeRep](builder: (() => Rep[BUILDRESULT], () => Rep[BUILDRESULT], Rep[T] => Rep[BUILDRESULT]) => Rep[BUILDRESULT]): Rep[Stream[T]] = {
+    _buildResultType = typeRep[Stream[T]]
+    builder.asInstanceOf[(() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]](() => Done[T], () => Skip[T], e => Yield[T](e))
+  }
 
   // def buildS[T: TypeRep](builder: (() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]): Rep[Stream[T]] = unit(BuildStream(builder))
   // def buildS[T: TypeRep](builder: (() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]): Rep[Stream[T]] =
@@ -441,52 +448,58 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
     def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryStream[S])(
       ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryStream[Res] =
       new QueryStream[Res] {
-        val elem1 = __newVarNamed[Stream[T]](Skip[T], "elemLeft")
-        val elem2 = __newVarNamed[Stream[S]](Skip[S], "elemRight")
+        val elem1 = __newVarNamed[Stream[T]](unit(null), "elemLeft")
+        val elem2 = __newVarNamed[Stream[S]](unit(null), "elemRight")
         val atEnd = __newVarNamed(unit(false), "atEnd")
+        val init = __newVarNamed(unit(false), "init")
+        val leftShouldProceed = __newVar(dsl"false")
         def stream(): Rep[Stream[Res]] = {
-          val leftShouldProceed = __newVar(dsl"false")
-          val nextJoinElem = __newVar[Stream[Res]](Skip[Res])
           dsl"""
-            if ($atEnd) {
-              ${Done[Res]}
-            } else {${
-            dsl"$elem1".semiFold(
-              () => dsl"$atEnd = true",
-              () => {
-                dsl"$leftShouldProceed = true"
-                dsl"$elem2".semiFold(
-                  () => dsl"$atEnd = true",
-                  () => dsl"()",
-                  _ => dsl"()")
-              },
-              ne1 => {
-                dsl"$elem2".semiFold(
-                  () => dsl"$atEnd = true",
-                  () => dsl"()",
-                  ne2 => {
-                    val cmp = ord(ne1, ne2)
-                    dsl"""
-                      if ($cmp < 0) {
-                        $leftShouldProceed = true
-                      } else {
-                        if ($cmp == 0) {
-                          $nextJoinElem = ${Yield(concat_records[T, S, Res](ne1, ne2))}
-                        }
-                      }
-                      """
-                  })
-              })
-            dsl"""
-              if ($leftShouldProceed) {
-                $elem1 = ${self.stream()}
-              } else {
-                $elem2 = ${q2.stream()}
-              }
-              $nextJoinElem
-              """
-          }
+            if ($leftShouldProceed || !$init) {
+              $elem1 = ${self.stream().materialize()}
             }
+            if (!$leftShouldProceed || !$init) {
+              $elem2 = ${q2.stream().materialize()}
+            }
+            $init = true
+            ${
+            buildS { (done, skip, yld: Rep[Res] => Rep[BUILDRESULT]) =>
+              dsl"""
+              if ($atEnd) {
+                ${done()}
+              } else {${
+                dsl"$leftShouldProceed = false"
+                dsl"$elem1".semiFold(
+                  () => dsl"{$atEnd = true; ${done()}}",
+                  () => {
+                    dsl"{$leftShouldProceed = true; ${skip()}}"
+                  },
+                  ne1 => {
+                    dsl"$elem2".semiFold(
+                      () => dsl"{$atEnd = true; ${done()}}",
+                      () => skip(),
+                      ne2 => {
+                        val cmp = ord(ne1, ne2)
+                        dsl"""
+                              if ($cmp < 0) {
+                                $leftShouldProceed = true
+                                ${skip()}
+                              } else {
+                                if ($cmp == 0) {
+                                  ${yld(concat_records[T, S, Res](ne1, ne2))}
+                                } else {
+                                  ${skip()}
+                                }
+                              }
+                              """
+                      })
+                  })
+              }
+              }
+              """
+            }
+          }
+
       """
         }
       }
