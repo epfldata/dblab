@@ -143,13 +143,15 @@ abstract class QueryStream[T] { self =>
     }
     var index = 0
     unstream { () =>
-      if (index >= size)
-        Done
-      else {
-        index += 1
-        val elem = treeSet.head
-        treeSet -= elem
-        Stream(elem)
+      buildS { (done, skip, yld) =>
+        if (index >= size)
+          done()
+        else {
+          index += 1
+          val elem = treeSet.head
+          treeSet -= elem
+          yld(elem)
+        }
       }
     }
   }
