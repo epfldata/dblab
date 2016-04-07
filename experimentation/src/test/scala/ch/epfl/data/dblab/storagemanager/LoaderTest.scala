@@ -2,21 +2,10 @@ package ch.epfl.data
 package dblab
 package storagemanager
 
-import experimentation.tpch.{ TPCHSchema, PARTSUPPRecord }
+import experimentation.tpch.{ TPCHSchema, PARTRecord, PARTSUPPRecord }
 import org.scalatest._
 import sc.pardis.shallow.OptimalString
 import Matchers._
-
-case class PARTRecord(
-  val P_PARTKEY: Int,
-  val P_NAME: OptimalString,
-  val P_MFGR: OptimalString,
-  val P_BRAND: OptimalString,
-  val P_TYPE: OptimalString,
-  val P_SIZE: Int,
-  val P_CONTAINER: OptimalString,
-  val P_RETAILPRICE: Double,
-  val P_COMMENT: OptimalString)
 
 class LoaderTest extends FlatSpec {
   TPCHData.runOnData(datapath => {
