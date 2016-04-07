@@ -20,7 +20,7 @@ hosts the compilation-related code for optimizing a database system such as tran
 code generators.
 
 [Experimentation](experimentation)
-host the expirmentation infrasturcture (e.g. the scripts, configurations, and the implementation of some benchmarks) used in the DBLAB systems.
+host the experimentation infrasturcture (e.g. the scripts, configurations, and the implementation of some benchmarks) used in the DBLAB systems.
 
 [Systems](systems)
 hosts the code base of the systems implemented using the DBLAB Components.
