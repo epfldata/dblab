@@ -8,7 +8,7 @@ import org.scalatest.{ FlatSpec, ShouldMatchers }
 import prettyprinter._
 import transformers._
 import transformers.monad._
-import dblab.benchmarks.tpch._
+import dblab.experimentation.tpch._
 import sc.pardis.optimization._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.quasi.anf._

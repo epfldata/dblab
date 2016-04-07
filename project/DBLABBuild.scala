@@ -77,26 +77,28 @@ object DBLABBuild extends Build {
         "ch.epfl.data" % "sc-pardis-quasi_2.11" % sc_version
         ))) dependsOn dblab_components
 
-  lazy val dblab_benchmarks       = Project(id = "dblab-benchmarks",        base = file("benchmarks"),
-   settings = defaults ++ purgatorySettings("benchmarks-compiler") ++  Seq(
-     name := "dblab-benchmarks",
+  lazy val dblab_experimentation       = Project(id = "dblab-experimentation",        base = file("experimentation"),
+   settings = defaults ++ purgatorySettings("experimentation/compiler") ++  Seq(
+     name := "dblab-experimentation",
      scalacOptions ++= Seq("-optimize"))) dependsOn dblab_components
 
-  lazy val dblab_benchmarks_compiler       = Project(id = "dblab-benchmarks-compiler",        base = file("benchmarks-compiler"),
+  lazy val dblab_experimentation_compiler       = Project(id = "dblab-experimentation-compiler",        base = file("experimentation/compiler"),
    settings = defaults ++ Seq(
-     name := "dblab-benchmarks-compiler")) dependsOn (dblab_benchmarks, dblab_components_compiler)
+     name := "dblab-experimentation-compiler")) dependsOn (dblab_experimentation, dblab_components_compiler)
 
-  lazy val dblab            = Project(id = "root",             base = file("."), settings = defaults) aggregate (dblab_components, dblab_benchmarks, 
-    dblab_components_compiler, dblab_benchmarks_compiler, legobase)
+  lazy val dblab            = Project(id = "root",             base = file("."), settings = defaults) aggregate (dblab_components, dblab_experimentation, 
+    dblab_components_compiler, dblab_experimentation_compiler, legobase)
+
+  val legobaseMainClass = "ch.epfl.data.dblab.legobase.experimentation.tpch.TPCHCompiler"
 
   lazy val legobase = Project(id = "legobase", base = file("systems/legobase"), settings = defaults ++ Seq(name := "legobase",
-      mainClass in Compile := Some("ch.epfl.data.dblab.legobase.tpch.TPCHCompiler"),
+      mainClass in Compile := Some(legobaseMainClass),
       generate_test <<= inputTask { (argTask: TaskKey[Seq[String]]) =>
         (argTask, sourceDirectory in Test, fullClasspath in Compile, runner in Compile, streams) map { (args, srcDir, cp, r, s) =>
           if(args(2).startsWith("Q")) {
             val cgDir = srcDir / "scala" / "generated"
             IO.delete(cgDir ** "*.scala" get)
-            toError(r.run("ch.epfl.data.dblab.legobase.tpch.TPCHCompiler", cp.files, args :+ "-scala", s.log))
+            toError(r.run(legobaseMainClass, cp.files, args :+ "-scala", s.log))
             val fileName = args(2) + "_Generated.scala"
             val filePath = cgDir / fileName
             println("Generated " + fileName)
@@ -105,7 +107,7 @@ object DBLABBuild extends Build {
           } else if (args(2) == "testsuite-scala") {
             for(i <- 1 to 22) {
               val newArgs = args.dropRight(1) :+ s"Q$i"
-              toError(r.run("ch.epfl.data.dblab.legobase.compiler.Main", cp.files, newArgs :+ "-scala", s.log))  
+              toError(r.run(legobaseMainClass, cp.files, newArgs :+ "-scala", s.log))  
             }
           }
           // println("classpath:" + (cp.files :+ filePath).mkString("\n"))
@@ -119,5 +121,5 @@ object DBLABBuild extends Build {
       //   Test,
       //   "ch.epfl.data.legobase.LEGO_QUERY"
       // ),
-      scalacOptions in Test ++= Seq("-optimize"))) dependsOn(dblab_benchmarks_compiler)
+      scalacOptions in Test ++= Seq("-optimize"))) dependsOn(dblab_experimentation_compiler)
 }
