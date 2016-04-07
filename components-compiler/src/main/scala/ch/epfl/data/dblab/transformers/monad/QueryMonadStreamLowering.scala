@@ -23,6 +23,8 @@ import scala.language.existentials
 class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineExp) extends RuleBasedTransformer[QueryEngineExp](IR) with StructProcessing[QueryEngineExp] {
   import IR._
 
+  val churchEncoding = true
+
   val QML = new QueryMonadLowering(schema, IR)
 
   def NULL[S: TypeRep]: Rep[S] = zeroValue[S]
@@ -38,8 +40,6 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
   class Stream[T] {
     def map[S](f: T => S): Stream[S] = ???
     def filter(p: T => Boolean): Stream[T] = ???
-    // def flatMap[S](f: T => Stream[S]) = ???
-    // def map2[S](f1: T => S, f2: () => S): Stream[S] = ???
   }
   def Done[T: TypeRep]: Rep[Stream[T]] = newStream(NULL[T], unit(false), unit(true))
   def newStream[T: TypeRep](element: Rep[T], isSkip: Rep[Boolean], isDone: Rep[Boolean]): Rep[Stream[T]] = __new[Stream[T]](("element", false, element),
@@ -49,11 +49,11 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
   def Yield[T: TypeRep](e: Rep[T]): Rep[Stream[T]] = newStream(e, unit(false), unit(false))
 
   abstract class StreamOps[T: TypeRep] {
-    def map[S: TypeRep](f: Rep[T => S]): Rep[Stream[S]] = //flatMap[S](x => Yield(inlineFunction(f, x)))
+    def map[S: TypeRep](f: Rep[T => S]): Rep[Stream[S]] =
       buildS { (done, skip, f1) =>
         semiFold(done, skip, x => f1(inlineFunction(f, x)))
       }
-    def filter(p: Rep[T => Boolean]): Rep[Stream[T]] = //flatMap[T](x => __ifThenElse(inlineFunction(p, x), Yield(x), Skip[T]))
+    def filter(p: Rep[T => Boolean]): Rep[Stream[T]] =
       buildS { (done, skip, yld) =>
         semiFold(done, skip, x => __ifThenElse(inlineFunction(p, x), yld(x), skip()))
       }
@@ -62,21 +62,13 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
       () => unit(),
       f)
     def flatMap[S: TypeRep](f: Rep[T] => Rep[Stream[S]]): Rep[Stream[S]] =
-      // semiFold[Stream[S]](
-      //   () => Done[S],
-      //   () => Skip[S],
-      //   f)
       buildS { (done, skip, yld) =>
         semiFold(done, skip, x => f(x).semiFold(done, skip, yld))
       }
-    def materialize(): Rep[Stream[T]] = {
-      _buildResultType = typeRep[Stream[T]]
-      semiFold(() => Done[T], () => Skip[T], Yield[T])
-    }
+    def materialize(): Rep[Stream[T]]
     def semiFold[S: TypeRep](done: () => Rep[S], skip: () => Rep[S], f: Rep[T] => Rep[S]): Rep[S]
   }
 
-  // case class BuildStream[T](builder: (() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]) extends Stream[T]
   case class BuildStream[T](builder: (() => Rep[BUILDRESULT], () => Rep[BUILDRESULT], Rep[T] => Rep[BUILDRESULT]) => Rep[BUILDRESULT]) extends Stream[T]
 
   class BUILDRESULT
@@ -85,20 +77,13 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
 
   var _buildResultType: TypeRep[_] = typeRep[Unit]
 
-  // def buildS[T: TypeRep](builder: (() => Rep[BUILDRESULT], () => Rep[BUILDRESULT], Rep[T] => Rep[BUILDRESULT]) => Rep[BUILDRESULT]): Rep[Stream[T]] = {
-  //   _buildResultType = typeRep[Unit]
-  //   unit(BuildStream(builder))
-  // }
-  def buildS[T: TypeRep](builder: (() => Rep[BUILDRESULT], () => Rep[BUILDRESULT], Rep[T] => Rep[BUILDRESULT]) => Rep[BUILDRESULT]): Rep[Stream[T]] = {
+  def buildS[T: TypeRep](builder: (() => Rep[BUILDRESULT], () => Rep[BUILDRESULT], Rep[T] => Rep[BUILDRESULT]) => Rep[BUILDRESULT]): Rep[Stream[T]] = if (churchEncoding) {
+    _buildResultType = typeRep[Unit]
+    unit(BuildStream(builder))
+  } else {
     _buildResultType = typeRep[Stream[T]]
     builder.asInstanceOf[(() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]](() => Done[T], () => Skip[T], e => Yield[T](e))
   }
-
-  // def buildS[T: TypeRep](builder: (() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]): Rep[Stream[T]] = unit(BuildStream(builder))
-  // def buildS[T: TypeRep](builder: (() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]): Rep[Stream[T]] =
-  //   builder.asInstanceOf[(() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]](() => Done[T], () => Skip[T], e => Yield[T](e))
-  // def buildS[T: TypeRep](builder: ((() => Rep[S], () => Rep[S], Rep[T] => Rep[S]) => Rep[S]) forSome { type S }): Rep[Stream[T]] =
-  //   builder.asInstanceOf[(() => Rep[Stream[T]], () => Rep[Stream[T]], Rep[T] => Rep[Stream[T]]) => Rep[Stream[T]]](() => Done[T], () => Skip[T], e => Yield[T](e))
 
   implicit class StreamRep[T: TypeRep](self: Rep[Stream[T]]) extends StreamOps[T] {
     def semiFold[S: TypeRep](done: () => Rep[S], skip: () => Rep[S], f: Rep[T] => Rep[S]): Rep[S] =
@@ -114,52 +99,24 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
         ${f(element)}
     """
       }
+    def materialize(): Rep[Stream[T]] = if (churchEncoding) {
+      _buildResultType = typeRep[Stream[T]]
+      semiFold(() => Done[T], () => Skip[T], Yield[T])
+    } else {
+      self
+    }
 
     def isSkip: Rep[Boolean] = field[Boolean](self, "isSkip")
     def isDone: Rep[Boolean] = field[Boolean](self, "isDone")
     def element: Rep[T] = field[T](self, "element")
   }
 
-  // implicit class OptionRep1[T: TypeRep](self: Rep[Option[T]]) {
-  //   def map[S: TypeRep](f: Rep[T => S]): Rep[Option[S]] = dsl"""
-  //     if ($self == ${NULL[Option[S]]})
-  //       ${NULL[Option[S]]}
-  //     else if(${self.nonEmpty})
-  //       ${Option(f(self.get))}
-  //     else
-  //       ${None[S]}
-  //   """
-  // }
-
   abstract class QueryStream[T: TypeRep] { self =>
     val tp = typeRep[T]
-    // type Source
-    // implicit def sourceType: TypeRep[Source]
 
-    // def source: Rep[Source]
-
-    // def atEnd(s: Rep[Source]): Rep[Boolean]
     def stream(): Rep[Stream[T]]
+
     def foreach(f: Rep[T] => Rep[Unit]): Rep[Unit] = {
-      // dsl"""
-      //   var elem: Option[T] = ${NULL[Option[T]]}
-      //   while ({
-      //     elem = ${stream()}
-      //     elem
-      //   } != ${NULL[T]}) {
-      //     for (e <- elem)
-      //       $f(e)
-      //   }
-      // """
-      // val elem = __newVar[Stream[T]](Done[T])
-      // __whileDo({
-      //   dsl"""{
-      //       $elem = ${stream()}; 
-      //       !${readVar(elem).isDone}
-      //     }"""
-      // }, {
-      //   readVar(elem).foreach(f)
-      // })
       val done = __newVarNamed(unit(false), "done")
       dsl"""
         while(!$done) {
@@ -191,150 +148,14 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
     def map[S: TypeRep](f: Rep[T => S]): QueryStream[S] = new QueryStream[S] {
       def stream(): Rep[Stream[S]] = dsl"${self.stream()}.map($f)"
     }
-    // def map[S: TypeRep](f: Rep[T => S]): QueryStream[S] = new QueryStream[S] {
-    //   type Source = self.Source
-    //   implicit def sourceType: TypeRep[Source] = self.sourceType
-
-    //   def source: Rep[Source] = self.source
-
-    //   def atEnd(s: Rep[Source]): Rep[Boolean] = self.atEnd(s)
-    //   def next(s: Rep[Source]): Rep[(S, Source)] = {
-    //     val n = self.next(s)
-    //     Tuple2(f(n._1), n._2)
-    //   }
-    // }
-    // def take(num: Rep[Int]): QueryStream[T] = (k: Rep[T] => Rep[Unit]) => {
-    //   val counter = __newVarNamed[Int](unit(0), "counter")
-    //   foreach(e => __ifThenElse(readVar(counter) < num,
-    //     {
-    //       k(e)
-    //       __assign(counter, readVar(counter) + unit(1))
-    //     },
-    //     unit()))
-    // }
 
     def filter(p: Rep[T => Boolean]): QueryStream[T] = new QueryStream[T] {
       def stream(): Rep[Stream[T]] = {
         val elem = self.stream()
-        // dsl"""
-        //   if ($elem == ${NULL[Option[T]]})
-        //     ${NULL[Option[T]]}
-        //   else if(${elem.nonEmpty}) {
-        //     val e = ${elem.get}
-        //     if($p(e)) {
-        //       elem
-        //     } else {
-        //       ${None[T]}
-        //     }
-        //   }
-        //   else
-        //     ${None[T]}
-        // """
         elem.filter(p)
       }
     }
 
-    // FIXME
-    // def filter(p: Rep[T => Boolean]): QueryStream[T] = self
-    // def filter2(p: Rep[T => Boolean]): QueryStream[T] = new QueryStream[T] {
-    //   type Source = self.Source
-    //   implicit def sourceType: TypeRep[Source] = self.sourceType
-
-    //   def source: Rep[Source] = self.source
-
-    //   val hd = __newVar[T](zeroValue[T])
-    //   val curTail = __newVar[Source](zeroValue[Source])
-
-    //   def atEnd(s: Rep[Source]): Rep[Boolean] = self.atEnd(s) || {
-    //     val tmpAtEnd = __newVar(unit(false))
-    //     val tmpSource = __newVar(s)
-    //     val nextAndRest = self.next(tmpSource)
-    //     val tmpHd = __newVar(nextAndRest._1)
-    //     val tmpRest = __newVar(nextAndRest._2)
-
-    //     __whileDo(!(readVar(tmpAtEnd) || p(tmpHd)), {
-    //       __assign(tmpSource, tmpRest)
-    //       __ifThenElse(self.atEnd(tmpSource),
-    //         __assign(tmpAtEnd, unit(true)), {
-    //           val nextAndRest2 = self.next(tmpSource)
-    //           __assign(tmpHd, nextAndRest2._1)
-    //           __assign(tmpRest, nextAndRest2._2)
-    //         })
-    //     })
-    //     __assign(hd, tmpHd)
-    //     __assign(curTail, tmpRest)
-    //     readVar(tmpAtEnd)
-    //   }
-    //   def next(s: Rep[Source]): Rep[(T, Source)] = {
-    //     val isAtEnd = atEnd(s)
-    //     val resE = __ifThenElse(isAtEnd,
-    //       zeroValue[T],
-    //       readVar(hd))
-    //     val resS = __ifThenElse(isAtEnd,
-    //       zeroValue[Source],
-    //       readVar(curTail))
-    //     Tuple2(resE, resS)
-    //   }
-    // }
-
-    // def filter(p: Rep[T => Boolean]): QueryStream[T] = new QueryStream[T] {
-    //   type Source = self.Source
-    //   implicit def sourceType: TypeRep[Source] = self.sourceType
-
-    //   def source: Rep[Source] = self.source
-
-    //   val hd = __newVar[T](zeroValue[T])
-    //   val curTail = __newVar[Source](zeroValue[Source])
-    //   val tmpAtEnd = __newVar(unit(false))
-
-    //   sealed trait LastCalledFunction
-    //   case object NothingYet extends LastCalledFunction
-    //   case object AtEnd extends LastCalledFunction
-    //   case object Next extends LastCalledFunction
-
-    //   var lastCalledFunction: LastCalledFunction = NothingYet
-
-    //   def atEnd(s: Rep[Source]): Rep[Boolean] = lastCalledFunction match {
-    //     case NothingYet | AtEnd =>
-    //       lastCalledFunction = AtEnd
-    //       self.atEnd(s) || readVar(tmpAtEnd) || {
-    //         val tmpSource = __newVar(s)
-    //         val nextAndRest = self.next(tmpSource)
-    //         val tmpHd = __newVar(nextAndRest._1)
-    //         val tmpRest = __newVar(nextAndRest._2)
-
-    //         __whileDo(!(readVar(tmpAtEnd) || p(tmpHd)), {
-    //           __assign(tmpSource, tmpRest)
-    //           __ifThenElse(self.atEnd(tmpSource), {
-    //             __assign(tmpAtEnd, unit(true))
-    //             __assign(tmpHd, zeroValue[T])
-    //             __assign(tmpRest, zeroValue[Source])
-    //           }, {
-    //             val nextAndRest2 = self.next(tmpSource)
-    //             __assign(tmpHd, nextAndRest2._1)
-    //             __assign(tmpRest, nextAndRest2._2)
-    //           })
-    //         })
-    //         __assign(hd, tmpHd)
-    //         __assign(curTail, tmpRest)
-    //         readVar(tmpAtEnd)
-    //       }
-    //     // case AtEnd => //readVar(tmpAtEnd)
-    //     //   throw new Exception("atEnd after atEnd is not considered yet!")
-    //     case Next => throw new Exception("atEnd after next is not considered yet!")
-    //   }
-
-    //   def next(s: Rep[Source]): Rep[(T, Source)] = lastCalledFunction match {
-    //     case NothingYet => throw new Exception("next before atEnd is not considered yet!")
-    //     case AtEnd =>
-    //       Tuple2(readVar(hd), readVar(curTail))
-    //     case Next => throw new Exception("next after next is not considered yet!")
-    //   }
-
-    //   override def filter(p2: Rep[T => Boolean]): QueryStream[T] = self.filter(__lambda { e =>
-    //     inlineFunction(p, e) && inlineFunction(p2, e)
-    //   })
-    // }
     def count: Rep[Int] = {
       val size = __newVarNamed[Int](unit(0), "size")
       foreach(e => {
@@ -391,59 +212,6 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
     //   def atEnd(ts: Rep[Source]): Rep[Boolean] = leftStream.atEnd(ts)
     //   def next(ts: Rep[Source]) = leftStream.next(ts)
     // }
-
-    // def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryStream[S])(
-    //   ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryStream[Res] =
-    //   new QueryStream[Res] {
-    //     val elem1 = __newVarNamed[Stream[T]](Skip[T], "elemLeft")
-    //     val elem2 = __newVarNamed[Stream[S]](Skip[S], "elemRight")
-    //     def getLeft: Rep[T] = readVar(elem1).element
-    //     def getRight: Rep[S] = readVar(elem2).element
-    //     val atEnd = __newVarNamed(unit(false), "atEnd")
-    //     def proceedLeft(): Unit = {
-    //       dsl"""
-    //         $elem1 = ${self.stream()}
-    //         $atEnd = $atEnd || ${readVar(elem1).isDone}
-    //       """
-    //     }
-    //     def proceedRight(): Unit = {
-    //       dsl"""
-    //         $elem2 = ${q2.stream()}
-    //         $atEnd = $atEnd || ${readVar(elem2).isDone}
-    //       """
-    //     }
-    //     def stream(): Rep[Stream[Res]] =
-    //       dsl"""
-    //       if($atEnd) {
-    //         ${Done[Res]}
-    //       } else {
-    //         var leftShouldProceed: Boolean = false
-    //         var nextJoinElem: Stream[Res] = ${Skip[Res]}
-    //         if(!${readVar(elem1).isSkip}) {
-    //           if(!${readVar(elem2).isSkip}) {
-    //             val cmp = ${ord(getLeft, getRight)}
-    //             if (cmp < 0) {
-    //               leftShouldProceed = true
-    //             } else {
-    //               if (cmp == 0) {
-    //                 nextJoinElem = ${Yield(concat_records[T, S, Res](getLeft, getRight))}
-    //               }
-    //             }
-    //           } else {
-
-    //           }
-    //         } else {
-    //           leftShouldProceed = true
-    //         }
-    //         if (leftShouldProceed) {
-    //           ${proceedLeft()}
-    //         } else {
-    //           ${proceedRight()}
-    //         }
-    //         nextJoinElem
-    //       }
-    //   """
-    //   }
 
     def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryStream[S])(
       ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryStream[Res] =
@@ -504,84 +272,6 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
         }
       }
 
-    // def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryStream[S])(
-    //   ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryStream[Res] =
-    //   new QueryStream[Res] {
-    //     val q1 = self
-    //     type Source1 = q1.Source
-    //     type Source2 = q2.Source
-    //     type Source = (q1.Source, q2.Source)
-    //     import q1.{ sourceType => q1SourceType }
-    //     import q2.{ sourceType => q2SourceType }
-    //     def sourceType: TypeRep[Source] = Tuple2Type(q1.sourceType, q2.sourceType)
-    //     def source = Tuple2(q1.source, q2.source)
-    //     val ts1: Var[Source1] = __newVar[Source1](zeroValue[Source1])
-    //     val ts2: Var[Source2] = __newVar[Source2](zeroValue[Source2])
-    //     val elem1: Var[T] = __newVar[T](zeroValue[T])
-    //     val elem2: Var[S] = __newVar[S](zeroValue[S])
-    //     val leftEnd: Var[Boolean] = __newVar[Boolean](unit(false))
-    //     val rightEnd: Var[Boolean] = __newVar[Boolean](unit(false))
-    //     val nextJoinElem: Var[Res] = __newVar[Res](zeroValue[Res])
-    //     val tmpAtEnd: Var[Boolean] = __newVar[Boolean](unit(false)) // keeps if the two sources are at the end or not
-    //     def proceedLeft(): Rep[Unit] = {
-    //       dsl"""
-    //       if (${q1.atEnd(ts1)}) {
-    //         $leftEnd = true
-    //       } else {
-    //         val q1Next = ${q1.next(ts1)}
-    //         val ne1 = q1Next._1
-    //         val ns1 = q1Next._2
-    //         $elem1 = ne1
-    //         $ts1 = ns1
-    //       }
-    //       """
-    //     }
-    //     def proceedRight(): Rep[Unit] = {
-    //       dsl"""
-    //       if (${q2.atEnd(ts2)}) {
-    //         $rightEnd = true
-    //       } else {
-    //         val q2Next = ${q2.next(ts2)}
-    //         $elem2 = q2Next._1
-    //         $ts2 = q2Next._2
-    //       }
-    //       """
-    //     }
-    //     def atEnd(ts: Rep[(Source1, Source2)]) = {
-    //       dsl"""
-    //       $tmpAtEnd || {
-    //         if ($elem1 == ${unit(null)} && $elem2 == ${unit(null)}) {
-    //           $ts1 = ${q1.source}
-    //           $ts2 = ${q2.source}
-    //           ${proceedLeft()}
-    //           ${proceedRight()}
-    //         }
-    //         var found = false
-    //         while (!$tmpAtEnd && !found) {
-    //           if ($leftEnd || $rightEnd) {
-    //             $tmpAtEnd = true
-    //           } else {
-    //             val cmp = ${ord(elem1, elem2)}
-    //             if (cmp < 0) {
-    //               ${proceedLeft()}
-    //             } else if (cmp > 0) {
-    //               ${proceedRight()}
-    //             } else {
-    //               $nextJoinElem = ${concat_records[T, S, Res](elem1, elem2)}
-    //               ${proceedRight()}
-    //               found = true
-    //             }
-    //           }
-    //         }
-    //         !found
-    //       }
-    //       """
-    //     }
-    //     def next(ts: Rep[(Source1, Source2)]) = {
-    //       Tuple2(nextJoinElem, Tuple2(ts1, ts2))
-    //     }
-    //   }
-
     //   def minBy[S: TypeRep](by: Rep[T => S]): Rep[T] = {
     //     val minResult = __newVarNamed[T](unit(null).asInstanceOf[Rep[T]], "minResult")
     //     def compare(x: Rep[T], y: Rep[T]): Rep[Int] =
@@ -595,8 +285,6 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
     //     })
     //     readVar(minResult)
     //   }
-
-    // def sortBy[S: TypeRep](sortFunction: Rep[T => S]): QueryStream[T] = self
 
     def sortBy[S: TypeRep](sortFunction: Rep[T => S]): QueryStream[T] = new QueryStream[T] {
 
@@ -802,13 +490,6 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
       }
 
     }
-    // QueryStream { (k: Rep[T] => Rep[Unit]) =>
-    //   QML.array_foreach_using_while(arr, k)
-    // }
-    // implicit def apply[T: TypeRep](k: (Rep[T] => Rep[Unit]) => Rep[Unit]): QueryStream[T] =
-    //   new QueryStream[T] {
-    //     def foreach(k2: Rep[T] => Rep[Unit]): Rep[Unit] = k(k2)
-    //   }
   }
 
   implicit def queryToStream[T](sym: Rep[Query[T]]): QueryStream[T] = {
