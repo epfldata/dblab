@@ -36,9 +36,9 @@ class Settings(val args: List[String]) {
         throw new Exception(s"${OptimalSetting.flagName} cannot be used for it, because there is no optimal handler defined for it.")
       val propName =
         if (chooseCompliant)
-          "config/compliant.properties"
+          "experimentation/config/compliant.properties"
         else
-          "config/optimal.properties"
+          "experimentation/config/optimal.properties"
       val newArgs = optimalArgsHandler(propName)
       // TODO rewrite using OptimizationLevelSetting
       val LEVELS_PREFIX = "-levels="

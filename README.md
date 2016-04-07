@@ -19,8 +19,8 @@ hosts a library of the components of a database system such as parsers, query en
 hosts the compilation-related code for optimizing a database system such as transformers and 
 code generators.
 
-[Benchmarks](benchmarks) and [Benchmarks Compiler](benchmarks-compiler)
-host the benchmarks used in the DBLAB systems.
+[Experimentation](experimentation)
+host the expirmentation infrasturcture (e.g. the scripts, configurations, and the implementation of some benchmarks) used in the DBLAB systems.
 
 [Systems](systems)
 hosts the code base of the systems implemented using the DBLAB Components.

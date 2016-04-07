@@ -7,7 +7,7 @@ package quasi
 import org.scalatest.{ FlatSpec, ShouldMatchers }
 import prettyprinter._
 import transformers._
-import dblab.benchmarks.tpch._
+import dblab.experimentation.tpch._
 import deep._
 import sc.pardis.optimization._
 import sc.pardis.types.PardisTypeImplicits._

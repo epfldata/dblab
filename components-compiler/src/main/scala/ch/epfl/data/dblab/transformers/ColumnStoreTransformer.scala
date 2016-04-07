@@ -120,10 +120,10 @@ class ColumnStoreTransformer(override val IR: QueryEngineExp)
   val potentialTypes = scala.collection.mutable.Set[TypeRep[_]]()
   val forbiddenTypes = scala.collection.mutable.Set[TypeRep[_]]()
   val columnarTypes = scala.collection.mutable.Set[TypeRep[_]]()
-  
+
   analysis += statement {
-//    case sym -> dsl"new Array($_)" =>
-    case sym -> dsl"new Array[Any]($_)" =>
+    //    case sym -> dsl"new Array($_)" =>
+    case sym -> dsl"new Array[Any]($size)" =>
       val innerType = sym.tp.typeArguments(0)
       if (innerType.isRecord)
         potentialTypes += innerType
@@ -147,7 +147,7 @@ class ColumnStoreTransformer(override val IR: QueryEngineExp)
 
   {
     analysis += rule {
-      case dsl"($arr: Array[Any])($_) = ${UnacceptableUpdateValue(_)}" =>
+      case dsl"($arr: Array[Any])($index) = ${ UnacceptableUpdateValue(_) }" =>
         val innerType = arr.tp.typeArguments(0)
         if (innerType.isRecord)
           forbiddenTypes += innerType
@@ -174,8 +174,8 @@ class ColumnStoreTransformer(override val IR: QueryEngineExp)
   }
 
   rewrite += rule {
-//    case an @ ArrayNew(size) if shouldBeColumnarized(an.tp.typeArguments(0)) => {
-//    case dsl"new Array[Any]($size) as $an" if shouldBeColumnarized(an.tp.typeArguments(0)) => {
+    //    case an @ ArrayNew(size) if shouldBeColumnarized(an.tp.typeArguments(0)) => {
+    //    case dsl"new Array[Any]($size) as $an" if shouldBeColumnarized(an.tp.typeArguments(0)) => {
     case an @ dsl"new Array[Any]($size)" if shouldBeColumnarized(an.tp.typeArguments(0)) => {
       val elemType = an.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
       val structDef = getStructDef(elemType).get

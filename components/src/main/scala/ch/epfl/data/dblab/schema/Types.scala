@@ -26,3 +26,4 @@ case class TableType(schema: Schema, table: Table) extends PardisType[Table] {
   override val isRecord = true
   val typeTag = throw new Exception("No type tag available for a TableType type representation.")
 }
+

@@ -4,8 +4,8 @@ package legobase
 package deep
 
 import dblab.deep.dsls.QueryEngineExp
-import dblab.deep.benchmarks._
-import dblab.deep.benchmarks.tpch._
+import dblab.deep.experimentation._
+import dblab.deep.experimentation.tpch._
 
 /** A polymophic embedding cake which chains all cakes needed for the LegoBase query engine */
 abstract class LegoBaseQueryEngineExp extends QueryEngineExp

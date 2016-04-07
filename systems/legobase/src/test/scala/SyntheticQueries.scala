@@ -1,6 +1,7 @@
 package ch.epfl.data
 package dblab
 package legobase
+package experimentation
 package tpch
 
 import compiler._
@@ -14,7 +15,7 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.types._
 import deep.quasi._
 import legobase.deep.LegoBaseQueryEngineExp
-import dblab.benchmarks.tpch._
+import dblab.experimentation.tpch._
 import config.Config
 import sc.pardis.shallow.OptimalString
 
@@ -69,7 +70,7 @@ object SyntheticQueries extends TPCHRunner {
 
   def query12_p2(numRuns: Int): context.Rep[Unit] = {
     import dblab.queryengine.monad.Query
-    import dblab.benchmarks.tpch.TPCHLoader._
+    import dblab.experimentation.tpch.TPCHLoader._
     import dblab.queryengine.GenericEngine._
     val lineitemTable = dsl"""Query(loadLineitem())"""
     val ordersTable = dsl"Query(loadOrders())"
@@ -125,7 +126,7 @@ object SyntheticQueries extends TPCHRunner {
 
   def querySimple(numRuns: Int): context.Rep[Unit] = {
     import dblab.queryengine.monad.Query
-    import dblab.benchmarks.tpch.TPCHLoader._
+    import dblab.experimentation.tpch.TPCHLoader._
     import dblab.queryengine.GenericEngine._
     dsl"""
       val result = {
@@ -141,7 +142,7 @@ object SyntheticQueries extends TPCHRunner {
 
   def query6(numRuns: Int): context.Rep[Unit] = {
     import dblab.queryengine.monad.Query
-    import dblab.benchmarks.tpch.TPCHLoader._
+    import dblab.experimentation.tpch.TPCHLoader._
     import dblab.queryengine.GenericEngine._
     val lineitemTable = dsl"""Query(loadLineitem())"""
 
@@ -219,7 +220,7 @@ object SyntheticQueries extends TPCHRunner {
 
     val validatedSettings = settings.validate()
 
-    val compiler = new LegoCompiler(context, validatedSettings, schema, "ch.epfl.data.dblab.benchmarks.tpch.TPCHRunner") {
+    val compiler = new LegoCompiler(context, validatedSettings, schema, "ch.epfl.data.dblab.experimentation.tpch.TPCHRunner") {
       def postfix: String = s"sf${settings.args(1)}_${super.outputFile}"
       override def outputFile =
         if (ONE_LOADER_FOR_ALL)

@@ -59,7 +59,8 @@ class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends Par
               }
               varsStruct += Var(sym.asInstanceOf[Rep[Var[Any]]]) -> VarStruct(vars.toMap)
             }
-
+            case None =>
+              throw new Exception(s"No struct definition found for `var $sym: ${sym.tp.typeArguments(0)} = $e`")
           }
         }
       }
