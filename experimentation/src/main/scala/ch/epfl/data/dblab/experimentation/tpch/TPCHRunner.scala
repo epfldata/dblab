@@ -27,7 +27,7 @@ trait TPCHRunner extends QueryRunner {
         query.dropRight(FUNCTIONAL_POST_FIX.size)
       else
         query
-    "results/" + resultFileName + ".result_sf" + scalingFactor
+    "experimentation/tpch-output/" + resultFileName + ".result_sf" + scalingFactor
   }
 
   def getQueries(args: Array[String]): List[String] = {
