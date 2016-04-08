@@ -1,10 +1,14 @@
 package ch.epfl.data
 package dblab
+package frontend
 package parser
 
 /**
  * AST for SQL select statement.
  * Based on: https://github.com/stephentu/scala-sql-parser
+ *
+ * @author Yannis Klonatos
+ *
  */
 
 trait Node

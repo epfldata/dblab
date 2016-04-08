@@ -1,5 +1,6 @@
 package ch.epfl.data
 package dblab
+package frontend
 package parser
 
 import scala.util.matching.Regex
@@ -14,6 +15,9 @@ import scala.util.parsing.input.CharArrayReader.EofCh
 /**
  * A simple SQL parser.
  * Based on: https://github.com/stephentu/scala-sql-parser
+ *
+ * @author Yannis Klonatos
+ *
  */
 object SQLParser extends StandardTokenParsers {
 

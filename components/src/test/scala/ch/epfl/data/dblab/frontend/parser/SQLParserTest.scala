@@ -1,4 +1,8 @@
-import ch.epfl.data.dblab.parser._
+package ch.epfl.data
+package dblab
+package frontend
+package parser
+
 import org.scalatest._
 import Matchers._
 
