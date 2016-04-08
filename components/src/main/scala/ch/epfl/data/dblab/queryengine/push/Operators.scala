@@ -9,7 +9,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.Set
 import scala.collection.mutable.TreeSet
 import GenericEngine._
-import sc.pardis.annotations.{ deep, metadeep, dontInline, needs, ::, onlineInliner, noDeepExt }
+import sc.pardis.annotations.{ deep, metadeep, dontInline, needs, ::, onlineInliner, noDeepExt, dontLift }
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
 import sc.pardis.shallow.scalalib.ScalaCore
 import scala.reflect.ClassTag
@@ -539,6 +539,8 @@ class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
     table(size) = tuple.asInstanceOf[A]
     size += 1
   }
+  @dontLift
+  def getDataArray() = table.slice(0, size)
 }
 
 /**
