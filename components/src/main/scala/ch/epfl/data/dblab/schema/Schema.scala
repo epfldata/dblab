@@ -8,7 +8,10 @@ import scala.collection.mutable.Map
 import scala.collection.mutable.ArrayBuffer
 
 case class Catalog(schemata: Map[String, Schema])
-case class Schema(tables: ArrayBuffer[Table], stats: Statistics = Statistics()) {
+case class Schema(tables: ArrayBuffer[Table], stats: Statistics) {
+  def this(tables: List[Table], stats: Statistics) = this(ArrayBuffer[Table]() ++ tables, stats)
+  def this(tables: List[Table]) = this(tables, Statistics())
+  def this(tables: ArrayBuffer[Table]) = this(tables, Statistics())
   def findTable(name: String): Option[Table] = tables.find(t => t.name == name)
   def findTableByType(tpe: PardisType[_]): Option[Table] = tables.find(t => t.name + "Record" == tpe.name)
   def findAttribute(attrName: String): Option[Attribute] = tables.map(t => t.attributes).flatten.find(attr => attr.name == attrName)

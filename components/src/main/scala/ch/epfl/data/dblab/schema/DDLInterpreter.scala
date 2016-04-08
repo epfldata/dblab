@@ -44,7 +44,7 @@ class DDLInterpreter(val catalog: Catalog) {
   def interpret(ddlDef: List[_]): Schema = {
     ddlDef.foreach(ddl => ddl match {
       case UseSchema(schemaName) => {
-        currSchema = Some(catalog.schemata.getOrElseUpdate(schemaName, new Schema(ArrayBuffer())))
+        currSchema = Some(catalog.schemata.getOrElseUpdate(schemaName, new Schema(ArrayBuffer[Table]())))
       }
       case DropTable(tableName) => {
         val schema = getCurrSchema
