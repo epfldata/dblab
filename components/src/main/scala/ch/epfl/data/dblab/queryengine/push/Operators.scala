@@ -13,6 +13,7 @@ import sc.pardis.annotations.{ deep, metadeep, dontInline, needs, ::, onlineInli
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
 import sc.pardis.shallow.scalalib.ScalaCore
 import scala.reflect.ClassTag
+import schema.DataRow
 
 @metadeep(
   folder = "",
@@ -188,6 +189,44 @@ class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B])(v
     var i: scala.Int = 0
     aggFuncs.foreach { aggFun =>
       aggs(i) = aggFun(tuple.asInstanceOf[A], aggs(i))
+      i += 1
+    }
+  }
+}
+
+class AggOpGeneric[A, B: TypeTag](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B], val keyName: Option[String])(val aggFuncs: Function2[A, Double, Double]*)(aggNames: Seq[String]) extends Operator[DataRow] {
+
+  val hm = HashMap[B, DataRow]()
+  val numAggRecordFields = 1 + numAggs // 1 for the key
+
+  def open() {
+    parent.child = this; parent.open
+  }
+
+  def next() {
+    parent.next
+    hm.foreach { pair =>
+      child.consume(pair._2)
+    }
+  }
+  def reset() { parent.reset; /*hm.clear;*/ open }
+  def consume(tuple: Record) {
+    // Starting values for aggregation
+    val aggregates = (0 until numAggRecordFields - 1).map(i => 0.0).toSeq
+
+    val key = grp(tuple.asInstanceOf[A])
+
+    val elem = hm.getOrElseUpdate(key.asInstanceOf[B], {
+      keyName match {
+        case Some(kn) => new DataRow(Seq(keyName.get) ++ aggNames zip Seq(key) ++ aggregates).asInstanceOf[DataRow]
+        case None     => new DataRow(aggNames zip aggregates).asInstanceOf[DataRow]
+      }
+    })
+
+    var i: scala.Int = 0
+    aggFuncs.foreach { aggFun =>
+      val newValue = aggFun(tuple.asInstanceOf[A], elem.getField(aggNames(i)).get.asInstanceOf[Double])
+      elem.setField(aggNames(i), newValue)
       i += 1
     }
   }

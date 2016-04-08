@@ -63,6 +63,34 @@ object Loader {
   // def loadTable[R](schema: Schema)(implicit t: TypeTag[R]): Array[R] = {
 
   @dontInline
+  def loadUntypedTable(table: Table): Array[DataRow] = {
+    val size = fileLineCount(table.resourceLocator)
+    val arr = new Array[DataRow](size)
+    val ldr = new FastScanner(table.resourceLocator)
+
+    var i = 0
+
+    val argNames = table.attributes.map(_.name).toSeq
+
+    while (i < size && ldr.hasNext()) {
+      val values = table.attributes.map(arg =>
+        arg.dataType match {
+          case IntType          => ldr.next_int
+          case DoubleType       => ldr.next_double
+          case CharType         => ldr.next_char
+          case DateType         => ldr.next_date
+          case VarCharType(len) => loadString(len, ldr)
+        })
+      val rec = new DataRow(table.attributes.map(_.name) zip values)
+      arr(i) = rec
+      i += 1
+    }
+    arr
+
+    //TODO update statistics
+  }
+
+  @dontInline
   def loadTable[R](table: Table)(implicit c: ClassTag[R]): Array[R] = {
     if (Config.cacheLoading && cachedTables.contains(table)) {
       System.out.println(s"Loading cached ${table.name}!")

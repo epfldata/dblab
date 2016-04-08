@@ -21,7 +21,6 @@ object QueryInterpreter {
   var currQuery: java.lang.String = ""
   var queryName: java.lang.String = ""
   Config.checkResults = true
-  val ddlInterpreter = new DDLInterpreter(new Catalog(scala.collection.mutable.Map()))
 
   def getOutputName = queryName + "Output.txt"
 
@@ -32,7 +31,9 @@ object QueryInterpreter {
    */
   def main(args: Array[String]) {
     if (args.size < 1) {
-      println("Please provide the data path as the first argument.")
+      System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
+      System.out.println("USAGE: run <data_folder> <list of DDL files and SQL queries>")
+      System.out.println("Example: run /home/data/sf0.1/ experimentation/tpch-sql/dss.ddl experimentation/tpch-sql/Q6.sql")
       System.exit(1)
     }
     // Set the folder containing data
@@ -51,6 +52,8 @@ object QueryInterpreter {
       } else if (f.isDirectory) f.listFiles.map(arg + "/" + _.getName).toList
       else List(arg)
     }).flatten.groupBy(f => f.substring(f.lastIndexOf('.'), f.length))
+
+    val ddlInterpreter = new DDLInterpreter(new Catalog(scala.collection.mutable.Map()))
 
     // TODO -- Ideally, the following should not be dependant on the file extension, but OK for now.
     for (f <- (filesToExecute.get(".ddl") ++ filesToExecute.get(".ri")).flatten.toList) {

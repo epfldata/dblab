@@ -81,7 +81,10 @@ object PlanExecutor {
           case Some(f) => Some(f)
           case None    => None //searchRecordFields(rec)
         }
-      } else searchRecordFields(rec.asInstanceOf[DataRow])
+      } else if (rec.isInstanceOf[DataRow])
+        searchRecordFields(rec.asInstanceOf[DataRow])
+      else
+        throw new Exception(s"$rec is not a DataRow record and does not have the field `$name`")
     }
 
     searchRecord(t) match {
@@ -324,7 +327,7 @@ object PlanExecutor {
   }
 
   def createAggOpOperator(parentOp: OperatorNode, aggs: Seq[Expression], gb: Seq[(Expression, String)], aggNames: Seq[String]): Operator[_] = {
-    System.out.println(aggs)
+    System.out.println(s"AGGOP INFO: $aggs")
     System.out.println(gb)
     System.out.println(aggNames)
     val aggFuncs: Seq[(Record, Double) => Double] = aggs.map(p => {
@@ -366,8 +369,8 @@ object PlanExecutor {
           new DataRow(keyFieldAttrNames zip keyExpr)
       }
     }
-    ??? // TODO
-    // new AggOp(convertOperator(parentOp).asInstanceOf[Operator[Record]], aggs.length)(grp, keyName)(aggFuncs: _*)(aggNames)
+    // new AggOp(convertOperator(parentOp).asInstanceOf[Operator[Record]], aggs.length)(grp)(aggFuncs: _*)
+    new AggOpGeneric(convertOperator(parentOp).asInstanceOf[Operator[Record]], aggs.length)(grp, keyName)(aggFuncs: _*)(aggNames)
   }
 
   def createSelectOperator(parentOp: OperatorNode, cond: Expression): Operator[_] = {
@@ -435,7 +438,7 @@ object PlanExecutor {
 
   def convertOperator(node: OperatorNode): Operator[_] = node match {
     case ScanOpNode(table, _, _) =>
-      new ScanOp(Loader.loadTable(table))
+      new ScanOp(Loader.loadUntypedTable(table))
     case SelectOpNode(parent, cond, _) =>
       createSelectOperator(parent, cond)
     case JoinOpNode(leftParent, rightParent, joinCond, joinType, leftAlias, rightAlias) =>
