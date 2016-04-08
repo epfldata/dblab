@@ -62,7 +62,7 @@ object Loader {
   // TODO
   // def loadTable[R](schema: Schema)(implicit t: TypeTag[R]): Array[R] = {
 
-  @dontInline
+  @dontLift
   def loadUntypedTable(table: Table): Array[DataRow] = {
     val size = fileLineCount(table.resourceLocator)
     val arr = new Array[DataRow](size)
