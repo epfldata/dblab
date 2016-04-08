@@ -4,6 +4,7 @@ package frontend
 package parser
 
 /**
+ *
  * @author Yannis Klonatos
  */
 object DDLAST {
