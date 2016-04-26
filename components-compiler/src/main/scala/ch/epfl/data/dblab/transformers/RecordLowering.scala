@@ -4,6 +4,7 @@ package transformers
 
 import scala.reflect.runtime.universe.{ typeTag => tag }
 import dblab.deep._
+import utils.Logger
 import scala.language.implicitConversions
 import sc.pardis.ir._
 import deep.dsls.QueryEngineExp
@@ -42,6 +43,7 @@ object RecordLowering {
  */
 class RecordLowering(override val from: QueryEngineExp, override val to: QueryEngineExp, val removeUnusedFields: Boolean) extends Lowering[QueryEngineExp, QueryEngineExp](from, to) {
   import from._
+  val logger = Logger[RecordLowering]
 
   // override val lowerStructs: Boolean = false
   def stop = ("stop", true, unit(false))
@@ -172,8 +174,8 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     phase = FieldUsagePhase
     traverseBlock(node)
     phase = OtherPhase
-    // System.out.println(s"tags: $manifestTags")
-    // System.out.println(s"dtypes: $notSeenDynamicRecordTypes")
+    logger.debug(s"tags: $manifestTags")
+    logger.debug(s"dtypes: $notSeenDynamicRecordTypes")
     computeConcatTypeEtc()
     val res = transformProgram(node)
     res

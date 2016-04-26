@@ -3,6 +3,7 @@ package dblab
 package transformers
 
 import schema._
+import utils.Logger
 import sc.pardis.ir._
 import deep.dsls.QueryEngineExp
 import sc.pardis.types._
@@ -17,6 +18,7 @@ import dblab.deep._
  */
 class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: Schema) extends RuleBasedTransformer[QueryEngineExp](IR) {
   import IR._
+  val logger = Logger[StringDictionaryTransformer]
 
   // TODO needs clean up
 
@@ -32,7 +34,6 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
   val scanOperatorArrays = new scala.collection.mutable.ArrayBuffer[(Rep[Array[Any]], Seq[String])]()
   val COMPRESSION_THREASHOLD = unit(4096) // maximum number of unique strings per list possible
 
-  val debugEnabled = false
   // The third argument of the following map is used only for the twoPhaseStringCompression
   var compressedStringsMaps = scala.collection.mutable.Map[String, (Var[Int], Rep[ArrayBuffer[OptimalString]], Rep[ArrayBuffer[OptimalString]])]()
   val hoistedStatements = collection.mutable.Set[String]()
@@ -47,7 +48,7 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
   def compressedStringType(name: String): TypeRep[Any] = (if (shouldTokenize(name)) ArrayType(IntType) else IntType).asInstanceOf[TypeRep[Any]]
 
   def getNameAliasIfAny(str: String) = nameAliases.getOrElse(str, {
-    if (debugEnabled) System.out.println("StringDictionaryTransformer: Name alias for string " + str + " not found!")
+    logger.debug("StringDictionaryTransformer: Name alias for string " + str + " not found!")
     str
   })
 
@@ -59,12 +60,12 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
 
   override def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     traverseBlock(node)
-    //System.out.println("StringDictionaryTransformer: Modified symbols are:\n" + modifiedExpressions.mkString("\n"))
+    //logger.debug("StringDictionaryTransformer: Modified symbols are:\n" + modifiedExpressions.mkString("\n"))
     phase = LoadingPhase
     reifyBlock {
       // Generate and hoist needed maps for string compression
       hoistedStatements.foreach(hs => {
-        System.out.println("StringDictionaryTransformer: Creating map for field " + hs)
+        logger.debug("StringDictionaryTransformer: Creating map for field " + hs)
         compressedStringsMaps.getOrElseUpdate(hs, {
           (__newVar[Int](unit(0)), __newArrayBuffer[OptimalString](), {
             if (twoPhaseStringCompressionNeeded) __newArrayBuffer[OptimalString]() else unit(null)
@@ -143,7 +144,7 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
           e.init match {
             case Def(StructImmutableField(s, f)) => {
               if (e.name != f) {
-                System.out.println("StringDictionaryTransformer: Registering name alias: " + e.name + " -> " + getNameAliasIfAny(f))
+                logger.debug("StringDictionaryTransformer: Registering name alias: " + e.name + " -> " + getNameAliasIfAny(f))
                 nameAliases += e.name -> getNameAliasIfAny(f)
               }
               modifiedExpressions += sym -> f
@@ -179,13 +180,12 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
   // Transformers
   rewrite += rule {
     case origStruct @ Struct(tag, elems, methods) if phase == LoadingPhase =>
-      if (debugEnabled) System.out.println("StringDictionaryTransformer: Struct " + tag + " found with elems " + elems.mkString)
+      logger.debug("StringDictionaryTransformer: Struct " + tag + " found with elems " + elems.mkString)
 
       Struct(tag, elems.map(e => {
         if (e.init.tp == OptimalStringType && cc(e.name)) {
-          //System.out.println(e.name)
-          if (debugEnabled) System.out.println("StringDictionaryTransformer: Field " + e.name + " of type " + e.init.tp)
-          if (debugEnabled) System.out.println("StringDictionaryTransformer: Map now is " + compressedStringsMaps.mkString)
+          logger.debug("StringDictionaryTransformer: Field " + e.name + " of type " + e.init.tp)
+          logger.debug("StringDictionaryTransformer: Map now is " + compressedStringsMaps.mkString)
 
           val compressedStringMetaData = compressedStringsMaps(e.name)
           val num_unique_strings = compressedStringMetaData._1
@@ -210,7 +210,7 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
 
           if (shouldTokenize(e.name)) {
             val tokenizedStringInfo = max_num_words_map(e.name)
-            System.out.println("StringDictionaryTransformer: tokenizing " + e.name);
+            logger.debug("StringDictionaryTransformer: tokenizing " + e.name);
             val delim = __newArray[Byte](unit(8))
             for ((chr, idx) <- List(' ', '.', '!', ';', ',', ':', '?', '-').zipWithIndex) {
               delim(unit(idx)) = unit(chr.toByte)
@@ -260,7 +260,7 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
     case origStruct @ Struct(tag, elems, methods) if phase == QueryExecutionPhase =>
       Struct(tag, elems.map(e => {
         if (e.init.tp == OptimalStringType && cc(e.name)) {
-          System.out.println("StringDictionaryTransformer: Rewriting struct during query with tag: " + tag + " / field: " + e.name)
+          logger.debug("StringDictionaryTransformer: Rewriting struct during query with tag: " + tag + " / field: " + e.name)
           PardisStructArg(e.name, e.mutable, infix_asInstanceOf(apply(e.init))(compressedStringType(e.name)))
         } else e
       }), methods)(origStruct.tp)
@@ -291,7 +291,7 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
   rewrite += statement {
     case sym -> GenericEngineParseStringObject(constantString) if constantStrings.contains(sym) && cc(constantStrings(sym).poolName) =>
       val csi = constantStrings(sym)
-      System.out.println("StringDictionaryTransformer: Generating code for compressing constant string " + csi.poolName)
+      logger.debug("StringDictionaryTransformer: Generating code for compressing constant string " + csi.poolName)
       val newSym = GenericEngine.parseString(constantString)
       val str2tmp = if (stringReversalNeeded) newSym.reverse else newSym
       val compressedStringMetaData = compressedStringsMaps(getNameAliasIfAny(csi.poolName))
@@ -307,7 +307,7 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
   rewrite += rule {
     case OptimalStringComparison(str1, str2, equalityCheck) => str2 match {
       case Def(GenericEngineParseStringObject(constantString)) =>
-        if (debugEnabled) System.out.println("StringDictionaryTransformer: GenericEngineParseStringObject of " + constantString + " encountered ")
+        logger.debug("StringDictionaryTransformer: GenericEngineParseStringObject of " + constantString + " encountered ")
         str1 match {
           case Def(StructImmutableField(s, name)) =>
             if (cc(name)) {
@@ -353,7 +353,7 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
         }
       }
       if (cc(fieldName)) {
-        System.out.println("StringDictionaryTransformer: Stringification of compressed string: Corresponding node is " + str.correspondingNode)
+        logger.debug("StringDictionaryTransformer: Stringification of compressed string: Corresponding node is " + str.correspondingNode)
         val compressedStringMetaData = compressedStringsMaps(fieldName)
         val compressedStringValues = compressedStringMetaData._2
         val tmpString = compressedStringValues(apply(str).asInstanceOf[Rep[Int]])
@@ -363,7 +363,7 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
 
     case OptimalStringStartsOrEndsWith(str1, str2, endsWith) => str2 match {
       case Def(GenericEngineParseStringObject(constantString)) =>
-        if (debugEnabled) System.out.println("StringDictionaryTransformer: GenericEngineParseStringObject of " + constantString + " encountered ")
+        logger.debug("StringDictionaryTransformer: GenericEngineParseStringObject of " + constantString + " encountered ")
         str1 match {
           case Def(StructImmutableField(s, name)) =>
             if (cc(name)) {
@@ -383,16 +383,16 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
 
   rewrite += rule {
     case hm @ HashMapNew() if hm.typeA == OptimalStringType && modifiedExpressions.size != 0 =>
-      System.out.println("StringDictionaryTransformer: Replacing map of OptimalString with map of Int")
+      logger.debug("StringDictionaryTransformer: Replacing map of OptimalString with map of Int")
       HashMapNew()(typeRep[Int].asInstanceOf[TypeRep[Any]], hm.typeB)
   }
 
   rewrite += rule {
     case GenericEngineRunQueryObject(b) => {
       phase = QueryExecutionPhase
-      System.out.println("StringDictionaryTransformer: twoPhaseStringCompressionNeeded = " + twoPhaseStringCompressionNeeded)
-      System.out.println("StringDictionaryTransformer: wordTokinizingStringCompressionNeeded = " + wordTokinizingStringCompressionNeeded)
-      System.out.println("StringDictionaryTransformer: tokenized strings: " + tokenizedStrings.mkString(","))
+      logger.debug("StringDictionaryTransformer: twoPhaseStringCompressionNeeded = " + twoPhaseStringCompressionNeeded)
+      logger.debug("StringDictionaryTransformer: wordTokinizingStringCompressionNeeded = " + wordTokinizingStringCompressionNeeded)
+      logger.debug("StringDictionaryTransformer: tokenized strings: " + tokenizedStrings.mkString(","))
       max_num_words_map.foreach(ts => {
         //printf(unit("%d"), readVar(ts._2._1)(IntType))
         __assign(ts._2._1, unit(-1))
@@ -400,7 +400,7 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
       if (twoPhaseStringCompressionNeeded) {
         reifyBlock {
           compressedStringsMaps = compressedStringsMaps.map(csm => {
-            System.out.println("StringDictionaryTransformer: Emitting code for sorting string pool of field " + csm._1)
+            logger.debug("StringDictionaryTransformer: Emitting code for sorting string pool of field " + csm._1)
             val ab = csm._2._2
             val abSorted = ab.sortWith(doLambda2((a: Rep[OptimalString], b: Rep[OptimalString]) => optimalStringDiff(a, b) < unit(0)))
             (csm._1, (csm._2._1, abSorted, csm._2._3))
@@ -444,7 +444,7 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
     case OptimalStringIndexOfSlice(str1, str2, beg) =>
       str1 match {
         case Def(StructImmutableField(s, name)) if (cc(name)) =>
-          System.out.println("AM I EVER HERE FOR " + name + " ? ")
+          logger.warn("StructImmutableField encountered for indexOfSlide method for the field: " + name + "!")
           val tokenizedStringInfo = max_num_words_map(name)
           val idx = __newVarNamed[Int](unit(MAX_NUM_WORDS), "findSlice")
           val start = __newVar[Int](apply(beg) match {

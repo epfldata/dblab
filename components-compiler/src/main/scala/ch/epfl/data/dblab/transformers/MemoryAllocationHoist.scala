@@ -2,6 +2,7 @@ package ch.epfl.data
 package dblab
 package transformers
 
+import utils.Logger
 import schema._
 import scala.language.implicitConversions
 import sc.pardis.ir._
@@ -49,6 +50,8 @@ class MemoryAllocationHoist(override val IR: QueryEngineExp, val schema: Schema)
   import IR._
   //import CNodes._
   //import CTypes._
+
+  val logger = Logger[MemoryAllocationHoist]
 
   /* If you want to disable this optimization, set this flag to `false` */
   val enabled = true
@@ -247,7 +250,7 @@ class MemoryAllocationHoist(override val IR: QueryEngineExp, val schema: Schema)
 
   rewrite += rule {
     case ps @ ArrayNew(size) if startCollecting => {
-      System.out.println(s"REPLACING ARRAY ALLOCATION IN MEMORYTRANSFORMER ${ps.tp}")
+      logger.debug(s"REPLACING ARRAY ALLOCATION IN MEMORYTRANSFORMER ${ps.tp}")
       // val mallocInstance = mallocToInstance(ps.asInstanceOf[Def[Any]])
       // val bufferInfo = mallocBuffers(mallocInstance)
       val bufferInfo = mallocBuffers(ps.tp.asInstanceOf[PardisType[Any]])
@@ -261,7 +264,7 @@ class MemoryAllocationHoist(override val IR: QueryEngineExp, val schema: Schema)
 
   rewrite += rule {
     case ps @ PardisStruct(tag, elems, methods) if startCollecting => {
-      System.out.println(s"REPLACING STRUCT ALLOCATION IN MEMORYTRANSFORMER ${ps.tp}")
+      logger.debug(s"REPLACING STRUCT ALLOCATION IN MEMORYTRANSFORMER ${ps.tp}")
       // val mallocInstance = mallocToInstance(ps.asInstanceOf[Def[Any]])
       // val bufferInfo = mallocBuffers(mallocInstance)
       // System.out.println(s"finding tp: ${ps.tp} with class ${ps.tp.asInstanceOf[RecordType[_]].tag} ${mallocBuffers.find(_._1 == ps.tp)}")

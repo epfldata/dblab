@@ -2,6 +2,7 @@ package ch.epfl.data
 package dblab
 package transformers
 
+import utils.Logger
 import schema._
 import scala.language.implicitConversions
 import sc.pardis.ir._
@@ -84,6 +85,8 @@ class HashMapGrouping(override val IR: QueryEngineExp,
   with WhileRangeProcessing {
   import IR.{ __struct_field => _, __block => _, _ }
 
+  val logger = Logger[HashMapGrouping]
+
   /**
    * Keeps the information about a relation which (probably) participates in a join.
    * This information is gathered during the analysis phase.
@@ -96,7 +99,7 @@ class HashMapGrouping(override val IR: QueryEngineExp,
       unit(schema.stats.getDistinctAttrValues(partitioningField))
     def bucketSize: Rep[Int] =
       unit(schema.stats.conflicts(partitioningField).getOrElse({
-        System.out.println(s"${scala.Console.RED}Number of partitions based on $partitioningField overestimated!${scala.Console.RESET}")
+        logger.warn(s"${scala.Console.RED}Number of partitions based on $partitioningField overestimated!${scala.Console.RESET}")
         1 << 10
       }))
     def is1D: Boolean =
@@ -171,7 +174,7 @@ class HashMapGrouping(override val IR: QueryEngineExp,
 
   override def optimize[T: TypeRep](node: Block[T]): Block[T] = {
     val res = super.optimize(node)
-    System.out.println(s"${scala.Console.GREEN}[$transformedMapsCount] MultiMaps partitioned!${scala.Console.RESET}")
+    logger.debug(s"${scala.Console.GREEN}[$transformedMapsCount] MultiMaps partitioned!${scala.Console.RESET}")
     res
   }
 
@@ -489,9 +492,7 @@ class HashMapGrouping(override val IR: QueryEngineExp,
                   } else {
                   }"""
         }
-        // System.out.println(s"STARTED setforeach for the key $key $e.${leftArray.fieldFunc} mm: $mm")
         val res1 = inlineBlock2(whileLoop.body)
-        // System.out.println(s"FINISH setforeach for the key $key")
         mm.leftElemCode.reset()
         mm.rightElemProcessingCode.reset()
         transformedMapsCount += 1
@@ -703,7 +704,7 @@ class HashMapGrouping(override val IR: QueryEngineExp,
    *
    */
   def createPartitionedArray(partitionedRelationInfo: RelationInfo): Unit = {
-    System.out.println(scala.Console.GREEN + "Table " +
+    logger.debug(scala.Console.GREEN + "Table " +
       partitionedRelationInfo.array.tp.typeArguments(0) + " was partitioned on field " +
       partitionedRelationInfo.partitioningField + scala.Console.RESET)
 
@@ -715,9 +716,9 @@ class HashMapGrouping(override val IR: QueryEngineExp,
 
     val buckets = partitionedRelationInfo.numBuckets
     if (partitionedRelationInfo.is1D) {
-      //System.out.println(s"${scala.Console.BLUE}1D Array!!!${scala.Console.RESET}")
+      //logger.debug(s"${scala.Console.BLUE}1D Array!!!${scala.Console.RESET}")
       if (partitionedRelationInfo.reuseOriginal1DArray) {
-        System.out.println(s"${scala.Console.BLUE}1D Original Array!!!${scala.Console.RESET}")
+        logger.debug(s"${scala.Console.BLUE}1D Original Array!!!${scala.Console.RESET}")
         partitionedRelationInfo.partitionedArray = originalArray
       } else {
         val partitionedArray = __newArray[InnerType](buckets)
@@ -737,7 +738,7 @@ class HashMapGrouping(override val IR: QueryEngineExp,
         })
       }
       if (partitionedObjectAlreadyExists.nonEmpty) {
-        System.out.println(s"${scala.Console.BLUE}2D Array already exists!${scala.Console.RESET}")
+        logger.debug(s"${scala.Console.BLUE}2D Array already exists!${scala.Console.RESET}")
         partitionedRelationInfo.partitionedArray = partitionedObjectAlreadyExists.get._1.partitionedArray
         partitionedRelationInfo.count = partitionedObjectAlreadyExists.get._1.count
       } else {

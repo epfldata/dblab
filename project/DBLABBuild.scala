@@ -20,6 +20,7 @@ object DBLABBuild extends Build {
     // add the library, reflect and the compiler as libraries
     libraryDependencies ++= Seq(
       "junit" % "junit-dep" % "4.10" % "test",
+      "log4j" % "log4j" % "1.2.17",
       "org.scalatest" % "scalatest_2.11" % "2.2.0" % "test",
       "org.scala-lang"         %  "scala-reflect" % scala_version,
       "org.scala-lang" % "scala-compiler" % scala_version % "optional"

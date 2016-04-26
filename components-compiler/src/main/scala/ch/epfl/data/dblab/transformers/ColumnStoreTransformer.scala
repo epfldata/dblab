@@ -3,7 +3,7 @@ package dblab
 package transformers
 
 import ch.epfl.data.sc.pardis.quasi.TypeParameters._
-
+import utils.Logger
 import scala.language.implicitConversions
 import sc.pardis.ir._
 import deep.dsls.QueryEngineExp
@@ -77,6 +77,8 @@ class ColumnStoreTransformer(override val IR: QueryEngineExp)
   extends RuleBasedTransformer[QueryEngineExp](IR)
   with StructCollector[QueryEngineExp] {
   import IR._
+
+  val logger = Logger[ColumnStoreTransformer]
 
   def shouldBeColumnarized[T](tp: PardisType[T]): Boolean =
     columnarTypes.contains(tp)
@@ -165,7 +167,7 @@ class ColumnStoreTransformer(override val IR: QueryEngineExp)
 
   override def postAnalyseProgram[T: TypeRep](node: Block[T]): Unit = {
     computeColumnarTypes()
-    System.out.println(s">>>CStore columnarTypes: ${columnarTypes}<<<")
+    logger.debug(s">>>CStore columnarTypes: ${columnarTypes}<<<")
   }
 
   rewrite += remove {

@@ -3,6 +3,7 @@ package dblab
 package transformers
 
 import schema._
+import utils.Logger
 import scala.language.implicitConversions
 import sc.pardis.ir._
 import deep.dsls.QueryEngineExp
@@ -23,11 +24,12 @@ import sc.pardis.ir.StructTags._
  */
 class StatisticsEstimator(override val IR: QueryEngineExp, val schema: Schema) extends RuleBasedTransformer[QueryEngineExp](IR) {
   import IR._
+  val logger = Logger[StatisticsEstimator]
 
   override def optimize[T: TypeRep](node: Block[T]): to.Block[T] = {
     schema.stats.removeQuerySpecificStats()
     traverseBlock(node)
-    System.out.println(schema.stats.mkString("\n"))
+    logger.debug(schema.stats.mkString("\n"))
     node
   }
 
@@ -44,7 +46,7 @@ class StatisticsEstimator(override val IR: QueryEngineExp, val schema: Schema) e
     case Def(GenericEngineDateToYearObject(_)) => Some(schema.stats.getNumYearsAllDates())
     case Def(ifa: ImmutableFieldAccess[_])     => schema.stats.distinctAttributes(getUnaliasedStructFieldName(ifa.field))
     case _ =>
-      System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics Estimator cannot accurately estimate cardinality for node " + expr.correspondingNode + ". Returning default estimation. This may lead to degraded performance due to unnecessarily large memory pool allocations. ")
+      logger.warn(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics Estimator cannot accurately estimate cardinality for node " + expr.correspondingNode + ". Returning default estimation. This may lead to degraded performance due to unnecessarily large memory pool allocations. ")
       None
   }
 
@@ -154,14 +156,15 @@ class StatisticsEstimator(override val IR: QueryEngineExp, val schema: Schema) e
         leftParentES
       //case other @ _ => System.out.println(other.asInstanceOf[Rep[Any]].correspondingNode)
     }
+    val sb = new StringBuilder
+    sb ++= ("QUERY ANALYZER: " + op.correspondingNode.nodeName)
+    if (typeInfo != null) sb ++= ("(" + typeInfo + ")")
+    sb ++= (" Estimated Size is = " + estimatedSize)
+    if (msg != null) sb ++= (" (" + msg + ")")
+    sb ++= "."
+    logger.debug(sb.toString)
 
-    System.out.print("QUERY ANALYZER: " + op.correspondingNode.nodeName)
-    if (typeInfo != null) System.out.print("(" + typeInfo + ")")
-    System.out.print(" Estimated Size is = " + estimatedSize)
-    if (msg != null) System.out.print(" (" + msg + ")")
-    System.out.println(".")
-
-    estimatedSize;
+    estimatedSize
   }
 
   analysis += statement {
