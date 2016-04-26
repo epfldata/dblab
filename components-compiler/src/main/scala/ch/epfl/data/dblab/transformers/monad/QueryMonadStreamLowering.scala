@@ -20,12 +20,10 @@ import scala.language.existentials
 /**
  * Lowers query monad operations using the stream fusion technique.
  */
-class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineExp, val QML: QueryMonadLowering) extends RuleBasedTransformer[QueryEngineExp](IR) with StructProcessing[QueryEngineExp] {
+class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineExp, val churchEncoding: Boolean, val QML: QueryMonadLowering) extends RuleBasedTransformer[QueryEngineExp](IR) with StructProcessing[QueryEngineExp] {
   import IR._
 
   val recordUsageAnalysis: RecordUsageAnalysis[QueryEngineExp] = QML.recordUsageAnalysis
-
-  val churchEncoding = false
 
   def NULL[S: TypeRep]: Rep[S] = zeroValue[S]
 

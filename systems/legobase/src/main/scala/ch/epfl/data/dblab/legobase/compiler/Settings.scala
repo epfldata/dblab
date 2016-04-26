@@ -104,6 +104,7 @@ class Settings(val args: List[String]) {
   def queryMonadCPS: Boolean = hasSetting(QueryMonadCPSSetting)
   def queryMonadIterator: Boolean = hasSetting(QueryMonadIteratorSetting)
   def queryMonadStream: Boolean = hasSetting(QueryMonadStreamSetting)
+  def queryMonadStreamChurch: Boolean = hasSetting(QueryMonadStreamChurchSetting)
   def queryMonadOptimization: Boolean = hasSetting(QueryMonadOptSetting)
   def queryMonadHoisting: Boolean = hasSetting(QueryMonadHoistingSetting)
   def forceCompliant: Boolean = hasSetting(ForceCompliantSetting)
@@ -152,6 +153,7 @@ object Settings {
     QueryMonadLoweringSetting,
     QueryMonadIteratorSetting,
     QueryMonadStreamSetting,
+    QueryMonadStreamChurchSetting,
     QueryMonadCPSSetting,
     QueryMonadOptSetting,
     ForceCompliantSetting,
@@ -292,6 +294,10 @@ case object QueryMonadIteratorSetting extends OptimizationSetting("monad-iterato
   "Very experimental!")
 case object QueryMonadStreamSetting extends OptimizationSetting("monad-stream",
   "Enables Query Monad Stream Lowering",
+  QMonadLanguage,
+  "Very experimental!")
+case object QueryMonadStreamChurchSetting extends OptimizationSetting("monad-stream-church",
+  "Enables Query Monad Stream + Church Encoding Lowering",
   QMonadLanguage,
   "Very experimental!")
 case object QueryMonadOptSetting extends OptimizationSetting("monad-opt",
