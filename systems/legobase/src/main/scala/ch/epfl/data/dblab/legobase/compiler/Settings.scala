@@ -106,6 +106,7 @@ class Settings(val args: List[String]) {
   def queryMonadStream: Boolean = hasSetting(QueryMonadStreamSetting)
   def queryMonadOptimization: Boolean = hasSetting(QueryMonadOptSetting)
   def queryMonadHoisting: Boolean = hasSetting(QueryMonadHoistingSetting)
+  def forceCompliant: Boolean = hasSetting(ForceCompliantSetting)
 
   def hasOptimizationLevel: Boolean = hasSetting(OptimizationLevelSetting)
   def getOptimizationLevel: Int = args.find(a => OptimizationLevelSetting.matches(a)).get.substring("-levels=".size).toInt
@@ -153,6 +154,7 @@ object Settings {
     QueryMonadStreamSetting,
     QueryMonadCPSSetting,
     QueryMonadOptSetting,
+    ForceCompliantSetting,
     ForceFieldRemovalSetting,
     QueryMonadHoistingSetting,
     OptimizationLevelSetting)
@@ -302,6 +304,9 @@ case object QueryMonadHoistingSetting extends OptimizationSetting("monad-hoist",
   "Enables Query Monad Hoisting",
   // QMonadLanguage)
   MCHLanguage)
+case object ForceCompliantSetting extends OptimizationSetting("force-compliant",
+  "Forces the compliant version of optimizations, for the ones which have a compliant version",
+  CCoreLanguage)
 
 /* 
  * Available option settings

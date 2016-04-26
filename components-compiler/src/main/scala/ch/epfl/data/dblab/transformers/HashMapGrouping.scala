@@ -80,7 +80,7 @@ import scala.collection.mutable
  */
 class HashMapGrouping(override val IR: QueryEngineExp,
                       val schema: Schema,
-                      val compliant: Boolean = false)
+                      val compliant: Boolean)
   extends RuleBasedTransformer[QueryEngineExp](IR)
   with WhileRangeProcessing {
   import IR.{ __struct_field => _, __block => _, _ }

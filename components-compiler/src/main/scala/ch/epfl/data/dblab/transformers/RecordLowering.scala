@@ -13,10 +13,10 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.optimization._
 
 object RecordLowering {
-  def apply(removeUnusedFields: Boolean) = new TransformerHandler {
+  def apply(removeUnusedFields: Boolean, compliant: Boolean) = new TransformerHandler {
     def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
       val lbContext = context.asInstanceOf[QueryEngineExp]
-      val recordLowering = new RecordLowering(lbContext, lbContext, removeUnusedFields)
+      val recordLowering = new RecordLowering(lbContext, lbContext, removeUnusedFields, compliant)
       val newBlock = recordLowering.lower(block)
       new RecordLoweringPostProcess(lbContext, recordLowering).optimize(newBlock)
     }
@@ -41,7 +41,7 @@ object RecordLowering {
  *    // fieldB is not used
  * }}}
  */
-class RecordLowering(override val from: QueryEngineExp, override val to: QueryEngineExp, val removeUnusedFields: Boolean) extends Lowering[QueryEngineExp, QueryEngineExp](from, to) {
+class RecordLowering(override val from: QueryEngineExp, override val to: QueryEngineExp, val removeUnusedFields: Boolean, val compliant: Boolean) extends Lowering[QueryEngineExp, QueryEngineExp](from, to) {
   import from._
   val logger = Logger[RecordLowering]
 
@@ -191,8 +191,8 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     case ps @ PardisStruct(tag, elems, methods) =>
       val registeredFields = fieldsAccessed.get(tag)
       val newFields = registeredFields match {
-        case Some(x) if removeUnusedFields => elems.filter(e => x.contains(e.name))
-        case _                             => elems
+        case Some(x) if removeUnusedFields && !compliant => elems.filter(e => x.contains(e.name))
+        case _ => elems
       }
       val newTpe = ps.tp.asInstanceOf[TypeRep[Any]]
       super.transformDef(PardisStruct(tag, newFields, Nil)(ps.tp))(ps.tp)

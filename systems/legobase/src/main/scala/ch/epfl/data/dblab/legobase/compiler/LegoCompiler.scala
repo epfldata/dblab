@@ -74,7 +74,7 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
 
   // pipeline += TreeDumper(false)
 
-  pipeline += RecordLowering(shouldRemoveUnusedFields)
+  pipeline += RecordLowering(shouldRemoveUnusedFields, settings.forceCompliant)
   // pipeline += TreeDumper(false)
   pipeline += ParameterPromotion
   pipeline += DCE
@@ -117,7 +117,7 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
   }
 
   if (settings.hashMapPartitioning) {
-    pipeline += new HashMapGrouping(DSL, schema)
+    pipeline += new HashMapGrouping(DSL, schema, settings.forceCompliant)
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE
