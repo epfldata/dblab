@@ -73,8 +73,8 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
   pipeline += new StatisticsEstimator(DSL, schema)
 
   // pipeline += TreeDumper(false)
-
-  pipeline += RecordLowering(shouldRemoveUnusedFields, settings.forceCompliant)
+  val recordLowering = RecordLowering(DSL, shouldRemoveUnusedFields, settings.forceCompliant)
+  pipeline += recordLowering
   // pipeline += TreeDumper(false)
   pipeline += ParameterPromotion
   pipeline += DCE
@@ -85,16 +85,17 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
       pipeline += new QueryMonadOptimization(settings.queryMonadHoisting)
     }
     pipeline += DCE
+    val queryMonadLowering = new QueryMonadLowering(schema, DSL, recordLowering.recordLowering)
     if (settings.queryMonadCPS) {
-      pipeline += new QueryMonadCPSLowering(schema, DSL)
+      pipeline += new QueryMonadCPSLowering(schema, DSL, queryMonadLowering)
     } else if (settings.queryMonadIterator) {
-      pipeline += new QueryMonadIteratorLowering(schema, DSL)
+      pipeline += new QueryMonadIteratorLowering(schema, DSL, queryMonadLowering)
     } else if (settings.queryMonadStream) {
-      pipeline += new QueryMonadStreamLowering(schema, DSL)
+      pipeline += new QueryMonadStreamLowering(schema, DSL, queryMonadLowering)
       pipeline += new CoreLanguageToC(DSL)
       pipeline += new ParameterPromotionWithVar(DSL)
     } else {
-      pipeline += new QueryMonadLowering(schema, DSL)
+      pipeline += queryMonadLowering
     }
     pipeline += TreeDumper(true)
     pipeline += ParameterPromotion

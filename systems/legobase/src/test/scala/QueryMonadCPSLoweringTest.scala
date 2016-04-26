@@ -28,12 +28,13 @@ class QueryMonadCPSLoweringTest extends FlatSpec with ShouldMatchers {
 
   def transform[T: TypeRep](block: Block[T]): Block[T] = {
     val pipeline = new TransformerPipeline()
-    pipeline += RecordLowering(false, false)
+    val recordLowering = RecordLowering(IR, false, false)
+    pipeline += recordLowering
     pipeline += ParameterPromotion
     pipeline += DCE
     pipeline += PartiallyEvaluate
 
-    pipeline += new QueryMonadCPSLowering(schema, IR)
+    pipeline += new QueryMonadCPSLowering(schema, IR, new QueryMonadLowering(schema, IR, recordLowering.recordLowering))
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE

@@ -27,7 +27,7 @@ class HashMapGroupingTest extends FlatSpec with ShouldMatchers {
 
   def transform[T: TypeRep](block: Block[T]): Block[T] = {
     val pipeline = new TransformerPipeline()
-    pipeline += RecordLowering(false, false)
+    pipeline += RecordLowering(IR, false, false)
     pipeline += ParameterPromotion
     pipeline += DCE
     pipeline += PartiallyEvaluate

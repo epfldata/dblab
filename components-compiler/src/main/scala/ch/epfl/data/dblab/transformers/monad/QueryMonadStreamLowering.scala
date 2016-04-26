@@ -20,12 +20,12 @@ import scala.language.existentials
 /**
  * Lowers query monad operations using the stream fusion technique.
  */
-class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineExp) extends RuleBasedTransformer[QueryEngineExp](IR) with StructProcessing[QueryEngineExp] {
+class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineExp, val QML: QueryMonadLowering) extends RuleBasedTransformer[QueryEngineExp](IR) with StructProcessing[QueryEngineExp] {
   import IR._
 
-  val churchEncoding = true
+  val recordUsageAnalysis: RecordUsageAnalysis[QueryEngineExp] = QML.recordUsageAnalysis
 
-  val QML = new QueryMonadLowering(schema, IR)
+  val churchEncoding = false
 
   def NULL[S: TypeRep]: Rep[S] = zeroValue[S]
 
@@ -462,7 +462,8 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
     val eachBucketSize = __newArray[Int](MAX_SIZE)
     // FIXME if we use .count it will regenerate the same loop until before groupBy
     // val arraySize = this.count / MAX_SIZE * unit(4)
-    val thisSize = unit(schema.stats.getCardinalityOrElse(typeRep[T].name, 1 << 25).toInt)
+    // val thisSize = unit(schema.stats.getCardinalityOrElse(typeRep[T].name, 1 << 25).toInt)
+    val thisSize = unit(schema.stats.getCardinality(typeRep[T].name).toInt)
     val arraySize = thisSize / MAX_SIZE * unit(8)
     Range(unit(0), MAX_SIZE).foreach {
       __lambda { i =>

@@ -19,10 +19,9 @@ import quasi._
 /**
  * Lowers query monad operations using continuation-passing style.
  */
-class QueryMonadCPSLowering(val schema: Schema, override val IR: QueryEngineExp) extends RuleBasedTransformer[QueryEngineExp](IR) with StructProcessing[QueryEngineExp] {
+class QueryMonadCPSLowering(val schema: Schema, override val IR: QueryEngineExp, val QML: QueryMonadLowering) extends RuleBasedTransformer[QueryEngineExp](IR) with StructProcessing[QueryEngineExp] {
   import IR._
-
-  val QML = new QueryMonadLowering(schema, IR)
+  val recordUsageAnalysis: RecordUsageAnalysis[QueryEngineExp] = QML.recordUsageAnalysis
 
   abstract class QueryCPS[T: TypeRep] {
     val tp = typeRep[T]
@@ -242,7 +241,8 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: QueryEngineExp)
     val eachBucketSize = __newArray[Int](MAX_SIZE)
     // FIXME if we use .count it will regenerate the same loop until before groupBy
     // val arraySize = this.count / MAX_SIZE * unit(4)
-    val thisSize = unit(schema.stats.getCardinalityOrElse(typeRep[T].name, 1 << 25).toInt)
+    // val thisSize = unit(schema.stats.getCardinalityOrElse(typeRep[T].name, 1 << 25).toInt)
+    val thisSize = unit(schema.stats.getCardinality(typeRep[T].name).toInt)
     val arraySize = thisSize / MAX_SIZE * unit(8)
     Range(unit(0), MAX_SIZE).foreach {
       __lambda { i =>

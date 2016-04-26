@@ -19,10 +19,10 @@ import quasi._
 /**
  * Lowers query monad operations using continuation-passing style.
  */
-class QueryMonadIteratorLowering(val schema: Schema, override val IR: QueryEngineExp) extends RuleBasedTransformer[QueryEngineExp](IR) with StructProcessing[QueryEngineExp] {
+class QueryMonadIteratorLowering(val schema: Schema, override val IR: QueryEngineExp, val QML: QueryMonadLowering) extends RuleBasedTransformer[QueryEngineExp](IR) with StructProcessing[QueryEngineExp] {
   import IR._
 
-  val QML = new QueryMonadLowering(schema, IR)
+  val recordUsageAnalysis: RecordUsageAnalysis[QueryEngineExp] = QML.recordUsageAnalysis
 
   abstract class QueryIterator[T: TypeRep] { self =>
     val tp = typeRep[T]

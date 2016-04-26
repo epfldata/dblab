@@ -13,12 +13,12 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.optimization._
 
 object RecordLowering {
-  def apply(removeUnusedFields: Boolean, compliant: Boolean) = new TransformerHandler {
+  def apply(originalContext: QueryEngineExp, removeUnusedFields: Boolean, compliant: Boolean) = new TransformerHandler {
+    val recordLowering: RecordLowering = new RecordLowering(originalContext, originalContext, removeUnusedFields, compliant)
     def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-      val lbContext = context.asInstanceOf[QueryEngineExp]
-      val recordLowering = new RecordLowering(lbContext, lbContext, removeUnusedFields, compliant)
+      assert(context == originalContext)
       val newBlock = recordLowering.lower(block)
-      new RecordLoweringPostProcess(lbContext, recordLowering).optimize(newBlock)
+      new RecordLoweringPostProcess(originalContext, recordLowering).optimize(newBlock)
     }
   }
 }
@@ -41,101 +41,12 @@ object RecordLowering {
  *    // fieldB is not used
  * }}}
  */
-class RecordLowering(override val from: QueryEngineExp, override val to: QueryEngineExp, val removeUnusedFields: Boolean, val compliant: Boolean) extends Lowering[QueryEngineExp, QueryEngineExp](from, to) {
+class RecordLowering(override val from: QueryEngineExp, override val to: QueryEngineExp, val removeUnusedFields: Boolean, val compliant: Boolean) extends Lowering[QueryEngineExp, QueryEngineExp](from, to) with RecordUsageAnalysis[QueryEngineExp] {
   import from._
   val logger = Logger[RecordLowering]
 
   // override val lowerStructs: Boolean = false
   def stop = ("stop", true, unit(false))
-
-  sealed trait Phase
-  case object FieldExtractionPhase extends Phase
-  case object FieldUsagePhase extends Phase
-  case object OtherPhase extends Phase
-
-  var phase: Phase = _
-
-  val fieldsAccessed = collection.mutable.Map[StructTags.StructTag[_], ArrayBuffer[String]]()
-  val notSeenDynamicRecordTypes = collection.mutable.Set[TypeRep[Any]]()
-
-  def getRegisteredFieldsOfType[A](t: PardisType[A]): List[String] = {
-    val registeredFields = t match {
-      case DynamicCompositeRecordType(l, r) =>
-        getTag(t) match {
-          case tag @ StructTags.CompositeTag(la, ra, ltag, rtag) =>
-            getRegisteredFieldsOfType(l).map(la + _) ++ getRegisteredFieldsOfType(r).map(ra + _)
-        }
-      case _ =>
-        manifestTags.get(t.asInstanceOf[TypeRep[Any]]).flatMap(x => fieldsAccessed.get(x)) match {
-          case Some(x) => x
-          case None    => List()
-        }
-    }
-    registeredFields.toList
-  }
-
-  def registerField[A](t: PardisType[A], field: String): Unit = {
-    t match {
-      case DynamicCompositeRecordType(l, r) =>
-        manifestTags.get(t.asInstanceOf[TypeRep[Any]]) match {
-          case Some(tag @ StructTags.CompositeTag(la, ra, ltag, rtag)) =>
-            // val lstruct = structs(ltag)
-            // val rstruct = structs(rtag)
-            if (field.startsWith(la)) {
-              registerField(l, field.substring(la.size))
-            }
-            if (field.startsWith(ra)) {
-              registerField(r, field.substring(ra.size))
-            }
-          case _ =>
-            notSeenDynamicRecordTypes += t.asInstanceOf[TypeRep[Any]]
-            registerField(l, field)
-            registerField(r, field)
-        }
-      case _ =>
-        manifestTags.get(t.asInstanceOf[TypeRep[Any]]) match {
-          case Some(tag) => structs.get(tag) match {
-            case Some(s) =>
-              val l = fieldsAccessed.getOrElseUpdate(tag, new ArrayBuffer())
-              if (s.map(e => e.name).contains(field) && !l.contains(field)) l.append(field);
-            case _ => throw new Exception(s"Tag $tag for type $t does not have corresponding struct")
-          }
-          case _ =>
-        }
-    }
-  }
-
-  override def traverseDef(node: Def[_]): Unit = node match {
-    case Struct(tag, elems, methods) if phase == FieldUsagePhase =>
-    case CaseClassNew(ccn) if phase == FieldUsagePhase           =>
-    case StructDefault() if phase == FieldUsagePhase             =>
-    case ImmutableField(self, f) if phase == FieldUsagePhase => {
-      super.traverseDef(node)
-      registerField(self.tp, f)
-    }
-    case FieldGetter(self, f) if phase == FieldUsagePhase => {
-      super.traverseDef(node)
-      registerField(self.tp, f)
-    }
-    case FieldSetter(self, f, _) if phase == FieldUsagePhase => {
-      super.traverseDef(node)
-      registerField(self.tp, f)
-    }
-    case ConcatDynamic(self, record2, leftAlias, rightAlias) if phase == FieldUsagePhase => {
-      val Constant(la: String) = leftAlias
-      val Constant(ra: String) = rightAlias
-      val leftTag = getTag(self.tp)
-      val rightTag = getTag(record2.tp)
-      // TODO rewrite using getElems method
-      val concatTag = StructTags.CompositeTag[Any, Any](la, ra, leftTag, rightTag)
-      val regFields = getRegisteredFieldsOfType(self.tp) ++ getRegisteredFieldsOfType(record2.tp)
-      def fieldIsRegistered(f: StructElemInformation): Boolean = regFields.contains(f.name) || !removeUnusedFields
-      val newElems = getStructElems(leftTag).filter(fieldIsRegistered).map(x => StructElemInformation(la + x.name, x.tpe, x.mutable)) ++ getStructElems(rightTag).filter(fieldIsRegistered).map(x => StructElemInformation(ra + x.name, x.tpe, x.mutable))
-      structs += concatTag -> newElems
-      manifestTags += node.tp.asInstanceOf[TypeRep[Any]] -> concatTag
-    }
-    case _ => super.traverseDef(node)
-  }
 
   def getElems[T](tp: TypeRep[T], aliasing: String = ""): Seq[StructElemInformation] = {
     val tag = getTag(tp)
@@ -174,8 +85,8 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     phase = FieldUsagePhase
     traverseBlock(node)
     phase = OtherPhase
-    logger.debug(s"tags: $manifestTags")
-    logger.debug(s"dtypes: $notSeenDynamicRecordTypes")
+    // logger.debug(s"tags: $manifestTags")
+    // logger.debug(s"dtypes: $notSeenDynamicRecordTypes")
     computeConcatTypeEtc()
     val res = transformProgram(node)
     res
@@ -189,6 +100,7 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     case sd @ StructDefault() if lowerStructs =>
       transformDef(super.transformDef(node))
     case ps @ PardisStruct(tag, elems, methods) =>
+      // logger.debug(s"transforming PardisStruct for tag: $tag")
       val registeredFields = fieldsAccessed.get(tag)
       val newFields = registeredFields match {
         case Some(x) if removeUnusedFields && !compliant => elems.filter(e => x.contains(e.name))
@@ -203,6 +115,7 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
       val Constant(la: String) = leftAlias
       val Constant(ra: String) = rightAlias
       val concatTag = StructTags.CompositeTag[Any, Any](la, ra, leftTag, rightTag)
+      // logger.debug(s"transforming ConcatDynamic for tag: $concatTag")
       def getElems[T](exp: Rep[T]): Seq[StructElemInformation] = getStructElems(getTag(exp.tp))
       val elems = getStructElems(concatTag)
       case class ElemInfo[T](name: String, rec: Rep[T], tp: TypeRep[Any])
@@ -368,6 +281,102 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
       case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | NestedLoopsJoinOpType(_, _) | SubquerySingleResultType(_) | ViewOpType(_) | HashJoinAntiType(_, _, _) | LeftOuterJoinOpType(_, _, _) => Some(exp)
       case _ => None
     }
+  }
+}
+
+trait RecordUsageAnalysis[Lang <: Base] extends Traverser[Lang] { this: Lowering[Lang, Lang] =>
+  import IR._
+
+  val removeUnusedFields: Boolean
+  val compliant: Boolean
+
+  sealed trait Phase
+  case object FieldExtractionPhase extends Phase
+  case object FieldUsagePhase extends Phase
+  case object OtherPhase extends Phase
+
+  var phase: Phase = _
+
+  val fieldsAccessed = collection.mutable.Map[StructTags.StructTag[_], collection.mutable.ArrayBuffer[String]]()
+  val notSeenDynamicRecordTypes = collection.mutable.Set[TypeRep[Any]]()
+
+  def getRegisteredFieldsOfType[A](t: PardisType[A]): List[String] = {
+    val registeredFields = t match {
+      case DynamicCompositeRecordType(l, r) =>
+        getTag(t) match {
+          case tag @ StructTags.CompositeTag(la, ra, ltag, rtag) =>
+            getRegisteredFieldsOfType(l).map(la + _) ++ getRegisteredFieldsOfType(r).map(ra + _)
+        }
+      case _ =>
+        manifestTags.get(t.asInstanceOf[TypeRep[Any]]).flatMap(x => fieldsAccessed.get(x)) match {
+          case Some(x) => x
+          case None    => List()
+        }
+    }
+    registeredFields.toList
+  }
+
+  def registerField[A](t: PardisType[A], field: String): Unit = {
+    t match {
+      case DynamicCompositeRecordType(l, r) =>
+        manifestTags.get(t.asInstanceOf[TypeRep[Any]]) match {
+          case Some(tag @ StructTags.CompositeTag(la, ra, ltag, rtag)) =>
+            // val lstruct = structs(ltag)
+            // val rstruct = structs(rtag)
+            if (field.startsWith(la)) {
+              registerField(l, field.substring(la.size))
+            }
+            if (field.startsWith(ra)) {
+              registerField(r, field.substring(ra.size))
+            }
+          case _ =>
+            notSeenDynamicRecordTypes += t.asInstanceOf[TypeRep[Any]]
+            registerField(l, field)
+            registerField(r, field)
+        }
+      case _ =>
+        manifestTags.get(t.asInstanceOf[TypeRep[Any]]) match {
+          case Some(tag) => structs.get(tag) match {
+            case Some(s) =>
+              val l = fieldsAccessed.getOrElseUpdate(tag, new collection.mutable.ArrayBuffer())
+              if (s.map(e => e.name).contains(field) && !l.contains(field)) l.append(field);
+            case _ => throw new Exception(s"Tag $tag for type $t does not have corresponding struct")
+          }
+          case _ =>
+        }
+    }
+  }
+
+  override def traverseDef(node: Def[_]): Unit = node match {
+    case Struct(tag, elems, methods) if phase == FieldUsagePhase =>
+    case CaseClassNew(ccn) if phase == FieldUsagePhase           =>
+    case StructDefault() if phase == FieldUsagePhase             =>
+    case ImmutableField(self, f) if phase == FieldUsagePhase => {
+      super.traverseDef(node)
+      registerField(self.tp, f)
+    }
+    case FieldGetter(self, f) if phase == FieldUsagePhase => {
+      super.traverseDef(node)
+      registerField(self.tp, f)
+    }
+    case FieldSetter(self, f, _) if phase == FieldUsagePhase => {
+      super.traverseDef(node)
+      registerField(self.tp, f)
+    }
+    case ConcatDynamic(self, record2, leftAlias, rightAlias) if phase == FieldUsagePhase => {
+      val Constant(la: String) = leftAlias
+      val Constant(ra: String) = rightAlias
+      val leftTag = getTag(self.tp)
+      val rightTag = getTag(record2.tp)
+      // TODO rewrite using getElems method
+      val concatTag = StructTags.CompositeTag[Any, Any](la, ra, leftTag, rightTag)
+      val regFields = getRegisteredFieldsOfType(self.tp) ++ getRegisteredFieldsOfType(record2.tp)
+      def fieldIsRegistered(f: StructElemInformation): Boolean = regFields.contains(f.name) || !removeUnusedFields
+      val newElems = getStructElems(leftTag).filter(fieldIsRegistered).map(x => StructElemInformation(la + x.name, x.tpe, x.mutable)) ++ getStructElems(rightTag).filter(fieldIsRegistered).map(x => StructElemInformation(ra + x.name, x.tpe, x.mutable))
+      structs += concatTag -> newElems
+      manifestTags += node.tp.asInstanceOf[TypeRep[Any]] -> concatTag
+    }
+    case _ => super.traverseDef(node)
   }
 }
 
