@@ -222,10 +222,16 @@ class QueryMonadStreamLowering(val schema: Schema, override val IR: QueryEngineE
         def stream(): Rep[Stream[Res]] = {
           dsl"""
             if ($leftShouldProceed || !$init) {
-              $elem1 = ${self.stream().materialize()}
+              $elem1 = ${
+            // self.stream().materialize()
+            self.next()
+          }
             }
             if (!$leftShouldProceed || !$init) {
-              $elem2 = ${q2.stream().materialize()}
+              $elem2 = ${
+            // q2.stream().materialize()
+            q2.next()
+          }
             }
             $init = true
             ${
