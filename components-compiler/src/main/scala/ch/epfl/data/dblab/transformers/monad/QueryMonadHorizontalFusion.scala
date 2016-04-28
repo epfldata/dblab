@@ -3,6 +3,7 @@ package dblab
 package transformers
 package monad
 
+import utils.Logger
 import scala.language.implicitConversions
 import sc.pardis.ir._
 import deep.dsls.QueryEngineExp
@@ -13,49 +14,9 @@ import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 
-class QueryMonadHorizontalFusion(override val IR: QueryEngineExp) extends RuleBasedTransformer[QueryEngineExp](IR) {
+class QueryMonadHorizontalFusion(override val IR: QueryEngineExp) extends RuleBasedTransformer[QueryEngineExp](IR) with QueryMonadHorizontalFusionAnalyzer {
   import IR._
 
-  val candidatesSymbol = scala.collection.mutable.Set[Rep[Any]]()
-  val candidatesNode = scala.collection.mutable.Map[Rep[Any], Def[Any]]()
-  val candidatesScope = scala.collection.mutable.Map[Rep[Any], Block[Any]]()
-
-  var currentScope: Block[Any] = _
-
-  /**
-   * Updates the current scope.
-   */
-  override def traverseBlock(block: Block[_]): Unit = {
-    val oldScope = currentScope
-    currentScope = block.asInstanceOf[Block[Any]]
-    super.traverseBlock(block)
-    currentScope = oldScope
-  }
-
-  analysis += statement {
-    case sym -> (node @ QueryFoldLeft(_, _, _)) =>
-      candidatesSymbol += sym
-      candidatesNode(sym) = node
-      candidatesScope(sym) = currentScope
-      ()
-  }
-
-  override def postAnalyseProgram[T: TypeRep](node: Block[T]): Unit = {
-    val blockIds = candidatesScope.values.toSet.toArray
-    val candidatesScopeId = candidatesScope.mapValues(b => blockIds.indexOf(b))
-    // Groups the loop symbols based on their range as well as their block scope.
-    val result = candidatesSymbol.groupBy(x => candidatesNode(x).funArgs(0) -> candidatesScopeId(x))
-    for ((((range: Rep[Any]), blockId), list) <- result) {
-      for (cand <- list) {
-        rewrittenOpsRange(cand) = range
-        val prevList = rewrittenRangeDefs.getOrElseUpdate(range, Nil)
-        rewrittenRangeDefs(range) = prevList :+ (cand -> candidatesNode(cand))
-      }
-    }
-  }
-
-  val rewrittenOpsRange = scala.collection.mutable.Map[Rep[Any], Rep[Any]]()
-  val rewrittenRangeDefs = scala.collection.mutable.Map[Rep[Any], List[(Rep[Any], Def[Any])]]()
   val alreadyRewrittenRange = scala.collection.mutable.Set[Rep[Any]]()
   val alreadyRewrittenOpsVars = scala.collection.mutable.Map[Rep[Any], Var[Any]]()
 
@@ -208,5 +169,84 @@ class QueryMonadHorizontalFusion(override val IR: QueryEngineExp) extends RuleBa
     case sym -> (node @ QueryFoldLeft(range, _, _)) if shouldBeReused(sym) =>
       val variable = alreadyRewrittenOpsVars(sym)
       readVar(variable)(variable.e.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
+  }
+}
+
+trait QueryMonadHorizontalFusionAnalyzer extends Traverser[QueryEngineExp] { this: RuleBasedTransformer[QueryEngineExp] =>
+  import IR._
+  val candidatesSymbol = scala.collection.mutable.Set[Rep[Any]]()
+  val candidatesNode = scala.collection.mutable.Map[Rep[Any], Def[Any]]()
+  val candidatesScope = scala.collection.mutable.Map[Rep[Any], Block[Any]]()
+
+  val rewrittenOpsRange = scala.collection.mutable.Map[Rep[Any], Rep[Any]]()
+  val rewrittenRangeDefs = scala.collection.mutable.Map[Rep[Any], List[(Rep[Any], Def[Any])]]()
+
+  var currentScope: Block[Any] = _
+
+  /**
+   * Updates the current scope.
+   */
+  override def traverseBlock(block: Block[_]): Unit = {
+    val oldScope = currentScope
+    currentScope = block.asInstanceOf[Block[Any]]
+    super.traverseBlock(block)
+    currentScope = oldScope
+  }
+
+  analysis += statement {
+    case sym -> (node @ QueryFoldLeft(_, _, _)) =>
+      candidatesSymbol += sym
+      candidatesNode(sym) = node
+      candidatesScope(sym) = currentScope
+      ()
+  }
+
+  override def postAnalyseProgram[T: TypeRep](node: Block[T]): Unit = {
+    val blockIds = candidatesScope.values.toSet.toArray
+    val candidatesScopeId = candidatesScope.mapValues(b => blockIds.indexOf(b))
+    // Groups the loop symbols based on their range as well as their block scope.
+    val result = candidatesSymbol.groupBy(x => candidatesNode(x).funArgs(0) -> candidatesScopeId(x))
+    for ((((range: Rep[Any]), blockId), list) <- result) {
+      for (cand <- list) {
+        rewrittenOpsRange(cand) = range
+        val prevList = rewrittenRangeDefs.getOrElseUpdate(range, Nil)
+        rewrittenRangeDefs(range) = prevList :+ (cand -> candidatesNode(cand))
+      }
+    }
+  }
+}
+
+class QueryMonadNoHorizontalVerifyer(override val IR: QueryEngineExp) extends RuleBasedTransformer[QueryEngineExp](IR) with QueryMonadHorizontalFusionAnalyzer {
+  import IR._
+
+  val querySymbolsCount = collection.mutable.Map[Rep[_], Int]()
+
+  def isQuerySymbol(sym: Rep[_]): Boolean = sym.tp.isInstanceOf[QueryType[_]]
+
+  def symbols(node: Def[_]): List[Rep[_]] = node.funArgs.collect {
+    case s: Rep[_] => s
+  }
+
+  def increaseQuerySymbol(sym: Rep[_]): Unit = {
+    val oldNumber = querySymbolsCount.getOrElseUpdate(sym, 0)
+    querySymbolsCount(sym) += 1
+  }
+
+  analysis += statement {
+    case sym -> node if isQuerySymbol(sym) || symbols(node).exists(isQuerySymbol) =>
+      for (s <- (sym :: symbols(node)) if isQuerySymbol(s)) {
+        increaseQuerySymbol(s)
+      }
+      ()
+  }
+
+  override def postAnalyseProgram[T: TypeRep](node: Block[T]): Unit = {
+    super.postAnalyseProgram(node)
+    if (rewrittenOpsRange.nonEmpty) {
+      Logger[QueryMonadNoHorizontalVerifyer].warn("WARNING! You need to apply horizontal fusion.")
+    } else if (querySymbolsCount.exists(_._2 > 2)) {
+      val (sym, count) = querySymbolsCount.find(_._2 > 2).get
+      Logger[QueryMonadNoHorizontalVerifyer].warn(s"WARNING! You MAY need to apply horizontal fusion for the symbol `$sym` occuring $count times.")
+    }
   }
 }
