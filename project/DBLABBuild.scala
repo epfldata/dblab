@@ -104,7 +104,7 @@ object DBLABBuild extends Build {
             val filePath = cgDir / fileName
             println("Generated " + fileName)
             IO.copyFile(new java.io.File("generator-out") / (args(2) + ".scala"), filePath)
-            println(s"Run it using `test:run ${args(0)} ${args(1)} ${args(2)}`")
+            println(s"Run it using `test:runMain ch.epfl.data.dblab.${args(2)} ${args(0)} ${args(1)} ${args(2)}`")
           } else if (args(2) == "testsuite-scala") {
             for(i <- 1 to 22) {
               val newArgs = args.dropRight(1) :+ s"Q$i"

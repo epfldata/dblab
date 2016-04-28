@@ -86,6 +86,7 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
     }
     pipeline += DCE
     val queryMonadLowering = new QueryMonadLowering(schema, DSL, recordLowering.recordLowering)
+    pipeline += new QueryMonadNoHorizontalVerifyer(DSL)
     if (settings.queryMonadCPS) {
       pipeline += new QueryMonadCPSLowering(schema, DSL, queryMonadLowering)
     } else if (settings.queryMonadIterator) {

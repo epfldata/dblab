@@ -39,18 +39,19 @@ import sc.pardis.shallow._
    * Returns the generated code that is put in the header
    */
   override def getHeader: Document = doc"""package ch.epfl.data
-package dblab.legobase
+package dblab
 
 $getShallowHeader
 import scala.collection.mutable.Set
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.TreeSet
 import scala.collection.mutable.ArrayBuffer
-import storagemanager.K2DBScanner
+import storagemanager.FastScanner
 import storagemanager.Loader
 import queryengine.GenericEngine
 import sc.pardis.shallow.OptimalString
 import sc.pardis.shallow.scalalib.collection.Cont
+import schema.Schema
 
 class MultiMap[T, S] extends HashMap[T, Set[S]] with scala.collection.mutable.MultiMap[T, S]
 
@@ -65,7 +66,7 @@ object OrderingFactory {
    * Returns the class/module signature code that the generated query is put inside that.
    */
   override def getTraitSignature(): Document = doc"""object $outputFileName extends $runnerClassName {
-  def executeQuery(query: String, schema: ch.epfl.data.dblab.legobase.schema.Schema): Unit = main()
+  def executeQuery(query: String, schema: Schema): Unit = main()
   def main(args: Array[String]) {
     run(args)
   }
