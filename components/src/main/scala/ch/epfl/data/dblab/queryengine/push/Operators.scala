@@ -116,6 +116,10 @@ class PrintOp[A](parent: Operator[A])(printFunc: A => Unit, limit: Int) extends 
       numRows += 1
     }
   }
+  def run(): Unit = {
+    open()
+    next()
+  }
   def reset() { parent.reset }
 }
 

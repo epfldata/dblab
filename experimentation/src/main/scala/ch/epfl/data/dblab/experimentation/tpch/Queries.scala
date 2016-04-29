@@ -65,8 +65,7 @@ object Queries {
         val po = new PrintOp(sortOp)(kv => printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n",
           kv.key.L_RETURNFLAG, kv.key.L_LINESTATUS, kv.aggs(1), kv.aggs(2), kv.aggs(3), kv.aggs(4),
           kv.aggs(6), kv.aggs(7), kv.aggs(8), kv.aggs(5)), -1)
-        po.open
-        po.next
+        po.run()
         ()
       }
     }
@@ -159,8 +158,7 @@ object Queries {
           val kv = e.wnd
           printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL[Double], (kv.S_NAME[OptimalString]).string, (kv.N_NAME[OptimalString]).string, kv.P_PARTKEY[Int], (kv.P_MFGR[OptimalString]).string, (kv.S_ADDRESS[OptimalString]).string, (kv.S_PHONE[OptimalString]).string, (kv.S_COMMENT[OptimalString]).string)
         }, 100)
-        po.open
-        po.next
+        po.run()
         ()
       }
     }
@@ -223,8 +221,7 @@ object Queries {
         val po = new PrintOp(sortOp)(kv => {
           printf("%d|%.4f|%s|%d\n", kv.key.L_ORDERKEY, kv.aggs(0), dateToString(kv.key.O_ORDERDATE), kv.key.O_SHIPPRIORITY)
         }, 10)
-        po.open
-        po.next
+        po.run()
         ()
       }
     }
@@ -270,8 +267,7 @@ object Queries {
           k1 diff k2
         })
         val po = new PrintOp(sortOp)(kv => printf("%s|%.0f\n", kv.key.string, kv.aggs(0)), -1)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -330,8 +326,7 @@ object Queries {
           else 0
         })
         val po = new PrintOp(sortOp)(kv => { printf("%s|%.4f\n", kv.key.string, kv.aggs(0)) }, -1)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -393,8 +388,7 @@ object Queries {
           x.L_SHIPDATE >= constantDate1 && (x.L_SHIPDATE < constantDate2 && (x.L_DISCOUNT >= 0.08 && (x.L_DISCOUNT <= 0.1 && (x.L_QUANTITY < 24)))))
         val aggOp = new AggOp(lineitemScan, 1)(x => "Total")((t, currAgg) => { (t.L_EXTENDEDPRICE * t.L_DISCOUNT) + currAgg })
         val po = new PrintOp(aggOp)(kv => { kv.key; printf("%.4f\n", kv.aggs(0)) }, -1)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -454,8 +448,7 @@ object Queries {
           }
         })
         val po = new PrintOp(so)(kv => printf("%s|%s|%d|%.4f\n", kv.key.SUPP_NATION.string, kv.key.CUST_NATION.string, kv.key.L_YEAR, kv.aggs(0)), -1)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -505,8 +498,7 @@ object Queries {
           else 0
         })
         val po = new PrintOp(sortOp)(kv => printf("%d|%.4f\n", kv.key, kv.aggs(2)), -1)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -545,8 +537,7 @@ object Queries {
           } else r
         })
         val po = new PrintOp(sortOp)(kv => printf("%s|%d|%.4f\n", kv.key.NATION.string, kv.key.O_YEAR, kv.aggs(0)), -1)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -657,8 +648,7 @@ object Queries {
             kv.key.C_ACCTBAL, kv.key.N_NAME.string, kv.key.C_ADDRESS.string, kv.key.C_PHONE.string,
             kv.key.C_COMMENT.string)
         }, 20)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -724,8 +714,7 @@ object Queries {
           else 0
         })
         val po = new PrintOp(sortOp)(kv => printf("%d|%.2f\n", kv.key, kv.wnd), -1)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -773,8 +762,7 @@ object Queries {
           (t, currAgg) => { if (t.O_ORDERPRIORITY[OptimalString] =!= URGENT && t.O_ORDERPRIORITY[OptimalString] =!= HIGH) currAgg + 1 else currAgg })
         val sortOp = new SortOp(aggOp)((x, y) => x.key diff y.key)
         val po = new PrintOp(sortOp)(kv => printf("%s|%.0f|%.0f\n", kv.key.string, kv.aggs(0), kv.aggs(1)), -1)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -862,8 +850,7 @@ object Queries {
           }
         })
         val po = new PrintOp(sortOp)(kv => printf("%d|%.0f\n", kv.key, kv.aggs(0)), -1)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -889,8 +876,7 @@ object Queries {
           (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
         val mapOp = new MapOp(aggOp)(kv => { kv.key; kv.aggs(2) = (kv.aggs(0) * 100) / kv.aggs(1) })
         val po = new PrintOp(mapOp)(kv => printf("%.4f\n", kv.aggs(2)), -1)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -946,8 +932,7 @@ object Queries {
         val scanSupplier = new ScanOp(supplierTable)
         val jo = new HashJoinOp(scanSupplier, vo)((x, y) => { maxRevenue.key; x.S_SUPPKEY == y.key && y.aggs(0) == maxRevenue.aggs(0) })(x => x.S_SUPPKEY)(x => x.key)
         val po = new PrintOp(jo)(kv => printf("%d|%s|%s|%s|%.4f\n", kv.S_SUPPKEY[Int], kv.S_NAME[OptimalString].string, kv.S_ADDRESS[OptimalString].string, kv.S_PHONE[OptimalString].string, kv.aggs[Array[Double]].apply(0)), -1)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -990,8 +975,7 @@ object Queries {
           }
         })
         val po = new PrintOp(sortOp)(x => printf("%s|%s|%d|%.0f\n", x.key.P_BRAND.string, x.key.P_TYPE.string, x.key.P_SIZE, x.aggs(0)), -1)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -1018,8 +1002,7 @@ object Queries {
         })
         val aggOp = new AggOp(wo, 1)(x => "Total")((t, currAgg) => currAgg + t.wnd)
         val po = new PrintOp(aggOp)(kv => { kv.key; printf("%.6f\n", kv.aggs(0)) }, -1)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -1060,8 +1043,7 @@ object Queries {
           kv.aggs;
           printf("%s|%d|%d|%s|%.2f|%.2f\n", kv.key.C_NAME.string, kv.key.C_CUSTKEY, kv.key.O_ORDERKEY, dateToString(kv.key.O_ORDERDATE), kv.key.O_TOTALPRICE, kv.aggs(0))
         }, 100)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -1112,8 +1094,7 @@ object Queries {
         val aggOp = new AggOp(jo, 1)(x => "Total")(
           (t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
         val po = new PrintOp(aggOp)(kv => { kv.key; printf("%.4f\n", kv.aggs(0)) }, -1)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -1146,8 +1127,7 @@ object Queries {
           x.S_NAME[OptimalString] diff y.S_NAME[OptimalString]
         })
         val po = new PrintOp(sortOp)(kv => printf("%s|%s\n", kv.S_NAME[OptimalString].string, kv.S_ADDRESS[OptimalString].string), -1)
-        po.open
-        po.next
+        po.run()
         ()
       }
     }
@@ -1184,8 +1164,7 @@ object Queries {
         val po = new PrintOp(sortOp)(kv => {
           printf("%s|%.0f\n", kv.key.string, kv.aggs(0))
         }, 100)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
@@ -1235,8 +1214,7 @@ object Queries {
           res
         })
         val po = new PrintOp(sortOp)(kv => printf("%s|%.0f|%.2f\n", kv.key.string, kv.aggs(1), kv.aggs(0)), -1)
-        po.open
-        po.next
+        po.run()
         ()
       })
     }
