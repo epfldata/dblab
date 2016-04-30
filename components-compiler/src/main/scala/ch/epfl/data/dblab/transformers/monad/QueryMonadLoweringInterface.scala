@@ -27,6 +27,12 @@ abstract class QueryMonadStreamLoweringInterface(val schema: Schema, override va
 
   val logger = Logger(getClass)
 
+  def zeroValue[S: TypeRep]: Rep[S] = {
+    val tp = typeRep[S]
+    val v = sc.pardis.shallow.utils.DefaultValue(tp.name).asInstanceOf[S]
+    infix_asInstanceOf(unit(v)(tp))(tp)
+  }
+
   type LoweredQuery[T]
 
   def getLoweredQuery[T](sym: Rep[Query[T]]): LoweredQuery[T] = loweredMap(sym).asInstanceOf[LoweredQuery[T]]

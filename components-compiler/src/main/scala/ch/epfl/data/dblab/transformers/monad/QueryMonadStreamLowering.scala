@@ -25,12 +25,6 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
 
   val recordUsageAnalysis: RecordUsageAnalysis[QueryEngineExp] = QML.recordUsageAnalysis
 
-  def zeroValue[S: TypeRep]: Rep[S] = {
-    val tp = typeRep[S]
-    val v = sc.pardis.shallow.utils.DefaultValue(tp.name).asInstanceOf[S]
-    infix_asInstanceOf(unit(v)(tp))(tp)
-  }
-
   implicit def streamType[T: TypeRep]: TypeRep[Stream[T]] = new RecordType(StructTags.ClassTag[Stream[T]]("Stream" + typeRep[T].name), scala.None)
 
   class Stream[T] {
