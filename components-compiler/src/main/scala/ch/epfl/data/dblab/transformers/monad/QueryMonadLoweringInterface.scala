@@ -45,9 +45,45 @@ abstract class QueryMonadStreamLoweringInterface(val schema: Schema, override va
   def monadTake[T: TypeRep](query: LoweredQuery[T], n: Rep[Int]): LoweredQuery[T]
   def monadMergeJoin[T: TypeRep, S: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
     ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res]
-  def initGroupByArray[T: TypeRep, K: TypeRep](monad: Rep[Query[T]], par: Rep[T => K]): GroupByResult[K, T]
   def monadGroupByMapValues[T: TypeRep, K: TypeRep, S: TypeRep](query: LoweredQuery[T])(par: Rep[T => K],
                                                                                         pred: Option[Rep[T => Boolean]])(func: Rep[Array[T] => S]): LoweredQuery[(K, S)]
+
+  def initGroupByArray[T: TypeRep, K: TypeRep](monad: Rep[Query[T]], par: Rep[T => K]): GroupByResult[K, T] = {
+    type V = T
+    def sizeByCardinality: Int = schema.stats.getCardinalityOrElse(typeRep[K].name, 8).toInt
+    val max_partitions = par match {
+      case Def(Lambda(_, i, Block(stmts, Def(StructImmutableField(struct, name))))) if i == struct && stmts.size == 1 =>
+        schema.stats.getDistinctAttrValuesOrElse(name, sizeByCardinality)
+      case _ =>
+        sizeByCardinality
+    }
+
+    // System.out.println(typeRep[K] + "-" + max_partitions)
+    // val MAX_SIZE = unit(4000)
+    val MAX_SIZE = unit(max_partitions)
+    val keyIndex = __newHashMap[K, Int]()
+    val keyRevertIndex = __newArray[K](MAX_SIZE)
+    val lastIndex = __newVarNamed(unit(0), "lastIndex")
+    val array = __newArray[Array[V]](MAX_SIZE)
+    // TODO generalize
+    schema.stats += "QS_MEM_ARRAY_LINEITEM" -> 4
+    schema.stats += "QS_MEM_ARRAY_DOUBLE" -> 4
+    val eachBucketSize = __newArray[Int](MAX_SIZE)
+    // FIXME if we use .count it will regenerate the same loop until before groupBy
+    // val arraySize = this.count / MAX_SIZE * unit(4)
+    // val thisSize = unit(schema.stats.getCardinalityOrElse(typeRep[T].name, 1 << 25).toInt)
+    val thisSize = unit(schema.stats.getCardinality(typeRep[T].name).toInt)
+    val arraySize = thisSize / MAX_SIZE * unit(8)
+    Range(unit(0), MAX_SIZE).foreach {
+      __lambda { i =>
+        // val arraySize = originalArray.length
+        // val arraySize = unit(128)
+        array(i) = __newArray[V](arraySize)
+        eachBucketSize(i) = unit(0)
+      }
+    }
+    GroupByResult(array, keyRevertIndex, eachBucketSize, MAX_SIZE, keyIndex)
+  }
   rewrite += statement {
     case sym -> QueryNew2(array) =>
       val low = __newLoweredQuery(array)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
