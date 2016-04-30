@@ -45,8 +45,17 @@ abstract class QueryMonadStreamLoweringInterface(val schema: Schema, override va
   def monadTake[T: TypeRep](query: LoweredQuery[T], n: Rep[Int]): LoweredQuery[T]
   def monadMergeJoin[T: TypeRep, S: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
     ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res]
-  def monadGroupByMapValues[T: TypeRep, K: TypeRep, S: TypeRep](query: LoweredQuery[T])(par: Rep[T => K],
-                                                                                        pred: Option[Rep[T => Boolean]])(func: Rep[Array[T] => S]): LoweredQuery[(K, S)]
+  def monadLeftHashSemiJoin[T: TypeRep, S: TypeRep, R: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
+    leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(
+      joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[T]
+  def monadHashJoin[T: TypeRep, S: TypeRep, R: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
+    leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(
+      joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res]
+  def monadGroupByMapValues[T: TypeRep, K: TypeRep, S: TypeRep](
+    query: LoweredQuery[T], groupByResult: GroupByResult[K, T])(
+      par: Rep[T => K], pred: Option[Rep[T => Boolean]])(
+        func: Rep[Array[T] => S])(
+          adder: (Rep[_], LoweredQuery[T]) => Unit): LoweredQuery[(K, S)]
 
   def initGroupByArray[T: TypeRep, K: TypeRep](monad: Rep[Query[T]], par: Rep[T => K]): GroupByResult[K, T] = {
     type V = T
@@ -153,32 +162,36 @@ abstract class QueryMonadStreamLoweringInterface(val schema: Schema, override va
     case QueryGetList(monad) => ()
   }
 
-  // rewrite += statement {
-  //   case sym -> JoinableQueryLeftHashSemiJoin(monad1, monad2, leftHash, rightHash, joinCond) => {
-  //     val Def(JoinableQueryNew(Def(QueryGetList(m1)))) = monad1
-  //     val Def(Lambda(lh, _, _)) = leftHash
-  //     val Def(Lambda(rh, _, _)) = rightHash
-  //     val Def(Lambda2(jc, _, _, _)) = joinCond
-  //     val cps = m1.leftHashSemiJoin2(monad2)(lh)(rh)(jc)(monad2.tp.typeArguments(0).asInstanceOf[TypeRep[Record]],
-  //       leftHash.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
-  //     streamMap += sym -> cps.asInstanceOf[QueryStream[Any]]
-  //     sym
-  //   }
-  // }
+  rewrite += statement {
+    case sym -> JoinableQueryLeftHashSemiJoin(monad1, monad2, leftHash, rightHash, joinCond) => {
+      val Def(JoinableQueryNew(Def(QueryGetList(m1)))) = monad1
+      val Def(Lambda(lh, _, _)) = leftHash
+      val Def(Lambda(rh, _, _)) = rightHash
+      val Def(Lambda2(jc, _, _, _)) = joinCond
+      val low = monadLeftHashSemiJoin(getLoweredQuery(m1),
+        getLoweredQuery(monad2))(lh)(rh)(jc)(monad1.tp.typeArguments(0).asInstanceOf[TypeRep[Record]],
+          monad2.tp.typeArguments(0).asInstanceOf[TypeRep[Record]],
+          leftHash.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
+      loweredMap += sym -> low.asInstanceOf[LoweredQuery[Any]]
+      sym
+    }
+  }
 
-  // rewrite += statement {
-  //   case sym -> JoinableQueryHashJoin(monad1, monad2, leftHash, rightHash, joinCond) => {
-  //     val Def(JoinableQueryNew(Def(QueryGetList(m1)))) = monad1
-  //     val Def(Lambda(lh, _, _)) = leftHash
-  //     val Def(Lambda(rh, _, _)) = rightHash
-  //     val Def(Lambda2(jc, _, _, _)) = joinCond
-  //     val cps = m1.hashJoin2(monad2)(lh)(rh)(jc)(monad2.tp.typeArguments(0).asInstanceOf[TypeRep[Record]],
-  //       leftHash.tp.typeArguments(1).asInstanceOf[TypeRep[Any]],
-  //       sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
-  //     streamMap += sym -> cps.asInstanceOf[QueryStream[Any]]
-  //     sym
-  //   }
-  // }
+  rewrite += statement {
+    case sym -> JoinableQueryHashJoin(monad1, monad2, leftHash, rightHash, joinCond) => {
+      val Def(JoinableQueryNew(Def(QueryGetList(m1)))) = monad1
+      val Def(Lambda(lh, _, _)) = leftHash
+      val Def(Lambda(rh, _, _)) = rightHash
+      val Def(Lambda2(jc, _, _, _)) = joinCond
+      val low = monadHashJoin(getLoweredQuery(m1), getLoweredQuery(monad2))(lh)(rh)(jc)(
+        monad1.tp.typeArguments(0).asInstanceOf[TypeRep[Record]],
+        monad2.tp.typeArguments(0).asInstanceOf[TypeRep[Record]],
+        leftHash.tp.typeArguments(1).asInstanceOf[TypeRep[Any]],
+        sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
+      loweredMap += sym -> low.asInstanceOf[LoweredQuery[Any]]
+      sym
+    }
+  }
 
   rewrite += statement {
     case sym -> JoinableQueryMergeJoin(monad1, monad2, ord, joinCond) => {
@@ -252,7 +265,9 @@ abstract class QueryMonadStreamLoweringInterface(val schema: Schema, override va
       implicit val typeK = groupedMonad.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
       implicit val typeV = groupedMonad.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
       implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-      val low = monadGroupByMapValues(getLoweredQuery(monad))(par, pred)(func.asInstanceOf[Rep[Array[Any] => Any]])(typeV, typeK, typeS)
+      val groupByResult = groupByResults(monad)
+      val low = monadGroupByMapValues(getLoweredQuery(monad), groupByResult)(par, pred)(
+        func.asInstanceOf[Rep[Array[Any] => Any]])((input, lq) => loweredMap += input -> lq)(typeV, typeK, typeS)
       loweredMap += sym -> low
       sym
   }

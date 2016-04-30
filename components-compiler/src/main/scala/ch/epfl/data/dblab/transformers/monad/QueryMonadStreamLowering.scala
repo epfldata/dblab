@@ -25,8 +25,6 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
 
   val recordUsageAnalysis: RecordUsageAnalysis[QueryEngineExp] = QML.recordUsageAnalysis
 
-  def NULL[S: TypeRep]: Rep[S] = zeroValue[S]
-
   def zeroValue[S: TypeRep]: Rep[S] = {
     val tp = typeRep[S]
     val v = sc.pardis.shallow.utils.DefaultValue(tp.name).asInstanceOf[S]
@@ -39,11 +37,11 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
     def map[S](f: T => S): Stream[S] = ???
     def filter(p: T => Boolean): Stream[T] = ???
   }
-  def Done[T: TypeRep]: Rep[Stream[T]] = newStream(NULL[T], unit(false), unit(true))
+  def Done[T: TypeRep]: Rep[Stream[T]] = newStream(zeroValue[T], unit(false), unit(true))
   def newStream[T: TypeRep](element: Rep[T], isSkip: Rep[Boolean], isDone: Rep[Boolean]): Rep[Stream[T]] = __new[Stream[T]](("element", false, element),
     ("isSkip", false, isSkip),
     ("isDone", false, isDone))
-  def Skip[T: TypeRep]: Rep[Stream[T]] = newStream(NULL[T], unit(true), unit(false))
+  def Skip[T: TypeRep]: Rep[Stream[T]] = newStream(zeroValue[T], unit(true), unit(false))
   def Yield[T: TypeRep](e: Rep[T]): Rep[Stream[T]] = newStream(e, unit(false), unit(false))
 
   abstract class StreamOps[T: TypeRep] {
@@ -386,14 +384,13 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
     //     })
     //   }
 
-    def groupByMapValues[K: TypeRep, S: TypeRep](par: Rep[T => K], pred: Option[Rep[T => Boolean]])(func: Rep[Array[T] => S]): QueryStream[(K, S)] = new QueryStream[(K, S)] {
+    def groupByMapValues[K: TypeRep, S: TypeRep](groupByResult: GroupByResult[K, T])(
+      par: Rep[T => K], pred: Option[Rep[T => Boolean]])(
+        func: Rep[Array[T] => S])(
+          adder: (Rep[_], QueryStream[T]) => Unit): QueryStream[(K, S)] = new QueryStream[(K, S)] {
       type V = T
 
-      val (groupByResult, partitions) = {
-        val monad = loweredMap.find(_._2 == self).get._1
-
-        logger.debug(s"HERE!$monad")
-        val groupByResult = groupByResults(monad).asInstanceOf[GroupByResult[K, V]]
+      val partitions = {
 
         val GroupByResult(array, keyRevertIndex, eachBucketSize, _, keyIndex) =
           groupByResult
@@ -415,7 +412,7 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
             eachBucketSize(bucket) += unit(1)
           }, unit())
         })
-        (groupByResult, readVar(lastIndex))
+        readVar(lastIndex)
       }
 
       val index = __newVarNamed(unit(0), "indexGroupBy")
@@ -429,7 +426,7 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
           // System.out.println(s"arr size ${arr.size} bucket size ${eachBucketSize(i)}")
           val key = keyRevertIndex(i)
           val Def(Lambda(_, input, _)) = func
-          loweredMap += input -> QueryStream(arr).asInstanceOf[QueryStream[Any]]
+          adder(input, QueryStream(arr))
           val newValue = inlineFunction(func, arr)
           dsl"$index = $index + 1"
           Yield(Tuple2(key, newValue))
@@ -469,8 +466,16 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
   def monadTake[T: TypeRep](query: LoweredQuery[T], n: Rep[Int]): LoweredQuery[T] = ??? //query.take(n)
   def monadMergeJoin[T: TypeRep, S: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
     ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res] = q1.mergeJoin2(q2)(ord)(joinCond)
+  def monadLeftHashSemiJoin[T: TypeRep, S: TypeRep, R: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
+    leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(
+      joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[T] = ???
+  def monadHashJoin[T: TypeRep, S: TypeRep, R: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
+    leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(
+      joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res] = ???
   def monadGroupByMapValues[T: TypeRep, K: TypeRep, S: TypeRep](
-    query: LoweredQuery[T])(par: Rep[T => K], pred: Option[Rep[T => Boolean]])(
-      func: Rep[Array[T] => S]): LoweredQuery[(K, S)] =
-    query.groupByMapValues(par, pred)(func)
+    query: LoweredQuery[T], groupByResult: GroupByResult[K, T])(
+      par: Rep[T => K], pred: Option[Rep[T => Boolean]])(
+        func: Rep[Array[T] => S])(
+          adder: (Rep[_], LoweredQuery[T]) => Unit): LoweredQuery[(K, S)] =
+    query.groupByMapValues(groupByResult)(par, pred)(func)(adder)
 }
