@@ -11,14 +11,14 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.TreeSet
 import scala.language.implicitConversions
-import QueryIterator.NULL
+import QueryIterator.{ NULL, iterate }
 
 // @reflect[Query[_]]
 // @transformation
 abstract class QueryIterator[T] { self =>
-  def next(): T
-  def reset(): Unit
-  final def findFirst(p: T => Boolean): T = {
+  def destroy[S](consumer: (() => T) => S): S
+
+  final def findFirst(p: T => Boolean, next: () => T): T = {
     var elem: T = NULL
     var found = false
     while (!found && {
@@ -31,18 +31,21 @@ abstract class QueryIterator[T] { self =>
     }
     elem
   }
-  @pure def map[S](f: T => S): QueryIterator[S] = destroy { () =>
-    val elem = next()
-    if (elem == NULL)
-      NULL
-    else
-      f(elem)
+  @pure def map[S](f: T => S): QueryIterator[S] = destroy { next =>
+    iterate { () =>
+      val elem = next()
+      if (elem == NULL)
+        NULL
+      else
+        f(elem)
+    }
   }
-  @pure def filter(p: T => Boolean): QueryIterator[T] = destroy { () =>
-    findFirst(p)
+  @pure def filter(p: T => Boolean): QueryIterator[T] = destroy { next =>
+    iterate { () =>
+      findFirst(p, next)
+    }
   }
-  def foreach(f: T => Unit): Unit = {
-    reset()
+  def foreach(f: T => Unit): Unit = destroy { next =>
     var elem: T = NULL
     while ({
       elem = next()
@@ -100,14 +103,16 @@ abstract class QueryIterator[T] { self =>
       (treeSet, treeSet.size)
     }
     var index = 0
-    destroy { () =>
-      if (index >= size)
-        NULL
-      else {
-        index += 1
-        val elem = treeSet.head
-        treeSet -= elem
-        elem
+    destroy { next =>
+      iterate { () =>
+        if (index >= size)
+          NULL
+        else {
+          index += 1
+          val elem = treeSet.head
+          treeSet -= elem
+          elem
+        }
       }
     }
   }
@@ -143,13 +148,15 @@ abstract class QueryIterator[T] { self =>
         rows += 1
       }
     } else {
-      var elem: T = NULL
-      while (rows < limit && {
-        elem = next()
-        elem
-      } != NULL) {
-        printFunc(elem)
-        rows += 1
+      destroy { next =>
+        var elem: T = NULL
+        while (rows < limit && {
+          elem = next()
+          elem
+        } != NULL) {
+          printFunc(elem)
+          rows += 1
+        }
       }
     }
     printf("(%d rows)\n", rows)
@@ -162,48 +169,51 @@ abstract class QueryIterator[T] { self =>
     }
     res.toList
   }
-
-  def destroy[T](n: () => T): QueryIterator[T] = new QueryIterator[T] {
-    def next(): T = n()
-    def reset(): Unit = self.reset()
-  }
 }
 
 object QueryIterator {
   def NULL[S]: S = null.asInstanceOf[S]
   @dontLift def apply[T](arr: Array[T]): QueryIterator[T] = new QueryIterator[T] {
     var index = 0
-    def next(): T =
-      if (index >= arr.length)
-        NULL
-      else {
-        index += 1
-        arr(index - 1)
+    override def destroy[S](consumer: (() => T) => S): S = {
+      consumer { () =>
+        if (index >= arr.length)
+          NULL
+        else {
+          index += 1
+          arr(index - 1)
+        }
       }
-    def reset(): Unit = {
-      index = 0
     }
   }
-  def apply[T](set: scala.collection.mutable.Set[T]): SetUnfold[T] = new SetUnfold[T](set)
+  def apply[T](set: scala.collection.mutable.Set[T]): SetIterator[T] = new SetIterator[T](set)
+  def iterate[T](next: () => T): QueryIterator[T] = new QueryIterator[T] {
+    override def destroy[S](consumer: (() => T) => S): S = consumer(next)
+  }
 }
 
-class SetUnfold[T](set: scala.collection.mutable.Set[T]) extends QueryIterator[T] { self =>
+class SetIterator[T](set: scala.collection.mutable.Set[T]) extends QueryIterator[T] { self =>
   var currentSet: scala.collection.mutable.Set[T] = set
 
-  def reset() = currentSet = set
-  def next() = {
-    if (currentSet.isEmpty) {
-      NULL
-    } else {
-      val elem = currentSet.head
-      currentSet = currentSet.tail
-      elem
+  override def destroy[S](consumer: (() => T) => S): S = {
+    consumer { () =>
+      if (currentSet.isEmpty) {
+        NULL
+      } else {
+        val elem = currentSet.head
+        currentSet = currentSet.tail
+        elem
+      }
     }
   }
 
-  def withFilter(p: T => Boolean): SetUnfold[T] = new SetUnfold[T](set) {
+  def next(): T = destroy { n =>
+    n()
+  }
+
+  def withFilter(p: T => Boolean): SetIterator[T] = new SetIterator[T](set) {
     val underlying = self.filter(p)
-    override def next() = underlying.next()
+    override def destroy[S](consumer: (() => T) => S): S = underlying.destroy(consumer)
   }
 }
 
@@ -214,36 +224,38 @@ class JoinableQueryIterator[T <: Record](private val underlying: QueryIterator[T
     for (elem <- underlying) {
       hm.addBinding(leftHash(elem), elem)
     }
-    var iterator: SetUnfold[T] = null
+    var iterator: SetIterator[T] = null
     var prevRightElem: S = NULL
-    underlying.destroy { () =>
-      var leftElem: T = NULL
-      val rightElem = if (iterator == null || {
-        leftElem = iterator.next
-        leftElem
-      } == NULL) {
-        val re = q2 findFirst { t =>
-          val k = rightHash(t)
-          hm.get(k) exists { tmpBuffer =>
-            val res = tmpBuffer exists { bufElem =>
-              joinCond(bufElem, t)
+    q2.destroy { next =>
+      iterate { () =>
+        var leftElem: T = NULL
+        val rightElem = if (iterator == null || {
+          leftElem = iterator.next
+          leftElem
+        } == NULL) {
+          val re = q2 findFirst ({ t =>
+            val k = rightHash(t)
+            hm.get(k) exists { tmpBuffer =>
+              val res = tmpBuffer exists { bufElem =>
+                joinCond(bufElem, t)
+              }
+              if (res) {
+                iterator = QueryIterator(tmpBuffer).withFilter(e => joinCond(e, t))
+                leftElem = iterator.next
+              }
+              res
             }
-            if (res) {
-              iterator = QueryIterator(tmpBuffer).withFilter(e => joinCond(e, t))
-              leftElem = iterator.next
-            }
-            res
-          }
+          }, next)
+          prevRightElem = re
+          re
+        } else {
+          prevRightElem
         }
-        prevRightElem = re
-        re
-      } else {
-        prevRightElem
-      }
-      if (rightElem == NULL) {
-        NULL
-      } else {
-        leftElem.concatenateDynamic(rightElem)
+        if (rightElem == NULL) {
+          NULL
+        } else {
+          leftElem.concatenateDynamic(rightElem)
+        }
       }
     }
   }
@@ -254,37 +266,43 @@ class JoinableQueryIterator[T <: Record](private val underlying: QueryIterator[T
     var elem2: S = NULL
     var nextJoinElem: DynamicCompositeRecord[T, S] = NULL
     var atEnd: Boolean = false
-    def proceedLeft(): Unit = {
-      elem1 = underlying.next()
+    def proceedLeft(next: () => T): Unit = {
+      elem1 = next()
       atEnd ||= elem1 == NULL
     }
-    def proceedRight(): Unit = {
-      elem2 = q2.next()
+    def proceedRight(next: () => S): Unit = {
+      elem2 = next()
       atEnd ||= elem2 == NULL
     }
-    proceedLeft()
-    proceedRight()
-    underlying.destroy { () =>
-
-      var found: Boolean = false
-
-      while (!found && !atEnd) {
-        val (ne1, ne2) = elem1 -> elem2
-        val cmp = ord(ne1, ne2)
-        if (cmp < 0) {
-          proceedLeft()
-        } else {
-          proceedRight()
-          if (cmp == 0) {
-            nextJoinElem = ne1.concatenateDynamic(ne2)
-            found = true
+    var init = false
+    underlying.destroy { nextLeft =>
+      q2.destroy { nextRight =>
+        iterate { () =>
+          var found: Boolean = false
+          if (!init) {
+            proceedLeft(nextLeft)
+            proceedRight(nextRight)
+            init = true
           }
+          while (!found && !atEnd) {
+            val (ne1, ne2) = elem1 -> elem2
+            val cmp = ord(ne1, ne2)
+            if (cmp < 0) {
+              proceedLeft(nextLeft)
+            } else {
+              proceedRight(nextRight)
+              if (cmp == 0) {
+                nextJoinElem = ne1.concatenateDynamic(ne2)
+                found = true
+              }
+            }
+          }
+          if (atEnd && !found)
+            NULL
+          else
+            nextJoinElem
         }
       }
-      if (atEnd && !found)
-        NULL
-      else
-        nextJoinElem
     }
   }
 
@@ -300,8 +318,10 @@ class JoinableQueryIterator[T <: Record](private val underlying: QueryIterator[T
         buf.exists(e => joinCond(t, e)))
     })
 
-    underlying.destroy { () =>
-      leftIterator.next()
+    leftIterator.destroy { next =>
+      iterate { () =>
+        next()
+      }
     }
   }
 }
@@ -355,18 +375,20 @@ class GroupedQueryIterator[K, V](underlying: QueryIterator[V], par: V => K) {
 
     var index: Int = 0
 
-    underlying.destroy { () =>
-      if (index >= partitions) {
-        NULL
-      } else {
-        val GroupByResult(array, keyRevertIndex, eachBucketSize, _, _) =
-          groupByResult
-        val i = index
-        index += 1
-        val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
-        val key = keyRevertIndex(i)
-        val newValue = func(QueryIterator(arr))
-        key -> newValue
+    underlying.destroy { next =>
+      iterate { () =>
+        if (index >= partitions) {
+          NULL
+        } else {
+          val GroupByResult(array, keyRevertIndex, eachBucketSize, _, _) =
+            groupByResult
+          val i = index
+          index += 1
+          val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
+          val key = keyRevertIndex(i)
+          val newValue = func(QueryIterator(arr))
+          key -> newValue
+        }
       }
     }
   }

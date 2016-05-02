@@ -187,10 +187,10 @@ object QueryUnfold {
     def next(ts: Int) = Tuple2(arr(ts), ts + 1)
 
   }
-  def apply[T](set: scala.collection.mutable.Set[T]): SetIterator[T] = new SetIterator[T](set)
+  def apply[T](set: scala.collection.mutable.Set[T]): SetUnfold[T] = new SetUnfold[T](set)
 }
 
-class SetIterator[T](set: scala.collection.mutable.Set[T]) extends QueryUnfold[T, Unit] { self =>
+class SetUnfold[T](set: scala.collection.mutable.Set[T]) extends QueryUnfold[T, Unit] { self =>
   var currentSet: scala.collection.mutable.Set[T] = set
   def source = ()
 
@@ -201,7 +201,7 @@ class SetIterator[T](set: scala.collection.mutable.Set[T]) extends QueryUnfold[T
     Tuple2(elem, ())
   }
 
-  def withFilter(p: T => Boolean): SetIterator[T] = new SetIterator[T](set) {
+  def withFilter(p: T => Boolean): SetUnfold[T] = new SetUnfold[T](set) {
     val underlying = self.filter(p)
     override def atEnd(ts: Unit) = underlying.atEnd(())
     override def next(ts: Unit) = underlying.next(())
@@ -220,7 +220,7 @@ class JoinableQueryUnfold[T <: Record, Source1](private val underlying: QueryUnf
 
     var nextSource: Source2 = null.asInstanceOf[Source2]
     var tmpAtEnd = false
-    var iterator: SetIterator[T] = null
+    var iterator: SetUnfold[T] = null
     var leftElem = null.asInstanceOf[T]
     var rightElem = null.asInstanceOf[S]
 

@@ -20,6 +20,7 @@ import queryengine.monad.Query
 // import queryengine.monad.{ QueryOptimized => Query }
 // import queryengine.monad.{ QueryCPS => Query }
 // import queryengine.monad.{ QueryUnfold => Query }
+// import queryengine.monad.{ QueryIterator => Query }
 // import queryengine.monad.{ QueryStream => Query }
 
 @metadeep(
@@ -782,9 +783,19 @@ object Queries {
         val jo = ordersTable.hashJoin(so2)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
         val URGENT = parseString("1-URGENT")
         val HIGH = parseString("2-HIGH")
-        val aggOp = jo.groupBy(x => x.L_SHIPMODE[OptimalString]).mapValues(list =>
+        val aggOp = jo.groupBy(x => x.L_SHIPMODE[OptimalString]).mapValues(list => {
           Array(list.filter(t => t.O_ORDERPRIORITY[OptimalString] === URGENT || t.O_ORDERPRIORITY[OptimalString] === HIGH).count,
-            list.filter(t => t.O_ORDERPRIORITY[OptimalString] =!= URGENT && t.O_ORDERPRIORITY[OptimalString] =!= HIGH).count))
+            list.filter(t => t.O_ORDERPRIORITY[OptimalString] =!= URGENT && t.O_ORDERPRIORITY[OptimalString] =!= HIGH).count)
+          // var x0 = 0
+          // var x1 = 0
+          // list.foreach { t =>
+          //   if (t.O_ORDERPRIORITY[OptimalString] === URGENT || t.O_ORDERPRIORITY[OptimalString] === HIGH)
+          //     x0 += 1
+          //   if (t.O_ORDERPRIORITY[OptimalString] =!= URGENT && t.O_ORDERPRIORITY[OptimalString] =!= HIGH)
+          //     x1 += 1
+          // }
+          // Array(x0, x1)
+        })
         val sortOp = aggOp.sortBy(_._1.string)
         sortOp.printRows(kv =>
           printf("%s|%d|%d\n", kv._1.string, kv._2(0), kv._2(1)), -1)
@@ -808,9 +819,19 @@ object Queries {
         val jo = ordersTable.mergeJoin(so2)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
         val URGENT = parseString("1-URGENT")
         val HIGH = parseString("2-HIGH")
-        val aggOp = jo.groupBy(x => x.L_SHIPMODE[OptimalString]).mapValues(list =>
+        val aggOp = jo.groupBy(x => x.L_SHIPMODE[OptimalString]).mapValues(list => {
           Array(list.filter(t => t.O_ORDERPRIORITY[OptimalString] === URGENT || t.O_ORDERPRIORITY[OptimalString] === HIGH).count,
-            list.filter(t => t.O_ORDERPRIORITY[OptimalString] =!= URGENT && t.O_ORDERPRIORITY[OptimalString] =!= HIGH).count))
+            list.filter(t => t.O_ORDERPRIORITY[OptimalString] =!= URGENT && t.O_ORDERPRIORITY[OptimalString] =!= HIGH).count)
+          // var x0 = 0
+          // var x1 = 0
+          // list.foreach { t =>
+          //   if (t.O_ORDERPRIORITY[OptimalString] === URGENT || t.O_ORDERPRIORITY[OptimalString] === HIGH)
+          //     x0 += 1
+          //   if (t.O_ORDERPRIORITY[OptimalString] =!= URGENT && t.O_ORDERPRIORITY[OptimalString] =!= HIGH)
+          //     x1 += 1
+          // }
+          // Array(x0, x1)
+        })
         val sortOp = aggOp.sortBy(_._1.string)
         sortOp.printRows(kv =>
           printf("%s|%d|%d\n", kv._1.string, kv._2(0), kv._2(1)), -1)
