@@ -65,13 +65,7 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
 
   abstract class QueryIterator[T: TypeRep] { self =>
     val tp = typeRep[T]
-    // type Source
-    // implicit def sourceType: TypeRep[Source]
 
-    // def source: Rep[Source]
-
-    // def atEnd(s: Rep[Source]): Rep[Boolean]
-    // def next(s: Rep[Source]): Rep[(T, Source)]
     def next(): Rep[MayBe[T]]
 
     def foreach(f: Rep[T] => Rep[Unit]): Rep[Unit] = {
@@ -85,15 +79,17 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
     def map[S: TypeRep](f: Rep[T => S]): QueryIterator[S] = new QueryIterator[S] {
       def next(): Rep[MayBe[S]] = self.next().map(f)
     }
-    // def take(num: Rep[Int]): QueryIterator[T] = (k: Rep[T] => Rep[Unit]) => {
-    //   val counter = __newVarNamed[Int](unit(0), "counter")
-    //   foreach(e => __ifThenElse(readVar(counter) < num,
-    //     {
-    //       k(e)
-    //       __assign(counter, readVar(counter) + unit(1))
-    //     },
-    //     unit()))
-    // }
+    def take(num: Rep[Int]): QueryIterator[T] = new QueryIterator[T] {
+      val counter = __newVarNamed[Int](unit(0), "counter")
+      def next(): Rep[MayBe[T]] = dsl"""
+        if($counter < $num) {
+          $counter = $counter + 1
+          ${self.next()}
+        } else {
+          ${Nothing[T]}
+        }
+      """
+    }
     def filter(p: Rep[T => Boolean]): QueryIterator[T] = new QueryIterator[T] {
 
       def next(): Rep[MayBe[T]] = {
@@ -113,107 +109,6 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
       }
     }
 
-    // FIXME
-    // def filter(p: Rep[T => Boolean]): QueryIterator[T] = self
-    // def filter2(p: Rep[T => Boolean]): QueryIterator[T] = new QueryIterator[T] {
-    //   type Source = self.Source
-    //   implicit def sourceType: TypeRep[Source] = self.sourceType
-
-    //   def source: Rep[Source] = self.source
-
-    //   val hd = __newVar[T](zeroValue[T])
-    //   val curTail = __newVar[Source](zeroValue[Source])
-
-    //   def atEnd(s: Rep[Source]): Rep[Boolean] = self.atEnd(s) || {
-    //     val tmpAtEnd = __newVar(unit(false))
-    //     val tmpSource = __newVar(s)
-    //     val nextAndRest = self.next(tmpSource)
-    //     val tmpHd = __newVar(nextAndRest._1)
-    //     val tmpRest = __newVar(nextAndRest._2)
-
-    //     __whileDo(!(readVar(tmpAtEnd) || p(tmpHd)), {
-    //       __assign(tmpSource, tmpRest)
-    //       __ifThenElse(self.atEnd(tmpSource),
-    //         __assign(tmpAtEnd, unit(true)), {
-    //           val nextAndRest2 = self.next(tmpSource)
-    //           __assign(tmpHd, nextAndRest2._1)
-    //           __assign(tmpRest, nextAndRest2._2)
-    //         })
-    //     })
-    //     __assign(hd, tmpHd)
-    //     __assign(curTail, tmpRest)
-    //     readVar(tmpAtEnd)
-    //   }
-    //   def next(s: Rep[Source]): Rep[(T, Source)] = {
-    //     val isAtEnd = atEnd(s)
-    //     val resE = __ifThenElse(isAtEnd,
-    //       zeroValue[T],
-    //       readVar(hd))
-    //     val resS = __ifThenElse(isAtEnd,
-    //       zeroValue[Source],
-    //       readVar(curTail))
-    //     Tuple2(resE, resS)
-    //   }
-    // }
-
-    // def filter(p: Rep[T => Boolean]): QueryIterator[T] = new QueryIterator[T] {
-    //   type Source = self.Source
-    //   implicit def sourceType: TypeRep[Source] = self.sourceType
-
-    //   def source: Rep[Source] = self.source
-
-    //   val hd = __newVar[T](zeroValue[T])
-    //   val curTail = __newVar[Source](zeroValue[Source])
-    //   val tmpAtEnd = __newVar(unit(false))
-
-    //   sealed trait LastCalledFunction
-    //   case object NothingYet extends LastCalledFunction
-    //   case object AtEnd extends LastCalledFunction
-    //   case object Next extends LastCalledFunction
-
-    //   var lastCalledFunction: LastCalledFunction = NothingYet
-
-    //   def atEnd(s: Rep[Source]): Rep[Boolean] = lastCalledFunction match {
-    //     case NothingYet | AtEnd =>
-    //       lastCalledFunction = AtEnd
-    //       self.atEnd(s) || readVar(tmpAtEnd) || {
-    //         val tmpSource = __newVar(s)
-    //         val nextAndRest = self.next(tmpSource)
-    //         val tmpHd = __newVar(nextAndRest._1)
-    //         val tmpRest = __newVar(nextAndRest._2)
-
-    //         __whileDo(!(readVar(tmpAtEnd) || p(tmpHd)), {
-    //           __assign(tmpSource, tmpRest)
-    //           __ifThenElse(self.atEnd(tmpSource), {
-    //             __assign(tmpAtEnd, unit(true))
-    //             __assign(tmpHd, zeroValue[T])
-    //             __assign(tmpRest, zeroValue[Source])
-    //           }, {
-    //             val nextAndRest2 = self.next(tmpSource)
-    //             __assign(tmpHd, nextAndRest2._1)
-    //             __assign(tmpRest, nextAndRest2._2)
-    //           })
-    //         })
-    //         __assign(hd, tmpHd)
-    //         __assign(curTail, tmpRest)
-    //         readVar(tmpAtEnd)
-    //       }
-    //     // case AtEnd => //readVar(tmpAtEnd)
-    //     //   throw new Exception("atEnd after atEnd is not considered yet!")
-    //     case Next => throw new Exception("atEnd after next is not considered yet!")
-    //   }
-
-    //   def next(s: Rep[Source]): Rep[(T, Source)] = lastCalledFunction match {
-    //     case NothingYet => throw new Exception("next before atEnd is not considered yet!")
-    //     case AtEnd =>
-    //       Tuple2(readVar(hd), readVar(curTail))
-    //     case Next => throw new Exception("next after next is not considered yet!")
-    //   }
-
-    //   override def filter(p2: Rep[T => Boolean]): QueryIterator[T] = self.filter(__lambda { e =>
-    //     inlineFunction(p, e) && inlineFunction(p2, e)
-    //   })
-    // }
     def count: Rep[Int] = {
       val size = __newVarNamed[Int](unit(0), "size")
       foreach(e => {
@@ -222,18 +117,18 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
       readVar(size)
     }
 
-    // def avg: Rep[T] = {
-    //   assert(typeRep[T] == DoubleType)
-    //   // it will generate the loops before avg two times
-    //   // (sum.asInstanceOf[Rep[Double]] / count).asInstanceOf[Rep[T]]
-    //   val sumResult = __newVarNamed[Double](unit(0.0), "sumResult")
-    //   val size = __newVarNamed[Int](unit(0), "size")
-    //   foreach(elem => {
-    //     __assign(sumResult, readVar(sumResult) + elem.asInstanceOf[Rep[Double]])
-    //     __assign(size, readVar(size) + unit(1))
-    //   })
-    //   (readVar(sumResult) / readVar(size)).asInstanceOf[Rep[T]]
-    // }
+    def avg: Rep[T] = {
+      assert(typeRep[T] == DoubleType)
+      // it will generate the loops before avg two times
+      // (sum.asInstanceOf[Rep[Double]] / count).asInstanceOf[Rep[T]]
+      val sumResult = __newVarNamed[Double](unit(0.0), "sumResult")
+      val size = __newVarNamed[Int](unit(0), "size")
+      foreach(elem => {
+        __assign(sumResult, readVar(sumResult) + elem.asInstanceOf[Rep[Double]])
+        __assign(size, readVar(size) + unit(1))
+      })
+      (readVar(sumResult) / readVar(size)).asInstanceOf[Rep[T]]
+    }
 
     def sum: Rep[T] = {
       assert(typeRep[T] == DoubleType)
@@ -284,16 +179,10 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
             $result = ${Nothing[Res]}
             while(!$atEnd && !$found) {
               if ($leftShouldProceed || !$init) {
-                $elem1 = ${
-            // self.stream().materialize()
-            self.next()
-          }
+                $elem1 = ${self.next()}
               }
               if (!$leftShouldProceed || !$init) {
-                $elem2 = ${
-            // q2.stream().materialize()
-            q2.next()
-          }
+                $elem2 = ${q2.next()}
               }
               $init = true
               if ($atEnd) {
@@ -331,99 +220,19 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
         }
       }
 
-    // def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryIterator[S])(
-    //   ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryIterator[Res] =
-    //   new QueryIterator[Res] {
-    //     val q1 = self
-    //     type Source1 = q1.Source
-    //     type Source2 = q2.Source
-    //     type Source = (q1.Source, q2.Source)
-    //     import q1.{ sourceType => q1SourceType }
-    //     import q2.{ sourceType => q2SourceType }
-    //     def sourceType: TypeRep[Source] = Tuple2Type(q1.sourceType, q2.sourceType)
-    //     def source = Tuple2(q1.source, q2.source)
-    //     val ts1: Var[Source1] = __newVar[Source1](zeroValue[Source1])
-    //     val ts2: Var[Source2] = __newVar[Source2](zeroValue[Source2])
-    //     val elem1: Var[T] = __newVar[T](zeroValue[T])
-    //     val elem2: Var[S] = __newVar[S](zeroValue[S])
-    //     val leftEnd: Var[Boolean] = __newVar[Boolean](unit(false))
-    //     val rightEnd: Var[Boolean] = __newVar[Boolean](unit(false))
-    //     val nextJoinElem: Var[Res] = __newVar[Res](zeroValue[Res])
-    //     val tmpAtEnd: Var[Boolean] = __newVar[Boolean](unit(false)) // keeps if the two sources are at the end or not
-    //     def proceedLeft(): Rep[Unit] = {
-    //       dsl"""
-    //       if (${q1.atEnd(ts1)}) {
-    //         $leftEnd = true
-    //       } else {
-    //         val q1Next = ${q1.next(ts1)}
-    //         val ne1 = q1Next._1
-    //         val ns1 = q1Next._2
-    //         $elem1 = ne1
-    //         $ts1 = ns1
-    //       }
-    //       """
-    //     }
-    //     def proceedRight(): Rep[Unit] = {
-    //       dsl"""
-    //       if (${q2.atEnd(ts2)}) {
-    //         $rightEnd = true
-    //       } else {
-    //         val q2Next = ${q2.next(ts2)}
-    //         $elem2 = q2Next._1
-    //         $ts2 = q2Next._2
-    //       }
-    //       """
-    //     }
-    //     def atEnd(ts: Rep[(Source1, Source2)]) = {
-    //       dsl"""
-    //       $tmpAtEnd || {
-    //         if ($elem1 == ${unit(null)} && $elem2 == ${unit(null)}) {
-    //           $ts1 = ${q1.source}
-    //           $ts2 = ${q2.source}
-    //           ${proceedLeft()}
-    //           ${proceedRight()}
-    //         }
-    //         var found = false
-    //         while (!$tmpAtEnd && !found) {
-    //           if ($leftEnd || $rightEnd) {
-    //             $tmpAtEnd = true
-    //           } else {
-    //             val cmp = ${ord(elem1, elem2)}
-    //             if (cmp < 0) {
-    //               ${proceedLeft()}
-    //             } else if (cmp > 0) {
-    //               ${proceedRight()}
-    //             } else {
-    //               $nextJoinElem = ${concat_records[T, S, Res](elem1, elem2)}
-    //               ${proceedRight()}
-    //               found = true
-    //             }
-    //           }
-    //         }
-    //         !found
-    //       }
-    //       """
-    //     }
-    //     def next(ts: Rep[(Source1, Source2)]) = {
-    //       Tuple2(nextJoinElem, Tuple2(ts1, ts2))
-    //     }
-    //   }
-
-    //   def minBy[S: TypeRep](by: Rep[T => S]): Rep[T] = {
-    //     val minResult = __newVarNamed[T](unit(null).asInstanceOf[Rep[T]], "minResult")
-    //     def compare(x: Rep[T], y: Rep[T]): Rep[Int] =
-    //       QML.ordering_minus(inlineFunction(by, x), inlineFunction(by, y))
-    //     foreach((elem: Rep[T]) => {
-    //       __ifThenElse((readVar(minResult) __== unit(null)) || compare(elem, readVar(minResult)) < unit(0), {
-    //         __assign(minResult, elem)
-    //       }, {
-    //         unit()
-    //       })
-    //     })
-    //     readVar(minResult)
-    //   }
-
-    // def sortBy[S: TypeRep](sortFunction: Rep[T => S]): QueryIterator[T] = self
+    def minBy[S: TypeRep](by: Rep[T => S]): Rep[T] = {
+      val minResult = __newVarNamed[T](unit(null).asInstanceOf[Rep[T]], "minResult")
+      def compare(x: Rep[T], y: Rep[T]): Rep[Int] =
+        QML.ordering_minus(inlineFunction(by, x), inlineFunction(by, y))
+      foreach((elem: Rep[T]) => {
+        __ifThenElse((readVar(minResult) __== unit(null)) || compare(elem, readVar(minResult)) < unit(0), {
+          __assign(minResult, elem)
+        }, {
+          unit()
+        })
+      })
+      readVar(minResult)
+    }
 
     def sortBy[S: TypeRep](sortFunction: Rep[T => S]): QueryIterator[T] = new QueryIterator[T] {
 
@@ -456,78 +265,11 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
       }
     }
 
-    // def hashJoin2[S: TypeRep, R: TypeRep, Res: TypeRep](q2: QueryIterator[S])(
-    //   leftHash: Rep[T] => Rep[R])(
-    //   rightHash: Rep[S] => Rep[R])(
-    //   joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryIterator[Res] = new QueryIterator[Res] {
-    //   type Source = (q2.Source, Int)
-    //   def sourceType: TypeRep[Source] = Tuple2Type(q2.sourceType, typeRep[Int])
-
-    //   val tmpBuffer = __newVarNamed[ArrayBuffer[T]](infix_asInstanceOf[ArrayBuffer[T]](unit(null)), unit("tmpBuffer"))
-
-    //   val hm = {
-    //     val hm = __newMultiMap[R, T]()
-    //     self.foreach((elem: Rep[T]) => {
-    //       hm.addBinding(leftHash(elem), elem)
-    //     })
-    //     hm
-    //   }
-
-    //   def source: Rep[Source] = Tuple2(q2.source, unit(0))
-
-    //   def atEnd(s: Rep[Source]): Rep[Boolean] = __ifThenElse(s._2 >= tmpBuffer.size, {
-    //       __ifThenElse(q2.atEnd,
-    //         unit(true), {
-    //           val e2 = q2.next(s._1)
-    //           val key = rightHash(e2._1)
-    //           hm.get(key) foreach {
-    //             __lambda { buff =>
-    //               __assign(tmpBuffer, buff)
-    //             }
-    //           }
-    //           q2.atEnd  
-    //         }
-    //       )
-    //     }, {
-    //       unit(false)
-    //     })
-    //   def next(s: Rep[Source]): Rep[(T, Source)] = {
-    //     val elem = treeSet.head
-    //     treeSet -= elem
-    //     Tuple2(elem, s + unit(1))
-    //   }
-    // }
-
-    //   def hashJoin2[S: TypeRep, R: TypeRep, Res: TypeRep](q2: QueryIterator[S])(leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryIterator[Res] = (k: Rep[Res] => Rep[Unit]) => {
-    //     assert(typeRep[Res].isInstanceOf[RecordType[_]])
-    //     // System.out.println(s"hashJoin called!!!")
-    //     val hm = __newMultiMap[R, T]()
-    //     foreach((elem: Rep[T]) => {
-    //       hm.addBinding(leftHash(elem), elem)
-    //     })
-    //     q2.foreach((elem: Rep[S]) => {
-    //       val key = rightHash(elem)
-    //       hm.get(key) foreach {
-    //         __lambda { tmpBuffer =>
-    //           tmpBuffer foreach {
-    //             __lambda { bufElem =>
-    //               __ifThenElse(joinCond(bufElem, elem), {
-    //                 k(concat_records[T, S, Res](bufElem, elem))
-    //               }, unit())
-    //             }
-    //           }
-    //         }
-    //       }
-    //     })
-    //   }
-
     def groupByMapValues[K: TypeRep, S: TypeRep](groupByResult: GroupByResult[K, T])(
       par: Rep[T => K], pred: Option[Rep[T => Boolean]])(
         func: Rep[Array[T] => S])(
           adder: (Rep[_], QueryIterator[T]) => Unit): QueryIterator[(K, S)] = new QueryIterator[(K, S)] {
       type V = T
-      // type Source = Int
-      // def sourceType: TypeRep[Source] = typeRep[Int]
 
       val partitions = {
 
@@ -536,9 +278,7 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
 
         val lastIndex = __newVarNamed(unit(0), "lastIndex")
 
-        // printf(unit("start!"))
         self.foreach((elem: Rep[V]) => {
-          // val key = par(elem)
           val cond = pred.map(p => inlineFunction(p, elem)).getOrElse(unit(true))
           __ifThenElse(cond, {
             val key = inlineFunction(par, elem)
@@ -556,28 +296,12 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
 
       val index = __newVarNamed(unit(0), "indexGroupBy")
 
-      // def source: Rep[Source] = unit(0)
-
-      // def atEnd(s: Rep[Source]): Rep[Boolean] = s >= partitions
-      // def next(s: Rep[Source]): Rep[((K, S), Source)] = {
-      //   val GroupByResult(array, keyRevertIndex, eachBucketSize, _, _) =
-      //     groupByResult
-      //   val i = s
-      //   val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
-      //   // System.out.println(s"arr size ${arr.size} bucket size ${eachBucketSize(i)}")
-      //   val key = keyRevertIndex(i)
-      //   val Def(Lambda(_, input, _)) = func
-      //   adder(input, QueryIterator(arr))
-      //   val newValue = inlineFunction(func, arr)
-      //   Tuple2(Tuple2(key, newValue), s + unit(1))
-      // }
       def next(): Rep[MayBe[(K, S)]] = {
         val GroupByResult(array, keyRevertIndex, eachBucketSize, _, _) =
           groupByResult
         val i = readVar(index)
         __ifThenElse(i < partitions, {
           val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
-          // System.out.println(s"arr size ${arr.size} bucket size ${eachBucketSize(i)}")
           val key = keyRevertIndex(i)
           val Def(Lambda(_, input, _)) = func
           adder(input, QueryIterator(arr))
@@ -612,9 +336,9 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
   def monadSortBy[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): LoweredQuery[T] = query.sortBy(f)
   def monadCount[T: TypeRep](query: LoweredQuery[T]): Rep[Int] = query.count
   def monadSum[T: TypeRep](query: LoweredQuery[T]): Rep[T] = query.sum
-  def monadAvg[T: TypeRep](query: LoweredQuery[T]): Rep[T] = ??? //query.avg
-  def monadMinBy[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): Rep[T] = ??? //query.minBy(f)
-  def monadTake[T: TypeRep](query: LoweredQuery[T], n: Rep[Int]): LoweredQuery[T] = ??? //query.take(n)
+  def monadAvg[T: TypeRep](query: LoweredQuery[T]): Rep[T] = query.avg
+  def monadMinBy[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): Rep[T] = query.minBy(f)
+  def monadTake[T: TypeRep](query: LoweredQuery[T], n: Rep[Int]): LoweredQuery[T] = query.take(n)
   def monadMergeJoin[T: TypeRep, S: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
     ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res] = q1.mergeJoin2(q2)(ord)(joinCond)
   def monadLeftHashSemiJoin[T: TypeRep, S: TypeRep, R: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
