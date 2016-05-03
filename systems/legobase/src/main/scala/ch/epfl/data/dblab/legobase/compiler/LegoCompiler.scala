@@ -90,7 +90,12 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
     if (settings.queryMonadCPS) {
       pipeline += new QueryMonadCPSLowering(schema, DSL, queryMonadLowering)
     } else if (settings.queryMonadIterator) {
+      // these should be together
       pipeline += new QueryMonadIteratorLowering(schema, DSL, queryMonadLowering)
+      pipeline += new CoreLanguageToC(DSL)
+      pipeline += new ParameterPromotionWithVar(DSL)
+      // this should be alone
+      // pipeline += new QueryMonadUnfoldLowering(schema, DSL, queryMonadLowering)
     } else if (settings.queryMonadStream) {
       pipeline += new QueryMonadStreamLowering(schema, DSL, settings.queryMonadStreamChurch, queryMonadLowering)
       pipeline += new CoreLanguageToC(DSL)
