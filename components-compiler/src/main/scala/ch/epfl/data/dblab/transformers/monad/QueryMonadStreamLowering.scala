@@ -20,7 +20,7 @@ import scala.language.existentials
 /**
  * Lowers query monad operations using the stream fusion technique.
  */
-class QueryMonadStreamLowering(override val schema: Schema, override val IR: QueryEngineExp, val churchEncoding: Boolean, val QML: QueryMonadLowering) extends QueryMonadStreamLoweringInterface(schema, IR) {
+class QueryMonadStreamLowering(override val schema: Schema, override val IR: QueryEngineExp, val churchEncoding: Boolean, val QML: QueryMonadLowering) extends QueryMonadLoweringInterface(schema, IR) {
   import IR._
 
   val recordUsageAnalysis: RecordUsageAnalysis[QueryEngineExp] = QML.recordUsageAnalysis
@@ -146,6 +146,19 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
       }
     }
 
+    def take(num: Rep[Int]): QueryStream[T] = new QueryStream[T] {
+      val counter = __newVarNamed[Int](unit(0), "counter")
+      def stream(): Rep[Stream[T]] = buildS { (done, skip, yld) =>
+        dsl"""
+          if($counter < $num) {
+            ${self.stream().semiFold(() => done(), () => skip(), x => { dsl"$counter = $counter + 1"; yld(x) })}
+          } else {
+            ${done()}
+          }
+        """
+      }
+    }
+
     def count: Rep[Int] = {
       val size = __newVarNamed[Int](unit(0), "size")
       foreach(e => {
@@ -154,18 +167,18 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
       readVar(size)
     }
 
-    // def avg: Rep[T] = {
-    //   assert(typeRep[T] == DoubleType)
-    //   // it will generate the loops before avg two times
-    //   // (sum.asInstanceOf[Rep[Double]] / count).asInstanceOf[Rep[T]]
-    //   val sumResult = __newVarNamed[Double](unit(0.0), "sumResult")
-    //   val size = __newVarNamed[Int](unit(0), "size")
-    //   foreach(elem => {
-    //     __assign(sumResult, readVar(sumResult) + elem.asInstanceOf[Rep[Double]])
-    //     __assign(size, readVar(size) + unit(1))
-    //   })
-    //   (readVar(sumResult) / readVar(size)).asInstanceOf[Rep[T]]
-    // }
+    def avg: Rep[T] = {
+      assert(typeRep[T] == DoubleType)
+      // it will generate the loops before avg two times
+      // (sum.asInstanceOf[Rep[Double]] / count).asInstanceOf[Rep[T]]
+      val sumResult = __newVarNamed[Double](unit(0.0), "sumResult")
+      val size = __newVarNamed[Int](unit(0), "size")
+      foreach(elem => {
+        __assign(sumResult, readVar(sumResult) + elem.asInstanceOf[Rep[Double]])
+        __assign(size, readVar(size) + unit(1))
+      })
+      (readVar(sumResult) / readVar(size)).asInstanceOf[Rep[T]]
+    }
 
     def sum: Rep[T] = {
       assert(typeRep[T] == DoubleType)
@@ -176,32 +189,29 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
       readVar(sumResult).asInstanceOf[Rep[T]]
     }
 
-    // def leftHashSemiJoin2[S: TypeRep, R: TypeRep](q2: QueryStream[S])(
-    //   leftHash: Rep[T] => Rep[R])(
-    //     rightHash: Rep[S] => Rep[R])(
-    //       joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryStream[T] = new QueryStream[T] {
-    //   val hm = __newMultiMap[R, S]()
-    //   for (elem <- q2) {
-    //     hm.addBinding(rightHash(elem), elem)
-    //   }
-    //   val leftStream = self.filter(__lambda {
-    //     t =>
-    //       {
-    //         val k = leftHash(t)
-    //         // TODO add exists to option to make this one nicer
-    //         val result = __newVarNamed(unit(false), "setExists")
-    //         hm.get(k).foreach(__lambda { buf =>
-    //           __assign(result, buf.exists(__lambda { e => joinCond(t, e) }))
-    //         })
-    //         readVar(result)
-    //       }
-    //   })
-    //   type Source = leftStream.Source
-    //   def sourceType: TypeRep[Source] = leftStream.sourceType
-    //   def source = leftStream.source
-    //   def atEnd(ts: Rep[Source]): Rep[Boolean] = leftStream.atEnd(ts)
-    //   def next(ts: Rep[Source]) = leftStream.next(ts)
-    // }
+    def leftHashSemiJoin2[S: TypeRep, R: TypeRep](q2: QueryStream[S])(
+      leftHash: Rep[T] => Rep[R])(
+        rightHash: Rep[S] => Rep[R])(
+          joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryStream[T] = new QueryStream[T] {
+      val hm = __newMultiMap[R, S]()
+      for (elem <- q2) {
+        hm.addBinding(rightHash(elem), elem)
+      }
+      val leftIterator = self.filter(__lambda {
+        t =>
+          {
+            val k = leftHash(t)
+            // TODO add exists to option to make this one nicer
+            val result = __newVarNamed(unit(false), "setExists")
+            hm.get(k).foreach(__lambda { buf =>
+              __assign(result, buf.exists(__lambda { e => joinCond(t, e) }))
+            })
+            readVar(result)
+          }
+      })
+
+      def stream() = leftIterator.stream()
+    }
 
     def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryStream[S])(
       ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryStream[Res] =
@@ -268,19 +278,19 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
         }
       }
 
-    //   def minBy[S: TypeRep](by: Rep[T => S]): Rep[T] = {
-    //     val minResult = __newVarNamed[T](unit(null).asInstanceOf[Rep[T]], "minResult")
-    //     def compare(x: Rep[T], y: Rep[T]): Rep[Int] =
-    //       QML.ordering_minus(inlineFunction(by, x), inlineFunction(by, y))
-    //     foreach((elem: Rep[T]) => {
-    //       __ifThenElse((readVar(minResult) __== unit(null)) || compare(elem, readVar(minResult)) < unit(0), {
-    //         __assign(minResult, elem)
-    //       }, {
-    //         unit()
-    //       })
-    //     })
-    //     readVar(minResult)
-    //   }
+    def minBy[S: TypeRep](by: Rep[T => S]): Rep[T] = {
+      val minResult = __newVarNamed[T](unit(null).asInstanceOf[Rep[T]], "minResult")
+      def compare(x: Rep[T], y: Rep[T]): Rep[Int] =
+        QML.ordering_minus(inlineFunction(by, x), inlineFunction(by, y))
+      foreach((elem: Rep[T]) => {
+        __ifThenElse((readVar(minResult) __== unit(null)) || compare(elem, readVar(minResult)) < unit(0), {
+          __assign(minResult, elem)
+        }, {
+          unit()
+        })
+      })
+      readVar(minResult)
+    }
 
     def sortBy[S: TypeRep](sortFunction: Rep[T => S]): QueryStream[T] = new QueryStream[T] {
 
@@ -455,14 +465,15 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
   def monadSortBy[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): LoweredQuery[T] = query.sortBy(f)
   def monadCount[T: TypeRep](query: LoweredQuery[T]): Rep[Int] = query.count
   def monadSum[T: TypeRep](query: LoweredQuery[T]): Rep[T] = query.sum
-  def monadAvg[T: TypeRep](query: LoweredQuery[T]): Rep[T] = ??? //query.avg
-  def monadMinBy[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): Rep[T] = ??? //query.minBy(f)
-  def monadTake[T: TypeRep](query: LoweredQuery[T], n: Rep[Int]): LoweredQuery[T] = ??? //query.take(n)
+  def monadAvg[T: TypeRep](query: LoweredQuery[T]): Rep[T] = query.avg
+  def monadMinBy[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): Rep[T] = query.minBy(f)
+  def monadTake[T: TypeRep](query: LoweredQuery[T], n: Rep[Int]): LoweredQuery[T] = query.take(n)
   def monadMergeJoin[T: TypeRep, S: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
     ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res] = q1.mergeJoin2(q2)(ord)(joinCond)
   def monadLeftHashSemiJoin[T: TypeRep, S: TypeRep, R: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
     leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(
-      joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[T] = ???
+      joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[T] =
+    q1.leftHashSemiJoin2(q2)(leftHash)(rightHash)(joinCond)
   def monadHashJoin[T: TypeRep, S: TypeRep, R: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
     leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(
       joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res] = ???

@@ -19,7 +19,7 @@ import quasi._
 /**
  * Lowers query monad operations using continuation-passing style.
  */
-class QueryMonadUnfoldLowering(override val schema: Schema, override val IR: QueryEngineExp, val QML: QueryMonadLowering) extends QueryMonadStreamLoweringInterface(schema, IR) {
+class QueryMonadUnfoldLowering(override val schema: Schema, override val IR: QueryEngineExp, val QML: QueryMonadLowering) extends QueryMonadLoweringInterface(schema, IR) {
   import IR._
 
   val recordUsageAnalysis: RecordUsageAnalysis[QueryEngineExp] = QML.recordUsageAnalysis

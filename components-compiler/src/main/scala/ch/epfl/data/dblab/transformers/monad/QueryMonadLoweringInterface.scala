@@ -22,7 +22,7 @@ import scala.language.higherKinds
 /**
  * Interface for lowering query monad operations.
  */
-abstract class QueryMonadStreamLoweringInterface(val schema: Schema, override val IR: QueryEngineExp) extends RuleBasedTransformer[QueryEngineExp](IR) with StructProcessing[QueryEngineExp] {
+abstract class QueryMonadLoweringInterface(val schema: Schema, override val IR: QueryEngineExp) extends RuleBasedTransformer[QueryEngineExp](IR) with StructProcessing[QueryEngineExp] {
   import IR._
 
   val logger = Logger(getClass)
