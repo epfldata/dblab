@@ -268,6 +268,69 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
       def next() = leftIterator.next()
     }
 
+    def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryIterator[S])(
+      ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryIterator[Res] =
+      new QueryIterator[Res] {
+        val elem1 = __newVarNamed[MayBe[T]](unit(null), "elemLeft")
+        val elem2 = __newVarNamed[MayBe[S]](unit(null), "elemRight")
+        val result = __newVarNamed[MayBe[Res]](unit(null), "result")
+        val atEnd = __newVarNamed(unit(false), "atEnd")
+        val found = __newVarNamed(unit(false), "found")
+        val init = __newVarNamed(unit(false), "init")
+        val leftShouldProceed = __newVar(dsl"false")
+        def next(): Rep[MayBe[Res]] = {
+          dsl"""
+            $found = false
+            $result = ${Nothing[Res]}
+            while(!$atEnd && !$found) {
+              if ($leftShouldProceed || !$init) {
+                $elem1 = ${
+            // self.stream().materialize()
+            self.next()
+          }
+              }
+              if (!$leftShouldProceed || !$init) {
+                $elem2 = ${
+            // q2.stream().materialize()
+            q2.next()
+          }
+              }
+              $init = true
+              if ($atEnd) {
+                $result = ${Nothing[Res]}
+              } else {${
+            dsl"$leftShouldProceed = false"
+            dsl"$elem1".semiFold(
+              () => dsl"{$atEnd = true}",
+              ne1 => {
+                dsl"$elem2".semiFold(
+                  () => dsl"{$atEnd = true}",
+                  ne2 => {
+                    val cmp = ord(ne1, ne2)
+                    dsl"""
+                              if ($cmp < 0) {
+                                $leftShouldProceed = true
+                              } else {
+                                if ($cmp == 0) {
+                                  $found = true
+                                  $result = ${Just(concat_records[T, S, Res](ne1, ne2))}
+                                } else {
+                                }
+                              }
+                              """
+                  })
+              })
+          }
+              }
+
+            }
+            $result
+              
+
+      """
+        }
+      }
+
     // def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryIterator[S])(
     //   ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryIterator[Res] =
     //   new QueryIterator[Res] {
@@ -553,7 +616,7 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
   def monadMinBy[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): Rep[T] = ??? //query.minBy(f)
   def monadTake[T: TypeRep](query: LoweredQuery[T], n: Rep[Int]): LoweredQuery[T] = ??? //query.take(n)
   def monadMergeJoin[T: TypeRep, S: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
-    ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res] = ??? //q1.mergeJoin2(q2)(ord)(joinCond)
+    ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res] = q1.mergeJoin2(q2)(ord)(joinCond)
   def monadLeftHashSemiJoin[T: TypeRep, S: TypeRep, R: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
     leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(
       joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[T] =
