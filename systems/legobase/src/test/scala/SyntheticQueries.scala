@@ -140,6 +140,25 @@ object SyntheticQueries extends TPCHRunner {
       """
   }
 
+  def filterMapSum(numRuns: Int): context.Rep[Unit] = {
+    import dblab.queryengine.monad.Query
+    import dblab.experimentation.tpch.TPCHLoader._
+    import dblab.queryengine.GenericEngine._
+    val lineitemTable = dsl"""Query(loadLineitem())"""
+    val startDate = "1995-12-01"
+    for (i <- 0 until numRuns) {
+      dsl"""
+        runQuery {
+          val constantDate1: Int = parseDate($startDate)
+          val result = $lineitemTable.filter(_.L_SHIPDATE >= constantDate1).
+          map(t => t.L_EXTENDEDPRICE * t.L_DISCOUNT).foldLeft(0.0)(_ + _)
+          printf("%.4f\n", result)
+        }
+      """
+    }
+    dsl"()"
+  }
+
   def query6(numRuns: Int): context.Rep[Unit] = {
     import dblab.queryengine.monad.Query
     import dblab.experimentation.tpch.TPCHLoader._
@@ -214,6 +233,7 @@ object SyntheticQueries extends TPCHRunner {
 
     val (queryNumber, queryFunction) = query match {
       case "QSimple"           => (0, () => querySimple(1))
+      case "fms"               => (23, () => filterMapSum(1))
       case "Q6_functional"     => (6, () => query6(1))
       case "Q12_functional_p2" => (12, () => query12_p2(1))
     }
