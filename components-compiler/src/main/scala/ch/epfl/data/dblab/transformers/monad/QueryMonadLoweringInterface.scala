@@ -51,9 +51,33 @@ abstract class QueryMonadLoweringInterface(val schema: Schema, override val IR: 
     readVar(foldResult)
   }
   def monadSortBy[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): LoweredQuery[T]
-  def monadCount[T: TypeRep](query: LoweredQuery[T]): Rep[Int]
-  def monadSum[T: TypeRep](query: LoweredQuery[T]): Rep[T]
-  def monadAvg[T: TypeRep](query: LoweredQuery[T]): Rep[T]
+  def monadCount[T: TypeRep](query: LoweredQuery[T]): Rep[Int] = {
+    val size = __newVarNamed[Int](unit(0), "size")
+    monadForeach(query, (e: Rep[T]) => {
+      __assign(size, readVar(size) + unit(1))
+    })
+    readVar(size)
+  }
+  def monadSum[T: TypeRep](query: LoweredQuery[T]): Rep[T] = {
+    assert(typeRep[T] == DoubleType)
+    val sumResult = __newVarNamed[Double](unit(0.0), "sumResult")
+    monadForeach(query, (elem: Rep[T]) => {
+      __assign(sumResult, readVar(sumResult) + elem.asInstanceOf[Rep[Double]])
+    })
+    readVar(sumResult).asInstanceOf[Rep[T]]
+  }
+  def monadAvg[T: TypeRep](query: LoweredQuery[T]): Rep[T] = {
+    assert(typeRep[T] == DoubleType)
+    // it will generate the loops before avg two times
+    // (sum.asInstanceOf[Rep[Double]] / count).asInstanceOf[Rep[T]]
+    val sumResult = __newVarNamed[Double](unit(0.0), "sumResult")
+    val size = __newVarNamed[Int](unit(0), "size")
+    monadForeach(query, (elem: Rep[T]) => {
+      __assign(sumResult, readVar(sumResult) + elem.asInstanceOf[Rep[Double]])
+      __assign(size, readVar(size) + unit(1))
+    })
+    (readVar(sumResult) / readVar(size)).asInstanceOf[Rep[T]]
+  }
   def monadMinBy[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): Rep[T]
   def monadTake[T: TypeRep](query: LoweredQuery[T], n: Rep[Int]): LoweredQuery[T]
   def monadMergeJoin[T: TypeRep, S: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(

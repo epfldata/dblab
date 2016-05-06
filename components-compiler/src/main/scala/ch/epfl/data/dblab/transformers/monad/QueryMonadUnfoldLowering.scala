@@ -176,35 +176,6 @@ class QueryMonadUnfoldLowering(override val schema: Schema, override val IR: Que
         inlineFunction(p, e) && inlineFunction(p2, e)
       })
     }
-    def count: Rep[Int] = {
-      val size = __newVarNamed[Int](unit(0), "size")
-      foreach(e => {
-        __assign(size, readVar(size) + unit(1))
-      })
-      readVar(size)
-    }
-
-    // def avg: Rep[T] = {
-    //   assert(typeRep[T] == DoubleType)
-    //   // it will generate the loops before avg two times
-    //   // (sum.asInstanceOf[Rep[Double]] / count).asInstanceOf[Rep[T]]
-    //   val sumResult = __newVarNamed[Double](unit(0.0), "sumResult")
-    //   val size = __newVarNamed[Int](unit(0), "size")
-    //   foreach(elem => {
-    //     __assign(sumResult, readVar(sumResult) + elem.asInstanceOf[Rep[Double]])
-    //     __assign(size, readVar(size) + unit(1))
-    //   })
-    //   (readVar(sumResult) / readVar(size)).asInstanceOf[Rep[T]]
-    // }
-
-    def sum: Rep[T] = {
-      assert(typeRep[T] == DoubleType)
-      val sumResult = __newVarNamed[Double](unit(0.0), "sumResult")
-      foreach(elem => {
-        __assign(sumResult, readVar(sumResult) + elem.asInstanceOf[Rep[Double]])
-      })
-      readVar(sumResult).asInstanceOf[Rep[T]]
-    }
 
     def leftHashSemiJoin2[S: TypeRep, R: TypeRep](q2: QueryUnfold[S])(
       leftHash: Rep[T] => Rep[R])(
@@ -494,9 +465,6 @@ class QueryMonadUnfoldLowering(override val schema: Schema, override val IR: Que
   def monadMap[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): LoweredQuery[S] = query.map(f)
   def monadForeach[T: TypeRep](query: LoweredQuery[T], f: Rep[T => Unit]): Unit = query.foreach(x => inlineFunction(f, x))
   def monadSortBy[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): LoweredQuery[T] = query.sortBy(f)
-  def monadCount[T: TypeRep](query: LoweredQuery[T]): Rep[Int] = query.count
-  def monadSum[T: TypeRep](query: LoweredQuery[T]): Rep[T] = query.sum
-  def monadAvg[T: TypeRep](query: LoweredQuery[T]): Rep[T] = ??? //query.avg
   def monadMinBy[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): Rep[T] = ??? //query.minBy(f)
   def monadTake[T: TypeRep](query: LoweredQuery[T], n: Rep[Int]): LoweredQuery[T] = ??? //query.take(n)
   def monadMergeJoin[T: TypeRep, S: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
