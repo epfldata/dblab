@@ -47,7 +47,7 @@ object DBLABBuild extends Build {
     .setPreference(AlignSingleLineCaseStatements, true)
   }
   val scala_version = "2.11.7"
-  val sc_version = "0.1.1-SNAPSHOT"
+  val sc_version = "0.1.2-SNAPSHOT"
 
   // addCommandAlias("test-gen", ";project legobase; project root; clean")
 

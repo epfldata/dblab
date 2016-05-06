@@ -68,6 +68,22 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
 
     def next(): Rep[MayBe[T]]
 
+    def findFirst(p: Rep[T => Boolean]): Rep[MayBe[T]] = {
+      val elem = __newVarNamed[MayBe[T]](Nothing[T], "result")
+      dsl"""
+        var found = false
+        while (!found && ${
+        dsl"$elem = ${next()}"
+        !dsl"$elem".isEmpty
+      }) {
+          if (${inlineFunction(p, dsl"$elem".element)}) {
+            found = true
+          }
+        }
+        $elem
+      """
+    }
+
     def foreach(f: Rep[T] => Rep[Unit]): Rep[Unit] = {
       val done = __newVarNamed(unit(false), "done")
       dsl"""
@@ -91,21 +107,8 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
       """
     }
     def filter(p: Rep[T => Boolean]): QueryIterator[T] = new QueryIterator[T] {
-
       def next(): Rep[MayBe[T]] = {
-        val elem = __newVarNamed[MayBe[T]](Nothing[T], "result")
-        dsl"""
-          var found = false
-          while (!found && ${
-          dsl"$elem = ${self.next()}"
-          !dsl"$elem".isEmpty
-        }) {
-            if (${inlineFunction(p, dsl"$elem".element)}) {
-              found = true
-            }
-          }
-          $elem
-        """
+        self.findFirst(p)
       }
     }
 
@@ -265,6 +268,46 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
       }
     }
 
+    def hashJoin2[S: TypeRep, R: TypeRep, Res: TypeRep](q2: QueryIterator[S])(
+      leftHash: Rep[T] => Rep[R])(
+        rightHash: Rep[S] => Rep[R])(
+          joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryIterator[Res] = new QueryIterator[Res] {
+      assert(typeRep[Res].isInstanceOf[RecordType[_]])
+      val hm = __newMultiMap[R, T]()
+      self.foreach((elem: Rep[T]) => {
+        hm.addBinding(leftHash(elem), elem)
+      })
+      def next(): Rep[MayBe[Res]] = {
+        val elem1 = __newVarNamed[MayBe[T]](unit(null), "elemLeft")
+        val found = __newVarNamed(unit(false), "found")
+        val elem2 = q2 findFirst (__lambda { (t: Rep[S]) =>
+          dsl"""
+          val k = ${rightHash(t)}
+          $hm.get(k) foreach { tmpBuffer =>
+            val leftElem = tmpBuffer find (bufElem => $joinCond(bufElem, $t))
+            leftElem foreach ${
+            __lambda { (le: Rep[T]) =>
+              dsl"""
+              $elem1 = ${Just(le)}
+              $found = true
+              """
+            }
+          }
+          }
+          $found
+      """
+        })
+        dsl"""
+        if ($found) {
+          ${Just(concat_records[T, S, Res](dsl"$elem1".element, elem2.element))}
+        } else {
+          ${Nothing[Res]}
+        }
+        """
+
+      }
+    }
+
     def groupByMapValues[K: TypeRep, S: TypeRep](groupByResult: GroupByResult[K, T])(
       par: Rep[T => K], pred: Option[Rep[T => Boolean]])(
         func: Rep[Array[T] => S])(
@@ -348,8 +391,7 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
   def monadHashJoin[T: TypeRep, S: TypeRep, R: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
     leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(
       joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res] =
-    ???
-  //q1.hashJoin2(q2)(leftHash)(rightHash)(joinCond)
+    q1.hashJoin2(q2)(leftHash)(rightHash)(joinCond)
   def monadGroupByMapValues[T: TypeRep, K: TypeRep, S: TypeRep](
     query: LoweredQuery[T], groupByResult: GroupByResult[K, T])(
       par: Rep[T => K], pred: Option[Rep[T => Boolean]])(

@@ -62,6 +62,11 @@ object OrderingFactory {
 }
 """
 
+  override def expToDocument(exp: Expression[_]): Document = exp match {
+    case Constant(b: Boolean) => doc"${b.toString}"
+    case _                    => super.expToDocument(exp)
+  }
+
   /**
    * Returns the class/module signature code that the generated query is put inside that.
    */
