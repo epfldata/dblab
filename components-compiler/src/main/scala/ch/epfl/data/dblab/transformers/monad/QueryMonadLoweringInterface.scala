@@ -43,6 +43,13 @@ abstract class QueryMonadLoweringInterface(val schema: Schema, override val IR: 
   def monadFilter[T: TypeRep](query: LoweredQuery[T], p: Rep[T => Boolean]): LoweredQuery[T]
   def monadMap[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): LoweredQuery[S]
   def monadForeach[T: TypeRep](query: LoweredQuery[T], f: Rep[T => Unit]): Unit
+  def monadFoldLeft[T: TypeRep, S: TypeRep](query: LoweredQuery[T], z: Rep[S], f: Rep[(S, T) => S]): Rep[S] = {
+    val foldResult = __newVarNamed[S](z, "foldResult")
+    monadForeach(query, (elem: Rep[T]) => {
+      __assign(foldResult, inlineFunction(f, readVar(foldResult), elem))
+    })
+    readVar(foldResult)
+  }
   def monadSortBy[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): LoweredQuery[T]
   def monadCount[T: TypeRep](query: LoweredQuery[T]): Rep[Int]
   def monadSum[T: TypeRep](query: LoweredQuery[T]): Rep[T]
@@ -124,6 +131,11 @@ abstract class QueryMonadLoweringInterface(val schema: Schema, override val IR: 
     case sym -> QueryForeach(monad, f) =>
       monadForeach(getLoweredQuery(monad), f)(f.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
       unit()
+  }
+
+  rewrite += rule {
+    case QueryFoldLeft(monad, z, f) =>
+      monadFoldLeft(getLoweredQuery(monad), z, f)(f.tp.typeArguments(0).asInstanceOf[TypeRep[Any]], z.tp.asInstanceOf[TypeRep[Any]])
   }
 
   rewrite += statement {
