@@ -224,37 +224,33 @@ class JoinableQueryIterator[T <: Record](private val underlying: QueryIterator[T
     for (elem <- underlying) {
       hm.addBinding(leftHash(elem), elem)
     }
-    var iterator: SetIterator[T] = null
-    var prevRightElem: S = NULL
+
     q2.destroy { next =>
       iterate { () =>
-        var leftElem: T = NULL
-        val rightElem = if (iterator == null || {
-          leftElem = iterator.next
-          leftElem
-        } == NULL) {
-          val re = q2 findFirst ({ t =>
-            val k = rightHash(t)
-            hm.get(k) exists { tmpBuffer =>
-              val res = tmpBuffer exists { bufElem =>
-                joinCond(bufElem, t)
-              }
-              if (res) {
-                iterator = QueryIterator(tmpBuffer).withFilter(e => joinCond(e, t))
-                leftElem = iterator.next
-              }
-              res
+        var found = false
+        var elem1: T = NULL
+        val elem2 = q2 findFirst ({ t =>
+          val k = rightHash(t)
+          hm.get(k) exists { tmpBuffer =>
+            val leftElem = tmpBuffer find (bufElem => joinCond(bufElem, t))
+            // Only to check if it is not the N-M case
+            if (tmpBuffer.filter(bufElem => joinCond(bufElem, t)).size > 1) {
+              throw new Exception("This join is for the N-M case")
             }
-          }, next)
-          prevRightElem = re
-          re
+            leftElem match {
+              case Some(le) =>
+                elem1 = le
+                found = true
+                true
+              case None =>
+                false
+            }
+          }
+        }, next)
+        if (found) {
+          elem1.concatenateDynamic(elem2)
         } else {
-          prevRightElem
-        }
-        if (rightElem == NULL) {
           NULL
-        } else {
-          leftElem.concatenateDynamic(rightElem)
         }
       }
     }
