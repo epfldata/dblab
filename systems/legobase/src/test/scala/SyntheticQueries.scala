@@ -24,6 +24,9 @@ import sc.pardis.shallow.OptimalString
  *
  * Run it with this command:
  * test:run /mnt/ramdisk/tpch 8 Q6_functional +monad-lowering +monad-iterator +malloc-hoist -name-with-flag
+ *
+ * Or to generate all the micro benchmarks for fusion run the following command:
+ * test:run /mnt/ramdisk/tpch fusion_micro
  */
 object SyntheticQueries extends TPCHRunner {
 
@@ -48,11 +51,9 @@ object SyntheticQueries extends TPCHRunner {
 
   var param: String = _
 
-  def main(args: Array[String]) {
-    if (args.length < 3) {
-      System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
-      System.exit(0)
-    }
+  def process(args: List[String]): Unit = process(args.toArray)
+
+  def process(args: Array[String]): Unit = {
     Config.checkResults = false
     settings = new Settings(args.toList)
 
@@ -63,6 +64,45 @@ object SyntheticQueries extends TPCHRunner {
         param = d
         run(args)
       }
+    }
+  }
+
+  val MICRO_RUNS = 10
+
+  def fusionMicroBenchmark(args: Array[String]): Unit = {
+    val folder = args(0)
+
+    val fixedFlags = List("+monad-lowering", "-name-with-flag",
+      "+force-compliant", "+monad-opt", "-name-with-flag")
+    val variableFlags = List(List("+monad-cps"), List("+monad-iterator"), List("+monad-stream"),
+      List("+monad-stream", "+monad-stream-church"))
+    val SFs1 = List(8, 16, 32)
+    val queries1 = List("fc", "fms", "ffms")
+    val SFs2 = List(1)
+    val queries2 = List("fm", "fmt")
+    for (flags <- variableFlags) {
+      for (sf <- SFs1) {
+        for (q <- queries1) {
+          process(folder :: sf.toString :: q :: flags ++ fixedFlags)
+        }
+      }
+
+      for (sf <- SFs2) {
+        for (q <- queries2) {
+          process(folder :: sf.toString :: q :: flags ++ fixedFlags)
+        }
+      }
+    }
+  }
+
+  def main(args: Array[String]): Unit = {
+    if (args.length == 2 && args(1) == "fusion_micro") {
+      fusionMicroBenchmark(args)
+    } else if (args.length < 3) {
+      System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
+      System.exit(0)
+    } else {
+      process(args)
     }
   }
 
@@ -180,6 +220,48 @@ object SyntheticQueries extends TPCHRunner {
     dsl"()"
   }
 
+  def filterMap(numRuns: Int): context.Rep[Unit] = {
+    import dblab.queryengine.monad.Query
+    import dblab.experimentation.tpch.TPCHLoader._
+    import dblab.queryengine.GenericEngine._
+    val loadedLineitemTable = dsl"loadLineitem()"
+    def lineitemTable = dsl"""Query($loadedLineitemTable)"""
+    val startDate = "1998-01-01"
+    for (i <- 0 until numRuns) {
+      dsl"""
+        runQuery {
+          val constantDate1: Int = parseDate($startDate)
+          $lineitemTable.filter(_.L_SHIPDATE >= constantDate1).
+            map(t => t.L_EXTENDEDPRICE * t.L_DISCOUNT).printRows(t =>
+              printf("%.4f\n", t)
+            , -1)
+        }
+      """
+    }
+    dsl"()"
+  }
+
+  def filterMapTake(numRuns: Int): context.Rep[Unit] = {
+    import dblab.queryengine.monad.Query
+    import dblab.experimentation.tpch.TPCHLoader._
+    import dblab.queryengine.GenericEngine._
+    val loadedLineitemTable = dsl"loadLineitem()"
+    def lineitemTable = dsl"""Query($loadedLineitemTable)"""
+    val startDate = "1998-01-01"
+    for (i <- 0 until numRuns) {
+      dsl"""
+        runQuery {
+          val constantDate1: Int = parseDate($startDate)
+          $lineitemTable.filter(_.L_SHIPDATE >= constantDate1).
+            map(t => t.L_EXTENDEDPRICE * t.L_DISCOUNT).take(100).printRows(t =>
+              printf("%.4f\n", t)
+            , -1)
+        }
+      """
+    }
+    dsl"()"
+  }
+
   def filterFilterMapSum(numRuns: Int): context.Rep[Unit] = {
     import dblab.queryengine.monad.Query
     import dblab.experimentation.tpch.TPCHLoader._
@@ -277,9 +359,11 @@ object SyntheticQueries extends TPCHRunner {
 
     val (queryNumber, queryFunction) = query match {
       case "QSimple"           => (0, () => querySimple(1))
-      case "fc"                => (25, () => filterCount(5))
-      case "fms"               => (23, () => filterMapSum(5))
-      case "ffms"              => (24, () => filterFilterMapSum(5))
+      case "fc"                => (25, () => filterCount(MICRO_RUNS))
+      case "fms"               => (23, () => filterMapSum(MICRO_RUNS))
+      case "ffms"              => (24, () => filterFilterMapSum(MICRO_RUNS))
+      case "fm"                => (26, () => filterMap(MICRO_RUNS))
+      case "fmt"               => (27, () => filterMapTake(MICRO_RUNS))
       case "Q6_functional"     => (6, () => query6(1))
       case "Q12_functional_p2" => (12, () => query12_p2(1))
     }
