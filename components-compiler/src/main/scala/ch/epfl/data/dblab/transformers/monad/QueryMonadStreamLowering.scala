@@ -293,70 +293,51 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
       }
     }
 
-    // def hashJoin2[S: TypeRep, R: TypeRep, Res: TypeRep](q2: QueryStream[S])(
-    //   leftHash: Rep[T] => Rep[R])(
-    //   rightHash: Rep[S] => Rep[R])(
-    //   joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryStream[Res] = new QueryStream[Res] {
-    //   type Source = (q2.Source, Int)
-    //   def sourceType: TypeRep[Source] = Tuple2Type(q2.sourceType, typeRep[Int])
-
-    //   val tmpBuffer = __newVarNamed[ArrayBuffer[T]](infix_asInstanceOf[ArrayBuffer[T]](unit(null)), unit("tmpBuffer"))
-
-    //   val hm = {
-    //     val hm = __newMultiMap[R, T]()
-    //     self.foreach((elem: Rep[T]) => {
-    //       hm.addBinding(leftHash(elem), elem)
-    //     })
-    //     hm
-    //   }
-
-    //   def source: Rep[Source] = Tuple2(q2.source, unit(0))
-
-    //   def atEnd(s: Rep[Source]): Rep[Boolean] = __ifThenElse(s._2 >= tmpBuffer.size, {
-    //       __ifThenElse(q2.atEnd,
-    //         unit(true), {
-    //           val e2 = q2.next(s._1)
-    //           val key = rightHash(e2._1)
-    //           hm.get(key) foreach {
-    //             __lambda { buff =>
-    //               __assign(tmpBuffer, buff)
-    //             }
-    //           }
-    //           q2.atEnd  
-    //         }
-    //       )
-    //     }, {
-    //       unit(false)
-    //     })
-    //   def next(s: Rep[Source]): Rep[(T, Source)] = {
-    //     val elem = treeSet.head
-    //     treeSet -= elem
-    //     Tuple2(elem, s + unit(1))
-    //   }
-    // }
-
-    //   def hashJoin2[S: TypeRep, R: TypeRep, Res: TypeRep](q2: QueryStream[S])(leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryStream[Res] = (k: Rep[Res] => Rep[Unit]) => {
-    //     assert(typeRep[Res].isInstanceOf[RecordType[_]])
-    //     // System.out.println(s"hashJoin called!!!")
-    //     val hm = __newMultiMap[R, T]()
-    //     foreach((elem: Rep[T]) => {
-    //       hm.addBinding(leftHash(elem), elem)
-    //     })
-    //     q2.foreach((elem: Rep[S]) => {
-    //       val key = rightHash(elem)
-    //       hm.get(key) foreach {
-    //         __lambda { tmpBuffer =>
-    //           tmpBuffer foreach {
-    //             __lambda { bufElem =>
-    //               __ifThenElse(joinCond(bufElem, elem), {
-    //                 k(concat_records[T, S, Res](bufElem, elem))
-    //               }, unit())
-    //             }
-    //           }
-    //         }
-    //       }
-    //     })
-    //   }
+    def hashJoin2[S: TypeRep, R: TypeRep, Res: TypeRep](q2: QueryStream[S])(
+      leftHash: Rep[T] => Rep[R])(
+        rightHash: Rep[S] => Rep[R])(
+          joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryStream[Res] = new QueryStream[Res] {
+      assert(typeRep[Res].isInstanceOf[RecordType[_]])
+      val hm = __newMultiMap[R, T]()
+      self.foreach((elem: Rep[T]) => {
+        hm.addBinding(leftHash(elem), elem)
+      })
+      def stream(): Rep[Stream[Res]] = {
+        val rightElem = q2.stream().materialize()
+        buildS { (done, skip, yld: Rep[Res] => Rep[BUILDRESULT]) =>
+          rightElem.semiFold(
+            () => done(),
+            // Done[Res],
+            () => skip(),
+            // Skip[Res],
+            t => {
+              val found = __newVarNamed(unit(false), "found")
+              val elem1 = __newVarNamed[T](zeroValue[T], "elemLeft")
+              dsl"""
+              val k = ${rightHash(t)}
+              $hm.get(k) foreach { tmpBuffer =>
+                val leftElem = tmpBuffer find (bufElem => $joinCond(bufElem, $t))
+                leftElem foreach { le =>
+                    $elem1 = le
+                    $found = true
+                }
+              }
+              if ($found) {
+                ${
+                yld(concat_records[T, S, Res](dsl"$elem1", t))
+                // Yield(concat_records[T, S, Res](dsl"$elem1", t))
+              }
+              } else {
+                ${
+                skip()
+                // Skip[Res]
+              }
+              }
+              """
+            })
+        }
+      }
+    }
 
     def groupByMapValues[K: TypeRep, S: TypeRep](groupByResult: GroupByResult[K, T])(
       par: Rep[T => K], pred: Option[Rep[T => Boolean]])(
@@ -443,7 +424,8 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
     q1.leftHashSemiJoin2(q2)(leftHash)(rightHash)(joinCond)
   def monadHashJoin[T: TypeRep, S: TypeRep, R: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
     leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(
-      joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res] = ???
+      joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res] =
+    q1.hashJoin2(q2)(leftHash)(rightHash)(joinCond)
   def monadGroupByMapValues[T: TypeRep, K: TypeRep, S: TypeRep](
     query: LoweredQuery[T], groupByResult: GroupByResult[K, T])(
       par: Rep[T => K], pred: Option[Rep[T => Boolean]])(
