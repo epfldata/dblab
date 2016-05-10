@@ -36,7 +36,7 @@ trait TPCHLoader
 object TPCHLoader {
 
   @dontLift
-  val tpchSchema: Schema = TPCHSchema.getSchema(Config.datapath, getScalingFactor)
+  def tpchSchema: Schema = TPCHSchema.getSchema(Config.datapath, getScalingFactor)
   @dontInline
   def getTable(tableName: String): Table = tpchSchema.tables.find(t => t.name == tableName).get
   @dontLift
