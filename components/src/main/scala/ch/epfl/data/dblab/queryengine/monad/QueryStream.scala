@@ -262,33 +262,34 @@ class JoinableQueryStream[T <: Record](private val underlying: QueryStream[T]) {
     for (elem <- underlying) {
       hm.addBinding(leftHash(elem), elem)
     }
-    var iterator: SetStream[T] = QueryStream(scala.collection.mutable.Set[T]())
-    var prevRightElem: Stream[S] = null
-    underlying.unstream { () =>
-      val leftElem = iterator.stream()
+
+    q2.unstream { () =>
       buildS { (done, skip, yld) =>
-        leftElem.semiFold(
-          () => {
-            val e2 = q2.stream()
-            e2.semiFold(() =>
-              done(),
-              () =>
-                skip(),
-              t => {
-                val k = rightHash(t)
-                val result = hm.get(k).fold[Stream[S]](Skip)(tmpBuffer => {
-                  iterator = QueryStream(tmpBuffer).withFilter(e => joinCond(e, t))
-                  Yield(t)
-                })
-                prevRightElem = result
-                skip()
-              })
-          },
+        q2.stream().semiFold(
+          () => done(),
           () => skip(),
-          e1 =>
-            prevRightElem.semiFold(() => done(),
-              () => skip(),
-              e2 => yld(e1.concatenateDynamic(e2))))
+          t => {
+            val k = rightHash(t)
+            var elem1: T = null.asInstanceOf[T]
+            val found = hm.get(k) exists { tmpBuffer =>
+              val leftElem = tmpBuffer find (bufElem => joinCond(bufElem, t))
+              // Only to check if it is not the N-M case
+              if (tmpBuffer.filter(bufElem => joinCond(bufElem, t)).size > 1) {
+                throw new Exception("This join is for the N-M case")
+              }
+              leftElem match {
+                case Some(le) =>
+                  elem1 = le
+                  true
+                case None =>
+                  false
+              }
+            }
+            if (found)
+              yld(elem1.concatenateDynamic(t))
+            else
+              skip()
+          })
       }
     }
   }
