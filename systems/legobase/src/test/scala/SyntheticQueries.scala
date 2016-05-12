@@ -54,6 +54,7 @@ object SyntheticQueries extends TPCHRunner {
   def process(args: List[String]): Unit = process(args.toArray)
 
   def process(args: Array[String]): Unit = {
+    newContext()
     Config.checkResults = false
     settings = new Settings(args.toList)
 
@@ -106,9 +107,17 @@ object SyntheticQueries extends TPCHRunner {
     }
   }
 
-  implicit val context = new LegoBaseQueryEngineExp {}
+  var _context: LegoBaseQueryEngineExp = _
 
-  def query12_p2(numRuns: Int): context.Rep[Unit] = {
+  def newContext(): Unit = {
+    _context = new LegoBaseQueryEngineExp {}
+  }
+
+  implicit def context: LegoBaseQueryEngineExp = _context
+
+  type Rep[T] = LegoBaseQueryEngineExp#Rep[T]
+
+  def query12_p2(numRuns: Int): Rep[Unit] = {
     import dblab.queryengine.monad.Query
     import dblab.experimentation.tpch.TPCHLoader._
     import dblab.queryengine.GenericEngine._
@@ -117,7 +126,7 @@ object SyntheticQueries extends TPCHRunner {
     // val endDate = "1994-07-01"
     // val endDate = "1998-12-01"
     val hasFilter = true
-    def generateQueryForEndDate(endDate: String): context.Rep[Unit] = {
+    def generateQueryForEndDate(endDate: String): Rep[Unit] = {
       def selection = if (hasFilter)
         dsl"""
           val mail = parseString("MAIL")
@@ -164,7 +173,7 @@ object SyntheticQueries extends TPCHRunner {
     }
   }
 
-  def querySimple(numRuns: Int): context.Rep[Unit] = {
+  def querySimple(numRuns: Int): Rep[Unit] = {
     import dblab.queryengine.monad.Query
     import dblab.experimentation.tpch.TPCHLoader._
     import dblab.queryengine.GenericEngine._
@@ -180,7 +189,7 @@ object SyntheticQueries extends TPCHRunner {
       """
   }
 
-  def filterCount(numRuns: Int): context.Rep[Unit] = {
+  def filterCount(numRuns: Int): Rep[Unit] = {
     import dblab.queryengine.monad.Query
     import dblab.experimentation.tpch.TPCHLoader._
     import dblab.queryengine.GenericEngine._
@@ -200,7 +209,7 @@ object SyntheticQueries extends TPCHRunner {
     dsl"()"
   }
 
-  def filterMapSum(numRuns: Int): context.Rep[Unit] = {
+  def filterMapSum(numRuns: Int): Rep[Unit] = {
     import dblab.queryengine.monad.Query
     import dblab.experimentation.tpch.TPCHLoader._
     import dblab.queryengine.GenericEngine._
@@ -220,7 +229,7 @@ object SyntheticQueries extends TPCHRunner {
     dsl"()"
   }
 
-  def filterMap(numRuns: Int): context.Rep[Unit] = {
+  def filterMap(numRuns: Int): Rep[Unit] = {
     import dblab.queryengine.monad.Query
     import dblab.experimentation.tpch.TPCHLoader._
     import dblab.queryengine.GenericEngine._
@@ -241,7 +250,7 @@ object SyntheticQueries extends TPCHRunner {
     dsl"()"
   }
 
-  def filterMapTake(numRuns: Int): context.Rep[Unit] = {
+  def filterMapTake(numRuns: Int): Rep[Unit] = {
     import dblab.queryengine.monad.Query
     import dblab.experimentation.tpch.TPCHLoader._
     import dblab.queryengine.GenericEngine._
@@ -262,7 +271,7 @@ object SyntheticQueries extends TPCHRunner {
     dsl"()"
   }
 
-  def filterFilterMapSum(numRuns: Int): context.Rep[Unit] = {
+  def filterFilterMapSum(numRuns: Int): Rep[Unit] = {
     import dblab.queryengine.monad.Query
     import dblab.experimentation.tpch.TPCHLoader._
     import dblab.queryengine.GenericEngine._
@@ -285,13 +294,13 @@ object SyntheticQueries extends TPCHRunner {
     dsl"()"
   }
 
-  def query6(numRuns: Int): context.Rep[Unit] = {
+  def query6(numRuns: Int): Rep[Unit] = {
     import dblab.queryengine.monad.Query
     import dblab.experimentation.tpch.TPCHLoader._
     import dblab.queryengine.GenericEngine._
     val lineitemTable = dsl"""Query(loadLineitem())"""
 
-    def generateQueryForStartDate(startDate: String): context.Rep[Unit] = {
+    def generateQueryForStartDate(startDate: String): Rep[Unit] = {
       def selection = dsl"""
         val constantDate1: Int = parseDate($startDate)
         val constantDate2: Int = parseDate("1997-01-01")
