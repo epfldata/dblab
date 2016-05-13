@@ -69,6 +69,7 @@ object SyntheticQueries extends TPCHRunner {
   }
 
   val MICRO_RUNS = 10
+  val MICRO_JOIN_RUNS = 5
 
   def fusionMicroBenchmark(args: Array[String]): Unit = {
     val folder = args(0)
@@ -81,6 +82,8 @@ object SyntheticQueries extends TPCHRunner {
     val queries1 = List("fc", "fms", "ffms")
     val SFs2 = List(1)
     val queries2 = List("fm", "fmt")
+    val SFs3 = List(8)
+    val queries3 = List("fmjs", "fhjs")
     for (flags <- variableFlags) {
       for (sf <- SFs1) {
         for (q <- queries1) {
@@ -90,6 +93,12 @@ object SyntheticQueries extends TPCHRunner {
 
       for (sf <- SFs2) {
         for (q <- queries2) {
+          process(folder :: sf.toString :: q :: flags ++ fixedFlags)
+        }
+      }
+
+      for (sf <- SFs3) {
+        for (q <- queries3) {
           process(folder :: sf.toString :: q :: flags ++ fixedFlags)
         }
       }
@@ -235,7 +244,7 @@ object SyntheticQueries extends TPCHRunner {
     import dblab.queryengine.GenericEngine._
     val loadedLineitemTable = dsl"loadLineitem()"
     def lineitemTable = dsl"""Query($loadedLineitemTable)"""
-    val startDate = "1998-01-01"
+    val startDate = "1998-10-01"
     for (i <- 0 until numRuns) {
       dsl"""
         runQuery {
@@ -256,13 +265,13 @@ object SyntheticQueries extends TPCHRunner {
     import dblab.queryengine.GenericEngine._
     val loadedLineitemTable = dsl"loadLineitem()"
     def lineitemTable = dsl"""Query($loadedLineitemTable)"""
-    val startDate = "1998-01-01"
+    val startDate = "1998-10-01"
     for (i <- 0 until numRuns) {
       dsl"""
         runQuery {
           val constantDate1: Int = parseDate($startDate)
           $lineitemTable.filter(_.L_SHIPDATE >= constantDate1).
-            map(t => t.L_EXTENDEDPRICE * t.L_DISCOUNT).take(100).printRows(t =>
+            map(t => t.L_EXTENDEDPRICE * t.L_DISCOUNT).take(1000).printRows(t =>
               printf("%.4f\n", t)
             , -1)
         }
@@ -289,6 +298,68 @@ object SyntheticQueries extends TPCHRunner {
             map(t => t.L_EXTENDEDPRICE * t.L_DISCOUNT).foldLeft(0.0)(_ + _)
           printf("%.4f\n", result)
         }
+      """
+    }
+    dsl"()"
+  }
+
+  def filterMergeJoinSum(numRuns: Int): Rep[Unit] = {
+    import dblab.queryengine.monad.Query
+    import dblab.experimentation.tpch.TPCHLoader._
+    import dblab.queryengine.GenericEngine._
+    val loadedLineitemTable = dsl"loadLineitem()"
+    def lineitemTable = dsl"""Query($loadedLineitemTable)"""
+    val loadedOrdersTable = dsl"loadOrders()"
+    def ordersTable = dsl"Query($loadedOrdersTable)"
+    val startDate = param
+    val hasFilter = true
+    for (i <- 0 until numRuns) {
+      def selection = if (hasFilter)
+        dsl"""
+            val constantDate1 = parseDate($startDate)
+            val so2 = $lineitemTable.filter(x =>x.L_SHIPDATE >= constantDate1)
+            so2
+          """
+      else
+        lineitemTable
+      dsl"""
+        runQuery({
+          val so2 = $selection
+          val jo = $ordersTable.mergeJoin(so2)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
+          val result = jo.foldLeft(0.0)((acc, cur) => cur.L_EXTENDEDPRICE[Double] + acc)
+          printf("%.4f\n", result)
+        })
+      """
+    }
+    dsl"()"
+  }
+
+  def filterHashJoinSum(numRuns: Int): Rep[Unit] = {
+    import dblab.queryengine.monad.Query
+    import dblab.experimentation.tpch.TPCHLoader._
+    import dblab.queryengine.GenericEngine._
+    val loadedLineitemTable = dsl"loadLineitem()"
+    def lineitemTable = dsl"""Query($loadedLineitemTable)"""
+    val loadedOrdersTable = dsl"loadOrders()"
+    def ordersTable = dsl"Query($loadedOrdersTable)"
+    val startDate = param
+    val hasFilter = true
+    for (i <- 0 until numRuns) {
+      def selection = if (hasFilter)
+        dsl"""
+            val constantDate1 = parseDate($startDate)
+            val so2 = $lineitemTable.filter(x =>x.L_SHIPDATE >= constantDate1)
+            so2
+          """
+      else
+        lineitemTable
+      dsl"""
+        runQuery({
+          val so2 = $selection
+          val jo = $ordersTable.hashJoin(so2)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
+          val result = jo.foldLeft(0.0)((acc, cur) => cur.L_EXTENDEDPRICE[Double] + acc)
+          printf("%.4f\n", result)
+        })
       """
     }
     dsl"()"
@@ -373,6 +444,8 @@ object SyntheticQueries extends TPCHRunner {
       case "ffms"              => (24, () => filterFilterMapSum(MICRO_RUNS))
       case "fm"                => (26, () => filterMap(MICRO_RUNS))
       case "fmt"               => (27, () => filterMapTake(MICRO_RUNS))
+      case "fmjs"              => (28, () => filterMergeJoinSum(MICRO_JOIN_RUNS))
+      case "fhjs"              => (29, () => filterHashJoinSum(MICRO_JOIN_RUNS))
       case "Q6_functional"     => (6, () => query6(1))
       case "Q12_functional_p2" => (12, () => query12_p2(1))
     }
