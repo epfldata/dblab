@@ -86,9 +86,9 @@ object SyntheticQueries extends TPCHRunner {
     tpchBenchmark = true
     val folder = args(0)
     val SFs = List(8)
-
-    val queries = List("Q1_functional", "Q2_functional", "Q3_functional",
-      "Q4_functional", "Q5_functional", "Q6_functional")
+    // val queryNumbers = (1 to 6).toList ++ (9 to 12).toList ++ List(14)
+    val queryNumbers = (1 to 6).toList ++ List(12, 14)
+    val queries = queryNumbers.map(x => s"Q${x}_functional")
     fusionBenchmarkProcess { flags =>
       for (sf <- SFs) {
         for (q <- queries) {
@@ -466,22 +466,26 @@ object SyntheticQueries extends TPCHRunner {
     import ctx.Queries._
 
     val (queryNumber, queryFunction) = query match {
-      case "QSimple"           => (0, () => querySimple(1))
-      case "fc"                => (25, () => filterCount(MICRO_RUNS))
-      case "fms"               => (23, () => filterMapSum(MICRO_RUNS))
-      case "ffms"              => (24, () => filterFilterMapSum(MICRO_RUNS))
-      case "fm"                => (26, () => filterMap(MICRO_RUNS))
-      case "fmt"               => (27, () => filterMapTake(MICRO_RUNS))
-      case "fmjs"              => (28, () => filterMergeJoinSum(MICRO_JOIN_RUNS))
-      case "fhjs"              => (29, () => filterHashJoinSum(MICRO_JOIN_RUNS))
-      case "Q1_functional"     => (1, () => Q1_functional(unit(Config.numRuns)))
-      case "Q2_functional"     => (2, () => Q2_functional(unit(Config.numRuns)))
-      case "Q3_functional"     => (3, () => Q3_functional(unit(Config.numRuns)))
-      case "Q4_functional"     => (4, () => Q4_functional(unit(Config.numRuns)))
-      case "Q5_functional"     => (5, () => Q5_functional(unit(Config.numRuns)))
-      case "Q6_functional"     => (6, () => Q6_functional(unit(Config.numRuns)))
-      // case "Q6_functional"     => (6, () => query6(1))
-      case "Q12_functional_p2" => (12, () => query12_p2(1))
+      case "QSimple"        => (0, () => querySimple(1))
+      case "fc"             => (25, () => filterCount(MICRO_RUNS))
+      case "fms"            => (23, () => filterMapSum(MICRO_RUNS))
+      case "ffms"           => (24, () => filterFilterMapSum(MICRO_RUNS))
+      case "fm"             => (26, () => filterMap(MICRO_RUNS))
+      case "fmt"            => (27, () => filterMapTake(MICRO_RUNS))
+      case "fmjs"           => (28, () => filterMergeJoinSum(MICRO_JOIN_RUNS))
+      case "fhjs"           => (29, () => filterHashJoinSum(MICRO_JOIN_RUNS))
+      case "Q1_functional"  => (1, () => Q1_functional(unit(Config.numRuns)))
+      case "Q2_functional"  => (2, () => Q2_functional(unit(Config.numRuns)))
+      case "Q3_functional"  => (3, () => Q3_functional(unit(Config.numRuns)))
+      case "Q4_functional"  => (4, () => Q4_functional(unit(Config.numRuns)))
+      case "Q5_functional"  => (5, () => Q5_functional(unit(Config.numRuns)))
+      case "Q6_functional"  => (6, () => Q6_functional(unit(Config.numRuns)))
+      case "Q9_functional"  => (9, () => Q9_functional(unit(Config.numRuns)))
+      case "Q10_functional" => (10, () => Q10_functional(unit(Config.numRuns)))
+      case "Q11_functional" => (11, () => Q11_functional(unit(Config.numRuns)))
+      case "Q12_functional" => (12, () => Q12_functional_p2(unit(Config.numRuns)))
+      case "Q14_functional" => (14, () => Q14_functional(unit(Config.numRuns)))
+      case "Q12_synthetic"  => (12, () => query12_p2(1))
     }
 
     val validatedSettings = settings.validate()
