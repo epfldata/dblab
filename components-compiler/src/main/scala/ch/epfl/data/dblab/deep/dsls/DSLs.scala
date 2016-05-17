@@ -48,6 +48,7 @@ trait ScalaCoreDSL extends CharComponent
   with ArrayExtraOps
   with TreeSetExtraOps
   with CharExtraOps
+  with DynamicDataRowOps
 
 trait ScalaCoreDSLInlined extends ScalaCoreDSL
   with DoublePartialEvaluation

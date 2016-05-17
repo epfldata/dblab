@@ -62,10 +62,13 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
         case t: TypeRep[_]                    => List(t.asInstanceOf[TypeRep[Any]])
       }
     }
+
     val sorted = notSeenDynamicRecordTypes.toList.sortBy(x => types(x).size)
+    // logger.debug(s"notSeenDynamicRecordTypes: $notSeenDynamicRecordTypes")
     for (tp <- sorted) {
       import scala.language.existentials
       val dtp = tp.asInstanceOf[DynamicCompositeRecordType[_, _]]
+      logger.debug(s"dtp: $dtp")
       val (lt, rt) = dtp.leftType -> dtp.rightType
       val leftTag = getTag(lt)
       val rightTag = getTag(rt)
