@@ -35,6 +35,7 @@ object SyntheticQueries extends TPCHRunner {
   val ONE_LOADER_FOR_ALL = false
   val oneAgg = false
   // val oneAgg = true
+  var tpchBenchmark = false
 
   def datesGenerator: List[String] = {
     // val years = 1992 to 1998
@@ -71,35 +72,57 @@ object SyntheticQueries extends TPCHRunner {
   val MICRO_RUNS = 10
   val MICRO_JOIN_RUNS = 5
 
-  def fusionMicroBenchmark(args: Array[String]): Unit = {
-    val folder = args(0)
-
+  def fusionBenchmarkProcess(f: List[String] => Unit): Unit = {
     val fixedFlags = List("+monad-lowering", "-name-with-flag",
       "+force-compliant", "+monad-opt", "-name-with-flag")
     val variableFlags = List(List("+monad-cps"), List("+monad-iterator"), List("+monad-stream"),
       List("+monad-stream", "+monad-stream-church"))
+    for (flags <- variableFlags) {
+      f(flags ++ fixedFlags)
+    }
+  }
+
+  def fusionTPCHBenchmark(args: Array[String]): Unit = {
+    tpchBenchmark = true
+    val folder = args(0)
+    val SFs = List(8)
+
+    val queries = List("Q1_functional", "Q2_functional", "Q3_functional",
+      "Q4_functional", "Q5_functional", "Q6_functional")
+    fusionBenchmarkProcess { flags =>
+      for (sf <- SFs) {
+        for (q <- queries) {
+          process(folder :: sf.toString :: q :: flags)
+        }
+      }
+    }
+  }
+
+  def fusionMicroBenchmark(args: Array[String]): Unit = {
+    val folder = args(0)
+
     val SFs1 = List(8, 16, 32)
     val queries1 = List("fc", "fms", "ffms")
     val SFs2 = List(1)
     val queries2 = List("fm", "fmt")
     val SFs3 = List(8)
     val queries3 = List("fmjs", "fhjs")
-    for (flags <- variableFlags) {
+    fusionBenchmarkProcess { flags =>
       for (sf <- SFs1) {
         for (q <- queries1) {
-          process(folder :: sf.toString :: q :: flags ++ fixedFlags)
+          process(folder :: sf.toString :: q :: flags)
         }
       }
 
       for (sf <- SFs2) {
         for (q <- queries2) {
-          process(folder :: sf.toString :: q :: flags ++ fixedFlags)
+          process(folder :: sf.toString :: q :: flags)
         }
       }
 
       for (sf <- SFs3) {
         for (q <- queries3) {
-          process(folder :: sf.toString :: q :: flags ++ fixedFlags)
+          process(folder :: sf.toString :: q :: flags)
         }
       }
     }
@@ -108,6 +131,8 @@ object SyntheticQueries extends TPCHRunner {
   def main(args: Array[String]): Unit = {
     if (args.length == 2 && args(1) == "fusion_micro") {
       fusionMicroBenchmark(args)
+    } else if (args.length == 2 && args(1) == "fusion_tpch") {
+      fusionTPCHBenchmark(args)
     } else if (args.length < 3) {
       System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
       System.exit(0)
@@ -436,6 +461,9 @@ object SyntheticQueries extends TPCHRunner {
 
   def executeQuery(query: String, schema: Schema): Unit = {
     System.out.println(s"\nRunning $query!")
+    val ctx = context
+    import ctx.unit
+    import ctx.Queries._
 
     val (queryNumber, queryFunction) = query match {
       case "QSimple"           => (0, () => querySimple(1))
@@ -446,7 +474,13 @@ object SyntheticQueries extends TPCHRunner {
       case "fmt"               => (27, () => filterMapTake(MICRO_RUNS))
       case "fmjs"              => (28, () => filterMergeJoinSum(MICRO_JOIN_RUNS))
       case "fhjs"              => (29, () => filterHashJoinSum(MICRO_JOIN_RUNS))
-      case "Q6_functional"     => (6, () => query6(1))
+      case "Q1_functional"     => (1, () => Q1_functional(unit(Config.numRuns)))
+      case "Q2_functional"     => (2, () => Q2_functional(unit(Config.numRuns)))
+      case "Q3_functional"     => (3, () => Q3_functional(unit(Config.numRuns)))
+      case "Q4_functional"     => (4, () => Q4_functional(unit(Config.numRuns)))
+      case "Q5_functional"     => (5, () => Q5_functional(unit(Config.numRuns)))
+      case "Q6_functional"     => (6, () => Q6_functional(unit(Config.numRuns)))
+      // case "Q6_functional"     => (6, () => query6(1))
       case "Q12_functional_p2" => (12, () => query12_p2(1))
     }
 
@@ -455,7 +489,7 @@ object SyntheticQueries extends TPCHRunner {
     val compiler = new LegoCompiler(context, validatedSettings, schema, "ch.epfl.data.dblab.experimentation.tpch.TPCHRunner") {
       def postfix: String = s"sf${settings.args(1)}_${super.outputFile}"
       override def outputFile =
-        if (ONE_LOADER_FOR_ALL)
+        if (ONE_LOADER_FOR_ALL || tpchBenchmark)
           postfix
         else
           s"${param}_${postfix}"
