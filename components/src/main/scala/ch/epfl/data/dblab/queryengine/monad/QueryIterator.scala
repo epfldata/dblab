@@ -162,6 +162,11 @@ abstract class QueryIterator[T] { self =>
     printf("(%d rows)\n", rows)
   }
 
+  @pure def materialize: QueryIterator[T] = {
+    val arr = getList.asInstanceOf[List[Any]].toArray.asInstanceOf[Array[T]]
+    QueryIterator(arr)
+  }
+
   @pure def getList: List[T] = {
     var res = ArrayBuffer[T]()
     for (e <- this) {

@@ -170,6 +170,11 @@ abstract class QueryUnfold[T, Source] { self =>
     printf("(%d rows)\n", rows)
   }
 
+  @pure def materialize: QueryUnfold[T, Int] = {
+    val arr = getList.asInstanceOf[List[Any]].toArray.asInstanceOf[Array[T]]
+    QueryUnfold(arr)
+  }
+
   @pure def getList: List[T] = {
     var res = ArrayBuffer[T]()
     for (e <- this) {

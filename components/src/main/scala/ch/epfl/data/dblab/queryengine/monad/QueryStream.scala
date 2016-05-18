@@ -203,6 +203,11 @@ abstract class QueryStream[T] { self =>
     printf("(%d rows)\n", rows)
   }
 
+  @pure def materialize: QueryStream[T] = {
+    val arr = getList.asInstanceOf[List[Any]].toArray.asInstanceOf[Array[T]]
+    QueryStream(arr)
+  }
+
   @pure def getList: List[T] = {
     var res = ArrayBuffer[T]()
     for (e <- this) {

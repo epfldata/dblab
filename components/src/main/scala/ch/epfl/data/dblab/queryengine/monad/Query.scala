@@ -70,6 +70,8 @@ class Query[T](private val underlying: List[T]) {
 
   @pure def getList: List[T] = underlying
 
+  @pure def materialize: Query[T] = this
+
   def printRows(printFunc: T => Unit, limit: Int): Unit = {
     var rows = 0
     if (limit == -1) {
@@ -117,10 +119,15 @@ class JoinableQuery[T <: Record](private val underlying: List[T]) {
     for (elem <- q2.getList) {
       val k = rightHash(elem)
       hm.get(k) foreach { tmpBuffer =>
+        var cnt = 0
         tmpBuffer foreach { bufElem =>
           if (joinCond(bufElem, elem)) {
             res += bufElem.concatenateDynamic(elem)
+            cnt += 1
           }
+        }
+        if (cnt > 1) {
+          throw new Exception("This join is for the N-M case")
         }
       }
     }

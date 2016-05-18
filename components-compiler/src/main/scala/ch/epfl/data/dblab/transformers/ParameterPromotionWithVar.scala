@@ -24,16 +24,16 @@ class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends Par
       case _ => false
     })
     // debug
-    symsState.toList.sortBy(_._1.id) foreach {
-      case (sym, state) =>
-        Logger[ParameterPromotionWithVar[_]].debug(s"${sym.id}: ${sym.tp} => $state")
-    }
+    // symsState.toList.sortBy(_._1.id) foreach {
+    //   case (sym, state) =>
+    //     Logger[ParameterPromotionWithVar[_]].debug(s"${sym.id}: ${sym.tp} => $state")
+    // }
   }
 
   case class VarStruct(variables: Map[String, Var[_]]) {
     def read[T](field: String): Rep[T] = {
       val variable = variables(field).asInstanceOf[Var[Any]]
-      Logger[ParameterPromotionWithVar[_]].debug(s"$field -> ${variable.e.tp}")
+      // Logger[ParameterPromotionWithVar[_]].debug(s"$field -> ${variable.e.tp}")
       readVar(variable)(variable.e.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]).asInstanceOf[Rep[T]]
     }
   }
@@ -55,7 +55,7 @@ class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends Par
             case Some(structDef) => {
               val vars = for (elem <- structDef.fields) yield {
                 val v = __newVarNamed(unit(DefaultValue(elem.tpe.name)), elem.name)(elem.tpe)
-                Logger[ParameterPromotionWithVar[_]].debug(s"var $sym = $e ===> ${elem.name} -> ${elem.tpe}")
+                // Logger[ParameterPromotionWithVar[_]].debug(s"var $sym = $e ===> ${elem.name} -> ${elem.tpe}")
                 elem.name -> v
               }
               varsStruct += Var(sym.asInstanceOf[Rep[Var[Any]]]) -> VarStruct(vars.toMap)

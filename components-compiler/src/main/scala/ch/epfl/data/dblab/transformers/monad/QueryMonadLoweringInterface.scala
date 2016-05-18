@@ -80,6 +80,17 @@ abstract class QueryMonadLoweringInterface(val schema: Schema, override val IR: 
   }
   def monadMinBy[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): Rep[T]
   def monadTake[T: TypeRep](query: LoweredQuery[T], n: Rep[Int]): LoweredQuery[T]
+  def monadMaterialize[T: TypeRep](query: LoweredQuery[T]): LoweredQuery[T] = {
+    logger.debug(s"materialize of Query[${typeRep[T].name}] with size: ${schema.stats.getCardinality(typeRep[T].name)}")
+    val maxSize = unit(schema.stats.getCardinality(typeRep[T].name).toInt)
+    val arr = __newArray[T](maxSize)
+    val size = __newVarNamed[Int](unit(0), "size")
+    monadForeach(query, (elem: Rep[T]) => {
+      dsl"$arr($size) = $elem"
+      dsl"$size = $size + 1"
+    })
+    __newLoweredQuery(arr)
+  }
   def monadMergeJoin[T: TypeRep, S: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
     ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res]
   def monadLeftHashSemiJoin[T: TypeRep, S: TypeRep, R: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
@@ -192,6 +203,13 @@ abstract class QueryMonadLoweringInterface(val schema: Schema, override val IR: 
   rewrite += statement {
     case sym -> QueryTake(monad, num) =>
       val low = monadTake(getLoweredQuery(monad), num)
+      loweredMap += sym -> low
+      sym
+  }
+
+  rewrite += statement {
+    case sym -> QueryMaterialize(monad) =>
+      val low = monadMaterialize(getLoweredQuery(monad))(monad.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
       loweredMap += sym -> low
       sym
   }

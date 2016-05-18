@@ -735,6 +735,7 @@ object Queries {
         val scanPartsupp = partsuppTable
         val jo2 = jo1.hashJoin(scanPartsupp)(x => x.S_SUPPKEY[Int])(x => x.PS_SUPPKEY)((x, y) => x.S_SUPPKEY[Int] == y.PS_SUPPKEY)
         val wo = jo2.groupBy(x => x.PS_PARTKEY[Int]).mapValues(list => list.map(e => (e.PS_SUPPLYCOST[Double] * e.PS_AVAILQTY[Int])).sum)
+          .materialize
         val total = wo.map(_._2).sum
         val so = wo.filter(_._2 > total * 0.0001)
         val sortOp = so.sortBy(-_._2)
