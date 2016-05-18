@@ -23,6 +23,8 @@ class QueryMonadCPSLowering(override val schema: Schema, override val IR: QueryE
   import IR._
   val recordUsageAnalysis: RecordUsageAnalysis[QueryEngineExp] = QML.recordUsageAnalysis
 
+  val SUPPORT_ONLY_1_TO_N = true
+
   abstract class QueryCPS[T: TypeRep] {
     val tp = typeRep[T]
     def foreach(k: Rep[T] => Rep[Unit]): Rep[Unit]
@@ -128,11 +130,20 @@ class QueryMonadCPSLowering(override val schema: Schema, override val IR: QueryE
         val key = rightHash(elem)
         hm.get(key) foreach {
           __lambda { tmpBuffer =>
-            tmpBuffer foreach {
-              __lambda { bufElem =>
-                __ifThenElse(joinCond(bufElem, elem), {
-                  k(concat_records[T, S, Res](bufElem, elem))
-                }, unit())
+            if (SUPPORT_ONLY_1_TO_N) {
+              dsl"""val leftElem = $tmpBuffer find (bufElem => $joinCond(bufElem, $elem))
+              leftElem foreach ${
+                __lambda { (le: Rep[T]) =>
+                  k(concat_records[T, S, Res](le, elem))
+                }
+              }"""
+            } else {
+              tmpBuffer foreach {
+                __lambda { bufElem =>
+                  __ifThenElse(joinCond(bufElem, elem), {
+                    k(concat_records[T, S, Res](bufElem, elem))
+                  }, unit())
+                }
               }
             }
           }
