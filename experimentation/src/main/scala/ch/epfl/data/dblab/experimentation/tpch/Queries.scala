@@ -1227,6 +1227,35 @@ object Queries {
     }
   }
 
+  def Q20_functional(numRuns: Int) {
+    val nationTable = Query(loadNation())
+    val supplierTable = Query(loadSupplier())
+    val partTable = Query(loadPart())
+    val partsuppTable = Query(loadPartsupp())
+    val lineitemTable = Query(loadLineitem())
+    for (i <- 0 until numRuns) {
+      runQuery {
+        val constantDate1 = parseDate("1996-01-01")
+        val constantDate2 = parseDate("1997-01-01")
+        val jordan = parseString("JORDAN")
+        val azure = parseString("azure")
+        val scanPart = partTable.filter(x => x.P_NAME startsWith azure)
+        val scanNation = nationTable.filter(x => x.N_NAME === jordan)
+        val scanLineitem = lineitemTable.filter(x => x.L_SHIPDATE >= constantDate1 && x.L_SHIPDATE < constantDate2)
+        val jo1 = scanPart.hashJoin(partsuppTable)(x => x.P_PARTKEY)(x => x.PS_PARTKEY)((x, y) => x.P_PARTKEY == y.PS_PARTKEY)
+        val jo2 = jo1.hashJoin(scanLineitem)(x => x.PS_PARTKEY[Int])(x => x.L_PARTKEY)((x, y) => x.PS_PARTKEY[Int] == y.L_PARTKEY && x.PS_SUPPKEY[Int] == y.L_SUPPKEY)
+        val aggOp = jo2.groupBy(x => new Q20GRPRecord(x.PS_PARTKEY[Int], x.PS_SUPPKEY[Int], x.PS_AVAILQTY[Int])).mapValues(_.map(_.L_QUANTITY[Double]).sum)
+        val selOp = aggOp.filter(x => x._1.PS_AVAILQTY > 0.5 * x._2).map(x => x._1)
+        val jo3 = selOp.hashJoin(supplierTable)(x => x.PS_SUPPKEY)(x => x.S_SUPPKEY)((x, y) => x.PS_SUPPKEY == y.S_SUPPKEY)
+        val jo4 = scanNation.hashJoin(jo3)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])
+        val sortOp = jo4.sortBy(_.S_NAME[OptimalString].string)
+        sortOp.printRows(kv =>
+          printf("%s|%s\n", kv.S_NAME[OptimalString].string, kv.S_ADDRESS[OptimalString].string), -1)
+        ()
+      }
+    }
+  }
+
   def Q21(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val supplierTable = loadSupplier()

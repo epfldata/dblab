@@ -71,6 +71,7 @@ object SyntheticQueries extends TPCHRunner {
 
   val MICRO_RUNS = 10
   val MICRO_JOIN_RUNS = 5
+  val TPCH_RUNS = 5
 
   def fusionBenchmarkProcess(f: List[String] => Unit): Unit = {
     val fixedFlags = List("+monad-lowering", "-name-with-flag",
@@ -87,7 +88,7 @@ object SyntheticQueries extends TPCHRunner {
     val folder = args(0)
     val SFs = List(8)
     // val queryNumbers = (1 to 6).toList ++ (9 to 12).toList ++ List(14)
-    val queryNumbers = (1 to 6).toList ++ List(9, 10, 12, 14, 19)
+    val queryNumbers = (1 to 6).toList ++ List(9, 10, 12, 14, 19, 20)
     val queries = queryNumbers.map(x => s"Q${x}_functional")
     fusionBenchmarkProcess { flags =>
       for (sf <- SFs) {
@@ -474,18 +475,19 @@ object SyntheticQueries extends TPCHRunner {
       case "fmt"            => (27, () => filterMapTake(MICRO_RUNS))
       case "fmjs"           => (28, () => filterMergeJoinSum(MICRO_JOIN_RUNS))
       case "fhjs"           => (29, () => filterHashJoinSum(MICRO_JOIN_RUNS))
-      case "Q1_functional"  => (1, () => Q1_functional(unit(Config.numRuns)))
-      case "Q2_functional"  => (2, () => Q2_functional(unit(Config.numRuns)))
-      case "Q3_functional"  => (3, () => Q3_functional(unit(Config.numRuns)))
-      case "Q4_functional"  => (4, () => Q4_functional(unit(Config.numRuns)))
-      case "Q5_functional"  => (5, () => Q5_functional(unit(Config.numRuns)))
-      case "Q6_functional"  => (6, () => Q6_functional(unit(Config.numRuns)))
-      case "Q9_functional"  => (9, () => Q9_functional(unit(Config.numRuns)))
-      case "Q10_functional" => (10, () => Q10_functional(unit(Config.numRuns)))
-      case "Q11_functional" => (11, () => Q11_functional(unit(Config.numRuns)))
-      case "Q12_functional" => (12, () => Q12_functional_p2(unit(Config.numRuns)))
-      case "Q14_functional" => (14, () => Q14_functional(unit(Config.numRuns)))
-      case "Q19_functional" => (19, () => Q19_functional(unit(Config.numRuns)))
+      case "Q1_functional"  => (1, () => Q1_functional(unit(TPCH_RUNS)))
+      case "Q2_functional"  => (2, () => Q2_functional(unit(TPCH_RUNS)))
+      case "Q3_functional"  => (3, () => Q3_functional(unit(TPCH_RUNS)))
+      case "Q4_functional"  => (4, () => Q4_functional(unit(TPCH_RUNS)))
+      case "Q5_functional"  => (5, () => Q5_functional(unit(TPCH_RUNS)))
+      case "Q6_functional"  => (6, () => Q6_functional(unit(TPCH_RUNS)))
+      case "Q9_functional"  => (9, () => Q9_functional(unit(TPCH_RUNS)))
+      case "Q10_functional" => (10, () => Q10_functional(unit(TPCH_RUNS)))
+      case "Q11_functional" => (11, () => Q11_functional(unit(TPCH_RUNS)))
+      case "Q12_functional" => (12, () => Q12_functional_p2(unit(TPCH_RUNS)))
+      case "Q14_functional" => (14, () => Q14_functional(unit(TPCH_RUNS)))
+      case "Q19_functional" => (19, () => Q19_functional(unit(TPCH_RUNS)))
+      case "Q20_functional" => (20, () => Q20_functional(unit(TPCH_RUNS)))
       case "Q12_synthetic"  => (12, () => query12_p2(1))
     }
 
