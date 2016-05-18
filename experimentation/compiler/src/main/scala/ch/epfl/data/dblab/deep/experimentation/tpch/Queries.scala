@@ -54,6 +54,7 @@ trait QueriesOps extends Base with TPCHLoaderOps with Q1GRPRecordOps with Q3GRPR
     def Q18(numRuns: Rep[Int]): Rep[Unit] = queriesQ18Object(numRuns)
     def Q18_functional(numRuns: Rep[Int]): Rep[Unit] = queriesQ18_functionalObject(numRuns)
     def Q19(numRuns: Rep[Int]): Rep[Unit] = queriesQ19Object(numRuns)
+    def Q19_functional(numRuns: Rep[Int]): Rep[Unit] = queriesQ19_functionalObject(numRuns)
     def Q20(numRuns: Rep[Int]): Rep[Unit] = queriesQ20Object(numRuns)
     def Q21(numRuns: Rep[Int]): Rep[Unit] = queriesQ21Object(numRuns)
     def Q22(numRuns: Rep[Int]): Rep[Unit] = queriesQ22Object(numRuns)
@@ -125,6 +126,8 @@ trait QueriesOps extends Base with TPCHLoaderOps with Q1GRPRecordOps with Q3GRPR
   type QueriesQ18_functionalObject = QueriesIRs.QueriesQ18_functionalObject
   val QueriesQ19Object = QueriesIRs.QueriesQ19Object
   type QueriesQ19Object = QueriesIRs.QueriesQ19Object
+  val QueriesQ19_functionalObject = QueriesIRs.QueriesQ19_functionalObject
+  type QueriesQ19_functionalObject = QueriesIRs.QueriesQ19_functionalObject
   val QueriesQ20Object = QueriesIRs.QueriesQ20Object
   type QueriesQ20Object = QueriesIRs.QueriesQ20Object
   val QueriesQ21Object = QueriesIRs.QueriesQ21Object
@@ -164,6 +167,7 @@ trait QueriesOps extends Base with TPCHLoaderOps with Q1GRPRecordOps with Q3GRPR
   def queriesQ18Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ18Object(numRuns)
   def queriesQ18_functionalObject(numRuns: Rep[Int]): Rep[Unit] = QueriesQ18_functionalObject(numRuns)
   def queriesQ19Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ19Object(numRuns)
+  def queriesQ19_functionalObject(numRuns: Rep[Int]): Rep[Unit] = QueriesQ19_functionalObject(numRuns)
   def queriesQ20Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ20Object(numRuns)
   def queriesQ21Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ21Object(numRuns)
   def queriesQ22Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ22Object(numRuns)
@@ -314,6 +318,10 @@ object QueriesIRs extends Base {
   }
 
   case class QueriesQ19Object(numRuns: Rep[Int]) extends FunctionDef[Unit](None, "Queries.Q19", List(List(numRuns))) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class QueriesQ19_functionalObject(numRuns: Rep[Int]) extends FunctionDef[Unit](None, "Queries.Q19_functional", List(List(numRuns))) {
     override def curriedConstructor = (copy _)
   }
 
@@ -1159,6 +1167,37 @@ trait QueriesImplementations extends QueriesOps { this: ch.epfl.data.dblab.deep.
         })), unit(-1));
         po.run();
         unit(())
+      }))))
+    }
+  }
+  override def queriesQ19_functionalObject(numRuns: Rep[Int]): Rep[Unit] = {
+    {
+      val lineitemTable: this.Rep[ch.epfl.data.dblab.queryengine.monad.Query[ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]] = Query.apply[ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord](TPCHLoader.loadLineitem());
+      val partTable: this.Rep[ch.epfl.data.dblab.queryengine.monad.Query[ch.epfl.data.dblab.experimentation.tpch.PARTRecord]] = Query.apply[ch.epfl.data.dblab.experimentation.tpch.PARTRecord](TPCHLoader.loadPart());
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
+        val Brand31: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("Brand#31"));
+        val Brand43: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("Brand#43"));
+        val SMBOX: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("SM BOX"));
+        val SMCASE: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("SM CASE"));
+        val SMPACK: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("SM PACK"));
+        val SMPKG: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("SM PKG"));
+        val MEDBAG: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("MED BAG"));
+        val MEDBOX: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("MED BOX"));
+        val MEDPACK: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("MED PACK"));
+        val MEDPKG: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("MED PKG"));
+        val LGBOX: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("LG BOX"));
+        val LGCASE: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("LG CASE"));
+        val LGPACK: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("LG PACK"));
+        val LGPKG: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("LG PKG"));
+        val DELIVERINPERSON: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("DELIVER IN PERSON"));
+        val AIR: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("AIR"));
+        val AIRREG: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("AIRREG"));
+        val so1: this.Rep[ch.epfl.data.dblab.queryengine.monad.Query[ch.epfl.data.dblab.experimentation.tpch.PARTRecord]] = partTable.filter(__lambda(((x: this.Rep[ch.epfl.data.dblab.experimentation.tpch.PARTRecord]) => x.P_SIZE.$greater$eq(unit(1)).$amp$amp(x.P_SIZE.$less$eq(unit(5)).$amp$amp(x.P_BRAND.$eq$eq$eq(Brand31)).$amp$amp(x.P_CONTAINER.$eq$eq$eq(SMBOX).$bar$bar(x.P_CONTAINER.$eq$eq$eq(SMCASE)).$bar$bar(x.P_CONTAINER.$eq$eq$eq(SMPACK)).$bar$bar(x.P_CONTAINER.$eq$eq$eq(SMPKG)))).$bar$bar(x.P_SIZE.$less$eq(unit(10)).$amp$amp(x.P_BRAND.$eq$eq$eq(Brand43)).$amp$amp(x.P_CONTAINER.$eq$eq$eq(MEDBAG).$bar$bar(x.P_CONTAINER.$eq$eq$eq(MEDBOX)).$bar$bar(x.P_CONTAINER.$eq$eq$eq(MEDPACK)).$bar$bar(x.P_CONTAINER.$eq$eq$eq(MEDPKG)))).$bar$bar(x.P_SIZE.$less$eq(unit(15)).$amp$amp(x.P_BRAND.$eq$eq$eq(Brand43)).$amp$amp(x.P_CONTAINER.$eq$eq$eq(LGBOX).$bar$bar(x.P_CONTAINER.$eq$eq$eq(LGCASE)).$bar$bar(x.P_CONTAINER.$eq$eq$eq(LGPACK)).$bar$bar(x.P_CONTAINER.$eq$eq$eq(LGPKG)))))));
+        val so2: this.Rep[ch.epfl.data.dblab.queryengine.monad.Query[ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]] = lineitemTable.filter(__lambda(((x: this.Rep[ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]) => x.L_QUANTITY.$less$eq(unit(36)).$amp$amp(x.L_QUANTITY.$greater$eq(unit(26))).$bar$bar(x.L_QUANTITY.$less$eq(unit(25)).$amp$amp(x.L_QUANTITY.$greater$eq(unit(15)))).$bar$bar(x.L_QUANTITY.$less$eq(unit(14)).$amp$amp(x.L_QUANTITY.$greater$eq(unit(4)))).$amp$amp(x.L_SHIPINSTRUCT.$eq$eq$eq(DELIVERINPERSON)).$amp$amp(x.L_SHIPMODE.$eq$eq$eq(AIR).$bar$bar(x.L_SHIPMODE.$eq$eq$eq(AIRREG))))));
+        val jo: this.Rep[ch.epfl.data.dblab.queryengine.monad.Query[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.dblab.experimentation.tpch.PARTRecord, ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]]] = queryToJoinableQuery[ch.epfl.data.dblab.experimentation.tpch.PARTRecord](so1).hashJoin[ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord, Int](so2)(__lambda(((x: this.Rep[ch.epfl.data.dblab.experimentation.tpch.PARTRecord]) => x.P_PARTKEY)))(__lambda(((x: this.Rep[ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]) => x.L_PARTKEY)))(__lambda(((x: this.Rep[ch.epfl.data.dblab.experimentation.tpch.PARTRecord], y: this.Rep[ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]) => infix_$eq$eq(x.P_PARTKEY, y.L_PARTKEY)))).filter(__lambda(((x: this.Rep[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.dblab.experimentation.tpch.PARTRecord, ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]]) => x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("P_BRAND")).$eq$eq$eq(Brand31).$amp$amp(x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("P_CONTAINER")).$eq$eq$eq(SMBOX).$bar$bar(x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("P_CONTAINER")).$eq$eq$eq(SMCASE)).$bar$bar(x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("P_CONTAINER")).$eq$eq$eq(SMPACK)).$bar$bar(x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("P_CONTAINER")).$eq$eq$eq(SMPKG))).$amp$amp(x.selectDynamic[Double](unit("L_QUANTITY")).$greater$eq(unit(4))).$amp$amp(x.selectDynamic[Double](unit("L_QUANTITY")).$less$eq(unit(14))).$amp$amp(x.selectDynamic[Int](unit("P_SIZE")).$less$eq(unit(5))).$bar$bar(x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("P_BRAND")).$eq$eq$eq(Brand43).$amp$amp(x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("P_CONTAINER")).$eq$eq$eq(MEDBAG).$bar$bar(x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("P_CONTAINER")).$eq$eq$eq(MEDBOX)).$bar$bar(x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("P_CONTAINER")).$eq$eq$eq(MEDPACK)).$bar$bar(x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("P_CONTAINER")).$eq$eq$eq(MEDPKG))).$amp$amp(x.selectDynamic[Double](unit("L_QUANTITY")).$greater$eq(unit(15))).$amp$amp(x.selectDynamic[Double](unit("L_QUANTITY")).$less$eq(unit(25))).$amp$amp(x.selectDynamic[Int](unit("P_SIZE")).$less$eq(unit(10)))).$bar$bar(x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("P_BRAND")).$eq$eq$eq(Brand43).$amp$amp(x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("P_CONTAINER")).$eq$eq$eq(LGBOX).$bar$bar(x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("P_CONTAINER")).$eq$eq$eq(LGCASE)).$bar$bar(x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("P_CONTAINER")).$eq$eq$eq(LGPACK)).$bar$bar(x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("P_CONTAINER")).$eq$eq$eq(LGPKG))).$amp$amp(x.selectDynamic[Double](unit("L_QUANTITY")).$greater$eq(unit(26))).$amp$amp(x.selectDynamic[Double](unit("L_QUANTITY")).$less$eq(unit(36))).$amp$amp(x.selectDynamic[Int](unit("P_SIZE")).$less$eq(unit(15)))))));
+        val result: this.Rep[Double] = jo.map[Double](__lambda(((t: this.Rep[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.dblab.experimentation.tpch.PARTRecord, ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]]) => t.selectDynamic[Double](unit("L_EXTENDEDPRICE")).$times(unit(1.0).$minus(t.selectDynamic[Double](unit("L_DISCOUNT"))))))).sum;
+        printf(unit("%.4f\n"), result);
+        printf(unit("(%d rows)\n"), unit(1))
       }))))
     }
   }

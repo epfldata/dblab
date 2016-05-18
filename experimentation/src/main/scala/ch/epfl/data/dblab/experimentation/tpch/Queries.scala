@@ -1145,6 +1145,55 @@ object Queries {
     }
   }
 
+  def Q19_functional(numRuns: Int) {
+    val lineitemTable = Query(loadLineitem())
+    val partTable = Query(loadPart())
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val Brand31 = parseString("Brand#31")
+        val Brand43 = parseString("Brand#43")
+        val SMBOX = parseString("SM BOX")
+        val SMCASE = parseString("SM CASE")
+        val SMPACK = parseString("SM PACK")
+        val SMPKG = parseString("SM PKG")
+        val MEDBAG = parseString("MED BAG")
+        val MEDBOX = parseString("MED BOX")
+        val MEDPACK = parseString("MED PACK")
+        val MEDPKG = parseString("MED PKG")
+        val LGBOX = parseString("LG BOX")
+        val LGCASE = parseString("LG CASE")
+        val LGPACK = parseString("LG PACK")
+        val LGPKG = parseString("LG PKG")
+        val DELIVERINPERSON = parseString("DELIVER IN PERSON")
+        val AIR = parseString("AIR")
+        val AIRREG = parseString("AIRREG")
+
+        val so1 = partTable.filter(x => x.P_SIZE >= 1 &&
+          (x.P_SIZE <= 5 && x.P_BRAND === Brand31 && (x.P_CONTAINER === SMBOX || x.P_CONTAINER === SMCASE ||
+            x.P_CONTAINER === SMPACK || x.P_CONTAINER === SMPKG)) ||
+            (x.P_SIZE <= 10 && x.P_BRAND === Brand43 && (x.P_CONTAINER === MEDBAG || x.P_CONTAINER === MEDBOX ||
+              x.P_CONTAINER === MEDPACK || x.P_CONTAINER === MEDPKG)) ||
+              (x.P_SIZE <= 15 && x.P_BRAND === Brand43 && (x.P_CONTAINER === LGBOX || x.P_CONTAINER === LGCASE ||
+                x.P_CONTAINER === LGPACK || x.P_CONTAINER === LGPKG)))
+        val so2 = lineitemTable.filter(x =>
+          ((x.L_QUANTITY <= 36 && x.L_QUANTITY >= 26) || (x.L_QUANTITY <= 25 && x.L_QUANTITY >= 15) ||
+            (x.L_QUANTITY <= 14 && x.L_QUANTITY >= 4)) && x.L_SHIPINSTRUCT === DELIVERINPERSON &&
+            (x.L_SHIPMODE === AIR || x.L_SHIPMODE === AIRREG))
+        val jo = so1.hashJoin(so2)(x => x.P_PARTKEY)(x => x.L_PARTKEY)((x, y) => x.P_PARTKEY == y.L_PARTKEY).filter(
+          x => x.P_BRAND[OptimalString] === Brand31 &&
+            (x.P_CONTAINER[OptimalString] === SMBOX || x.P_CONTAINER[OptimalString] === SMCASE || x.P_CONTAINER[OptimalString] === SMPACK || x.P_CONTAINER[OptimalString] === SMPKG) &&
+            x.L_QUANTITY[Double] >= 4 && x.L_QUANTITY[Double] <= 14 && x.P_SIZE[Int] <= 5 || x.P_BRAND[OptimalString] === Brand43 &&
+            (x.P_CONTAINER[OptimalString] === MEDBAG || x.P_CONTAINER[OptimalString] === MEDBOX || x.P_CONTAINER[OptimalString] === MEDPACK || x.P_CONTAINER[OptimalString] === MEDPKG) &&
+            x.L_QUANTITY[Double] >= 15 && x.L_QUANTITY[Double] <= 25 && x.P_SIZE[Int] <= 10 || x.P_BRAND[OptimalString] === Brand43 &&
+            (x.P_CONTAINER[OptimalString] === LGBOX || x.P_CONTAINER[OptimalString] === LGCASE || x.P_CONTAINER[OptimalString] === LGPACK || x.P_CONTAINER[OptimalString] === LGPKG) &&
+            x.L_QUANTITY[Double] >= 26 && x.L_QUANTITY[Double] <= 36 && x.P_SIZE[Int] <= 15)
+        val result = jo.map(t => (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))).sum
+        printf("%.4f\n", result)
+        printf("(%d rows)\n", 1)
+      })
+    }
+  }
+
   def Q20(numRuns: Int) {
     val nationTable = loadNation()
     val supplierTable = loadSupplier()

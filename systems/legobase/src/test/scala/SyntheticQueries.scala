@@ -87,7 +87,7 @@ object SyntheticQueries extends TPCHRunner {
     val folder = args(0)
     val SFs = List(8)
     // val queryNumbers = (1 to 6).toList ++ (9 to 12).toList ++ List(14)
-    val queryNumbers = (1 to 6).toList ++ List(12, 14)
+    val queryNumbers = (1 to 6).toList ++ List(9, 10, 12, 14, 19)
     val queries = queryNumbers.map(x => s"Q${x}_functional")
     fusionBenchmarkProcess { flags =>
       for (sf <- SFs) {
@@ -485,6 +485,7 @@ object SyntheticQueries extends TPCHRunner {
       case "Q11_functional" => (11, () => Q11_functional(unit(Config.numRuns)))
       case "Q12_functional" => (12, () => Q12_functional_p2(unit(Config.numRuns)))
       case "Q14_functional" => (14, () => Q14_functional(unit(Config.numRuns)))
+      case "Q19_functional" => (19, () => Q19_functional(unit(Config.numRuns)))
       case "Q12_synthetic"  => (12, () => query12_p2(1))
     }
 
