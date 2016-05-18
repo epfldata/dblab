@@ -14,6 +14,7 @@ import sc.pardis.annotations.{ deep, metadeep, dontLift, dontInline, onlineInlin
 import sc.pardis.shallow.OptimalString
 import TPCHLoader._
 import GenericEngine._
+import schema.DynamicDataRow
 // import queryengine.TPCHRelations._
 import storagemanager._
 import queryengine.monad.Query
@@ -561,11 +562,11 @@ object Queries {
         val soPart = partTable.filter(x => x.P_NAME.containsSlice(ghost))
         val soPartsupp = partsuppTable
         val soOrders = ordersTable
-        val hj1 = soLineitem.hashJoin(soPart)(x => x.L_PARTKEY)(x => x.P_PARTKEY)((x, y) => x.L_PARTKEY == y.P_PARTKEY)
-        val hj2 = hj1.hashJoin(soSupplier)(x => x.L_SUPPKEY[Int])(x => x.S_SUPPKEY)((x, y) => x.L_SUPPKEY[Int] == y.S_SUPPKEY)
-        val hj3 = hj2.hashJoin(soNation)(x => x.S_NATIONKEY[Int])(x => x.N_NATIONKEY)((x, y) => x.S_NATIONKEY[Int] == y.N_NATIONKEY)
+        val hj1 = soPart.hashJoin(soLineitem)(x => x.P_PARTKEY)(x => x.L_PARTKEY)((x, y) => x.P_PARTKEY == y.L_PARTKEY)
+        val hj2 = soSupplier.hashJoin(hj1)(x => x.S_SUPPKEY)(x => x.L_SUPPKEY[Int])((x, y) => x.S_SUPPKEY == y.L_SUPPKEY[Int])
+        val hj3 = soNation.hashJoin(hj2)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])
         val hj4 = soPartsupp.hashJoin(hj3)(x => x.PS_PARTKEY)(x => x.L_PARTKEY[Int])((x, y) => x.PS_PARTKEY == y.L_PARTKEY[Int] && x.PS_SUPPKEY == y.L_SUPPKEY[Int])
-        val hj5 = hj4.hashJoin(soOrders)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)((x, y) => x.L_ORDERKEY[Int] == y.O_ORDERKEY)
+        val hj5 = soOrders.hashJoin(hj4)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY[Int])((x, y) => x.O_ORDERKEY == y.L_ORDERKEY[Int])
         val aggOp = hj5.groupBy(x => new Q9GRPRecord(x.N_NAME[OptimalString], dateToYear(x.O_ORDERDATE[Int]))).mapValues(_.map(t =>
           ((t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))) - ((1.0 * t.PS_SUPPLYCOST[Double]) * t.L_QUANTITY[Double])).sum)
         val sortOp = aggOp.sortBy(x => (x._1.NATION.string, -x._1.O_YEAR))
@@ -668,7 +669,7 @@ object Queries {
         val so2 = customerTable
         val so3 = nationTable
         val so4 = lineitemTable.filter(x => x.L_RETURNFLAG == 'R')
-        val hj1 = so4.hashJoin(so1)(x => x.L_ORDERKEY)(x => x.O_ORDERKEY)((x, y) => x.L_ORDERKEY == y.O_ORDERKEY)
+        val hj1 = so1.hashJoin(so4)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
         val hj2 = so2.hashJoin(hj1)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY[Int])((x, y) => x.C_CUSTKEY == y.O_CUSTKEY[Int])
         val hj3 = so3.hashJoin(hj2)(x => x.N_NATIONKEY)(x => x.C_NATIONKEY[Int])((x, y) => x.N_NATIONKEY == y.C_NATIONKEY[Int])
         val aggOp = hj3.groupBy(x => new Q10GRPRecord(x.C_CUSTKEY[Int],
@@ -1065,6 +1066,28 @@ object Queries {
           printf("%s|%d|%d|%s|%.2f|%.2f\n", kv.key.C_NAME.string, kv.key.C_CUSTKEY, kv.key.O_ORDERKEY, dateToString(kv.key.O_ORDERDATE), kv.key.O_TOTALPRICE, kv.aggs(0))
         }, 100)
         po.run()
+        ()
+      })
+    }
+  }
+
+  def Q18_functional(numRuns: Int) {
+    val lineitemTable = Query(loadLineitem())
+    val ordersTable = Query(loadOrders())
+    val customerTable = Query(loadCustomer())
+    for (i <- 0 until numRuns) {
+      runQuery({
+        // Group aggregation on Lineitem
+        val aggOp1 = lineitemTable.groupBy(_.L_ORDERKEY).mapValues(_.map(_.L_QUANTITY).sum).filter(_._2 > 300)
+          .map(x => DynamicDataRow("AggRec")(("key", x._1), ("agg", x._2)))
+        // Hash Join with orders
+        val jo1 = aggOp1.hashJoin(ordersTable)(_.key[Int])(_.O_ORDERKEY)(_.key[Int] == _.O_ORDERKEY)
+        val jo2 = jo1.hashJoin(customerTable)(_.O_CUSTKEY[Int])(_.C_CUSTKEY)(_.O_CUSTKEY[Int] == _.C_CUSTKEY)
+        val aggOp2 = jo2.groupBy(x => new Q18GRPRecord(x.C_NAME[OptimalString], x.C_CUSTKEY[Int], x.O_ORDERKEY[Int], x.O_ORDERDATE[Int], x.O_TOTALPRICE[Double]))
+          .mapValues(_.map(_.agg[Double]).sum)
+        val sortOp = aggOp2.sortBy(t => (-t._1.O_TOTALPRICE, t._1.O_ORDERDATE))
+        sortOp.printRows(kv =>
+          printf("%s|%d|%d|%s|%.2f|%.2f\n", kv._1.C_NAME.string, kv._1.C_CUSTKEY, kv._1.O_ORDERKEY, dateToString(kv._1.O_ORDERDATE), kv._1.O_TOTALPRICE, kv._2), 100)
         ()
       })
     }
