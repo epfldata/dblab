@@ -130,6 +130,7 @@ class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends Par
 
   def isUnbreakableNode[T](rhs: Def[T]): Boolean = rhs match {
     case sc.pardis.deep.scalalib.OptionIRs.OptionGet(_) => true
+    case sc.pardis.deep.scalalib.ArrayIRs.ArrayApply(_, _) => true
     case _ => false
   }
 
@@ -152,10 +153,12 @@ class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends Par
         sym.addChain(v.e.asInstanceOf[Sym[_]])
       }
       case Assign(v, value: Sym[_]) => {
+        val vSym = v.e.asInstanceOf[Sym[_]]
         if (value.isInitialized && value.state == Escaped) {
-          v.e.asInstanceOf[Sym[_]].state = Escaped
+          vSym.state = Escaped
+        } else {
+          vSym.addChain(value)
         }
-        value.addChain(v.e.asInstanceOf[Sym[_]])
       }
       case ReadVal(sy) => {
         sy match {
