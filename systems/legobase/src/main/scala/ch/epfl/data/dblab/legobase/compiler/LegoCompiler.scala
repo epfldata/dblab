@@ -89,22 +89,30 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
     pipeline += new QueryMonadNoHorizontalVerifyer(DSL)
     if (settings.queryMonadCPS) {
       pipeline += new QueryMonadCPSLowering(schema, DSL, queryMonadLowering)
+      pipeline += ParameterPromotion
     } else if (settings.queryMonadIterator) {
       // these should be together
       pipeline += new QueryMonadIteratorLowering(schema, DSL, queryMonadLowering)
       pipeline += new CoreLanguageToC(DSL)
+      pipeline += DCE
+      pipeline += new ParameterPromotionWithVar(DSL)
+      pipeline += DCE
+      pipeline += PartiallyEvaluate
       pipeline += new ParameterPromotionWithVar(DSL)
       // this should be alone
       // pipeline += new QueryMonadUnfoldLowering(schema, DSL, queryMonadLowering)
     } else if (settings.queryMonadStream) {
       pipeline += new QueryMonadStreamLowering(schema, DSL, settings.queryMonadStreamChurch, queryMonadLowering)
       pipeline += new CoreLanguageToC(DSL)
+      pipeline += DCE
+      pipeline += new ParameterPromotionWithVar(DSL)
+      pipeline += DCE
+      pipeline += PartiallyEvaluate
       pipeline += new ParameterPromotionWithVar(DSL)
     } else {
       pipeline += queryMonadLowering
+      pipeline += ParameterPromotion
     }
-    pipeline += TreeDumper(true)
-    pipeline += ParameterPromotion
     pipeline += DCE
     pipeline += PartiallyEvaluate
   } else {
@@ -238,7 +246,7 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
 
   pipeline += DCECLang //NEVER REMOVE!!!!
 
-  pipeline += TreeDumper(true)
+  // pipeline += TreeDumper(true)
 
   val codeGenerator =
     if (settings.targetLanguage == CCoreLanguage) {
