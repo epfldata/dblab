@@ -27,6 +27,8 @@ import sc.pardis.shallow.OptimalString
  *
  * Or to generate all the micro benchmarks for fusion run the following command:
  * test:run /mnt/ramdisk/tpch fusion_micro
+ * test:run /mnt/ramdisk/tpch fusion_tpch
+ * test:run /mnt/ramdisk/tpch var_sel [MICRO_QUERY]
  */
 object SyntheticQueries extends TPCHRunner {
 
@@ -38,19 +40,21 @@ object SyntheticQueries extends TPCHRunner {
   var tpchBenchmark = false
 
   def datesGenerator: List[String] = {
-    // val years = 1992 to 1998
-    // 1996
-    // val months = (1 to 12 by 2) map (x => if (x < 10) s"0$x" else x.toString)
-    // val dates = for (y <- years; m <- months) yield s"$y-$m-01"
+    val years = //1992 to 1998
+      List(1998)
+    val months = (1 to 12 by 2) map (x => if (x < 10) s"0$x" else x.toString)
+    val dates = for (y <- years; m <- months) yield s"$y-$m-01"
     // val days = 1 to 30 map (x => if (x < 10) s"0$x" else x.toString)
     // val dates = for (d <- days) yield s"1996-12-$d"
     // val dates = for (d <- days) yield s"1998-11-$d"
     // val dates = for (y <- List(4, 5, 6, 7, 8); m <- if (y == 4) List(7) else List(1, 7)) yield s"199$y-0$m-01"
-    val dates = List("1998-11-01")
+    // val dates = List("1998-11-01")
     dates.toList
   }
 
-  var param: String = _
+  def singleDate: String = "1998-11-01"
+
+  var param: String = singleDate
 
   def process(args: List[String]): Unit = process(args.toArray)
 
@@ -59,19 +63,20 @@ object SyntheticQueries extends TPCHRunner {
     Config.checkResults = false
     settings = new Settings(args.toList)
 
-    if (ONE_LOADER_FOR_ALL) {
-      run(args)
-    } else {
-      for (d <- datesGenerator) {
-        param = d
-        run(args)
-      }
-    }
+    // if (ONE_LOADER_FOR_ALL) {
+    //   run(args)
+    // } else {
+    //   for (d <- datesGenerator) {
+    //     param = d
+    //     run(args)
+    //   }
+    // }
+    run(args)
   }
 
   val MICRO_RUNS = 10
   val MICRO_JOIN_RUNS = 5
-  val TPCH_RUNS = 5
+  val TPCH_RUNS = 1
 
   def fusionBenchmarkProcess(f: List[String] => Unit): Unit = {
     val fixedFlags = List("+monad-lowering", "-name-with-flag",
@@ -99,14 +104,28 @@ object SyntheticQueries extends TPCHRunner {
     }
   }
 
+  def varySelBenchmark(args: Array[String]): Unit = {
+    val folder = args(0)
+    val SFs = List(16)
+    val query = args(2)
+    fusionBenchmarkProcess { flags =>
+      for (sf <- SFs) {
+        for (d <- datesGenerator) {
+          param = d
+          process(folder :: sf.toString :: query :: flags)
+        }
+      }
+    }
+  }
+
   def fusionMicroBenchmark(args: Array[String]): Unit = {
     val folder = args(0)
 
-    val SFs1 = List(8, 16, 32)
+    val SFs1 = List(32)
     val queries1 = List("fc", "fms", "ffms")
     val SFs2 = List(1)
-    val queries2 = List("fm", "fmt")
-    val SFs3 = List(8)
+    val queries2 = List("fm", "fmt", "fmot")
+    val SFs3 = List(16)
     val queries3 = List("fmjs", "fhjs")
     fusionBenchmarkProcess { flags =>
       for (sf <- SFs1) {
@@ -134,6 +153,8 @@ object SyntheticQueries extends TPCHRunner {
       fusionMicroBenchmark(args)
     } else if (args.length == 2 && args(1) == "fusion_tpch") {
       fusionTPCHBenchmark(args)
+    } else if (args.length == 3 && args(1) == "vary_sel") {
+      varySelBenchmark(args)
     } else if (args.length < 3) {
       System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
       System.exit(0)
@@ -299,6 +320,27 @@ object SyntheticQueries extends TPCHRunner {
           $lineitemTable.filter(_.L_SHIPDATE >= constantDate1).
             map(t => t.L_EXTENDEDPRICE * t.L_DISCOUNT).take(1000).printRows(t =>
               printf("%.4f\n", t)
+            , -1)
+        }
+      """
+    }
+    dsl"()"
+  }
+
+  def filterMapSortByTake(numRuns: Int): Rep[Unit] = {
+    import dblab.queryengine.monad.Query
+    import dblab.experimentation.tpch.TPCHLoader._
+    import dblab.queryengine.GenericEngine._
+    val loadedLineitemTable = dsl"loadLineitem()"
+    def lineitemTable = dsl"""Query($loadedLineitemTable)"""
+    val startDate = "1998-10-01"
+    for (i <- 0 until numRuns) {
+      dsl"""
+        runQuery {
+          val constantDate1: Int = parseDate($startDate)
+          $lineitemTable.filter(_.L_SHIPDATE >= constantDate1).
+            sortBy(_.L_ORDERKEY).take(1000).printRows(t =>
+              printf("%.4f\n", t.L_EXTENDEDPRICE)
             , -1)
         }
       """
@@ -473,6 +515,7 @@ object SyntheticQueries extends TPCHRunner {
       case "ffms"           => (24, () => filterFilterMapSum(MICRO_RUNS))
       case "fm"             => (26, () => filterMap(MICRO_RUNS))
       case "fmt"            => (27, () => filterMapTake(MICRO_RUNS))
+      case "fmot"           => (30, () => filterMapSortByTake(MICRO_RUNS))
       case "fmjs"           => (28, () => filterMergeJoinSum(MICRO_JOIN_RUNS))
       case "fhjs"           => (29, () => filterHashJoinSum(MICRO_JOIN_RUNS))
       case "Q1_functional"  => (1, () => Q1_functional(unit(TPCH_RUNS)))
