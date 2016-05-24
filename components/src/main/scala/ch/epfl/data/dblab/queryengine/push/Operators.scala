@@ -3,6 +3,7 @@ package dblab
 package queryengine
 package push
 
+import ch.epfl.data.dblab.schema.DynamicDataRow
 import scala.reflect.runtime.universe._
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.HashMap
@@ -198,9 +199,9 @@ class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B])(v
   }
 }
 
-class AggOpGeneric[A, B: TypeTag](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B], val keyName: Option[String])(val aggFuncs: Function2[A, Double, Double]*)(aggNames: Seq[String]) extends Operator[DataRow] {
+class AggOpGeneric[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B], val keyName: Option[String])(val aggFuncs: Function2[A, Double, Double]*)(aggNames: Seq[String]) extends Operator[DynamicDataRow] {
 
-  val hm = HashMap[B, DataRow]()
+  val hm = HashMap[B, DynamicDataRow]()
   val numAggRecordFields = 1 + numAggs // 1 for the key
 
   def open() {
@@ -222,8 +223,8 @@ class AggOpGeneric[A, B: TypeTag](parent: Operator[A], numAggs: Int)(val grp: Fu
 
     val elem = hm.getOrElseUpdate(key.asInstanceOf[B], {
       keyName match {
-        case Some(kn) => new DataRow(Seq(keyName.get) ++ aggNames zip Seq(key) ++ aggregates).asInstanceOf[DataRow]
-        case None     => new DataRow(aggNames zip aggregates).asInstanceOf[DataRow]
+        case Some(kn) => DynamicDataRow("Agg")(Seq(keyName.get) ++ aggNames zip Seq(key) ++ aggregates: _*).asInstanceOf[DynamicDataRow]
+        case None     => DynamicDataRow("Agg")(aggNames zip aggregates: _*).asInstanceOf[DynamicDataRow]
       }
     })
 
