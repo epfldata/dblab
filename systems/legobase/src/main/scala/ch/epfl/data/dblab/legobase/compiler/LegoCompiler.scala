@@ -251,9 +251,9 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
   val codeGenerator =
     if (settings.targetLanguage == CCoreLanguage) {
       if (settings.noLetBinding)
-        new QueryEngineCASTGenerator(DSL, outputFile, settings.profile, true)
+        new QueryEngineCASTGenerator(DSL, outputFile, settings.papiProfile, true)
       else
-        new QueryEngineCGenerator(outputFile, settings.profile, true)
+        new QueryEngineCGenerator(outputFile, settings.papiProfile, true)
     } else {
       if (settings.noLetBinding)
         new QueryEngineScalaASTGenerator(DSL, false, outputFile, runnerClassName)

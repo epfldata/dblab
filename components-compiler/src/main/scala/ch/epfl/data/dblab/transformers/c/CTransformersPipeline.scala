@@ -46,12 +46,13 @@ class CTransformersPipeline(val settings: CTransformersPipelineSettings) extends
     pipeline += new RangeToCTransformer(context)
     pipeline += new ScalaConstructsToCTranformer(context, settings.ifAggressive)
     pipeline += new BlockFlattening(context)
-    if (settings.profiler) {
+    if (settings.mallocProfile) {
       pipeline += new MallocProfiler(context)
     }
     pipeline(context)(b)
   }
 }
 
-case class CTransformersPipelineSettings(ifAggressive: Boolean, onlyLoading: Boolean, profiler: Boolean, oldCArrayHandling: Boolean, pointerStore: Boolean,
+case class CTransformersPipelineSettings(ifAggressive: Boolean, onlyLoading: Boolean, mallocProfile: Boolean,
+                                         papiProfile: Boolean, oldCArrayHandling: Boolean, pointerStore: Boolean,
                                          containerFlattenning: Boolean)

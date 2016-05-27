@@ -54,10 +54,10 @@ class GenericEngineToCTransformer(override val IR: QueryEngineExp, val settings:
       } else {
         val Timer(diff, start, end) = createTimer
         gettimeofday(&(start))
-        if (settings.profiler)
+        if (settings.papiProfile)
           papi_start()
         inlineBlock(apply(b))
-        if (settings.profiler)
+        if (settings.papiProfile)
           papi_end()
         gettimeofday(&(end))
         val tm = timeval_subtract(&(diff), &(end), &(start))

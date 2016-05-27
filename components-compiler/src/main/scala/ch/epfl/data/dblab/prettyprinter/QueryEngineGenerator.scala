@@ -114,7 +114,7 @@ class QueryEngineScalaASTGenerator(val IR: Base, override val shallow: Boolean =
  * definitions. For example, in the case of defining mutable variables an appropriate comment in front
  * of that variable definition.
  */
-class QueryEngineCGenerator(val outputFileName: String, val profiler: Boolean, override val verbose: Boolean = true) extends CCodeGenerator with ScalaCoreCCodeGen /* with BooleanCCodeGen */ {
+class QueryEngineCGenerator(val outputFileName: String, val papiProfile: Boolean, override val verbose: Boolean = true) extends CCodeGenerator with ScalaCoreCCodeGen /* with BooleanCCodeGen */ {
   /**
    * Generates the code for the IR of the given program
    *
@@ -128,7 +128,7 @@ class QueryEngineCGenerator(val outputFileName: String, val profiler: Boolean, o
 
   override def header: Document = super.header :/: doc"""#include "pardis_clib.h" """ ::
     {
-      if (profiler)
+      if (papiProfile)
         Document.break :: doc"""#include <papi.h>""" :/: {
           if (branch_mis_pred)
             doc"""#define NUM_EVENTS 7
@@ -223,5 +223,5 @@ if (PAPI_stop_counters(values, NUM_EVENTS) != PAPI_OK) {
  */
 class QueryEngineCASTGenerator(val IR: Base,
                                override val outputFileName: String,
-                               override val profiler: Boolean,
-                               override val verbose: Boolean = true) extends QueryEngineCGenerator(outputFileName, profiler, verbose) with CASTCodeGenerator[Base]
+                               override val papiProfile: Boolean,
+                               override val verbose: Boolean = true) extends QueryEngineCGenerator(outputFileName, papiProfile, verbose) with CASTCodeGenerator[Base]
