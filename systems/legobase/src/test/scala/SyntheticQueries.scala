@@ -126,7 +126,7 @@ object SyntheticQueries extends TPCHRunner {
     val SFs2 = List(1)
     val queries2 = List("fm", "fmt", "fmot")
     val SFs3 = List(16)
-    val queries3 = List("fmjs", "fhjs")
+    val queries3 = List("fmjs", "fhjs", "fhsjs")
     fusionBenchmarkProcess { flags =>
       for (sf <- SFs1) {
         for (q <- queries1) {
@@ -385,15 +385,14 @@ object SyntheticQueries extends TPCHRunner {
       def selection = if (hasFilter)
         dsl"""
             val constantDate1 = parseDate($startDate)
-            val so2 = $lineitemTable.filter(x =>x.L_SHIPDATE >= constantDate1)
+            val so2 = $ordersTable.filter(x =>x.O_ORDERDATE >= constantDate1)
             so2
           """
       else
-        lineitemTable
+        ordersTable
       dsl"""
         runQuery({
-          val so2 = $selection
-          val jo = $ordersTable.mergeJoin(so2)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
+          val jo = $selection.mergeJoin($lineitemTable)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
           val result = jo.foldLeft(0.0)((acc, cur) => cur.L_EXTENDEDPRICE[Double] + acc)
           printf("%.4f\n", result)
         })
@@ -416,16 +415,45 @@ object SyntheticQueries extends TPCHRunner {
       def selection = if (hasFilter)
         dsl"""
             val constantDate1 = parseDate($startDate)
-            val so2 = $lineitemTable.filter(x =>x.L_SHIPDATE >= constantDate1)
+            val so2 = $ordersTable.filter(x =>x.O_ORDERDATE >= constantDate1)
             so2
           """
       else
-        lineitemTable
+        ordersTable
       dsl"""
         runQuery({
-          val so2 = $selection
-          val jo = $ordersTable.hashJoin(so2)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
-          val result = jo.foldLeft(0.0)((acc, cur) => cur.L_EXTENDEDPRICE[Double] + acc)
+          val jo = $selection.hashJoin($lineitemTable)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
+          val result = jo.foldLeft(0.0)((acc, cur) => cur.O_TOTALPRICE[Double] + acc)
+          printf("%.4f\n", result)
+        })
+      """
+    }
+    dsl"()"
+  }
+
+  def filterHashSemiJoinSum(numRuns: Int): Rep[Unit] = {
+    import dblab.queryengine.monad.Query
+    import dblab.experimentation.tpch.TPCHLoader._
+    import dblab.queryengine.GenericEngine._
+    val loadedLineitemTable = dsl"loadLineitem()"
+    def lineitemTable = dsl"""Query($loadedLineitemTable)"""
+    val loadedOrdersTable = dsl"loadOrders()"
+    def ordersTable = dsl"Query($loadedOrdersTable)"
+    val startDate = param
+    val hasFilter = true
+    for (i <- 0 until numRuns) {
+      def selection = if (hasFilter)
+        dsl"""
+            val constantDate1 = parseDate($startDate)
+            val so2 = $ordersTable.filter(x =>x.O_ORDERDATE >= constantDate1)
+            so2
+          """
+      else
+        ordersTable
+      dsl"""
+        runQuery({
+          val jo = $selection.leftHashSemiJoin($lineitemTable)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
+          val result = jo.foldLeft(0.0)((acc, cur) => cur.O_TOTALPRICE + acc)
           printf("%.4f\n", result)
         })
       """
@@ -518,6 +546,7 @@ object SyntheticQueries extends TPCHRunner {
       case "fmot"           => (30, () => filterMapSortByTake(MICRO_RUNS))
       case "fmjs"           => (28, () => filterMergeJoinSum(MICRO_JOIN_RUNS))
       case "fhjs"           => (29, () => filterHashJoinSum(MICRO_JOIN_RUNS))
+      case "fhsjs"          => (31, () => filterHashSemiJoinSum(MICRO_JOIN_RUNS))
       case "Q1_functional"  => (1, () => Q1_functional(unit(TPCH_RUNS)))
       case "Q2_functional"  => (2, () => Q2_functional(unit(TPCH_RUNS)))
       case "Q3_functional"  => (3, () => Q3_functional(unit(TPCH_RUNS)))
