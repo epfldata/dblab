@@ -28,6 +28,7 @@ import sc.pardis.shallow.OptimalString
  * Or to generate all the micro benchmarks for fusion run the following command:
  * test:run /mnt/ramdisk/tpch fusion_micro
  * test:run /mnt/ramdisk/tpch fusion_tpch
+ * test:run /mnt/ramdisk/tpch mem_cons_tpch
  * test:run /mnt/ramdisk/tpch var_sel [MICRO_QUERY]
  */
 object SyntheticQueries extends TPCHRunner {
@@ -40,8 +41,8 @@ object SyntheticQueries extends TPCHRunner {
   var tpchBenchmark = false
 
   def datesGenerator: List[String] = {
-    val years = //1992 to 1998
-      List(1998)
+    val years = 1992 to 1998
+    // List(1998)
     val months = (1 to 12 by 2) map (x => if (x < 10) s"0$x" else x.toString)
     val dates = for (y <- years; m <- months) yield s"$y-$m-01"
     // val days = 1 to 30 map (x => if (x < 10) s"0$x" else x.toString)
@@ -88,7 +89,7 @@ object SyntheticQueries extends TPCHRunner {
     }
   }
 
-  def fusionTPCHBenchmark(args: Array[String]): Unit = {
+  def fusionTPCHBenchmark(args: Array[String], additionalFlags: List[String] = Nil): Unit = {
     tpchBenchmark = true
     val folder = args(0)
     val SFs = List(8)
@@ -98,7 +99,7 @@ object SyntheticQueries extends TPCHRunner {
     fusionBenchmarkProcess { flags =>
       for (sf <- SFs) {
         for (q <- queries) {
-          process(folder :: sf.toString :: q :: flags)
+          process(folder :: sf.toString :: q :: flags ++ additionalFlags)
         }
       }
     }
@@ -153,6 +154,8 @@ object SyntheticQueries extends TPCHRunner {
       fusionMicroBenchmark(args)
     } else if (args.length == 2 && args(1) == "fusion_tpch") {
       fusionTPCHBenchmark(args)
+    } else if (args.length == 2 && args(1) == "mem_cons_tpch") {
+      fusionTPCHBenchmark(args, List("-malloc-profile"))
     } else if (args.length == 3 && args(1) == "vary_sel") {
       varySelBenchmark(args)
     } else if (args.length < 3) {
