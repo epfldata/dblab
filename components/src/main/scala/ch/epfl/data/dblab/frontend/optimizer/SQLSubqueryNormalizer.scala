@@ -129,6 +129,7 @@ class SQLSubqueryNormalizer(schema: Schema) extends SQLNormalizer {
     case sub: Subtract       => Subtract(op1, op2)
     case div: Divide         => Divide(op1, op2)
     case cs: Case            => Case(cs.cond, op1, op2)
+    case mul: Multiply       => Multiply(op1, op2)
   }
 
   private def regenerateBinaryOperator(expr: Expression, left: Expression, right: Expression, subqueriesToBeRewritten: Seq[TopLevelStatement]) = {

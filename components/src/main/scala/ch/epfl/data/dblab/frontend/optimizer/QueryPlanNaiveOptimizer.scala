@@ -94,7 +94,7 @@ class QueryPlanNaiveOptimizer(schema: Schema) extends QueryPlanOptimizer {
       } else false
     }) match {
       case Some(jo) =>
-        //System.out.println("Adding cond " + cond + " to operator " + jo);   
+        //System.out.println("Adding cond " + cond + " to operator " + jo);
         val buf = joinOpConds.getOrElseUpdate(jo, new ArrayBuffer[Expression]())
         buf += {
           if (reorder) reorderPredicates(cond)
@@ -151,6 +151,7 @@ class QueryPlanNaiveOptimizer(schema: Schema) extends QueryPlanOptimizer {
       case GreaterThan(_, _) => Some(cond)
       case LessThan(_, _) => Some(cond)
       case LessOrEqual(_, _) => Some(cond)
+      case Not(_) => Some(cond) // TODO: can this be optimized?
     }
   }
 
