@@ -7,7 +7,7 @@ import sc.pardis.shallow.{ Record, OptimalString }
 /**
  * @author Yannis Klonatos
  */
-class DataRow(values: Seq[(String, Any)]) extends Record {
+class DataRow(val values: Seq[(String, Any)]) extends Record {
   private val fieldMap = collection.mutable.HashMap[String, Any](values: _*)
   def numFields = fieldMap.size
   def getField(name: String): Option[Any] = fieldMap.get(name) match {
@@ -31,11 +31,16 @@ class DataRow(values: Seq[(String, Any)]) extends Record {
   def getFieldNames() = fieldMap.keySet
   def getNestedRecords(): Seq[DataRow] = fieldMap.map({ case (k, v) => v }).filter(_.isInstanceOf[DataRow]).toSeq.asInstanceOf[Seq[DataRow]]
   override def toString = "DataRow(" + fieldMap.toSeq.toString + ")"
+  override def hashCode: Int = values.map(_._2.hashCode).sum
+  override def equals(o: Any): Boolean = o match {
+    case dr: DataRow => values.zip(dr.values).forall(x => x._1._1 == x._2._1 && x._1._2 == x._2._2)
+    case _           => false
+  }
 }
 
 import scala.language.dynamics
 
-class DynamicDataRow(val className: String, values: Seq[(String, Any)]) extends DataRow(values.toSeq) with Dynamic {
+class DynamicDataRow(val className: String, override val values: Seq[(String, Any)]) extends DataRow(values) with Dynamic {
   def selectDynamic[T](key: String): T = {
     getField(key).getOrElse(sys.error(s"$this does not have $key field")).asInstanceOf[T]
   }
