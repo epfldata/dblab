@@ -121,16 +121,17 @@ class QueryPlanNaiveOptimizer(schema: Schema) extends QueryPlanOptimizer {
           case (None, Some(_))    => rhsPushed
           case (Some(l), Some(r)) => Some(And(l, r))
         }
-
+      // FIXME there's a bug here
       case Or(lhs, rhs) =>
-        val lhsPushed = analysePushingUpCondition(parent, lhs)
-        val rhsPushed = analysePushingUpCondition(parent, rhs)
-        (lhsPushed, rhsPushed) match {
-          case (None, None)       => None
-          case (Some(_), None)    => lhsPushed
-          case (None, Some(_))    => rhsPushed
-          case (Some(l), Some(r)) => Some(Or(l, r))
-        }
+        // val lhsPushed = analysePushingUpCondition(parent, lhs)
+        // val rhsPushed = analysePushingUpCondition(parent, rhs)
+        // (lhsPushed, rhsPushed) match {
+        //   case (None, None)       => None
+        //   case (Some(_), None)    => lhsPushed
+        //   case (None, Some(_))    => rhsPushed
+        //   case (Some(l), Some(r)) => Some(Or(l, r))
+        // }
+        Some(Or(lhs, rhs))
 
       case Equals(fi1: FieldIdent, fi2: FieldIdent) =>
         registerJoinOpCond(fi1, fi2, cond)
