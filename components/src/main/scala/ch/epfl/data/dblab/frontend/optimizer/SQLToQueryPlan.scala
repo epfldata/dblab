@@ -7,7 +7,7 @@ import schema._
 import scala.reflect._
 import parser._
 import parser.OperatorAST._
-import scala.reflect.runtime.{ universe => ru }
+import scala.reflect.runtime.{universe => ru}
 import ru._
 import queryengine.GenericEngine
 
@@ -114,8 +114,11 @@ class SQLToQueryPlan(schema: Schema) {
       var aggProjs = projsWithoutDiv.filter(p => p._1.isAggregateOpExpr)
 
       val hasAVG = aggProjs.exists(ap => ap._1.isInstanceOf[Avg])
-      if (hasAVG && aggProjs.find(_._1.isInstanceOf[CountAll]) == None)
-        aggProjs = aggProjs :+ (CountAll(), Some("__TOTAL_COUNT"))
+      if (hasAVG && aggProjs.find(_._1.isInstanceOf[CountAll]) == None) {
+        val count = CountAll()
+        count.setTp(typeTag[Int])
+        aggProjs = aggProjs :+ ((count, Some("__TOTAL_COUNT")))
+      }
 
       if (aggProjs == List()) parentOp
       else {
@@ -126,8 +129,11 @@ class SQLToQueryPlan(schema: Schema) {
 
         val aggOp = if (hasAVG) {
           val finalAggs = aggProjs.map(ag => ag._1 match {
-            case Avg(e) => Sum(e)
-            case _      => ag._1
+            case Avg(e) =>
+              val sum = Sum(e)
+              sum.setTp(ag._1.tp)
+              sum
+            case _ => ag._1
           })
 
           //val countAllIdx = aggsAliases.indexOf(CountAll())

@@ -5,7 +5,7 @@ package analyzer
 
 import sc.pardis.types._
 import schema._
-import scala.reflect.runtime.{ universe => ru }
+import scala.reflect.runtime.{universe => ru}
 import ru._
 import parser._
 import sc.pardis.shallow.OptimalString
@@ -107,10 +107,10 @@ class SQLAnalyzer(schema: Schema) {
       checkAndInferExpr(expr)
       avg.setTp(typeTag(expr.tp))
     case countAll @ CountAll() =>
-      countAll.setTp(typeTag[Double])
+      countAll.setTp(typeTag[Int])
     case countExpr @ CountExpr(expr) =>
       checkAndInferExpr(expr)
-      countExpr.setTp(typeTag[Double])
+      countExpr.setTp(typeTag[Int])
     case min @ Min(expr) =>
       checkAndInferExpr(expr)
       min.setTp(expr.tp)
@@ -208,20 +208,27 @@ class SQLAnalyzer(schema: Schema) {
   }
 
   def checkAndInferJoinTree(root: Relation): Unit = root match {
-    case Join(leftParent, Subquery(subquery, _), _, _) =>
+    case Join(leftParent, Subquery(subquery, _), _, clause) =>
       checkAndInferJoinTree(leftParent)
       checkAndInfer(subquery)
-    case Join(Subquery(subquery, _), rightParent, _, _) =>
+      checkAndInferExpr(clause)
+    case Join(Subquery(subquery, _), rightParent, _, clause) =>
       checkAndInferJoinTree(rightParent)
       checkAndInfer(subquery)
+      checkAndInferExpr(clause)
     case Subquery(parent, _) => checkAndInfer(parent)
-    case Join((leftParent: Join), SQLTable(_, _), _, _) => checkAndInferJoinTree(leftParent)
-    case Join((leftParent: Join), View(_, _), _, _) => checkAndInferJoinTree(leftParent)
+    case Join((leftParent: Join), SQLTable(_, _), _, clause) =>
+      checkAndInferExpr(clause)
+      checkAndInferJoinTree(leftParent)
+    case Join((leftParent: Join), View(_, _), _, clause) =>
+      checkAndInferExpr(clause)
+      checkAndInferJoinTree(leftParent)
     // Nothing to infer for the following
-    case Join(SQLTable(_, _), SQLTable(_, _), _, _) =>
+    case Join(SQLTable(_, _), SQLTable(_, _), _, clause) =>
+      checkAndInferExpr(clause)
     case SQLTable(_, _) =>
     // For unknown cases, throw an exception to keep track of them and add them above if necessary
-    case dflt => throw new Exception("Unknown class type " + dflt + " encountered in SQLSemanticCheckerAndTypeInference component!")
+    case dflt           => throw new Exception("Unknown class type " + dflt + " encountered in SQLSemanticCheckerAndTypeInference component!")
   }
 
   def checkAndInfer(node: Node) {
