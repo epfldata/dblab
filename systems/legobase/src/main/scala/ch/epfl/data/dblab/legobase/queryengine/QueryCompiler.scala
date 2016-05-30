@@ -100,32 +100,33 @@ object QueryCompiler {
           System.out.println("After Optimizer:\n" + optimizerTree + "\n\n")
 
         val qp = PlanCompiler.executeQuery(optimizerTree, schema)
-        PlanExecutor.executeQuery(optimizerTree, schema)
 
-        // Check results
-        if (Config.checkResults) {
-          val resultFile = filesToExecute.get(".result").toList.flatten.filter(f => f.contains(queryName + ".result")) match {
-            case elem :: _ => elem
-            case List()    => ""
-          }
-          val resq = scala.io.Source.fromFile(getOutputName).mkString
-          if (new java.io.File(resultFile).exists) {
-            val resc = {
-              val str = scala.io.Source.fromFile(resultFile).mkString
-              str * Config.numRuns
-            }
-            if (resq != resc) {
-              System.out.println("-----------------------------------------")
-              System.out.println("QUERY " + q + " DID NOT RETURN CORRECT RESULT!!!")
-              System.out.println("Correct result:")
-              System.out.println(resc)
-              System.out.println("Result obtained from execution:")
-              System.out.println(resq)
-              System.out.println("-----------------------------------------")
-              System.exit(0)
-            } else System.out.println("CHECK RESULT FOR QUERY " + q + ": [OK]")
-          } else System.out.println("Reference result file not found. Skipping checking of result")
-        }
+        // PlanExecutor.executeQuery(optimizerTree, schema)
+
+        // // Check results
+        // if (Config.checkResults) {
+        //   val resultFile = filesToExecute.get(".result").toList.flatten.filter(f => f.contains(queryName + ".result")) match {
+        //     case elem :: _ => elem
+        //     case List()    => ""
+        //   }
+        //   val resq = scala.io.Source.fromFile(getOutputName).mkString
+        //   if (new java.io.File(resultFile).exists) {
+        //     val resc = {
+        //       val str = scala.io.Source.fromFile(resultFile).mkString
+        //       str * Config.numRuns
+        //     }
+        //     if (resq != resc) {
+        //       System.out.println("-----------------------------------------")
+        //       System.out.println("QUERY " + q + " DID NOT RETURN CORRECT RESULT!!!")
+        //       System.out.println("Correct result:")
+        //       System.out.println(resc)
+        //       System.out.println("Result obtained from execution:")
+        //       System.out.println(resq)
+        //       System.out.println("-----------------------------------------")
+        //       System.exit(0)
+        //     } else System.out.println("CHECK RESULT FOR QUERY " + q + ": [OK]")
+        //   } else System.out.println("Reference result file not found. Skipping checking of result")
+        // }
       }
     }
   }

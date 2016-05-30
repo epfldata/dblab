@@ -2,18 +2,16 @@ package ch.epfl.data
 package dblab
 package queryengine
 
+import ch.epfl.data.sc.pardis.ir.Constant
+import ch.epfl.data.sc.pardis.types.{PardisType, RecordType}
 import ch.epfl.data.sc.pardis.types.PardisTypeImplicits._
 import ch.epfl.data.sc.pardis.shallow.Record
-import push._
 import legobase.deep.LegoBaseQueryEngineExp
 import ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps
 
-import utils._
 import schema._
 import ch.epfl.data.dblab.storagemanager.{Loader => ShallowLoader}
-import scala.reflect._
 import scala.util.Random
-import scala.reflect.runtime.universe._
 import scala.collection.mutable.ArrayBuffer
 import frontend.parser.OperatorAST._
 import frontend.parser._
@@ -49,15 +47,16 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
     }
 
     import legobase.compiler._
-    val settings = new Settings(List("-scala"))
+    val settings = new Settings(List("-scala", "+no-sing-hm"))
     val validatedSettings = settings.validate()
-    val compiler = new LegoCompiler(context, validatedSettings, schema, "ch.epfl.data.dblab.experimentation.runner.SimpleRunner") {
+    //    val compiler = new LegoCompiler(context, validatedSettings, schema, "ch.epfl.data.dblab.experimentation.runner.SimpleRunner") {
+    val compiler = new LegoCompiler(context, validatedSettings, schema, "ch.epfl.data.dblab.experimentation.tpch.TPCHRunner") {
       override def outputFile = "out"
     }
     compiler.compile(block)
   }
 
-  def queryToOperator(operatorTree: QueryPlanTree, schema: Schema): Rep[Operator[DynamicDataRow]] = {
+  def queryToOperator(operatorTree: QueryPlanTree, schema: Schema): Rep[Operator[Record]] = {
     // Calculate the views if any
     // operatorTree.views.foreach(v => {
     //   val vo = new ViewOp(convertOperator(v.parent))
@@ -125,351 +124,439 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
     }
   }
 
-  // def printRecord(rec: Rep[Record], order: Seq[Expression] = scala.collection.immutable.Seq()): Rep[Unit] = {
-  //   //System.out.println("Printing record...")
-  //   def printMembers(v: Rep[_], cls: Class[_]): Rep[Unit] = {
-  //     v match {
-  //       case rec: Rep[Record] =>
-  //         printRecord(rec, order)
-  //       case c if cls.isArray =>
-  //         val arr = c.asInstanceOf[Array[_]]
-  //         for (arrElem <- arr)
-  //           printMembers(arrElem, arrElem.getClass)
-  //       case i: Int           => print("%d|".format(i))
-  //       case c: Character     => print("%c|".format(c))
-  //       case d: Double        => print("%.2f|".format(d)) // TODO -- Precision should not be hardcoded
-  //       case str: String      => print("%s|".format(str))
-  //       case s: OptimalString => print("%s|".format(s.string))
-  //       case _                => throw new Exception("Do not know how to print member " + v + " of class " + cls + " in record " + rec)
-  //     }
-  //   }
-  //   order.size match {
-  //     case 0 =>
-  //       val fieldNames = rec.asInstanceOf[Rep[DynamicDataRow]].getFieldNames
-  //       val liftedFieldNames = __liftSeq(fieldNames.map { unit(_) })
-  //       liftedFieldNames.foreach(__lambda(fn => {
-  //         val f = rec.asInstanceOf[Rep[DynamicDataRow]].selectDynamic[Any](fn)
-  //         //val f = recursiveGetField(fn, None, rec)
-  //         printMembers(f, f.getClass)
-  //       }))
-  //     case _ =>
-  //       order.foreach(p => p match {
-  //         case FieldIdent(qualifier, name, _) =>
-  //           val f = recursiveGetField(qualifier.getOrElse("") + name, None, rec)
-  //           printMembers(f, f.getClass)
-  //         case e =>
-  //           val parsedExpr = parseExpression(e, rec)(e.tp)
-  //           printMembers(parsedExpr, parsedExpr.getClass)
-  //       })
-  //   }
-  // }
-
-  def printRecord(rec: Rep[DynamicDataRow], order: Seq[Expression] = scala.collection.immutable.Seq()): Rep[Unit] = {
+  def printRecord(rec: Rep[Record], parent: OperatorNode, order: Seq[Expression] = scala.collection.immutable.Seq()): Rep[Unit] = {
     //System.out.println("Printing record...")
-    printf(unit("%s|"), rec)
     // TODO: actually printing the fields nicely
-    // val fields = order.size match {
-    //   case 0 =>
-    //     val fieldNames = rec.getFieldNames
-    //     __liftSeq(fieldNames.map { unit(_) })
-    //   case _ =>
-    //     __liftSeq(order.map {
-    //       _ match {
-    //         case FieldIdent(qualifier, name, _) =>
-    //           unit(qualifier.getOrElse("") + name)
-    //         // TODO
-    //         //case e =>
-    //         //val parsedExpr = parseExpression(e, rec)(e.tp)
-    //         //unit(parsedExpr)
-    //       }
-    //     })
-    // }
-    // fields.foreach(__lambda(fn => {
-    //   val f = rec.asInstanceOf[Rep[DynamicDataRow]].selectDynamic[Any](fn)
-    //   //val f = recursiveGetField(fn, None, rec)
-    //   stream.printf(unit("%s|"), f)
-    // }))
-  }
-
-  /**
-   * This method receives two numbers and makes sure that both number have the same type.
-   * If their type is different, it will upcast the number with lower type to the type
-   * of the other number.
-   */
-  def promoteNumbers[A: TypeTag, B: TypeTag](n1: A, n2: B) = {
-    val IntType = typeTag[Int]
-    val FloatType = typeTag[Float]
-    val DoubleType = typeTag[Double]
-
-    ((typeTag[A], typeTag[B]) match {
-      case (x, y) if x == y      => n1 -> n2
-      case (IntType, DoubleType) => n1.asInstanceOf[Int].toDouble -> n2
-      //case (IntType, FloatType)    => n1.asInstanceOf[Int].toFloat -> n2
-      //case (FloatType, DoubleType) => n1.asInstanceOf[Float].toDouble -> n2
-      //case (DoubleType, FloatType) => n1 -> n2.asInstanceOf[Float].toDouble
-      case (DoubleType, IntType) => n1 -> n2.asInstanceOf[Int].toDouble
-      case (_, null)             => n1 -> n2
-      case (null, _)             => n1 -> n2
-      //case _ =>
-      //n1.asInstanceOf[Double].toDouble -> n2.asInstanceOf[Double].toDouble // FIXME FIXME FIXME THIS SHOULD BE HAPPENING, TYPE INFERENCE BUG
-      case (x, y)                => throw new Exception(s"Does not know how to find the common type for $x and $y")
-    }).asInstanceOf[(Any, Any)]
-  }
-
-  def computeOrderingExpression[A: TypeTag, B: TypeTag](e1: Expression, e2: Expression, op: (Ordering[Any]#Ops, Any) => Boolean, t: Record, t2: Record = null): Boolean = {
-    val n1 = parseExpression[A](e1, t, t2)
-    val n2 = parseExpression[B](e2, t, t2)
-    val (pn1, pn2) = promoteNumbers(n1, n2)
-    val ordering = pn1.getClass match {
-      case c if c == classOf[java.lang.Integer] || c == classOf[java.lang.Character] => implicitly[Numeric[Int]].asInstanceOf[Ordering[Any]]
-      case d if d == classOf[java.lang.Double]                                       => implicitly[Numeric[Double]].asInstanceOf[Ordering[Any]]
-    }
-    op(new ordering.Ops(pn1), pn2)
-  }
-
-  def computeNumericExpression[A: TypeTag, B: TypeTag](e1: Expression, e2: Expression, op: (Numeric[Any]#Ops, Any) => Any, t: Record, t2: Record = null): Any = {
-    val n1 = parseExpression[A](e1, t, t2)
-    val n2 = parseExpression[B](e2, t, t2)
-    val (pn1, pn2) = promoteNumbers(n1, n2)
-    pn1.getClass match {
-      case c if c == classOf[java.lang.Integer] || c == classOf[java.lang.Character] =>
-        val numeric = implicitly[Numeric[Int]].asInstanceOf[Numeric[Any]]
-        op(new numeric.Ops(pn1), pn2)
-      case d if d == classOf[java.lang.Double] =>
-        val numeric = implicitly[Numeric[Double]].asInstanceOf[Numeric[Any]]
-        decimalFormatter.format(op(new numeric.Ops(pn1), pn2)).toDouble
-    }
-  }
-
-  val subqueryInitializedMap = new scala.collection.mutable.HashMap[OperatorNode, SubquerySingleResult[_]]()
-  def parseExpression[A: TypeTag](e: Expression, t: Record, t2: Record = null): A = (e match {
-    // Literals
-    case FieldIdent(qualifier, name, _) => recursiveGetField(name, qualifier, t, t2)
-    case DateLiteral(v)                 => GenericEngine.parseDate(unit(v))
-    case FloatLiteral(v)                => v
-    case DoubleLiteral(v)               => v
-    case IntLiteral(v)                  => v
-    case StringLiteral(v)               => GenericEngine.parseString(unit(v))
-    case NullLiteral                    => null
-    case CharLiteral(v)                 => v
-    // Arithmetic Operators
-    case Add(left, right) =>
-      computeNumericExpression(left, right, (x, y) => x + y, t, t2)(left.tp, right.tp)
-    case Subtract(left, right) =>
-      computeNumericExpression(left, right, (x, y) => x - y, t, t2)(left.tp, right.tp)
-    case Multiply(left, right) =>
-      computeNumericExpression(left, right, (x, y) => x * y, t, t2)(left.tp, right.tp)
-    case Divide(left, right) =>
-      // TODO: Check if this gives the correct result -- also fix asInstanceOf
-      computeNumericExpression(left, right, { (x, y) =>
-        if (y.isInstanceOf[Double])
-          x.toInt / y.asInstanceOf[Double]
-        else
-          x.toInt / y.asInstanceOf[Int]
-      }, t, t2)(left.tp, right.tp)
-    case UnaryMinus(expr) => computeNumericExpression(IntLiteral(-1), expr, (x, y) => x * y, t, t2)(expr.tp, expr.tp)
-    // Logical Operators
-    case Equals(left, right) =>
-      parseExpression(left, t, t2)(left.tp) == parseExpression(right, t, t2)(right.tp)
-    case NotEquals(left, right) =>
-      parseExpression(left, t, t2)(left.tp) != parseExpression(right, t, t2)(right.tp)
-    case And(left, right) =>
-      parseExpression[Boolean](left, t, t2) && parseExpression[Boolean](right, t, t2)
-    case Or(left, right) =>
-      parseExpression[Boolean](left, t, t2) || parseExpression[Boolean](right, t, t2)
-    case GreaterOrEqual(left, right) =>
-      computeOrderingExpression(left, right, (x, y) => x >= y, t, t2)(left.tp, right.tp)
-    case GreaterThan(left, right) =>
-      computeOrderingExpression(left, right, (x, y) => x > y, t, t2)(left.tp, right.tp)
-    case LessOrEqual(left, right) =>
-      computeOrderingExpression(left, right, (x, y) => x <= y, t, t2)(left.tp, right.tp)
-    case LessThan(left, right) =>
-      computeOrderingExpression(left, right, (x, y) => x < y, t, t2)(left.tp, right.tp)
-    case Not(expr) =>
-      val c = parseExpression[Boolean](expr, t, t2)
-      !c
-    // SQL statements
-    case Year(date) =>
-      val d = parseExpression(date, t, t2)
-      d.asInstanceOf[Int] / 10000;
-    case Substring(field, idx1, idx2) =>
-      val f = parseExpression(field, t, t2).asInstanceOf[OptimalString]
-      val index1 = parseExpression(idx1, t, t2).asInstanceOf[Int] - 1
-      val index2 = parseExpression(idx2, t, t2).asInstanceOf[Int]
-      f.slice(index1, index2)
-    case Like(field, value) =>
-      val f = parseExpression(field, t, t2).asInstanceOf[Rep[OptimalString]]
-      val s = parseExpression(value, t, t2).asInstanceOf[OptimalString]
-      val str = s.string
-      val delim = "%%"
-      // TODO: In what follows, the replaceAll call must go to the compiler
-      str match {
-        case c if str.startsWith(delim) && str.endsWith(delim) && delim.r.findAllMatchIn(str).length == 2 =>
-          val v = OptimalString(unit(str.replaceAll("%", "").getBytes))
-          f.containsSlice(v)
-        case c if str.startsWith(delim) && str.endsWith(delim) && delim.r.findAllMatchIn(str).length == 3 =>
-          val substrings = str.replaceFirst(delim, "").split(delim).map { s: String => GenericEngine.parseString(unit(s)) }
-          val idxu = f.indexOfSlice(substrings(0), unit(0))
-          val idxp = f.indexOfSlice(substrings(1), idxu)
-          idxu != -1 && idxp != -1
-        case c if str.endsWith(delim) =>
-          val v = OptimalString(unit(str.replaceAll("%", "").getBytes))
-          f.startsWith(v)
-        case c if str.startsWith(delim) =>
-          val v = OptimalString(unit(str.replaceAll("%", "").getBytes))
-          f.endsWith(v)
+    val fieldNames = if (order.isEmpty) {
+      parent.fieldNames
+    } else {
+      order.map {
+        _ match {
+          case FieldIdent(qualifier, name, _) =>
+            qualifier.getOrElse("") + name
+          // TODO
+          //case e =>
+          //val parsedExpr = parseExpression(e, rec)(e.tp)
+          //unit(parsedExpr)
+        }
       }
-    case In(expr, values) => {
-      val c = parseExpression(expr, t, t2)
-      val v = values.map(parseExpression(_, t, t2))
-      if (v.contains(c)) true
-      else false
     }
-    case StringConcat(str1, str2) =>
-      // Todo move this to SC
-      val left = parseExpression(str1, t, t2)
-      val right = parseExpression[OptimalString](str2, t, t2)
-      left + new String((right.data: scala.collection.mutable.ArrayOps[Byte]).map(_.toChar))
-    case Case(cond, thenp, elsep) =>
-      val c = parseExpression(cond, t, t2)
-      if (c == true) parseExpression(thenp, t, t2) else parseExpression(elsep, t, t2)
-    // TODO -- Not good. Must be generalized. The extraction of the single field should go earlier in the pipeline.
-    case GetSingleResult(parent) =>
-      val p = subqueryInitializedMap.getOrElseUpdate(parent, convertOperator(parent).asInstanceOf[SubquerySingleResult[_]])
-      val rec = p.getResult.asInstanceOf[DynamicDataRow]
-      //if (rec.numFields > 1) throw new Exception("LegoBase BUG: Do not know how to extract single value from record with > 1 fields (" + rec.numFields + " fields found -- rec = " + rec + ").")
-      rec.getField(rec.getFieldNames().toList.last).get // TODO: Generalize, this is a hack
-  }).asInstanceOf[A]
 
-  // // TODO -- Generalize! 
-  // def parseJoinClause(e: Expression): (Expression, Expression) = e match {
-  //   case Equals(left, right) => (left, right)
-  //   case And(left, equals)   => parseJoinClause(left)
-  //   case GreaterThan(_, _)   => throw new Exception("LegoBase currently does not support Theta-Joins. This is either a problem with the query (e.g. GreaterThan on ON join clause) or a bug of the optimizer. ")
-  // }
+    System.out.println(parent.fields)
+    fieldNames.foreach { name =>
+      val tpe = parent.fields.getOrElse(name, throw new Exception(s"Could not find field $name"))
+      val f = parent.getField(rec, name, None)(tpe)
+      tpe match {
+        case IntType           => printf(unit("%d"), f)
+        case CharType          => printf(unit("%c"), f)
+        case DoubleType        => printf(unit("%.4f"), f) // TODO -- Precision should not be hardcoded
+        case StringType        => printf(unit("%s"), f)
+        case VarCharType(_)    => printf(unit("%s"), f)
+        case OptimalStringType => printf(unit("%s"), f)
+        case DateType          => printf(unit("%s"), f)
+        case _ =>
+          throw new Exception(s"Do not know how to print member $name of type $tpe.")
+      }
+      if (name != fieldNames.last) printf(unit("|"))
+    }
 
-  // def createJoinOperator(leftParent: OperatorNode, rightParent: OperatorNode, joinCond: Expression, joinType: JoinType, leftAlias: String, rightAlias: String): Operator[_] = {
-  //   val leftOp = convertOperator(leftParent).asInstanceOf[Operator[Record]]
-  //   val rightOp = convertOperator(rightParent).asInstanceOf[Operator[Record]]
-  //   val (leftCond, rightCond) = parseJoinClause(joinCond)
+    printf(unit("\n"))
+  }
 
-  //   joinType match {
-  //     case LeftSemiJoin =>
-  //       new LeftHashSemiJoinOp(leftOp, rightOp)((x, y) => parseExpression(joinCond, x, y).asInstanceOf[Boolean])(
-  //         x => parseExpression(leftCond, x)(leftCond.tp)
-  //       )(x => parseExpression(rightCond, x)(rightCond.tp))
-  //     case LeftOuterJoin =>
-  //       //TODO Generalize!
-  //       val tp = rightParent match {
-  //         case ScanOpNode(_, _, _)                    => classTag[DynamicDataRow]
-  //         case SelectOpNode(parent: ScanOpNode, _, _) => classTag[DynamicDataRow]
-  //       }
-  //       val rightTp = Manifest.classType(tp.runtimeClass).asInstanceOf[Manifest[Record]]
-  //       new LeftOuterJoinOp(leftOp, rightOp)((x, y) => parseExpression(joinCond, x, y).asInstanceOf[Boolean])(
-  //         x => parseExpression(leftCond, x)(leftCond.tp)
-  //       )(x => parseExpression(rightCond, x)(rightCond.tp))(rightTp)
-  //     case AntiJoin =>
-  //       new HashJoinAnti(leftOp, rightOp)((x, y) => parseExpression(joinCond, x, y).asInstanceOf[Boolean])(
-  //         x => parseExpression(leftCond, x)(leftCond.tp)
-  //       )(x => parseExpression(rightCond, x)(rightCond.tp))
-  //     case InnerJoin =>
-  //       new HashJoinOp(leftOp, rightOp, leftAlias, rightAlias)((x, y) => parseExpression(joinCond, x, y).asInstanceOf[Boolean])(
-  //         x => parseExpression(leftCond, x)(leftCond.tp)
-  //       )(x => parseExpression(rightCond, x)(rightCond.tp))
-  //   }
-  // }
+  // Generalize by passing a "getField" function (and therefore drop all the other parameters)
+  case class ExpressionCompiler(node: OperatorNode, t1: Rep[Record] = null, node2: OperatorNode = null, t2: Rep[Record] = null) {
+    implicit class ExpressionOps(e: Expression) {
+      def pardisType: PardisType[_] = OperatorNodeOps.expressionToPardisType(e)
 
-  // def createAggOpOperator(parentOp: OperatorNode, aggs: Seq[Expression], gb: Seq[(Expression, String)], aggNames: Seq[String]): Operator[_] = {
-  //   System.out.println(s"AGGOP INFO: $aggs")
-  //   System.out.println(gb)
-  //   System.out.println(aggNames)
-  //   val aggFuncs: Seq[(Record, Double) => Double] = aggs.map(p => {
-  //     (t: Record, currAgg: Double) =>
-  //       val result: Double = p match {
-  //         case Sum(e) => computeNumericExpression(DoubleLiteral(currAgg), e, (x, y) => x + y, t)(typeTag[Double], e.tp).asInstanceOf[Double]
-  //         case Min(e) =>
-  //           val newMin = parseExpression(e, t)(e.tp).asInstanceOf[Double]
-  //           if (currAgg == 0 || newMin < currAgg) newMin // TODO -- Assumes that 0 cannot occur naturally in the data as a min value. FIXME
-  //           else currAgg
-  //         case CountAll() => currAgg + 1
-  //         case CountExpr(expr) => {
-  //           // From http://www.techonthenet.com/sql/count.php: "Not everyone realizes this, but the SQL COUNT function will only include the 
-  //           // records in the count where the value of expression in COUNT(expression) is NOT NULL". 
-  //           // Here we use pardis default value to test for the above condition
-  //           import sc.pardis.shallow.utils.DefaultValue
-  //           if (parseExpression(expr, t)(expr.tp) != DefaultValue(expr.tp.tpe.dealias.toString)) currAgg + 1
-  //           else currAgg
-  //         }
-  //         case IntLiteral(v)    => v
-  //         case DoubleLiteral(v) => v
-  //         case CharLiteral(v)   => v
-  //       }
-  //       result
-  //   })
+      def asRep[T: PardisType]: Rep[T] = parseExpression[T](e)
+      def toRep: Rep[_] = parseExpression(e)(e.pardisType)
+    }
 
-  //   val keyName = gb.size match {
-  //     case 0 => None
-  //     case 1 => Some(gb(0)._2)
-  //     case _ => Some("key")
-  //   }
+    // def promoteNumbers[A: PardisType, B: PardisType](n1: Rep[A], n2: Rep[B]): (Rep[Any], Rep[Any]) = {
+    //   ((implicitly[PardisType[A]], implicitly[PardisType[B]]) match {
+    //     case (x, y) if x == y      => n1 -> n2
+    //     case (IntType, DoubleType) => infix_asInstanceOf[Int](n1).toDouble -> n2
+    //     //case (IntType, FloatType)    => n1.asInstanceOf[Int].toFloat -> n2
+    //     //case (FloatType, DoubleType) => n1.asInstanceOf[Float].toDouble -> n2
+    //     //case (DoubleType, FloatType) => n1 -> n2.asInstanceOf[Float].toDouble
+    //     case (DoubleType, IntType) => n1 -> infix_asInstanceOf[Int](n2).toDouble
+    //     case (_, null)             => n1 -> n2
+    //     case (null, _)             => n1 -> n2
+    //     //case _ =>
+    //     //n1.asInstanceOf[Double].toDouble -> n2.asInstanceOf[Double].toDouble // FIXME FIXME FIXME THIS SHOULD BE HAPPENING, TYPE INFERENCE BUG
+    //     case (x, y)                => throw new Exception(s"Does not know how to find the common type for $x and $y")
+    //   }).asInstanceOf[(Rep[Any], Rep[Any])]
+    // }
 
-  //   val grp: (Record) => Any = (t: Record) => {
-  //     gb.size match {
-  //       case 0 => "NO_GROUP_BY"
-  //       case 1 => parseExpression(gb(0)._1, t)
-  //       case _ =>
-  //         val keyFieldAttrNames = gb.map(_._2)
-  //         val keyExpr = gb.map(_._1).map(gbExpr => parseExpression(gbExpr, t)(gbExpr.tp))
-  //         new DynamicDataRow("GroupBy", keyFieldAttrNames zip keyExpr)
-  //     }
-  //   }
-  //   new AggOp(convertOperator(parentOp).asInstanceOf[Operator[Record]], aggs.length)(grp)(aggFuncs: _*)
-  //   //new AggOpGeneric(convertOperator(parentOp).asInstanceOf[Operator[Record]], aggs.length)(grp, keyName)(aggNames)(aggFuncs: _*)
-  // }
+    /**
+     * This method receives two numbers and makes sure that both number have the same type.
+     * If their type is different, it will upcast the number with lower type to the type
+     * of the other number.
+     */
+    def promoteNumbers(e1: Expression, e2: Expression): (Rep[Any], Rep[Any]) = {
+      val n1 = e1.toRep
+      val n2 = e2.toRep
+      ((e1.pardisType, e2.pardisType) match {
+        case (x, y) if x == y      => n1 -> n2
+        case (IntType, DoubleType) => infix_asInstanceOf[Int](n1).toDouble -> n2
+        //case (IntType, FloatType)    => n1.asInstanceOf[Int].toFloat -> n2
+        //case (FloatType, DoubleType) => n1.asInstanceOf[Float].toDouble -> n2
+        //case (DoubleType, FloatType) => n1 -> n2.asInstanceOf[Float].toDouble
+        case (DoubleType, IntType) => n1 -> infix_asInstanceOf[Int](n2).toDouble
+        case (_, null)             => n1 -> n2
+        case (null, _)             => n1 -> n2
+        //case _ =>
+        //n1.asInstanceOf[Double].toDouble -> n2.asInstanceOf[Double].toDouble // FIXME FIXME FIXME THIS SHOULD BE HAPPENING, TYPE INFERENCE BUG
+        case (x, y)                => throw new Exception(s"Does not know how to find the common type for $x and $y")
+      }).asInstanceOf[(Rep[Any], Rep[Any])]
+    }
 
-  // def createSelectOperator(parentOp: OperatorNode, cond: Expression): Operator[_] = {
-  //   new SelectOp(convertOperator(parentOp).asInstanceOf[Operator[Record]])((t: Record) => {
-  //     parseExpression(cond, t).asInstanceOf[Boolean]
-  //   })
-  // }
+    def addition[A: TypeRep](x: Rep[_], y: Rep[_]): Rep[A] = (implicitly[TypeRep[A]] match {
+      case IntType    => x.asInstanceOf[Rep[Int]] + y.asInstanceOf[Rep[Int]]
+      case DoubleType => x.asInstanceOf[Rep[Double]] + y.asInstanceOf[Rep[Double]]
+    }).asInstanceOf[Rep[A]]
 
-  // def createMapOperator(parentOp: OperatorNode, indices: Seq[(String, String)]): Operator[_] = {
-  //   val mapFuncs: Seq[Record => Unit] = indices.map(idx => idx match {
-  //     case (idx1, idx2) => (t: Record) => {
-  //       val record = t.asInstanceOf[DynamicDataRow]
-  //       record.setField(idx1, record.getField(idx1).get.asInstanceOf[Double] / record.getField(idx2).get.asInstanceOf[Double])
-  //     }
-  //   })
-  //   new MapOp(convertOperator(parentOp).asInstanceOf[Operator[Record]])(mapFuncs: _*);
-  // }
+    def product[A: TypeRep](x: Rep[_], y: Rep[_]): Rep[A] = (implicitly[TypeRep[A]] match {
+      case IntType    => x.asInstanceOf[Rep[Int]] * y.asInstanceOf[Rep[Int]]
+      case DoubleType => x.asInstanceOf[Rep[Double]] * y.asInstanceOf[Rep[Double]]
+    }).asInstanceOf[Rep[A]]
 
-  // def createSortOperator(parentOp: OperatorNode, orderBy: Seq[(Expression, OrderType)]) = {
-  //   new SortOp(convertOperator(parentOp).asInstanceOf[Operator[Record]])((kv1: Record, kv2: Record) => {
-  //     var stop = false;
-  //     var res = 0;
-  //     for (e <- orderBy if !stop) {
-  //       val k1 = parseExpression(e._1, kv1)(e._1.tp)
-  //       val k2 = parseExpression(e._1, kv2)(e._1.tp)
-  //       res = (e._1.tp match {
-  //         case i if i == typeTag[Int]         => k1.asInstanceOf[Int] - k2.asInstanceOf[Int]
-  //         // Multiply with 100 to account for very small differences (e.g. 0.02)
-  //         case d if d == typeTag[Double]      => (k1.asInstanceOf[Double] - k2.asInstanceOf[Double]) * 100
-  //         case c if c == typeTag[Char]        => k1.asInstanceOf[Char] - k2.asInstanceOf[Char]
-  //         case s if s == typeTag[VarCharType] => k1.asInstanceOf[OptimalString].diff(k2.asInstanceOf[OptimalString])
-  //         //case _                              => (k1.asInstanceOf[Double] - k2.asInstanceOf[Double]) * 100 // TODO -- Type inference bug -- there should be absolutely no need for that and this will soon DIE
-  //       }).asInstanceOf[Int]
-  //       if (res != 0) {
-  //         stop = true
-  //         if (e._2 == DESC) res = -res
-  //       }
-  //     }
-  //     // If after all columns, there is still a tie, break it arbitraril
-  //     if (res == 0) kv1.hashCode() - kv2.hashCode()
-  //     else res
-  //   })
-  // }
+    def subtraction[A: TypeRep](x: Rep[_], y: Rep[_]): Rep[A] = (implicitly[TypeRep[A]] match {
+      case IntType    => x.asInstanceOf[Rep[Int]] - y.asInstanceOf[Rep[Int]]
+      case DoubleType => x.asInstanceOf[Rep[Double]] - y.asInstanceOf[Rep[Double]]
+      case CharType   => x.asInstanceOf[Rep[Char]] - y.asInstanceOf[Rep[Char]]
+    }).asInstanceOf[Rep[A]]
 
-  def createPrintOperator(parent: OperatorNode, projs: Seq[(Expression, Option[String])], limit: Int): Rep[PrintOp[DynamicDataRow]] = {
+    def lessThan[A: TypeRep](x: Rep[_], y: Rep[_]): Rep[Boolean] = implicitly[TypeRep[A]] match {
+      case IntType    => x.asInstanceOf[Rep[Int]] < y.asInstanceOf[Rep[Int]]
+      case DoubleType => x.asInstanceOf[Rep[Double]] < y.asInstanceOf[Rep[Double]]
+    }
+
+    def lessOrEqual[A: TypeRep](x: Rep[_], y: Rep[_]): Rep[Boolean] = implicitly[TypeRep[A]] match {
+      case IntType    => x.asInstanceOf[Rep[Int]] <= y.asInstanceOf[Rep[Int]]
+      case DoubleType => x.asInstanceOf[Rep[Double]] <= y.asInstanceOf[Rep[Double]]
+    }
+
+    def greaterThan[A: TypeRep](x: Rep[_], y: Rep[_]): Rep[Boolean] = implicitly[TypeRep[A]] match {
+      case IntType    => x.asInstanceOf[Rep[Int]] > y.asInstanceOf[Rep[Int]]
+      case DoubleType => x.asInstanceOf[Rep[Double]] > y.asInstanceOf[Rep[Double]]
+    }
+
+    def greaterOrEqual[A: TypeRep](x: Rep[_], y: Rep[_]): Rep[Boolean] = implicitly[TypeRep[A]] match {
+      case IntType    => x.asInstanceOf[Rep[Int]] >= y.asInstanceOf[Rep[Int]]
+      case DoubleType => x.asInstanceOf[Rep[Double]] >= y.asInstanceOf[Rep[Double]]
+    }
+
+    //
+    def equals[A: TypeRep](x: Rep[A], y: Rep[A]): Rep[Boolean] = implicitly[TypeRep[A]] match {
+      case IntType =>
+        // TODO: this shouldn't be hardcoded, maybe it can even be inferred from the schema
+        x.asInstanceOf[Rep[Int]] - y.asInstanceOf[Rep[Int]] <= unit(1e-2) &&
+          x.asInstanceOf[Rep[Int]] - y.asInstanceOf[Rep[Int]] >= unit(-1e-2)
+      case DoubleType =>
+        x.asInstanceOf[Rep[Double]] - y.asInstanceOf[Rep[Double]] <= unit(1e-2) &&
+          x.asInstanceOf[Rep[Double]] - y.asInstanceOf[Rep[Double]] >= unit(-1e-2)
+      case other =>
+        AllRepOps(x)(other).__==(y)
+    }
+
+    // // TODO: All the expression manipulation stuff could go into another class
+    val subqueryInitializedMap = new scala.collection.mutable.HashMap[OperatorNode, Rep[SubquerySingleResult[Record]]]()
+    def parseExpression[A: TypeRep](e: Expression): Rep[A] = {
+      val result: Rep[_] = e match {
+        // Literals
+        case FieldIdent(qualifier, name, _) =>
+          //recursiveGetField(name, qualifier, t, t2)
+          val field = qualifier.getOrElse("") + name
+          // TODO: better error handling. Abstract this functionality out of the expression compiler
+          if (node != null && node2 != null) { // We are in a join
+            // System.out.println(s"Node1 fields: ${node.fieldNames}")
+            // System.out.println(s"Node2 fields: ${node2.fieldNames}")
+            // System.out.println(s"Looking for $field")
+            if (node.fieldNames.contains(name) || node.fieldNames.contains(field)) {
+              node.getField(t1, name, qualifier)(e.pardisType)
+            } else {
+              node2.getField(t2, name, None)(e.pardisType)
+            }
+          } else {
+            node.getField(t1, name, qualifier)(e.pardisType)
+          }
+        case DateLiteral(v)   => GenericEngine.parseDate(unit(v))
+        case FloatLiteral(v)  => unit(v)
+        case DoubleLiteral(v) => unit(v)
+        case IntLiteral(v)    => unit(v)
+        case StringLiteral(v) => GenericEngine.parseString(unit(v))
+        case NullLiteral      => unit(null)
+        case CharLiteral(v)   => unit(v)
+        // Arithmetic Operators
+        case Add(left, right) =>
+          val (e1, e2) = promoteNumbers(left, right)
+          addition(e1, e2)(e1.tp)
+        case Subtract(left, right) =>
+          val (e1, e2) = promoteNumbers(left, right)
+          subtraction(e1, e2)(e1.tp)
+        case Multiply(left, right) =>
+          val (e1, e2) = promoteNumbers(left, right)
+          product(e1, e2)(e1.tp)
+        // case Divide(left, right) =>
+        //   // TODO: Check if this gives the correct result -- also fix asInstanceOf
+        //   computeNumericExpression(left, right, { (x, y) =>
+        //     if (y.isInstanceOf[Double])
+        //       x.toInt / y.asInstanceOf[Double]
+        //     else
+        //       x.toInt / y.asInstanceOf[Int]
+        //   }, t, t2)(left.tp, right.tp)
+        // case UnaryMinus(expr) => computeNumericExpression(IntLiteral(-1), expr, (x, y) => x * y, t, t2)(expr.tp, expr.tp)
+        // Logical Operators
+        case Equals(left, right) =>
+          val lhs = left.toRep
+          val rhs = right.toRep
+          equals(lhs, rhs)(lhs.tp)
+        case NotEquals(left, right) =>
+          val lhs = left.toRep
+          val rhs = right.toRep
+          !equals(lhs, rhs)(lhs.tp)
+        case And(left, right) =>
+          left.asRep[Boolean] && right.asRep[Boolean]
+        case Or(left, right) =>
+          left.asRep[Boolean] || right.asRep[Boolean]
+        case GreaterOrEqual(left, right) =>
+          val (e1, e2) = promoteNumbers(left, right)
+          greaterOrEqual(e1, e2)(e1.tp)
+        case GreaterThan(left, right) =>
+          val (e1, e2) = promoteNumbers(left, right)
+          greaterThan(e1, e2)(e1.tp)
+        case LessOrEqual(left, right) =>
+          val (e1, e2) = promoteNumbers(left, right)
+          lessOrEqual(e1, e2)(e1.tp)
+        case LessThan(left, right) =>
+          val (e1, e2) = promoteNumbers(left, right)
+          lessThan(e1, e2)(e1.tp)
+        case Not(expr) =>
+          !expr.asRep[Boolean]
+        // // SQL statements
+        case Year(date) =>
+          val d = date.toRep
+          infix_asInstanceOf[Int](d) / unit(10000);
+        case Substring(field, idx1, idx2) =>
+          field.asRep[OptimalString].slice(idx1.asRep[Int], idx2.asRep[Int])
+        case Like(field, value) =>
+          val f = field.asRep[OptimalString]
+          //val s = value.asRep[OptimalString]
+          val str = value match {
+            case StringLiteral(s: String) =>
+              s
+            case _ =>
+              throw new Exception(s"Couldn't intrepret LIKE pattern: %str")
+          }
+          val delim = "%%"
+          val v = GenericEngine.parseString(unit(str.replaceAll("%", "")))
+          if (str.startsWith(delim) && str.endsWith(delim)) {
+            f.containsSlice(v)
+          } else if (str.endsWith(delim)) {
+            f.startsWith(v)
+          } else if (str.startsWith(delim)) {
+            f.endsWith(v)
+          } else {
+            throw new Exception(s"Couldn't intrepret LIKE pattern: %str")
+          }
+        // case In(expr, values) => {
+        //   val c = parseExpression(expr, t, t2)
+        //   val v = values.map(parseExpression(_, t, t2))
+        //   if (v.contains(c)) true
+        //   else false
+        // }
+        // case StringConcat(str1, str2) =>
+        //   // Todo move this to SC
+        //   val left = parseExpression(str1, t, t2)
+        //   val right = parseExpression[OptimalString](str2, t, t2)
+        //   left + new String((right.data: scala.collection.mutable.ArrayOps[Byte]).map(_.toChar))
+        case Case(cond, thenp, elsep) =>
+          __ifThenElse(cond.asRep[Boolean], thenp.toRep, elsep.toRep)
+        // // TODO -- Not good. Must be generalized. The extraction of the single field should go earlier in the pipeline.
+        case GetSingleResult(parent: SubquerySingleResultNode) =>
+          val p = subqueryInitializedMap.getOrElseUpdate(parent, convertOperator(parent).asInstanceOf[Rep[SubquerySingleResult[Record]]])
+          val rec = p.getResult
+          p.reset
+
+          // TODO: hack
+          if (parent.fieldNames.last == "__TOTAL_COUNT")
+            parent.getField(rec, parent.fieldNames.head, None)(parent.fieldTypes.head)
+          else if (parent.fieldNames.length > 1)
+            throw new Exception(s"LegoBase BUG: Do not know how to extract single value from tuple with > 1 fields (${parent.fieldNames}).")
+          // TODO: Generalize, this is a hack
+          else
+            parent.getField(rec, parent.fieldNames.last, None)(parent.fieldTypes.last)
+      }
+      result.asInstanceOf[Rep[A]]
+    }
+  }
+
+  // TODO -- Generalize! 
+  def parseJoinClause(e: Expression): (Expression, Expression) = e match {
+    case Equals(left, right) => (left, right)
+    case And(left, equals)   => parseJoinClause(left)
+    case GreaterThan(_, _)   => throw new Exception("LegoBase currently does not support Theta-Joins. This is either a problem with the query (e.g. GreaterThan on ON join clause) or a bug of the optimizer. ")
+  }
+
+  def createJoinOperator(node: OperatorNode, leftParent: OperatorNode, rightParent: OperatorNode, joinCond: Expression, joinType: JoinType, leftAlias: String, rightAlias: String): Rep[Operator[Record]] = {
+    val leftOp = convertOperator(leftParent)
+    val rightOp = convertOperator(rightParent)
+    val (leftCond, rightCond) = parseJoinClause(joinCond)
+
+    val joinFun = __lambda[Record, Record, Boolean] { (x, y) =>
+      val comp = ExpressionCompiler(leftParent, x, rightParent, y)
+      import comp._
+      joinCond.asRep[Boolean]
+    }
+
+    val leftFun = __lambda[Record, Any] { x =>
+      val comp = ExpressionCompiler(leftParent, x)
+      import comp._
+      leftCond.toRep
+    }
+
+    val rightFun = __lambda[Record, Any] { x =>
+      val comp = ExpressionCompiler(rightParent, x)
+      import comp._
+      rightCond.toRep
+    }
+
+    joinType match {
+      case LeftSemiJoin =>
+        __newLeftHashSemiJoinOp[Record, Record, Any](leftOp, rightOp)(joinFun)(leftFun)(rightFun)(
+          leftParent.pardisType, rightParent.pardisType,
+          OperatorNodeOps.expressionToPardisType(leftCond).asInstanceOf[PardisType[Any]]
+        )
+      // case LeftOuterJoin =>
+      //   //TODO Generalize!
+      //   val tp = rightParent match {
+      //     case ScanOpNode(_, _, _)                    => classTag[DynamicDataRow]
+      //     case SelectOpNode(parent: ScanOpNode, _, _) => classTag[DynamicDataRow]
+      //   }
+      //   val rightTp = Manifest.classType(tp.runtimeClass).asInstanceOf[Manifest[Record]]
+      //   new LeftOuterJoinOp(leftOp, rightOp)((x, y) => parseExpression(joinCond, x, y).asInstanceOf[Boolean])(
+      //     x => parseExpression(leftCond, x)(leftCond.tp)
+      //   )(x => parseExpression(rightCond, x)(rightCond.tp))(rightTp)
+      case AntiJoin =>
+        __newHashJoinAnti[Record, Record, Any](leftOp, rightOp)(joinFun)(leftFun)(rightFun)(
+          implicitly[Manifest[Record]], leftParent.pardisType, rightParent.pardisType,
+          OperatorNodeOps.expressionToPardisType(leftCond).asInstanceOf[PardisType[Any]]
+        )
+      case InnerJoin =>
+        __newHashJoinOp[Record, Record, Any](leftOp, rightOp, unit(leftAlias), unit(rightAlias))(joinFun)(leftFun)(rightFun)(
+          implicitly[Overloaded1], leftParent.pardisType, rightParent.pardisType,
+          OperatorNodeOps.expressionToPardisType(leftCond).asInstanceOf[PardisType[Any]] // Uh oh...
+        )
+    }
+  }
+
+  def createAggOpOperator(node: OperatorNode, parentOp: OperatorNode, aggs: Seq[Expression], gb: Seq[(Expression, String)], aggNames: Seq[String]): Rep[Operator[Record]] = {
+    System.out.println(s"AGGOP INFO: $aggs")
+    System.out.println(gb)
+    System.out.println(aggNames)
+
+    val aggFuncs: Seq[Rep[(Record, Double) => Double]] = aggs.map { aggExpression =>
+      __lambda[Record, Double, Double] { (t, currAgg) =>
+        val expressionCompiler = ExpressionCompiler(parentOp, t)
+        import expressionCompiler._
+        val result: Rep[Double] = aggExpression match {
+          case Sum(e) =>
+            // TODO: is it necessary to promote the result of e.asRep?
+            addition(currAgg, e.asRep[Double])
+          case Min(e) =>
+            val newMin = e.asRep[Double]
+            __ifThenElse((currAgg __== unit(0)) || newMin < currAgg, newMin, currAgg) // TODO -- Assumes that 0 cannot occur naturally in the data as a min value. FIXME
+          case CountAll()       => currAgg + unit[Int](1)
+          // case CountExpr(expr) => {
+          //   // From http://www.techonthenet.com/sql/count.php: "Not everyone realizes this, but the SQL COUNT function will only include the
+          //   // records in the count where the value of expression in COUNT(expression) is NOT NULL".
+          //   // Here we use pardis default value to test for the above condition
+          //   import sc.pardis.shallow.utils.DefaultValue
+          //   if (parseExpression(expr, t)(expr.tp) != DefaultValue(expr.tp.tpe.dealias.toString)) currAgg + 1
+          //   else currAgg
+          // }
+          case IntLiteral(v)    => unit(v.toDouble)
+          case DoubleLiteral(v) => unit(v)
+          case CharLiteral(v)   => unit(v.toDouble)
+        }
+        result
+      }
+    }
+
+    val dataRowName = aggRecordNameForFields(gb.map { _._2 })
+    val aggTpe = dataRowTypeForName(dataRowName)
+    val grp: Rep[(Record) => DynamicDataRow] = __lambda[Record, DynamicDataRow] { t =>
+      DynamicDataRow(unit(dataRowName))(gb.map {
+        case (exp, name) =>
+          val fname = unit(name)
+          val tpe = OperatorNodeOps.expressionToPardisType(exp)
+          val value = ExpressionCompiler(parentOp, t).parseExpression(exp)(tpe)
+          Tuple2(fname, value)
+      }: _*)
+    }
+
+    __newAggOp(
+      convertOperator(parentOp),
+      unit(aggs.length)
+    )(grp)(aggFuncs: _*)(parentOp.pardisType, aggTpe)
+  }
+
+  def createSelectOperator(node: OperatorNode, parentOp: OperatorNode, cond: Expression): Rep[SelectOp[Record]] = {
+    __newSelectOp(convertOperator(parentOp))(__lambda { t =>
+      ExpressionCompiler(parentOp, t).parseExpression[Boolean](cond)
+    })(node.pardisType)
+  }
+
+  def createMapOperator(node: OperatorNode, parentOp: OperatorNode, indices: Seq[(String, String)]): Rep[MapOp[Record]] = {
+    val mapFuncs: Seq[Rep[Record => Unit]] = indices.map {
+      case (idx1, idx2) =>
+        __lambda[Record, Unit] { t =>
+          parentOp.setField(t, idx1, parentOp.getField[Double](t, idx1, None) / parentOp.getField[Double](t, idx2, None))
+        }
+    }
+
+    __newMapOp(convertOperator(parentOp))(mapFuncs: _*)(node.pardisType)
+  }
+
+  def createSortOperator(node: OperatorNode, parentOp: OperatorNode, orderBy: Seq[(Expression, OrderType)]): Rep[SortOp[Record]] = {
+    __newSortOp(convertOperator(parentOp))(__lambda[Record, Record, Int] { (kv1, kv2) =>
+      val expressions = orderBy.map { e =>
+        val tp = OperatorNodeOps.expressionToPardisType(e._1)
+        val k1 = ExpressionCompiler(parentOp, kv1).parseExpression(e._1)(tp)
+        val k2 = ExpressionCompiler(parentOp, kv2).parseExpression(e._1)(tp)
+
+        // Expression compiler without input tuples
+        val expressionCompiler = ExpressionCompiler(parentOp)
+        import expressionCompiler._
+
+        val res = tp match {
+          case i if i == typeInt           => subtraction[Int](k1, k2)
+          // Multiply with 100 to account for very small differences (e.g. 0.02)
+          case d if d == typeDouble        => product[Double](subtraction[Double](k1, k2), unit(100.0)).toInt
+          case c if c == typeChar          => subtraction[Char](k1, k2).toInt
+          case s if s == typeOptimalString => k1.asInstanceOf[Rep[OptimalString]].diff(k2.asInstanceOf[Rep[OptimalString]])
+          //case _                 => (k1.asInstanceOf[Double] - k2.asInstanceOf[Double]) * 100 // TODO -- Type inference bug -- there should be absolutely no need for that and this will soon DIE
+        }
+
+        if (e._2 == DESC) -res else res
+      }
+
+      // Create a tree a sequence of nested if-then-elses. Whenever the result
+      // of an expression is already different from 0 we return the result,
+      // otherwise we check the next expression.
+      // TODO: a expression shouldn't be computed if a previous one has already
+      // returned != 0
+      val result = expressions.foldLeft(unit(0)) { (acc, exp) =>
+        __ifThenElse(acc __!= unit(0), acc, exp)
+      }
+
+      // Break arbitrarily
+      __ifThenElse(result __!= unit(0), result, infix_hashCode(kv1) - infix_hashCode(kv2))
+    }(parentOp.pardisType, parentOp.pardisType, typeInt))(node.pardisType)
+  }
+
+  def createPrintOperator(node: OperatorNode, parent: OperatorNode, projs: Seq[(Expression, Option[String])], limit: Int): Rep[PrintOp[Record]] = {
     val finalProjs = projs.map(p => p._1 match {
       case c if (!p._2.isDefined && p._1.isAggregateOpExpr) =>
         throw new Exception("LegoBase limitation: Aggregates must always be aliased (e.g. SUM(...) AS TOTAL) -- aggregate " + p._1 + " was not ")
@@ -483,42 +570,153 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
       }
     })
 
-    __newPrintOp(convertOperator(parent))(__lambda(kv => {
-      finalProjs.size match {
-        case 0 => printRecord(kv)
-        case _ => printRecord(kv, finalProjs)
-      }
-    }), unit(limit))
+    //implicit val tableType = dynamicDataRowRecordType("Print", List())
+    __newPrintOp(convertOperator(parent))(__lambda { kv =>
+      printRecord(kv, parent, finalProjs)
+    }, unit(limit))(node.pardisType)
   }
 
-  def convertOperator(node: OperatorNode): Rep[Operator[DynamicDataRow]] = {
+  implicit class ExtraOperatorNodeOps(node: OperatorNode) extends OperatorNodeOps.OperatorASTNodeOps(node) {
+    def pardisType: PardisType[Record] = node match {
+      // TODO: Other ones?
+      case ScanOpNode(table, _, _) =>
+        dataRowTypeForName(node.recordName).asInstanceOf[TypeRep[Record]]
+      case AggOpNode(_, _, gb, aggNames) =>
+        // The AGGRecord is not necessarily a string
+        val keyType = dataRowTypeForName(aggRecordNameForFields(gb.map { _._2 }))
+        typeAGGRecord(keyType).asInstanceOf[TypeRep[Record]]
+      case JoinOpNode(left, right, _, joinType, leftAlias, rightAlias) if joinType == LeftSemiJoin =>
+        left.pardisType
+      case JoinOpNode(left, right, _, joinType, leftAlias, rightAlias) if joinType == AntiJoin =>
+        left.pardisType
+      case JoinOpNode(left, right, _, _, leftAlias, rightAlias) =>
+        typeDynamicCompositeRecord(left.pardisType, right.pardisType).asInstanceOf[TypeRep[Record]]
+      case _ =>
+        node.parents(0).pardisType
+    }
+
+    // Maybe a better abstraction would be to have the field, fieldNames,
+    // fieldTypes, and getField methods in a "ResultType" class
+    // TODO: change result to an option type. It will make everything better. Trust me, I'm a comment
+    def getField[T: PardisType](record: Rep[Record], name: String, qualifier: Option[String], forceQualifier: Boolean = false): Rep[T] = node match {
+      // TODO: rethink the handling of qualifiers. Are they only being used in
+      // joins? Maybe in most cases it will suffice to concatenate and forget about it?
+      // TODO: better error handling
+      case ScanOpNode(_, _, _) =>
+        val field = qualifier.getOrElse("") + name
+        if (fieldNames.contains(field)) {
+          record_select(record, field)(record.tp, implicitly[TypeRep[T]])
+        } else if (fieldNames.contains(name)) {
+          // TODO: this is kind of a hack
+          val f = if (forceQualifier) field else name
+          record_select(record, f)(record.tp, implicitly[TypeRep[T]])
+        } else {
+          throw new Exception(s"Couldn't find key $field in the result result of ScanOpNode (fields: ${fieldNames}")
+        }
+      case AggOpNode(parent, _, gb, aggNames) =>
+        val rec = record.asInstanceOf[Rep[AGGRecord[Record]]]
+        val field = qualifier.getOrElse("") + name
+        gb.collectFirst {
+          case (e, n) if n == field =>
+            // TODO: refactor this
+            val tp = OperatorNodeOps.expressionToPardisType(e)
+            record_select(rec.key, field)(typeRecord, tp).asInstanceOf[Rep[T]]
+        }.getOrElse {
+          val index = aggNames.indexWhere { _ == field }
+          val result = if (index == -1) {
+            if (qualifier.isDefined) {
+              getField[T](record, name, None) // search without qualifier
+            } else {
+              throw new Exception(s"Couldn't find key $field in the result result of AggOpNode (fields: ${fieldNames}")
+            }
+          } else if (fields(field) == typeInt) {
+            rec.aggs(unit(index)).toInt
+          } else {
+            rec.aggs(unit(index))
+          }
+          result.asInstanceOf[Rep[T]]
+        }
+      case JoinOpNode(left, right, _, _, leftAlias, rightAlias) =>
+        val field = qualifier.getOrElse("") + name
+        if (left.fieldNames.contains(field) || left.fieldNames.contains(name)) {
+          left.getField[T](record, name, qualifier, forceQualifier = true)
+        } else if (right.fieldNames.contains(name) || right.fieldNames.contains(field)) {
+          right.getField[T](record, name, qualifier, forceQualifier = true)
+        } else {
+          throw new Exception(s"Couldn't find field $name in the result of $node")
+        }
+
+      // case ProjectOpNode(parent, projNames, origFieldNames) =>
+      //   val field = qualifier.getOrElse("") + name
+      //   if (projNames.contains(field)) {
+      //     val index = projNames.indexOf(field)
+      //     val projExpression = origFieldNames(index)
+      //     ExpressionCompiler(parent, record).parseExpression(projExpression)
+      //   } else {
+      //     parent.getField(record, name, qualifier)
+      //   }
+      case _ if parents.length == 1 =>
+        parents(0).getField(record, name, qualifier)
+    }
+
+    def setField[T: PardisType](record: Rep[Record], name: String, rhs: Rep[T]): Rep[Unit] = node match {
+      // TODO: better error handling
+      case ScanOpNode(_, _, _) =>
+        ??? //fieldSetter(record, name, rhs)
+      case AggOpNode(parent, _, gb, aggNames) =>
+        val rec = record.asInstanceOf[Rep[AGGRecord[Record]]]
+        gb.collectFirst {
+          case (e, n) if n == name =>
+            fieldSetter(rec.key, name, rhs)
+        }.getOrElse {
+          val index = aggNames.indexWhere { _ == name }
+          if (index == -1) throw new Exception(s"Couldn't find key $name in the result result of $node")
+          rec.aggs(unit(index)) = rhs.asInstanceOf[Rep[Double]]
+        }
+      case JoinOpNode(left, right, _, _, leftAlias, rightAlias) =>
+        ???
+      case _ if parents.length == 1 =>
+        ??? //parents(0).setField(record, name, rhs)
+    }
+
+  }
+
+  def aggRecordNameForFields(fields: Seq[String]): String = {
+    "AggKey" + fields.foldLeft("")(_ + "_" + _)
+  }
+
+  def convertOperator(node: OperatorNode): Rep[Operator[Record]] = {
     node match {
       case ScanOpNode(table, _, _) =>
         // TODO: maybe not use the shallow loader?
         //val records = ShallowLoader.loadUntypedTable(table)
-        __newScanOp(Loader.loadUntypedTable(unit(table)))
-      //__newScanOp(Array(DynamicDataRow(unit("blerg"))(Tuple2(unit("hello"), unit(42)))))
-      // case SelectOpNode(parent, cond, _) =>
-      //   createSelectOperator(parent, cond)
-      // case OperatorAST.JoinOpNode(leftParent, rightParent, joinCond, joinType, leftAlias, rightAlias) =>
-      //   createJoinOperator(leftParent, rightParent, joinCond, joinType, leftAlias, rightAlias)
-      // case AggOpNode(parent, aggs, gb, aggAlias) =>
-      //   createAggOpOperator(parent, aggs, gb, aggAlias)
-      // case MapOpNode(parent, indices) =>
-      //   createMapOperator(parent, indices)
-      // case OrderByNode(parent, orderBy) =>
-      //   createSortOperator(parent, orderBy)
-      case OperatorAST.PrintOpNode(parent, projNames, limit) =>
-        createPrintOperator(parent, projNames, limit)
-      // case SubqueryNode(parent) => convertOperator(parent)
-      // case SubquerySingleResultNode(parent) =>
-      //   new SubquerySingleResult(convertOperator(parent))
+        __newScanOp(Loader.loadUntypedTable(unit(table)))(dataRowTypeForTable(table))
+      case SelectOpNode(parent, cond, _) =>
+        createSelectOperator(node, parent, cond)
+      case JoinOpNode(leftParent, rightParent, joinCond, joinType, leftAlias, rightAlias) =>
+        createJoinOperator(node, leftParent, rightParent, joinCond, joinType, leftAlias, rightAlias)
+      case AggOpNode(parent, aggs, gb, aggAlias) =>
+        createAggOpOperator(node, parent, aggs, gb, aggAlias)
+      case MapOpNode(parent, indices) =>
+        createMapOperator(node, parent, indices)
+      case OrderByNode(parent, orderBy) =>
+        createSortOperator(node, parent, orderBy)
+      case PrintOpNode(parent, projNames, limit) =>
+        createPrintOperator(node, parent, projNames, limit)
+      case SubqueryNode(parent) =>
+        convertOperator(parent)
+      case SubquerySingleResultNode(parent) =>
+        val p = convertOperator(parent)
+        //p.reset
+        __newSubquerySingleResult(p)(parent.pardisType)
       // case UnionAllOpNode(top, bottom) =>
       //   // new UnionAllOperator(convertOperator(top), convertOperator(bottom))
       //   ??? // TODO
-      // case ProjectOpNode(parent, projNames, origFieldNames) =>
-      //   // new ProjectOperator(convertOperator(parent), projNames, origFieldNames)
-      //   ??? // TODO
+      case ProjectOpNode(parent, projNames, origFieldNames) =>
+        // TODO
+        // Maybe all that we need to do is hide the other fields?
+        //new ProjectOperator(convertOperator(parent), projNames, origFieldNames)
+        convertOperator(parent)
       // case ViewOpNode(_, _, name) => new ScanOp(activeViews(name).getDataArray())
     }
   }

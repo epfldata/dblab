@@ -16,13 +16,20 @@ trait DynamicDataRowOps extends Base with TableOps {
   type DynamicDataRow = ch.epfl.data.dblab.schema.DynamicDataRow
   implicit val typeDynamicDataRow: TypeRep[DynamicDataRow] = DynamicDataRowIRs.DynamicDataRowType
 
+  def dataRowTypeForTable(table: Table): TypeRep[DynamicDataRow] = {
+    DynamicDataRowIRs.DynamicDataRowRecordType(table.name)
+  }
+  def dataRowTypeForName(className: String): TypeRep[DynamicDataRow] = {
+    DynamicDataRowIRs.DynamicDataRowRecordType(className)
+  }
+
   object DynamicDataRow {
     def apply(className: Rep[String])(values: Rep[(String, Any)]*): Rep[DynamicDataRow] = {
       val Constant(classNameString) = className
       val valuesConstant = values map { case Def(Tuple2New(Constant(_1: String), _2)) => (_1, false, _2) }
-      val tp = //DynamicDataRowIRs.DynamicDataRowRecordType(classNameString)
-        DynamicDataRowIRs.DynamicDataRowType
-      record_new(valuesConstant)(tp).asInstanceOf[Rep[DynamicDataRow]]
+      val tp = DynamicDataRowIRs.DynamicDataRowRecordType(classNameString)
+
+      record_new(valuesConstant)(tp)
     }
   }
 
@@ -31,7 +38,7 @@ trait DynamicDataRowOps extends Base with TableOps {
       case Constant(name: String) => selectDynamic[T](name)
       case _                      => sys.error(s"field name for a dynamic record must be constant but was $key")
     }
-    def selectDynamic[T: TypeRep](key: String): Rep[T] = record_select[DynamicDataRow, T](drec, key)
+    def selectDynamic[T: TypeRep](key: String): Rep[T] = record_select[DynamicDataRow, T](drec, key)(drec.tp, implicitly[TypeRep[T]])
   }
 }
 

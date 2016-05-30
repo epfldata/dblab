@@ -7,7 +7,7 @@ import scala.language.implicitConversions
 import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
 import scala.reflect._
-import scala.reflect.runtime.universe.{ termNames, typeOf, TermName, Type }
+import scala.reflect.runtime.universe.{termNames, typeOf, TermName, Type}
 import scala.reflect.runtime.currentMirror
 import dblab.schema._
 import config._
@@ -71,8 +71,10 @@ trait LoaderInlined extends storagemanager.LoaderImplementations
     val table = _table match {
       case Constant(v: Table) => v
     }
+    implicit val tableType = dataRowTypeForTable(table)
+
     val size = Loader.fileLineCount(unit(table.resourceLocator))
-    val arr = __newArray[DynamicDataRow](size)
+    val arr = __newArray(size)(tableType)
     val ldr = __newFastScanner(unit(table.resourceLocator))
 
     allTables += table
@@ -93,7 +95,7 @@ trait LoaderInlined extends storagemanager.LoaderImplementations
 
       val rec = DynamicDataRow(unit(table.name))(values: _*)
       //val rec = reflectedMethod.apply(values: _*).asInstanceOf[Rep[R]]
-      arr(i) = rec
+      (ArrayRep(arr)(tableType))(i) = rec
       __assign(i, (i: Rep[Int]) + unit(1))
     })
     arr

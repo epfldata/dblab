@@ -3,6 +3,7 @@
 package ch.epfl.data.dblab.deep.storagemanager
 import ch.epfl.data.dblab.deep._
 import ch.epfl.data.dblab.deep.queryengine._
+import ch.epfl.data.dblab.deep.schema._
 import ch.epfl.data.dblab.schema._
 import scala.reflect._
 
@@ -15,7 +16,7 @@ import pardis.deep.scalalib._
 import pardis.deep.scalalib.collection._
 import pardis.deep.scalalib.io._
 
-import ch.epfl.data.sc.pardis.quasi.anf.{ BaseExt, BaseExtIR }
+import ch.epfl.data.sc.pardis.quasi.anf.{BaseExt, BaseExtIR}
 import ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag
 
 trait LoaderOps extends Base with FastScannerOps with ArrayOps with OptimalStringOps with StringOps with NumericOps with DynamicDataRowOps {
