@@ -375,7 +375,6 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
         override def getField[T: PardisType](qualifier: Option[String], fieldName: String): Option[Rep[T]] = {
           val nameWithQualifier = qualifier.getOrElse("") + fieldName
           val field = if (fieldNames.contains(nameWithQualifier)) nameWithQualifier else fieldName
-          System.out.println(s"Fields: ${fieldNames}")
           fields.get(field).map {
             _ match {
               case SimpleField(tp, _) =>
