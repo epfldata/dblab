@@ -43,7 +43,7 @@ object SyntheticQueries extends TPCHRunner {
   def datesGenerator: List[String] = {
     val years = 1992 to 1998
     // List(1998)
-    val months = (1 to 12 by 2) map (x => if (x < 10) s"0$x" else x.toString)
+    val months = (1 to 12 by 3) map (x => if (x < 10) s"0$x" else x.toString)
     val dates = for (y <- years; m <- months) yield s"$y-$m-01"
     // val days = 1 to 30 map (x => if (x < 10) s"0$x" else x.toString)
     // val dates = for (d <- days) yield s"1996-12-$d"
@@ -53,9 +53,11 @@ object SyntheticQueries extends TPCHRunner {
     dates.toList
   }
 
+  def joinDate: String = "1998-11-01"
+
   def singleDate: String = "1998-11-01"
 
-  var param: String = singleDate
+  var param: String = _
 
   def process(args: List[String]): Unit = process(args.toArray)
 
@@ -129,6 +131,7 @@ object SyntheticQueries extends TPCHRunner {
     val SFs3 = List(16)
     val queries3 = List("fmjs", "fhjs", "fhsjs")
     fusionBenchmarkProcess { flags =>
+      param = singleDate
       for (sf <- SFs1) {
         for (q <- queries1) {
           process(folder :: sf.toString :: q :: flags)
@@ -141,6 +144,7 @@ object SyntheticQueries extends TPCHRunner {
         }
       }
 
+      param = joinDate
       for (sf <- SFs3) {
         for (q <- queries3) {
           process(folder :: sf.toString :: q :: flags)
@@ -254,7 +258,7 @@ object SyntheticQueries extends TPCHRunner {
     import dblab.queryengine.GenericEngine._
     val loadedLineitemTable = dsl"loadLineitem()"
     def lineitemTable = dsl"""Query($loadedLineitemTable)"""
-    val startDate = "1995-12-01"
+    val startDate = param
     for (i <- 0 until numRuns) {
       dsl"""
         runQuery {
@@ -274,7 +278,7 @@ object SyntheticQueries extends TPCHRunner {
     import dblab.queryengine.GenericEngine._
     val loadedLineitemTable = dsl"loadLineitem()"
     def lineitemTable = dsl"""Query($loadedLineitemTable)"""
-    val startDate = "1995-12-01"
+    val startDate = param
     for (i <- 0 until numRuns) {
       dsl"""
         runQuery {
@@ -357,7 +361,7 @@ object SyntheticQueries extends TPCHRunner {
     import dblab.queryengine.GenericEngine._
     val loadedLineitemTable = dsl"loadLineitem()"
     def lineitemTable = dsl"""Query($loadedLineitemTable)"""
-    val startDate = "1995-12-01"
+    val startDate = param
     val endDate = "1997-01-01"
     for (i <- 0 until numRuns) {
       dsl"""
