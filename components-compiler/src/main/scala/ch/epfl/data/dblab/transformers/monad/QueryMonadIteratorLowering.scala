@@ -19,7 +19,7 @@ import quasi._
 /**
  * Lowers query monad operations using continuation-passing style.
  */
-class QueryMonadIteratorLowering(override val schema: Schema, override val IR: QueryEngineExp, val QML: QueryMonadLowering) extends QueryMonadLoweringInterface(schema, IR) {
+class QueryMonadIteratorLowering(override val schema: Schema, override val IR: QueryEngineExp, val QML: QueryMonadLowering, val duplicatedFilter: Boolean) extends QueryMonadLoweringInterface(schema, IR) {
   import IR._
 
   val recordUsageAnalysis: RecordUsageAnalysis[QueryEngineExp] = QML.recordUsageAnalysis
@@ -70,18 +70,30 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
 
     def findFirst(p: Rep[T => Boolean]): Rep[MayBe[T]] = {
       val elem = __newVarNamed[MayBe[T]](Nothing[T], "result")
-      dsl"""
-        var found = false
-        while (!found && ${
-        dsl"$elem = ${next()}"
-        !dsl"$elem".isEmpty
-      }) {
-          if (${inlineFunction(p, dsl"$elem".element)}) {
-            found = true
+      def predicate: Rep[Boolean] = inlineFunction(p, dsl"$elem".element)
+      if (duplicatedFilter) {
+        dsl"""
+          var found = false
+          $elem = ${next()}
+          while(!${dsl"$elem".isEmpty} && !$predicate) {
+            $elem = ${next()}
           }
-        }
-        $elem
-      """
+          $elem
+        """
+      } else {
+        dsl"""
+          var found = false
+          while (!found && ${
+          dsl"$elem = ${next()}"
+          !dsl"$elem".isEmpty
+        }) {
+            if (${inlineFunction(p, dsl"$elem".element)}) {
+              found = true
+            }
+          }
+          $elem
+        """
+      }
     }
 
     def foreach(f: Rep[T] => Rep[Unit]): Rep[Unit] = {

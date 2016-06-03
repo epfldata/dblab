@@ -104,6 +104,7 @@ class Settings(val args: List[String]) {
   def queryMonadLowering: Boolean = hasSetting(QueryMonadLoweringSetting)
   def queryMonadCPS: Boolean = hasSetting(QueryMonadCPSSetting)
   def queryMonadIterator: Boolean = hasSetting(QueryMonadIteratorSetting)
+  def queryMonadIteratorBadFilter: Boolean = hasSetting(QueryMonadIteratorBadFilterSetting)
   def queryMonadStream: Boolean = hasSetting(QueryMonadStreamSetting)
   def queryMonadStreamChurch: Boolean = hasSetting(QueryMonadStreamChurchSetting)
   def queryMonadOptimization: Boolean = hasSetting(QueryMonadOptSetting)
@@ -154,6 +155,7 @@ object Settings {
     ScalaCGSetting,
     QueryMonadLoweringSetting,
     QueryMonadIteratorSetting,
+    QueryMonadIteratorBadFilterSetting,
     QueryMonadStreamSetting,
     QueryMonadStreamChurchSetting,
     QueryMonadCPSSetting,
@@ -294,6 +296,10 @@ case object QueryMonadIteratorSetting extends OptimizationSetting("monad-iterato
   "Enables Query Monad Iterator Lowering",
   QMonadLanguage,
   "Very experimental!")
+case object QueryMonadIteratorBadFilterSetting extends OptimizationSetting("monad-iterator-bad-filter",
+  "Enables duplicated inlining of filter in Query Monad Iterator Lowering",
+  QMonadLanguage,
+  "Deoptimization!")
 case object QueryMonadStreamSetting extends OptimizationSetting("monad-stream",
   "Enables Query Monad Stream Lowering",
   QMonadLanguage,

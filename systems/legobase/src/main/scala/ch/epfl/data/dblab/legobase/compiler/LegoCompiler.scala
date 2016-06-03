@@ -92,7 +92,7 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
       pipeline += ParameterPromotion
     } else if (settings.queryMonadIterator) {
       // these should be together
-      pipeline += new QueryMonadIteratorLowering(schema, DSL, queryMonadLowering)
+      pipeline += new QueryMonadIteratorLowering(schema, DSL, queryMonadLowering, settings.queryMonadIteratorBadFilter)
       pipeline += new CoreLanguageToC(DSL)
       pipeline += DCE
       pipeline += new ParameterPromotionWithVar(DSL)

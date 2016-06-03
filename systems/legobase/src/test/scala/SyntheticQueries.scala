@@ -109,7 +109,7 @@ object SyntheticQueries extends TPCHRunner {
 
   def varySelBenchmark(args: Array[String]): Unit = {
     val folder = args(0)
-    val SFs = List(16)
+    val SFs = List(8)
     val query = args(2)
     fusionBenchmarkProcess { flags =>
       for (sf <- SFs) {
