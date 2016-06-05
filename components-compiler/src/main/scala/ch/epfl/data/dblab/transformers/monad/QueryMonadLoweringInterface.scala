@@ -59,7 +59,9 @@ abstract class QueryMonadLoweringInterface(val schema: Schema, override val IR: 
     readVar(size)
   }
   def monadSum[T: TypeRep](query: LoweredQuery[T]): Rep[T] = {
-    assert(typeRep[T] == DoubleType)
+    if (typeRep[T] != DoubleType) {
+      sys.error(s"Does not support sum for ${typeRep[T]}")
+    }
     val sumResult = __newVarNamed[Double](unit(0.0), "sumResult")
     monadForeach(query, (elem: Rep[T]) => {
       __assign(sumResult, readVar(sumResult) + elem.asInstanceOf[Rep[Double]])
@@ -192,12 +194,12 @@ abstract class QueryMonadLoweringInterface(val schema: Schema, override val IR: 
 
   rewrite += rule {
     case QueryAvg(monad) =>
-      monadAvg(getLoweredQuery(monad))
+      monadAvg(getLoweredQuery(monad))(monad.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
   }
 
   rewrite += rule {
     case QuerySum(monad) =>
-      monadSum(getLoweredQuery(monad))
+      monadSum(getLoweredQuery(monad))(monad.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
   }
 
   rewrite += statement {

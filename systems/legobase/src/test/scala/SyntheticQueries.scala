@@ -83,7 +83,7 @@ object SyntheticQueries extends TPCHRunner {
 
   def fusionBenchmarkProcess(f: List[String] => Unit): Unit = {
     val fixedFlags = List("+monad-lowering", "-name-with-flag",
-      "+force-compliant", "+monad-opt", "-name-with-flag")
+      "+force-compliant")
     val variableFlags = List(List("+monad-cps"), List("+monad-iterator"), List("+monad-stream"),
       List("+monad-stream", "+monad-stream-church"))
     for (flags <- variableFlags) {
@@ -554,7 +554,7 @@ object SyntheticQueries extends TPCHRunner {
       case "fmjs"           => (28, () => filterMergeJoinSum(MICRO_JOIN_RUNS))
       case "fhjs"           => (29, () => filterHashJoinSum(MICRO_JOIN_RUNS))
       case "fhsjs"          => (31, () => filterHashSemiJoinSum(MICRO_JOIN_RUNS))
-      case "Q1_functional"  => (1, () => Q1_functional(unit(TPCH_RUNS)))
+      case "Q1_functional"  => (1, () => Q1_functional_p2(unit(TPCH_RUNS)))
       case "Q2_functional"  => (2, () => Q2_functional(unit(TPCH_RUNS)))
       case "Q3_functional"  => (3, () => Q3_functional(unit(TPCH_RUNS)))
       case "Q4_functional"  => (4, () => Q4_functional(unit(TPCH_RUNS)))
