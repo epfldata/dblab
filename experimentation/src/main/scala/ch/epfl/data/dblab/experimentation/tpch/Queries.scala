@@ -124,6 +124,50 @@ object Queries {
     }
   }
 
+  def Q1_functional_p2(numRuns: Int) {
+    // import queryengine.monad.{ QueryIterator => Query }
+    val lineitemTable = Query(loadLineitem())
+    for (i <- 0 until numRuns) {
+      runQuery {
+        val constantDate: Int = parseDate("1998-09-02")
+        val result = lineitemTable.filter(_.L_SHIPDATE <= constantDate).groupBy(x => new Q1GRPRecord(
+          x.L_RETURNFLAG, x.L_LINESTATUS)).mapValues(l => {
+          var x0 = 0.0
+          var x1 = 0.0
+          var x2 = 0.0
+          var x3 = 0.0
+          var x4 = 0.0
+          var x5 = 0.0
+          l.foreach(cur => {
+            x0 += cur.L_DISCOUNT
+            x1 += cur.L_QUANTITY
+            x2 += cur.L_EXTENDEDPRICE
+            x3 += cur.L_EXTENDEDPRICE * (1.0 - cur.L_DISCOUNT)
+            x4 += cur.L_EXTENDEDPRICE * (1.0 - cur.L_DISCOUNT) * (1.0 + cur.L_TAX)
+            x5 += 1
+          })
+          Array(
+            x0,
+            x1,
+            x2,
+            x3,
+            x4,
+            x5,
+            x1 / x5,
+            x2 / x5,
+            x0 / x5)
+        })
+          .sortBy(t =>
+            t._1.L_RETURNFLAG.toInt * 128 + t._1.L_LINESTATUS.toInt)
+        result.printRows(kv => {
+          printf("%c|%c|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.0f\n",
+            kv._1.L_RETURNFLAG, kv._1.L_LINESTATUS, kv._2.apply(1), kv._2.apply(2), kv._2.apply(3), kv._2.apply(4),
+            kv._2.apply(6), kv._2.apply(7), kv._2.apply(8), kv._2.apply(5))
+        }, -1)
+      }
+    }
+  }
+
   def Q2(numRuns: Int) {
     val partTable = loadPart()
     val partsuppTable = loadPartsupp()
@@ -185,10 +229,10 @@ object Queries {
         val jo4 = regionScan.hashJoin(jo3)(x => x.R_REGIONKEY)(x => x.N_REGIONKEY[Int])((x, y) => x.R_REGIONKEY == y.N_REGIONKEY[Int])
         val wo = jo4.groupBy(x => x.P_PARTKEY[Int]).mapValues(x => x.minBy(y => y.PS_SUPPLYCOST[Double]))
         val so = wo.sortBy(x => (-x._2.S_ACCTBAL[Double], x._2.N_NAME[OptimalString].string, x._2.S_NAME[OptimalString].string, x._2.P_PARTKEY[Int]))
-        so.printRows(e => {
+        so.take(100).printRows(e => {
           val kv = e._2
           printf("%.2f|%s|%s|%d|%s|%s|%s|%s\n", kv.S_ACCTBAL[Double], (kv.S_NAME[OptimalString]).string, (kv.N_NAME[OptimalString]).string, kv.P_PARTKEY[Int], (kv.P_MFGR[OptimalString]).string, (kv.S_ADDRESS[OptimalString]).string, (kv.S_PHONE[OptimalString]).string, (kv.S_COMMENT[OptimalString]).string)
-        }, 100)
+        }, -1)
         ()
       }
     }
@@ -246,8 +290,8 @@ object Queries {
         val aggOp = jo2.groupBy(x => new Q3GRPRecord(x.L_ORDERKEY[Int], x.O_ORDERDATE[Int], x.O_SHIPPRIORITY[Int])).mapValues(_.map(t => (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))).sum)
         val sortOp = aggOp.sortBy(x => (-x._2, x._1.O_ORDERDATE))
         var rows = 0
-        sortOp.printRows(e =>
-          printf("%d|%.4f|%s|%d\n", e._1.L_ORDERKEY, e._2, dateToString(e._1.O_ORDERDATE), e._1.O_SHIPPRIORITY), 10)
+        sortOp.take(10).printRows(e =>
+          printf("%d|%.4f|%s|%d\n", e._1.L_ORDERKEY, e._2, dateToString(e._1.O_ORDERDATE), e._1.O_SHIPPRIORITY), -1)
       }
     }
   }
@@ -677,11 +721,11 @@ object Queries {
           x.C_PHONE[OptimalString], x.N_NAME[OptimalString],
           x.C_ADDRESS[OptimalString], x.C_COMMENT[OptimalString])).mapValues(list => list.map(t => t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])).sum)
         val sortOp = aggOp.sortBy(-_._2)
-        sortOp.printRows(kv => {
+        sortOp.take(20).printRows(kv => {
           printf("%d|%s|%.4f|%.2f|%s|%s|%s|%s\n", kv._1.C_CUSTKEY, kv._1.C_NAME.string, kv._2,
             kv._1.C_ACCTBAL, kv._1.N_NAME.string, kv._1.C_ADDRESS.string, kv._1.C_PHONE.string,
             kv._1.C_COMMENT.string)
-        }, 20)
+        }, -1)
         ()
       })
     }
@@ -822,17 +866,17 @@ object Queries {
         val URGENT = parseString("1-URGENT")
         val HIGH = parseString("2-HIGH")
         val aggOp = jo.groupBy(x => x.L_SHIPMODE[OptimalString]).mapValues(list => {
-          Array(list.filter(t => t.O_ORDERPRIORITY[OptimalString] === URGENT || t.O_ORDERPRIORITY[OptimalString] === HIGH).count,
-            list.filter(t => t.O_ORDERPRIORITY[OptimalString] =!= URGENT && t.O_ORDERPRIORITY[OptimalString] =!= HIGH).count)
-          // var x0 = 0
-          // var x1 = 0
-          // list.foreach { t =>
-          //   if (t.O_ORDERPRIORITY[OptimalString] === URGENT || t.O_ORDERPRIORITY[OptimalString] === HIGH)
-          //     x0 += 1
-          //   if (t.O_ORDERPRIORITY[OptimalString] =!= URGENT && t.O_ORDERPRIORITY[OptimalString] =!= HIGH)
-          //     x1 += 1
-          // }
-          // Array(x0, x1)
+          // Array(list.filter(t => t.O_ORDERPRIORITY[OptimalString] === URGENT || t.O_ORDERPRIORITY[OptimalString] === HIGH).count,
+          //   list.filter(t => t.O_ORDERPRIORITY[OptimalString] =!= URGENT && t.O_ORDERPRIORITY[OptimalString] =!= HIGH).count)
+          var x0 = 0
+          var x1 = 0
+          list.foreach { t =>
+            if (t.O_ORDERPRIORITY[OptimalString] === URGENT || t.O_ORDERPRIORITY[OptimalString] === HIGH)
+              x0 += 1
+            if (t.O_ORDERPRIORITY[OptimalString] =!= URGENT && t.O_ORDERPRIORITY[OptimalString] =!= HIGH)
+              x1 += 1
+          }
+          Array(x0, x1)
         })
         val sortOp = aggOp.sortBy(_._1.string)
         sortOp.printRows(kv =>
