@@ -167,20 +167,40 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
       for (elem <- q2) {
         hm.addBinding(rightHash(elem), elem)
       }
-      val leftIterator = self.filter(__lambda {
-        t =>
-          {
-            val k = leftHash(t)
-            // TODO add exists to option to make this one nicer
-            val result = __newVarNamed(unit(false), "setExists")
-            hm.get(k).foreach(__lambda { buf =>
-              __assign(result, buf.exists(__lambda { e => joinCond(t, e) }))
-            })
-            readVar(result)
-          }
-      })
+      // val leftIterator = self.filter(__lambda {
+      //   t =>
+      //     {
+      //       val k = leftHash(t)
+      //       // TODO add exists to option to make this one nicer
+      //       val result = __newVarNamed(unit(false), "setExists")
+      //       hm.get(k).foreach(__lambda { buf =>
+      //         __assign(result, buf.exists(__lambda { e => joinCond(t, e) }))
+      //       })
+      //       readVar(result)
+      //     }
+      // })
 
-      def stream() = leftIterator.stream()
+      def stream() = buildS { (done, skip, yld) =>
+        self.stream().semiFold(() => done(),
+          () => skip(),
+          elem => {
+            val k = leftHash(elem)
+            val found = __newVarNamed(unit(false), "found")
+            hm.get(k).foreach(__lambda { tmpBuffer =>
+              dsl"""
+                val leftElem = $tmpBuffer find (bufElem => $joinCond($elem, bufElem))
+                leftElem foreach (le => $found = true)
+                """
+            })
+            dsl"""
+              if($found) {
+                ${yld(elem)}
+              } else {
+                ${skip()}
+              }
+            """
+          })
+      }
     }
 
     def mergeJoin2[S: TypeRep, Res: TypeRep](q2: QueryStream[S])(

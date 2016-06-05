@@ -137,11 +137,15 @@ class QueryMonadIteratorLowering(override val schema: Schema, override val IR: Q
           {
             val k = leftHash(t)
             // TODO add exists to option to make this one nicer
-            val result = __newVarNamed(unit(false), "setExists")
+            val found = __newVarNamed(unit(false), "found")
             hm.get(k).foreach(__lambda { buf =>
-              __assign(result, buf.exists(__lambda { e => joinCond(t, e) }))
+              // __assign(found, buf.exists(__lambda { e => joinCond(t, e) }))
+              dsl"""
+                val leftElem = $buf find (bufElem => $joinCond($t, bufElem))
+                leftElem foreach (le => $found = true)
+                """
             })
-            readVar(result)
+            dsl"$found"
           }
       })
 

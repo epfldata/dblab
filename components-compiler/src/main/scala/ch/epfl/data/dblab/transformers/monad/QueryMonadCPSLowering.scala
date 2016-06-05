@@ -53,12 +53,14 @@ class QueryMonadCPSLowering(override val schema: Schema, override val IR: QueryE
         val key = leftHash(elem)
         hm.get(key) foreach {
           __lambda { tmpBuffer =>
-            __ifThenElse(tmpBuffer.exists(
-              __lambda { bufElem =>
-                joinCond(elem, bufElem)
-              }), {
-              k(elem)
-            }, unit())
+            // __ifThenElse(tmpBuffer.exists(
+            //   __lambda { bufElem =>
+            //     joinCond(elem, bufElem)
+            //   }), {
+            //   k(elem)
+            // }, unit())
+            dsl"""val leftElem = $tmpBuffer find (bufElem => $joinCond($elem, bufElem))
+              leftElem foreach (le => $k($elem))"""
           }
         }
       }
