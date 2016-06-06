@@ -43,7 +43,7 @@ object SyntheticQueries extends TPCHRunner {
   def datesGenerator: List[String] = {
     val years = 1992 to 1998
     // List(1998)
-    val months = (1 to 12 by 6) map (x => if (x < 10) s"0$x" else x.toString)
+    val months = (4 to 12 by 6) map (x => if (x < 10) s"0$x" else x.toString)
     val dates = for (y <- years; m <- months) yield s"$y-$m-01"
     // val days = 1 to 30 map (x => if (x < 10) s"0$x" else x.toString)
     // val dates = for (d <- days) yield s"1996-12-$d"
@@ -96,12 +96,12 @@ object SyntheticQueries extends TPCHRunner {
     fusionBenchmarkProcess(f, VARIABLE_OPTIMIZATION_FLAGS)
   }
 
-  def fusionTPCHBenchmark(args: Array[String], additionalFlags: List[String] = Nil): Unit = {
+  def fusionTPCHBenchmark(args: Array[String], additionalFlags: List[String],
+                          scenarios: List[List[String]] = VARIABLE_OPTIMIZATION_FLAGS, queryNumbers: List[Int] = (1 to 6).toList ++ List(9, 10, 12, 14, 19, 20)): Unit = {
     tpchBenchmark = true
     val folder = args(0)
     val SFs = List(8)
     // val queryNumbers = (1 to 6).toList ++ (9 to 12).toList ++ List(14)
-    val queryNumbers = (1 to 6).toList ++ List(9, 10, 12, 14, 19, 20)
     val queries = queryNumbers.map(x => s"Q${x}_functional")
     fusionBenchmarkProcess({ flags =>
       for (sf <- SFs) {
@@ -109,8 +109,7 @@ object SyntheticQueries extends TPCHRunner {
           process(folder :: sf.toString :: q :: flags ++ additionalFlags)
         }
       }
-    }, VARIABLE_OPTIMIZATION_FLAGS ++ List(List("+monad-stream", "+monad-no-escape"),
-      List("+monad-iterator", "+monad-iterator-bad-filter")))
+    }, scenarios)
   }
 
   def varySelBenchmark(args: Array[String]): Unit = {
@@ -133,7 +132,7 @@ object SyntheticQueries extends TPCHRunner {
     val SFs1 = List(8)
     val queries1 = List("fc", "fs", "ffs")
     val SFs2 = List(1)
-    val queries2 = List("fm", "fmt", "fmot")
+    val queries2 = List("fm", "fmt", "fot")
     val SFs3 = List(8)
     val queries3 = List("fmjs", "fhjs", "fhsjs")
     fusionBenchmarkProcess { flags =>
@@ -163,9 +162,17 @@ object SyntheticQueries extends TPCHRunner {
     if (args.length == 2 && args(1) == "fusion_micro") {
       fusionMicroBenchmark(args)
     } else if (args.length == 2 && args(1) == "fusion_tpch") {
-      fusionTPCHBenchmark(args)
+      fusionTPCHBenchmark(args, Nil)
+      fusionTPCHBenchmark(args, Nil, List(
+        List("+monad-stream", "+monad-no-escape"),
+        List("+monad-iterator", "+monad-iterator-bad-filter")),
+        List(14, 19))
     } else if (args.length == 2 && args(1) == "mem_cons_tpch") {
-      fusionTPCHBenchmark(args, List("-malloc-profile"))
+      fusionTPCHBenchmark(args, List("-malloc-profile"), List(
+        List("+monad-stream", "+monad-no-escape"),
+        List("+monad-stream", "+monad-church")),
+        List(14, 19))
+
     } else if (args.length == 3 && args(1) == "vary_sel") {
       varySelBenchmark(args)
     } else if (args.length < 3) {
@@ -340,7 +347,7 @@ object SyntheticQueries extends TPCHRunner {
     dsl"()"
   }
 
-  def filterMapSortByTake(numRuns: Int): Rep[Unit] = {
+  def filterSortByTake(numRuns: Int): Rep[Unit] = {
     import dblab.queryengine.monad.Query
     import dblab.experimentation.tpch.TPCHLoader._
     import dblab.queryengine.GenericEngine._
@@ -580,7 +587,7 @@ object SyntheticQueries extends TPCHRunner {
       case "ffs"            => (24, () => filterFilterSum(MICRO_RUNS))
       case "fm"             => (26, () => filterMap(MICRO_RUNS))
       case "fmt"            => (27, () => filterMapTake(MICRO_RUNS))
-      case "fmot"           => (30, () => filterMapSortByTake(MICRO_RUNS))
+      case "fot"            => (30, () => filterSortByTake(MICRO_RUNS))
       case "fmjs"           => (28, () => filterMergeJoinSum(MICRO_JOIN_RUNS))
       case "fhjs"           => (29, () => filterHashJoinSum(MICRO_JOIN_RUNS))
       case "fhsjs"          => (31, () => filterHashSemiJoinSum(MICRO_JOIN_RUNS))
