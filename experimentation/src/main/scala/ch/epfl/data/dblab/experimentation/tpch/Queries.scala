@@ -74,7 +74,6 @@ object Queries {
   }
 
   def Q1_functional(numRuns: Int) {
-    // import queryengine.monad.{ QueryIterator => Query }
     val lineitemTable = Query(loadLineitem())
     for (i <- 0 until numRuns) {
       runQuery {
@@ -91,28 +90,6 @@ object Queries {
             l.map(_.L_QUANTITY).avg,
             l.map(_.L_EXTENDEDPRICE).avg,
             l.map(_.L_DISCOUNT).avg))
-          // val result = lineitemTable.filter(_.L_SHIPDATE <= constantDate).groupBy(x => new Q1GRPRecord(
-          //   x.L_RETURNFLAG, x.L_LINESTATUS)).mapValues(l => {
-          //   val (x0, x1, x2, x3, x4, x5) = l.foldLeft((0.0, 0.0, 0.0, 0.0, 0.0, 0.0))((acc, cur) => {
-          //     (acc._1 + cur.L_DISCOUNT,
-          //       acc._2 + cur.L_QUANTITY,
-          //       acc._3 + cur.L_EXTENDEDPRICE,
-          //       acc._4 + cur.L_EXTENDEDPRICE * (1.0 - cur.L_DISCOUNT),
-          //       acc._5 + cur.L_EXTENDEDPRICE * (1.0 - cur.L_DISCOUNT) * (1.0 + cur.L_TAX),
-          //       acc._6 + 1)
-          //   })
-          //   val (x6, x7, x8) = (x1 / x5, x2 / x5, x0 / x5)
-          //   Array(
-          //     x0,
-          //     x1,
-          //     x2,
-          //     x3,
-          //     x4,
-          //     x5,
-          //     x6,
-          //     x7,
-          //     x8)
-          // })
           .sortBy(t =>
             t._1.L_RETURNFLAG.toInt * 128 + t._1.L_LINESTATUS.toInt)
         result.printRows(kv => {
@@ -125,12 +102,11 @@ object Queries {
   }
 
   def Q1_functional_p2(numRuns: Int) {
-    // import queryengine.monad.{ QueryIterator => Query }
-    val lineitemTable = Query(loadLineitem())
+    val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
       runQuery {
         val constantDate: Int = parseDate("1998-09-02")
-        val result = lineitemTable.filter(_.L_SHIPDATE <= constantDate).groupBy(x => new Q1GRPRecord(
+        val result = Query(lineitemTable).filter(_.L_SHIPDATE <= constantDate).groupBy(x => new Q1GRPRecord(
           x.L_RETURNFLAG, x.L_LINESTATUS)).mapValues(l => {
           var x0 = 0.0
           var x1 = 0.0
@@ -211,21 +187,20 @@ object Queries {
   }
 
   def Q2_functional(numRuns: Int) {
-    // import queryengine.monad.{ QueryIterator => Query }
-    val partTable = Query(loadPart())
-    val partsuppTable = Query(loadPartsupp())
-    val nationTable = Query(loadNation())
-    val regionTable = Query(loadRegion())
-    val supplierTable = Query(loadSupplier())
+    val partTable = loadPart()
+    val partsuppTable = loadPartsupp()
+    val nationTable = loadNation()
+    val regionTable = loadRegion()
+    val supplierTable = loadSupplier()
     for (i <- 0 until numRuns) {
       runQuery {
         val africa = parseString("AFRICA")
         val tin = parseString("TIN")
-        val jo1 = supplierTable.hashJoin(partsuppTable)(x => x.S_SUPPKEY)(x => x.PS_SUPPKEY)((x, y) => x.S_SUPPKEY == y.PS_SUPPKEY)
-        val jo2 = nationTable.hashJoin(jo1)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])
-        val partScan = partTable.filter(x => x.P_SIZE == 43 && x.P_TYPE.endsWith(tin))
+        val jo1 = Query(supplierTable).hashJoin(Query(partsuppTable))(x => x.S_SUPPKEY)(x => x.PS_SUPPKEY)((x, y) => x.S_SUPPKEY == y.PS_SUPPKEY)
+        val jo2 = Query(nationTable).hashJoin(jo1)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])
+        val partScan = Query(partTable).filter(x => x.P_SIZE == 43 && x.P_TYPE.endsWith(tin))
         val jo3 = partScan.hashJoin(jo2)(x => x.P_PARTKEY)(x => x.PS_PARTKEY[Int])((x, y) => x.P_PARTKEY == y.PS_PARTKEY[Int])
-        val regionScan = regionTable.filter(_.R_NAME === africa)
+        val regionScan = Query(regionTable).filter(_.R_NAME === africa)
         val jo4 = regionScan.hashJoin(jo3)(x => x.R_REGIONKEY)(x => x.N_REGIONKEY[Int])((x, y) => x.R_REGIONKEY == y.N_REGIONKEY[Int])
         val wo = jo4.groupBy(x => x.P_PARTKEY[Int]).mapValues(x => x.minBy(y => y.PS_SUPPLYCOST[Double]))
         val so = wo.sortBy(x => (-x._2.S_ACCTBAL[Double], x._2.N_NAME[OptimalString].string, x._2.S_NAME[OptimalString].string, x._2.P_PARTKEY[Int]))
@@ -274,17 +249,16 @@ object Queries {
   }
 
   def Q3_functional(numRuns: Int) {
-    // import queryengine.monad.{ QueryIterator => Query }
-    val lineitemTable = Query(loadLineitem())
-    val ordersTable = Query(loadOrders())
-    val customerTable = Query(loadCustomer())
+    val lineitemTable = loadLineitem()
+    val ordersTable = loadOrders()
+    val customerTable = loadCustomer()
     for (i <- 0 until numRuns) {
       runQuery {
         val constantDate = parseDate("1995-03-04")
         val houseHold = parseString("HOUSEHOLD")
-        val scanCustomer = customerTable.filter(x => x.C_MKTSEGMENT === houseHold)
-        val scanOrders = ordersTable.filter(x => x.O_ORDERDATE < constantDate)
-        val scanLineitem = lineitemTable.filter(x => x.L_SHIPDATE > constantDate)
+        val scanCustomer = Query(customerTable).filter(x => x.C_MKTSEGMENT === houseHold)
+        val scanOrders = Query(ordersTable).filter(x => x.O_ORDERDATE < constantDate)
+        val scanLineitem = Query(lineitemTable).filter(x => x.L_SHIPDATE > constantDate)
         val jo1 = scanCustomer.hashJoin(scanOrders)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)
         val jo2 = jo1.hashJoin(scanLineitem)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY[Int] == y.L_ORDERKEY)
         val aggOp = jo2.groupBy(x => new Q3GRPRecord(x.L_ORDERKEY[Int], x.O_ORDERDATE[Int], x.O_SHIPPRIORITY[Int])).mapValues(_.map(t => (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))).sum)
@@ -320,15 +294,14 @@ object Queries {
   }
 
   def Q4_functional(numRuns: Int) {
-    // import queryengine.monad.{ QueryIterator => Query }
-    val lineitemTable = Query(loadLineitem())
-    val ordersTable = Query(loadOrders())
+    val lineitemTable = loadLineitem()
+    val ordersTable = loadOrders()
     for (i <- 0 until numRuns) {
       runQuery({
         val constantDate1: Int = parseDate("1993-11-01")
         val constantDate2: Int = parseDate("1993-08-01")
-        val scanOrders = ordersTable.filter(x => x.O_ORDERDATE < constantDate1 && x.O_ORDERDATE >= constantDate2)
-        val scanLineitem = lineitemTable.filter(x => x.L_COMMITDATE < x.L_RECEIPTDATE)
+        val scanOrders = Query(ordersTable).filter(x => x.O_ORDERDATE < constantDate1 && x.O_ORDERDATE >= constantDate2)
+        val scanLineitem = Query(lineitemTable).filter(x => x.L_COMMITDATE < x.L_RECEIPTDATE)
         val hj = scanOrders.leftHashSemiJoin(scanLineitem)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
         val aggRes = hj.groupBy(x => x.O_ORDERPRIORITY).mapValues(_.count)
         val sortOp = aggRes.sortBy(_._1.string)
@@ -379,13 +352,12 @@ object Queries {
   }
 
   def Q5_functional(numRuns: Int) {
-    // import queryengine.monad.{ QueryIterator => Query }
-    val nationTable = Query(loadNation())
-    val regionTable = Query(loadRegion())
-    val supplierTable = Query(loadSupplier())
-    val lineitemTable = Query(loadLineitem())
-    val ordersTable = Query(loadOrders())
-    val customerTable = Query(loadCustomer())
+    val nationTable = loadNation()
+    val regionTable = loadRegion()
+    val supplierTable = loadSupplier()
+    val lineitemTable = loadLineitem()
+    val ordersTable = loadOrders()
+    val customerTable = loadCustomer()
 
     for (i <- 0 until numRuns) {
       runQuery({
@@ -393,17 +365,17 @@ object Queries {
         val constantDate2 = parseDate("1997-01-01")
         val asia = parseString("ASIA")
         val scanRegion =
-          regionTable.filter(x => x.R_NAME === asia)
+          Query(regionTable).filter(x => x.R_NAME === asia)
         val scanNation =
-          nationTable
+          Query(nationTable)
         val scanLineitem =
-          lineitemTable
+          Query(lineitemTable)
         val scanOrders =
-          ordersTable.filter(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE < constantDate2)
+          Query(ordersTable).filter(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE < constantDate2)
         val scanCustomer =
-          customerTable
+          Query(customerTable)
         val scanSupplier =
-          supplierTable
+          Query(supplierTable)
         val jo1 =
           scanRegion.hashJoin(scanNation)(x => x.R_REGIONKEY)(x => x.N_REGIONKEY)((x, y) => x.R_REGIONKEY == y.N_REGIONKEY)
         val jo2 =
@@ -441,12 +413,12 @@ object Queries {
   }
 
   def Q6_functional(numRuns: Int) {
-    val lineitemTable = Query(loadLineitem())
+    val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
       runQuery {
         val constantDate1: Int = parseDate("1996-01-01")
         val constantDate2: Int = parseDate("1997-01-01")
-        val result = lineitemTable.filter(x => x.L_SHIPDATE >= constantDate1 && (x.L_SHIPDATE < constantDate2 && (x.L_DISCOUNT >= 0.08 && (x.L_DISCOUNT <= 0.1 && (x.L_QUANTITY < 24)))))
+        val result = Query(lineitemTable).filter(x => x.L_SHIPDATE >= constantDate1 && (x.L_SHIPDATE < constantDate2 && (x.L_DISCOUNT >= 0.08 && (x.L_DISCOUNT <= 0.1 && (x.L_QUANTITY < 24)))))
           .map(t => t.L_EXTENDEDPRICE * t.L_DISCOUNT).sum
         printf("%.4f\n", result)
         printf("(%d rows)\n", 1)
@@ -590,22 +562,21 @@ object Queries {
   }
 
   def Q9_functional(numRuns: Int) {
-    // import queryengine.monad.{ QueryIterator => Query }
-    val partTable = Query(loadPart())
-    val nationTable = Query(loadNation())
-    val ordersTable = Query(loadOrders())
-    val partsuppTable = Query(loadPartsupp())
-    val supplierTable = Query(loadSupplier())
-    val lineitemTable = Query(loadLineitem())
+    val partTable = loadPart()
+    val nationTable = loadNation()
+    val ordersTable = loadOrders()
+    val partsuppTable = loadPartsupp()
+    val supplierTable = loadSupplier()
+    val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
       runQuery({
         val ghost = parseString("ghost")
-        val soNation = nationTable
-        val soSupplier = supplierTable
-        val soLineitem = lineitemTable
-        val soPart = partTable.filter(x => x.P_NAME.containsSlice(ghost))
-        val soPartsupp = partsuppTable
-        val soOrders = ordersTable
+        val soNation = Query(nationTable)
+        val soSupplier = Query(supplierTable)
+        val soLineitem = Query(lineitemTable)
+        val soPart = Query(partTable).filter(x => x.P_NAME.containsSlice(ghost))
+        val soPartsupp = Query(partsuppTable)
+        val soOrders = Query(ordersTable)
         val hj1 = soPart.hashJoin(soLineitem)(x => x.P_PARTKEY)(x => x.L_PARTKEY)((x, y) => x.P_PARTKEY == y.L_PARTKEY)
         val hj2 = soSupplier.hashJoin(hj1)(x => x.S_SUPPKEY)(x => x.L_SUPPKEY[Int])((x, y) => x.S_SUPPKEY == y.L_SUPPKEY[Int])
         val hj3 = soNation.hashJoin(hj2)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])
@@ -621,22 +592,21 @@ object Queries {
 
   // adapted from http://www.qdpma.com/tpch/TPCH100_Query_plans.html
   @dontLift def Q9_functional_p2(numRuns: Int) {
-    // import queryengine.monad.{ QueryIterator => Query }
-    val partTable = Query(loadPart())
-    val nationTable = Query(loadNation())
-    val ordersTable = Query(loadOrders())
-    val partsuppTable = Query(loadPartsupp())
-    val supplierTable = Query(loadSupplier())
-    val lineitemTable = Query(loadLineitem())
+    val partTable = loadPart()
+    val nationTable = loadNation()
+    val ordersTable = loadOrders()
+    val partsuppTable = loadPartsupp()
+    val supplierTable = loadSupplier()
+    val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
       runQuery({
         val ghost = parseString("ghost")
-        val soNation = nationTable
-        val soSupplier = supplierTable
-        val soLineitem = lineitemTable
-        val soPart = partTable.filter(x => x.P_NAME.containsSlice(ghost))
-        val soPartsupp = partsuppTable
-        val soOrders = ordersTable
+        val soNation = Query(nationTable)
+        val soSupplier = Query(supplierTable)
+        val soLineitem = Query(lineitemTable)
+        val soPart = Query(partTable).filter(x => x.P_NAME.containsSlice(ghost))
+        val soPartsupp = Query(partsuppTable)
+        val soOrders = Query(ordersTable)
         val hj1 = soLineitem.hashJoin(soPart)(x => x.L_PARTKEY)(x => x.P_PARTKEY)((x, y) => x.L_PARTKEY == y.P_PARTKEY)
         val hj2 = hj1.hashJoin(soSupplier)(x => x.L_SUPPKEY[Int])(x => x.S_SUPPKEY)((x, y) => x.L_SUPPKEY[Int] == y.S_SUPPKEY)
         val hj3 = hj2.hashJoin(soNation)(x => x.S_NATIONKEY[Int])(x => x.N_NATIONKEY)((x, y) => x.S_NATIONKEY[Int] == y.N_NATIONKEY)
@@ -701,18 +671,18 @@ object Queries {
   }
 
   def Q10_functional(numRuns: Int) {
-    val lineitemTable = Query(loadLineitem())
-    val nationTable = Query(loadNation())
-    val customerTable = Query(loadCustomer())
-    val ordersTable = Query(loadOrders())
+    val lineitemTable = loadLineitem()
+    val nationTable = loadNation()
+    val customerTable = loadCustomer()
+    val ordersTable = loadOrders()
     for (i <- 0 until numRuns) {
       runQuery({
         val constantDate1 = parseDate("1994-11-01")
         val constantDate2 = parseDate("1995-02-01")
-        val so1 = ordersTable.filter(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE < constantDate2)
-        val so2 = customerTable
-        val so3 = nationTable
-        val so4 = lineitemTable.filter(x => x.L_RETURNFLAG == 'R')
+        val so1 = Query(ordersTable).filter(x => x.O_ORDERDATE >= constantDate1 && x.O_ORDERDATE < constantDate2)
+        val so2 = Query(customerTable)
+        val so3 = Query(nationTable)
+        val so4 = Query(lineitemTable).filter(x => x.L_RETURNFLAG == 'R')
         val hj1 = so1.hashJoin(so4)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
         val hj2 = so2.hashJoin(hj1)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY[Int])((x, y) => x.C_CUSTKEY == y.O_CUSTKEY[Int])
         val hj3 = so3.hashJoin(hj2)(x => x.N_NATIONKEY)(x => x.C_NATIONKEY[Int])((x, y) => x.N_NATIONKEY == y.C_NATIONKEY[Int])
@@ -767,16 +737,16 @@ object Queries {
   }
 
   def Q11_functional(numRuns: Int) {
-    val partsuppTable = Query(loadPartsupp())
-    val supplierTable = Query(loadSupplier())
-    val nationTable = Query(loadNation())
+    val partsuppTable = loadPartsupp()
+    val supplierTable = loadSupplier()
+    val nationTable = loadNation()
     for (i <- 0 until numRuns) {
       runQuery({
         val uk = parseString("UNITED KINGDOM")
-        val scanSupplier = supplierTable
-        val scanNation = nationTable.filter(x => x.N_NAME === uk)
+        val scanSupplier = Query(supplierTable)
+        val scanNation = Query(nationTable).filter(x => x.N_NAME === uk)
         val jo1 = scanNation.hashJoin(scanSupplier)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY)((x, y) => x.N_NATIONKEY == y.S_NATIONKEY)
-        val scanPartsupp = partsuppTable
+        val scanPartsupp = Query(partsuppTable)
         val jo2 = jo1.hashJoin(scanPartsupp)(x => x.S_SUPPKEY[Int])(x => x.PS_SUPPKEY)((x, y) => x.S_SUPPKEY[Int] == y.PS_SUPPKEY)
         val wo = jo2.groupBy(x => x.PS_PARTKEY[Int]).mapValues(list => list.map(e => (e.PS_SUPPLYCOST[Double] * e.PS_AVAILQTY[Int])).sum)
           .materialize
@@ -816,17 +786,17 @@ object Queries {
   }
 
   def Q12_functional(numRuns: Int) {
-    val lineitemTable = Query(loadLineitem())
-    val ordersTable = Query(loadOrders())
+    val lineitemTable = loadLineitem()
+    val ordersTable = loadOrders()
     for (i <- 0 until numRuns) {
       runQuery({
         val mail = parseString("MAIL")
         val ship = parseString("SHIP")
         val constantDate = parseDate("1995-01-01")
         val constantDate2 = parseDate("1994-01-01")
-        val so2 = lineitemTable.filter(x =>
+        val so2 = Query(lineitemTable).filter(x =>
           x.L_RECEIPTDATE < constantDate && x.L_COMMITDATE < constantDate && x.L_SHIPDATE < constantDate && x.L_SHIPDATE < x.L_COMMITDATE && x.L_COMMITDATE < x.L_RECEIPTDATE && x.L_RECEIPTDATE >= constantDate2 && (x.L_SHIPMODE === mail || x.L_SHIPMODE === ship))
-        val jo = ordersTable.hashJoin(so2)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
+        val jo = Query(ordersTable).hashJoin(so2)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
         val URGENT = parseString("1-URGENT")
         val HIGH = parseString("2-HIGH")
         val aggOp = jo.groupBy(x => x.L_SHIPMODE[OptimalString]).mapValues(list => {
@@ -850,19 +820,18 @@ object Queries {
   }
 
   def Q12_functional_p2(numRuns: Int) {
-    // import queryengine.monad.{ QueryIterator => Query }
-    val lineitemTable = Query(loadLineitem())
-    val ordersTable = Query(loadOrders())
+    val lineitemTable = loadLineitem()
+    val ordersTable = loadOrders()
     for (i <- 0 until numRuns) {
       runQuery({
         val mail = parseString("MAIL")
         val ship = parseString("SHIP")
         val constantDate = parseDate("1995-01-01")
         val constantDate2 = parseDate("1994-01-01")
-        val so2 = lineitemTable.filter(x =>
+        val so2 = Query(lineitemTable).filter(x =>
           x.L_RECEIPTDATE < constantDate && x.L_COMMITDATE < constantDate && x.L_SHIPDATE < constantDate && x.L_SHIPDATE < x.L_COMMITDATE && x.L_COMMITDATE < x.L_RECEIPTDATE && x.L_RECEIPTDATE >= constantDate2 && (x.L_SHIPMODE === mail || x.L_SHIPMODE === ship))
         // val jo = ordersTable.hashJoin(so2)(x => x.O_ORDERKEY)(x => x.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
-        val jo = ordersTable.mergeJoin(so2)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
+        val jo = Query(ordersTable).mergeJoin(so2)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY)((x, y) => x.O_ORDERKEY == y.L_ORDERKEY)
         val URGENT = parseString("1-URGENT")
         val HIGH = parseString("2-HIGH")
         val aggOp = jo.groupBy(x => x.L_SHIPMODE[OptimalString]).mapValues(list => {
@@ -950,16 +919,15 @@ object Queries {
   }
 
   def Q14_functional(numRuns: Int) {
-    // import queryengine.monad.{ QueryIterator => Query }
-    val lineitemTable = Query(loadLineitem())
-    val partTable = Query(loadPart())
+    val lineitemTable = loadLineitem()
+    val partTable = loadPart()
     for (i <- 0 until numRuns) {
       runQuery({
         val promo = parseString("PROMO")
         val constantDate = parseDate("1994-04-01")
         val constantDate2 = parseDate("1994-03-01")
-        val joinResult = partTable
-          .hashJoin(lineitemTable
+        val joinResult = Query(partTable)
+          .hashJoin(Query(lineitemTable)
             .filter(x => x.L_SHIPDATE >= constantDate2 && x.L_SHIPDATE < constantDate))(_.P_PARTKEY)(_.L_PARTKEY)((x, y) => x.P_PARTKEY == y.L_PARTKEY)
         val agg1 = joinResult.filter(_.P_TYPE[OptimalString].startsWith(promo)).map(t => (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))).sum
         val agg2 = joinResult.map(t => (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double]))).sum
@@ -1117,17 +1085,17 @@ object Queries {
   }
 
   def Q18_functional(numRuns: Int) {
-    val lineitemTable = Query(loadLineitem())
-    val ordersTable = Query(loadOrders())
-    val customerTable = Query(loadCustomer())
+    val lineitemTable = loadLineitem()
+    val ordersTable = loadOrders()
+    val customerTable = loadCustomer()
     for (i <- 0 until numRuns) {
       runQuery({
         // Group aggregation on Lineitem
-        val aggOp1 = lineitemTable.groupBy(_.L_ORDERKEY).mapValues(_.map(_.L_QUANTITY).sum).filter(_._2 > 300)
+        val aggOp1 = Query(lineitemTable).groupBy(_.L_ORDERKEY).mapValues(_.map(_.L_QUANTITY).sum).filter(_._2 > 300)
           .map(x => DynamicDataRow("AggRec")(("key", x._1), ("agg", x._2)))
         // Hash Join with orders
-        val jo1 = aggOp1.hashJoin(ordersTable)(_.key[Int])(_.O_ORDERKEY)(_.key[Int] == _.O_ORDERKEY)
-        val jo2 = jo1.hashJoin(customerTable)(_.O_CUSTKEY[Int])(_.C_CUSTKEY)(_.O_CUSTKEY[Int] == _.C_CUSTKEY)
+        val jo1 = aggOp1.hashJoin(Query(ordersTable))(_.key[Int])(_.O_ORDERKEY)(_.key[Int] == _.O_ORDERKEY)
+        val jo2 = jo1.hashJoin(Query(customerTable))(_.O_CUSTKEY[Int])(_.C_CUSTKEY)(_.O_CUSTKEY[Int] == _.C_CUSTKEY)
         val aggOp2 = jo2.groupBy(x => new Q18GRPRecord(x.C_NAME[OptimalString], x.C_CUSTKEY[Int], x.O_ORDERKEY[Int], x.O_ORDERDATE[Int], x.O_TOTALPRICE[Double]))
           .mapValues(_.map(_.agg[Double]).sum)
         val sortOp = aggOp2.sortBy(t => (-t._1.O_TOTALPRICE, t._1.O_ORDERDATE))
@@ -1190,8 +1158,8 @@ object Queries {
   }
 
   def Q19_functional(numRuns: Int) {
-    val lineitemTable = Query(loadLineitem())
-    val partTable = Query(loadPart())
+    val lineitemTable = loadLineitem()
+    val partTable = loadPart()
     for (i <- 0 until numRuns) {
       runQuery({
         val Brand31 = parseString("Brand#31")
@@ -1212,14 +1180,14 @@ object Queries {
         val AIR = parseString("AIR")
         val AIRREG = parseString("AIRREG")
 
-        val so1 = partTable.filter(x => x.P_SIZE >= 1 &&
+        val so1 = Query(partTable).filter(x => x.P_SIZE >= 1 &&
           (x.P_SIZE <= 5 && x.P_BRAND === Brand31 && (x.P_CONTAINER === SMBOX || x.P_CONTAINER === SMCASE ||
             x.P_CONTAINER === SMPACK || x.P_CONTAINER === SMPKG)) ||
             (x.P_SIZE <= 10 && x.P_BRAND === Brand43 && (x.P_CONTAINER === MEDBAG || x.P_CONTAINER === MEDBOX ||
               x.P_CONTAINER === MEDPACK || x.P_CONTAINER === MEDPKG)) ||
               (x.P_SIZE <= 15 && x.P_BRAND === Brand43 && (x.P_CONTAINER === LGBOX || x.P_CONTAINER === LGCASE ||
                 x.P_CONTAINER === LGPACK || x.P_CONTAINER === LGPKG)))
-        val so2 = lineitemTable.filter(x =>
+        val so2 = Query(lineitemTable).filter(x =>
           ((x.L_QUANTITY <= 36 && x.L_QUANTITY >= 26) || (x.L_QUANTITY <= 25 && x.L_QUANTITY >= 15) ||
             (x.L_QUANTITY <= 14 && x.L_QUANTITY >= 4)) && x.L_SHIPINSTRUCT === DELIVERINPERSON &&
             (x.L_SHIPMODE === AIR || x.L_SHIPMODE === AIRREG))
@@ -1272,25 +1240,25 @@ object Queries {
   }
 
   def Q20_functional(numRuns: Int) {
-    val nationTable = Query(loadNation())
-    val supplierTable = Query(loadSupplier())
-    val partTable = Query(loadPart())
-    val partsuppTable = Query(loadPartsupp())
-    val lineitemTable = Query(loadLineitem())
+    val nationTable = loadNation()
+    val supplierTable = loadSupplier()
+    val partTable = loadPart()
+    val partsuppTable = loadPartsupp()
+    val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
       runQuery {
         val constantDate1 = parseDate("1996-01-01")
         val constantDate2 = parseDate("1997-01-01")
         val jordan = parseString("JORDAN")
         val azure = parseString("azure")
-        val scanPart = partTable.filter(x => x.P_NAME startsWith azure)
-        val scanNation = nationTable.filter(x => x.N_NAME === jordan)
-        val scanLineitem = lineitemTable.filter(x => x.L_SHIPDATE >= constantDate1 && x.L_SHIPDATE < constantDate2)
-        val jo1 = scanPart.hashJoin(partsuppTable)(x => x.P_PARTKEY)(x => x.PS_PARTKEY)((x, y) => x.P_PARTKEY == y.PS_PARTKEY)
+        val scanPart = Query(partTable).filter(x => x.P_NAME startsWith azure)
+        val scanNation = Query(nationTable).filter(x => x.N_NAME === jordan)
+        val scanLineitem = Query(lineitemTable).filter(x => x.L_SHIPDATE >= constantDate1 && x.L_SHIPDATE < constantDate2)
+        val jo1 = scanPart.hashJoin(Query(partsuppTable))(x => x.P_PARTKEY)(x => x.PS_PARTKEY)((x, y) => x.P_PARTKEY == y.PS_PARTKEY)
         val jo2 = jo1.hashJoin(scanLineitem)(x => x.PS_PARTKEY[Int])(x => x.L_PARTKEY)((x, y) => x.PS_PARTKEY[Int] == y.L_PARTKEY && x.PS_SUPPKEY[Int] == y.L_SUPPKEY)
         val aggOp = jo2.groupBy(x => new Q20GRPRecord(x.PS_PARTKEY[Int], x.PS_SUPPKEY[Int], x.PS_AVAILQTY[Int])).mapValues(_.map(_.L_QUANTITY[Double]).sum)
         val selOp = aggOp.filter(x => x._1.PS_AVAILQTY > 0.5 * x._2).map(x => x._1)
-        val jo3 = selOp.hashJoin(supplierTable)(x => x.PS_SUPPKEY)(x => x.S_SUPPKEY)((x, y) => x.PS_SUPPKEY == y.S_SUPPKEY)
+        val jo3 = selOp.hashJoin(Query(supplierTable))(x => x.PS_SUPPKEY)(x => x.S_SUPPKEY)((x, y) => x.PS_SUPPKEY == y.S_SUPPKEY)
         val jo4 = scanNation.hashJoin(jo3)(x => x.N_NATIONKEY)(x => x.S_NATIONKEY[Int])((x, y) => x.N_NATIONKEY == y.S_NATIONKEY[Int])
         val sortOp = jo4.sortBy(_.S_NAME[OptimalString].string)
         sortOp.printRows(kv =>
