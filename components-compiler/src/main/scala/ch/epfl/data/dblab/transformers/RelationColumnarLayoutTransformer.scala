@@ -106,33 +106,49 @@ class RelationColumnarLayoutTransformer(override val IR: QueryEngineExp)
     def columnStoreOf = s"$CSTORE_OF_PREFIX$className"
   }
 
-  override def transformType[T: PardisType]: PardisType[Any] = {
-    val tp = typeRep[T]
-    if (tp.isArray) {
-      if (shouldBeColumnarized(tp.typeArguments(0))) {
-        val structDef = getStructDef(tp.typeArguments(0)).get
-        tableColumnStoreType(tableColumnStoreTag(structDef.tag))
-      } else super.transformType[T]
-    } else if (shouldBeColumnarized(tp)) {
-      val structDef = getStructDef(tp).get
-      elemColumnStoreType(structDef.tag)
-    } else super.transformType[T]
+  // override def transformType[T: PardisType]: PardisType[Any] = {
+  //   val tp = typeRep[T]
+  //   if (tp.isArray) {
+  //     if (shouldBeColumnarized(tp.typeArguments(0))) {
+  //       val structDef = getStructDef(tp.typeArguments(0)).get
+  //       tableColumnStoreType(tableColumnStoreTag(structDef.tag))
+  //     } else super.transformType[T]
+  //   } else if (shouldBeColumnarized(tp)) {
+  //     val structDef = getStructDef(tp).get
+  //     elemColumnStoreType(structDef.tag)
+  //   } else super.transformType[T]
+  // }
+
+  case class ColumnarArray(originalSymbol: Rep[_], fields: List[(String, Rep[Array[_]])]) {
+    def getField(field: String)(idx: Rep[Int]): Rep[Any] = {
+      val arr = fields.find(_._1 == field).get._2.asInstanceOf[Rep[Array[Any]]]
+      implicit val tp: TypeRep[Any] = arr.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
+      val res = arrayApply(arr, idx)(tp)
+      logger.debug(s"get field of $res with tp ${res.tp}")
+      res
+    }
+    def setField(field: String)(idx: Rep[Int])(value: Rep[Any]): Rep[Unit] = {
+      val arr = fields.find(_._1 == field).get._2.asInstanceOf[Rep[Array[Any]]]
+      implicit val tp: TypeRep[Any] = arr.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
+      arr.update(idx, value)
+    }
   }
 
   val potentialTypes = scala.collection.mutable.Set[TypeRep[_]]()
   val relationArrays = scala.collection.mutable.Set[Rep[_]]()
+  val relationRecords = scala.collection.mutable.Set[Rep[_]]()
+  val relationColumnarArrays = scala.collection.mutable.Set[ColumnarArray]()
   val forbiddenTypes = scala.collection.mutable.Set[TypeRep[_]]()
   val columnarTypes = scala.collection.mutable.Set[TypeRep[_]]()
 
   analysis += statement {
-    //    case sym -> dsl"new Array($_)" =>
     case sym -> dsl"new Array[Any](${ Def(LoaderFileLineCountObject(_)) })" =>
       val innerType = sym.tp.typeArguments(0)
       relationArrays += sym
-      if (innerType.isRecord)
-        potentialTypes += innerType
-      if (innerType.isArray && innerType.typeArguments(0).isRecord)
-        forbiddenTypes += innerType.typeArguments(0)
+      // if (innerType.isRecord)
+      //   potentialTypes += innerType
+      // if (innerType.isArray && innerType.typeArguments(0).isRecord)
+      //   forbiddenTypes += innerType.typeArguments(0)
       ()
   }
 
@@ -151,10 +167,8 @@ class RelationColumnarLayoutTransformer(override val IR: QueryEngineExp)
 
   {
     analysis += rule {
-      case dsl"($arr: Array[Any])($index) = ${ UnacceptableUpdateValue(_) }" =>
-        val innerType = arr.tp.typeArguments(0)
-        if (innerType.isRecord)
-          forbiddenTypes += innerType
+      case dsl"($arr: Array[Any])($index) = $rhs" if relationArrays.contains(arr) =>
+        relationRecords += rhs
         ()
     }
   }
@@ -171,110 +185,150 @@ class RelationColumnarLayoutTransformer(override val IR: QueryEngineExp)
     computeColumnarTypes()
     logger.debug(s">>>CStore columnarTypes: ${columnarTypes}<<<")
     logger.debug(s"Relation arrays: ${relationArrays}")
-  }
-
-  rewrite += remove {
-    case (ps @ Struct(_, _, _)) if shouldBeColumnarized(ps.tp) =>
-      ()
-  }
-
-  rewrite += rule {
-    //    case an @ ArrayNew(size) if shouldBeColumnarized(an.tp.typeArguments(0)) => {
-    //    case dsl"new Array[Any]($size) as $an" if shouldBeColumnarized(an.tp.typeArguments(0)) => {
-    case an @ dsl"new Array[Any]($size)" if shouldBeColumnarized(an.tp.typeArguments(0)) => {
-      val elemType = an.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
-      val structDef = getStructDef(elemType).get
-      val newElems = structDef.fields.map(el =>
-        PardisStructArg(el.name.arrayOf, true, arrayNew(size)(el.tpe)))
-      val newTag = tableColumnStoreTag(structDef.tag)
-      val newType = tableColumnStoreType(newTag)
-      struct(newElems: _*)(newType)
-    }
-  }
-
-  rewrite += rule {
-    case au @ dsl"(($arr: Array[Any])($idx) = $value)" if shouldBeColumnarized(arr.tp.typeArguments(0)) =>
-      val elemType = arr.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
-      val structDef = getStructDef(elemType).get
-      for (el <- structDef.fields) {
-        class ColumnType
-        implicit val columnType = el.tpe.asInstanceOf[TypeRep[ColumnType]]
-        val column = field[Array[ColumnType]](apply(arr), el.name.arrayOf)
-        val struct = apply(value) match {
-          case Def(s: Struct[Any]) => s
-          case v =>
-            val nodeType = v match {
-              case Def(node) => s", node of type $node,"
-              case _         => ""
-            }
-            throw new Exception(s"Cannot handle column-store for `$arr($idx) = $v: $nodeType` with the element type of $elemType")
-        }
-        val v = struct.elems.find(e => e.name == el.name) match {
-          case Some(e) => e.init.asInstanceOf[Rep[ColumnType]]
-          case None if struct.tag.typeName.startsWith(ROW_OF_PREFIX) =>
-            val newTag = StructTags.ClassTag[Any](structDef.tag.typeName.substring(ROW_OF_PREFIX.length).columnStoreOf)
-            class ColumnStorePointerType
-            implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
-            val columnStorePointer = field[ColumnStorePointerType](apply(value), COLUMN_STORE_POINTER)
-            val column = field[Array[ColumnType]](columnStorePointer, el.name.arrayOf)
-            val idx = field[Int](apply(value), INDEX)
-            column(idx)
-        }
-        column(idx) = v
-      }
-      dsl"()"
+    logger.debug(s"Relation records: ${relationRecords}")
   }
 
   rewrite += statement {
-    /* Nodes returning struct nodes -- convert them to a reference to column store */
-    case sym -> (aa @ dsl"($arr: Array[Any])($idx)") if shouldBeColumnarized(sym.tp) =>
-      val tpe = sym.tp.asInstanceOf[RecordType[Any]]
-      val newElems = List(PardisStructArg(COLUMN_STORE_POINTER, false, apply(arr)), PardisStructArg(INDEX, false, apply(idx)))
-      val rTpe = elemColumnStoreType(tpe.tag)
-      struct[Any](newElems: _*)(rTpe)
+    case sym -> dsl"new Array[Any]($size)" if relationArrays.contains(sym) => {
+      val elemType = sym.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+      val structDef = getStructDef(elemType).get
+      val fields = structDef.fields.map(el =>
+        el.name -> arrayNew(size)(el.tpe)).toList
+      relationColumnarArrays += ColumnarArray(sym, fields)
+      logger.debug(s"fields: $fields")
+      unit()
+    }
+  }
+
+  rewrite += statement {
+    case sym -> (aa @ dsl"($arr: Array[Any])($idx)") if relationArrays.contains(arr) =>
+      val elemType = sym.tp.asInstanceOf[PardisType[Any]]
+      val columnarArray = relationColumnarArrays.find(_.originalSymbol == arr).get
+      // val newElems = List(PardisStructArg(COLUMN_STORE_POINTER, false, apply(arr)), PardisStructArg(INDEX, false, apply(idx)))
+      // val rTpe = elemColumnStoreType(tpe.tag)
+      logger.debug(s"apply elemType: $elemType --> $columnarArray")
+      val newElems = columnarArray.fields.map(f => PardisStructArg(f._1, false, columnarArray.getField(f._1)(idx)))
+      struct[Any](newElems: _*)(elemType)
+    // unit()
   }
 
   rewrite += rule {
-    case psif @ StructImmutableField(s, f) if shouldBeColumnarized(s.tp) =>
-      val structDef = getStructDef(s.tp).get
-      class ColumnType
-      implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]
-      val newTag = tableColumnStoreTag(structDef.tag)
-      class ColumnStorePointerType
-      implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
-      val columnStorePointer = field[ColumnStorePointerType](apply(s), COLUMN_STORE_POINTER)
-      val column = field[Array[ColumnType]](columnStorePointer, f.arrayOf)
-      val idx = field[Int](apply(s), INDEX)
-      column(idx)
+    case dsl"(($arr: Array[Any])($idx) = $value)" if relationArrays.contains(arr) =>
+      val elemType = arr.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+      val columnarArray = relationColumnarArrays.find(_.originalSymbol == arr).get
+      // val newElems = List(PardisStructArg(COLUMN_STORE_POINTER, false, apply(arr)), PardisStructArg(INDEX, false, apply(idx)))
+      // val rTpe = elemColumnStoreType(tpe.tag)
+      for ((fieldName, fieldArray) <- columnarArray.fields) {
+        columnarArray.setField(fieldName)(idx)(field(apply(value), fieldName))
+      }
+      logger.debug(s"update elemType: $elemType --> $columnarArray")
+      // val newElems = columnarArray.fields.map(f => PardisStructArg(f._1, false, columnarArray.getField(f._1)(idx)))
+      // struct[Any](newElems: _*)(elemType)
+      unit()
   }
 
-  rewrite += rule {
-    case psif @ StructFieldGetter(s, f) if shouldBeColumnarized(s.tp) =>
-      val structDef = getStructDef(s.tp).get
-      class ColumnType
-      implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]
-      val newTag = tableColumnStoreTag(structDef.tag)
-      class ColumnStorePointerType
-      implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
-      val columnStorePointer = field[ColumnStorePointerType](apply(s), COLUMN_STORE_POINTER)
-      val column = field[Array[ColumnType]](columnStorePointer, f.arrayOf)
-      val idx = field[Int](apply(s), INDEX)
-      column(idx)
-  }
+  // rewrite += remove {
+  //   case (ps @ Struct(_, _, _)) if shouldBeColumnarized(ps.tp) =>
+  //     ()
+  // }
 
-  rewrite += rule {
-    case psif @ StructFieldSetter(s, f, v) if shouldBeColumnarized(s.tp) =>
-      val structDef = getStructDef(s.tp).get
-      class ColumnType
-      implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]
-      val value = v.asInstanceOf[Rep[ColumnType]]
-      val newTag = tableColumnStoreTag(structDef.tag)
-      class ColumnStorePointerType
-      implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
+  // rewrite += rule {
+  //   //    case an @ ArrayNew(size) if shouldBeColumnarized(an.tp.typeArguments(0)) => {
+  //   //    case dsl"new Array[Any]($size) as $an" if shouldBeColumnarized(an.tp.typeArguments(0)) => {
+  //   case an @ dsl"new Array[Any]($size)" if shouldBeColumnarized(an.tp.typeArguments(0)) => {
+  //     val elemType = an.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+  //     val structDef = getStructDef(elemType).get
+  //     val newElems = structDef.fields.map(el =>
+  //       PardisStructArg(el.name.arrayOf, true, arrayNew(size)(el.tpe)))
+  //     val newTag = tableColumnStoreTag(structDef.tag)
+  //     val newType = tableColumnStoreType(newTag)
+  //     struct(newElems: _*)(newType)
+  //   }
+  // }
 
-      val columnStorePointer = field[ColumnStorePointerType](apply(s), COLUMN_STORE_POINTER)
-      val column = field[Array[ColumnType]](columnStorePointer, f.arrayOf)
-      val idx = field[Int](apply(s), INDEX)
-      column(idx) = value
-  }
+  // rewrite += rule {
+  //   case au @ dsl"(($arr: Array[Any])($idx) = $value)" if shouldBeColumnarized(arr.tp.typeArguments(0)) =>
+  //     val elemType = arr.tp.typeArguments(0).asInstanceOf[PardisType[Any]]
+  //     val structDef = getStructDef(elemType).get
+  //     for (el <- structDef.fields) {
+  //       class ColumnType
+  //       implicit val columnType = el.tpe.asInstanceOf[TypeRep[ColumnType]]
+  //       val column = field[Array[ColumnType]](apply(arr), el.name.arrayOf)
+  //       val struct = apply(value) match {
+  //         case Def(s: Struct[Any]) => s
+  //         case v =>
+  //           val nodeType = v match {
+  //             case Def(node) => s", node of type $node,"
+  //             case _         => ""
+  //           }
+  //           throw new Exception(s"Cannot handle column-store for `$arr($idx) = $v: $nodeType` with the element type of $elemType")
+  //       }
+  //       val v = struct.elems.find(e => e.name == el.name) match {
+  //         case Some(e) => e.init.asInstanceOf[Rep[ColumnType]]
+  //         case None if struct.tag.typeName.startsWith(ROW_OF_PREFIX) =>
+  //           val newTag = StructTags.ClassTag[Any](structDef.tag.typeName.substring(ROW_OF_PREFIX.length).columnStoreOf)
+  //           class ColumnStorePointerType
+  //           implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
+  //           val columnStorePointer = field[ColumnStorePointerType](apply(value), COLUMN_STORE_POINTER)
+  //           val column = field[Array[ColumnType]](columnStorePointer, el.name.arrayOf)
+  //           val idx = field[Int](apply(value), INDEX)
+  //           column(idx)
+  //       }
+  //       column(idx) = v
+  //     }
+  //     dsl"()"
+  // }
+
+  // rewrite += statement {
+  //    Nodes returning struct nodes -- convert them to a reference to column store 
+  //   case sym -> (aa @ dsl"($arr: Array[Any])($idx)") if shouldBeColumnarized(sym.tp) =>
+  //     val tpe = sym.tp.asInstanceOf[RecordType[Any]]
+  //     val newElems = List(PardisStructArg(COLUMN_STORE_POINTER, false, apply(arr)), PardisStructArg(INDEX, false, apply(idx)))
+  //     val rTpe = elemColumnStoreType(tpe.tag)
+  //     struct[Any](newElems: _*)(rTpe)
+  // }
+
+  // rewrite += rule {
+  //   case psif @ StructImmutableField(s, f) if shouldBeColumnarized(s.tp) =>
+  //     val structDef = getStructDef(s.tp).get
+  //     class ColumnType
+  //     implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]
+  //     val newTag = tableColumnStoreTag(structDef.tag)
+  //     class ColumnStorePointerType
+  //     implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
+  //     val columnStorePointer = field[ColumnStorePointerType](apply(s), COLUMN_STORE_POINTER)
+  //     val column = field[Array[ColumnType]](columnStorePointer, f.arrayOf)
+  //     val idx = field[Int](apply(s), INDEX)
+  //     column(idx)
+  // }
+
+  // rewrite += rule {
+  //   case psif @ StructFieldGetter(s, f) if shouldBeColumnarized(s.tp) =>
+  //     val structDef = getStructDef(s.tp).get
+  //     class ColumnType
+  //     implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]
+  //     val newTag = tableColumnStoreTag(structDef.tag)
+  //     class ColumnStorePointerType
+  //     implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
+  //     val columnStorePointer = field[ColumnStorePointerType](apply(s), COLUMN_STORE_POINTER)
+  //     val column = field[Array[ColumnType]](columnStorePointer, f.arrayOf)
+  //     val idx = field[Int](apply(s), INDEX)
+  //     column(idx)
+  // }
+
+  // rewrite += rule {
+  //   case psif @ StructFieldSetter(s, f, v) if shouldBeColumnarized(s.tp) =>
+  //     val structDef = getStructDef(s.tp).get
+  //     class ColumnType
+  //     implicit val columnElemType = structDef.fields.find(el => el.name == f).get.tpe.asInstanceOf[TypeRep[ColumnType]]
+  //     val value = v.asInstanceOf[Rep[ColumnType]]
+  //     val newTag = tableColumnStoreTag(structDef.tag)
+  //     class ColumnStorePointerType
+  //     implicit val newType = tableColumnStoreType(newTag).asInstanceOf[TypeRep[ColumnStorePointerType]]
+
+  //     val columnStorePointer = field[ColumnStorePointerType](apply(s), COLUMN_STORE_POINTER)
+  //     val column = field[Array[ColumnType]](columnStorePointer, f.arrayOf)
+  //     val idx = field[Int](apply(s), INDEX)
+  //     column(idx) = value
+  // }
 }
