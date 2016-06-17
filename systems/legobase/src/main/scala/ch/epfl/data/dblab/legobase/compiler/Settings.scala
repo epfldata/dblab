@@ -74,6 +74,7 @@ class Settings(val args: List[String]) {
   def containerFlattenning: Boolean = hasSetting(ContainerFlattenningSetting)
   def hashMapToArray: Boolean = hasSetting(HashMapToArraySetting)
   def columnStore: Boolean = hasSetting(ColumnStoreSetting)
+  def relationColumn: Boolean = hasSetting(RelationColumnarSetting)
   def partitioning: Boolean = hasSetting(ArrayPartitioningSetting)
   def hashMapPartitioning: Boolean = hasSetting(HashMapPartitioningSetting)
   def whileToForLoop: Boolean = hasSetting(WhileToForSetting)
@@ -131,6 +132,7 @@ object Settings {
     ContainerFlattenningSetting,
     HashMapToArraySetting,
     ColumnStoreSetting,
+    RelationColumnarSetting,
     PointerStoreSetting,
     ArrayPartitioningSetting,
     HashMapPartitioningSetting,
@@ -234,6 +236,10 @@ case object ColumnStoreSetting extends OptimizationSetting("cstore",
   "Column-Store optimization",
   ScalaCoreLanguage,
   "Not finished yet!")
+case object RelationColumnarSetting extends OptimizationSetting("relation-column",
+  "Columnar layout for source relations",
+  ScalaCoreLanguage,
+  "Experimental!")
 case object PointerStoreSetting extends OptimizationSetting("bad-rec",
   "Pointer-Store (de)optimization",
   ScalaCoreLanguage,

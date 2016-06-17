@@ -211,7 +211,6 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
   }
 
   if (settings.columnStore) {
-
     pipeline += new ColumnStoreTransformer(DSL)
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
@@ -221,6 +220,13 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
     pipeline += PartiallyEvaluate
     pipeline += DCE
     pipeline += ParameterPromotion
+    pipeline += DCE
+  }
+
+  if (settings.relationColumn) {
+    pipeline += new RelationColumnarLayoutTransformer(DSL)
+    pipeline += ParameterPromotion
+    pipeline += PartiallyEvaluate
     pipeline += DCE
   }
 
