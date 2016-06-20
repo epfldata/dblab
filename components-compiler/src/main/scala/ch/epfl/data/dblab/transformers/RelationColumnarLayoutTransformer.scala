@@ -29,26 +29,14 @@ import quasi._
  * }}}
  * is converted to:
  * {{{
- *    // ColumnStoreOfRecordA {
- *    //   arrayOfFieldA: Int,
- *    //   arrayOfFieldB: String
- *    // }
- *    val csArray = ColumnStoreOfRecordA {
- *      val arrayOfFieldA = new Array[Int](size)
- *      val arrayOfFieldB = new Array[String](size)
- *    }
- *    // RowOfRecordA {
- *    //   columnStorePointer: ColumnStoreOfRecordA,
- *    //   index: Int
- *    // }
+ *    val arrayOfFieldA = new Array[Int](size)
+ *    val arrayOfFieldB = new Array[String](size)
  *    for(i <- 0 until size) {
- *      val csElem = RowOfRecordA {
- *        val columnStorePointer = csArray
- *        val index = i
+ *      val elem = RecordA {
+ *        val fieldA = arrayOfFieldA(i)
+ *        val fieldB = arrayOfFieldB(i)
  *      }
- *      val elemFieldA = csElem.columnStorePointer.arrayOfFieldA(csElem.index)
- *      val elemFieldB = csElem.columnStorePointer.arrayOfFieldB(csElem.index)
- *      process(elemFieldA, elemFieldB)
+ *      process(elem.fieldA, elem.fieldB)
  *    }
  * }}}
  *
@@ -66,9 +54,7 @@ import quasi._
  * }}}
  *
  * Precondition:
- * The elements of the array of records that we would like to convert, should not
- * be set to a null value.
- * Also, the elements of such array should be set to the value of a mutable variable.
+ * The arrays should correspond to source relations.
  *
  *
  * @param IR the polymorphic embedding trait which contains the reified program.
@@ -79,6 +65,8 @@ class RelationColumnarLayoutTransformer(override val IR: QueryEngineExp)
   import IR._
 
   val logger = Logger[RelationColumnarLayoutTransformer]
+
+  case class ColumnarRecord[T](arraySymbol: Rep[Array[T]], recordSymbol: Rep[T], index: Rep[Int])
 
   case class ColumnarArray(originalSymbol: Rep[_], fields: List[(String, Rep[Array[_]])]) {
     def getField(field: String)(idx: Rep[Int]): Rep[Any] = {
@@ -96,7 +84,7 @@ class RelationColumnarLayoutTransformer(override val IR: QueryEngineExp)
   }
 
   val relationArrays = scala.collection.mutable.Set[Rep[_]]()
-  val relationRecords = scala.collection.mutable.Set[Rep[_]]()
+  val relationRecords = scala.collection.mutable.Set[ColumnarRecord[_]]()
   val relationColumnarArrays = scala.collection.mutable.Set[ColumnarArray]()
 
   analysis += statement {
@@ -106,9 +94,9 @@ class RelationColumnarLayoutTransformer(override val IR: QueryEngineExp)
       ()
   }
 
-  analysis += rule {
-    case dsl"($arr: Array[Any])($index) = $rhs" if relationArrays.contains(arr) =>
-      relationRecords += rhs
+  analysis += statement {
+    case sym -> dsl"($arr: Array[Any])($index)" if relationArrays.contains(arr) =>
+      relationRecords += ColumnarRecord(arr, sym, index)
       ()
   }
 
@@ -154,5 +142,13 @@ class RelationColumnarLayoutTransformer(override val IR: QueryEngineExp)
       // val newElems = columnarArray.fields.map(f => PardisStructArg(f._1, false, columnarArray.getField(f._1)(idx)))
       // struct[Any](newElems: _*)(elemType)
       unit()
+  }
+
+  rewrite += statement {
+    case sym -> StructImmutableField(s, f) if relationRecords.exists(_.recordSymbol == s) =>
+      val ColumnarRecord(arr, rec, idx) = relationRecords.find(_.recordSymbol == s).get
+      logger.debug(s"struct field access: $s.$f: ${sym.tp}")
+      val columnarArray = relationColumnarArrays.find(_.originalSymbol == arr).get
+      columnarArray.getField(f)(idx)
   }
 }
