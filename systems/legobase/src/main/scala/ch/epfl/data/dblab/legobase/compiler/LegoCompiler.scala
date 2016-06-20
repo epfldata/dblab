@@ -89,35 +89,24 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
     pipeline += new QueryMonadNoHorizontalVerifyer(DSL)
     if (settings.queryMonadCPS) {
       pipeline += new QueryMonadCPSLowering(schema, DSL, queryMonadLowering)
-      if (!settings.queryMonadNoEscape) {
-        pipeline += ParameterPromotion
-      }
     } else if (settings.queryMonadIterator) {
       // these should be together
       pipeline += new QueryMonadIteratorLowering(schema, DSL, queryMonadLowering, settings.queryMonadIteratorBadFilter)
-      if (!settings.queryMonadNoEscape) {
-        pipeline += new CoreLanguageToC(DSL)
-        pipeline += DCE
-        pipeline += new ParameterPromotionWithVar(DSL)
-        pipeline += DCE
-        pipeline += PartiallyEvaluate
-        pipeline += new ParameterPromotionWithVar(DSL)
-      }
       // this should be alone
       // pipeline += new QueryMonadUnfoldLowering(schema, DSL, queryMonadLowering)
     } else if (settings.queryMonadStream) {
       pipeline += new QueryMonadStreamLowering(schema, DSL, settings.queryMonadStreamChurch, queryMonadLowering)
-      if (!settings.queryMonadNoEscape) {
-        pipeline += new CoreLanguageToC(DSL)
-        pipeline += DCE
-        pipeline += new ParameterPromotionWithVar(DSL)
-        pipeline += DCE
-        pipeline += PartiallyEvaluate
-        pipeline += new ParameterPromotionWithVar(DSL)
-      }
     } else {
       pipeline += queryMonadLowering
       pipeline += ParameterPromotion
+    }
+    if (!settings.queryMonadNoEscape) {
+      pipeline += new CoreLanguageToC(DSL)
+      pipeline += DCE
+      pipeline += new ParameterPromotionWithVar(DSL)
+      pipeline += DCE
+      pipeline += PartiallyEvaluate
+      pipeline += new ParameterPromotionWithVar(DSL)
     }
     pipeline += DCE
     pipeline += PartiallyEvaluate
@@ -225,7 +214,9 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
 
   if (settings.relationColumn) {
     pipeline += new RelationColumnarLayoutTransformer(DSL)
-    pipeline += ParameterPromotion
+    pipeline += DCE
+    // pipeline += TreeDumper(true)
+    pipeline += new ParameterPromotionWithVar(DSL)
     pipeline += PartiallyEvaluate
     pipeline += DCE
   }

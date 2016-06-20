@@ -83,7 +83,7 @@ object SyntheticQueries extends TPCHRunner {
   var tpchRuns = TPCH_DEFAULT_RUNS
 
   val FIXED_OPTIMIZATION_FLAGS = List("+monad-lowering", "-name-with-flag",
-    "+force-compliant")
+    "+force-compliant" /*, "+relation-column" */ )
   val VARIABLE_OPTIMIZATION_FLAGS = List(List("+monad-cps"), List("+monad-iterator"), List("+monad-stream"),
     List("+monad-stream", "+monad-stream-church"))
 
@@ -580,6 +580,11 @@ object SyntheticQueries extends TPCHRunner {
     val ctx = context
     import ctx.unit
     import ctx.Queries._
+
+    if (param == null) {
+      param = singleDate
+      System.out.println(s"\nParameter was null. Set to $param by default!")
+    }
 
     val (queryNumber, queryFunction) = query match {
       case "QSimple"        => (0, () => querySimple(1))
