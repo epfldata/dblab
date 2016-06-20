@@ -10,7 +10,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-typedef long long numeric_int_t;
+typedef int numeric_int_t;
 typedef int boolean_t;
 
 unsigned long long timeval_subtract(struct timeval *result, struct timeval *t2, struct timeval *t1) {
