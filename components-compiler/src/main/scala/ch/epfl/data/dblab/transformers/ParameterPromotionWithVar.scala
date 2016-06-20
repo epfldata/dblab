@@ -123,7 +123,7 @@ class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends Par
           varStruct.read(name)
         }
         case None =>
-          sys.error(s"Reading variable $v not supported yet!")
+          sys.error(s"Reading variable `val $obj = readVar($v)` not supported yet!")
       }
 
   }
@@ -151,14 +151,16 @@ class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends Par
       }
       case ReadVar(v) => {
         sym.addChain(v.e.asInstanceOf[Sym[_]])
+        v.e.asInstanceOf[Sym[_]].addChain(sym)
+
       }
       case Assign(v, value: Sym[_]) => {
         val vSym = v.e.asInstanceOf[Sym[_]]
-        if (value.isInitialized && value.state == Escaped) {
-          vSym.state = Escaped
-        } else {
-          vSym.addChain(value)
-        }
+        // if (value.isInitialized && value.state == Escaped) {
+        //   vSym.state = Escaped
+        // } else {
+        vSym.addChain(value)
+        // }
       }
       case ReadVal(sy) => {
         sy match {
@@ -183,6 +185,40 @@ class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends Par
     arguments foreach {
       case sym: Sym[_] => sym.markAsEscaped
       case _           =>
+    }
+  }
+
+  implicit class SymOps2[T](sym: Sym[T]) {
+    def initialized: Unit = {
+      definedSyms(blockScopes.last) += sym
+      sym.state = NotEscaped
+      chainSyms(sym) = collection.mutable.ArrayBuffer[Sym[_]]()
+    }
+    def isInitialized: Boolean = symsState.contains(sym)
+    def state: EscapeState = symsState(sym)
+    def state_=(newState: EscapeState): Unit = {
+      if (!(isInitialized && state == newState)) {
+        symsState(sym) = newState
+        chainSyms.get(sym).getOrElse(collection.mutable.ArrayBuffer[Sym[_]]()) foreach { s =>
+          s.state = newState
+        }
+      }
+    }
+    def markAsEscaped: Unit = {
+      // System.out.println(s"${sym.id} marked as escaped")
+      sym.state = Escaped
+    }
+    def isDefinedInBlock(block: Block[_]): Boolean =
+      definedSyms(block).contains(sym)
+    def addChain[S](chainedSym: Sym[S]) = {
+      // System.out.println(s"${sym.id} <-> ${chainedSym.id}")
+      if (chainedSym.isInitialized) {
+        if (!chainSyms.contains(sym)) chainSyms(sym) = collection.mutable.ArrayBuffer[Sym[_]]()
+        if (!chainSyms(sym).contains(chainedSym)) {
+          chainSyms(sym) += chainedSym
+          sym.state = chainedSym.state
+        }
+      }
     }
   }
 }
