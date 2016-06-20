@@ -4,6 +4,7 @@ package prettyprinter
 
 import sc.pardis.utils.document._
 import sc.pardis.ir._
+import sc.pardis.types._
 import CNodes._
 import sc.pardis.prettyprinter._
 import scala.language.implicitConversions
@@ -124,9 +125,15 @@ class QueryEngineCGenerator(val outputFileName: String, val papiProfile: Boolean
     generate(program, outputFileName)
   }
 
+  override def mapScalaConstruct[A](t: PardisType[A]): String = t.name match {
+    case "Int"     => "numeric_int_t"
+    case "Boolean" => "boolean_t"
+    case _         => super.mapScalaConstruct(t)
+  }
+
   val branch_mis_pred = true
 
-  override def header: Document = super.header :/: doc"""#include "pardis_clib.h" """ ::
+  override def header: Document = super.header :/: doc"""#include "dblab_clib.h" """ ::
     {
       if (papiProfile)
         Document.break :: doc"""#include <papi.h>""" :/: {

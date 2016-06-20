@@ -1,5 +1,5 @@
-#ifndef __PARDIS_CLIB_H__
-	#define __PARDIS_CLIB_H__
+#ifndef __DBLAB_CLIB_H__
+	#define __DBLAB_CLIB_H__
 
 // Domain specific libraries should be put here and not in CCodeGenerator of pardis
 #include <glib.h>
@@ -9,6 +9,9 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+typedef long long numeric_int_t;
+typedef int boolean_t;
 
 unsigned long long timeval_subtract(struct timeval *result, struct timeval *t2, struct timeval *t1) {
    	int diff = (t2->tv_usec + 1000000 * t2->tv_sec) - (t1->tv_usec + 1000000 * t1->tv_sec);
@@ -25,7 +28,7 @@ char* ltoa(long num) {
 } 
 
 // These can be moved to the transformer for mmap
-char* strntoi_unchecked(char *s, int* num) {
+char* strntoi_unchecked(char *s, numeric_int_t* num) {
 	int n = 0;
 	int sign = 1;
 	if (*s == '-') {
