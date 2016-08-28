@@ -29,7 +29,7 @@ import sc.pardis.shallow.OptimalString
  * test:run /mnt/ramdisk/tpch fusion_micro
  * test:run /mnt/ramdisk/tpch fusion_tpch
  * test:run /mnt/ramdisk/tpch mem_cons_tpch
- * test:run /mnt/ramdisk/tpch var_sel [MICRO_QUERY]
+ * test:run /mnt/ramdisk/tpch vary_sel [MICRO_QUERY]
  */
 object SyntheticQueries extends TPCHRunner {
 
