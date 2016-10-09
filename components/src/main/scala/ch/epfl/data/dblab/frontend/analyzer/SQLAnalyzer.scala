@@ -5,7 +5,7 @@ package analyzer
 
 import sc.pardis.types._
 import schema._
-import scala.reflect.runtime.{universe => ru}
+import scala.reflect.runtime.{ universe => ru }
 import ru._
 import parser._
 import sc.pardis.shallow.OptimalString

@@ -4,13 +4,13 @@ package queryengine
 
 import ch.epfl.data.dblab.schema._
 import ch.epfl.data.sc.pardis.ir.Constant
-import ch.epfl.data.sc.pardis.types.{PardisType, RecordType}
+import ch.epfl.data.sc.pardis.types.{ PardisType, RecordType }
 import ch.epfl.data.sc.pardis.types.PardisTypeImplicits._
 import ch.epfl.data.sc.pardis.shallow.Record
 import legobase.deep.LegoBaseQueryEngineExp
 import ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps
 
-import ch.epfl.data.dblab.storagemanager.{Loader => ShallowLoader}
+import ch.epfl.data.dblab.storagemanager.{ Loader => ShallowLoader }
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
 import frontend.parser.OperatorAST._
@@ -112,8 +112,7 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
     joinType match {
       case LeftSemiJoin =>
         __newLeftHashSemiJoinOp[Record, Record, Any](leftOp, rightOp)(joinFun)(leftFun)(rightFun)(
-          leftParent.resultType.pardisType, rightParent.resultType.pardisType, leftTp
-        )
+          leftParent.resultType.pardisType, rightParent.resultType.pardisType, leftTp)
       // case LeftOuterJoin =>
       //   //TODO Generalize!
       //   val tp = rightParent match {
@@ -126,12 +125,10 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
       //   )(x => parseExpression(rightCond, x)(rightCond.tp))(rightTp)
       case AntiJoin =>
         __newHashJoinAnti[Record, Record, Any](leftOp, rightOp)(joinFun)(leftFun)(rightFun)(
-          implicitly[Manifest[Record]], leftParent.resultType.pardisType, rightParent.resultType.pardisType, leftTp
-        )
+          implicitly[Manifest[Record]], leftParent.resultType.pardisType, rightParent.resultType.pardisType, leftTp)
       case InnerJoin =>
         __newHashJoinOp[Record, Record, Any](leftOp, rightOp, unit(leftAlias), unit(rightAlias))(joinFun)(leftFun)(rightFun)(
-          implicitly[Overloaded1], leftParent.resultType.pardisType, rightParent.resultType.pardisType, leftTp
-        )
+          implicitly[Overloaded1], leftParent.resultType.pardisType, rightParent.resultType.pardisType, leftTp)
     }
   }
 
@@ -182,8 +179,7 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
 
     __newAggOp(
       convertOperator(parentOp),
-      unit(aggs.length)
-    )(grp)(aggFuncs: _*)(parentOp.resultType.pardisType, aggTpe)
+      unit(aggs.length))(grp)(aggFuncs: _*)(parentOp.resultType.pardisType, aggTpe)
   }
 
   def createSelectOperator(node: OperatorNode, parentOp: OperatorNode, cond: Expression): Rep[SelectOp[Record]] = {

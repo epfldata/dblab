@@ -22,7 +22,7 @@ sbt takes care of fetching the necessary dependencies.
 Testing
 =======
 In order to perform query compilation, first you have to go the Legobase compiler
-project using `project lego-compiler`. 
+project using `project legobase`. 
 For generating the TPCH query X with scaling factor N, you have to run the following command:
 `run DATA_FOLDER N QX`
 

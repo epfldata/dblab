@@ -7,7 +7,7 @@ import scala.language.implicitConversions
 import sc.pardis.ir._
 import sc.pardis.types.PardisTypeImplicits._
 import scala.reflect._
-import scala.reflect.runtime.universe.{termNames, typeOf, TermName, Type}
+import scala.reflect.runtime.universe.{ termNames, typeOf, TermName, Type }
 import scala.reflect.runtime.currentMirror
 import dblab.schema._
 import config._

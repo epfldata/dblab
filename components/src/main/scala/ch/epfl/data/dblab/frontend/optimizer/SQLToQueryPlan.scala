@@ -7,7 +7,7 @@ import schema._
 import scala.reflect._
 import parser._
 import parser.OperatorAST._
-import scala.reflect.runtime.{universe => ru}
+import scala.reflect.runtime.{ universe => ru }
 import ru._
 import queryengine.GenericEngine
 
