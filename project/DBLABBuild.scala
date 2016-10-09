@@ -20,6 +20,7 @@ object DBLABBuild extends Build {
     // add the library, reflect and the compiler as libraries
     libraryDependencies ++= Seq(
       "junit" % "junit-dep" % "4.10" % "test",
+      "log4j" % "log4j" % "1.2.17",
       "org.scalatest" % "scalatest_2.11" % "2.2.0" % "test",
       "org.scala-lang"         %  "scala-reflect" % scala_version,
       "org.scala-lang" % "scala-compiler" % scala_version % "optional"
@@ -46,7 +47,7 @@ object DBLABBuild extends Build {
     .setPreference(AlignSingleLineCaseStatements, true)
   }
   val scala_version = "2.11.7"
-  val sc_version = "0.1.1-SNAPSHOT"
+  val sc_version = "0.1.3-SNAPSHOT"
 
   // addCommandAlias("test-gen", ";project legobase; project root; clean")
 
@@ -103,7 +104,7 @@ object DBLABBuild extends Build {
             val filePath = cgDir / fileName
             println("Generated " + fileName)
             IO.copyFile(new java.io.File("generator-out") / (args(2) + ".scala"), filePath)
-            println(s"Run it using `test:run ${args(0)} ${args(1)} ${args(2)}`")
+            println(s"Run it using `test:runMain ch.epfl.data.dblab.${args(2)} ${args(0)} ${args(1)} ${args(2)}`")
           } else if (args(2) == "testsuite-scala") {
             for(i <- 1 to 22) {
               val newArgs = args.dropRight(1) :+ s"Q$i"

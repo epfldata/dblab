@@ -4,6 +4,7 @@ package prettyprinter
 
 import sc.pardis.utils.document._
 import sc.pardis.ir._
+import sc.pardis.types._
 import CNodes._
 import sc.pardis.prettyprinter._
 import scala.language.implicitConversions
@@ -39,18 +40,19 @@ import sc.pardis.shallow._
    * Returns the generated code that is put in the header
    */
   override def getHeader: Document = doc"""package ch.epfl.data
-package dblab.legobase
+package dblab
 
 $getShallowHeader
 import scala.collection.mutable.Set
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.TreeSet
 import scala.collection.mutable.ArrayBuffer
-import storagemanager.K2DBScanner
+import storagemanager.FastScanner
 import storagemanager.Loader
 import queryengine.GenericEngine
 import sc.pardis.shallow.OptimalString
 import sc.pardis.shallow.scalalib.collection.Cont
+import schema.Schema
 
 class MultiMap[T, S] extends HashMap[T, Set[S]] with scala.collection.mutable.MultiMap[T, S]
 
@@ -61,11 +63,16 @@ object OrderingFactory {
 }
 """
 
+  override def expToDocument(exp: Expression[_]): Document = exp match {
+    case Constant(b: Boolean) => doc"${b.toString}"
+    case _                    => super.expToDocument(exp)
+  }
+
   /**
    * Returns the class/module signature code that the generated query is put inside that.
    */
   override def getTraitSignature(): Document = doc"""object $outputFileName extends $runnerClassName {
-  def executeQuery(query: String, schema: ch.epfl.data.dblab.legobase.schema.Schema): Unit = main()
+  def executeQuery(query: String, schema: Schema): Unit = main()
   def main(args: Array[String]) {
     run(args)
   }
@@ -108,7 +115,7 @@ class QueryEngineScalaASTGenerator(val IR: Base, override val shallow: Boolean =
  * definitions. For example, in the case of defining mutable variables an appropriate comment in front
  * of that variable definition.
  */
-class QueryEngineCGenerator(val outputFileName: String, val profiler: Boolean, override val verbose: Boolean = true) extends CCodeGenerator with ScalaCoreCCodeGen /* with BooleanCCodeGen */ {
+class QueryEngineCGenerator(val outputFileName: String, val papiProfile: Boolean, override val verbose: Boolean = true) extends CCodeGenerator with ScalaCoreCCodeGen /* with BooleanCCodeGen */ {
   /**
    * Generates the code for the IR of the given program
    *
@@ -118,11 +125,17 @@ class QueryEngineCGenerator(val outputFileName: String, val profiler: Boolean, o
     generate(program, outputFileName)
   }
 
+  override def mapScalaConstruct[A](t: PardisType[A]): String = t.name match {
+    case "Int"     => "numeric_int_t"
+    case "Boolean" => "boolean_t"
+    case _         => super.mapScalaConstruct(t)
+  }
+
   val branch_mis_pred = true
 
-  override def header: Document = super.header :/: doc"""#include "pardis_clib.h" """ ::
+  override def header: Document = super.header :/: doc"""#include "dblab_clib.h" """ ::
     {
-      if (profiler)
+      if (papiProfile)
         Document.break :: doc"""#include <papi.h>""" :/: {
           if (branch_mis_pred)
             doc"""#define NUM_EVENTS 7
@@ -217,5 +230,5 @@ if (PAPI_stop_counters(values, NUM_EVENTS) != PAPI_OK) {
  */
 class QueryEngineCASTGenerator(val IR: Base,
                                override val outputFileName: String,
-                               override val profiler: Boolean,
-                               override val verbose: Boolean = true) extends QueryEngineCGenerator(outputFileName, profiler, verbose) with CASTCodeGenerator[Base]
+                               override val papiProfile: Boolean,
+                               override val verbose: Boolean = true) extends QueryEngineCGenerator(outputFileName, papiProfile, verbose) with CASTCodeGenerator[Base]

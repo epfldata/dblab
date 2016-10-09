@@ -17,12 +17,13 @@ import scala.collection.mutable
 import quasi._
 
 /**
- * Lowers query monad operations using continuation-passing style.
+ * Lowers query monad operations using church encoding of lists.
  */
-class QueryMonadCPSLowering(val schema: Schema, override val IR: QueryEngineExp) extends RuleBasedTransformer[QueryEngineExp](IR) with StructProcessing[QueryEngineExp] {
+class QueryMonadCPSLowering(override val schema: Schema, override val IR: QueryEngineExp, val QML: QueryMonadLowering) extends QueryMonadLoweringInterface(schema, IR) {
   import IR._
+  val recordUsageAnalysis: RecordUsageAnalysis[QueryEngineExp] = QML.recordUsageAnalysis
 
-  val QML = new QueryMonadLowering(schema, IR)
+  val SUPPORT_ONLY_1_TO_N = true
 
   abstract class QueryCPS[T: TypeRep] {
     val tp = typeRep[T]
@@ -42,35 +43,7 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: QueryEngineExp)
     def filter(p: Rep[T => Boolean]): QueryCPS[T] = (k: Rep[T] => Rep[Unit]) => {
       foreach(e => __ifThenElse(inlineFunction(p, e), k(e), unit()))
     }
-    def count: Rep[Int] = {
-      val size = __newVarNamed[Int](unit(0), "size")
-      foreach(e => {
-        __assign(size, readVar(size) + unit(1))
-      })
-      readVar(size)
-    }
 
-    def avg: Rep[T] = {
-      assert(typeRep[T] == DoubleType)
-      // it will generate the loops before avg two times
-      // (sum.asInstanceOf[Rep[Double]] / count).asInstanceOf[Rep[T]]
-      val sumResult = __newVarNamed[Double](unit(0.0), "sumResult")
-      val size = __newVarNamed[Int](unit(0), "size")
-      foreach(elem => {
-        __assign(sumResult, readVar(sumResult) + elem.asInstanceOf[Rep[Double]])
-        __assign(size, readVar(size) + unit(1))
-      })
-      (readVar(sumResult) / readVar(size)).asInstanceOf[Rep[T]]
-    }
-
-    def sum: Rep[T] = {
-      assert(typeRep[T] == DoubleType)
-      val sumResult = __newVarNamed[Double](unit(0.0), "sumResult")
-      foreach(elem => {
-        __assign(sumResult, readVar(sumResult) + elem.asInstanceOf[Rep[Double]])
-      })
-      readVar(sumResult).asInstanceOf[Rep[T]]
-    }
     def leftHashSemiJoin2[S: TypeRep, R: TypeRep](q2: QueryCPS[S])(leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): QueryCPS[T] = (k: Rep[T] => Rep[Unit]) => {
       val hm = __newMultiMap[R, S]()
       for (elem <- q2) {
@@ -80,12 +53,14 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: QueryEngineExp)
         val key = leftHash(elem)
         hm.get(key) foreach {
           __lambda { tmpBuffer =>
-            __ifThenElse(tmpBuffer.exists(
-              __lambda { bufElem =>
-                joinCond(elem, bufElem)
-              }), {
-              k(elem)
-            }, unit())
+            // __ifThenElse(tmpBuffer.exists(
+            //   __lambda { bufElem =>
+            //     joinCond(elem, bufElem)
+            //   }), {
+            //   k(elem)
+            // }, unit())
+            dsl"""val leftElem = $tmpBuffer find (bufElem => $joinCond($elem, bufElem))
+              leftElem foreach (le => $k($elem))"""
           }
         }
       }
@@ -157,11 +132,20 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: QueryEngineExp)
         val key = rightHash(elem)
         hm.get(key) foreach {
           __lambda { tmpBuffer =>
-            tmpBuffer foreach {
-              __lambda { bufElem =>
-                __ifThenElse(joinCond(bufElem, elem), {
-                  k(concat_records[T, S, Res](bufElem, elem))
-                }, unit())
+            if (SUPPORT_ONLY_1_TO_N) {
+              dsl"""val leftElem = $tmpBuffer find (bufElem => $joinCond(bufElem, $elem))
+              leftElem foreach ${
+                __lambda { (le: Rep[T]) =>
+                  k(concat_records[T, S, Res](le, elem))
+                }
+              }"""
+            } else {
+              tmpBuffer foreach {
+                __lambda { bufElem =>
+                  __ifThenElse(joinCond(bufElem, elem), {
+                    k(concat_records[T, S, Res](bufElem, elem))
+                  }, unit())
+                }
               }
             }
           }
@@ -169,15 +153,16 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: QueryEngineExp)
       })
     }
 
-    def groupByMapValues[K: TypeRep, S: TypeRep](par: Rep[T => K], pred: Option[Rep[T => Boolean]])(func: Rep[Array[T] => S]): QueryCPS[(K, S)] = (k: (Rep[(K, S)]) => Rep[Unit]) => {
+    def groupByMapValues[K: TypeRep, S: TypeRep](groupByResult: GroupByResult[K, T])(
+      par: Rep[T => K], pred: Option[Rep[T => Boolean]])(
+        func: Rep[Array[T] => S])(
+          adder: (Rep[_], QueryCPS[T]) => Unit): QueryCPS[(K, S)] = (k: (Rep[(K, S)]) => Rep[Unit]) => {
       type V = T
-
-      val monad = cpsMap.find(_._2 == this).get._1
 
       // System.out.println(s"HERE!$monad")
 
       val GroupByResult(array, keyRevertIndex, eachBucketSize, _, keyIndex) =
-        groupByResults(monad).asInstanceOf[GroupByResult[K, V]]
+        groupByResult
 
       val lastIndex = __newVarNamed(unit(0), "lastIndex")
 
@@ -206,53 +191,12 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: QueryEngineExp)
           // System.out.println(s"arr size ${arr.size} bucket size ${eachBucketSize(i)}")
           val key = keyRevertIndex(i)
           val Def(Lambda(_, input, _)) = func
-          cpsMap += input -> QueryCPS(arr).asInstanceOf[QueryCPS[Any]]
+          adder(input, QueryCPS(arr))
           val newValue = inlineFunction(func, arr)
           k(Tuple2(key, newValue))
         }
       }
     }
-  }
-
-  case class GroupByResult[K, V](partitionedArray: Rep[Array[Array[V]]], keyRevertIndex: Rep[Array[K]],
-                                 eachBucketSize: Rep[Array[Int]], partitions: Rep[Int], keyIndex: Rep[HashMap[K, Int]])
-
-  val groupByResults = scala.collection.mutable.Map[Rep[Any], GroupByResult[Any, Any]]()
-
-  def initGroupByArray[T: TypeRep, K: TypeRep](monad: Rep[Query[T]], par: Rep[T => K]): GroupByResult[K, T] = {
-    type V = T
-    def sizeByCardinality: Int = schema.stats.getCardinalityOrElse(typeRep[K].name, 8).toInt
-    val max_partitions = par match {
-      case Def(Lambda(_, i, Block(stmts, Def(StructImmutableField(struct, name))))) if i == struct && stmts.size == 1 =>
-        schema.stats.getDistinctAttrValuesOrElse(name, sizeByCardinality)
-      case _ =>
-        sizeByCardinality
-    }
-
-    // System.out.println(typeRep[K] + "-" + max_partitions)
-    // val MAX_SIZE = unit(4000)
-    val MAX_SIZE = unit(max_partitions)
-    val keyIndex = __newHashMap[K, Int]()
-    val keyRevertIndex = __newArray[K](MAX_SIZE)
-    val lastIndex = __newVarNamed(unit(0), "lastIndex")
-    val array = __newArray[Array[V]](MAX_SIZE)
-    // TODO generalize
-    schema.stats += "QS_MEM_ARRAY_LINEITEM" -> 4
-    schema.stats += "QS_MEM_ARRAY_DOUBLE" -> 4
-    val eachBucketSize = __newArray[Int](MAX_SIZE)
-    // FIXME if we use .count it will regenerate the same loop until before groupBy
-    // val arraySize = this.count / MAX_SIZE * unit(4)
-    val thisSize = unit(schema.stats.getCardinalityOrElse(typeRep[T].name, 1 << 25).toInt)
-    val arraySize = thisSize / MAX_SIZE * unit(8)
-    Range(unit(0), MAX_SIZE).foreach {
-      __lambda { i =>
-        // val arraySize = originalArray.length
-        // val arraySize = unit(128)
-        array(i) = __newArray[V](arraySize)
-        eachBucketSize(i) = unit(0)
-      }
-    }
-    GroupByResult(array, keyRevertIndex, eachBucketSize, MAX_SIZE, keyIndex)
   }
 
   object QueryCPS {
@@ -266,178 +210,29 @@ class QueryMonadCPSLowering(val schema: Schema, override val IR: QueryEngineExp)
       }
   }
 
-  implicit def queryToCps[T](sym: Rep[Query[T]]): QueryCPS[T] = {
-    // System.out.println(s"finding cps for $sym")
-    val cps = cpsMap(sym.asInstanceOf[Rep[Any]]).asInstanceOf[QueryCPS[T]]
-    // System.out.println(s"tp associated to sym $sym is: ${cps.tp}")
-    cps
-  }
+  type LoweredQuery[T] = QueryCPS[T]
 
-  val cpsMap = mutable.Map[Rep[Any], QueryCPS[Any]]()
-
-  rewrite += statement {
-    case sym -> QueryNew2(array) =>
-      val cps = QueryCPS(array)(array.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
-      cpsMap += sym -> cps
-      sym
-  }
-
-  rewrite += statement {
-    case sym -> QueryFilter(monad, p) =>
-      val cps = queryToCps(monad).filter(p)
-      cpsMap += sym -> cps
-      sym
-  }
-
-  rewrite += statement {
-    case sym -> QueryMap(monad, f) =>
-      val cps = queryToCps(monad).map(f)(f.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
-      cpsMap += sym -> cps
-      sym
-  }
-
-  rewrite += statement {
-    case sym -> QueryForeach(monad, f) =>
-      val cps = queryToCps(monad).foreach(i => inlineFunction(f, i))
-      cps
-  }
-
-  rewrite += statement {
-    case sym -> QuerySortBy(monad, f) =>
-      val cps = monad.sortBy(f)(f.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
-      cpsMap += sym -> cps
-      sym
-  }
-
-  rewrite += rule {
-    case QueryMinBy(monad, by) =>
-      queryToCps(monad).minBy(by)(by.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
-  }
-
-  rewrite += rule {
-    case QueryCount(monad) =>
-      queryToCps(monad).count
-  }
-
-  rewrite += rule {
-    case QueryAvg(monad) =>
-      queryToCps(monad).avg
-  }
-
-  rewrite += rule {
-    case QuerySum(monad) =>
-      queryToCps(monad).sum
-  }
-
-  rewrite += statement {
-    case sym -> QueryTake(monad, num) =>
-      val cps = queryToCps(monad).take(num)
-      cpsMap += sym -> cps
-      sym
-  }
-
-  rewrite += remove {
-    case JoinableQueryNew(joinMonad) => ()
-  }
-
-  rewrite += remove {
-    case QueryGetList(monad) => ()
-  }
-
-  rewrite += statement {
-    case sym -> JoinableQueryLeftHashSemiJoin(monad1, monad2, leftHash, rightHash, joinCond) => {
-      val Def(JoinableQueryNew(Def(QueryGetList(m1)))) = monad1
-      val Def(Lambda(lh, _, _)) = leftHash
-      val Def(Lambda(rh, _, _)) = rightHash
-      val Def(Lambda2(jc, _, _, _)) = joinCond
-      val cps = m1.leftHashSemiJoin2(monad2)(lh)(rh)(jc)(monad2.tp.typeArguments(0).asInstanceOf[TypeRep[Record]],
-        leftHash.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
-      cpsMap += sym -> cps.asInstanceOf[QueryCPS[Any]]
-      sym
-    }
-  }
-
-  rewrite += statement {
-    case sym -> JoinableQueryHashJoin(monad1, monad2, leftHash, rightHash, joinCond) => {
-      val Def(JoinableQueryNew(Def(QueryGetList(m1)))) = monad1
-      val Def(Lambda(lh, _, _)) = leftHash
-      val Def(Lambda(rh, _, _)) = rightHash
-      val Def(Lambda2(jc, _, _, _)) = joinCond
-      val cps = m1.hashJoin2(monad2)(lh)(rh)(jc)(monad2.tp.typeArguments(0).asInstanceOf[TypeRep[Record]],
-        leftHash.tp.typeArguments(1).asInstanceOf[TypeRep[Any]],
-        sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
-      cpsMap += sym -> cps.asInstanceOf[QueryCPS[Any]]
-      sym
-    }
-  }
-
-  rewrite += statement {
-    case sym -> JoinableQueryMergeJoin(monad1, monad2, ord, joinCond) => {
-      val Def(JoinableQueryNew(Def(QueryGetList(m1)))) = monad1
-      val Def(Lambda2(or, _, _, _)) = ord
-      val Def(Lambda2(jc, _, _, _)) = joinCond
-      val cps = m1.mergeJoin2(monad2)(or)(jc)(monad2.tp.typeArguments(0).asInstanceOf[TypeRep[Record]],
-        sym.tp.typeArguments(0).asInstanceOf[TypeRep[Any]])
-      cpsMap += sym -> cps.asInstanceOf[QueryCPS[Any]]
-      sym
-    }
-  }
-
-  val mapValuesFuncs = scala.collection.mutable.ArrayBuffer[Rep[Query[Any] => Any]]()
-
-  analysis += statement {
-    case sym -> GroupedQueryMapValues(groupedMonad, func) =>
-      mapValuesFuncs += func
-      ()
-  }
-
-  rewrite += removeStatement {
-    case (sym -> Lambda(_, _, _)) if mapValuesFuncs.contains(sym) =>
-      ()
-  }
-
-  case class GroupByInfo[K, V](monad: Rep[Query[V]], pred: Option[Rep[V => Boolean]], par: Rep[V => K])
-  val groupBysInfo = scala.collection.mutable.Map[Rep[Any], GroupByInfo[Any, Any]]()
-
-  object QueryGroupByAll {
-    def unapply(groupedMonad: Def[Any]): Option[GroupByInfo[Any, Any]] = groupedMonad match {
-      case QueryGroupBy(monad, par)               => Some(GroupByInfo(monad, None, par))
-      case QueryFilteredGroupBy(monad, pred, par) => Some(GroupByInfo(monad, Some(pred), par))
-      case _                                      => None
-    }
-  }
-
-  analysis += statement {
-    case sym -> QueryGroupByAll(info) => {
-      // System.out.println(info)
-      groupBysInfo += sym -> info
-      ()
-    }
-  }
-
-  rewrite += rule {
-    case GenericEngineRunQueryObject(b) =>
-      for ((key, groupByInfo) <- groupBysInfo) {
-        val groupByResult = initGroupByArray(groupByInfo.monad, groupByInfo.par)(
-          groupByInfo.par.tp.typeArguments(0).asInstanceOf[TypeRep[Any]], groupByInfo.par.tp.typeArguments(1).asInstanceOf[TypeRep[Any]])
-        groupByResults(groupByInfo.monad) = groupByResult
-      }
-      val newBlock = transformBlock(b)(b.tp)
-      GenericEngineRunQueryObject(newBlock)(newBlock.tp)
-  }
-
-  // TODO: Separate groupBy and mapValues
-  rewrite += statement {
-    case sym -> GroupedQueryMapValues(groupedMonad, func) =>
-      val (monad, pred, par) = groupedMonad match {
-        case Def(QueryFilteredGroupBy(monad, pred, par)) => (monad, Some(pred), par)
-        case Def(QueryGroupBy(monad, par))               => (monad, None, par)
-      }
-      implicit val typeK = groupedMonad.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]
-      implicit val typeV = groupedMonad.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-      implicit val typeS = func.tp.typeArguments(1).asInstanceOf[TypeRep[Any]]
-      val cps = monad.groupByMapValues(par, pred)(func.asInstanceOf[Rep[Array[Any] => Any]])(typeK, typeS)
-      cpsMap += sym -> cps.asInstanceOf[QueryCPS[Any]]
-      sym
-  }
+  def __newLoweredQuery[T: TypeRep](array: Rep[Array[T]]): LoweredQuery[T] = QueryCPS(array)
+  def monadFilter[T: TypeRep](query: LoweredQuery[T], p: Rep[T => Boolean]): LoweredQuery[T] = query.filter(p)
+  def monadMap[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): LoweredQuery[S] = query.map(f)
+  def monadForeach[T: TypeRep](query: LoweredQuery[T], f: Rep[T => Unit]): Unit = query.foreach(x => inlineFunction(f, x))
+  def monadSortBy[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): LoweredQuery[T] = query.sortBy(f)
+  def monadMinBy[T: TypeRep, S: TypeRep](query: LoweredQuery[T], f: Rep[T => S]): Rep[T] = query.minBy(f)
+  def monadTake[T: TypeRep](query: LoweredQuery[T], n: Rep[Int]): LoweredQuery[T] = query.take(n)
+  def monadMergeJoin[T: TypeRep, S: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
+    ord: (Rep[T], Rep[S]) => Rep[Int])(joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res] = q1.mergeJoin2(q2)(ord)(joinCond)
+  def monadLeftHashSemiJoin[T: TypeRep, S: TypeRep, R: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
+    leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(
+      joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[T] =
+    q1.leftHashSemiJoin2(q2)(leftHash)(rightHash)(joinCond)
+  def monadHashJoin[T: TypeRep, S: TypeRep, R: TypeRep, Res: TypeRep](q1: LoweredQuery[T], q2: LoweredQuery[S])(
+    leftHash: Rep[T] => Rep[R])(rightHash: Rep[S] => Rep[R])(
+      joinCond: (Rep[T], Rep[S]) => Rep[Boolean]): LoweredQuery[Res] =
+    q1.hashJoin2(q2)(leftHash)(rightHash)(joinCond)
+  def monadGroupByMapValues[T: TypeRep, K: TypeRep, S: TypeRep](
+    query: LoweredQuery[T], groupByResult: GroupByResult[K, T])(
+      par: Rep[T => K], pred: Option[Rep[T => Boolean]])(
+        func: Rep[Array[T] => S])(
+          adder: (Rep[_], LoweredQuery[T]) => Unit): LoweredQuery[(K, S)] =
+    query.groupByMapValues(groupByResult)(par, pred)(func)(adder)
 }

@@ -11,81 +11,80 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.TreeSet
 import scala.language.implicitConversions
+import QueryIterator.{ NULL, iterate }
 
 // @reflect[Query[_]]
 // @transformation
-abstract class QueryIterator[T, Source] { self =>
-  def source: Source
-  def atEnd(s: Source): Boolean
-  def next(s: Source): (T, Source)
+abstract class QueryIterator[T] { self =>
+  def destroy[S](consumer: (() => T) => S): S
 
-  @pure def map[S](f: T => S): QueryIterator[S, Source] = new QueryIterator[S, Source] {
-    def source = self.source
-    def atEnd(s: Source): Boolean = self.atEnd(s)
-    def next(s: Source): (S, Source) = self.next(s) match {
-      case (e, sp) => (f(e), sp)
-    }
-  }
-  @pure def filter(p: T => Boolean): QueryIterator[T, Source] = new QueryIterator[T, Source] {
-    def zeroValue[TP]: TP = null.asInstanceOf[TP]
-    var hd = zeroValue[T]
-    var curTail = zeroValue[Source]
-    var tmpAtEnd = false
-    def source = self.source
-    def atEnd(s: Source): Boolean = self.atEnd(s) || tmpAtEnd || {
-      var tmpSource = s
-      val nextAndRest = self.next(tmpSource)
-      var tmpHd = nextAndRest._1
-      var tmpRest = nextAndRest._2
-      while (!(tmpAtEnd || p(tmpHd))) {
-        tmpSource = tmpRest
-        if (self.atEnd(tmpSource)) {
-          tmpAtEnd = true
-          tmpHd = zeroValue[T]
-          tmpRest = zeroValue[Source]
-        } else {
-          val nextAndRest2 = self.next(tmpSource)
-          tmpHd = nextAndRest2._1
-          tmpRest = nextAndRest2._2
-        }
+  final def findFirst(p: T => Boolean, next: () => T): T = {
+    var elem: T = NULL
+    var found = false
+    while (!found && {
+      elem = next()
+      elem
+    } != NULL) {
+      if (p(elem)) {
+        found = true
       }
-      hd = tmpHd
-      curTail = tmpRest
-      tmpAtEnd
     }
-    def next(s: Source): (T, Source) = (hd, curTail)
+    elem
   }
-  // @pure def foldLeft[S](z: S)(f: (S, T) => S): S = {
-  //   var res = z
-  //   foreach(e => res = f(res, e))
-  //   res
-  // }
-  def foreach(f: T => Unit): Unit = {
-    var s = source
-    while (!atEnd(s)) {
-      val n = next(s)
-      f(n._1)
-      s = n._2
+  @pure def map[S](f: T => S): QueryIterator[S] = destroy { next =>
+    iterate { () =>
+      val elem = next()
+      if (elem == NULL)
+        NULL
+      else
+        f(elem)
     }
+  }
+  @pure def filter(p: T => Boolean): QueryIterator[T] = destroy { next =>
+    iterate { () =>
+      findFirst(p, next)
+    }
+  }
+  def foreach(f: T => Unit): Unit = destroy { next =>
+    var elem: T = NULL
+    while ({
+      elem = next()
+      elem
+    } != NULL) {
+      f(elem)
+    }
+  }
+
+  @pure def foldLeft[S](z: S)(f: (S, T) => S): S = {
+    var res = z
+    for (e <- this) {
+      res = f(res, e)
+    }
+    res
   }
 
   @pure def sum(implicit num: Numeric[T]): T = {
     var res = num.zero
-    foreach(e => res = num.plus(res, e))
+    for (e <- this) {
+      res = num.plus(res, e)
+    }
     res
   }
   @pure def count: Int = {
     var size = 0
-    foreach(e => size += 1)
+    for (e <- this) {
+      size += 1
+    }
     size
   }
   @pure def avg(implicit num: Fractional[T]): T =
     num.div(sum, num.fromInt(count))
-  @pure def groupBy[K](par: T => K): GroupedQueryIterator[K, T, Source] =
+  @pure def groupBy[K](par: T => K): GroupedQueryIterator[K, T] =
     new GroupedQueryIterator(this, par)
-  // @pure def filteredGroupBy[K](pred: T => Boolean, par: T => K): GroupedQueryIterator[K, T] =
-  //   filter(pred).groupBy(par)
-  @dontLift def sortBy[S](f: T => S)(implicit ord: Ordering[S]): QueryIterator[T, Int] = new QueryIterator[T, Int] {
+  @pure def filteredGroupBy[K](pred: T => Boolean, par: T => K): GroupedQueryIterator[K, T] =
+    filter(pred).groupBy(par)
+
+  def sortBy[S](f: T => S)(implicit ord: Ordering[S]): QueryIterator[T] = {
     val (treeSet, size) = {
       val treeSet = new TreeSet()(
         new Ordering[T] {
@@ -98,32 +97,23 @@ abstract class QueryIterator[T, Source] { self =>
             }
           }
         })
-      // var count = 0
-      self.foreach((elem: T) => {
+      for (elem <- this) {
         treeSet += elem
-        // count += 1
-      })
-      // println(count)
+      }
       (treeSet, treeSet.size)
     }
-
-    def source = 0
-
-    // var lastIndex = -1
-    // var lastElem: T = _
-    // println(size)
-
-    def atEnd(s: Int): Boolean = s >= size
-    def next(s: Int): (T, Int) = {
-      // if (lastIndex != s) {
-      val elem = treeSet.head
-      treeSet -= elem
-      // lastElem = elem
-      // lastIndex = s
-      Tuple2(elem, s + 1)
-      // } else {
-      //   Tuple2(lastElem, s + 1)
-      // }
+    var index = 0
+    destroy { next =>
+      iterate { () =>
+        if (index >= size)
+          NULL
+        else {
+          index += 1
+          val elem = treeSet.head
+          treeSet -= elem
+          elem
+        }
+      }
     }
   }
 
@@ -142,11 +132,11 @@ abstract class QueryIterator[T, Source] { self =>
 
   @pure def minBy[S](f: T => S)(implicit ord: Ordering[S]): T = {
     var minResult: T = null.asInstanceOf[T]
-    foreach(e => {
+    for (e <- this) {
       if (minResult == null || ord.compare(f(minResult), f(e)) > 0) {
         minResult = e
       }
-    })
+    }
     minResult
   }
 
@@ -154,20 +144,27 @@ abstract class QueryIterator[T, Source] { self =>
     var rows = 0
     if (limit == -1) {
       for (e <- this) {
-        // printf(format, elems.map(_(e)): _*)
         printFunc(e)
         rows += 1
       }
     } else {
-      var s = source
-      while (!atEnd(s) && rows < limit) {
-        val n = next(s)
-        printFunc(n._1)
-        s = n._2
-        rows += 1
+      destroy { next =>
+        var elem: T = NULL
+        while (rows < limit && {
+          elem = next()
+          elem
+        } != NULL) {
+          printFunc(elem)
+          rows += 1
+        }
       }
     }
     printf("(%d rows)\n", rows)
+  }
+
+  @pure def materialize: QueryIterator[T] = {
+    val arr = getList.asInstanceOf[List[Any]].toArray.asInstanceOf[Array[T]]
+    QueryIterator(arr)
   }
 
   @pure def getList: List[T] = {
@@ -180,190 +177,171 @@ abstract class QueryIterator[T, Source] { self =>
 }
 
 object QueryIterator {
-  @dontLift def apply[T](arr: Array[T]): QueryIterator[T, Int] = new QueryIterator[T, Int] {
-    def source = 0
-
-    def atEnd(ts: Int) = ts >= arr.length
-    def next(ts: Int) = Tuple2(arr(ts), ts + 1)
-
+  def NULL[S]: S = null.asInstanceOf[S]
+  @dontLift def apply[T](arr: Array[T]): QueryIterator[T] = new QueryIterator[T] {
+    var index = 0
+    override def destroy[S](consumer: (() => T) => S): S = {
+      consumer { () =>
+        if (index >= arr.length)
+          NULL
+        else {
+          index += 1
+          arr(index - 1)
+        }
+      }
+    }
   }
   def apply[T](set: scala.collection.mutable.Set[T]): SetIterator[T] = new SetIterator[T](set)
+  def iterate[T](next: () => T): QueryIterator[T] = new QueryIterator[T] {
+    override def destroy[S](consumer: (() => T) => S): S = consumer(next)
+  }
 }
 
-class SetIterator[T](set: scala.collection.mutable.Set[T]) extends QueryIterator[T, Unit] { self =>
+class SetIterator[T](set: scala.collection.mutable.Set[T]) extends QueryIterator[T] { self =>
   var currentSet: scala.collection.mutable.Set[T] = set
-  def source = ()
 
-  def atEnd(ts: Unit) = currentSet.isEmpty
-  def next(ts: Unit) = {
-    val elem = currentSet.head
-    currentSet = currentSet.tail
-    Tuple2(elem, ())
+  override def destroy[S](consumer: (() => T) => S): S = {
+    consumer { () =>
+      if (currentSet.isEmpty) {
+        NULL
+      } else {
+        val elem = currentSet.head
+        currentSet = currentSet.tail
+        elem
+      }
+    }
+  }
+
+  def next(): T = destroy { n =>
+    n()
   }
 
   def withFilter(p: T => Boolean): SetIterator[T] = new SetIterator[T](set) {
     val underlying = self.filter(p)
-    override def atEnd(ts: Unit) = underlying.atEnd(())
-    override def next(ts: Unit) = underlying.next(())
+    override def destroy[S](consumer: (() => T) => S): S = underlying.destroy(consumer)
   }
 }
 
-class JoinableQueryIterator[T <: Record, Source1](private val underlying: QueryIterator[T, Source1]) {
-  def hashJoin[S <: Record, R, Source2](q2: QueryIterator[S, Source2])(leftHash: T => R)(rightHash: S => R)(
-    joinCond: (T, S) => Boolean): QueryIterator[DynamicCompositeRecord[T, S], Source2] = new QueryIterator[DynamicCompositeRecord[T, S], Source2] {
-    def source = q2.source
-
+class JoinableQueryIterator[T <: Record](private val underlying: QueryIterator[T]) {
+  def hashJoin[S <: Record, R](q2: QueryIterator[S])(leftHash: T => R)(rightHash: S => R)(
+    joinCond: (T, S) => Boolean): QueryIterator[DynamicCompositeRecord[T, S]] = {
     val hm = MultiMap[R, T]
     for (elem <- underlying) {
       hm.addBinding(leftHash(elem), elem)
     }
 
-    var nextSource: Source2 = null.asInstanceOf[Source2]
-    var tmpAtEnd = false
-    var iterator: SetIterator[T] = null
-    var leftElem = null.asInstanceOf[T]
-    var rightElem = null.asInstanceOf[S]
-
-    def atEnd(ts: Source2) = /*q2.atEnd(ts) || */ tmpAtEnd || {
-      if (iterator == null || iterator.atEnd(())) {
-        var tmpSource = ts
-        var leftElemFound = false
-        while (!tmpAtEnd && !leftElemFound) {
-          if (q2.atEnd(tmpSource)) {
-            tmpAtEnd = true
-          } else {
-            val nextAndRest2 = q2.next(tmpSource)
-            val tmpHd = nextAndRest2._1
-            tmpSource = nextAndRest2._2
-            val elem = tmpHd
-            rightElem = elem
-            val key = rightHash(elem)
-            hm.get(key) foreach { tmpBuffer =>
-              iterator = QueryIterator(tmpBuffer.filter(bufElem => joinCond(bufElem, elem)))
-              //QueryIterator(tmpBuffer).withFilter(bufElem => joinCond(bufElem, elem))
-              // println(s"set iterator $iterator")
-              if (!iterator.atEnd(())) {
-                leftElemFound = true
-                leftElem = iterator.next(())._1
-              }
+    q2.destroy { next =>
+      iterate { () =>
+        var found = false
+        var elem1: T = NULL
+        val elem2 = q2 findFirst ({ t =>
+          val k = rightHash(t)
+          hm.get(k) exists { tmpBuffer =>
+            val leftElem = tmpBuffer find (bufElem => joinCond(bufElem, t))
+            // Only to check if it is not the N-M case
+            if (tmpBuffer.filter(bufElem => joinCond(bufElem, t)).size > 1) {
+              throw new Exception("This join is for the N-M case")
+            }
+            leftElem match {
+              case Some(le) =>
+                elem1 = le
+                found = true
+                true
+              case None =>
+                false
             }
           }
+        }, next)
+        if (found) {
+          elem1.concatenateDynamic(elem2)
+        } else {
+          NULL
         }
-        // println(s"got left elem $leftElem")
-        nextSource = tmpSource
-        tmpAtEnd
-      } else {
-        // println(s"got left elem next $leftElem")
-        leftElem = iterator.next(())._1
-        false
       }
     }
-    def next(ts: Source2) = leftElem.concatenateDynamic(rightElem) -> nextSource
   }
 
-  def mergeJoin[S <: Record, Source2](q2: QueryIterator[S, Source2])(
-    ord: (T, S) => Int)(joinCond: (T, S) => Boolean): QueryIterator[DynamicCompositeRecord[T, S], (Source1, Source2)] =
-    new QueryIterator[DynamicCompositeRecord[T, S], (Source1, Source2)] {
-      val q1 = underlying
-      def source = (q1.source, q2.source)
-      var ts1: Source1 = _
-      var ts2: Source2 = _
-      var elem1: T = _
-      var elem2: S = _
-      var leftEnd: Boolean = false
-      var rightEnd: Boolean = false
-      var nextJoinElem: DynamicCompositeRecord[T, S] = _
-      var tmpAtEnd = false // keeps if the two sources are at the end or not
-      def proceedLeft(): Unit = {
-        if (q1.atEnd(ts1)) {
-          leftEnd = true
-        } else {
-          val (ne1, ns1) = q1.next(ts1)
-          elem1 = ne1
-          ts1 = ns1
-        }
-      }
-      def proceedRight(): Unit = {
-        if (q2.atEnd(ts2)) {
-          rightEnd = true
-        } else {
-          val (ne2, ns2) = q2.next(ts2)
-          elem2 = ne2
-          ts2 = ns2
-        }
-      }
-      def atEnd(ts: (Source1, Source2)) = {
-        tmpAtEnd || {
-          if (elem1 == null && elem2 == null) {
-            ts1 = q1.source
-            ts2 = q2.source
-            proceedLeft()
-            proceedRight()
+  def mergeJoin[S <: Record](q2: QueryIterator[S])(
+    ord: (T, S) => Int)(joinCond: (T, S) => Boolean): QueryIterator[DynamicCompositeRecord[T, S]] = {
+    var elem1: T = NULL
+    var elem2: S = NULL
+    var nextJoinElem: DynamicCompositeRecord[T, S] = NULL
+    var atEnd: Boolean = false
+    def proceedLeft(next: () => T): Unit = {
+      elem1 = next()
+      atEnd ||= elem1 == NULL
+    }
+    def proceedRight(next: () => S): Unit = {
+      elem2 = next()
+      atEnd ||= elem2 == NULL
+    }
+    var init = false
+    underlying.destroy { nextLeft =>
+      q2.destroy { nextRight =>
+        iterate { () =>
+          var found: Boolean = false
+          if (!init) {
+            proceedLeft(nextLeft)
+            proceedRight(nextRight)
+            init = true
           }
-          var found = false
-          while (!tmpAtEnd && !found) {
-            if (leftEnd || rightEnd) {
-              tmpAtEnd = true
+          while (!found && !atEnd) {
+            val (ne1, ne2) = elem1 -> elem2
+            val cmp = ord(ne1, ne2)
+            if (cmp < 0) {
+              proceedLeft(nextLeft)
             } else {
-              val (ne1, ne2) = elem1 -> elem2
-              val cmp = ord(ne1, ne2)
-              if (cmp < 0) {
-                proceedLeft()
-              } else if (cmp > 0) {
-                proceedRight()
-              } else {
-                val le = ne1
-                val re = ne2
-                nextJoinElem = le.concatenateDynamic(re)
-                proceedRight()
+              proceedRight(nextRight)
+              if (cmp == 0) {
+                nextJoinElem = ne1.concatenateDynamic(ne2)
                 found = true
               }
             }
           }
-          !found
+          if (atEnd && !found)
+            NULL
+          else
+            nextJoinElem
         }
       }
-      def next(ts: (Source1, Source2)) = {
-        nextJoinElem -> (ts1 -> ts2)
-      }
     }
+  }
 
-  def leftHashSemiJoin[S <: Record, R, Source2](q2: QueryIterator[S, Source2])(leftHash: T => R)(rightHash: S => R)(
-    joinCond: (T, S) => Boolean): QueryIterator[T, Source1] = new QueryIterator[T, Source1] {
+  def leftHashSemiJoin[S <: Record, R](q2: QueryIterator[S])(leftHash: T => R)(rightHash: S => R)(
+    joinCond: (T, S) => Boolean): QueryIterator[T] = {
     val hm = MultiMap[R, S]
     for (elem <- q2) {
       hm.addBinding(rightHash(elem), elem)
     }
-
     val leftIterator = underlying.filter(t => {
       val k = leftHash(t)
       hm.get(k).exists(buf =>
         buf.exists(e => joinCond(t, e)))
     })
 
-    def source = leftIterator.source
-    def atEnd(ts: Source1): Boolean = leftIterator.atEnd(ts)
-    def next(ts: Source1) = leftIterator.next(ts)
+    leftIterator.destroy { next =>
+      iterate { () =>
+        next()
+      }
+    }
   }
 }
 
-case class GroupByResult[K, V](partitionedArray: Array[Array[V]], keyRevertIndex: Array[K],
-                               eachBucketSize: Array[Int], partitions: Int, keyIndex: HashMap[K, Int])
-
-class GroupedQueryIterator[K, V, Source1](underlying: QueryIterator[V, Source1], par: V => K) {
+class GroupedQueryIterator[K, V](underlying: QueryIterator[V], par: V => K) {
   def getGroupByResult: GroupByResult[K, V] = {
-    // val max_partitions = 50
+    val max_partitions = 50
     // Q3
     // val max_partitions = 150000
     // Q9
-    val max_partitions = 25 * 7
+    // val max_partitions = 25 * 7
     val MAX_SIZE = max_partitions
     val keyIndex = new HashMap[K, Int]()
     val keyRevertIndex = new Array[Any](MAX_SIZE).asInstanceOf[Array[K]]
     var lastIndex = 0
     val array = new Array[Array[Any]](MAX_SIZE).asInstanceOf[Array[Array[V]]]
     val eachBucketSize = new Array[Int](MAX_SIZE)
-    val thisSize = 1 << 25
+    // val thisSize = 1 << 25
+    val thisSize = 1 << 22
     val arraySize = thisSize / MAX_SIZE * 8
     Range(0, MAX_SIZE).foreach { i =>
       // val arraySize = originalArray.length
@@ -375,7 +353,7 @@ class GroupedQueryIterator[K, V, Source1](underlying: QueryIterator[V, Source1],
     // ???
   }
 
-  @pure def mapValues[S](func: QueryIterator[V, Int] => S): QueryIterator[(K, S), Int] = new QueryIterator[(K, S), Int] {
+  @pure def mapValues[S](func: QueryIterator[V] => S): QueryIterator[(K, S)] = {
 
     val (groupByResult, partitions) = {
       val groupByResult = getGroupByResult
@@ -396,17 +374,23 @@ class GroupedQueryIterator[K, V, Source1](underlying: QueryIterator[V, Source1],
       (groupByResult, lastIndex)
     }
 
-    def source: Int = 0
+    var index: Int = 0
 
-    def atEnd(s: Int): Boolean = s >= partitions
-    def next(s: Int): ((K, S), Int) = {
-      val GroupByResult(array, keyRevertIndex, eachBucketSize, _, _) =
-        groupByResult
-      val i = s
-      val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
-      val key = keyRevertIndex(i)
-      val newValue = func(QueryIterator(arr))
-      Tuple2(Tuple2(key, newValue), s + 1)
+    underlying.destroy { next =>
+      iterate { () =>
+        if (index >= partitions) {
+          NULL
+        } else {
+          val GroupByResult(array, keyRevertIndex, eachBucketSize, _, _) =
+            groupByResult
+          val i = index
+          index += 1
+          val arr = array(i).dropRight(array(i).length - eachBucketSize(i))
+          val key = keyRevertIndex(i)
+          val newValue = func(QueryIterator(arr))
+          key -> newValue
+        }
+      }
     }
   }
 }

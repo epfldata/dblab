@@ -17,10 +17,7 @@ import sc.pardis.shallow.utils.DefaultValue
 trait StructProcessing[Lang <: Base] extends StructCollector[Lang] {
   import IR._
 
-  // TODO remove
-  def concat_types[T: TypeRep, S: TypeRep, Res: TypeRep]: TypeRep[Res] = {
-    typeRep[Res]
-  }
+  val recordUsageAnalysis: RecordUsageAnalysis[Lang]
 
   def getStructDefByTag[T: TypeRep](tag: StructTags.StructTag[T]): Option[PardisStructDef[T]] =
     structsDefMap.get(tag).asInstanceOf[Option[PardisStructDef[T]]]
@@ -38,10 +35,20 @@ trait StructProcessing[Lang <: Base] extends StructCollector[Lang] {
     case t                 => throw new Exception(s"No fields exist for ${typeRep[T]}")
   }
 
+  def getRegisteredFieldsOfType[A: TypeRep]: List[String] = {
+    typeRep[A] match {
+      case rt: RecordType[_] if rt.originalType.nonEmpty => getRegisteredFieldsOfType(rt.originalType.get)
+      case t => recordUsageAnalysis.getRegisteredFieldsOfType(t)
+    }
+  }
+
   def concat_records[T: TypeRep, S: TypeRep, Res: TypeRep](elem1: Rep[T], elem2: Rep[S]): Rep[Res] = {
-    val resultType = concat_types[T, S, Res]
-    val elems1 = getFields[T].map(x => PardisStructArg(x.name, x.mutable, field(elem1, x.name)(x.tpe)))
-    val elems2 = getFields[S].map(x => PardisStructArg(x.name, x.mutable, field(elem2, x.name)(x.tpe)))
+    val resultType = typeRep[Res]
+    val regFields = getRegisteredFieldsOfType(elem1.tp) ++ getRegisteredFieldsOfType(elem2.tp)
+    // System.out.println(s"regFields: $regFields")
+    def fieldIsRegistered(f: StructElemInformation): Boolean = regFields.contains(f.name) || !recordUsageAnalysis.removeUnusedFields
+    val elems1 = getFields[T].filter(fieldIsRegistered).map(x => PardisStructArg(x.name, x.mutable, field(elem1, x.name)(x.tpe)))
+    val elems2 = getFields[S].filter(fieldIsRegistered).map(x => PardisStructArg(x.name, x.mutable, field(elem2, x.name)(x.tpe)))
     val structFields = elems1 ++ elems2
     struct(structFields: _*)(resultType)
   }

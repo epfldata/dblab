@@ -34,6 +34,7 @@ trait QueryOps extends Base with ListOps with ArrayOps { this: GroupedQueryOps =
     def take(i: Rep[Int]): Rep[Query[T]] = queryTake[T](self, i)(typeT)
     def minBy[S](f: Rep[(T => S)])(implicit typeS: TypeRep[S], ord: Ordering[S]): Rep[T] = queryMinBy[T, S](self, f)(typeT, typeS, ord)
     def getList: Rep[List[T]] = queryGetList[T](self)(typeT)
+    def materialize: Rep[Query[T]] = queryMaterialize[T](self)(typeT)
     def printRows(printFunc: Rep[(T => Unit)], limit: Rep[Int]): Rep[Unit] = queryPrintRows[T](self, printFunc, limit)(typeT)
     def underlying: Rep[List[T]] = query_Field_Underlying[T](self)(typeT)
   }
@@ -77,6 +78,8 @@ trait QueryOps extends Base with ListOps with ArrayOps { this: GroupedQueryOps =
   type QueryMinBy[T, S] = QueryIRs.QueryMinBy[T, S]
   val QueryGetList = QueryIRs.QueryGetList
   type QueryGetList[T] = QueryIRs.QueryGetList[T]
+  val QueryMaterialize = QueryIRs.QueryMaterialize
+  type QueryMaterialize[T] = QueryIRs.QueryMaterialize[T]
   val QueryPrintRows = QueryIRs.QueryPrintRows
   type QueryPrintRows[T] = QueryIRs.QueryPrintRows[T]
   val Query_Field_Underlying = QueryIRs.Query_Field_Underlying
@@ -98,6 +101,7 @@ trait QueryOps extends Base with ListOps with ArrayOps { this: GroupedQueryOps =
   def queryTake[T](self: Rep[Query[T]], i: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Query[T]] = QueryTake[T](self, i)
   def queryMinBy[T, S](self: Rep[Query[T]], f: Rep[((T) => S)])(implicit typeT: TypeRep[T], typeS: TypeRep[S], ord: Ordering[S]): Rep[T] = QueryMinBy[T, S](self, f)
   def queryGetList[T](self: Rep[Query[T]])(implicit typeT: TypeRep[T]): Rep[List[T]] = QueryGetList[T](self)
+  def queryMaterialize[T](self: Rep[Query[T]])(implicit typeT: TypeRep[T]): Rep[Query[T]] = QueryMaterialize[T](self)
   def queryPrintRows[T](self: Rep[Query[T]], printFunc: Rep[((T) => Unit)], limit: Rep[Int])(implicit typeT: TypeRep[T]): Rep[Unit] = QueryPrintRows[T](self, printFunc, limit)
   def query_Field_Underlying[T](self: Rep[Query[T]])(implicit typeT: TypeRep[T]): Rep[List[T]] = Query_Field_Underlying[T](self)
   def queryApplyObject1[T](underlying: Rep[List[T]])(implicit typeT: TypeRep[T]): Rep[Query[T]] = {
@@ -294,6 +298,18 @@ object QueryIRs extends Base {
     override def partiallyEvaluate(children: Any*): List[T] = {
       val self = children(0).asInstanceOf[Query[T]]
       self.getList
+    }
+    override def partiallyEvaluable: Boolean = true
+
+  }
+
+  case class QueryMaterialize[T](self: Rep[Query[T]])(implicit val typeT: TypeRep[T]) extends FunctionDef[Query[T]](Some(self), "materialize", List()) {
+    override def curriedConstructor = (copy[T] _)
+    override def isPure = true
+
+    override def partiallyEvaluate(children: Any*): Query[T] = {
+      val self = children(0).asInstanceOf[Query[T]]
+      self.materialize
     }
     override def partiallyEvaluable: Boolean = true
 

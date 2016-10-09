@@ -73,8 +73,8 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
   pipeline += new StatisticsEstimator(DSL, schema)
 
   // pipeline += TreeDumper(false)
-
-  pipeline += RecordLowering(shouldRemoveUnusedFields)
+  val recordLowering = RecordLowering(DSL, shouldRemoveUnusedFields, settings.forceCompliant)
+  pipeline += recordLowering
   // pipeline += TreeDumper(false)
   pipeline += ParameterPromotion
   pipeline += DCE
@@ -85,19 +85,29 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
       pipeline += new QueryMonadOptimization(settings.queryMonadHoisting)
     }
     pipeline += DCE
+    val queryMonadLowering = new QueryMonadLowering(schema, DSL, recordLowering.recordLowering)
+    pipeline += new QueryMonadNoHorizontalVerifyer(DSL)
     if (settings.queryMonadCPS) {
-      pipeline += new QueryMonadCPSLowering(schema, DSL)
+      pipeline += new QueryMonadCPSLowering(schema, DSL, queryMonadLowering)
     } else if (settings.queryMonadIterator) {
-      pipeline += new QueryMonadIteratorLowering(schema, DSL)
+      // these should be together
+      pipeline += new QueryMonadIteratorLowering(schema, DSL, queryMonadLowering, settings.queryMonadIteratorBadFilter)
+      // this should be alone
+      // pipeline += new QueryMonadUnfoldLowering(schema, DSL, queryMonadLowering)
     } else if (settings.queryMonadStream) {
-      pipeline += new QueryMonadStreamLowering(schema, DSL)
-      pipeline += new CoreLanguageToC(DSL)
-      pipeline += new ParameterPromotionWithVar(DSL)
+      pipeline += new QueryMonadStreamLowering(schema, DSL, settings.queryMonadStreamChurch, queryMonadLowering)
     } else {
-      pipeline += new QueryMonadLowering(schema, DSL)
+      pipeline += queryMonadLowering
+      pipeline += ParameterPromotion
     }
-    pipeline += TreeDumper(true)
-    pipeline += ParameterPromotion
+    if (!settings.queryMonadNoEscape) {
+      pipeline += new CoreLanguageToC(DSL)
+      pipeline += DCE
+      pipeline += new ParameterPromotionWithVar(DSL)
+      pipeline += DCE
+      pipeline += PartiallyEvaluate
+      pipeline += new ParameterPromotionWithVar(DSL)
+    }
     pipeline += DCE
     pipeline += PartiallyEvaluate
   } else {
@@ -117,7 +127,7 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
   }
 
   if (settings.hashMapPartitioning) {
-    pipeline += new HashMapGrouping(DSL, schema)
+    pipeline += new HashMapGrouping(DSL, schema, settings.forceCompliant)
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE
@@ -190,7 +200,6 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
   }
 
   if (settings.columnStore) {
-
     pipeline += new ColumnStoreTransformer(DSL)
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
@@ -200,6 +209,15 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
     pipeline += PartiallyEvaluate
     pipeline += DCE
     pipeline += ParameterPromotion
+    pipeline += DCE
+  }
+
+  if (settings.relationColumn) {
+    pipeline += new RelationColumnarLayoutTransformer(DSL)
+    pipeline += DCE
+    // pipeline += TreeDumper(true)
+    pipeline += new ParameterPromotionWithVar(DSL)
+    pipeline += PartiallyEvaluate
     pipeline += DCE
   }
 
@@ -231,14 +249,14 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
 
   pipeline += DCECLang //NEVER REMOVE!!!!
 
-  pipeline += TreeDumper(true)
+  // pipeline += TreeDumper(true)
 
   val codeGenerator =
     if (settings.targetLanguage == CCoreLanguage) {
       if (settings.noLetBinding)
-        new QueryEngineCASTGenerator(DSL, outputFile, settings.profile, true)
+        new QueryEngineCASTGenerator(DSL, outputFile, settings.papiProfile, true)
       else
-        new QueryEngineCGenerator(outputFile, settings.profile, true)
+        new QueryEngineCGenerator(outputFile, settings.papiProfile, true)
     } else {
       if (settings.noLetBinding)
         new QueryEngineScalaASTGenerator(DSL, false, outputFile, runnerClassName)

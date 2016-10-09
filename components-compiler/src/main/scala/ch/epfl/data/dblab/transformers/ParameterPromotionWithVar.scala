@@ -12,6 +12,7 @@ import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
 import sc.pardis.quasi.anf._
 import scala.collection.mutable
+import utils.Logger
 
 class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends ParameterPromotion(IR) with StructCollector[Lang] {
   import IR._
@@ -22,17 +23,17 @@ class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends Par
       case tp if tp.isRecord => true
       case _ => false
     })
-    debug
+    // debug
     // symsState.toList.sortBy(_._1.id) foreach {
     //   case (sym, state) =>
-    //     System.out.println(s"${sym.id}: ${sym.tp} => $state")
+    //     Logger[ParameterPromotionWithVar[_]].debug(s"${sym.id}: ${sym.tp} => $state")
     // }
   }
 
   case class VarStruct(variables: Map[String, Var[_]]) {
     def read[T](field: String): Rep[T] = {
       val variable = variables(field).asInstanceOf[Var[Any]]
-      System.out.println(s"$field -> ${variable.e.tp}")
+      // Logger[ParameterPromotionWithVar[_]].debug(s"$field -> ${variable.e.tp}")
       readVar(variable)(variable.e.tp.typeArguments(0).asInstanceOf[TypeRep[Any]]).asInstanceOf[Rep[T]]
     }
   }
@@ -54,7 +55,7 @@ class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends Par
             case Some(structDef) => {
               val vars = for (elem <- structDef.fields) yield {
                 val v = __newVarNamed(unit(DefaultValue(elem.tpe.name)), elem.name)(elem.tpe)
-                System.out.println(s"===${elem.name} -> ${elem.tpe}")
+                // Logger[ParameterPromotionWithVar[_]].debug(s"var $sym = $e ===> ${elem.name} -> ${elem.tpe}")
                 elem.name -> v
               }
               varsStruct += Var(sym.asInstanceOf[Rep[Var[Any]]]) -> VarStruct(vars.toMap)
@@ -93,6 +94,7 @@ class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends Par
             val e = varStruct2.read[Any](name)
             __assign(variable, e)(e.tp)
           }
+        case _ => sys.error(s"`$sym = $rhs` cannot be parameter promoted!")
         //   val structTp = sym.tp.typeArguments(0)
         //   getStructDef(structTp) match {
         //     case Some(structDef) => {
@@ -121,13 +123,18 @@ class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends Par
           varStruct.read(name)
         }
         case None =>
-          sys.error(s"Reading variable $v not supported yet!")
+          sys.error(s"Reading variable `val $obj = readVar($v)` not supported yet!")
       }
 
   }
 
+  def isUnbreakableNode[T](rhs: Def[T]): Boolean = rhs match {
+    case sc.pardis.deep.scalalib.OptionIRs.OptionGet(_) => true
+    case sc.pardis.deep.scalalib.ArrayIRs.ArrayApply(_, _) => true
+    case _ => false
+  }
+
   override def escapeAnalysis[T](sym: Sym[T], rhs: Def[T]): Unit = {
-    // System.out.println(s"Traversing ${sym.id}")
     rhs match {
       case _: ConstructorDef[_]  => sym.initialized
       case PardisStruct(_, _, _) => sym.initialized
@@ -144,9 +151,16 @@ class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends Par
       }
       case ReadVar(v) => {
         sym.addChain(v.e.asInstanceOf[Sym[_]])
+        v.e.asInstanceOf[Sym[_]].addChain(sym)
+
       }
       case Assign(v, value: Sym[_]) => {
-        value.addChain(v.e.asInstanceOf[Sym[_]])
+        val vSym = v.e.asInstanceOf[Sym[_]]
+        // if (value.isInitialized && value.state == Escaped) {
+        //   vSym.state = Escaped
+        // } else {
+        vSym.addChain(value)
+        // }
       }
       case ReadVal(sy) => {
         sy match {
@@ -154,6 +168,8 @@ class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends Par
           case _         =>
         }
       }
+      case _ if isUnbreakableNode(rhs) =>
+        sym.markAsEscaped
       case _ => ()
     }
     val arguments = rhs match {
@@ -169,6 +185,40 @@ class ParameterPromotionWithVar[Lang <: Base](override val IR: Lang) extends Par
     arguments foreach {
       case sym: Sym[_] => sym.markAsEscaped
       case _           =>
+    }
+  }
+
+  implicit class SymOps2[T](sym: Sym[T]) {
+    def initialized: Unit = {
+      definedSyms(blockScopes.last) += sym
+      sym.state = NotEscaped
+      chainSyms(sym) = collection.mutable.ArrayBuffer[Sym[_]]()
+    }
+    def isInitialized: Boolean = symsState.contains(sym)
+    def state: EscapeState = symsState(sym)
+    def state_=(newState: EscapeState): Unit = {
+      if (!(isInitialized && state == newState)) {
+        symsState(sym) = newState
+        chainSyms.get(sym).getOrElse(collection.mutable.ArrayBuffer[Sym[_]]()) foreach { s =>
+          s.state = newState
+        }
+      }
+    }
+    def markAsEscaped: Unit = {
+      // System.out.println(s"${sym.id} marked as escaped")
+      sym.state = Escaped
+    }
+    def isDefinedInBlock(block: Block[_]): Boolean =
+      definedSyms(block).contains(sym)
+    def addChain[S](chainedSym: Sym[S]) = {
+      // System.out.println(s"${sym.id} <-> ${chainedSym.id}")
+      if (chainedSym.isInitialized) {
+        if (!chainSyms.contains(sym)) chainSyms(sym) = collection.mutable.ArrayBuffer[Sym[_]]()
+        if (!chainSyms(sym).contains(chainedSym)) {
+          chainSyms(sym) += chainedSym
+          sym.state = chainedSym.state
+        }
+      }
     }
   }
 }

@@ -3,6 +3,7 @@
 package ch.epfl.data.dblab.deep.storagemanager
 import ch.epfl.data.dblab.deep._
 import ch.epfl.data.dblab.deep.queryengine._
+import ch.epfl.data.dblab.deep.schema._
 import ch.epfl.data.dblab.schema._
 import scala.reflect._
 
@@ -18,7 +19,7 @@ import pardis.deep.scalalib.io._
 import ch.epfl.data.sc.pardis.quasi.anf.{ BaseExt, BaseExtIR }
 import ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag
 
-trait LoaderOps extends Base with FastScannerOps with ArrayOps with OptimalStringOps with StringOps with NumericOps {
+trait LoaderOps extends Base with FastScannerOps with ArrayOps with OptimalStringOps with StringOps with NumericOps with DynamicDataRowOps {
   // Type representation
   val LoaderType = LoaderIRs.LoaderType
   implicit val typeLoader: TypeRep[Loader] = LoaderType
@@ -29,6 +30,7 @@ trait LoaderOps extends Base with FastScannerOps with ArrayOps with OptimalStrin
     def getFullPath(fileName: Rep[String]): Rep[String] = loaderGetFullPathObject(fileName)
     def loadString(size: Rep[Int], s: Rep[FastScanner]): Rep[OptimalString] = loaderLoadStringObject(size, s)
     def fileLineCount(file: Rep[String]): Rep[Int] = loaderFileLineCountObject(file)
+    def loadUntypedTable(table: Rep[Table]): Rep[Array[DynamicDataRow]] = loaderLoadUntypedTableObject(table)
     def loadTable[R](table: Rep[Table])(implicit typeR: TypeRep[R], c: ClassTag[R]): Rep[Array[R]] = loaderLoadTableObject[R](table)(typeR, c)
   }
   // constructors
@@ -40,12 +42,15 @@ trait LoaderOps extends Base with FastScannerOps with ArrayOps with OptimalStrin
   type LoaderLoadStringObject = LoaderIRs.LoaderLoadStringObject
   val LoaderFileLineCountObject = LoaderIRs.LoaderFileLineCountObject
   type LoaderFileLineCountObject = LoaderIRs.LoaderFileLineCountObject
+  val LoaderLoadUntypedTableObject = LoaderIRs.LoaderLoadUntypedTableObject
+  type LoaderLoadUntypedTableObject = LoaderIRs.LoaderLoadUntypedTableObject
   val LoaderLoadTableObject = LoaderIRs.LoaderLoadTableObject
   type LoaderLoadTableObject[R] = LoaderIRs.LoaderLoadTableObject[R]
   // method definitions
   def loaderGetFullPathObject(fileName: Rep[String]): Rep[String] = LoaderGetFullPathObject(fileName)
   def loaderLoadStringObject(size: Rep[Int], s: Rep[FastScanner]): Rep[OptimalString] = LoaderLoadStringObject(size, s)
   def loaderFileLineCountObject(file: Rep[String]): Rep[Int] = LoaderFileLineCountObject(file)
+  def loaderLoadUntypedTableObject(table: Rep[Table]): Rep[Array[DynamicDataRow]] = LoaderLoadUntypedTableObject(table)
   def loaderLoadTableObject[R](table: Rep[Table])(implicit typeR: TypeRep[R], c: ClassTag[R]): Rep[Array[R]] = LoaderLoadTableObject[R](table)
   type Loader = ch.epfl.data.dblab.storagemanager.Loader
 }
@@ -55,6 +60,7 @@ object LoaderIRs extends Base {
   import OptimalStringIRs._
   import StringIRs._
   import NumericIRs._
+  import DynamicDataRowIRs._
   // Type representation
   case object LoaderType extends TypeRep[Loader] {
     def rebuild(newArguments: TypeRep[_]*): TypeRep[_] = LoaderType
@@ -72,6 +78,10 @@ object LoaderIRs extends Base {
   }
 
   case class LoaderFileLineCountObject(file: Rep[String]) extends FunctionDef[Int](None, "Loader.fileLineCount", List(List(file))) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class LoaderLoadUntypedTableObject(table: Rep[Table]) extends FunctionDef[Array[DynamicDataRow]](None, "Loader.loadUntypedTable", List(List(table))) {
     override def curriedConstructor = (copy _)
   }
 

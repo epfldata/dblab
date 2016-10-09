@@ -74,6 +74,7 @@ class Settings(val args: List[String]) {
   def containerFlattenning: Boolean = hasSetting(ContainerFlattenningSetting)
   def hashMapToArray: Boolean = hasSetting(HashMapToArraySetting)
   def columnStore: Boolean = hasSetting(ColumnStoreSetting)
+  def relationColumn: Boolean = hasSetting(RelationColumnarSetting)
   def partitioning: Boolean = hasSetting(ArrayPartitioningSetting)
   def hashMapPartitioning: Boolean = hasSetting(HashMapPartitioningSetting)
   def whileToForLoop: Boolean = hasSetting(WhileToForSetting)
@@ -93,7 +94,8 @@ class Settings(val args: List[String]) {
   def noDSHoist: Boolean = hasSetting(NoDSHoistSetting)
   def nameIsWithFlag: Boolean = hasSetting(OutputNameWithFlagSetting)
   def onlyLoading: Boolean = hasSetting(OnlyLoaderSetting)
-  def profile: Boolean = hasSetting(ProfileSetting)
+  def papiProfile: Boolean = hasSetting(Profilers.PAPIProfileSetting)
+  def mallocProfile: Boolean = hasSetting(Profilers.MallocProfileSetting)
   def chooseOptimal: Boolean = hasSetting(OptimalSetting)
   def chooseCompliant: Boolean = hasSetting(CompliantSetting)
   def targetLanguage: Language = if (hasSetting(ScalaCGSetting))
@@ -103,9 +105,13 @@ class Settings(val args: List[String]) {
   def queryMonadLowering: Boolean = hasSetting(QueryMonadLoweringSetting)
   def queryMonadCPS: Boolean = hasSetting(QueryMonadCPSSetting)
   def queryMonadIterator: Boolean = hasSetting(QueryMonadIteratorSetting)
+  def queryMonadIteratorBadFilter: Boolean = hasSetting(QueryMonadIteratorBadFilterSetting)
+  def queryMonadNoEscape: Boolean = hasSetting(QueryMonadNoEscapeSetting)
   def queryMonadStream: Boolean = hasSetting(QueryMonadStreamSetting)
+  def queryMonadStreamChurch: Boolean = hasSetting(QueryMonadStreamChurchSetting)
   def queryMonadOptimization: Boolean = hasSetting(QueryMonadOptSetting)
   def queryMonadHoisting: Boolean = hasSetting(QueryMonadHoistingSetting)
+  def forceCompliant: Boolean = hasSetting(ForceCompliantSetting)
 
   def hasOptimizationLevel: Boolean = hasSetting(OptimizationLevelSetting)
   def getOptimizationLevel: Int = args.find(a => OptimizationLevelSetting.matches(a)).get.substring("-levels=".size).toInt
@@ -113,7 +119,7 @@ class Settings(val args: List[String]) {
   def queryName: String = args(2)
 
   def cSettings: CTransformersPipelineSettings = CTransformersPipelineSettings(ifAggressive,
-    onlyLoading, profile, oldCArrayHandling, pointerStore, containerFlattenning)
+    onlyLoading, mallocProfile, papiProfile, oldCArrayHandling, pointerStore, containerFlattenning)
 }
 
 /**
@@ -126,6 +132,7 @@ object Settings {
     ContainerFlattenningSetting,
     HashMapToArraySetting,
     ColumnStoreSetting,
+    RelationColumnarSetting,
     PointerStoreSetting,
     ArrayPartitioningSetting,
     HashMapPartitioningSetting,
@@ -144,15 +151,20 @@ object Settings {
     NoDSHoistSetting,
     OutputNameWithFlagSetting,
     OnlyLoaderSetting,
-    ProfileSetting,
+    Profilers.PAPIProfileSetting,
+    Profilers.MallocProfileSetting,
     OptimalSetting,
     CompliantSetting,
     ScalaCGSetting,
     QueryMonadLoweringSetting,
     QueryMonadIteratorSetting,
+    QueryMonadIteratorBadFilterSetting,
+    QueryMonadNoEscapeSetting,
     QueryMonadStreamSetting,
+    QueryMonadStreamChurchSetting,
     QueryMonadCPSSetting,
     QueryMonadOptSetting,
+    ForceCompliantSetting,
     ForceFieldRemovalSetting,
     QueryMonadHoistingSetting,
     OptimizationLevelSetting)
@@ -224,6 +236,10 @@ case object ColumnStoreSetting extends OptimizationSetting("cstore",
   "Column-Store optimization",
   ScalaCoreLanguage,
   "Not finished yet!")
+case object RelationColumnarSetting extends OptimizationSetting("relation-column",
+  "Columnar layout for source relations",
+  ScalaCoreLanguage,
+  "Experimental!")
 case object PointerStoreSetting extends OptimizationSetting("bad-rec",
   "Pointer-Store (de)optimization",
   ScalaCoreLanguage,
@@ -288,8 +304,20 @@ case object QueryMonadIteratorSetting extends OptimizationSetting("monad-iterato
   "Enables Query Monad Iterator Lowering",
   QMonadLanguage,
   "Very experimental!")
+case object QueryMonadIteratorBadFilterSetting extends OptimizationSetting("monad-iterator-bad-filter",
+  "Enables duplicated inlining of filter in Query Monad Iterator Lowering",
+  QMonadLanguage,
+  "Deoptimization!")
+case object QueryMonadNoEscapeSetting extends OptimizationSetting("monad-no-escape",
+  "Disables Escape Analysis and Scalar Replacement in Query Monad Lowerings",
+  QMonadLanguage,
+  "Deoptimization!")
 case object QueryMonadStreamSetting extends OptimizationSetting("monad-stream",
   "Enables Query Monad Stream Lowering",
+  QMonadLanguage,
+  "Very experimental!")
+case object QueryMonadStreamChurchSetting extends OptimizationSetting("monad-stream-church",
+  "Enables Query Monad Stream + Church Encoding Lowering",
   QMonadLanguage,
   "Very experimental!")
 case object QueryMonadOptSetting extends OptimizationSetting("monad-opt",
@@ -302,6 +330,9 @@ case object QueryMonadHoistingSetting extends OptimizationSetting("monad-hoist",
   "Enables Query Monad Hoisting",
   // QMonadLanguage)
   MCHLanguage)
+case object ForceCompliantSetting extends OptimizationSetting("force-compliant",
+  "Forces the compliant version of optimizations, for the ones which have a compliant version",
+  CCoreLanguage)
 
 /* 
  * Available option settings
@@ -310,8 +341,13 @@ case object OutputNameWithFlagSetting extends OptionSetting("name-with-flag",
   "Appends the optimization flags to the name of files")
 case object OnlyLoaderSetting extends OptionSetting("only-load",
   "Generates only the loader of a query")
-case object ProfileSetting extends OptionSetting("profile",
-  "Generates profiling information by using the PAPI tool")
+object Profilers {
+  case object PAPIProfileSetting extends OptionSetting("papi-profile",
+    "Generates profiling information by using the PAPI tool")
+  case object MallocProfileSetting extends OptionSetting("malloc-profile",
+    "Instruments malloc profiling counters")
+}
+
 case object OptimalSetting extends OptionSetting("optimal",
   "Considers the best combiniation of optimization flags")
 case object CompliantSetting extends OptionSetting("compliant",

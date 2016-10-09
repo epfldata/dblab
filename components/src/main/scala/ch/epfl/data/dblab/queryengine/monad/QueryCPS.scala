@@ -114,7 +114,18 @@ abstract class QueryCPS[T] {
     printf("(%d rows)\n", rows)
   }
 
-  // @pure def getList: List[T] = ???
+  @pure def materialize: QueryCPS[T] = {
+    val arr = getList.asInstanceOf[List[Any]].toArray.asInstanceOf[Array[T]]
+    QueryCPS(arr)
+  }
+
+  @pure def getList: List[T] = {
+    var res = ArrayBuffer[T]()
+    for (e <- this) {
+      res += e
+    }
+    res.toList
+  }
 }
 
 object QueryCPS {

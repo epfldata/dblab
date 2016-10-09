@@ -17,4 +17,7 @@ object Utilities {
     val p = new java.io.PrintWriter(f)
     try { op(p) } finally { p.close() }
   }
+  def getNumLinesInFile(filePath: String): Int = {
+    io.Source.fromFile(filePath).getLines.size
+  }
 }

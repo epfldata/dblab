@@ -6,6 +6,7 @@ package tpch
 import sc.pardis.types._
 import schema._
 import utils.Utilities._
+import scala.collection.mutable.ArrayBuffer
 
 object TPCHSchema {
   def getSchema(folderLocation: String, scalingFactor: Double): Schema = {
@@ -32,7 +33,7 @@ object TPCHSchema {
         L_SHIPINSTRUCT,
         L_SHIPMODE,
         ("L_COMMENT" -> VarCharType(44))),
-        List(
+        ArrayBuffer(
           PrimaryKey(List(L_ORDERKEY, L_LINENUMBER)),
           ForeignKey("LINEITEM", "ORDERS", List(("L_ORDERKEY", "O_ORDERKEY"))),
           ForeignKey("LINEITEM", "PARTSUPP", List(("L_PARTKEY", "PS_PARTKEY"), ("L_SUPPKEY", "PS_SUPPKEY")))),
@@ -47,7 +48,7 @@ object TPCHSchema {
         R_REGIONKEY,
         R_NAME,
         ("R_COMMENT" -> VarCharType(152))),
-        List(PrimaryKey(List(R_REGIONKEY)),
+        ArrayBuffer(PrimaryKey(List(R_REGIONKEY)),
           Continuous(R_REGIONKEY, 0)),
         folderLocation + "region.tbl", 5)
     }
@@ -61,7 +62,7 @@ object TPCHSchema {
         N_NAME,
         "N_REGIONKEY" -> IntType,
         ("N_COMMENT" -> VarCharType(152))),
-        List(
+        ArrayBuffer(
           PrimaryKey(List(N_NATIONKEY)),
           Continuous(N_NATIONKEY, 0),
           ForeignKey("NATION", "REGION", List(("N_REGIONKEY", "R_REGIONKEY")))),
@@ -79,7 +80,7 @@ object TPCHSchema {
         ("S_PHONE" -> VarCharType(15)),
         "S_ACCTBAL" -> DoubleType,
         ("S_COMMENT" -> VarCharType(101))),
-        List(
+        ArrayBuffer(
           PrimaryKey(List(sk)),
           Continuous(sk, 1),
           ForeignKey("SUPPLIER", "NATION", List(("S_NATIONKEY", "N_NATIONKEY")))),
@@ -103,7 +104,7 @@ object TPCHSchema {
         P_CONTAINER,
         "P_RETAILPRICE" -> DoubleType,
         ("P_COMMENT" -> VarCharType(23))),
-        List(
+        ArrayBuffer(
           PrimaryKey(List(P_PARTKEY)),
           Continuous(P_PARTKEY, 1)),
         folderLocation + "part.tbl", (scalingFactor * 200000).toLong)
@@ -119,7 +120,7 @@ object TPCHSchema {
         "PS_AVAILQTY" -> IntType,
         "PS_SUPPLYCOST" -> DoubleType,
         ("PS_COMMENT" -> VarCharType(199))),
-        List(
+        ArrayBuffer(
           PrimaryKey(List(pk, sk)),
           ForeignKey("PARTSUPP", "PART", List(("PS_PARTKEY", "P_PARTKEY"))),
           ForeignKey("PARTSUPP", "SUPPLIER", List(("PS_SUPPKEY", "S_SUPPKEY")))),
@@ -139,7 +140,7 @@ object TPCHSchema {
         "C_ACCTBAL" -> DoubleType,
         C_MKTSEGMENT,
         ("C_COMMENT" -> VarCharType(117))),
-        List(
+        ArrayBuffer(
           PrimaryKey(List(ck)),
           Continuous(ck, 1),
           ForeignKey("CUSTOMER", "NATION", List(("C_NATIONKEY", "N_NATIONKEY")))),
@@ -161,7 +162,7 @@ object TPCHSchema {
         ("O_CLERK" -> VarCharType(15)),
         "O_SHIPPRIORITY" -> IntType,
         O_COMMENT),
-        List(
+        ArrayBuffer(
           PrimaryKey(List(O_ORDERKEY)),
           ForeignKey("ORDERS", "CUSTOMER", List(("O_CUSTKEY", "C_CUSTKEY")))),
         folderLocation + "orders.tbl", (scalingFactor * 1500000).toLong)

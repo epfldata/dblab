@@ -67,4 +67,38 @@ trait LoaderInlined extends storagemanager.LoaderImplementations
     arr
   }
 
+  override def loaderLoadUntypedTableObject(_table: Rep[Table]): Rep[Array[DynamicDataRow]] = {
+    val table = _table match {
+      case Constant(v: Table) => v
+    }
+    implicit val tableType = dataRowTypeForTable(table)
+
+    val size = Loader.fileLineCount(unit(table.resourceLocator))
+    val arr = __newArray(size)(tableType)
+    val ldr = __newFastScanner(unit(table.resourceLocator))
+
+    allTables += table
+
+    val argNames = table.attributes.map(_.name).toSeq
+
+    val i = __newVar(unit(0))
+    __whileDo(((i: Rep[Int]) < size) && ldr.hasNext(), {
+      val values = table.attributes.map(arg =>
+        Tuple2(unit(arg.name), arg.dataType match {
+          case IntType    => ldr.next_int
+          case DoubleType => ldr.next_double
+          case CharType   => ldr.next_char
+          case DateType   => ldr.next_date
+          case VarCharType(len) => //Loader.loadString(len, ldr)
+            ldr.next_string
+        }))
+
+      val rec = DynamicDataRow(unit(table.name))(values: _*)
+      //val rec = reflectedMethod.apply(values: _*).asInstanceOf[Rep[R]]
+      (ArrayRep(arr)(tableType))(i) = rec
+      __assign(i, (i: Rep[Int]) + unit(1))
+    })
+    arr
+  }
+
 }

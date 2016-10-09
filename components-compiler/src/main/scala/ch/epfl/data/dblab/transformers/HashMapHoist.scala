@@ -118,6 +118,16 @@ class HashMapHoist(override val IR: QueryEngineExp) extends Optimizer[QueryEngin
     depthLevel -= 1
   }
 
+  def isDependentOnMutation(exp: Rep[_]): Boolean = exp match {
+    case Def(node) => node match {
+      case ReadVar(_) => true
+      case _ => node.funArgs.collect({
+        case e: Rep[_] => isDependentOnMutation(e)
+      }).exists(identity)
+    }
+    case _ => false
+  }
+
   /**
    * Gathers the statements that should be hoisted.
    */
@@ -135,7 +145,7 @@ class HashMapHoist(override val IR: QueryEngineExp) extends Optimizer[QueryEngin
         case MultiMapNew() if startCollecting && !hoistedStatements.contains(stm) => {
           hoistStatement()
         }
-        case ArrayNew(Def(ReadVar(_))) =>
+        case ArrayNew(size) if isDependentOnMutation(size) =>
           super.traverseStm(stm)
         case ArrayNew(_) if startCollecting && depthLevel == 1 && !hoistedStatements.contains(stm) => {
           hoistStatement()

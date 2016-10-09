@@ -20,4 +20,8 @@ object Config {
   val printResult = false
   /** Code generation info */
   var codeGenLang: Language = CCoreLanguage
+  /** Specifies whether to obtain statistics during schema definition */
+  val gatherStats: Boolean = false
+  /** Specifies whether to show information about the query plan generation during execution */
+  val debugQueryPlan: Boolean = true
 }

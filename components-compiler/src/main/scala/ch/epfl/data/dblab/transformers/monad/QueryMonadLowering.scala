@@ -13,12 +13,15 @@ import deep._
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.shallow.utils.DefaultValue
+import quasi._
 
 /**
  * Lowers query monad operations.
  */
-class QueryMonadLowering(val schema: Schema, override val IR: QueryEngineExp) extends RuleBasedTransformer[QueryEngineExp](IR) with StructProcessing[QueryEngineExp] {
+class QueryMonadLowering(val schema: Schema, override val IR: QueryEngineExp, val recordUsageAnalysis: RecordUsageAnalysis[QueryEngineExp]) extends RuleBasedTransformer[QueryEngineExp](IR) with StructProcessing[QueryEngineExp] {
   import IR._
+
+  val SUPPORT_ONLY_1_TO_N = true
 
   def array_filter[T: TypeRep](array: Rep[Array[T]], p: Rep[T => Boolean]): Rep[Array[T]] = {
     val Def(IR.Lambda(pred, _, _)) = p
@@ -448,10 +451,10 @@ class QueryMonadLowering(val schema: Schema, override val IR: QueryEngineExp) ex
     // TODO generalize to the cases other than primary key - foreign key relations
     // val maxSize = __ifThenElse(array1.length > array2.length, array1.length, array2.length)
     val maxSize = unit(100000000)
-    val res = __newArray[Res](maxSize)(concat_types[T, S, Res])
+    val res = __newArray[Res](maxSize)
     val counter = __newVar[Int](unit(0))
     val hm = __newMultiMap[R, T]()
-    // System.out.println(concat_types[T, S, Res])
+    // System.out.println(typeRep[Res])
     array_foreach_using_while(array1, (elem: Rep[T]) => {
       hm.addBinding(leftHash(elem), elem)
     })
@@ -459,13 +462,25 @@ class QueryMonadLowering(val schema: Schema, override val IR: QueryEngineExp) ex
       val k = rightHash(elem)
       hm.get(k) foreach {
         __lambda { tmpBuffer =>
-          tmpBuffer foreach {
-            __lambda { bufElem =>
-              __ifThenElse(joinCond(bufElem, elem), {
-                res(readVar(counter)) =
-                  concat_records[T, S, Res](bufElem, elem)
-                __assign(counter, readVar(counter) + unit(1))
-              }, unit())
+          if (SUPPORT_ONLY_1_TO_N) {
+            dsl"""val leftElem = $tmpBuffer find (bufElem => $joinCond(bufElem, $elem))
+            leftElem foreach ${
+              __lambda { (le: Rep[T]) =>
+                dsl"""$res($counter) =
+                    ${concat_records[T, S, Res](le, elem)}
+                  $counter = $counter + 1
+                """
+              }
+            }"""
+          } else {
+            tmpBuffer foreach {
+              __lambda { bufElem =>
+                __ifThenElse(joinCond(bufElem, elem), {
+                  res(readVar(counter)) =
+                    concat_records[T, S, Res](bufElem, elem)
+                  __assign(counter, readVar(counter) + unit(1))
+                }, unit())
+              }
             }
           }
         }
@@ -481,7 +496,7 @@ class QueryMonadLowering(val schema: Schema, override val IR: QueryEngineExp) ex
     val res = __newArray[T](maxSize)
     val counter = __newVar[Int](unit(0))
     val hm = __newMultiMap[R, S]()
-    // System.out.println(concat_types[T, S, Res])
+    // System.out.println(typeRep[Res])
     array_foreach_using_while(array2, (elem: Rep[S]) => {
       hm.addBinding(rightHash(elem), elem)
     })

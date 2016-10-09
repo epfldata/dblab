@@ -3,16 +3,18 @@ package dblab
 package queryengine
 package push
 
+import ch.epfl.data.dblab.schema.DynamicDataRow
 import scala.reflect.runtime.universe._
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Set
 import scala.collection.mutable.TreeSet
 import GenericEngine._
-import sc.pardis.annotations.{ deep, metadeep, dontInline, needs, ::, onlineInliner, noDeepExt }
+import sc.pardis.annotations.{ deep, metadeep, dontInline, needs, ::, onlineInliner, noDeepExt, dontLift }
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
 import sc.pardis.shallow.scalalib.ScalaCore
 import scala.reflect.ClassTag
+import schema.DataRow
 
 @metadeep(
   folder = "",
@@ -115,6 +117,10 @@ class PrintOp[A](parent: Operator[A])(printFunc: A => Unit, limit: Int) extends 
       numRows += 1
     }
   }
+  def run(): Unit = {
+    open()
+    next()
+  }
   def reset() { parent.reset }
 }
 
@@ -188,6 +194,44 @@ class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B])(v
     var i: scala.Int = 0
     aggFuncs.foreach { aggFun =>
       aggs(i) = aggFun(tuple.asInstanceOf[A], aggs(i))
+      i += 1
+    }
+  }
+}
+
+class AggOpGeneric[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B], val keyName: Option[String])(val aggFuncs: Function2[A, Double, Double]*)(aggNames: Seq[String]) extends Operator[DynamicDataRow] {
+
+  val hm = HashMap[B, DynamicDataRow]()
+  val numAggRecordFields = 1 + numAggs // 1 for the key
+
+  def open() {
+    parent.child = this; parent.open
+  }
+
+  def next() {
+    parent.next
+    hm.foreach { pair =>
+      child.consume(pair._2)
+    }
+  }
+  def reset() { parent.reset; /*hm.clear;*/ open }
+  def consume(tuple: Record) {
+    // Starting values for aggregation
+    val aggregates = (0 until numAggRecordFields - 1).map(i => 0.0).toSeq
+
+    val key = grp(tuple.asInstanceOf[A])
+
+    val elem = hm.getOrElseUpdate(key.asInstanceOf[B], {
+      keyName match {
+        case Some(kn) => DynamicDataRow("Agg")(Seq(keyName.get) ++ aggNames zip Seq(key) ++ aggregates: _*).asInstanceOf[DynamicDataRow]
+        case None     => DynamicDataRow("Agg")(aggNames zip aggregates: _*).asInstanceOf[DynamicDataRow]
+      }
+    })
+
+    var i: scala.Int = 0
+    aggFuncs.foreach { aggFun =>
+      val newValue = aggFun(tuple.asInstanceOf[A], elem.getField(aggNames(i)).get.asInstanceOf[Double])
+      elem.setField(aggNames(i), newValue)
       i += 1
     }
   }
@@ -539,6 +583,8 @@ class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
     table(size) = tuple.asInstanceOf[A]
     size += 1
   }
+  @dontLift
+  def getDataArray() = table.slice(0, size)
 }
 
 /**
