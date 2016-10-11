@@ -96,7 +96,10 @@ import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
         i += 1
       }
     }
-    iterator = hm.iterator
+    // The following if expression is for handling a corner case revealed in the 
+    // case of TPCH Query 15.
+    if (iterator == null)
+      iterator = hm.iterator
   }
   def next() = {
     if (iterator.hasNext) {
@@ -106,7 +109,7 @@ import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
     }
   }
   def close() {}
-  def reset() { parent.reset; hm.clear; open }
+  def reset() { parent.reset; hm.clear; iterator = null; open }
 }
 
 /*@deep*/ class SortOp[A](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends Operator[A] {
