@@ -142,17 +142,22 @@ import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
   def reset { parent.reset }
 }
 
-/*@deep*/ class PrintOp[A](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean) extends Operator[A] {
+/*@deep*/ class PrintOp[A](var parent: Operator[A])(printFunc: A => Unit, limit: Int) extends Operator[A] {
   var numRows = 0
   def open() = { parent.open; }
   def next() = {
     var exit = false
     while (exit == false) {
       val t = parent.next
-      if (limit() == false || t == NullDynamicRecord) exit = true
+      if ((limit != -1 && numRows >= limit) || t == NullDynamicRecord) exit = true
       else { printFunc(t); numRows += 1 }
     }
+    printf("(%d rows)\n", numRows)
     NullDynamicRecord
+  }
+  def run(): Unit = {
+    open()
+    next()
   }
   def close() = {}
   def reset() { parent.reset }
