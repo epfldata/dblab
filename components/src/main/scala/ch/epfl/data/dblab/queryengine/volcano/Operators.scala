@@ -8,6 +8,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Set
 import scala.collection.mutable.TreeSet
+import scala.collection.Iterator
 import GenericEngine._
 import sc.pardis.annotations.{ deep, metadeep }
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
@@ -80,29 +81,29 @@ import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
 }
 
 /*@deep*/ class AggOp[A, B](parent: Operator[A], val numAggs: Int)(val grp: A => B)(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
-  val hm = new HashMap[B, Array[Double]]()
-  var keySet = Set(hm.keySet.toSeq: _*)
+  val hm = new HashMap[B, AGGRecord[B]]()
+  var iterator: Iterator[(B, AGGRecord[B])] = _
 
   def open() {
     parent.open
     parent foreach { t: A =>
       val key = grp(t)
-      val aggs = hm.getOrElseUpdate(key, new Array[Double](numAggs))
+      val elem = hm.getOrElseUpdate(key, new AGGRecord(key, new Array[Double](numAggs)))
+      val aggs = elem.aggs
       var i: scala.Int = 0
       aggFuncs.foreach { aggFun =>
         aggs(i) = aggFun(t, aggs(i))
         i += 1
       }
     }
-    keySet = Set(hm.keySet.toSeq: _*)
+    iterator = hm.iterator
   }
   def next() = {
-    if (hm.size != 0) {
-      val key = keySet.head
-      keySet.remove(key)
-      val elem = hm.remove(key)
-      new AGGRecord(key, elem.get)
-    } else NullDynamicRecord
+    if (iterator.hasNext) {
+      iterator.next._2
+    } else {
+      NullDynamicRecord
+    }
   }
   def close() {}
   def reset() { parent.reset; hm.clear; open }
