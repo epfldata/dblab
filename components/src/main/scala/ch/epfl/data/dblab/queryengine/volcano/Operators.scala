@@ -8,6 +8,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Set
 import scala.collection.mutable.TreeSet
+import scala.collection.Iterator
 import GenericEngine._
 import sc.pardis.annotations.{ deep, metadeep }
 import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
@@ -80,32 +81,35 @@ import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
 }
 
 /*@deep*/ class AggOp[A, B](parent: Operator[A], val numAggs: Int)(val grp: A => B)(val aggFuncs: Function2[A, Double, Double]*) extends Operator[AGGRecord[B]] {
-  val hm = new HashMap[B, Array[Double]]()
-  var keySet = Set(hm.keySet.toSeq: _*)
+  val hm = new HashMap[B, AGGRecord[B]]()
+  var iterator: Iterator[(B, AGGRecord[B])] = _
 
   def open() {
     parent.open
     parent foreach { t: A =>
       val key = grp(t)
-      val aggs = hm.getOrElseUpdate(key, new Array[Double](numAggs))
+      val elem = hm.getOrElseUpdate(key, new AGGRecord(key, new Array[Double](numAggs)))
+      val aggs = elem.aggs
       var i: scala.Int = 0
       aggFuncs.foreach { aggFun =>
         aggs(i) = aggFun(t, aggs(i))
         i += 1
       }
     }
-    keySet = Set(hm.keySet.toSeq: _*)
+    // The following if expression is for handling a corner case revealed in the 
+    // case of TPCH Query 15.
+    if (iterator == null)
+      iterator = hm.iterator
   }
   def next() = {
-    if (hm.size != 0) {
-      val key = keySet.head
-      keySet.remove(key)
-      val elem = hm.remove(key)
-      new AGGRecord(key, elem.get)
-    } else NullDynamicRecord
+    if (iterator.hasNext) {
+      iterator.next._2
+    } else {
+      NullDynamicRecord
+    }
   }
   def close() {}
-  def reset() { parent.reset; hm.clear; open }
+  def reset() { parent.reset; hm.clear; iterator = null; open }
 }
 
 /*@deep*/ class SortOp[A](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends Operator[A] {
@@ -142,17 +146,22 @@ import sc.pardis.shallow.{ Record, DynamicCompositeRecord }
   def reset { parent.reset }
 }
 
-/*@deep*/ class PrintOp[A](var parent: Operator[A])(printFunc: A => Unit, limit: () => Boolean) extends Operator[A] {
+/*@deep*/ class PrintOp[A](var parent: Operator[A])(printFunc: A => Unit, limit: Int) extends Operator[A] {
   var numRows = 0
   def open() = { parent.open; }
   def next() = {
     var exit = false
     while (exit == false) {
       val t = parent.next
-      if (limit() == false || t == NullDynamicRecord) exit = true
+      if ((limit != -1 && numRows >= limit) || t == NullDynamicRecord) exit = true
       else { printFunc(t); numRows += 1 }
     }
+    printf("(%d rows)\n", numRows)
     NullDynamicRecord
+  }
+  def run(): Unit = {
+    open()
+    next()
   }
   def close() = {}
   def reset() { parent.reset }
