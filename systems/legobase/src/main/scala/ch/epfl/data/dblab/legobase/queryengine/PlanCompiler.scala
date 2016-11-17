@@ -38,10 +38,11 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
   def executeQuery(operatorTree: QueryPlanTree, schema: Schema): Unit = {
     def block = {
       // Execute main query plan tree
-      val qp = queryToOperator(operatorTree, schema)
+      val qp = queryToOperator(operatorTree, schema).asInstanceOf[Rep[PrintOp[Record]]]
       // Execute tree
-      qp.open
-      qp.next
+      // qp.open
+      // qp.next
+      qp.run()
     }
 
     import legobase.compiler._

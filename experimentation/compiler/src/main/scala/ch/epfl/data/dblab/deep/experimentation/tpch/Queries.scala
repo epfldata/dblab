@@ -979,8 +979,7 @@ trait QueriesImplementations extends QueriesOps { this: ch.epfl.data.dblab.deep.
           val ev$1: this.Rep[ch.epfl.data.dblab.experimentation.tpch.Q13IntRecord] = aggArray.apply(t.O_CUSTKEY);
           ev$1.count_$eq(ev$1.count.$plus(unit(1)))
         })));
-        aggOp1.open();
-        aggOp1.next();
+        aggOp1.run();
         val aggScan: this.Rep[ch.epfl.data.dblab.queryengine.push.ScanOp[ch.epfl.data.dblab.experimentation.tpch.Q13IntRecord]] = __newScanOp(aggArray);
         val aggOp2: this.Rep[ch.epfl.data.dblab.queryengine.push.AggOp[ch.epfl.data.dblab.experimentation.tpch.Q13IntRecord, Int]] = __newAggOp(aggScan, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.dblab.experimentation.tpch.Q13IntRecord]) => x.count)))(__lambda(((t: this.Rep[ch.epfl.data.dblab.experimentation.tpch.Q13IntRecord], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
         val sortOp: this.Rep[ch.epfl.data.dblab.queryengine.push.SortOp[ch.epfl.data.dblab.queryengine.AGGRecord[Int]]] = __newSortOp(aggOp2)(__lambda(((x: this.Rep[ch.epfl.data.dblab.queryengine.AGGRecord[Int]], y: this.Rep[ch.epfl.data.dblab.queryengine.AGGRecord[Int]]) => __ifThenElse(x.aggs.apply(unit(0)).$less(y.aggs.apply(unit(0))), unit(1), __ifThenElse(x.aggs.apply(unit(0)).$greater(y.aggs.apply(unit(0))), unit(-1), __ifThenElse(x.key.$less(y.key), unit(1), __ifThenElse(x.key.$greater(y.key), unit(-1), unit(0))))))));

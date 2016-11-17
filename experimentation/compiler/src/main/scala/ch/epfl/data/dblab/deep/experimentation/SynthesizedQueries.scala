@@ -81,8 +81,7 @@ trait SynthesizedQueriesComponent extends tpch.QueriesImplementations { this: de
             case 6 => printf(unit("%d, %d, %d, %d, %f, %f"), ex1, ex2, ex3, ex4, ex5, ex6)
           }
         }, unit(-1))
-        po.open();
-        po.next();
+        po.run()
         unit(())
       }))))
     }

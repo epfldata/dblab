@@ -41,12 +41,14 @@ object PlanExecutor {
     })
 
     // Then execute main query plan tree
-    val qp = convertOperator(operatorTree.rootNode)
+    val qp = convertOperator(operatorTree.rootNode) match {
+      case po: PrintOp[_] => po
+      case o              => throw new Exception(s"The last operator should be a runnable operator, but is ${o.getClass()} instead.")
+    }
     // Execute tree
     for (i <- 0 until Config.numRuns) {
       Utilities.time({
-        qp.open
-        qp.next
+        qp.run
       }, "Query")
     }
   }

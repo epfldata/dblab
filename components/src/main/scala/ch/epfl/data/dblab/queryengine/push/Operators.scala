@@ -34,7 +34,7 @@ class MetaInfo
 @onlineInliner
 abstract class Operator[+A] {
   def open()
-  def next()
+  def init()
   def reset()
   def consume(tuple: Record)
   @inline var child: Operator[Any] = null
@@ -64,7 +64,7 @@ class ScanOp[A](table: Array[A]) extends Operator[A] {
   def open() {
     //printf("Scan operator commencing...\n")
   }
-  def next() {
+  def init() {
     while (!stop && i < table.length) {
       /*  for (j <- 0 until 16) {
         child.consume(table(i + j).asInstanceOf[Record])
@@ -98,11 +98,11 @@ class PrintOp[A](parent: Operator[A])(printFunc: A => Unit, limit: Int) extends 
     parent.child = self;
     parent.open;
   }
-  def next() = {
-    parent.next;
+  def init() = {
+    parent.init;
     /* Amir (TODO): the following line removes the need for stop */
     // try {
-    //   parent.next
+    //   parent.init
     // } catch {
     //   case ex: PrintOpStop =>
     // }
@@ -119,7 +119,7 @@ class PrintOp[A](parent: Operator[A])(printFunc: A => Unit, limit: Int) extends 
   }
   def run(): Unit = {
     open()
-    next()
+    init()
   }
   def reset() { parent.reset }
 }
@@ -138,7 +138,7 @@ class SelectOp[A](parent: Operator[A])(selectPred: A => Boolean) extends Operato
   def open() {
     parent.child = this; parent.open
   }
-  def next() = parent.next
+  def init() = parent.init
   def reset() { parent.reset }
   def consume(tuple: Record) {
     if (selectPred(tuple.asInstanceOf[A])) child.consume(tuple)
@@ -167,8 +167,8 @@ class AggOp[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A, B])(v
   def open() {
     parent.child = this; parent.open
   }
-  def next() {
-    parent.next
+  def init() {
+    parent.init
     // var keySet = Set(hm.keySet.toSeq: _*)
     // while (!stop && hm.size != 0) {
     //   val key = keySet.head
@@ -208,8 +208,8 @@ class AggOpGeneric[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A
     parent.child = this; parent.open
   }
 
-  def next() {
-    parent.next
+  def init() {
+    parent.init
     hm.foreach { pair =>
       child.consume(pair._2)
     }
@@ -249,10 +249,14 @@ class AggOpGeneric[A, B](parent: Operator[A], numAggs: Int)(val grp: Function1[A
 class MapOp[A](parent: Operator[A])(mapFuncs: Function1[A, Unit]*) extends Operator[A] {
   def reset { parent.reset }
   def open() { parent.child = this; parent.open }
-  def next() { parent.next }
+  def init() { parent.init }
   def consume(tuple: Record) {
     mapFuncs foreach (mf => mf(tuple.asInstanceOf[A]))
     if (child != null) child.consume(tuple)
+  }
+  def run() {
+    open()
+    init()
   }
 }
 
@@ -271,8 +275,8 @@ class SortOp[A](parent: Operator[A])(orderingFunc: Function2[A, A, Int]) extends
     new Ordering[A] {
       def compare(o1: A, o2: A) = orderingFunc(o1, o2)
     })
-  def next() = {
-    parent.next
+  def init() = {
+    parent.init
     while (!stop && sortedTree.size != 0) {
       val elem = sortedTree.head
       sortedTree -= elem
@@ -319,10 +323,10 @@ class HashJoinOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val r
     leftParent.open
     rightParent.open
   }
-  def next() {
-    leftParent.next
+  def init() {
+    leftParent.init
     mode += 1
-    rightParent.next
+    rightParent.init
     mode += 1
   }
   def consume(tuple: Record) {
@@ -364,8 +368,8 @@ class WindowOp[A, B, C](parent: Operator[A])(val grp: Function1[A, B])(val wndf:
     parent.open
   }
   def reset() { parent.reset; hm.clear; open }
-  def next() {
-    parent.next
+  def init() {
+    parent.init
     hm.foreach { pair =>
       val elem = pair._2
       val wnd = wndf(elem)
@@ -405,10 +409,10 @@ class LeftHashSemiJoinOp[A, B, C](leftParent: Operator[A], rightParent: Operator
     rightParent.open
   }
   def reset() { rightParent.reset; leftParent.reset; hm.clear; }
-  def next() {
-    rightParent.next
+  def init() {
+    rightParent.init
     mode = 1
-    leftParent.next
+    leftParent.init
   }
   def consume(tuple: Record) {
     if (mode == 0) {
@@ -449,12 +453,12 @@ class NestedLoopsJoinOp[A <: Record, B <: Record](leftParent: Operator[A], right
     leftParent.open
   }
   def reset() = { rightParent.reset; leftParent.reset; leftTuple = null.asInstanceOf[A] }
-  def next() { leftParent.next }
+  def init() { leftParent.init }
   def consume(tuple: Record) {
     if (mode == 0) {
       leftTuple = tuple.asInstanceOf[A]
       mode = 1
-      rightParent.next
+      rightParent.init
       mode = 0
       rightParent.reset
     } else {
@@ -478,7 +482,7 @@ class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   def open() {
     throw new Exception("PUSH ENGINE BUG:: Open function in SubqueryResult should never be called!!!!\n")
   }
-  def next() {
+  def init() {
     throw new Exception("PUSH ENGINE BUG:: Next function in SubqueryResult should never be called!!!!\n")
   }
   def reset() {
@@ -490,7 +494,7 @@ class SubquerySingleResult[A](parent: Operator[A]) extends Operator[A] {
   def getResult = {
     parent.child = this
     parent.open
-    parent.next
+    parent.init
     result
   }
 }
@@ -521,10 +525,10 @@ class HashJoinAnti[A: Manifest, B, C](leftParent: Operator[A], rightParent: Oper
     rightParent.open
   }
   def reset() { rightParent.reset; leftParent.reset; hm.clear; }
-  def next() {
-    leftParent.next
+  def init() {
+    leftParent.init
     mode = 1
-    rightParent.next
+    rightParent.init
     hm.foreach { pair =>
       val v = pair._2
       v.foreach { e =>
@@ -567,9 +571,9 @@ class ViewOp[A: Manifest](parent: Operator[A]) extends Operator[A] {
     parent.open
   }
   def reset() {}
-  def next() {
+  def init() {
     if (!initialized) {
-      parent.next
+      parent.init
       initialized = true
     }
     var idx = 0
@@ -612,10 +616,10 @@ class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Ope
     rightParent.child = this
     rightParent.open
   }
-  def next() {
-    rightParent.next
+  def init() {
+    rightParent.init
     mode = 1
-    leftParent.next
+    leftParent.init
   }
   def reset() { rightParent.reset; leftParent.reset; hm.clear; }
   def consume(tuple: Record) {

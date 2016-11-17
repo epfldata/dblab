@@ -871,8 +871,7 @@ object Queries {
           !(idxu != -1 && idxp != -1)
         })
         val aggOp1 = new MapOp(scanOrders)(t => aggArray(t.O_CUSTKEY).count += 1)
-        aggOp1.open
-        aggOp1.next
+        aggOp1.run()
         val aggScan = new ScanOp(aggArray)
         val aggOp2 = new AggOp(aggScan, 1)(x => x.count)(
           (t, currAgg) => { currAgg + 1 })
