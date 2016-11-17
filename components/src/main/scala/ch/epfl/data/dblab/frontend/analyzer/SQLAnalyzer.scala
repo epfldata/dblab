@@ -11,6 +11,7 @@ import parser._
 import sc.pardis.shallow.OptimalString
 
 /**
+ * Performs various analysis (e.g. type checking) on SQL queries.
  *
  * @author Yannis Klonatos
  */

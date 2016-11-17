@@ -20,7 +20,7 @@ import config.Config
 /**
  * The main module for compiling query plans.
  *
- * @author Yannis Klonatos
+ * @author Daniel Espino
  */
 object PlanCompiler { this: LegoBaseQueryEngineExp =>
   type Rep[T] = LegoBaseQueryEngineExp#Rep[T]

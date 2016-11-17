@@ -8,6 +8,7 @@ import scala.reflect._
 import scala.collection.mutable.ArrayBuffer
 
 /**
+ * A module containing AST of physical query operators.
  *
  * @author Yannis Klonatos
  */

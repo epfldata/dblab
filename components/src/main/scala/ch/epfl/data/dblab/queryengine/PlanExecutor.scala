@@ -16,7 +16,7 @@ import sc.pardis.shallow.{ OptimalString, Record, DynamicCompositeRecord }
 import config.Config
 
 /**
- * The main module for executing query plans.
+ * The main module for executing (interpreting) query plans.
  *
  * @author Yannis Klonatos
  */

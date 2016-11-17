@@ -5,6 +5,8 @@ package schema
 import sc.pardis.shallow.{ Record, OptimalString }
 
 /**
+ * Represents a row in a database relation.
+ *
  * @author Yannis Klonatos
  */
 class DataRow(val values: Seq[(String, Any)]) extends Record {

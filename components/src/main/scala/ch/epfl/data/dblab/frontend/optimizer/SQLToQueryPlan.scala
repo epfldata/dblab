@@ -12,6 +12,8 @@ import ru._
 import queryengine.GenericEngine
 
 /**
+ * Converts SQL queries into a physical query plan representation. This conversion is performed in a naive way
+ * (i.e. without performing any cost-based optimization).
  *
  * @author Yannis Klonatos
  */

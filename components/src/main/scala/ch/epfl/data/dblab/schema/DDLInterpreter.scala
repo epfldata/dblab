@@ -11,6 +11,8 @@ import sys.process._
 import config.Config
 
 /**
+ * An interpreter for DDL.
+ *
  * @author Yannis Klonatos
  */
 class DDLInterpreter(val catalog: Catalog) {
