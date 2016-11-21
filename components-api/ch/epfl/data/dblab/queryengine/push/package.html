@@ -1,0 +1,581 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>push - ch.epfl.data.dblab.queryengine.push</title>
+          <meta name="description" content="push - ch.epfl.data.dblab.queryengine.push" />
+          <meta name="keywords" content="push ch.epfl.data.dblab.queryengine.push" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../../index.html';
+            var hash = 'ch.epfl.data.dblab.queryengine.push.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../../../package.html" class="extype" name="ch">ch</a>.<a href="../../../../package.html" class="extype" name="ch.epfl">epfl</a>.<a href="../../../package.html" class="extype" name="ch.epfl.data">data</a>.<a href="../../package.html" class="extype" name="ch.epfl.data.dblab">dblab</a>.<a href="../package.html" class="extype" name="ch.epfl.data.dblab.queryengine">queryengine</a></p>
+        <h1>push</h1><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">push</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="ch.epfl.data.dblab.queryengine.push.AggOp" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="AggOp[A,B]extendsOperator[ch.epfl.data.dblab.queryengine.AGGRecord[B]]"></a>
+      <a id="AggOp[A,B]:AggOp[A,B]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="AggOp.html"><span class="name">AggOp</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="result"> extends <a href="Operator.html" class="extype" name="ch.epfl.data.dblab.queryengine.push.Operator">Operator</a>[<a href="../AGGRecord.html" class="extype" name="ch.epfl.data.dblab.queryengine.AGGRecord">AGGRecord</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.push.AggOp.B">B</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@AggOp[A,B]extendsOperator[ch.epfl.data.dblab.queryengine.AGGRecord[B]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Aggregate Operator
+</p><div class="fullcomment"><div class="comment cmt"><p>Aggregate Operator
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@needs</span><span class="args">()</span>
+              
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+                <span class="name">@onlineInliner</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.push.AggOpGeneric" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AggOpGeneric[A,B]extendsOperator[ch.epfl.data.dblab.schema.DynamicDataRow]"></a>
+      <a id="AggOpGeneric[A,B]:AggOpGeneric[A,B]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="AggOpGeneric.html"><span class="name">AggOpGeneric</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="result"> extends <a href="Operator.html" class="extype" name="ch.epfl.data.dblab.queryengine.push.Operator">Operator</a>[<a href="../../schema/DynamicDataRow.html" class="extype" name="ch.epfl.data.dblab.schema.DynamicDataRow">DynamicDataRow</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@AggOpGeneric[A,B]extendsOperator[ch.epfl.data.dblab.schema.DynamicDataRow]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.push.HashJoinAnti" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="HashJoinAnti[A,B,C]extendsOperator[A]"></a>
+      <a id="HashJoinAnti[A,B,C]:HashJoinAnti[A,B,C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HashJoinAnti.html"><span class="name">HashJoinAnti</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="result"> extends <a href="Operator.html" class="extype" name="ch.epfl.data.dblab.queryengine.push.Operator">Operator</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.push.HashJoinAnti.A">A</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@HashJoinAnti[A,B,C]extendsOperator[A]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Anti Hash Join Operator
+</p><div class="fullcomment"><div class="comment cmt"><p>Anti Hash Join Operator
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@needs</span><span class="args">()</span>
+              
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+                <span class="name">@onlineInliner</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.push.HashJoinOp" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="HashJoinOp[A&lt;:ch.epfl.data.sc.pardis.shallow.Record,B&lt;:ch.epfl.data.sc.pardis.shallow.Record,C]extendsOperator[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[A,B]]"></a>
+      <a id="HashJoinOp[A&lt;:Record,B&lt;:Record,C]:HashJoinOp[A,B,C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HashJoinOp.html"><span class="name">HashJoinOp</span></a><span class="tparams">[<span name="A">A &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>, <span name="B">B &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>, <span name="C">C</span>]</span><span class="result"> extends <a href="Operator.html" class="extype" name="ch.epfl.data.dblab.queryengine.push.Operator">Operator</a>[<span class="extype" name="ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord">DynamicCompositeRecord</span>[<span class="extype" name="ch.epfl.data.dblab.queryengine.push.HashJoinOp.A">A</span>, <span class="extype" name="ch.epfl.data.dblab.queryengine.push.HashJoinOp.B">B</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@HashJoinOp[A&lt;:ch.epfl.data.sc.pardis.shallow.Record,B&lt;:ch.epfl.data.sc.pardis.shallow.Record,C]extendsOperator[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[A,B]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Hash Join Operator
+</p><div class="fullcomment"><div class="comment cmt"><p>Hash Join Operator
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@needs</span><span class="args">()</span>
+              
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+                <span class="name">@onlineInliner</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.push.LeftHashSemiJoinOp" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="LeftHashSemiJoinOp[A,B,C]extendsOperator[A]"></a>
+      <a id="LeftHashSemiJoinOp[A,B,C]:LeftHashSemiJoinOp[A,B,C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="LeftHashSemiJoinOp.html"><span class="name">LeftHashSemiJoinOp</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="result"> extends <a href="Operator.html" class="extype" name="ch.epfl.data.dblab.queryengine.push.Operator">Operator</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.push.LeftHashSemiJoinOp.A">A</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@LeftHashSemiJoinOp[A,B,C]extendsOperator[A]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Left Hash Semi Join Operator
+</p><div class="fullcomment"><div class="comment cmt"><p>Left Hash Semi Join Operator
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@needs</span><span class="args">()</span>
+              
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+                <span class="name">@onlineInliner</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.push.LeftOuterJoinOp" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="LeftOuterJoinOp[A&lt;:ch.epfl.data.sc.pardis.shallow.Record,B&lt;:ch.epfl.data.sc.pardis.shallow.Record,C]extendsOperator[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[A,B]]"></a>
+      <a id="LeftOuterJoinOp[A&lt;:Record,B&lt;:Record,C]:LeftOuterJoinOp[A,B,C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="LeftOuterJoinOp.html"><span class="name">LeftOuterJoinOp</span></a><span class="tparams">[<span name="A">A &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>, <span name="B">B &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>, <span name="C">C</span>]</span><span class="result"> extends <a href="Operator.html" class="extype" name="ch.epfl.data.dblab.queryengine.push.Operator">Operator</a>[<span class="extype" name="ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord">DynamicCompositeRecord</span>[<span class="extype" name="ch.epfl.data.dblab.queryengine.push.LeftOuterJoinOp.A">A</span>, <span class="extype" name="ch.epfl.data.dblab.queryengine.push.LeftOuterJoinOp.B">B</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@LeftOuterJoinOp[A&lt;:ch.epfl.data.sc.pardis.shallow.Record,B&lt;:ch.epfl.data.sc.pardis.shallow.Record,C]extendsOperator[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[A,B]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Left Outer Join Operator
+</p><div class="fullcomment"><div class="comment cmt"><p>Left Outer Join Operator
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@needs</span><span class="args">()</span>
+              
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+                <span class="name">@onlineInliner</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.push.MapOp" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="MapOp[A]extendsOperator[A]"></a>
+      <a id="MapOp[A]:MapOp[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MapOp.html"><span class="name">MapOp</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <a href="Operator.html" class="extype" name="ch.epfl.data.dblab.queryengine.push.Operator">Operator</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.push.MapOp.A">A</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@MapOp[A]extendsOperator[A]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Map Operator
+</p><div class="fullcomment"><div class="comment cmt"><p>Map Operator
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+                <span class="name">@onlineInliner</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.push.MetaInfo" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="MetaInfoextendsAnyRef"></a>
+      <a id="MetaInfo:MetaInfo"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MetaInfo.html"><span class="name">MetaInfo</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@MetaInfoextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@metadeep</span><span class="args">(<span>
+      
+      <span class="symbol">&quot;&quot;</span>
+    </span>, <span>
+      
+      <span class="defval" name="&quot;&quot;&quot;import ch.epfl.data.dblab.deep._<br/>import ch.epfl.data.dblab.deep.common._<br/>import ch.epfl.data.dblab.deep.queryengine._&quot;&quot;&quot;">...</span>
+    </span>, <span>
+      
+      <span class="symbol">&quot;OperatorsComponent&quot;</span>
+    </span>, <span>
+      
+      <span class="symbol">&quot;OperatorsComponent&quot;</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.push.NestedLoopsJoinOp" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="NestedLoopsJoinOp[A&lt;:ch.epfl.data.sc.pardis.shallow.Record,B&lt;:ch.epfl.data.sc.pardis.shallow.Record]extendsOperator[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[A,B]]"></a>
+      <a id="NestedLoopsJoinOp[A&lt;:Record,B&lt;:Record]:NestedLoopsJoinOp[A,B]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="NestedLoopsJoinOp.html"><span class="name">NestedLoopsJoinOp</span></a><span class="tparams">[<span name="A">A &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>, <span name="B">B &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>]</span><span class="result"> extends <a href="Operator.html" class="extype" name="ch.epfl.data.dblab.queryengine.push.Operator">Operator</a>[<span class="extype" name="ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord">DynamicCompositeRecord</span>[<span class="extype" name="ch.epfl.data.dblab.queryengine.push.NestedLoopsJoinOp.A">A</span>, <span class="extype" name="ch.epfl.data.dblab.queryengine.push.NestedLoopsJoinOp.B">B</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@NestedLoopsJoinOp[A&lt;:ch.epfl.data.sc.pardis.shallow.Record,B&lt;:ch.epfl.data.sc.pardis.shallow.Record]extendsOperator[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[A,B]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Nested Loop Join Operator
+</p><div class="fullcomment"><div class="comment cmt"><p>Nested Loop Join Operator
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+                <span class="name">@onlineInliner</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.push.Operator" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="Operator[+A]extendsAnyRef"></a>
+      <a id="Operator[+A]:Operator[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Operator.html"><span class="name">Operator</span></a><span class="tparams">[<span name="A">+A</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@Operator[+A]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The common class for all query operators in push-engine.</p><div class="fullcomment"><div class="comment cmt"><p>The common class for all query operators in push-engine.
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@needs</span><span class="args">()</span>
+              
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+                <span class="name">@onlineInliner</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.push.PrintOp" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="PrintOp[A]extendsOperator[A]"></a>
+      <a id="PrintOp[A]:PrintOp[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="PrintOp.html"><span class="name">PrintOp</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <a href="Operator.html" class="extype" name="ch.epfl.data.dblab.queryengine.push.Operator">Operator</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.push.PrintOp.A">A</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@PrintOp[A]extendsOperator[A]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Print Operator
+</p><div class="fullcomment"><div class="comment cmt"><p>Print Operator
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+                <span class="name">@onlineInliner</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.push.ScanOp" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ScanOp[A]extendsOperator[A]"></a>
+      <a id="ScanOp[A]:ScanOp[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ScanOp.html"><span class="name">ScanOp</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <a href="Operator.html" class="extype" name="ch.epfl.data.dblab.queryengine.push.Operator">Operator</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.push.ScanOp.A">A</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@ScanOp[A]extendsOperator[A]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Scan Operator
+</p><div class="fullcomment"><div class="comment cmt"><p>Scan Operator
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@needs</span><span class="args">()</span>
+              
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+                <span class="name">@onlineInliner</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.push.SelectOp" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="SelectOp[A]extendsOperator[A]"></a>
+      <a id="SelectOp[A]:SelectOp[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SelectOp.html"><span class="name">SelectOp</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <a href="Operator.html" class="extype" name="ch.epfl.data.dblab.queryengine.push.Operator">Operator</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.push.SelectOp.A">A</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@SelectOp[A]extendsOperator[A]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Select Operator
+</p><div class="fullcomment"><div class="comment cmt"><p>Select Operator
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+                <span class="name">@onlineInliner</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.push.SortOp" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="SortOp[A]extendsOperator[A]"></a>
+      <a id="SortOp[A]:SortOp[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SortOp.html"><span class="name">SortOp</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <a href="Operator.html" class="extype" name="ch.epfl.data.dblab.queryengine.push.Operator">Operator</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.push.SortOp.A">A</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@SortOp[A]extendsOperator[A]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Sort Operator
+</p><div class="fullcomment"><div class="comment cmt"><p>Sort Operator
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@needs</span><span class="args">()</span>
+              
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+                <span class="name">@onlineInliner</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.push.SubquerySingleResult" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="SubquerySingleResult[A]extendsOperator[A]"></a>
+      <a id="SubquerySingleResult[A]:SubquerySingleResult[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SubquerySingleResult.html"><span class="name">SubquerySingleResult</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <a href="Operator.html" class="extype" name="ch.epfl.data.dblab.queryengine.push.Operator">Operator</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.push.SubquerySingleResult.A">A</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@SubquerySingleResult[A]extendsOperator[A]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Subquery Result Operator
+</p><div class="fullcomment"><div class="comment cmt"><p>Subquery Result Operator
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@needs</span><span class="args">()</span>
+              
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+                <span class="name">@onlineInliner</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.push.ViewOp" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ViewOp[A]extendsOperator[A]"></a>
+      <a id="ViewOp[A]:ViewOp[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ViewOp.html"><span class="name">ViewOp</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <a href="Operator.html" class="extype" name="ch.epfl.data.dblab.queryengine.push.Operator">Operator</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.push.ViewOp.A">A</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@ViewOp[A]extendsOperator[A]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">View Operator
+</p><div class="fullcomment"><div class="comment cmt"><p>View Operator
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@needs</span><span class="args">()</span>
+              
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+                <span class="name">@onlineInliner</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.push.WindowOp" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="WindowOp[A,B,C]extendsOperator[ch.epfl.data.dblab.queryengine.WindowRecord[B,C]]"></a>
+      <a id="WindowOp[A,B,C]:WindowOp[A,B,C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="WindowOp.html"><span class="name">WindowOp</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="result"> extends <a href="Operator.html" class="extype" name="ch.epfl.data.dblab.queryengine.push.Operator">Operator</a>[<a href="../WindowRecord.html" class="extype" name="ch.epfl.data.dblab.queryengine.WindowRecord">WindowRecord</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.push.WindowOp.B">B</span>, <span class="extype" name="ch.epfl.data.dblab.queryengine.push.WindowOp.C">C</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@WindowOp[A,B,C]extendsOperator[ch.epfl.data.dblab.queryengine.WindowRecord[B,C]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Window Operator
+</p><div class="fullcomment"><div class="comment cmt"><p>Window Operator
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@needs</span><span class="args">()</span>
+              
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+                <span class="name">@onlineInliner</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="ch.epfl.data.dblab.queryengine.push.MultiMap" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MultiMap"></a>
+      <a id="MultiMap:MultiMap"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="MultiMap$.html"><span class="name">MultiMap</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.push.package@MultiMap" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Factory for creating MultiMap instances.</p>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

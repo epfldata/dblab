@@ -1,0 +1,1809 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>SetToArrayTransformation - ch.epfl.data.dblab.transformers.SetToArrayTransformation</title>
+          <meta name="description" content="SetToArrayTransformation - ch.epfl.data.dblab.transformers.SetToArrayTransformation" />
+          <meta name="keywords" content="SetToArrayTransformation ch.epfl.data.dblab.transformers.SetToArrayTransformation" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'ch.epfl.data.dblab.transformers.SetToArrayTransformation';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="type">
+      <div id="definition">
+        <a href="SetToArrayTransformation$.html" title="See companion object"><img alt="Class/Object" src="../../../../../lib/class_to_object_big.png" /></a>
+        <p id="owner"><a href="../../../../package.html" class="extype" name="ch">ch</a>.<a href="../../../package.html" class="extype" name="ch.epfl">epfl</a>.<a href="../../package.html" class="extype" name="ch.epfl.data">data</a>.<a href="../package.html" class="extype" name="ch.epfl.data.dblab">dblab</a>.<a href="package.html" class="extype" name="ch.epfl.data.dblab.transformers">transformers</a></p>
+        <h1><a href="SetToArrayTransformation$.html" title="See companion object">SetToArrayTransformation</a></h1><h3><span class="morelinks"><div>
+            Related Docs:
+            <a href="SetToArrayTransformation$.html" title="See companion object">object SetToArrayTransformation</a>
+            | <a href="package.html" class="extype" name="ch.epfl.data.dblab.transformers">package transformers</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">SetToArrayTransformation</span><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation">SetArrayTransformation</span> with <span class="extype" name="ch.epfl.data.sc.pardis.optimization.ArrayEscapeLowering">ArrayEscapeLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>] with <span class="extype" name="ch.epfl.data.sc.pardis.optimization.VarEscapeLowering">VarEscapeLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>] with <span class="extype" name="ch.epfl.data.sc.pardis.optimization.Tuple2EscapeLowering">Tuple2EscapeLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>] with <span class="extype" name="ch.epfl.data.sc.pardis.optimization.OptionEscapeLowering">OptionEscapeLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>] with <span class="extype" name="ch.epfl.data.sc.pardis.optimization.LambdaEscapeLowering">LambdaEscapeLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>] with <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedLowering">RuleBasedLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>]</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Converts a Set collection, which there is no duplicate element inserted into it,
+to a record of Int and Array which represent the size and an array containing
+the elements.
+To check how this transformation is implemented take a look at the implementation
+of <span class="extype" name="sc.pardis.shallow.scalalib.collection.SetArray">sc.pardis.shallow.scalalib.collection.SetArray</span>. Purgatory automatically
+generates the skeleton of the core part of this transformation out of the shallow
+implementation.</p><p>Example:</p><pre><span class="kw">val</span> elements: Collection[A] = <span class="cmt">// some collection of elements of type A</span>
+<span class="kw">val</span> set = <span class="std">Set</span>[A]()
+<span class="kw">for</span>(elem <span class="kw">&lt;-</span> elements) {
+  set += elem
+}
+...
+<span class="kw">for</span>(e <span class="kw">&lt;-</span> set) { <span class="cmt">// desugared into `set.foreach(e => ...)`</span>
+  process(e)
+}</pre><p>is converted into:</p><pre><span class="kw">val</span> elements: Collection[A] = <span class="cmt">// some collection of elements of type A</span>
+<span class="kw">val</span> setRecord = Record {
+  <span class="kw">var</span> maxSize: <span class="std">Int</span> = <span class="num">0</span>;
+  <span class="kw">val</span> array: <span class="std">Array</span>[A] = <span class="kw">new</span> <span class="std">Array</span>[A](MAX_SIZE)
+}
+<span class="kw">for</span>(elem <span class="kw">&lt;-</span> elements) {
+  setRecord.array(setRecord.maxSize) = elem
+  setRecord.maxSize += <span class="num">1</span>
+}
+...
+<span class="kw">for</span>(i <span class="kw">&lt;-</span> <span class="num">0</span> until setRecord.maxSize) {
+  <span class="kw">val</span> e = setRecord.array(i)
+  process(e)
+}</pre><p>Precondition:
+The elements inserted into the set should not have any duplication. Otherwise,
+this transformation does not work correctly. There is no analysis phase involved
+for check this contraint, which means it should be made sure by the user.
+</p></div><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span class="extype" name="ch.epfl.data.sc.pardis.optimization.LambdaEscapeLowering">LambdaEscapeLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>], <span class="extype" name="ch.epfl.data.sc.pardis.optimization.OptionEscapeLowering">OptionEscapeLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>], <span class="extype" name="ch.epfl.data.sc.pardis.optimization.Tuple2EscapeLowering">Tuple2EscapeLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>], <span class="extype" name="ch.epfl.data.sc.pardis.optimization.VarEscapeLowering">VarEscapeLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>], <span class="extype" name="ch.epfl.data.sc.pardis.optimization.ArrayEscapeLowering">ArrayEscapeLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>], <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedLowering">RuleBasedLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>], <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation">SetArrayTransformation</span>, <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer">RecursiveRuleBasedTransformer</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span>], <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span>], <span class="extype" name="ch.epfl.data.sc.pardis.optimization.Optimizer">Optimizer</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span>], <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TransformerHandler">TransformerHandler</span>, <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformerTraverser">TopDownTransformerTraverser</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span>], <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer">TopDownTransformer</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span>, <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span>], <span class="extype" name="ch.epfl.data.sc.pardis.optimization.Traverser">Traverser</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span>], <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation"><span>SetToArrayTransformation</span></li><li class="in" name="ch.epfl.data.sc.pardis.optimization.LambdaEscapeLowering"><span>LambdaEscapeLowering</span></li><li class="in" name="ch.epfl.data.sc.pardis.optimization.OptionEscapeLowering"><span>OptionEscapeLowering</span></li><li class="in" name="ch.epfl.data.sc.pardis.optimization.Tuple2EscapeLowering"><span>Tuple2EscapeLowering</span></li><li class="in" name="ch.epfl.data.sc.pardis.optimization.VarEscapeLowering"><span>VarEscapeLowering</span></li><li class="in" name="ch.epfl.data.sc.pardis.optimization.ArrayEscapeLowering"><span>ArrayEscapeLowering</span></li><li class="in" name="ch.epfl.data.sc.pardis.optimization.RuleBasedLowering"><span>RuleBasedLowering</span></li><li class="in" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation"><span>SetArrayTransformation</span></li><li class="in" name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer"><span>RecursiveRuleBasedTransformer</span></li><li class="in" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer"><span>RuleBasedTransformer</span></li><li class="in" name="ch.epfl.data.sc.pardis.optimization.Optimizer"><span>Optimizer</span></li><li class="in" name="ch.epfl.data.sc.pardis.optimization.TransformerHandler"><span>TransformerHandler</span></li><li class="in" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformerTraverser"><span>TopDownTransformerTraverser</span></li><li class="in" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer"><span>TopDownTransformer</span></li><li class="in" name="ch.epfl.data.sc.pardis.optimization.Traverser"><span>Traverser</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        <div id="constructors" class="members">
+              <h3>Instance Constructors</h3>
+              <ol><li name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps,schema:ch.epfl.data.dblab.schema.Schema):ch.epfl.data.dblab.transformers.SetToArrayTransformation"></a>
+      <a id="&lt;init&gt;:SetToArrayTransformation"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">new</span>
+      </span>
+      <span class="symbol">
+        <span class="name">SetToArrayTransformation</span><span class="params">(<span name="IR">IR: <a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a> with <a href="../deep/common/OrderingOps.html" class="extype" name="ch.epfl.data.dblab.deep.common.OrderingOps">OrderingOps</a></span>, <span name="schema">schema: <span class="extype" name="ch.epfl.data.dblab.schema.Schema">Schema</span></span>)</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@&lt;init&gt;(IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps,schema:ch.epfl.data.dblab.schema.Schema):ch.epfl.data.dblab.transformers.SetToArrayTransformation" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation.A" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="AextendsAnyRef"></a>
+      <a id="A:A"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">A</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@AextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SetArrayTransformation</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer.AnalysisAPI" visbl="prt" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="AnalysisAPIextendsAnyRef"></a>
+      <a id="AnalysisAPI:AnalysisAPI"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <span class="name">AnalysisAPI</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@AnalysisAPIextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer.AnalysisAtPhase" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="AnalysisAtPhaseextendsRuleBasedTransformer.this.AnalysisAPI"></a>
+      <a id="AnalysisAtPhase:AnalysisAtPhase"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">AnalysisAtPhase</span><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer.AnalysisAPI">AnalysisAPI</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@AnalysisAtPhaseextendsRuleBasedTransformer.this.AnalysisAPI" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer.AnalysisPhase" visbl="prt" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="AnalysisPhaseextendsAnyRef"></a>
+      <a id="AnalysisPhase:AnalysisPhase"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <span class="name">AnalysisPhase</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@AnalysisPhaseextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation.Rep" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Rep[T]=SetArrayTransformation.this.IR.Rep[T]"></a>
+      <a id="Rep[T]:Rep[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Rep</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> = <span class="extype" name="ch.epfl.data.sc.pardis.ir.Expression">Expression</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation.Rep.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@Rep[T]=SetArrayTransformation.this.IR.Rep[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SetArrayTransformation</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation.Var" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Var[T]=SetArrayTransformation.this.IR.Var[T]"></a>
+      <a id="Var[T]:Var[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Var</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> = <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisVar">PardisVar</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation.Var.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@Var[T]=SetArrayTransformation.this.IR.Var[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SetArrayTransformation</dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@##():Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer.-&gt;" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="-&gt;"></a>
+      <a id="-&gt;:-&gt;"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $minus$greater" class="name">-&gt;</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@-&gt;" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RuleBasedTransformer</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer#DSLContext" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="DSLContext:Lang"></a>
+      <a id="DSLContext:SetOpswithRangeOpswithArrayOpswithIntOpswithBooleanOpswithOptionOps"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">DSLContext</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@DSLContext:Lang" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps"></a>
+      <a id="IR:LangwithOrderingOps"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">IR</span><span class="result">: <a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a> with <a href="../deep/common/OrderingOps.html" class="extype" name="ch.epfl.data.dblab.deep.common.OrderingOps">OrderingOps</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation">SetToArrayTransformation</a> → SetArrayTransformation → RecursiveRuleBasedTransformer → RuleBasedTransformer → Optimizer → Traverser</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.Lambda" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Lambda"></a>
+      <a id="Lambda:Lambda"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Lambda</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@Lambda" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.TDef" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="TDef"></a>
+      <a id="TDef:TDef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">TDef</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@TDef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer#THRESHOLD" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="THRESHOLD:Int"></a>
+      <a id="THRESHOLD:Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">THRESHOLD</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@THRESHOLD:Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RecursiveRuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation#__newSetArray" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__newSetArray[A&lt;:&lt;?&gt;]()(implicittypeA:&lt;?&gt;):SetArrayTransformation.this.Rep[SetArrayTransformation.this.IR.Set[A]]"></a>
+      <a id="__newSetArray[A]()((IR)#TypeRep[A]):Rep[(IR)#Set[A]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__newSetArray</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="typeA">typeA: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation.__newSetArray.A">A</span>]</span>)</span><span class="result">: <a href="#Rep[T]=SetArrayTransformation.this.IR.Rep[T]" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Rep">Rep</a>[(<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps.Set">Set</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation.__newSetArray.A">A</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@__newSetArray[A]()(implicittypeA:SetArrayTransformation.this.IR.TypeRep[A]):SetArrayTransformation.this.Rep[SetArrayTransformation.this.IR.Set[A]]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SetArrayTransformation</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer#addHandle" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addHandle(handle:()=&gt;Unit):Unit"></a>
+      <a id="addHandle(()⇒Unit):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addHandle</span><span class="params">(<span name="handle">handle: () ⇒ <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@addHandle(handle:()=&gt;Unit):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#addToLowered" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addToLowered[T](sym:SetToArrayTransformation.this.Rep[T]):Unit"></a>
+      <a id="addToLowered[T](Rep[T]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addToLowered</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="sym">sym: <a href="#Rep[T]=SetArrayTransformation.this.IR.Rep[T]" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.addToLowered.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@addToLowered[T](sym:SetToArrayTransformation.this.Rep[T]):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation">SetToArrayTransformation</a> → RuleBasedLowering</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer.analysis" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="analysis"></a>
+      <a id="analysis:analysis"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">analysis</span><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer.AnalysisAPI">AnalysisAPI</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@analysis" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer#analysisPhases" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="analysisPhases:List[RuleBasedTransformer.this.AnalysisPhase]"></a>
+      <a id="analysisPhases:List[AnalysisPhase]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">analysisPhases</span><span class="result">: <span class="extype" name="scala.List">List</span>[<a href="#AnalysisPhaseextendsAnyRef" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.AnalysisPhase">AnalysisPhase</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@analysisPhases:List[RuleBasedTransformer.this.AnalysisPhase]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.Optimizer#apply" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="apply[Lang2&lt;:ch.epfl.data.sc.pardis.ir.Base,T](context:Lang2)(block:context.Block[T])(implicitevidence$1:Optimizer.this.IR.TypeRep[T]):context.Block[T]"></a>
+      <a id="apply[Lang2&lt;:Base,T](Lang2)(sc.pardis.optimization.Optimizer.apply.Lang2.Block[T])((IR)#TypeRep[T]):sc.pardis.optimization.Optimizer.apply.Lang2.Block[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">apply</span><span class="tparams">[<span name="Lang2">Lang2 &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.ir.Base">Base</span></span>, <span name="T">T</span>]</span><span class="params">(<span name="context">context: <span class="extype" name="ch.epfl.data.sc.pardis.optimization.Optimizer.apply.Lang2">Lang2</span></span>)</span><span class="params">(<span name="block">block: <span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">sc.pardis.optimization.Optimizer.apply.Lang2.Block</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.Optimizer.apply.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.Optimizer.apply.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">sc.pardis.optimization.Optimizer.apply.Lang2.Block</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.Optimizer.apply.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@apply[Lang2&lt;:ch.epfl.data.sc.pardis.ir.Base,T](context:Lang2)(block:context.Block[T])(implicitevidence$1:Optimizer.this.IR.TypeRep[T]):context.Block[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Optimizer → TransformerHandler</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#apply" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="apply[T](exp:TopDownTransformer.this.from.Rep[T])(implicitevidence$5:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.to.Rep[T]"></a>
+      <a id="apply[T]((from)#Rep[T])((from)#TypeRep[T]):(to)#Rep[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">apply</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="exp">exp: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.apply.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.apply.T">T</span>]</span>)</span><span class="result">: (<a href="#to:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#to">to</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.apply.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@apply[T](exp:TopDownTransformer.this.from.Rep[T])(implicitevidence$5:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.to.Rep[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#apply" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="apply[T](node:TopDownTransformer.this.from.Def[T])(implicitevidence$4:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.to.Def[T]"></a>
+      <a id="apply[T]((from)#Def[T])((from)#TypeRep[T]):(to)#Def[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">apply</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="node">node: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Def">Def</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.apply.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.apply.T">T</span>]</span>)</span><span class="result">: (<a href="#to:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#to">to</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Def">Def</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.apply.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@apply[T](node:TopDownTransformer.this.from.Def[T])(implicitevidence$4:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.to.Def[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#apply" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="apply[T](m:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.from.TypeRep[Any]"></a>
+      <a id="apply[T]((from)#TypeRep[T]):(from)#TypeRep[Any]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">apply</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="m">m: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.apply.T">T</span>]</span>)</span><span class="result">: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="scala.Any">Any</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@apply[T](m:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.from.TypeRep[Any]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#apply" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="apply[T](block:TopDownTransformer.this.from.Block[T])(implicitevidence$3:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.to.Block[T]"></a>
+      <a id="apply[T]((from)#Block[T])((from)#TypeRep[T]):(to)#Block[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">apply</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="block">block: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">Block</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.apply.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.apply.T">T</span>]</span>)</span><span class="result">: (<a href="#to:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#to">to</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">Block</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.apply.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@apply[T](block:TopDownTransformer.this.from.Block[T])(implicitevidence$3:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.to.Block[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer#currentAnalysisPhase" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="currentAnalysisPhase:RuleBasedTransformer.this.AnalysisPhase"></a>
+      <a id="currentAnalysisPhase:AnalysisPhase"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">var</span>
+      </span>
+      <span class="symbol">
+        <span class="name">currentAnalysisPhase</span><span class="result">: <a href="#AnalysisPhaseextendsAnyRef" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.AnalysisPhase">AnalysisPhase</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@currentAnalysisPhase:RuleBasedTransformer.this.AnalysisPhase" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RuleBasedTransformer</dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformerTraverser#from" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="from:Lang"></a>
+      <a id="from:SetOpswithRangeOpswithArrayOpswithIntOpswithBooleanOpswithOptionOps"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">from</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@from:Lang" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>TopDownTransformerTraverser → TopDownTransformer</dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer#getName" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getName:String"></a>
+      <a id="getName:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getName</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@getName:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RecursiveRuleBasedTransformer</dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#inlineBlock" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="inlineBlock[T](block:TopDownTransformer.this.from.Block[T])(implicitevidence$10:ch.epfl.data.sc.pardis.types.PardisType[T]):TopDownTransformer.this.to.Rep[T]"></a>
+      <a id="inlineBlock[T]((from)#Block[T])(PardisType[T]):(to)#Rep[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">inlineBlock</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="block">block: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">Block</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineBlock.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.types.PardisType">PardisType</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineBlock.T">T</span>]</span>)</span><span class="result">: (<a href="#to:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#to">to</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineBlock.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@inlineBlock[T](block:TopDownTransformer.this.from.Block[T])(implicitevidence$10:ch.epfl.data.sc.pardis.types.PardisType[T]):TopDownTransformer.this.to.Rep[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#inlineBlock2" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="inlineBlock2[T](block:TopDownTransformer.this.from.Block[T])(implicitevidence$11:ch.epfl.data.sc.pardis.types.PardisType[T]):TopDownTransformer.this.to.Rep[T]"></a>
+      <a id="inlineBlock2[T]((from)#Block[T])(PardisType[T]):(to)#Rep[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">inlineBlock2</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="block">block: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">Block</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineBlock2.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.types.PardisType">PardisType</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineBlock2.T">T</span>]</span>)</span><span class="result">: (<a href="#to:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#to">to</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineBlock2.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@inlineBlock2[T](block:TopDownTransformer.this.from.Block[T])(implicitevidence$11:ch.epfl.data.sc.pardis.types.PardisType[T]):TopDownTransformer.this.to.Rep[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#inlineFunction" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="inlineFunction[T1,T2,T3,S](fun:TopDownTransformer.this.from.Rep[(T1,T2,T3)=&gt;S],input1:TopDownTransformer.this.from.Rep[T1],input2:TopDownTransformer.this.from.Rep[T2],input3:TopDownTransformer.this.from.Rep[T3])(implicitevidence$22:TopDownTransformer.this.from.TypeRep[T1],implicitevidence$23:TopDownTransformer.this.from.TypeRep[T2],implicitevidence$24:TopDownTransformer.this.from.TypeRep[T3],implicitevidence$25:TopDownTransformer.this.from.TypeRep[S]):TopDownTransformer.this.from.Rep[S]"></a>
+      <a id="inlineFunction[T1,T2,T3,S]((from)#Rep[(T1,T2,T3)⇒S],(from)#Rep[T1],(from)#Rep[T2],(from)#Rep[T3])((from)#TypeRep[T1],(from)#TypeRep[T2],(from)#TypeRep[T3],(from)#TypeRep[S]):(from)#Rep[S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">inlineFunction</span><span class="tparams">[<span name="T1">T1</span>, <span name="T2">T2</span>, <span name="T3">T3</span>, <span name="S">S</span>]</span><span class="params">(<span name="fun">fun: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[(<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T1">T1</span>, <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T2">T2</span>, <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T3">T3</span>) ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.S">S</span>]</span>, <span name="input1">input1: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T1">T1</span>]</span>, <span name="input2">input2: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T2">T2</span>]</span>, <span name="input3">input3: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T3">T3</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T1">T1</span>]</span>, <span name="arg1">arg1: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T2">T2</span>]</span>, <span name="arg2">arg2: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T3">T3</span>]</span>, <span name="arg3">arg3: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.S">S</span>]</span>)</span><span class="result">: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@inlineFunction[T1,T2,T3,S](fun:TopDownTransformer.this.from.Rep[(T1,T2,T3)=&gt;S],input1:TopDownTransformer.this.from.Rep[T1],input2:TopDownTransformer.this.from.Rep[T2],input3:TopDownTransformer.this.from.Rep[T3])(implicitevidence$22:TopDownTransformer.this.from.TypeRep[T1],implicitevidence$23:TopDownTransformer.this.from.TypeRep[T2],implicitevidence$24:TopDownTransformer.this.from.TypeRep[T3],implicitevidence$25:TopDownTransformer.this.from.TypeRep[S]):TopDownTransformer.this.from.Rep[S]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#inlineFunction" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="inlineFunction[T1,T2,S](fun:TopDownTransformer.this.from.Rep[(T1,T2)=&gt;S],input1:TopDownTransformer.this.from.Rep[T1],input2:TopDownTransformer.this.from.Rep[T2])(implicitevidence$19:TopDownTransformer.this.from.TypeRep[T1],implicitevidence$20:TopDownTransformer.this.from.TypeRep[T2],implicitevidence$21:TopDownTransformer.this.from.TypeRep[S]):TopDownTransformer.this.from.Rep[S]"></a>
+      <a id="inlineFunction[T1,T2,S]((from)#Rep[(T1,T2)⇒S],(from)#Rep[T1],(from)#Rep[T2])((from)#TypeRep[T1],(from)#TypeRep[T2],(from)#TypeRep[S]):(from)#Rep[S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">inlineFunction</span><span class="tparams">[<span name="T1">T1</span>, <span name="T2">T2</span>, <span name="S">S</span>]</span><span class="params">(<span name="fun">fun: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[(<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T1">T1</span>, <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T2">T2</span>) ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.S">S</span>]</span>, <span name="input1">input1: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T1">T1</span>]</span>, <span name="input2">input2: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T2">T2</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T1">T1</span>]</span>, <span name="arg1">arg1: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T2">T2</span>]</span>, <span name="arg2">arg2: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.S">S</span>]</span>)</span><span class="result">: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@inlineFunction[T1,T2,S](fun:TopDownTransformer.this.from.Rep[(T1,T2)=&gt;S],input1:TopDownTransformer.this.from.Rep[T1],input2:TopDownTransformer.this.from.Rep[T2])(implicitevidence$19:TopDownTransformer.this.from.TypeRep[T1],implicitevidence$20:TopDownTransformer.this.from.TypeRep[T2],implicitevidence$21:TopDownTransformer.this.from.TypeRep[S]):TopDownTransformer.this.from.Rep[S]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#inlineFunction" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="inlineFunction[T,S](fun:TopDownTransformer.this.from.Rep[T=&gt;S],input:TopDownTransformer.this.from.Rep[T])(implicitevidence$17:TopDownTransformer.this.from.TypeRep[T],implicitevidence$18:TopDownTransformer.this.from.TypeRep[S]):TopDownTransformer.this.from.Rep[S]"></a>
+      <a id="inlineFunction[T,S]((from)#Rep[(T)⇒S],(from)#Rep[T])((from)#TypeRep[T],(from)#TypeRep[S]):(from)#Rep[S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">inlineFunction</span><span class="tparams">[<span name="T">T</span>, <span name="S">S</span>]</span><span class="params">(<span name="fun">fun: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[(<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T">T</span>) ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.S">S</span>]</span>, <span name="input">input: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.T">T</span>]</span>, <span name="arg1">arg1: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.S">S</span>]</span>)</span><span class="result">: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@inlineFunction[T,S](fun:TopDownTransformer.this.from.Rep[T=&gt;S],input:TopDownTransformer.this.from.Rep[T])(implicitevidence$17:TopDownTransformer.this.from.TypeRep[T],implicitevidence$18:TopDownTransformer.this.from.TypeRep[S]):TopDownTransformer.this.from.Rep[S]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#inlineFunction" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="inlineFunction[S](fun:TopDownTransformer.this.from.Rep[()=&gt;S])(implicitevidence$16:TopDownTransformer.this.from.TypeRep[S]):TopDownTransformer.this.from.Rep[S]"></a>
+      <a id="inlineFunction[S]((from)#Rep[()⇒S])((from)#TypeRep[S]):(from)#Rep[S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">inlineFunction</span><span class="tparams">[<span name="S">S</span>]</span><span class="params">(<span name="fun">fun: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[() ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.S">S</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.S">S</span>]</span>)</span><span class="result">: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.inlineFunction.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@inlineFunction[S](fun:TopDownTransformer.this.from.Rep[()=&gt;S])(implicitevidence$16:TopDownTransformer.this.from.TypeRep[S]):TopDownTransformer.this.from.Rep[S]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#lowerType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="lowerType[T](implicitevidence$1:ch.epfl.data.sc.pardis.types.PardisType[T]):ch.epfl.data.sc.pardis.types.PardisType[Any]"></a>
+      <a id="lowerType[T](PardisType[T]):PardisType[Any]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">lowerType</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.types.PardisType">PardisType</span>[<span class="extype" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.lowerType.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.types.PardisType">PardisType</span>[<span class="extype" name="scala.Any">Any</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@lowerType[T](implicitevidence$1:ch.epfl.data.sc.pardis.types.PardisType[T]):ch.epfl.data.sc.pardis.types.PardisType[Any]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation">SetToArrayTransformation</a> → RuleBasedLowering</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.ArrayEscapeLowering#loweredEscapeArrays" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="loweredEscapeArrays:scala.collection.mutable.ArrayBuffer[ch.epfl.data.sc.pardis.ir.Expression[Any]]"></a>
+      <a id="loweredEscapeArrays:ArrayBuffer[Expression[Any]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">loweredEscapeArrays</span><span class="result">: <span class="extype" name="scala.collection.mutable.ArrayBuffer">ArrayBuffer</span>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.Expression">Expression</span>[<span class="extype" name="scala.Any">Any</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@loweredEscapeArrays:scala.collection.mutable.ArrayBuffer[ch.epfl.data.sc.pardis.ir.Expression[Any]]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ArrayEscapeLowering</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.OptionEscapeLowering#loweredEscapeOptions" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="loweredEscapeOptions:scala.collection.mutable.ArrayBuffer[ch.epfl.data.sc.pardis.ir.Expression[Any]]"></a>
+      <a id="loweredEscapeOptions:ArrayBuffer[Expression[Any]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">loweredEscapeOptions</span><span class="result">: <span class="extype" name="scala.collection.mutable.ArrayBuffer">ArrayBuffer</span>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.Expression">Expression</span>[<span class="extype" name="scala.Any">Any</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@loweredEscapeOptions:scala.collection.mutable.ArrayBuffer[ch.epfl.data.sc.pardis.ir.Expression[Any]]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>OptionEscapeLowering</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.Tuple2EscapeLowering#loweredEscapeTuple2s" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="loweredEscapeTuple2s:scala.collection.mutable.ArrayBuffer[ch.epfl.data.sc.pardis.ir.Expression[Any]]"></a>
+      <a id="loweredEscapeTuple2s:ArrayBuffer[Expression[Any]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">loweredEscapeTuple2s</span><span class="result">: <span class="extype" name="scala.collection.mutable.ArrayBuffer">ArrayBuffer</span>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.Expression">Expression</span>[<span class="extype" name="scala.Any">Any</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@loweredEscapeTuple2s:scala.collection.mutable.ArrayBuffer[ch.epfl.data.sc.pardis.ir.Expression[Any]]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tuple2EscapeLowering</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.VarEscapeLowering#loweredEscapeVars" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="loweredEscapeVars:scala.collection.mutable.ArrayBuffer[ch.epfl.data.sc.pardis.ir.Expression[Any]]"></a>
+      <a id="loweredEscapeVars:ArrayBuffer[Expression[Any]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">loweredEscapeVars</span><span class="result">: <span class="extype" name="scala.collection.mutable.ArrayBuffer">ArrayBuffer</span>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.Expression">Expression</span>[<span class="extype" name="scala.Any">Any</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@loweredEscapeVars:scala.collection.mutable.ArrayBuffer[ch.epfl.data.sc.pardis.ir.Expression[Any]]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VarEscapeLowering</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#loweredSets" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="loweredSets:scala.collection.mutable.ArrayBuffer[ch.epfl.data.sc.pardis.ir.Expression[Any]]"></a>
+      <a id="loweredSets:ArrayBuffer[Expression[Any]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">loweredSets</span><span class="result">: <span class="extype" name="scala.collection.mutable.ArrayBuffer">ArrayBuffer</span>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.Expression">Expression</span>[<span class="extype" name="scala.Any">Any</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@loweredSets:scala.collection.mutable.ArrayBuffer[ch.epfl.data.sc.pardis.ir.Expression[Any]]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The list of Set symbols that are lowered
+</p>
+    </li><li name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#mayBeLowered" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="mayBeLowered[T](sym:SetToArrayTransformation.this.Rep[T]):SetToArrayTransformation.this.IR.Boolean"></a>
+      <a id="mayBeLowered[T](Rep[T]):(IR)#Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mayBeLowered</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="sym">sym: <a href="#Rep[T]=SetArrayTransformation.this.IR.Rep[T]" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.mayBeLowered.T">T</span>]</span>)</span><span class="result">: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@mayBeLowered[T](sym:SetToArrayTransformation.this.Rep[T]):SetToArrayTransformation.this.IR.Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation">SetToArrayTransformation</a> → RuleBasedLowering</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#mustBeLowered" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="mustBeLowered[T](sym:SetToArrayTransformation.this.Rep[T]):SetToArrayTransformation.this.IR.Boolean"></a>
+      <a id="mustBeLowered[T](Rep[T]):(IR)#Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mustBeLowered</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="sym">sym: <a href="#Rep[T]=SetArrayTransformation.this.IR.Rep[T]" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.mustBeLowered.T">T</span>]</span>)</span><span class="result">: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@mustBeLowered[T](sym:SetToArrayTransformation.this.Rep[T]):SetToArrayTransformation.this.IR.Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation">SetToArrayTransformation</a> → RuleBasedLowering</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedLowering#mustBeTransformed" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="mustBeTransformed[T](sym:RuleBasedLowering.this.IR.Rep[T]):Boolean"></a>
+      <a id="mustBeTransformed[T]((IR)#Rep[T]):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mustBeTransformed</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="sym">sym: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedLowering.mustBeTransformed.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@mustBeTransformed[T](sym:RuleBasedLowering.this.IR.Rep[T]):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RuleBasedLowering</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#newSym" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newSym[T](sym:TopDownTransformer.this.from.Rep[T])(implicitevidence$12:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.to.Sym[_]"></a>
+      <a id="newSym[T]((from)#Rep[T])((from)#TypeRep[T]):(to)#Sym[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newSym</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="sym">sym: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.newSym.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.newSym.T">T</span>]</span>)</span><span class="result">: (<a href="#to:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#to">to</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Sym">Sym</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@newSym[T](sym:TopDownTransformer.this.from.Rep[T])(implicitevidence$12:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.to.Sym[_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer#optimize" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="optimize[T](node:RecursiveRuleBasedTransformer.this.IR.Block[T])(implicitevidence$5:RecursiveRuleBasedTransformer.this.IR.TypeRep[T]):RecursiveRuleBasedTransformer.this.IR.Block[T]"></a>
+      <a id="optimize[T]((IR)#Block[T])((IR)#TypeRep[T]):(IR)#Block[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">optimize</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="node">node: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">Block</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer.optimize.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer.optimize.T">T</span>]</span>)</span><span class="result">: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">Block</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer.optimize.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@optimize[T](node:RecursiveRuleBasedTransformer.this.IR.Block[T])(implicitevidence$5:RecursiveRuleBasedTransformer.this.IR.TypeRep[T]):RecursiveRuleBasedTransformer.this.IR.Block[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RecursiveRuleBasedTransformer → RuleBasedTransformer → Optimizer</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#postAnalyseProgram" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="postAnalyseProgram[T](node:SetToArrayTransformation.this.IR.Block[T])(implicitevidence$2:SetToArrayTransformation.this.IR.TypeRep[T]):Unit"></a>
+      <a id="postAnalyseProgram[T]((IR)#Block[T])((IR)#TypeRep[T]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">postAnalyseProgram</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="node">node: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">Block</span>[<span class="extype" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.postAnalyseProgram.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.postAnalyseProgram.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@postAnalyseProgram[T](node:SetToArrayTransformation.this.IR.Block[T])(implicitevidence$2:SetToArrayTransformation.this.IR.TypeRep[T]):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Updates the memory estimation information stored in the schema.</p><div class="fullcomment"><div class="comment cmt"><p>Updates the memory estimation information stored in the schema.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation">SetToArrayTransformation</a> → RuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer.remove" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="remove"></a>
+      <a id="remove:remove"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">remove</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@remove" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer.removeStatement" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="removeStatement"></a>
+      <a id="removeStatement:removeStatement"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">removeStatement</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@removeStatement" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer.rewrite" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rewrite"></a>
+      <a id="rewrite:rewrite"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rewrite</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@rewrite" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer.rule" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rule"></a>
+      <a id="rule:rule"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rule</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@rule" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer#ruleApplied" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ruleApplied():Unit"></a>
+      <a id="ruleApplied():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ruleApplied</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@ruleApplied():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RecursiveRuleBasedTransformer → RuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer#ruleApplyHandle" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ruleApplyHandle:ch.epfl.data.sc.pardis.optimization.Rule.RuleApplyHandle"></a>
+      <a id="ruleApplyHandle:RuleApplyHandle"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ruleApplyHandle</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.optimization.Rule.RuleApplyHandle">RuleApplyHandle</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@ruleApplyHandle:ch.epfl.data.sc.pardis.optimization.Rule.RuleApplyHandle" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#schema" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="schema:ch.epfl.data.dblab.schema.Schema"></a>
+      <a id="schema:Schema"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">schema</span><span class="result">: <span class="extype" name="ch.epfl.data.dblab.schema.Schema">Schema</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@schema:ch.epfl.data.dblab.schema.Schema" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation#set_Field_Array" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="set_Field_Array[A&lt;:&lt;?&gt;](self:&lt;?&gt;)(implicittypeA:&lt;?&gt;):SetArrayTransformation.this.Rep[SetArrayTransformation.this.IR.Array[A]]"></a>
+      <a id="set_Field_Array[A](Rep[(IR)#Set[A]])((IR)#TypeRep[A]):Rep[(IR)#Array[A]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">set_Field_Array</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="self">self: <a href="#Rep[T]=SetArrayTransformation.this.IR.Rep[T]" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Rep">Rep</a>[(<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps.Set">Set</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation.set_Field_Array.A">A</span>]]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="typeA">typeA: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation.set_Field_Array.A">A</span>]</span>)</span><span class="result">: <a href="#Rep[T]=SetArrayTransformation.this.IR.Rep[T]" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Rep">Rep</a>[(<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps.Array">Array</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation.set_Field_Array.A">A</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@set_Field_Array[A](self:SetArrayTransformation.this.Rep[SetArrayTransformation.this.IR.Set[A]])(implicittypeA:SetArrayTransformation.this.IR.TypeRep[A]):SetArrayTransformation.this.Rep[SetArrayTransformation.this.IR.Array[A]]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SetArrayTransformation</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation#set_Field_MaxSize" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="set_Field_MaxSize[A&lt;:&lt;?&gt;](self:&lt;?&gt;)(implicittypeA:&lt;?&gt;):SetArrayTransformation.this.Rep[SetArrayTransformation.this.IR.Int]"></a>
+      <a id="set_Field_MaxSize[A](Rep[(IR)#Set[A]])((IR)#TypeRep[A]):Rep[(IR)#Int]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">set_Field_MaxSize</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="self">self: <a href="#Rep[T]=SetArrayTransformation.this.IR.Rep[T]" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Rep">Rep</a>[(<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps.Set">Set</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation.set_Field_MaxSize.A">A</span>]]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="typeA">typeA: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation.set_Field_MaxSize.A">A</span>]</span>)</span><span class="result">: <a href="#Rep[T]=SetArrayTransformation.this.IR.Rep[T]" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Rep">Rep</a>[(<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps.Int">Int</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@set_Field_MaxSize[A](self:SetArrayTransformation.this.Rep[SetArrayTransformation.this.IR.Set[A]])(implicittypeA:SetArrayTransformation.this.IR.TypeRep[A]):SetArrayTransformation.this.Rep[SetArrayTransformation.this.IR.Int]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SetArrayTransformation</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation#set_Field_MaxSize_=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="set_Field_MaxSize_=[A&lt;:&lt;?&gt;](self:&lt;?&gt;,x$1:&lt;?&gt;)(implicittypeA:&lt;?&gt;):SetArrayTransformation.this.Rep[Unit]"></a>
+      <a id="set_Field_MaxSize_=[A](Rep[(IR)#Set[A]],Rep[(IR)#Int])((IR)#TypeRep[A]):Rep[Unit]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: set_Field_MaxSize_$eq" class="name">set_Field_MaxSize_=</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="self">self: <a href="#Rep[T]=SetArrayTransformation.this.IR.Rep[T]" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Rep">Rep</a>[(<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps.Set">Set</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation.set_Field_MaxSize_=.A">A</span>]]</span>, <span name="arg1">arg1: <a href="#Rep[T]=SetArrayTransformation.this.IR.Rep[T]" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Rep">Rep</a>[(<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps.Int">Int</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="typeA">typeA: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation.set_Field_MaxSize_=.A">A</span>]</span>)</span><span class="result">: <a href="#Rep[T]=SetArrayTransformation.this.IR.Rep[T]" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Rep">Rep</a>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@set_Field_MaxSize_=[A](self:SetArrayTransformation.this.Rep[SetArrayTransformation.this.IR.Set[A]],x$1:SetArrayTransformation.this.Rep[SetArrayTransformation.this.IR.Int])(implicittypeA:SetArrayTransformation.this.IR.TypeRep[A]):SetArrayTransformation.this.Rep[Unit]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SetArrayTransformation</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer.statement" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="statement"></a>
+      <a id="statement:statement"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">statement</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@statement" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RuleBasedTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#subst" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="subst:scala.collection.mutable.Map[TopDownTransformer.this.from.Rep[Any],TopDownTransformer.this.to.Rep[Any]]"></a>
+      <a id="subst:Map[(from)#Rep[Any],(to)#Rep[Any]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">subst</span><span class="result">: <span class="extype" name="scala.collection.mutable.Map">Map</span>[(<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="scala.Any">Any</span>], (<a href="#to:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#to">to</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="scala.Any">Any</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@subst:scala.collection.mutable.Map[TopDownTransformer.this.from.Rep[Any],TopDownTransformer.this.to.Rep[Any]]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#substitutionContext" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="substitutionContext[T](substContext:(TopDownTransformer.this.from.Rep[Any],TopDownTransformer.this.from.Rep[Any])*)(task:=&gt;T):T"></a>
+      <a id="substitutionContext[T](((from)#Rep[Any],(from)#Rep[Any])*)(⇒T):T"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">substitutionContext</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="substContext">substContext: ((<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="scala.Any">Any</span>], (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="scala.Any">Any</span>])*</span>)</span><span class="params">(<span name="task">task: ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.substitutionContext.T">T</span></span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.substitutionContext.T">T</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@substitutionContext[T](substContext:(TopDownTransformer.this.from.Rep[Any],TopDownTransformer.this.from.Rep[Any])*)(task:=&gt;T):T" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformerTraverser#to" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="to:Lang"></a>
+      <a id="to:SetOpswithRangeOpswithArrayOpswithIntOpswithBooleanOpswithOptionOps"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">to</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@to:Lang" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>TopDownTransformerTraverser → TopDownTransformer</dd></dl></div>
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@toString():String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#transformBlock" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformBlock[T](block:TopDownTransformer.this.from.Block[T])(implicitevidence$9:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.to.Block[T]"></a>
+      <a id="transformBlock[T]((from)#Block[T])((from)#TypeRep[T]):(to)#Block[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transformBlock</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="block">block: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">Block</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.transformBlock.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.transformBlock.T">T</span>]</span>)</span><span class="result">: (<a href="#to:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#to">to</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">Block</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.transformBlock.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@transformBlock[T](block:TopDownTransformer.this.from.Block[T])(implicitevidence$9:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.to.Block[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#transformBlockTyped" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformBlockTyped[T,S](block:TopDownTransformer.this.from.Block[T])(implicitevidence$6:TopDownTransformer.this.from.TypeRep[T],implicitevidence$7:TopDownTransformer.this.from.TypeRep[S]):TopDownTransformer.this.to.Block[S]"></a>
+      <a id="transformBlockTyped[T,S]((from)#Block[T])((from)#TypeRep[T],(from)#TypeRep[S]):(to)#Block[S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transformBlockTyped</span><span class="tparams">[<span name="T">T</span>, <span name="S">S</span>]</span><span class="params">(<span name="block">block: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">Block</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.transformBlockTyped.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.transformBlockTyped.T">T</span>]</span>, <span name="arg1">arg1: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.transformBlockTyped.S">S</span>]</span>)</span><span class="result">: (<a href="#to:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#to">to</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">Block</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.transformBlockTyped.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@transformBlockTyped[T,S](block:TopDownTransformer.this.from.Block[T])(implicitevidence$6:TopDownTransformer.this.from.TypeRep[T],implicitevidence$7:TopDownTransformer.this.from.TypeRep[S]):TopDownTransformer.this.to.Block[S]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer#transformDef" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformDef[T](node:RuleBasedTransformer.this.IR.Def[T])(implicitevidence$4:RuleBasedTransformer.this.IR.TypeRep[T]):RuleBasedTransformer.this.IR.Def[T]"></a>
+      <a id="transformDef[T]((IR)#Def[T])((IR)#TypeRep[T]):(IR)#Def[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transformDef</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="node">node: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Def">Def</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer.transformDef.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer.transformDef.T">T</span>]</span>)</span><span class="result">: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Def">Def</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer.transformDef.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@transformDef[T](node:RuleBasedTransformer.this.IR.Def[T])(implicitevidence$4:RuleBasedTransformer.this.IR.TypeRep[T]):RuleBasedTransformer.this.IR.Def[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RuleBasedTransformer → TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#transformExp" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformExp[T,S](exp:TopDownTransformer.this.from.Rep[T])(implicitevidence$14:TopDownTransformer.this.from.TypeRep[T],implicitevidence$15:TopDownTransformer.this.from.TypeRep[S]):TopDownTransformer.this.to.Rep[S]"></a>
+      <a id="transformExp[T,S]((from)#Rep[T])((from)#TypeRep[T],(from)#TypeRep[S]):(to)#Rep[S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transformExp</span><span class="tparams">[<span name="T">T</span>, <span name="S">S</span>]</span><span class="params">(<span name="exp">exp: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.transformExp.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.transformExp.T">T</span>]</span>, <span name="arg1">arg1: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.transformExp.S">S</span>]</span>)</span><span class="result">: (<a href="#to:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#to">to</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.transformExp.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@transformExp[T,S](exp:TopDownTransformer.this.from.Rep[T])(implicitevidence$14:TopDownTransformer.this.from.TypeRep[T],implicitevidence$15:TopDownTransformer.this.from.TypeRep[S]):TopDownTransformer.this.to.Rep[S]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#transformFunArg" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformFunArg(funArg:ch.epfl.data.sc.pardis.ir.PardisFunArg):ch.epfl.data.sc.pardis.ir.PardisFunArg"></a>
+      <a id="transformFunArg(PardisFunArg):PardisFunArg"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transformFunArg</span><span class="params">(<span name="funArg">funArg: <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisFunArg">PardisFunArg</span></span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisFunArg">PardisFunArg</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@transformFunArg(funArg:ch.epfl.data.sc.pardis.ir.PardisFunArg):ch.epfl.data.sc.pardis.ir.PardisFunArg" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#transformProgram" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformProgram[T](block:TopDownTransformer.this.from.Block[T])(implicitevidence$8:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.to.Block[T]"></a>
+      <a id="transformProgram[T]((from)#Block[T])((from)#TypeRep[T]):(to)#Block[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transformProgram</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="block">block: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">Block</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.transformProgram.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.transformProgram.T">T</span>]</span>)</span><span class="result">: (<a href="#to:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#to">to</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">Block</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.transformProgram.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@transformProgram[T](block:TopDownTransformer.this.from.Block[T])(implicitevidence$8:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.to.Block[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer#transformStm" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformStm(stm:RuleBasedTransformer.this.IR.Stm[_]):RuleBasedTransformer.this.to.Stm[_]"></a>
+      <a id="transformStm((IR)#Stm[_]):(to)#Stm[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transformStm</span><span class="params">(<span name="stm">stm: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Stm">Stm</span>[_]</span>)</span><span class="result">: (<a href="#to:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#to">to</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Stm">Stm</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@transformStm(stm:RuleBasedTransformer.this.IR.Stm[_]):RuleBasedTransformer.this.to.Stm[_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RuleBasedTransformer → TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#transformStmToMultiple" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformStmToMultiple(stm:TopDownTransformer.this.from.Stm[_]):List[TopDownTransformer.this.to.Stm[_]]"></a>
+      <a id="transformStmToMultiple((from)#Stm[_]):List[(to)#Stm[_]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transformStmToMultiple</span><span class="params">(<span name="stm">stm: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Stm">Stm</span>[_]</span>)</span><span class="result">: <span class="extype" name="scala.List">List</span>[(<a href="#to:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#to">to</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Stm">Stm</span>[_]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@transformStmToMultiple(stm:TopDownTransformer.this.from.Stm[_]):List[TopDownTransformer.this.to.Stm[_]]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer#transformStmWithNewSym" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformStmWithNewSym(stm:RuleBasedTransformer.this.IR.Stm[_]):RuleBasedTransformer.this.to.Stm[_]"></a>
+      <a id="transformStmWithNewSym((IR)#Stm[_]):(to)#Stm[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transformStmWithNewSym</span><span class="params">(<span name="stm">stm: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Stm">Stm</span>[_]</span>)</span><span class="result">: (<a href="#to:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#to">to</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Stm">Stm</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@transformStmWithNewSym(stm:RuleBasedTransformer.this.IR.Stm[_]):RuleBasedTransformer.this.to.Stm[_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RuleBasedTransformer → TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer#transformType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformType[T](implicittp:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.from.TypeRep[Any]"></a>
+      <a id="transformType[T]((from)#TypeRep[T]):(from)#TypeRep[Any]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transformType</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="tp">tp: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer.transformType.T">T</span>]</span>)</span><span class="result">: (<a href="#from:Lang" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#from">from</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.TypeReps.TypeRep">TypeRep</span>[<span class="extype" name="scala.Any">Any</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@transformType[T](implicittp:TopDownTransformer.this.from.TypeRep[T]):TopDownTransformer.this.from.TypeRep[Any]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>TopDownTransformer</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.Traverser#traverseBlock" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="traverseBlock(block:Traverser.this.IR.Block[_]):Unit"></a>
+      <a id="traverseBlock((IR)#Block[_]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">traverseBlock</span><span class="params">(<span name="block">block: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Block">Block</span>[_]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@traverseBlock(block:Traverser.this.IR.Block[_]):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>Traverser</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer#traverseDef" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="traverseDef(node:RuleBasedTransformer.this.IR.Def[_]):Unit"></a>
+      <a id="traverseDef((IR)#Def[_]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">traverseDef</span><span class="params">(<span name="node">node: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Def">Def</span>[_]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@traverseDef(node:RuleBasedTransformer.this.IR.Def[_]):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RuleBasedTransformer → Traverser</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.Traverser#traverseExp" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="traverseExp(exp:Traverser.this.IR.Rep[_]):Unit"></a>
+      <a id="traverseExp((IR)#Rep[_]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">traverseExp</span><span class="params">(<span name="exp">exp: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Rep">Rep</span>[_]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@traverseExp(exp:Traverser.this.IR.Rep[_]):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>Traverser</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.Traverser#traverseFunArg" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="traverseFunArg(funArg:ch.epfl.data.sc.pardis.ir.PardisFunArg):Unit"></a>
+      <a id="traverseFunArg(PardisFunArg):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">traverseFunArg</span><span class="params">(<span name="funArg">funArg: <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisFunArg">PardisFunArg</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@traverseFunArg(funArg:ch.epfl.data.sc.pardis.ir.PardisFunArg):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>Traverser</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer#traverseStm" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="traverseStm(stm:RuleBasedTransformer.this.IR.Stm[_]):Unit"></a>
+      <a id="traverseStm((IR)#Stm[_]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">traverseStm</span><span class="params">(<span name="stm">stm: (<a href="#IR:ch.epfl.data.dblab.transformers.SetToArrayTransformation.Langwithch.epfl.data.dblab.deep.common.OrderingOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation#IR">IR</a>)#<span class="extype" name="ch.epfl.data.sc.pardis.ir.Base.Stm">Stm</span>[_]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@traverseStm(stm:RuleBasedTransformer.this.IR.Stm[_]):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../sc$pardis.html" class="extype" name="ch.epfl.data.sc.pardis">ch.epfl.data.sc.pardis</a>] </dd><dt>Definition Classes</dt><dd>RuleBasedTransformer → Traverser</dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer#|" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="|(other:ch.epfl.data.sc.pardis.optimization.TransformerHandler):ch.epfl.data.sc.pardis.optimization.TransformerHandler"></a>
+      <a id="|(TransformerHandler):TransformerHandler"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bar" class="name">|</span><span class="params">(<span name="other">other: <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TransformerHandler">TransformerHandler</span></span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TransformerHandler">TransformerHandler</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.transformers.SetToArrayTransformation@|(other:ch.epfl.data.sc.pardis.optimization.TransformerHandler):ch.epfl.data.sc.pardis.optimization.TransformerHandler" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RecursiveRuleBasedTransformer → RuleBasedTransformer → Optimizer → TransformerHandler</dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="ch.epfl.data.sc.pardis.optimization.LambdaEscapeLowering">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.optimization.LambdaEscapeLowering">LambdaEscapeLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>]</h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.optimization.OptionEscapeLowering">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.optimization.OptionEscapeLowering">OptionEscapeLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>]</h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.optimization.Tuple2EscapeLowering">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.optimization.Tuple2EscapeLowering">Tuple2EscapeLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>]</h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.optimization.VarEscapeLowering">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.optimization.VarEscapeLowering">VarEscapeLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>]</h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.optimization.ArrayEscapeLowering">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.optimization.ArrayEscapeLowering">ArrayEscapeLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>]</h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.optimization.RuleBasedLowering">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedLowering">RuleBasedLowering</span>[<a href="SetToArrayTransformation$.html#Lang=ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOpswithch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOpswithch.epfl.data.sc.pardis.deep.scalalib.ArrayOpswithch.epfl.data.sc.pardis.deep.scalalib.IntOpswithch.epfl.data.sc.pardis.deep.scalalib.BooleanOpswithch.epfl.data.sc.pardis.deep.scalalib.OptionOps" class="extmbr" name="ch.epfl.data.dblab.transformers.SetToArrayTransformation.Lang">Lang</a>]</h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetArrayTransformation">SetArrayTransformation</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer">RecursiveRuleBasedTransformer</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span>]</h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span>]</h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.optimization.Optimizer">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.optimization.Optimizer">Optimizer</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span>]</h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.optimization.TransformerHandler">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TransformerHandler">TransformerHandler</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformerTraverser">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformerTraverser">TopDownTransformerTraverser</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span>]</h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformer">TopDownTransformer</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span>, <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span>]</h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.optimization.Traverser">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.optimization.Traverser">Traverser</span>[<span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.SetOps">SetOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.collection.RangeOps">RangeOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps">ArrayOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.IntOps">IntOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.BooleanOps">BooleanOps</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.OptionOps">OptionOps</span>]</h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>optimizer - ch.epfl.data.dblab.frontend.optimizer</title>
+          <meta name="description" content="optimizer - ch.epfl.data.dblab.frontend.optimizer" />
+          <meta name="keywords" content="optimizer ch.epfl.data.dblab.frontend.optimizer" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../../index.html';
+            var hash = 'ch.epfl.data.dblab.frontend.optimizer.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../../../package.html" class="extype" name="ch">ch</a>.<a href="../../../../package.html" class="extype" name="ch.epfl">epfl</a>.<a href="../../../package.html" class="extype" name="ch.epfl.data">data</a>.<a href="../../package.html" class="extype" name="ch.epfl.data.dblab">dblab</a>.<a href="../package.html" class="extype" name="ch.epfl.data.dblab.frontend">frontend</a></p>
+        <h1>optimizer</h1><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.package" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">optimizer</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="ch.epfl.data.dblab.frontend.optimizer.QueryPlanNaiveOptimizer" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="QueryPlanNaiveOptimizerextendsQueryPlanOptimizer"></a>
+      <a id="QueryPlanNaiveOptimizer:QueryPlanNaiveOptimizer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryPlanNaiveOptimizer.html"><span class="name">QueryPlanNaiveOptimizer</span></a><span class="result"> extends <a href="QueryPlanOptimizer.html" class="extype" name="ch.epfl.data.dblab.frontend.optimizer.QueryPlanOptimizer">QueryPlanOptimizer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.package@QueryPlanNaiveOptimizerextendsQueryPlanOptimizer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This optimizer is called naive, since it only pushes-up selection predicates to
+scan and join operators, and performs no other technique from traditional query
+optimization (e.g.</p><div class="fullcomment"><div class="comment cmt"><p>This optimizer is called naive, since it only pushes-up selection predicates to
+scan and join operators, and performs no other technique from traditional query
+optimization (e.g. join reordering).</p><p>The tree received by this optimizer is the one built by the SQL parser, thus
+_by construction_ has _a single_ select op that performs the where clause, and
+which is executed after all the scans and joins and aggregations have been
+executed. This optimizer pushes up parts of this where clause to the corresponding
+scan and join operators operators.
+</p></div></div>
+    </li><li name="ch.epfl.data.dblab.frontend.optimizer.QueryPlanOptimizer" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="QueryPlanOptimizerextendsAnyRef"></a>
+      <a id="QueryPlanOptimizer:QueryPlanOptimizer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryPlanOptimizer.html"><span class="name">QueryPlanOptimizer</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.package@QueryPlanOptimizerextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The general interface each query optimizer of DBLAB must abide to.</p><div class="fullcomment"><div class="comment cmt"><p>The general interface each query optimizer of DBLAB must abide to.
+Observe that since the main optimize function takes as input and returns
+an operator tree, this allows optimizers to be chained together.
+</p></div></div>
+    </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLNormalizer" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="SQLNormalizerextendsAnyRef"></a>
+      <a id="SQLNormalizer:SQLNormalizer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLNormalizer.html"><span class="name">SQLNormalizer</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.package@SQLNormalizerextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The general interface each SQL normalizer of DBLAB must abide to.</p><div class="fullcomment"><div class="comment cmt"><p>The general interface each SQL normalizer of DBLAB must abide to.
+Observe that since the main normalize function takes as input and returns
+an SQLAST, this allows normalizers to be chained together.
+</p></div></div>
+    </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLSubqueryNormalizer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SQLSubqueryNormalizerextendsSQLNormalizer"></a>
+      <a id="SQLSubqueryNormalizer:SQLSubqueryNormalizer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLSubqueryNormalizer.html"><span class="name">SQLSubqueryNormalizer</span></a><span class="result"> extends <a href="SQLNormalizer.html" class="extype" name="ch.epfl.data.dblab.frontend.optimizer.SQLNormalizer">SQLNormalizer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.package@SQLSubqueryNormalizerextendsSQLNormalizer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Converts SQL queries with subqueries into normalized queries without subqueries.</p>
+    </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="SQLToQueryPlanextendsAnyRef"></a>
+      <a id="SQLToQueryPlan:SQLToQueryPlan"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLToQueryPlan.html"><span class="name">SQLToQueryPlan</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.package@SQLToQueryPlanextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Converts SQL queries into a physical query plan representation.</p><div class="fullcomment"><div class="comment cmt"><p>Converts SQL queries into a physical query plan representation. This conversion is performed in a naive way
+(i.e. without performing any cost-based optimization).
+</p></div></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

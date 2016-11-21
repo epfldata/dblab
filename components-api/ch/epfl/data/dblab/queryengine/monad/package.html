@@ -1,0 +1,818 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>monad - ch.epfl.data.dblab.queryengine.monad</title>
+          <meta name="description" content="monad - ch.epfl.data.dblab.queryengine.monad" />
+          <meta name="keywords" content="monad ch.epfl.data.dblab.queryengine.monad" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../../index.html';
+            var hash = 'ch.epfl.data.dblab.queryengine.monad.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../../../package.html" class="extype" name="ch">ch</a>.<a href="../../../../package.html" class="extype" name="ch.epfl">epfl</a>.<a href="../../../package.html" class="extype" name="ch.epfl.data">data</a>.<a href="../../package.html" class="extype" name="ch.epfl.data.dblab">dblab</a>.<a href="../package.html" class="extype" name="ch.epfl.data.dblab.queryengine">queryengine</a></p>
+        <h1>monad</h1><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">monad</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="ch.epfl.data.dblab.queryengine.monad"><span>monad</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="ch.epfl.data.dblab.queryengine.monad.BuildStream" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="BuildStream[+T]extendsStream[T]withProductwithSerializable"></a>
+      <a id="BuildStream[+T]:BuildStream[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="BuildStream.html"><span class="name">BuildStream</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="params">(<span name="builder">builder: <span class="extype" name="scala.Function3">Function3</span>[<span class="extype" name="scala.Function0">Function0</span>[_], <span class="extype" name="scala.Function0">Function0</span>[_], <span class="extype" name="scala.Function1">Function1</span>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.BuildStream.T">T</span>, _], _]</span>)</span><span class="result"> extends <a href="Stream.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.Stream">Stream</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.BuildStream.T">T</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@BuildStream[+T]extendsStream[T]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.GroupByResult" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GroupByResult[K,V]extendsProductwithSerializable"></a>
+      <a id="GroupByResult[K,V]:GroupByResult[K,V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="GroupByResult.html"><span class="name">GroupByResult</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span name="partitionedArray">partitionedArray: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Array">Array</span>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.GroupByResult.V">V</span>]]</span>, <span name="keyRevertIndex">keyRevertIndex: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.GroupByResult.K">K</span>]</span>, <span name="eachBucketSize">eachBucketSize: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Int">Int</span>]</span>, <span name="partitions">partitions: <span class="extype" name="scala.Int">Int</span></span>, <span name="keyIndex">keyIndex: <span class="extype" name="scala.collection.mutable.HashMap">HashMap</span>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.GroupByResult.K">K</span>, <span class="extype" name="scala.Int">Int</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@GroupByResult[K,V]extendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.GroupedQuery" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="GroupedQuery[K,V]extendsAnyRef"></a>
+      <a id="GroupedQuery[K,V]:GroupedQuery[K,V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="GroupedQuery.html"><span class="name">GroupedQuery</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@GroupedQuery[K,V]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@needs</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.GroupedQueryCPS" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GroupedQueryCPS[K,V]extendsAnyRef"></a>
+      <a id="GroupedQueryCPS[K,V]:GroupedQueryCPS[K,V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="GroupedQueryCPS.html"><span class="name">GroupedQueryCPS</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@GroupedQueryCPS[K,V]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.GroupedQueryIterator" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GroupedQueryIterator[K,V]extendsAnyRef"></a>
+      <a id="GroupedQueryIterator[K,V]:GroupedQueryIterator[K,V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="GroupedQueryIterator.html"><span class="name">GroupedQueryIterator</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@GroupedQueryIterator[K,V]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.GroupedQueryOptimized1" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GroupedQueryOptimized1[K,V]extendsAnyRef"></a>
+      <a id="GroupedQueryOptimized1[K,V]:GroupedQueryOptimized1[K,V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="GroupedQueryOptimized1.html"><span class="name">GroupedQueryOptimized1</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@GroupedQueryOptimized1[K,V]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.GroupedQueryOptimized2" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GroupedQueryOptimized2[K,V]extendsAnyRef"></a>
+      <a id="GroupedQueryOptimized2[K,V]:GroupedQueryOptimized2[K,V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="GroupedQueryOptimized2.html"><span class="name">GroupedQueryOptimized2</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@GroupedQueryOptimized2[K,V]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.GroupedQueryStream" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GroupedQueryStream[K,V]extendsAnyRef"></a>
+      <a id="GroupedQueryStream[K,V]:GroupedQueryStream[K,V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="GroupedQueryStream.html"><span class="name">GroupedQueryStream</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@GroupedQueryStream[K,V]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.GroupedQueryUnfold" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GroupedQueryUnfold[K,V,Source1]extendsAnyRef"></a>
+      <a id="GroupedQueryUnfold[K,V,Source1]:GroupedQueryUnfold[K,V,Source1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="GroupedQueryUnfold.html"><span class="name">GroupedQueryUnfold</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="Source1">Source1</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@GroupedQueryUnfold[K,V,Source1]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.JoinableQuery" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="JoinableQuery[T&lt;:ch.epfl.data.sc.pardis.shallow.Record]extendsAnyRef"></a>
+      <a id="JoinableQuery[T&lt;:Record]:JoinableQuery[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JoinableQuery.html"><span class="name">JoinableQuery</span></a><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@JoinableQuery[T&lt;:ch.epfl.data.sc.pardis.shallow.Record]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@needs</span><span class="args">()</span>
+              
+                <span class="name">@needsCircular</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.JoinableQueryCPS" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JoinableQueryCPS[T&lt;:ch.epfl.data.sc.pardis.shallow.Record]extendsAnyRef"></a>
+      <a id="JoinableQueryCPS[T&lt;:Record]:JoinableQueryCPS[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JoinableQueryCPS.html"><span class="name">JoinableQueryCPS</span></a><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@JoinableQueryCPS[T&lt;:ch.epfl.data.sc.pardis.shallow.Record]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.JoinableQueryIterator" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JoinableQueryIterator[T&lt;:ch.epfl.data.sc.pardis.shallow.Record]extendsAnyRef"></a>
+      <a id="JoinableQueryIterator[T&lt;:Record]:JoinableQueryIterator[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JoinableQueryIterator.html"><span class="name">JoinableQueryIterator</span></a><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@JoinableQueryIterator[T&lt;:ch.epfl.data.sc.pardis.shallow.Record]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.JoinableQueryStream" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JoinableQueryStream[T&lt;:ch.epfl.data.sc.pardis.shallow.Record]extendsAnyRef"></a>
+      <a id="JoinableQueryStream[T&lt;:Record]:JoinableQueryStream[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JoinableQueryStream.html"><span class="name">JoinableQueryStream</span></a><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@JoinableQueryStream[T&lt;:ch.epfl.data.sc.pardis.shallow.Record]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.JoinableQueryUnfold" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JoinableQueryUnfold[T&lt;:ch.epfl.data.sc.pardis.shallow.Record,Source1]extendsAnyRef"></a>
+      <a id="JoinableQueryUnfold[T&lt;:Record,Source1]:JoinableQueryUnfold[T,Source1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JoinableQueryUnfold.html"><span class="name">JoinableQueryUnfold</span></a><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>, <span name="Source1">Source1</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@JoinableQueryUnfold[T&lt;:ch.epfl.data.sc.pardis.shallow.Record,Source1]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.Query" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Query[T]extendsAnyRef"></a>
+      <a id="Query[T]:Query[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Query.html"><span class="name">Query</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@Query[T]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@deep</span><span class="args">()</span>
+              
+                <span class="name">@needs</span><span class="args">()</span>
+              
+                <span class="name">@needsCircular</span><span class="args">()</span>
+              
+                <span class="name">@noDeepExt</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.QueryCPS" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="QueryCPS[T]extendsAnyRef"></a>
+      <a id="QueryCPS[T]:QueryCPS[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryCPS.html"><span class="name">QueryCPS</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@QueryCPS[T]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.QueryIterator" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="QueryIterator[T]extendsAnyRef"></a>
+      <a id="QueryIterator[T]:QueryIterator[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryIterator.html"><span class="name">QueryIterator</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@QueryIterator[T]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.QueryOptimized" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryOptimized[T]extendsAnyRef"></a>
+      <a id="QueryOptimized[T]:QueryOptimized[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryOptimized.html"><span class="name">QueryOptimized</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@QueryOptimized[T]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.QueryStream" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="QueryStream[T]extendsAnyRef"></a>
+      <a id="QueryStream[T]:QueryStream[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryStream.html"><span class="name">QueryStream</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@QueryStream[T]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.QueryUnfold" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="QueryUnfold[T,Source]extendsAnyRef"></a>
+      <a id="QueryUnfold[T,Source]:QueryUnfold[T,Source]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryUnfold.html"><span class="name">QueryUnfold</span></a><span class="tparams">[<span name="T">T</span>, <span name="Source">Source</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@QueryUnfold[T,Source]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.SetIterator" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SetIterator[T]extendsQueryIterator[T]"></a>
+      <a id="SetIterator[T]:SetIterator[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SetIterator.html"><span class="name">SetIterator</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="QueryIterator.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.QueryIterator">QueryIterator</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.SetIterator.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@SetIterator[T]extendsQueryIterator[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.SetStream" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SetStream[T]extendsQueryStream[T]"></a>
+      <a id="SetStream[T]:SetStream[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SetStream.html"><span class="name">SetStream</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="QueryStream.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.QueryStream">QueryStream</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.SetStream.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@SetStream[T]extendsQueryStream[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.SetUnfold" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SetUnfold[T]extendsQueryUnfold[T,Unit]"></a>
+      <a id="SetUnfold[T]:SetUnfold[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SetUnfold.html"><span class="name">SetUnfold</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="QueryUnfold.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.QueryUnfold">QueryUnfold</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.SetUnfold.T">T</span>, <span class="extype" name="scala.Unit">Unit</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@SetUnfold[T]extendsQueryUnfold[T,Unit]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.Stream" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="Stream[+T]extendsAnyRef"></a>
+      <a id="Stream[+T]:Stream[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Stream.html"><span class="name">Stream</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@Stream[+T]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.Yield" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Yield[+T]extendsStream[T]withProductwithSerializable"></a>
+      <a id="Yield[+T]:Yield[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Yield.html"><span class="name">Yield</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="params">(<span name="value">value: <span class="extype" name="ch.epfl.data.dblab.queryengine.monad.Yield.T">T</span></span>)</span><span class="result"> extends <a href="Stream.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.Stream">Stream</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.Yield.T">T</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@Yield[+T]extendsStream[T]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="ch.epfl.data.dblab.queryengine.monad.Done" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Done"></a>
+      <a id="Done:Done"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Done$.html"><span class="name">Done</span></a><span class="result"> extends <a href="Stream.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.Stream">Stream</a>[<span class="extype" name="scala.Nothing">Nothing</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@Done" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.JoinableQueryCPS" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JoinableQueryCPS"></a>
+      <a id="JoinableQueryCPS:JoinableQueryCPS"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="JoinableQueryCPS$.html"><span class="name">JoinableQueryCPS</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@JoinableQueryCPS" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.Query" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Query"></a>
+      <a id="Query:Query"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Query$.html"><span class="name">Query</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@Query" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.QueryCPS" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryCPS"></a>
+      <a id="QueryCPS:QueryCPS"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryCPS$.html"><span class="name">QueryCPS</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@QueryCPS" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.QueryIterator" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryIterator"></a>
+      <a id="QueryIterator:QueryIterator"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryIterator$.html"><span class="name">QueryIterator</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@QueryIterator" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.QueryStream" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryStream"></a>
+      <a id="QueryStream:QueryStream"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryStream$.html"><span class="name">QueryStream</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@QueryStream" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.QueryUnfold" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryUnfold"></a>
+      <a id="QueryUnfold:QueryUnfold"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryUnfold$.html"><span class="name">QueryUnfold</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@QueryUnfold" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.Skip" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Skip"></a>
+      <a id="Skip:Skip"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Skip$.html"><span class="name">Skip</span></a><span class="result"> extends <a href="Stream.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.Stream">Stream</a>[<span class="extype" name="scala.Nothing">Nothing</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@Skip" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad.Stream" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Stream"></a>
+      <a id="Stream:Stream"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Stream$.html"><span class="name">Stream</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@Stream" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad#queryCPSToJoinableQueryCPS" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="queryCPSToJoinableQueryCPS[T&lt;:ch.epfl.data.sc.pardis.shallow.Record](q:ch.epfl.data.dblab.queryengine.monad.QueryCPS[T]):ch.epfl.data.dblab.queryengine.monad.JoinableQueryCPS[T]"></a>
+      <a id="queryCPSToJoinableQueryCPS[T&lt;:Record](QueryCPS[T]):JoinableQueryCPS[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">queryCPSToJoinableQueryCPS</span><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>]</span><span class="params">(<span name="q">q: <a href="QueryCPS.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.QueryCPS">QueryCPS</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.queryCPSToJoinableQueryCPS.T">T</span>]</span>)</span><span class="result">: <a href="JoinableQueryCPS.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.JoinableQueryCPS">JoinableQueryCPS</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.queryCPSToJoinableQueryCPS.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@queryCPSToJoinableQueryCPS[T&lt;:ch.epfl.data.sc.pardis.shallow.Record](q:ch.epfl.data.dblab.queryengine.monad.QueryCPS[T]):ch.epfl.data.dblab.queryengine.monad.JoinableQueryCPS[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad#queryIteratorToJoinableQueryIterator" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="queryIteratorToJoinableQueryIterator[T&lt;:ch.epfl.data.sc.pardis.shallow.Record](q:ch.epfl.data.dblab.queryengine.monad.QueryIterator[T]):ch.epfl.data.dblab.queryengine.monad.JoinableQueryIterator[T]"></a>
+      <a id="queryIteratorToJoinableQueryIterator[T&lt;:Record](QueryIterator[T]):JoinableQueryIterator[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">queryIteratorToJoinableQueryIterator</span><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>]</span><span class="params">(<span name="q">q: <a href="QueryIterator.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.QueryIterator">QueryIterator</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.queryIteratorToJoinableQueryIterator.T">T</span>]</span>)</span><span class="result">: <a href="JoinableQueryIterator.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.JoinableQueryIterator">JoinableQueryIterator</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.queryIteratorToJoinableQueryIterator.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@queryIteratorToJoinableQueryIterator[T&lt;:ch.epfl.data.sc.pardis.shallow.Record](q:ch.epfl.data.dblab.queryengine.monad.QueryIterator[T]):ch.epfl.data.dblab.queryengine.monad.JoinableQueryIterator[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad#queryStreamToJoinableQueryStream" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="queryStreamToJoinableQueryStream[T&lt;:ch.epfl.data.sc.pardis.shallow.Record](q:ch.epfl.data.dblab.queryengine.monad.QueryStream[T]):ch.epfl.data.dblab.queryengine.monad.JoinableQueryStream[T]"></a>
+      <a id="queryStreamToJoinableQueryStream[T&lt;:Record](QueryStream[T]):JoinableQueryStream[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">queryStreamToJoinableQueryStream</span><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>]</span><span class="params">(<span name="q">q: <a href="QueryStream.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.QueryStream">QueryStream</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.queryStreamToJoinableQueryStream.T">T</span>]</span>)</span><span class="result">: <a href="JoinableQueryStream.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.JoinableQueryStream">JoinableQueryStream</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.queryStreamToJoinableQueryStream.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@queryStreamToJoinableQueryStream[T&lt;:ch.epfl.data.sc.pardis.shallow.Record](q:ch.epfl.data.dblab.queryengine.monad.QueryStream[T]):ch.epfl.data.dblab.queryengine.monad.JoinableQueryStream[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad#queryToJoinableQuery" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="queryToJoinableQuery[T&lt;:ch.epfl.data.sc.pardis.shallow.Record](q:ch.epfl.data.dblab.queryengine.monad.Query[T]):ch.epfl.data.dblab.queryengine.monad.JoinableQuery[T]"></a>
+      <a id="queryToJoinableQuery[T&lt;:Record](Query[T]):JoinableQuery[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">queryToJoinableQuery</span><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>]</span><span class="params">(<span name="q">q: <a href="Query.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.Query">Query</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.queryToJoinableQuery.T">T</span>]</span>)</span><span class="result">: <a href="JoinableQuery.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.JoinableQuery">JoinableQuery</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.queryToJoinableQuery.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@queryToJoinableQuery[T&lt;:ch.epfl.data.sc.pardis.shallow.Record](q:ch.epfl.data.dblab.queryengine.monad.Query[T]):ch.epfl.data.dblab.queryengine.monad.JoinableQuery[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.queryengine.monad#queryUnfoldToJoinableQueryUnfold" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="queryUnfoldToJoinableQueryUnfold[T&lt;:ch.epfl.data.sc.pardis.shallow.Record,Source](q:ch.epfl.data.dblab.queryengine.monad.QueryUnfold[T,Source]):ch.epfl.data.dblab.queryengine.monad.JoinableQueryUnfold[T,Source]"></a>
+      <a id="queryUnfoldToJoinableQueryUnfold[T&lt;:Record,Source](QueryUnfold[T,Source]):JoinableQueryUnfold[T,Source]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">queryUnfoldToJoinableQueryUnfold</span><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.shallow.Record">Record</span></span>, <span name="Source">Source</span>]</span><span class="params">(<span name="q">q: <a href="QueryUnfold.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.QueryUnfold">QueryUnfold</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.queryUnfoldToJoinableQueryUnfold.T">T</span>, <span class="extype" name="ch.epfl.data.dblab.queryengine.monad.queryUnfoldToJoinableQueryUnfold.Source">Source</span>]</span>)</span><span class="result">: <a href="JoinableQueryUnfold.html" class="extype" name="ch.epfl.data.dblab.queryengine.monad.JoinableQueryUnfold">JoinableQueryUnfold</a>[<span class="extype" name="ch.epfl.data.dblab.queryengine.monad.queryUnfoldToJoinableQueryUnfold.T">T</span>, <span class="extype" name="ch.epfl.data.dblab.queryengine.monad.queryUnfoldToJoinableQueryUnfold.Source">Source</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.queryengine.monad.package@queryUnfoldToJoinableQueryUnfold[T&lt;:ch.epfl.data.sc.pardis.shallow.Record,Source](q:ch.epfl.data.dblab.queryengine.monad.QueryUnfold[T,Source]):ch.epfl.data.dblab.queryengine.monad.JoinableQueryUnfold[T,Source]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

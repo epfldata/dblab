@@ -1,0 +1,1950 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>GenericEngineQuasiNodes - ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes</title>
+          <meta name="description" content="GenericEngineQuasiNodes - ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes" />
+          <meta name="keywords" content="GenericEngineQuasiNodes ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../../index.html';
+            var hash = 'ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Object" src="../../../../../../lib/object_big.png" />
+        <p id="owner"><a href="../../../../../package.html" class="extype" name="ch">ch</a>.<a href="../../../../package.html" class="extype" name="ch.epfl">epfl</a>.<a href="../../../package.html" class="extype" name="ch.epfl.data">data</a>.<a href="../../package.html" class="extype" name="ch.epfl.data.dblab">dblab</a>.<a href="../package.html" class="extype" name="ch.epfl.data.dblab.deep">deep</a>.<a href="package.html" class="extype" name="ch.epfl.data.dblab.deep.queryengine">queryengine</a></p>
+        <h1>GenericEngineQuasiNodes</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="ch.epfl.data.dblab.deep.queryengine">package queryengine</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">GenericEngineQuasiNodes</span><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExtIR">BaseExtIR</span></span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExtIR">BaseExtIR</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt">BaseExt</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.TypeRepsExt">TypeRepsExt</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt">StructsExt</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VarArgsExt">VarArgsExt</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt">FunctionsExt</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt">ObjectOpsExt</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt">VariablesExt</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.IfThenElseExt">IfThenElseExt</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.WhileExt">WhileExt</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes"><span>GenericEngineQuasiNodes</span></li><li class="in" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExtIR"><span>BaseExtIR</span></li><li class="in" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt"><span>BaseExt</span></li><li class="in" name="ch.epfl.data.sc.pardis.quasi.anf.TypeRepsExt"><span>TypeRepsExt</span></li><li class="in" name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt"><span>StructsExt</span></li><li class="in" name="ch.epfl.data.sc.pardis.quasi.anf.VarArgsExt"><span>VarArgsExt</span></li><li class="in" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt"><span>FunctionsExt</span></li><li class="in" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt"><span>ObjectOpsExt</span></li><li class="in" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt"><span>VariablesExt</span></li><li class="in" name="ch.epfl.data.sc.pardis.quasi.anf.IfThenElseExt"><span>IfThenElseExt</span></li><li class="in" name="ch.epfl.data.sc.pardis.quasi.anf.WhileExt"><span>WhileExt</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt.AllRepOps" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="AllRepOps[T]extendsAnyRef"></a>
+      <a id="AllRepOps[T]:sc.pardis.quasi.anf.BaseExt.AllRepOps[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">AllRepOps</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@AllRepOps[T]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ObjectOpsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.Apply" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Apply[T,S]=ch.epfl.data.sc.pardis.quasi.anf.ApplyExtract[T,S]"></a>
+      <a id="Apply[T,S]:Apply[T,S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Apply</span><span class="tparams">[<span name="T">T</span>, <span name="S">S</span>]</span><span class="result"> = <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ApplyExtract">ApplyExtract</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.Apply.T">T</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.Apply.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Apply[T,S]=ch.epfl.data.sc.pardis.quasi.anf.ApplyExtract[T,S]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.Binding" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Binding[A]extendsAnyRef"></a>
+      <a id="Binding[A]:Binding[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Binding</span><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Binding[A]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.Block" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Block[T]=ch.epfl.data.sc.pardis.quasi.anf.BlockExtract[T]"></a>
+      <a id="Block[T]:Block[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Block</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> = <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BlockExtract">BlockExtract</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.Block.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Block[T]=ch.epfl.data.sc.pardis.quasi.anf.BlockExtract[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.ConstructorDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ConstructorDef[S,T]=ch.epfl.data.sc.pardis.quasi.anf.FunctionDefExtract[S,T]"></a>
+      <a id="ConstructorDef[S,T]:ConstructorDef[S,T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ConstructorDef</span><span class="tparams">[<span name="S">S</span>, <span name="T">T</span>]</span><span class="result"> = <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionDefExtract">FunctionDefExtract</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.ConstructorDef.S">S</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.ConstructorDef.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@ConstructorDef[S,T]=ch.epfl.data.sc.pardis.quasi.anf.FunctionDefExtract[S,T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.Def" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Def[T]=ch.epfl.data.sc.pardis.quasi.anf.DefExtract[_,T]"></a>
+      <a id="Def[T]:Def[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Def</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> = <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.DefExtract">DefExtract</span>[_, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.Def.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Def[T]=ch.epfl.data.sc.pardis.quasi.anf.DefExtract[_,T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.FunctionDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="FunctionDef[S,T]=ch.epfl.data.sc.pardis.quasi.anf.FunctionDefExtract[S,T]"></a>
+      <a id="FunctionDef[S,T]:FunctionDef[S,T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">FunctionDef</span><span class="tparams">[<span name="S">S</span>, <span name="T">T</span>]</span><span class="result"> = <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionDefExtract">FunctionDefExtract</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.FunctionDef.S">S</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.FunctionDef.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@FunctionDef[S,T]=ch.epfl.data.sc.pardis.quasi.anf.FunctionDefExtract[S,T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.GenericEngine" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GenericEngine=ch.epfl.data.dblab.queryengine.GenericEngine"></a>
+      <a id="GenericEngine:GenericEngine"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">GenericEngine</span><span class="result"> = <span class="extype" name="ch.epfl.data.dblab.queryengine.GenericEngine">queryengine.GenericEngine</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@GenericEngine=ch.epfl.data.dblab.queryengine.GenericEngine" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.GenericEngineDateToStringObjectExt" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GenericEngineDateToStringObjectExtextendsch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.FunctionDef[ch.epfl.data.dblab.deep.queryengine.GenericEngineIRs.GenericEngineDateToStringObject,String]withProductwithSerializable"></a>
+      <a id="GenericEngineDateToStringObjectExt:GenericEngineDateToStringObjectExt"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="GenericEngineQuasiNodes$$GenericEngineDateToStringObjectExt.html"><span class="name">GenericEngineDateToStringObjectExt</span></a><span class="params">(<span name="long">long: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">GenericEngineQuasiNodes.Rep</a>[<span class="extype" name="scala.Int">Int</span>]</span>)</span><span class="result"> extends <a href="#FunctionDef[S,T]=ch.epfl.data.sc.pardis.quasi.anf.FunctionDefExtract[S,T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.FunctionDef">FunctionDef</a>[<a href="GenericEngineIRs$$GenericEngineDateToStringObject.html" class="extype" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineIRs.GenericEngineDateToStringObject">GenericEngineDateToStringObject</a>, <span class="extype" name="scala.Predef.String">String</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@GenericEngineDateToStringObjectExtextendsch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.FunctionDef[ch.epfl.data.dblab.deep.queryengine.GenericEngineIRs.GenericEngineDateToStringObject,String]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.GenericEngineDateToYearObjectExt" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GenericEngineDateToYearObjectExtextendsch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.FunctionDef[ch.epfl.data.dblab.deep.queryengine.GenericEngineIRs.GenericEngineDateToYearObject,Int]withProductwithSerializable"></a>
+      <a id="GenericEngineDateToYearObjectExt:GenericEngineDateToYearObjectExt"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="GenericEngineQuasiNodes$$GenericEngineDateToYearObjectExt.html"><span class="name">GenericEngineDateToYearObjectExt</span></a><span class="params">(<span name="long">long: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">GenericEngineQuasiNodes.Rep</a>[<span class="extype" name="scala.Int">Int</span>]</span>)</span><span class="result"> extends <a href="#FunctionDef[S,T]=ch.epfl.data.sc.pardis.quasi.anf.FunctionDefExtract[S,T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.FunctionDef">FunctionDef</a>[<a href="GenericEngineIRs$$GenericEngineDateToYearObject.html" class="extype" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineIRs.GenericEngineDateToYearObject">GenericEngineDateToYearObject</a>, <span class="extype" name="scala.Int">Int</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@GenericEngineDateToYearObjectExtextendsch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.FunctionDef[ch.epfl.data.dblab.deep.queryengine.GenericEngineIRs.GenericEngineDateToYearObject,Int]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.GenericEngineParseDateObjectExt" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GenericEngineParseDateObjectExtextendsch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.FunctionDef[ch.epfl.data.dblab.deep.queryengine.GenericEngineIRs.GenericEngineParseDateObject,Int]withProductwithSerializable"></a>
+      <a id="GenericEngineParseDateObjectExt:GenericEngineParseDateObjectExt"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="GenericEngineQuasiNodes$$GenericEngineParseDateObjectExt.html"><span class="name">GenericEngineParseDateObjectExt</span></a><span class="params">(<span name="x">x: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">GenericEngineQuasiNodes.Rep</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <a href="#FunctionDef[S,T]=ch.epfl.data.sc.pardis.quasi.anf.FunctionDefExtract[S,T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.FunctionDef">FunctionDef</a>[<a href="GenericEngineIRs$$GenericEngineParseDateObject.html" class="extype" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineIRs.GenericEngineParseDateObject">GenericEngineParseDateObject</a>, <span class="extype" name="scala.Int">Int</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@GenericEngineParseDateObjectExtextendsch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.FunctionDef[ch.epfl.data.dblab.deep.queryengine.GenericEngineIRs.GenericEngineParseDateObject,Int]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.GenericEngineParseStringObjectExt" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GenericEngineParseStringObjectExtextendsch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.FunctionDef[ch.epfl.data.dblab.deep.queryengine.GenericEngineIRs.GenericEngineParseStringObject,ch.epfl.data.sc.pardis.deep.OptimalStringQuasiNodes.OptimalString]withProductwithSerializable"></a>
+      <a id="GenericEngineParseStringObjectExt:GenericEngineParseStringObjectExt"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="GenericEngineQuasiNodes$$GenericEngineParseStringObjectExt.html"><span class="name">GenericEngineParseStringObjectExt</span></a><span class="params">(<span name="x">x: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">GenericEngineQuasiNodes.Rep</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <a href="#FunctionDef[S,T]=ch.epfl.data.sc.pardis.quasi.anf.FunctionDefExtract[S,T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.FunctionDef">FunctionDef</a>[<a href="GenericEngineIRs$$GenericEngineParseStringObject.html" class="extype" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineIRs.GenericEngineParseStringObject">GenericEngineParseStringObject</a>, <span class="extype" name="ch.epfl.data.sc.pardis.deep.OptimalStringQuasiNodes.OptimalString">OptimalString</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@GenericEngineParseStringObjectExtextendsch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.FunctionDef[ch.epfl.data.dblab.deep.queryengine.GenericEngineIRs.GenericEngineParseStringObject,ch.epfl.data.sc.pardis.deep.OptimalStringQuasiNodes.OptimalString]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.GenericEngineRunQueryObjectExt" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GenericEngineRunQueryObjectExt[T]extendsch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.FunctionDef[ch.epfl.data.dblab.deep.queryengine.GenericEngineIRs.GenericEngineRunQueryObject[T],T]withProductwithSerializable"></a>
+      <a id="GenericEngineRunQueryObjectExt[T]:GenericEngineRunQueryObjectExt[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="GenericEngineQuasiNodes$$GenericEngineRunQueryObjectExt.html"><span class="name">GenericEngineRunQueryObjectExt</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="queryOutput">queryOutput: <a href="#Block[T]=ch.epfl.data.sc.pardis.quasi.anf.BlockExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Block">GenericEngineQuasiNodes.Block</a>[<span class="extype" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.GenericEngineRunQueryObjectExt.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="paramT">paramT: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.GenericEngineRunQueryObjectExt.T">T</span>]</span>)</span><span class="result"> extends <a href="#FunctionDef[S,T]=ch.epfl.data.sc.pardis.quasi.anf.FunctionDefExtract[S,T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.FunctionDef">FunctionDef</a>[<a href="GenericEngineIRs$$GenericEngineRunQueryObject.html" class="extype" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineIRs.GenericEngineRunQueryObject">GenericEngineRunQueryObject</a>[<span class="extype" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.GenericEngineRunQueryObjectExt.T">T</span>], <span class="extype" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.GenericEngineRunQueryObjectExt.T">T</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@GenericEngineRunQueryObjectExt[T]extendsch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.FunctionDef[ch.epfl.data.dblab.deep.queryengine.GenericEngineIRs.GenericEngineRunQueryObject[T],T]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.Lambda" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Lambda[T,S]=ch.epfl.data.sc.pardis.quasi.anf.LambdaExtract[T,S]"></a>
+      <a id="Lambda[T,S]:Lambda[T,S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Lambda</span><span class="tparams">[<span name="T">T</span>, <span name="S">S</span>]</span><span class="result"> = <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.LambdaExtract">LambdaExtract</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.Lambda.T">T</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.Lambda.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Lambda[T,S]=ch.epfl.data.sc.pardis.quasi.anf.LambdaExtract[T,S]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.Rep" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]"></a>
+      <a id="Rep[T]:Rep[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Rep</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> = <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ExpExtract">ExpExtract</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.Rep.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VarArgsExt.RepSeqToSeqRep" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="RepSeqToSeqRep[A]extendsSeq[VarArgsExt.this.Rep[A]]withProductwithSerializable"></a>
+      <a id="RepSeqToSeqRep[A]:sc.pardis.quasi.anf.BaseExt.RepSeqToSeqRep[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">RepSeqToSeqRep</span><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.Rep">Rep</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VarArgsExt.RepSeqToSeqRep.A">A</span>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@RepSeqToSeqRep[A]extendsSeq[VarArgsExt.this.Rep[A]]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VarArgsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.Stm" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Stm[T]=ch.epfl.data.sc.pardis.quasi.anf.StmExtract[T]"></a>
+      <a id="Stm[T]:Stm[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Stm</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> = <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.StmExtract">StmExtract</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.Stm.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Stm[T]=ch.epfl.data.sc.pardis.quasi.anf.StmExtract[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt.StructArgSeq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="StructArgSeq=Seq[ch.epfl.data.sc.pardis.quasi.anf.PardisStructArgExt]"></a>
+      <a id="StructArgSeq:StructArgSeq"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">StructArgSeq</span><span class="result"> = <span class="extype" name="scala.collection.Seq">Seq</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.PardisStructArgExt">PardisStructArgExt</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@StructArgSeq=Seq[ch.epfl.data.sc.pardis.quasi.anf.PardisStructArgExt]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>StructsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.Sym" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Sym[T]=ch.epfl.data.sc.pardis.quasi.anf.SymExtract[T]"></a>
+      <a id="Sym[T]:Sym[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Sym</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> = <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.SymExtract">SymExtract</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.Sym.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Sym[T]=ch.epfl.data.sc.pardis.quasi.anf.SymExtract[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.TypeRepsExt.TypeRep" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="TypeRep[T]=ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]"></a>
+      <a id="TypeRep[T]:TypeRep[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">TypeRep</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> = <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.TypeRepsExt.TypeRep.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@TypeRep[T]=ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>TypeRepsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.Var" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Var[T]=ch.epfl.data.sc.pardis.quasi.anf.VarExtract[T]"></a>
+      <a id="Var[T]:Var[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Var</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> = <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VarExtract">VarExtract</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.Var.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Var[T]=ch.epfl.data.sc.pardis.quasi.anf.VarExtract[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VariablesExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.WhileExt.While" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="While=ch.epfl.data.sc.pardis.quasi.anf.WhileExtract"></a>
+      <a id="While:While"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">While</span><span class="result"> = <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.WhileExtract">WhileExtract</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@While=ch.epfl.data.sc.pardis.quasi.anf.WhileExtract" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>WhileExt</dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@##():Int" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#Apply" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Apply:ch.epfl.data.sc.pardis.quasi.anf.ApplyExtract.type"></a>
+      <a id="Apply:ApplyExtract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Apply</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ApplyExtract">ApplyExtract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Apply:ch.epfl.data.sc.pardis.quasi.anf.ApplyExtract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#Apply0" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Apply0:ch.epfl.data.sc.pardis.quasi.anf.Apply0Extract.type"></a>
+      <a id="Apply0:Apply0Extract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Apply0</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.Apply0Extract">Apply0Extract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Apply0:ch.epfl.data.sc.pardis.quasi.anf.Apply0Extract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#Apply2" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Apply2:ch.epfl.data.sc.pardis.quasi.anf.Apply2Extract.type"></a>
+      <a id="Apply2:Apply2Extract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Apply2</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.Apply2Extract">Apply2Extract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Apply2:ch.epfl.data.sc.pardis.quasi.anf.Apply2Extract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#Apply3" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Apply3:ch.epfl.data.sc.pardis.quasi.anf.Apply3Extract.type"></a>
+      <a id="Apply3:Apply3Extract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Apply3</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.Apply3Extract">Apply3Extract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Apply3:ch.epfl.data.sc.pardis.quasi.anf.Apply3Extract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt#Assign" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Assign:ch.epfl.data.sc.pardis.quasi.anf.AssignExtract.type"></a>
+      <a id="Assign:AssignExtract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Assign</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.AssignExtract">AssignExtract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Assign:ch.epfl.data.sc.pardis.quasi.anf.AssignExtract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VariablesExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt#Block" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Block:ch.epfl.data.sc.pardis.quasi.anf.BlockExtract.type"></a>
+      <a id="Block:BlockExtract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Block</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BlockExtract">BlockExtract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Block:ch.epfl.data.sc.pardis.quasi.anf.BlockExtract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.IfThenElseExt#IfThenElse" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="IfThenElse:ch.epfl.data.sc.pardis.quasi.anf.IfThenElseExtract.type"></a>
+      <a id="IfThenElse:IfThenElseExtract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">IfThenElse</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.IfThenElseExtract">IfThenElseExtract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@IfThenElse:ch.epfl.data.sc.pardis.quasi.anf.IfThenElseExtract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>IfThenElseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#Lambda" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Lambda:ch.epfl.data.sc.pardis.quasi.anf.LambdaExtract.type"></a>
+      <a id="Lambda:LambdaExtract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Lambda</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.LambdaExtract">LambdaExtract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Lambda:ch.epfl.data.sc.pardis.quasi.anf.LambdaExtract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#Lambda0" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Lambda0:ch.epfl.data.sc.pardis.quasi.anf.Lambda0Extract.type"></a>
+      <a id="Lambda0:Lambda0Extract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Lambda0</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.Lambda0Extract">Lambda0Extract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Lambda0:ch.epfl.data.sc.pardis.quasi.anf.Lambda0Extract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#Lambda2" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Lambda2:ch.epfl.data.sc.pardis.quasi.anf.Lambda2Extract.type"></a>
+      <a id="Lambda2:Lambda2Extract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Lambda2</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.Lambda2Extract">Lambda2Extract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Lambda2:ch.epfl.data.sc.pardis.quasi.anf.Lambda2Extract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#Lambda3" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Lambda3:ch.epfl.data.sc.pardis.quasi.anf.Lambda3Extract.type"></a>
+      <a id="Lambda3:Lambda3Extract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Lambda3</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.Lambda3Extract">Lambda3Extract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Lambda3:ch.epfl.data.sc.pardis.quasi.anf.Lambda3Extract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt#NewVar" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="NewVar:ch.epfl.data.sc.pardis.quasi.anf.NewVarExtract.type"></a>
+      <a id="NewVar:NewVarExtract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">NewVar</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.NewVarExtract">NewVarExtract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@NewVar:ch.epfl.data.sc.pardis.quasi.anf.NewVarExtract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VariablesExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt#ReadVar" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ReadVar:ch.epfl.data.sc.pardis.quasi.anf.ReadVarExtract.type"></a>
+      <a id="ReadVar:ReadVarExtract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ReadVar</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ReadVarExtract">ReadVarExtract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@ReadVar:ch.epfl.data.sc.pardis.quasi.anf.ReadVarExtract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VariablesExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt#Stm" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Stm:ch.epfl.data.sc.pardis.quasi.anf.StmExtract.type"></a>
+      <a id="Stm:StmExtract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Stm</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.StmExtract">StmExtract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Stm:ch.epfl.data.sc.pardis.quasi.anf.StmExtract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt#Sym" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Sym:ch.epfl.data.sc.pardis.quasi.anf.SymExtract.type"></a>
+      <a id="Sym:SymExtract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Sym</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.SymExtract">SymExtract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Sym:ch.epfl.data.sc.pardis.quasi.anf.SymExtract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt#Var" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Var:ch.epfl.data.sc.pardis.quasi.anf.VarExtract.type"></a>
+      <a id="Var:VarExtract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Var</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VarExtract">VarExtract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@Var:ch.epfl.data.sc.pardis.quasi.anf.VarExtract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VariablesExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.WhileExt#While" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="While:ch.epfl.data.sc.pardis.quasi.anf.WhileExtract.type"></a>
+      <a id="While:WhileExtract.type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">While</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.WhileExtract">WhileExtract</span>.type</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@While:ch.epfl.data.sc.pardis.quasi.anf.WhileExtract.type" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>WhileExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#__app" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__app[T1,T2,T3,S](fun:FunctionsExt.this.Rep[(T1,T2,T3)=&gt;S])(implicitov:ch.epfl.data.sc.pardis.quasi.OverloadHackObj.Overloaded3):(FunctionsExt.this.Rep[T1],FunctionsExt.this.Rep[T2],FunctionsExt.this.Rep[T3])=&gt;FunctionsExt.this.Rep[S]"></a>
+      <a id="__app[T1,T2,T3,S](Rep[(T1,T2,T3)⇒S])(sc.pardis.quasi.OverloadHackObj.Overloaded3):(Rep[T1],Rep[T2],Rep[T3])⇒Rep[S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__app</span><span class="tparams">[<span name="T1">T1</span>, <span name="T2">T2</span>, <span name="T3">T3</span>, <span name="S">S</span>]</span><span class="params">(<span name="fun">fun: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[(<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.T1">T1</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.T2">T2</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.T3">T3</span>) ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.S">S</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ov">ov: <span class="extype" name="ch.epfl.data.sc.pardis.ir.OverloadHack.Overloaded3">sc.pardis.quasi.OverloadHackObj.Overloaded3</span></span>)</span><span class="result">: (<a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.T1">T1</span>], <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.T2">T2</span>], <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.T3">T3</span>]) ⇒ <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__app[T1,T2,T3,S](fun:FunctionsExt.this.Rep[(T1,T2,T3)=&gt;S])(implicitov:ch.epfl.data.sc.pardis.quasi.OverloadHackObj.Overloaded3):(FunctionsExt.this.Rep[T1],FunctionsExt.this.Rep[T2],FunctionsExt.this.Rep[T3])=&gt;FunctionsExt.this.Rep[S]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#__app" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__app[T1,T2,S](fun:FunctionsExt.this.Rep[(T1,T2)=&gt;S])(implicitov:ch.epfl.data.sc.pardis.quasi.OverloadHackObj.Overloaded2):(FunctionsExt.this.Rep[T1],FunctionsExt.this.Rep[T2])=&gt;FunctionsExt.this.Rep[S]"></a>
+      <a id="__app[T1,T2,S](Rep[(T1,T2)⇒S])(sc.pardis.quasi.OverloadHackObj.Overloaded2):(Rep[T1],Rep[T2])⇒Rep[S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__app</span><span class="tparams">[<span name="T1">T1</span>, <span name="T2">T2</span>, <span name="S">S</span>]</span><span class="params">(<span name="fun">fun: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[(<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.T1">T1</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.T2">T2</span>) ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.S">S</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ov">ov: <span class="extype" name="ch.epfl.data.sc.pardis.ir.OverloadHack.Overloaded2">sc.pardis.quasi.OverloadHackObj.Overloaded2</span></span>)</span><span class="result">: (<a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.T1">T1</span>], <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.T2">T2</span>]) ⇒ <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__app[T1,T2,S](fun:FunctionsExt.this.Rep[(T1,T2)=&gt;S])(implicitov:ch.epfl.data.sc.pardis.quasi.OverloadHackObj.Overloaded2):(FunctionsExt.this.Rep[T1],FunctionsExt.this.Rep[T2])=&gt;FunctionsExt.this.Rep[S]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#__app" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__app[T,S](fun:FunctionsExt.this.Rep[T=&gt;S])(implicitov:ch.epfl.data.sc.pardis.quasi.OverloadHackObj.Overloaded1):FunctionsExt.this.Rep[T]=&gt;FunctionsExt.this.Rep[S]"></a>
+      <a id="__app[T,S](Rep[(T)⇒S])(sc.pardis.quasi.OverloadHackObj.Overloaded1):(Rep[T])⇒Rep[S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__app</span><span class="tparams">[<span name="T">T</span>, <span name="S">S</span>]</span><span class="params">(<span name="fun">fun: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[(<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.T">T</span>) ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.S">S</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ov">ov: <span class="extype" name="ch.epfl.data.sc.pardis.ir.OverloadHack.Overloaded1">sc.pardis.quasi.OverloadHackObj.Overloaded1</span></span>)</span><span class="result">: (<a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.T">T</span>]) ⇒ <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__app[T,S](fun:FunctionsExt.this.Rep[T=&gt;S])(implicitov:ch.epfl.data.sc.pardis.quasi.OverloadHackObj.Overloaded1):FunctionsExt.this.Rep[T]=&gt;FunctionsExt.this.Rep[S]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#__app" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__app[S](fun:FunctionsExt.this.Rep[()=&gt;S]):()=&gt;FunctionsExt.this.Rep[S]"></a>
+      <a id="__app[S](Rep[()⇒S]):()⇒Rep[S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__app</span><span class="tparams">[<span name="S">S</span>]</span><span class="params">(<span name="fun">fun: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[() ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.S">S</span>]</span>)</span><span class="result">: () ⇒ <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__app.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__app[S](fun:FunctionsExt.this.Rep[()=&gt;S]):()=&gt;FunctionsExt.this.Rep[S]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt#__assign" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__assign[T](lhs:VariablesExt.this.Var[T],rhs:VariablesExt.this.Rep[T])(implicitevidence$8:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):VariablesExt.this.Rep[Unit]"></a>
+      <a id="__assign[T](Var[T],Rep[T])(MaybeParamTag[T]):Rep[Unit]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__assign</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="lhs">lhs: <a href="#Var[T]=ch.epfl.data.sc.pardis.quasi.anf.VarExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Var">Var</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.__assign.T">T</span>]</span>, <span name="rhs">rhs: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.__assign.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.__assign.T">T</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__assign[T](lhs:VariablesExt.this.Var[T],rhs:VariablesExt.this.Rep[T])(implicitevidence$8:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):VariablesExt.this.Rep[Unit]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VariablesExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt#__block" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__block[T](e:=&gt;BaseExt.this.Rep[T])(implicitevidence$3:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):BaseExt.this.Block[T]"></a>
+      <a id="__block[T](⇒Rep[T])(MaybeParamTag[T]):Block[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__block</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="e">e: ⇒ <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.__block.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.__block.T">T</span>]</span>)</span><span class="result">: <a href="#Block[T]=ch.epfl.data.sc.pardis.quasi.anf.BlockExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Block">Block</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.__block.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__block[T](e:=&gt;BaseExt.this.Rep[T])(implicitevidence$3:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):BaseExt.this.Block[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VarArgsExt#__castVarArg" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__castVarArg[A](l:VarArgsExt.this.Rep[Seq[A]]):Seq[VarArgsExt.this.Rep[A]]"></a>
+      <a id="__castVarArg[A](Rep[Seq[A]]):Seq[Rep[A]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__castVarArg</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="l">l: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VarArgsExt.__castVarArg.A">A</span>]]</span>)</span><span class="result">: <span class="extype" name="scala.Seq">Seq</span>[<a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VarArgsExt.__castVarArg.A">A</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__castVarArg[A](l:VarArgsExt.this.Rep[Seq[A]]):Seq[VarArgsExt.this.Rep[A]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VarArgsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VarArgsExt#__castVarArg" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__castVarArg[A](ve:ch.epfl.data.sc.pardis.quasi.anf.VarargExtract):ch.epfl.data.sc.pardis.quasi.anf.VarargExtract"></a>
+      <a id="__castVarArg[A](VarargExtract):VarargExtract"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__castVarArg</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="ve">ve: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VarargExtract">VarargExtract</span></span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VarargExtract">VarargExtract</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__castVarArg[A](ve:ch.epfl.data.sc.pardis.quasi.anf.VarargExtract):ch.epfl.data.sc.pardis.quasi.anf.VarargExtract" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VarArgsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.IfThenElseExt#__ifThenElse" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__ifThenElse[T](cond:IfThenElseExt.this.Rep[Boolean],thenp:=&gt;IfThenElseExt.this.Rep[T],elsep:=&gt;IfThenElseExt.this.Rep[T])(implicitevidence$16:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):IfThenElseExt.this.Rep[T]"></a>
+      <a id="__ifThenElse[T](Rep[Boolean],⇒Rep[T],⇒Rep[T])(MaybeParamTag[T]):Rep[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__ifThenElse</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="cond">cond: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>, <span name="thenp">thenp: ⇒ <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.IfThenElseExt.__ifThenElse.T">T</span>]</span>, <span name="elsep">elsep: ⇒ <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.IfThenElseExt.__ifThenElse.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.IfThenElseExt.__ifThenElse.T">T</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.IfThenElseExt.__ifThenElse.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__ifThenElse[T](cond:IfThenElseExt.this.Rep[Boolean],thenp:=&gt;IfThenElseExt.this.Rep[T],elsep:=&gt;IfThenElseExt.this.Rep[T])(implicitevidence$16:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):IfThenElseExt.this.Rep[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>IfThenElseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#__lambda" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__lambda[T1,T2,T3,S](fun:(FunctionsExt.this.Rep[T1],FunctionsExt.this.Rep[T2],FunctionsExt.this.Rep[T3])=&gt;FunctionsExt.this.Rep[S])(implicitevidence$23:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T1],implicitevidence$24:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T2],implicitevidence$25:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T3],implicitevidence$26:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[(T1,T2,T3)=&gt;S]"></a>
+      <a id="__lambda[T1,T2,T3,S]((Rep[T1],Rep[T2],Rep[T3])⇒Rep[S])(MaybeParamTag[T1],MaybeParamTag[T2],MaybeParamTag[T3],MaybeParamTag[S]):Rep[(T1,T2,T3)⇒S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__lambda</span><span class="tparams">[<span name="T1">T1</span>, <span name="T2">T2</span>, <span name="T3">T3</span>, <span name="S">S</span>]</span><span class="params">(<span name="fun">fun: (<a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T1">T1</span>], <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T2">T2</span>], <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T3">T3</span>]) ⇒ <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.S">S</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T1">T1</span>]</span>, <span name="arg1">arg1: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T2">T2</span>]</span>, <span name="arg2">arg2: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T3">T3</span>]</span>, <span name="arg3">arg3: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.S">S</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[(<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T1">T1</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T2">T2</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T3">T3</span>) ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__lambda[T1,T2,T3,S](fun:(FunctionsExt.this.Rep[T1],FunctionsExt.this.Rep[T2],FunctionsExt.this.Rep[T3])=&gt;FunctionsExt.this.Rep[S])(implicitevidence$23:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T1],implicitevidence$24:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T2],implicitevidence$25:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T3],implicitevidence$26:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[(T1,T2,T3)=&gt;S]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#__lambda" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__lambda[T1,T2,S](fun:(FunctionsExt.this.Rep[T1],FunctionsExt.this.Rep[T2])=&gt;FunctionsExt.this.Rep[S])(implicitevidence$20:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T1],implicitevidence$21:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T2],implicitevidence$22:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[(T1,T2)=&gt;S]"></a>
+      <a id="__lambda[T1,T2,S]((Rep[T1],Rep[T2])⇒Rep[S])(MaybeParamTag[T1],MaybeParamTag[T2],MaybeParamTag[S]):Rep[(T1,T2)⇒S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__lambda</span><span class="tparams">[<span name="T1">T1</span>, <span name="T2">T2</span>, <span name="S">S</span>]</span><span class="params">(<span name="fun">fun: (<a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T1">T1</span>], <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T2">T2</span>]) ⇒ <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.S">S</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T1">T1</span>]</span>, <span name="arg1">arg1: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T2">T2</span>]</span>, <span name="arg2">arg2: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.S">S</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[(<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T1">T1</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T2">T2</span>) ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__lambda[T1,T2,S](fun:(FunctionsExt.this.Rep[T1],FunctionsExt.this.Rep[T2])=&gt;FunctionsExt.this.Rep[S])(implicitevidence$20:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T1],implicitevidence$21:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T2],implicitevidence$22:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[(T1,T2)=&gt;S]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#__lambda" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__lambda[T,S](fun:FunctionsExt.this.Rep[T]=&gt;FunctionsExt.this.Rep[S])(implicitevidence$18:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T],implicitevidence$19:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[T=&gt;S]"></a>
+      <a id="__lambda[T,S]((Rep[T])⇒Rep[S])(MaybeParamTag[T],MaybeParamTag[S]):Rep[(T)⇒S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__lambda</span><span class="tparams">[<span name="T">T</span>, <span name="S">S</span>]</span><span class="params">(<span name="fun">fun: (<a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T">T</span>]) ⇒ <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.S">S</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T">T</span>]</span>, <span name="arg1">arg1: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.S">S</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[(<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.T">T</span>) ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__lambda[T,S](fun:FunctionsExt.this.Rep[T]=&gt;FunctionsExt.this.Rep[S])(implicitevidence$18:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T],implicitevidence$19:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[T=&gt;S]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#__lambda" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__lambda[S](fun:()=&gt;FunctionsExt.this.Rep[S])(implicitevidence$17:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[()=&gt;S]"></a>
+      <a id="__lambda[S](()⇒Rep[S])(MaybeParamTag[S]):Rep[()⇒S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__lambda</span><span class="tparams">[<span name="S">S</span>]</span><span class="params">(<span name="fun">fun: () ⇒ <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.S">S</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.S">S</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[() ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.__lambda.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__lambda[S](fun:()=&gt;FunctionsExt.this.Rep[S])(implicitevidence$17:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[()=&gt;S]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VarArgsExt#__liftSeq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__liftSeq[A](l:Seq[VarArgsExt.this.Rep[A]]):VarArgsExt.this.Rep[Seq[A]]"></a>
+      <a id="__liftSeq[A](Seq[Rep[A]]):Rep[Seq[A]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__liftSeq</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="l">l: <span class="extype" name="scala.Seq">Seq</span>[<a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VarArgsExt.__liftSeq.A">A</span>]]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VarArgsExt.__liftSeq.A">A</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__liftSeq[A](l:Seq[VarArgsExt.this.Rep[A]]):VarArgsExt.this.Rep[Seq[A]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VarArgsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt#__newVar" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__newVar[T](init:VariablesExt.this.Rep[T])(implicitevidence$5:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):VariablesExt.this.Var[T]"></a>
+      <a id="__newVar[T](Rep[T])(MaybeParamTag[T]):Var[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__newVar</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="init">init: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.__newVar.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.__newVar.T">T</span>]</span>)</span><span class="result">: <a href="#Var[T]=ch.epfl.data.sc.pardis.quasi.anf.VarExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Var">Var</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.__newVar.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__newVar[T](init:VariablesExt.this.Rep[T])(implicitevidence$5:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):VariablesExt.this.Var[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VariablesExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt#__newVarNamed" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__newVarNamed[T](init:VariablesExt.this.Rep[T],name:VariablesExt.this.Rep[String])(implicitevidence$7:VariablesExt.this.TypeRep[T]):VariablesExt.this.Var[T]"></a>
+      <a id="__newVarNamed[T](Rep[T],Rep[String])(TypeRep[T]):Var[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__newVarNamed</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="init">init: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.__newVarNamed.T">T</span>]</span>, <span name="name">name: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="#TypeRep[T]=ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.TypeRep">TypeRep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.__newVarNamed.T">T</span>]</span>)</span><span class="result">: <a href="#Var[T]=ch.epfl.data.sc.pardis.quasi.anf.VarExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Var">Var</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.__newVarNamed.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__newVarNamed[T](init:VariablesExt.this.Rep[T],name:VariablesExt.this.Rep[String])(implicitevidence$7:VariablesExt.this.TypeRep[T]):VariablesExt.this.Var[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VariablesExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt#__newVarNamed" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__newVarNamed[T](init:VariablesExt.this.Rep[T],name:String)(implicitevidence$6:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):VariablesExt.this.Var[T]"></a>
+      <a id="__newVarNamed[T](Rep[T],String)(MaybeParamTag[T]):Var[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__newVarNamed</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="init">init: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.__newVarNamed.T">T</span>]</span>, <span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.__newVarNamed.T">T</span>]</span>)</span><span class="result">: <a href="#Var[T]=ch.epfl.data.sc.pardis.quasi.anf.VarExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Var">Var</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.__newVarNamed.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__newVarNamed[T](init:VariablesExt.this.Rep[T],name:String)(implicitevidence$6:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):VariablesExt.this.Var[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VariablesExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt#__readVar" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__readVar[T](rhs:VariablesExt.this.Var[T])(implicitevidence$9:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):VariablesExt.this.Rep[T]"></a>
+      <a id="__readVar[T](Var[T])(MaybeParamTag[T]):Rep[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__readVar</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="rhs">rhs: <a href="#Var[T]=ch.epfl.data.sc.pardis.quasi.anf.VarExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Var">Var</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.__readVar.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.__readVar.T">T</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.__readVar.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__readVar[T](rhs:VariablesExt.this.Var[T])(implicitevidence$9:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):VariablesExt.this.Rep[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VariablesExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt#__struct_arg" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__struct_arg(name:StructsExt.this.Rep[String],mutable:StructsExt.this.Rep[Boolean],init:StructsExt.this.Rep[Any]):ch.epfl.data.sc.pardis.quasi.anf.PardisStructArgExt"></a>
+      <a id="__struct_arg(Rep[String],Rep[Boolean],Rep[Any]):PardisStructArgExt"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__struct_arg</span><span class="params">(<span name="name">name: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="mutable">mutable: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>, <span name="init">init: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Any">Any</span>]</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.PardisStructArgExt">PardisStructArgExt</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__struct_arg(name:StructsExt.this.Rep[String],mutable:StructsExt.this.Rep[Boolean],init:StructsExt.this.Rep[Any]):ch.epfl.data.sc.pardis.quasi.anf.PardisStructArgExt" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>StructsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt#__struct_args" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__struct_args(args:StructsExt.this.Rep[ch.epfl.data.sc.pardis.ir.PardisStructArg]*):Seq[StructsExt.this.Rep[ch.epfl.data.sc.pardis.ir.PardisStructArg]]"></a>
+      <a id="__struct_args(Rep[PardisStructArg]*):Seq[Rep[PardisStructArg]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__struct_args</span><span class="params">(<span name="args">args: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisStructArg">PardisStructArg</span>]*</span>)</span><span class="result">: <span class="extype" name="scala.collection.Seq">Seq</span>[<a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisStructArg">PardisStructArg</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__struct_args(args:StructsExt.this.Rep[ch.epfl.data.sc.pardis.ir.PardisStructArg]*):Seq[StructsExt.this.Rep[ch.epfl.data.sc.pardis.ir.PardisStructArg]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>StructsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt#__struct_classTag" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__struct_classTag[T](name:StructsExt.this.Rep[String]):ch.epfl.data.sc.pardis.quasi.anf.ConstExtract[ch.epfl.data.sc.pardis.ir.StructTags.StructTag[T]]"></a>
+      <a id="__struct_classTag[T](Rep[String]):ConstExtract[StructTag[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__struct_classTag</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="name">name: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ConstExtract">ConstExtract</span>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.StructTags.StructTag">StructTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt.__struct_classTag.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__struct_classTag[T](name:StructsExt.this.Rep[String]):ch.epfl.data.sc.pardis.quasi.anf.ConstExtract[ch.epfl.data.sc.pardis.ir.StructTags.StructTag[T]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>StructsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt#__struct_field" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__struct_field[T](src:StructsExt.this.Rep[Any],name:StructsExt.this.Rep[String])(implicitevidence$4:StructsExt.this.TypeRep[T]):StructsExt.this.Rep[T]"></a>
+      <a id="__struct_field[T](Rep[Any],Rep[String])(TypeRep[T]):Rep[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__struct_field</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="src">src: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Any">Any</span>]</span>, <span name="name">name: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="#TypeRep[T]=ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.TypeRep">TypeRep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt.__struct_field.T">T</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt.__struct_field.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__struct_field[T](src:StructsExt.this.Rep[Any],name:StructsExt.this.Rep[String])(implicitevidence$4:StructsExt.this.TypeRep[T]):StructsExt.this.Rep[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>StructsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt#__struct_getField" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__struct_getField[T](src:StructsExt.this.Rep[Any],name:StructsExt.this.Rep[String])(implicitevidence$2:StructsExt.this.TypeRep[T]):ch.epfl.data.sc.pardis.quasi.anf.PardisStructFieldGetterExt[T]"></a>
+      <a id="__struct_getField[T](Rep[Any],Rep[String])(TypeRep[T]):PardisStructFieldGetterExt[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__struct_getField</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="src">src: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Any">Any</span>]</span>, <span name="name">name: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="#TypeRep[T]=ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.TypeRep">TypeRep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt.__struct_getField.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.PardisStructFieldGetterExt">PardisStructFieldGetterExt</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt.__struct_getField.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__struct_getField[T](src:StructsExt.this.Rep[Any],name:StructsExt.this.Rep[String])(implicitevidence$2:StructsExt.this.TypeRep[T]):ch.epfl.data.sc.pardis.quasi.anf.PardisStructFieldGetterExt[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>StructsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt#__struct_new" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__struct_new[T](tag:StructsExt.this.Rep[ch.epfl.data.sc.pardis.ir.StructTags.StructTag[T]],args:Seq[StructsExt.this.Rep[ch.epfl.data.sc.pardis.ir.PardisStructArg]])(implicitevidence$1:StructsExt.this.TypeRep[T]):StructsExt.this.Rep[T]"></a>
+      <a id="__struct_new[T](Rep[StructTag[T]],Seq[Rep[PardisStructArg]])(TypeRep[T]):Rep[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__struct_new</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="tag">tag: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.StructTags.StructTag">StructTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt.__struct_new.T">T</span>]]</span>, <span name="args">args: <span class="extype" name="scala.Seq">Seq</span>[<a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisStructArg">PardisStructArg</span>]]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="#TypeRep[T]=ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.TypeRep">TypeRep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt.__struct_new.T">T</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt.__struct_new.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__struct_new[T](tag:StructsExt.this.Rep[ch.epfl.data.sc.pardis.ir.StructTags.StructTag[T]],args:Seq[StructsExt.this.Rep[ch.epfl.data.sc.pardis.ir.PardisStructArg]])(implicitevidence$1:StructsExt.this.TypeRep[T]):StructsExt.this.Rep[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>StructsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt#__struct_setField" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__struct_setField[T](src:StructsExt.this.Rep[Any],name:StructsExt.this.Rep[String],value:StructsExt.this.Rep[T])(implicitevidence$3:StructsExt.this.TypeRep[T]):ch.epfl.data.sc.pardis.quasi.anf.PardisStructFieldSetterExt[T]"></a>
+      <a id="__struct_setField[T](Rep[Any],Rep[String],Rep[T])(TypeRep[T]):PardisStructFieldSetterExt[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__struct_setField</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="src">src: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Any">Any</span>]</span>, <span name="name">name: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="value">value: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt.__struct_setField.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="#TypeRep[T]=ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.TypeRep">TypeRep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt.__struct_setField.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.PardisStructFieldSetterExt">PardisStructFieldSetterExt</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt.__struct_setField.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__struct_setField[T](src:StructsExt.this.Rep[Any],name:StructsExt.this.Rep[String],value:StructsExt.this.Rep[T])(implicitevidence$3:StructsExt.this.TypeRep[T]):ch.epfl.data.sc.pardis.quasi.anf.PardisStructFieldSetterExt[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>StructsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.WhileExt#__whileDo" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="__whileDo(cond:=&gt;WhileExt.this.Rep[Boolean],body:=&gt;WhileExt.this.Rep[Unit]):WhileExt.this.Rep[Unit]"></a>
+      <a id="__whileDo(⇒Rep[Boolean],⇒Rep[Unit]):Rep[Unit]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">__whileDo</span><span class="params">(<span name="cond">cond: ⇒ <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>, <span name="body">body: ⇒ <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Unit">Unit</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@__whileDo(cond:=&gt;WhileExt.this.Rep[Boolean],body:=&gt;WhileExt.this.Rep[Unit]):WhileExt.this.Rep[Unit]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>WhileExt</dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExtIR#booleanToOptionProduct" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="booleanToOptionProduct[T](v:Boolean):Option[Product]"></a>
+      <a id="booleanToOptionProduct[T](Boolean):Option[Product]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">booleanToOptionProduct</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="v">v: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Product">Product</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@booleanToOptionProduct[T](v:Boolean):Option[Product]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExtIR</dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt#const" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="const[T](e:BaseExt.this.Rep[T]):BaseExt.this.Rep[T]"></a>
+      <a id="const[T](Rep[T]):Rep[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">const</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="e">e: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.const.T">T</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.const.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@const[T](e:BaseExt.this.Rep[T]):BaseExt.this.Rep[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt#infix_!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="infix_!=[A,B](a:ObjectOpsExt.this.Rep[A],b:ObjectOpsExt.this.Rep[B])(implicitevidence$12:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[A],implicitevidence$13:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[B]):ObjectOpsExt.this.Rep[Boolean]"></a>
+      <a id="infix_!=[A,B](Rep[A],Rep[B])(MaybeParamTag[A],MaybeParamTag[B]):Rep[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: infix_$bang$eq" class="name">infix_!=</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="params">(<span name="a">a: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt.infix_!=.A">A</span>]</span>, <span name="b">b: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt.infix_!=.B">B</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt.infix_!=.A">A</span>]</span>, <span name="arg1">arg1: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt.infix_!=.B">B</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@infix_!=[A,B](a:ObjectOpsExt.this.Rep[A],b:ObjectOpsExt.this.Rep[B])(implicitevidence$12:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[A],implicitevidence$13:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[B]):ObjectOpsExt.this.Rep[Boolean]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ObjectOpsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt#infix_==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="infix_==[A,B](a:ObjectOpsExt.this.Rep[A],b:ObjectOpsExt.this.Rep[B])(implicitevidence$10:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[A],implicitevidence$11:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[B]):ObjectOpsExt.this.Rep[Boolean]"></a>
+      <a id="infix_==[A,B](Rep[A],Rep[B])(MaybeParamTag[A],MaybeParamTag[B]):Rep[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: infix_$eq$eq" class="name">infix_==</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="params">(<span name="a">a: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt.infix_==.A">A</span>]</span>, <span name="b">b: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt.infix_==.B">B</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt.infix_==.A">A</span>]</span>, <span name="arg1">arg1: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt.infix_==.B">B</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@infix_==[A,B](a:ObjectOpsExt.this.Rep[A],b:ObjectOpsExt.this.Rep[B])(implicitevidence$10:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[A],implicitevidence$11:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[B]):ObjectOpsExt.this.Rep[Boolean]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ObjectOpsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt#infix_hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="infix_hashCode[A](a:ObjectOpsExt.this.Rep[A])(implicitevidence$14:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[A]):ObjectOpsExt.this.Rep[Int]"></a>
+      <a id="infix_hashCode[A](Rep[A])(MaybeParamTag[A]):Rep[Int]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">infix_hashCode</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="a">a: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt.infix_hashCode.A">A</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt.infix_hashCode.A">A</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Int">Int</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@infix_hashCode[A](a:ObjectOpsExt.this.Rep[A])(implicitevidence$14:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[A]):ObjectOpsExt.this.Rep[Int]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ObjectOpsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt#infix_toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="infix_toString[A](a:ObjectOpsExt.this.Rep[A])(implicitevidence$15:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[A]):ObjectOpsExt.this.Rep[String]"></a>
+      <a id="infix_toString[A](Rep[A])(MaybeParamTag[A]):Rep[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">infix_toString</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="a">a: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt.infix_toString.A">A</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt.infix_toString.A">A</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@infix_toString[A](a:ObjectOpsExt.this.Rep[A])(implicitevidence$15:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[A]):ObjectOpsExt.this.Rep[String]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ObjectOpsExt</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#lambdaApply" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="lambdaApply[T,S](fun:FunctionsExt.this.Rep[T=&gt;S],input:FunctionsExt.this.Rep[T])(implicitevidence$28:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T],implicitevidence$29:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[S]"></a>
+      <a id="lambdaApply[T,S](Rep[(T)⇒S],Rep[T])(MaybeParamTag[T],MaybeParamTag[S]):Rep[S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">lambdaApply</span><span class="tparams">[<span name="T">T</span>, <span name="S">S</span>]</span><span class="params">(<span name="fun">fun: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[(<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply.T">T</span>) ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply.S">S</span>]</span>, <span name="input">input: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply.T">T</span>]</span>, <span name="arg1">arg1: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply.S">S</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@lambdaApply[T,S](fun:FunctionsExt.this.Rep[T=&gt;S],input:FunctionsExt.this.Rep[T])(implicitevidence$28:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T],implicitevidence$29:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[S]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#lambdaApply0" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="lambdaApply0[S](fun:FunctionsExt.this.Rep[()=&gt;S])(implicitevidence$27:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[S]"></a>
+      <a id="lambdaApply0[S](Rep[()⇒S])(MaybeParamTag[S]):Rep[S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">lambdaApply0</span><span class="tparams">[<span name="S">S</span>]</span><span class="params">(<span name="fun">fun: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[() ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply0.S">S</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply0.S">S</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply0.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@lambdaApply0[S](fun:FunctionsExt.this.Rep[()=&gt;S])(implicitevidence$27:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[S]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#lambdaApply2" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="lambdaApply2[T1,T2,S](fun:FunctionsExt.this.Rep[(T1,T2)=&gt;S],i1:FunctionsExt.this.Rep[T1],i2:FunctionsExt.this.Rep[T2])(implicitevidence$30:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T1],implicitevidence$31:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T2],implicitevidence$32:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[S]"></a>
+      <a id="lambdaApply2[T1,T2,S](Rep[(T1,T2)⇒S],Rep[T1],Rep[T2])(MaybeParamTag[T1],MaybeParamTag[T2],MaybeParamTag[S]):Rep[S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">lambdaApply2</span><span class="tparams">[<span name="T1">T1</span>, <span name="T2">T2</span>, <span name="S">S</span>]</span><span class="params">(<span name="fun">fun: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[(<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply2.T1">T1</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply2.T2">T2</span>) ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply2.S">S</span>]</span>, <span name="i1">i1: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply2.T1">T1</span>]</span>, <span name="i2">i2: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply2.T2">T2</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply2.T1">T1</span>]</span>, <span name="arg1">arg1: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply2.T2">T2</span>]</span>, <span name="arg2">arg2: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply2.S">S</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply2.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@lambdaApply2[T1,T2,S](fun:FunctionsExt.this.Rep[(T1,T2)=&gt;S],i1:FunctionsExt.this.Rep[T1],i2:FunctionsExt.this.Rep[T2])(implicitevidence$30:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T1],implicitevidence$31:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T2],implicitevidence$32:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[S]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt#lambdaApply3" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="lambdaApply3[T1,T2,T3,S](fun:FunctionsExt.this.Rep[(T1,T2,T3)=&gt;S],i1:FunctionsExt.this.Rep[T1],i2:FunctionsExt.this.Rep[T2],i3:FunctionsExt.this.Rep[T3])(implicitevidence$33:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T1],implicitevidence$34:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T2],implicitevidence$35:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T3],implicitevidence$36:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[S]"></a>
+      <a id="lambdaApply3[T1,T2,T3,S](Rep[(T1,T2,T3)⇒S],Rep[T1],Rep[T2],Rep[T3])(MaybeParamTag[T1],MaybeParamTag[T2],MaybeParamTag[T3],MaybeParamTag[S]):Rep[S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">lambdaApply3</span><span class="tparams">[<span name="T1">T1</span>, <span name="T2">T2</span>, <span name="T3">T3</span>, <span name="S">S</span>]</span><span class="params">(<span name="fun">fun: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[(<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply3.T1">T1</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply3.T2">T2</span>, <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply3.T3">T3</span>) ⇒ <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply3.S">S</span>]</span>, <span name="i1">i1: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply3.T1">T1</span>]</span>, <span name="i2">i2: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply3.T2">T2</span>]</span>, <span name="i3">i3: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply3.T3">T3</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply3.T1">T1</span>]</span>, <span name="arg1">arg1: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply3.T2">T2</span>]</span>, <span name="arg2">arg2: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply3.T3">T3</span>]</span>, <span name="arg3">arg3: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply3.S">S</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt.lambdaApply3.S">S</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@lambdaApply3[T1,T2,T3,S](fun:FunctionsExt.this.Rep[(T1,T2,T3)=&gt;S],i1:FunctionsExt.this.Rep[T1],i2:FunctionsExt.this.Rep[T2],i3:FunctionsExt.this.Rep[T3])(implicitevidence$33:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T1],implicitevidence$34:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T2],implicitevidence$35:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T3],implicitevidence$36:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[S]):FunctionsExt.this.Rep[S]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FunctionsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt#localDefs" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="localDefs:List[BaseExt.this.Stm[_]]"></a>
+      <a id="localDefs:List[Stm[_]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">var</span>
+      </span>
+      <span class="symbol">
+        <span class="name">localDefs</span><span class="result">: <span class="extype" name="scala.List">List</span>[<a href="#Stm[T]=ch.epfl.data.sc.pardis.quasi.anf.StmExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Stm">Stm</a>[_]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@localDefs:List[BaseExt.this.Stm[_]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExtIR#optionToOptionProduct" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="optionToOptionProduct[T](v:Option[T]):Option[Product]"></a>
+      <a id="optionToOptionProduct[T](Option[T]):Option[Product]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">optionToOptionProduct</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="v">v: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExtIR.optionToOptionProduct.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Product">Product</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@optionToOptionProduct[T](v:Option[T]):Option[Product]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExtIR</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt#readVar" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="readVar[T](v:VariablesExt.this.Var[T]):VariablesExt.this.Rep[T]"></a>
+      <a id="readVar[T](Var[T]):Rep[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">readVar</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="v">v: <a href="#Var[T]=ch.epfl.data.sc.pardis.quasi.anf.VarExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Var">Var</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.readVar.T">T</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt.readVar.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@readVar[T](v:VariablesExt.this.Var[T]):VariablesExt.this.Rep[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VariablesExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt#reifyBlock" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="reifyBlock[T](e:=&gt;BaseExt.this.Rep[T],explicit:Boolean)(implicitevidence$1:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):BaseExt.this.Block[T]"></a>
+      <a id="reifyBlock[T](⇒Rep[T],Boolean)(MaybeParamTag[T]):Block[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">reifyBlock</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="e">e: ⇒ <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.reifyBlock.T">T</span>]</span>, <span name="explicit">explicit: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.reifyBlock.T">T</span>]</span>)</span><span class="result">: <a href="#Block[T]=ch.epfl.data.sc.pardis.quasi.anf.BlockExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Block">Block</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.reifyBlock.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@reifyBlock[T](e:=&gt;BaseExt.this.Rep[T],explicit:Boolean)(implicitevidence$1:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):BaseExt.this.Block[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.TypeRepsExt#runtimeType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="runtimeType[T](implicitevidence$4:TypeRepsExt.this.TypeRep[T]):TypeRepsExt.this.TypeRep[T]"></a>
+      <a id="runtimeType[T](TypeRep[T]):TypeRep[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">runtimeType</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="#TypeRep[T]=ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.TypeRep">TypeRep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.TypeRepsExt.runtimeType.T">T</span>]</span>)</span><span class="result">: <a href="#TypeRep[T]=ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.TypeRep">TypeRep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.TypeRepsExt.runtimeType.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@runtimeType[T](implicitevidence$4:TypeRepsExt.this.TypeRep[T]):TypeRepsExt.this.TypeRep[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>TypeRepsExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt#singleHole" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="singleHole:BaseExt.this.Rep[Nothing]"></a>
+      <a id="singleHole:Rep[Nothing]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">singleHole</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Nothing">Nothing</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@singleHole:BaseExt.this.Rep[Nothing]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt#toAtom" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toAtom[T](d:BaseExt.this.Def[T]):BaseExt.this.Rep[T]"></a>
+      <a id="toAtom[T](Def[T]):Rep[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toAtom</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="d">d: <a href="#Def[T]=ch.epfl.data.sc.pardis.quasi.anf.DefExtract[_,T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Def">Def</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.toAtom.T">T</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.toAtom.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@toAtom[T](d:BaseExt.this.Def[T]):BaseExt.this.Rep[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@toString():String" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt#unit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="unit[T](v:T)(implicitevidence$2:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):BaseExt.this.Rep[T]"></a>
+      <a id="unit[T](T)(MaybeParamTag[T]):Rep[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">unit</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="v">v: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.unit.T">T</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag">MaybeParamTag</span>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.unit.T">T</span>]</span>)</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt.unit.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@unit[T](v:T)(implicitevidence$2:ch.epfl.data.sc.pardis.quasi.TypeParameters.MaybeParamTag[T]):BaseExt.this.Rep[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt#unit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="unit():BaseExt.this.Rep[Unit]"></a>
+      <a id="unit():Rep[Unit]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">unit</span><span class="params">()</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@unit():BaseExt.this.Rep[Unit]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseExt</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.quasi.anf.VarArgsExt#varargHole" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="varargHole:VarArgsExt.this.Rep[Seq[Nothing]]"></a>
+      <a id="varargHole:Rep[Seq[Nothing]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">varargHole</span><span class="result">: <a href="#Rep[T]=ch.epfl.data.sc.pardis.quasi.anf.ExpExtract[T]" class="extmbr" name="ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes.Rep">Rep</a>[<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Nothing">Nothing</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@varargHole:VarArgsExt.this.Rep[Seq[Nothing]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>VarArgsExt</dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.deep.queryengine.GenericEngineQuasiNodes$@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExtIR">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExtIR">BaseExtIR</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.BaseExt">BaseExt</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.quasi.anf.TypeRepsExt">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.TypeRepsExt">TypeRepsExt</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.StructsExt">StructsExt</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.quasi.anf.VarArgsExt">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VarArgsExt">VarArgsExt</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.FunctionsExt">FunctionsExt</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.ObjectOpsExt">ObjectOpsExt</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.VariablesExt">VariablesExt</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.quasi.anf.IfThenElseExt">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.IfThenElseExt">IfThenElseExt</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.quasi.anf.WhileExt">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.quasi.anf.WhileExt">WhileExt</span></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

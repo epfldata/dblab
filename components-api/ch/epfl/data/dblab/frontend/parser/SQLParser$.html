@@ -1,0 +1,1824 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>SQLParser - ch.epfl.data.dblab.frontend.parser.SQLParser</title>
+          <meta name="description" content="SQLParser - ch.epfl.data.dblab.frontend.parser.SQLParser" />
+          <meta name="keywords" content="SQLParser ch.epfl.data.dblab.frontend.parser.SQLParser" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../../index.html';
+            var hash = 'ch.epfl.data.dblab.frontend.parser.SQLParser$';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Object" src="../../../../../../lib/object_big.png" />
+        <p id="owner"><a href="../../../../../package.html" class="extype" name="ch">ch</a>.<a href="../../../../package.html" class="extype" name="ch.epfl">epfl</a>.<a href="../../../package.html" class="extype" name="ch.epfl.data">data</a>.<a href="../../package.html" class="extype" name="ch.epfl.data.dblab">dblab</a>.<a href="../package.html" class="extype" name="ch.epfl.data.dblab.frontend">frontend</a>.<a href="package.html" class="extype" name="ch.epfl.data.dblab.frontend.parser">parser</a></p>
+        <h1>SQLParser</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="ch.epfl.data.dblab.frontend.parser">package parser</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">SQLParser</span><span class="result"> extends <span class="extype" name="scala.util.parsing.combinator.syntactical.StandardTokenParsers">StandardTokenParsers</span></span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A simple SQL parser.
+Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for our needs
+</p></div><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.util.parsing.combinator.syntactical.StandardTokenParsers">StandardTokenParsers</span>, <span class="extype" name="scala.util.parsing.combinator.syntactical.StdTokenParsers">StdTokenParsers</span>, <span class="extype" name="scala.util.parsing.combinator.syntactical.TokenParsers">TokenParsers</span>, <span class="extype" name="scala.util.parsing.combinator.Parsers">Parsers</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="ch.epfl.data.dblab.frontend.parser.SQLParser"><span>SQLParser</span></li><li class="in" name="scala.util.parsing.combinator.syntactical.StandardTokenParsers"><span>StandardTokenParsers</span></li><li class="in" name="scala.util.parsing.combinator.syntactical.StdTokenParsers"><span>StdTokenParsers</span></li><li class="in" name="scala.util.parsing.combinator.syntactical.TokenParsers"><span>TokenParsers</span></li><li class="in" name="scala.util.parsing.combinator.Parsers"><span>Parsers</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="scala.util.parsing.combinator.syntactical.TokenParsers.Elem" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Elem=TokenParsers.this.lexical.Token"></a>
+      <a id="Elem:Elem"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Elem</span><span class="result"> = <a href="SQLParser$$SqlLexical.html#TokenextendsAnyRef" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.SqlLexical.Token">SQLParser.SqlLexical.Token</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@Elem=TokenParsers.this.lexical.Token" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>TokenParsers → Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers.Error" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ErrorextendsParsers.this.NoSuccesswithProductwithSerializable"></a>
+      <a id="Error:Error"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Error</span><span class="result"> extends <span class="extype" name="scala.util.parsing.combinator.Parsers.NoSuccess">NoSuccess</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@ErrorextendsParsers.this.NoSuccesswithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers.Failure" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="FailureextendsParsers.this.NoSuccesswithProductwithSerializable"></a>
+      <a id="Failure:Failure"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Failure</span><span class="result"> extends <span class="extype" name="scala.util.parsing.combinator.Parsers.NoSuccess">NoSuccess</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@FailureextendsParsers.this.NoSuccesswithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers.Input" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Input=scala.util.parsing.input.Reader[Parsers.this.Elem]"></a>
+      <a id="Input:Input"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Input</span><span class="result"> = <span class="extype" name="scala.util.parsing.input.Reader">Reader</span>[<a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@Input=scala.util.parsing.input.Reader[Parsers.this.Elem]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers.NoSuccess" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="NoSuccessextendsParsers.this.ParseResult[Nothing]"></a>
+      <a id="NoSuccess:NoSuccess"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">NoSuccess</span><span class="result"> extends <span class="extype" name="scala.util.parsing.combinator.Parsers.ParseResult">ParseResult</span>[<span class="extype" name="scala.Nothing">Nothing</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@NoSuccessextendsParsers.this.ParseResult[Nothing]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers.OnceParser" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="OnceParser[+T&lt;:&lt;?&gt;]extendsParsers.this.Parser[T]"></a>
+      <a id="OnceParser[+T]:OnceParser[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <span class="name">OnceParser</span><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends <span class="extype" name="scala.util.parsing.combinator.Parsers.Parser">Parser</span>[<span class="extype" name="scala.util.parsing.combinator.Parsers.OnceParser.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@OnceParser[+T]extendsParsers.this.Parser[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers.ParseResult" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ParseResult[+T&lt;:&lt;?&gt;]extendsAnyRef"></a>
+      <a id="ParseResult[+T]:ParseResult[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ParseResult</span><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@ParseResult[+T]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers.Parser" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]"></a>
+      <a id="Parser[+T]:Parser[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Parser</span><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends (<span class="extype" name="scala.util.parsing.combinator.Parsers.Input">Input</span>) ⇒ <span class="extype" name="scala.util.parsing.combinator.Parsers.ParseResult">ParseResult</span>[<span class="extype" name="scala.util.parsing.combinator.Parsers.Parser.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser.SqlLexical" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SqlLexicalextendsStdLexical"></a>
+      <a id="SqlLexical:SqlLexical"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLParser$$SqlLexical.html"><span class="name">SqlLexical</span></a><span class="result"> extends <span class="extype" name="scala.util.parsing.combinator.lexical.StdLexical">StdLexical</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@SqlLexicalextendsStdLexical" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">****************************************</p>
+    </li><li name="scala.util.parsing.combinator.Parsers.Success" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Success[+T]extendsParsers.this.ParseResult[T]withProductwithSerializable"></a>
+      <a id="Success[+T]:Success[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Success</span><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends <span class="extype" name="scala.util.parsing.combinator.Parsers.ParseResult">ParseResult</span>[<span class="extype" name="scala.util.parsing.combinator.Parsers.Success.T">T</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@Success[+T]extendsParsers.this.ParseResult[T]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.syntactical.StandardTokenParsers.Tokens" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Tokens=scala.util.parsing.combinator.token.StdTokens"></a>
+      <a id="Tokens:Tokens"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Tokens</span><span class="result"> = <span class="extype" name="scala.util.parsing.combinator.token.StdTokens">StdTokens</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@Tokens=scala.util.parsing.combinator.token.StdTokens" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>StandardTokenParsers → StdTokenParsers → TokenParsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers.~" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="~[+a,+b]extendsProductwithSerializable"></a>
+      <a id="~[+a,+b]:~[a,b]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $tilde" class="name">~</span><span class="tparams">[<span name="a">+a</span>, <span name="b">+b</span>]</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@~[+a,+b]extendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@##():Int" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#OnceParser" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="OnceParser[T&lt;:&lt;?&gt;](f:&lt;?&gt;):Parsers.this.Parser[T]withParsers.this.OnceParser[T]"></a>
+      <a id="OnceParser[T]((Input)⇒ParseResult[T]):Parser[T]withOnceParser[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">OnceParser</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<a href="#Input=scala.util.parsing.input.Reader[Parsers.this.Elem]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Input">Input</a>) ⇒ <a href="#ParseResult[+T]extendsAnyRef" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.ParseResult">ParseResult</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.OnceParser.T">T</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.OnceParser.T">T</span>] with <a href="#OnceParser[+T]extendsParsers.this.Parser[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.OnceParser">OnceParser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.OnceParser.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@OnceParser[T](f:Parsers.this.Input=&gt;Parsers.this.ParseResult[T]):Parsers.this.Parser[T]withParsers.this.OnceParser[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#Parser" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Parser[T&lt;:&lt;?&gt;](f:&lt;?&gt;):Parsers.this.Parser[T]"></a>
+      <a id="Parser[T]((Input)⇒ParseResult[T]):Parser[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Parser</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<a href="#Input=scala.util.parsing.input.Reader[Parsers.this.Elem]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Input">Input</a>) ⇒ <a href="#ParseResult[+T]extendsAnyRef" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.ParseResult">ParseResult</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.Parser.T">T</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.Parser.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@Parser[T](f:Parsers.this.Input=&gt;Parsers.this.ParseResult[T]):Parsers.this.Parser[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#accept" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="accept[U](expected:String,f:PartialFunction[Parsers.this.Elem,U]):Parsers.this.Parser[U]"></a>
+      <a id="accept[U](String,PartialFunction[Elem,U]):Parser[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">accept</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="expected">expected: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="f">f: <span class="extype" name="scala.PartialFunction">PartialFunction</span>[<a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a>, <span class="extype" name="scala.util.parsing.combinator.Parsers.accept.U">U</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.accept.U">U</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@accept[U](expected:String,f:PartialFunction[Parsers.this.Elem,U]):Parsers.this.Parser[U]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#accept" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="accept[ES](es:ES)(implicitevidence$1:ES=&gt;List[Parsers.this.Elem]):Parsers.this.Parser[List[Parsers.this.Elem]]"></a>
+      <a id="accept[ES](ES)((ES)⇒List[Elem]):Parser[List[Elem]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">accept</span><span class="tparams">[<span name="ES">ES</span>]</span><span class="params">(<span name="es">es: <span class="extype" name="scala.util.parsing.combinator.Parsers.accept.ES">ES</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<span class="extype" name="scala.util.parsing.combinator.Parsers.accept.ES">ES</span>) ⇒ <span class="extype" name="scala.List">List</span>[<a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.List">List</span>[<a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@accept[ES](es:ES)(implicitevidence$1:ES=&gt;List[Parsers.this.Elem]):Parsers.this.Parser[List[Parsers.this.Elem]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#accept" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="accept(e:Parsers.this.Elem):Parsers.this.Parser[Parsers.this.Elem]"></a>
+      <a id="accept(Elem):Parser[Elem]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">accept</span><span class="params">(<span name="e">e: <a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a></span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@accept(e:Parsers.this.Elem):Parsers.this.Parser[Parsers.this.Elem]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#acceptIf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="acceptIf(p:&lt;?&gt;)(err:&lt;?&gt;):Parsers.this.Parser[Parsers.this.Elem]"></a>
+      <a id="acceptIf((Elem)⇒Boolean)((Elem)⇒String):Parser[Elem]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">acceptIf</span><span class="params">(<span name="p">p: (<a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="params">(<span name="err">err: (<a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a>) ⇒ <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@acceptIf(p:Parsers.this.Elem=&gt;Boolean)(err:Parsers.this.Elem=&gt;String):Parsers.this.Parser[Parsers.this.Elem]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#acceptMatch" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="acceptMatch[U&lt;:&lt;?&gt;](expected:&lt;?&gt;,f:&lt;?&gt;):Parsers.this.Parser[U]"></a>
+      <a id="acceptMatch[U](String,PartialFunction[Elem,U]):Parser[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">acceptMatch</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="expected">expected: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="f">f: <span class="extype" name="scala.PartialFunction">PartialFunction</span>[<a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a>, <span class="extype" name="scala.util.parsing.combinator.Parsers.acceptMatch.U">U</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.acceptMatch.U">U</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@acceptMatch[U](expected:String,f:PartialFunction[Parsers.this.Elem,U]):Parsers.this.Parser[U]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#acceptSeq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="acceptSeq[ES&lt;:&lt;?&gt;](es:&lt;?&gt;)(implicitevidence$2:&lt;?&gt;):Parsers.this.Parser[List[Parsers.this.Elem]]"></a>
+      <a id="acceptSeq[ES](ES)((ES)⇒Iterable[Elem]):Parser[List[Elem]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">acceptSeq</span><span class="tparams">[<span name="ES">ES</span>]</span><span class="params">(<span name="es">es: <span class="extype" name="scala.util.parsing.combinator.Parsers.acceptSeq.ES">ES</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<span class="extype" name="scala.util.parsing.combinator.Parsers.acceptSeq.ES">ES</span>) ⇒ <span class="extype" name="scala.Iterable">Iterable</span>[<a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.List">List</span>[<a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@acceptSeq[ES](es:ES)(implicitevidence$2:ES=&gt;Iterable[Parsers.this.Elem]):Parsers.this.Parser[List[Parsers.this.Elem]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#chainl1" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="chainl1[T&lt;:&lt;?&gt;,U&lt;:&lt;?&gt;](first:&lt;?&gt;,p:&lt;?&gt;,q:&lt;?&gt;):Parsers.this.Parser[T]"></a>
+      <a id="chainl1[T,U](⇒Parser[T],⇒Parser[U],⇒Parser[(T,U)⇒T]):Parser[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">chainl1</span><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="params">(<span name="first">first: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.chainl1.T">T</span>]</span>, <span name="p">p: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.chainl1.U">U</span>]</span>, <span name="q">q: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[(<span class="extype" name="scala.util.parsing.combinator.Parsers.chainl1.T">T</span>, <span class="extype" name="scala.util.parsing.combinator.Parsers.chainl1.U">U</span>) ⇒ <span class="extype" name="scala.util.parsing.combinator.Parsers.chainl1.T">T</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.chainl1.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@chainl1[T,U](first:=&gt;Parsers.this.Parser[T],p:=&gt;Parsers.this.Parser[U],q:=&gt;Parsers.this.Parser[(T,U)=&gt;T]):Parsers.this.Parser[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#chainl1" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="chainl1[T&lt;:&lt;?&gt;](p:&lt;?&gt;,q:&lt;?&gt;):Parsers.this.Parser[T]"></a>
+      <a id="chainl1[T](⇒Parser[T],⇒Parser[(T,T)⇒T]):Parser[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">chainl1</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="p">p: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.chainl1.T">T</span>]</span>, <span name="q">q: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[(<span class="extype" name="scala.util.parsing.combinator.Parsers.chainl1.T">T</span>, <span class="extype" name="scala.util.parsing.combinator.Parsers.chainl1.T">T</span>) ⇒ <span class="extype" name="scala.util.parsing.combinator.Parsers.chainl1.T">T</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.chainl1.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@chainl1[T](p:=&gt;Parsers.this.Parser[T],q:=&gt;Parsers.this.Parser[(T,T)=&gt;T]):Parsers.this.Parser[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#chainr1" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="chainr1[T&lt;:&lt;?&gt;,U&lt;:&lt;?&gt;](p:&lt;?&gt;,q:&lt;?&gt;,combine:&lt;?&gt;,first:&lt;?&gt;):Parsers.this.Parser[U]"></a>
+      <a id="chainr1[T,U](⇒Parser[T],⇒Parser[(T,U)⇒U],(T,U)⇒U,U):Parser[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">chainr1</span><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="params">(<span name="p">p: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.chainr1.T">T</span>]</span>, <span name="q">q: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[(<span class="extype" name="scala.util.parsing.combinator.Parsers.chainr1.T">T</span>, <span class="extype" name="scala.util.parsing.combinator.Parsers.chainr1.U">U</span>) ⇒ <span class="extype" name="scala.util.parsing.combinator.Parsers.chainr1.U">U</span>]</span>, <span name="combine">combine: (<span class="extype" name="scala.util.parsing.combinator.Parsers.chainr1.T">T</span>, <span class="extype" name="scala.util.parsing.combinator.Parsers.chainr1.U">U</span>) ⇒ <span class="extype" name="scala.util.parsing.combinator.Parsers.chainr1.U">U</span></span>, <span name="first">first: <span class="extype" name="scala.util.parsing.combinator.Parsers.chainr1.U">U</span></span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.chainr1.U">U</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@chainr1[T,U](p:=&gt;Parsers.this.Parser[T],q:=&gt;Parsers.this.Parser[(T,U)=&gt;U],combine:(T,U)=&gt;U,first:U):Parsers.this.Parser[U]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#commit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="commit[T&lt;:&lt;?&gt;](p:&lt;?&gt;):Parsers.this.Parser[T]"></a>
+      <a id="commit[T](⇒Parser[T]):Parser[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">commit</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="p">p: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.commit.T">T</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.commit.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@commit[T](p:=&gt;Parsers.this.Parser[T]):Parsers.this.Parser[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#elem" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="elem(e:Parsers.this.Elem):Parsers.this.Parser[Parsers.this.Elem]"></a>
+      <a id="elem(Elem):Parser[Elem]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">elem</span><span class="params">(<span name="e">e: <a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a></span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@elem(e:Parsers.this.Elem):Parsers.this.Parser[Parsers.this.Elem]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#elem" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="elem(kind:String,p:Parsers.this.Elem=&gt;Boolean):Parsers.this.Parser[Parsers.this.Elem]"></a>
+      <a id="elem(String,(Elem)⇒Boolean):Parser[Elem]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">elem</span><span class="params">(<span name="kind">kind: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="p">p: (<a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="#Elem=TokenParsers.this.lexical.Token" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Elem">Elem</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@elem(kind:String,p:Parsers.this.Elem=&gt;Boolean):Parsers.this.Parser[Parsers.this.Elem]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#err" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="err(msg:&lt;?&gt;):Parsers.this.Parser[Nothing]"></a>
+      <a id="err(String):Parser[Nothing]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">err</span><span class="params">(<span name="msg">msg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Nothing">Nothing</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@err(msg:String):Parsers.this.Parser[Nothing]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#exprToSQLNode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="exprToSQLNode(acc:ch.epfl.data.dblab.frontend.parser.Expression,elem:Any):ch.epfl.data.dblab.frontend.parser.Expression"></a>
+      <a id="exprToSQLNode(Expression,Any):Expression"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">exprToSQLNode</span><span class="params">(<span name="acc">acc: <a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a></span>, <span name="elem">elem: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@exprToSQLNode(acc:ch.epfl.data.dblab.frontend.parser.Expression,elem:Any):ch.epfl.data.dblab.frontend.parser.Expression" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="scala.util.parsing.combinator.Parsers#failure" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="failure(msg:String):Parsers.this.Parser[Nothing]"></a>
+      <a id="failure(String):Parser[Nothing]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">failure</span><span class="params">(<span name="msg">msg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Nothing">Nothing</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@failure(msg:String):Parsers.this.Parser[Nothing]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#floatLit" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="floatLit:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[String]"></a>
+      <a id="floatLit:Parser[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">floatLit</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@floatLit:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[String]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#guard" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="guard[T&lt;:&lt;?&gt;](p:&lt;?&gt;):Parsers.this.Parser[T]"></a>
+      <a id="guard[T](⇒Parser[T]):Parser[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">guard</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="p">p: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.guard.T">T</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.guard.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@guard[T](p:=&gt;Parsers.this.Parser[T]):Parsers.this.Parser[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.syntactical.StdTokenParsers#ident" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ident:StdTokenParsers.this.Parser[String]"></a>
+      <a id="ident:Parser[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ident</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@ident:StdTokenParsers.this.Parser[String]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>StdTokenParsers</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.syntactical.StandardTokenParsers#keyword" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="keyword(chars:String):StandardTokenParsers.this.Parser[String]"></a>
+      <a id="keyword(String):Parser[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">keyword</span><span class="params">(<span name="chars">chars: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@keyword(chars:String):StandardTokenParsers.this.Parser[String]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>StandardTokenParsers → StdTokenParsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.syntactical.StdTokenParsers#keywordCache" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="keywordCache:scala.collection.mutable.HashMap[String,StdTokenParsers.this.Parser[String]]"></a>
+      <a id="keywordCache:HashMap[String,Parser[String]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">keywordCache</span><span class="result">: <span class="extype" name="scala.collection.mutable.HashMap">HashMap</span>[<span class="extype" name="java.lang.String">String</span>, <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="java.lang.String">String</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@keywordCache:scala.collection.mutable.HashMap[String,StdTokenParsers.this.Parser[String]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>StdTokenParsers</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#lexical" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="lexical:ch.epfl.data.dblab.frontend.parser.SQLParser.SqlLexical"></a>
+      <a id="lexical:SqlLexical"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">lexical</span><span class="result">: <a href="SQLParser$$SqlLexical.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLParser.SqlLexical">SqlLexical</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@lexical:ch.epfl.data.dblab.frontend.parser.SQLParser.SqlLexical" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLParser">SQLParser</a> → StandardTokenParsers → TokenParsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#log" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="log[T&lt;:&lt;?&gt;](p:&lt;?&gt;)(name:&lt;?&gt;):Parsers.this.Parser[T]"></a>
+      <a id="log[T](⇒Parser[T])(String):Parser[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">log</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="p">p: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.log.T">T</span>]</span>)</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.log.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@log[T](p:=&gt;Parsers.this.Parser[T])(name:String):Parsers.this.Parser[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#mkList" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="mkList[T&lt;:&lt;?&gt;]:Parsers.this.~[T,List[T]]=&gt;List[T]"></a>
+      <a id="mkList[T]:(~[T,List[T]])⇒List[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mkList</span><span class="tparams">[<span name="T">T</span>]</span><span class="result">: (<a href="#~[+a,+b]extendsProductwithSerializable" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.~">~</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.mkList.T">T</span>, <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.util.parsing.combinator.Parsers.mkList.T">T</span>]]) ⇒ <span class="extype" name="scala.collection.immutable.List">List</span>[<span class="extype" name="scala.util.parsing.combinator.Parsers.mkList.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@mkList[T]:Parsers.this.~[T,List[T]]=&gt;List[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#not" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="not[T&lt;:&lt;?&gt;](p:&lt;?&gt;):Parsers.this.Parser[Unit]"></a>
+      <a id="not[T](⇒Parser[T]):Parser[Unit]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">not</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="p">p: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.not.T">T</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@not[T](p:=&gt;Parsers.this.Parser[T]):Parsers.this.Parser[Unit]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.syntactical.StdTokenParsers#numericLit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="numericLit:StdTokenParsers.this.Parser[String]"></a>
+      <a id="numericLit:Parser[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">numericLit</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@numericLit:StdTokenParsers.this.Parser[String]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>StdTokenParsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#opt" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="opt[T](p:=&gt;Parsers.this.Parser[T]):Parsers.this.Parser[Option[T]]"></a>
+      <a id="opt[T](⇒Parser[T]):Parser[Option[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">opt</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="p">p: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.opt.T">T</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.util.parsing.combinator.Parsers.opt.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@opt[T](p:=&gt;Parsers.this.Parser[T]):Parsers.this.Parser[Option[T]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parse" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parse(statement:String):ch.epfl.data.dblab.frontend.parser.TopLevelStatement"></a>
+      <a id="parse(String):TopLevelStatement"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parse</span><span class="params">(<span name="statement">statement: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="TopLevelStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.TopLevelStatement">TopLevelStatement</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parse(statement:String):ch.epfl.data.dblab.frontend.parser.TopLevelStatement" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseAddition" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseAddition:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parseAddition:Parser[Expression]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseAddition</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseAddition:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseAlias" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseAlias:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[String]"></a>
+      <a id="parseAlias:Parser[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseAlias</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseAlias:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[String]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseAliasedExpression" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseAliasedExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[(ch.epfl.data.dblab.frontend.parser.Expression,Option[String])]"></a>
+      <a id="parseAliasedExpression:Parser[(Expression,Option[String])]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseAliasedExpression</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[(<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>])]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseAliasedExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[(ch.epfl.data.dblab.frontend.parser.Expression,Option[String])]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseAllCTEs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseAllCTEs:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[List[ch.epfl.data.dblab.frontend.parser.View]]"></a>
+      <a id="parseAllCTEs:Parser[List[View]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseAllCTEs</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.List">List</span>[<a href="View.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.View">View</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseAllCTEs:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[List[ch.epfl.data.dblab.frontend.parser.View]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseCTE" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseCTE:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.View]"></a>
+      <a id="parseCTE:Parser[View]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseCTE</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="View.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.View">View</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseCTE:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.View]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseDataType" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseDataType:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[String]"></a>
+      <a id="parseDataType:Parser[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseDataType</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseDataType:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[String]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseExpression" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parseExpression:Parser[Expression]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseExpression</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">*******************</p>
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseFrom" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseFrom:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Relation]"></a>
+      <a id="parseFrom:Parser[Relation]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseFrom</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Relation">Relation</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseFrom:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Relation]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseFunction" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseFunction:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parseFunction:Parser[Expression]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseFunction</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseFunction:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseGroupBy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseGroupBy:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.GroupBy]"></a>
+      <a id="parseGroupBy:Parser[GroupBy]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseGroupBy</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="GroupBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.GroupBy">GroupBy</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseGroupBy:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.GroupBy]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseHaving" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseHaving:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Having]"></a>
+      <a id="parseHaving:Parser[Having]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseHaving</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Having.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Having">Having</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseHaving:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Having]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseJoinType" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseJoinType:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.JoinType]"></a>
+      <a id="parseJoinType:Parser[JoinType]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseJoinType</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="JoinType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.JoinType">JoinType</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseJoinType:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.JoinType]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseLimit" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseLimit:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Limit]"></a>
+      <a id="parseLimit:Parser[Limit]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseLimit</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Limit.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Limit">Limit</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseLimit:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Limit]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseLiteral" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseLiteral:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parseLiteral:Parser[Expression]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseLiteral</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseLiteral:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseMultiplication" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseMultiplication:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parseMultiplication:Parser[Expression]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseMultiplication</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseMultiplication:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseOperandExpression" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseOperandExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parseOperandExpression:Parser[Expression]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseOperandExpression</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseOperandExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseOperation" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseOperation:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[Product]"></a>
+      <a id="parseOperation:Parser[Product]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseOperation</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Product">Product</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseOperation:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[Product]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseOrderBy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseOrderBy:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.OrderBy]"></a>
+      <a id="parseOrderBy:Parser[OrderBy]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseOrderBy</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="OrderBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OrderBy">OrderBy</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseOrderBy:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.OrderBy]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseOrderKey" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseOrderKey:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[(ch.epfl.data.dblab.frontend.parser.Expression,ch.epfl.data.dblab.frontend.parser.OrderType)]"></a>
+      <a id="parseOrderKey:Parser[(Expression,OrderType)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseOrderKey</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[(<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>, <a href="OrderType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OrderType">OrderType</a>)]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseOrderKey:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[(ch.epfl.data.dblab.frontend.parser.Expression,ch.epfl.data.dblab.frontend.parser.OrderType)]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseOtherRelations" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseOtherRelations:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[Seq[(ch.epfl.data.dblab.frontend.parser.JoinType,ch.epfl.data.dblab.frontend.parser.Relation,ch.epfl.data.dblab.frontend.parser.Expression)]]"></a>
+      <a id="parseOtherRelations:Parser[Seq[(JoinType,Relation,Expression)]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseOtherRelations</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Seq">Seq</span>[(<a href="JoinType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.JoinType">JoinType</a>, <a href="Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Relation">Relation</a>, <a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>)]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseOtherRelations:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[Seq[(ch.epfl.data.dblab.frontend.parser.JoinType,ch.epfl.data.dblab.frontend.parser.Relation,ch.epfl.data.dblab.frontend.parser.Expression)]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parsePrimaryExpression" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parsePrimaryExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parsePrimaryExpression:Parser[Expression]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parsePrimaryExpression</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parsePrimaryExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseProjections" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseProjections:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Projections]"></a>
+      <a id="parseProjections:Parser[Projections]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseProjections</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Projections">Projections</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseProjections:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Projections]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseQuery" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseQuery:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.TopLevelStatement]"></a>
+      <a id="parseQuery:Parser[TopLevelStatement]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseQuery</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="TopLevelStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.TopLevelStatement">TopLevelStatement</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseQuery:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.TopLevelStatement]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseSelectStatement" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseSelectStatement:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SelectStatement]"></a>
+      <a id="parseSelectStatement:Parser[SelectStatement]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseSelectStatement</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SelectStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SelectStatement">SelectStatement</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseSelectStatement:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SelectStatement]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">*******************************************************</p>
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseSingleRelation" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseSingleRelation:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Relation]"></a>
+      <a id="parseSingleRelation:Parser[Relation]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseSingleRelation</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Relation">Relation</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseSingleRelation:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Relation]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseWhere" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseWhere:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parseWhere:Parser[Expression]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseWhere</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseWhere:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="scala.util.parsing.combinator.Parsers#phrase" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="phrase[T](p:Parsers.this.Parser[T]):Parsers.this.Parser[T]"></a>
+      <a id="phrase[T](Parser[T]):Parser[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">phrase</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="p">p: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.phrase.T">T</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.phrase.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@phrase[T](p:Parsers.this.Parser[T]):Parsers.this.Parser[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#positioned" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="positioned[T&lt;:scala.util.parsing.input.Positional](p:=&gt;Parsers.this.Parser[T]):Parsers.this.Parser[T]"></a>
+      <a id="positioned[T&lt;:Positional](⇒Parser[T]):Parser[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">positioned</span><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="scala.util.parsing.input.Positional">Positional</span></span>]</span><span class="params">(<span name="p">p: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.positioned.T">T</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.positioned.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@positioned[T&lt;:scala.util.parsing.input.Positional](p:=&gt;Parsers.this.Parser[T]):Parsers.this.Parser[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#rep" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rep[T](p:=&gt;Parsers.this.Parser[T]):Parsers.this.Parser[List[T]]"></a>
+      <a id="rep[T](⇒Parser[T]):Parser[List[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rep</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="p">p: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.rep.T">T</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.util.parsing.combinator.Parsers.rep.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@rep[T](p:=&gt;Parsers.this.Parser[T]):Parsers.this.Parser[List[T]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#rep1" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rep1[T](first:=&gt;Parsers.this.Parser[T],p0:=&gt;Parsers.this.Parser[T]):Parsers.this.Parser[List[T]]"></a>
+      <a id="rep1[T](⇒Parser[T],⇒Parser[T]):Parser[List[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rep1</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="first">first: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.rep1.T">T</span>]</span>, <span name="p0">p0: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.rep1.T">T</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.util.parsing.combinator.Parsers.rep1.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@rep1[T](first:=&gt;Parsers.this.Parser[T],p0:=&gt;Parsers.this.Parser[T]):Parsers.this.Parser[List[T]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd><dt>Annotations</dt><dd>
+                <span class="name">@migration</span>
+              
+        </dd><dt>Migration</dt><dd class="cmt"><p><i>(Changed in version 2.9.0)</i> The <code>p0</code> call-by-name arguments is evaluated at most once per constructed Parser object, instead of on every need that arises during parsing.</p></dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#rep1" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rep1[T](p:=&gt;Parsers.this.Parser[T]):Parsers.this.Parser[List[T]]"></a>
+      <a id="rep1[T](⇒Parser[T]):Parser[List[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rep1</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="p">p: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.rep1.T">T</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.util.parsing.combinator.Parsers.rep1.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@rep1[T](p:=&gt;Parsers.this.Parser[T]):Parsers.this.Parser[List[T]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#rep1sep" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rep1sep[T](p:=&gt;Parsers.this.Parser[T],q:=&gt;Parsers.this.Parser[Any]):Parsers.this.Parser[List[T]]"></a>
+      <a id="rep1sep[T](⇒Parser[T],⇒Parser[Any]):Parser[List[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rep1sep</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="p">p: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.rep1sep.T">T</span>]</span>, <span name="q">q: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Any">Any</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.util.parsing.combinator.Parsers.rep1sep.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@rep1sep[T](p:=&gt;Parsers.this.Parser[T],q:=&gt;Parsers.this.Parser[Any]):Parsers.this.Parser[List[T]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#repN" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="repN[T&lt;:&lt;?&gt;](num:&lt;?&gt;,p:&lt;?&gt;):Parsers.this.Parser[List[T]]"></a>
+      <a id="repN[T](Int,⇒Parser[T]):Parser[List[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">repN</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="num">num: <span class="extype" name="scala.Int">Int</span></span>, <span name="p">p: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.repN.T">T</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.util.parsing.combinator.Parsers.repN.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@repN[T](num:Int,p:=&gt;Parsers.this.Parser[T]):Parsers.this.Parser[List[T]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#repsep" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="repsep[T](p:=&gt;Parsers.this.Parser[T],q:=&gt;Parsers.this.Parser[Any]):Parsers.this.Parser[List[T]]"></a>
+      <a id="repsep[T](⇒Parser[T],⇒Parser[Any]):Parser[List[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">repsep</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="p">p: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.repsep.T">T</span>]</span>, <span name="q">q: ⇒ <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Any">Any</span>]</span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.util.parsing.combinator.Parsers.repsep.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@repsep[T](p:=&gt;Parsers.this.Parser[T],q:=&gt;Parsers.this.Parser[Any]):Parsers.this.Parser[List[T]]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.syntactical.StdTokenParsers#stringLit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="stringLit:StdTokenParsers.this.Parser[String]"></a>
+      <a id="stringLit:Parser[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">stringLit</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@stringLit:StdTokenParsers.this.Parser[String]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>StdTokenParsers</dd></dl></div>
+    </li><li name="scala.util.parsing.combinator.Parsers#success" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="success[T&lt;:&lt;?&gt;](v:&lt;?&gt;):Parsers.this.Parser[T]"></a>
+      <a id="success[T](T):Parser[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">success</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="v">v: <span class="extype" name="scala.util.parsing.combinator.Parsers.success.T">T</span></span>)</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.util.parsing.combinator.Parsers.success.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@success[T](v:T):Parsers.this.Parser[T]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@toString():String" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#tokens" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="tokens:List[String]"></a>
+      <a id="tokens:List[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">tokens</span><span class="result">: <span class="extype" name="scala.collection.immutable.List">List</span>[<span class="extype" name="java.lang.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@tokens:List[String]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="scala.util.parsing.combinator.syntactical.StandardTokenParsers">
+              <h3>Inherited from <span class="extype" name="scala.util.parsing.combinator.syntactical.StandardTokenParsers">StandardTokenParsers</span></h3>
+            </div><div class="parent" name="scala.util.parsing.combinator.syntactical.StdTokenParsers">
+              <h3>Inherited from <span class="extype" name="scala.util.parsing.combinator.syntactical.StdTokenParsers">StdTokenParsers</span></h3>
+            </div><div class="parent" name="scala.util.parsing.combinator.syntactical.TokenParsers">
+              <h3>Inherited from <span class="extype" name="scala.util.parsing.combinator.syntactical.TokenParsers">TokenParsers</span></h3>
+            </div><div class="parent" name="scala.util.parsing.combinator.Parsers">
+              <h3>Inherited from <span class="extype" name="scala.util.parsing.combinator.Parsers">Parsers</span></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

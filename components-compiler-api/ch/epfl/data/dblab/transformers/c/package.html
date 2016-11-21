@@ -1,0 +1,513 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>c - ch.epfl.data.dblab.transformers.c</title>
+          <meta name="description" content="c - ch.epfl.data.dblab.transformers.c" />
+          <meta name="keywords" content="c ch.epfl.data.dblab.transformers.c" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../../index.html';
+            var hash = 'ch.epfl.data.dblab.transformers.c.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../../../package.html" class="extype" name="ch">ch</a>.<a href="../../../../package.html" class="extype" name="ch.epfl">epfl</a>.<a href="../../../package.html" class="extype" name="ch.epfl.data">data</a>.<a href="../../package.html" class="extype" name="ch.epfl.data.dblab">dblab</a>.<a href="../package.html" class="extype" name="ch.epfl.data.dblab.transformers">transformers</a></p>
+        <h1>c</h1><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">c</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="ch.epfl.data.dblab.transformers.c.BlockFlattening" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="BlockFlatteningextendsLetCommutingConversion[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer"></a>
+      <a id="BlockFlattening:BlockFlattening"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="BlockFlattening.html"><span class="name">BlockFlattening</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.LetCommutingConversion">LetCommutingConversion</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="CTransformer.html" class="extype" name="ch.epfl.data.dblab.transformers.c.CTransformer">CTransformer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@BlockFlatteningextendsLetCommutingConversion[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Flattens the nested block into a single block whenever possible.</p><div class="fullcomment"><div class="comment cmt"><p>Flattens the nested block into a single block whenever possible.</p><p>As an example the following program:</p><pre><span class="kw">val</span> block1 = {
+  <span class="kw">val</span> x = {
+    y
+  }
+}</pre><p>is converted into</p><pre><span class="kw">val</span> block1 = y</pre></div></div>
+    </li><li name="ch.epfl.data.dblab.transformers.c.CTransformer" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="CTransformerextendsTopDownTransformerTraverser[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]"></a>
+      <a id="CTransformer:CTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="CTransformer.html"><span class="name">CTransformer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TopDownTransformerTraverser">TopDownTransformerTraverser</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@CTransformerextendsTopDownTransformerTraverser[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Common trait for all C transformers.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.c.CTransformersPipeline" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CTransformersPipelineextendsTransformerHandler"></a>
+      <a id="CTransformersPipeline:CTransformersPipeline"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="CTransformersPipeline.html"><span class="name">CTransformersPipeline</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TransformerHandler">TransformerHandler</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@CTransformersPipelineextendsTransformerHandler" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">A pipeline of transformations necessary to lower the program into an
+equivalent program in C programming language.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.c.CTransformersPipelineSettings" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CTransformersPipelineSettingsextendsProductwithSerializable"></a>
+      <a id="CTransformersPipelineSettings:CTransformersPipelineSettings"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="CTransformersPipelineSettings.html"><span class="name">CTransformersPipelineSettings</span></a><span class="params">(<span name="ifAggressive">ifAggressive: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="onlyLoading">onlyLoading: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="mallocProfile">mallocProfile: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="papiProfile">papiProfile: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="oldCArrayHandling">oldCArrayHandling: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="pointerStore">pointerStore: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="containerFlattenning">containerFlattenning: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@CTransformersPipelineSettingsextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.transformers.c.DCECLang" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DCECLangextendsDCE[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer"></a>
+      <a id="DCECLang:DCECLang"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DCECLang.html"><span class="name">DCECLang</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.DCE">DCE</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="CTransformer.html" class="extype" name="ch.epfl.data.dblab.transformers.c.CTransformer">CTransformer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@DCECLangextendsDCE[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">DCE transformation for programs in C programming language.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.c.GenericEngineToCTransformer" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="GenericEngineToCTransformerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]"></a>
+      <a id="GenericEngineToCTransformer:GenericEngineToCTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="GenericEngineToCTransformer.html"><span class="name">GenericEngineToCTransformer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@GenericEngineToCTransformerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Transforms the generic engine methods to the corresponding C implementations.</p><div class="fullcomment"><div class="comment cmt"><p>Transforms the generic engine methods to the corresponding C implementations.</p><p>This transformation inserts the profiling statements into the given program.
+</p></div></div>
+    </li><li name="ch.epfl.data.dblab.transformers.c.HashEqualsFuncsToCTransformer" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="HashEqualsFuncsToCTransformerextendsRecursiveRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformerwithStructCollector[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]"></a>
+      <a id="HashEqualsFuncsToCTransformer:HashEqualsFuncsToCTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HashEqualsFuncsToCTransformer.html"><span class="name">HashEqualsFuncsToCTransformer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer">RecursiveRuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="CTransformer.html" class="extype" name="ch.epfl.data.dblab.transformers.c.CTransformer">CTransformer</a> with <span class="extype" name="ch.epfl.data.sc.pardis.optimization.StructCollector">StructCollector</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@HashEqualsFuncsToCTransformerextendsRecursiveRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformerwithStructCollector[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Transforms the object methods into their corresponding C implementation.</p><div class="fullcomment"><div class="comment cmt"><p>Transforms the object methods into their corresponding C implementation.</p><p>The supported object operations (for now) are <code>hashCode</code>, <code>equals</code>, and <code>toString</code>
+</p></div></div>
+    </li><li name="ch.epfl.data.dblab.transformers.c.MallocProfiler" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MallocProfilerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer"></a>
+      <a id="MallocProfiler:MallocProfiler"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MallocProfiler.html"><span class="name">MallocProfiler</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="CTransformer.html" class="extype" name="ch.epfl.data.dblab.transformers.c.CTransformer">CTransformer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@MallocProfilerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.transformers.c.OptimalStringToCTransformer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OptimalStringToCTransformerextendsRecursiveRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer"></a>
+      <a id="OptimalStringToCTransformer:OptimalStringToCTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="OptimalStringToCTransformer.html"><span class="name">OptimalStringToCTransformer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer">RecursiveRuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="CTransformer.html" class="extype" name="ch.epfl.data.dblab.transformers.c.CTransformer">CTransformer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@OptimalStringToCTransformerextendsRecursiveRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Transforms (Optimal)String objects to their corresponding C implementation.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.c.OptionToCTransformer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OptionToCTransformerextendsRecursiveRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer"></a>
+      <a id="OptionToCTransformer:OptionToCTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="OptionToCTransformer.html"><span class="name">OptionToCTransformer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer">RecursiveRuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="CTransformer.html" class="extype" name="ch.epfl.data.dblab.transformers.c.CTransformer">CTransformer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@OptionToCTransformerextendsRecursiveRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Removes the abstraction overhead of Options.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.c.RangeToCTransformer" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="RangeToCTransformerextendsRecursiveRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer"></a>
+      <a id="RangeToCTransformer:RangeToCTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="RangeToCTransformer.html"><span class="name">RangeToCTransformer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer">RecursiveRuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="CTransformer.html" class="extype" name="ch.epfl.data.dblab.transformers.c.CTransformer">CTransformer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@RangeToCTransformerextendsRecursiveRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Transforms Range operations into their C implementation.</p><div class="fullcomment"><div class="comment cmt"><p>Transforms Range operations into their C implementation.</p><p>One of the concrete cases is the following:</p><pre><span class="kw">for</span>(i <span class="kw">&lt;-</span> <span class="num">0</span> until n by j) {
+  foo(i)
+}</pre><p>-&gt;</p><pre><span class="kw">for</span>(int i=<span class="num">0</span>; i&lt;n; i+=j) {
+  foo(i);
+}</pre></div></div>
+    </li><li name="ch.epfl.data.dblab.transformers.c.ScalaArrayToCCommon" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ScalaArrayToCCommonextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer"></a>
+      <a id="ScalaArrayToCCommon:ScalaArrayToCCommon"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ScalaArrayToCCommon.html"><span class="name">ScalaArrayToCCommon</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="CTransformer.html" class="extype" name="ch.epfl.data.dblab.transformers.c.CTransformer">CTransformer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@ScalaArrayToCCommonextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Lowers Scala Array operations to more low-level operations.</p><div class="fullcomment"><div class="comment cmt"><p>Lowers Scala Array operations to more low-level operations.
+The result low-level operations are understandable by the C transformer.
+</p></div></div>
+    </li><li name="ch.epfl.data.dblab.transformers.c.ScalaArrayToCStructTransformer" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ScalaArrayToCStructTransformerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer"></a>
+      <a id="ScalaArrayToCStructTransformer:ScalaArrayToCStructTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ScalaArrayToCStructTransformer.html"><span class="name">ScalaArrayToCStructTransformer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="CTransformer.html" class="extype" name="ch.epfl.data.dblab.transformers.c.CTransformer">CTransformer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@ScalaArrayToCStructTransformerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Transforms Scala Arrays into C structs.</p><div class="fullcomment"><div class="comment cmt"><p>Transforms Scala Arrays into C structs.</p><p>More specifically:</p><pre><span class="kw">val</span> x: <span class="std">Array</span>[Foo]</pre><p>is converted into:</p><pre>struct ArrayFoo {
+  Foo* array;
+  int length;
+};
+ArrayFoo* x;</pre><p>This one is Row-Store representation.</p></div></div>
+    </li><li name="ch.epfl.data.dblab.transformers.c.ScalaArrayToPointerBadRecordTransformer" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ScalaArrayToPointerBadRecordTransformerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer"></a>
+      <a id="ScalaArrayToPointerBadRecordTransformer:ScalaArrayToPointerBadRecordTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ScalaArrayToPointerBadRecordTransformer.html"><span class="name">ScalaArrayToPointerBadRecordTransformer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="CTransformer.html" class="extype" name="ch.epfl.data.dblab.transformers.c.CTransformer">CTransformer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@ScalaArrayToPointerBadRecordTransformerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Transforms Scala Arrays into C structs with a pointer of pointer as its field.</p><div class="fullcomment"><div class="comment cmt"><p>Transforms Scala Arrays into C structs with a pointer of pointer as its field.</p><p>More specifically:</p><pre><span class="kw">val</span> x: <span class="std">Array</span>[Foo]</pre><p>is converted into:</p><pre>struct ArrayFoo {
+  Foo** array;
+  int length;
+};
+ArrayFoo* x;</pre><p>This one has performance overhead in comparison with the one which was using a
+pointer as its field.</p><p>This one is Pointer-Store representation.
+</p></div></div>
+    </li><li name="ch.epfl.data.dblab.transformers.c.ScalaArrayToPointerTransformer" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ScalaArrayToPointerTransformerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer"></a>
+      <a id="ScalaArrayToPointerTransformer:ScalaArrayToPointerTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ScalaArrayToPointerTransformer.html"><span class="name">ScalaArrayToPointerTransformer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="CTransformer.html" class="extype" name="ch.epfl.data.dblab.transformers.c.CTransformer">CTransformer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@ScalaArrayToPointerTransformerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Transforms Scala Arrays into C pointers.</p><div class="fullcomment"><div class="comment cmt"><p>Transforms Scala Arrays into C pointers.</p><p>More specifically:</p><pre><span class="kw">val</span> x: <span class="std">Array</span>[Foo]</pre><p>is converted into:</p><pre>Foo* x;</pre><p>We assume that the length field of an array is partially evaluated before.</p><p>This one is Row-Store representation.
+</p></div></div>
+    </li><li name="ch.epfl.data.dblab.transformers.c.ScalaCollectionsToGLibTransfomer" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ScalaCollectionsToGLibTransfomerextendsRecursiveRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer"></a>
+      <a id="ScalaCollectionsToGLibTransfomer:ScalaCollectionsToGLibTransfomer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ScalaCollectionsToGLibTransfomer.html"><span class="name">ScalaCollectionsToGLibTransfomer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer">RecursiveRuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="CTransformer.html" class="extype" name="ch.epfl.data.dblab.transformers.c.CTransformer">CTransformer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@ScalaCollectionsToGLibTransfomerextendsRecursiveRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Transforms Scala collection classes into a C GLib types.</p><div class="fullcomment"><div class="comment cmt"><p>Transforms Scala collection classes into a C GLib types.</p><p>HashMap is converted to g_hash_table.
+Set is converted to g_list
+TreeSet is converted to g_tree
+ArrayBuffer is converted to g_array
+</p></div></div>
+    </li><li name="ch.epfl.data.dblab.transformers.c.ScalaConstructsToCTranformer" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ScalaConstructsToCTranformerextendsRecursiveRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer"></a>
+      <a id="ScalaConstructsToCTranformer:ScalaConstructsToCTranformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ScalaConstructsToCTranformer.html"><span class="name">ScalaConstructsToCTranformer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer">RecursiveRuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="CTransformer.html" class="extype" name="ch.epfl.data.dblab.transformers.c.CTransformer">CTransformer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@ScalaConstructsToCTranformerextendsRecursiveRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Converts core constructs of Scala into C.</p><div class="fullcomment"><div class="comment cmt"><p>Converts core constructs of Scala into C.</p><p>For example a block in Scala can have an arbitrary return type whereas in C
+it should have a void (Unit) type. The following program:</p><pre><span class="kw">val</span> x: Foo = <span class="kw">if</span>(cond) y <span class="kw">else</span> z</pre><p>is converted into:</p><pre>Foo x;
+<span class="kw">if</span>(cond) {
+  x = y;
+} <span class="kw">else</span> {
+  x = z;
+}</pre></div></div>
+    </li><li name="ch.epfl.data.dblab.transformers.c.ScalaScannerToCFScanfTransformer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ScalaScannerToCFScanfTransformerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]"></a>
+      <a id="ScalaScannerToCFScanfTransformer:ScalaScannerToCFScanfTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ScalaScannerToCFScanfTransformer.html"><span class="name">ScalaScannerToCFScanfTransformer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@ScalaScannerToCFScanfTransformerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Transforms Scala Scanner operations to C FILE operations.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.c.ScalaScannerToCmmapTransformer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ScalaScannerToCmmapTransformerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]"></a>
+      <a id="ScalaScannerToCmmapTransformer:ScalaScannerToCmmapTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ScalaScannerToCmmapTransformer.html"><span class="name">ScalaScannerToCmmapTransformer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@ScalaScannerToCmmapTransformerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Transforms Scala Scanner operations to C mmap operations.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.c.ScalaStructToMallocTransformer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ScalaStructToMallocTransformerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer"></a>
+      <a id="ScalaStructToMallocTransformer:ScalaStructToMallocTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ScalaStructToMallocTransformer.html"><span class="name">ScalaStructToMallocTransformer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="CTransformer.html" class="extype" name="ch.epfl.data.dblab.transformers.c.CTransformer">CTransformer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@ScalaStructToMallocTransformerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Transforms <code>new Struct</code> in Scala to <code>malloc(..)</code> in C.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.c.Tuple2ToCTransformer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Tuple2ToCTransformerextendsRecursiveRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer"></a>
+      <a id="Tuple2ToCTransformer:Tuple2ToCTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Tuple2ToCTransformer.html"><span class="name">Tuple2ToCTransformer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RecursiveRuleBasedTransformer">RecursiveRuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="CTransformer.html" class="extype" name="ch.epfl.data.dblab.transformers.c.CTransformer">CTransformer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@Tuple2ToCTransformerextendsRecursiveRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withCTransformer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Removes the abstraction overhead of Tuple2.</p>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="ch.epfl.data.dblab.transformers.c.DCECLang" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DCECLang"></a>
+      <a id="DCECLang:DCECLang"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DCECLang$.html"><span class="name">DCECLang</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TransformerHandler">TransformerHandler</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.c.package@DCECLang" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Factory for <a href="DCECLang.html" class="extype" name="ch.epfl.data.dblab.transformers.c.DCECLang">DCECLang</a>
+</p>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

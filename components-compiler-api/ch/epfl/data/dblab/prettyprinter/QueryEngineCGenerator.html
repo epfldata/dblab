@@ -1,0 +1,1208 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>QueryEngineCGenerator - ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator</title>
+          <meta name="description" content="QueryEngineCGenerator - ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator" />
+          <meta name="keywords" content="QueryEngineCGenerator ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="type">
+      <div id="definition">
+        <img alt="Class" src="../../../../../lib/class_big.png" />
+        <p id="owner"><a href="../../../../package.html" class="extype" name="ch">ch</a>.<a href="../../../package.html" class="extype" name="ch.epfl">epfl</a>.<a href="../../package.html" class="extype" name="ch.epfl.data">data</a>.<a href="../package.html" class="extype" name="ch.epfl.data.dblab">dblab</a>.<a href="package.html" class="extype" name="ch.epfl.data.dblab.prettyprinter">prettyprinter</a></p>
+        <h1>QueryEngineCGenerator</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="ch.epfl.data.dblab.prettyprinter">package prettyprinter</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">QueryEngineCGenerator</span><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator">CCodeGenerator</span> with <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ScalaCoreCCodeGen">ScalaCoreCCodeGen</span></span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>The class responsible for C code generation in ANF.</p><p>This class unparses the IR nodes into their corresponding C syntax. However, the generated
+code still remains in the administrative-normal form (ANF).
+</p></div><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ScalaCoreCCodeGen">ScalaCoreCCodeGen</span>, <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayCCodeGen">ArrayCCodeGen</span>, <span class="extype" name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator">CCodeGenerator</span>, <span class="extype" name="ch.epfl.data.sc.pardis.prettyprinter.CUtils">CUtils</span>, <span class="extype" name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator">CodeGenerator</span>, <span class="extype" name="ch.epfl.data.sc.pardis.prettyprinter.DocumentGenerator">DocumentGenerator</span>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisProgram">PardisProgram</span>], <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div><div class="toggleContainer block">
+            <span class="toggle">Known Subclasses</span>
+            <div class="subClasses hiddenContent"><a href="QueryEngineCASTGenerator.html" class="extype" name="ch.epfl.data.dblab.prettyprinter.QueryEngineCASTGenerator">QueryEngineCASTGenerator</a></div>
+          </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator"><span>QueryEngineCGenerator</span></li><li class="in" name="ch.epfl.data.sc.pardis.deep.scalalib.ScalaCoreCCodeGen"><span>ScalaCoreCCodeGen</span></li><li class="in" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayCCodeGen"><span>ArrayCCodeGen</span></li><li class="in" name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator"><span>CCodeGenerator</span></li><li class="in" name="ch.epfl.data.sc.pardis.prettyprinter.CUtils"><span>CUtils</span></li><li class="in" name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator"><span>CodeGenerator</span></li><li class="in" name="ch.epfl.data.sc.pardis.prettyprinter.DocumentGenerator"><span>DocumentGenerator</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        <div id="constructors" class="members">
+              <h3>Instance Constructors</h3>
+              <ol><li name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="&lt;init&gt;(outputFileName:String,papiProfile:Boolean,verbose:Boolean):ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator"></a>
+      <a id="&lt;init&gt;:QueryEngineCGenerator"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">new</span>
+      </span>
+      <span class="symbol">
+        <span class="name">QueryEngineCGenerator</span><span class="params">(<span name="outputFileName">outputFileName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="papiProfile">papiProfile: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="verbose">verbose: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">true</span></span>)</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@&lt;init&gt;(outputFileName:String,papiProfile:Boolean,verbose:Boolean):ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">outputFileName</dt><dd class="cmt"><p>the name of output file</p></dd><dt class="param">verbose</dt><dd class="cmt"><p>outputs comments inside the code to provide more information about specific variable
+definitions. For example, in the case of defining mutable variables an appropriate comment in front
+of that variable definition.</p></dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@##():Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator#BN" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="BN:String"></a>
+      <a id="BN:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">BN</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@BN:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator#NEST_COUNT" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="NEST_COUNT:Int"></a>
+      <a id="NEST_COUNT:Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">NEST_COUNT</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@NEST_COUNT:Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator#WIDTH" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="WIDTH:Int"></a>
+      <a id="WIDTH:Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">WIDTH</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@WIDTH:Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator#apply" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="apply(program:ch.epfl.data.sc.pardis.ir.PardisProgram):Unit"></a>
+      <a id="apply(PardisProgram):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">apply</span><span class="params">(<span name="program">program: <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisProgram">PardisProgram</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@apply(program:ch.epfl.data.sc.pardis.ir.PardisProgram):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Generates the code for the IR of the given program
+</p><div class="fullcomment"><div class="comment cmt"><p>Generates the code for the IR of the given program
+</p></div><dl class="paramcmts block"><dt class="param">program</dt><dd class="cmt"><p>the input program for which the code is generated</p></dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#blockToDocument" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="blockToDocument(block:ch.epfl.data.sc.pardis.ir.PardisBlock[_]):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="blockToDocument(PardisBlock[_]):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">blockToDocument</span><span class="params">(<span name="block">block: <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisBlock">PardisBlock</span>[_]</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@blockToDocument(block:ch.epfl.data.sc.pardis.ir.PardisBlock[_]):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator → CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator#body" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="body(program:ch.epfl.data.sc.pardis.ir.PardisProgram):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="body(PardisProgram):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">body</span><span class="params">(<span name="program">program: <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisProgram">PardisProgram</span></span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@body(program:ch.epfl.data.sc.pardis.ir.PardisProgram):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CodeGenerator → DocumentGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator#branch_mis_pred" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="branch_mis_pred:Boolean"></a>
+      <a id="branch_mis_pred:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">branch_mis_pred</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@branch_mis_pred:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator#currentProgram" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="currentProgram:ch.epfl.data.sc.pardis.ir.PardisProgram"></a>
+      <a id="currentProgram:PardisProgram"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">var</span>
+      </span>
+      <span class="symbol">
+        <span class="name">currentProgram</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisProgram">PardisProgram</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@currentProgram:ch.epfl.data.sc.pardis.ir.PardisProgram" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator#doc" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="doc:ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="doc:Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">var</span>
+      </span>
+      <span class="symbol">
+        <span class="name">doc</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@doc:ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CodeGenerator</dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator#expLiftable" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="expLiftable[T]:ch.epfl.data.sc.pardis.utils.document.Liftable[ch.epfl.data.sc.pardis.ir.Expression[T]]"></a>
+      <a id="expLiftable[T]:Liftable[Expression[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">expLiftable</span><span class="tparams">[<span name="T">T</span>]</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Liftable">Liftable</span>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.Expression">Expression</span>[<span class="extype" name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator.expLiftable.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@expLiftable[T]:ch.epfl.data.sc.pardis.utils.document.Liftable[ch.epfl.data.sc.pardis.ir.Expression[T]]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#expToDocument" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="expToDocument(exp:ch.epfl.data.sc.pardis.ir.Expression[_]):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="expToDocument(Expression[_]):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">expToDocument</span><span class="params">(<span name="exp">exp: <span class="extype" name="ch.epfl.data.sc.pardis.ir.Expression">Expression</span>[_]</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@expToDocument(exp:ch.epfl.data.sc.pardis.ir.Expression[_]):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator → CodeGenerator</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator#footer" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="footer:ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="footer:Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">footer</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@footer:ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CodeGenerator → DocumentGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#funArgToDocument" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="funArgToDocument(fun:ch.epfl.data.sc.pardis.ir.PardisFunArg):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="funArgToDocument(PardisFunArg):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">funArgToDocument</span><span class="params">(<span name="fun">fun: <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisFunArg">PardisFunArg</span></span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@funArgToDocument(fun:ch.epfl.data.sc.pardis.ir.PardisFunArg):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator → CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator#functionNodeToDocument" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="functionNodeToDocument(fun:ch.epfl.data.sc.pardis.ir.FunctionNode[_]):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="functionNodeToDocument(FunctionNode[_]):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">functionNodeToDocument</span><span class="params">(<span name="fun">fun: <span class="extype" name="ch.epfl.data.sc.pardis.ir.FunctionNode">FunctionNode</span>[_]</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@functionNodeToDocument(fun:ch.epfl.data.sc.pardis.ir.FunctionNode[_]):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Generates the code for the given function definition node
+</p><div class="fullcomment"><div class="comment cmt"><p>Generates the code for the given function definition node
+</p></div><dl class="paramcmts block"><dt class="param">fun</dt><dd class="cmt"><p>the input function definition node</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator">QueryEngineCGenerator</a> → ArrayCCodeGen → CCodeGenerator → CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#functionsList" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="functionsList:scala.collection.mutable.ArrayBuffer[(ch.epfl.data.sc.pardis.ir.ExpressionSymbol[_],List[ch.epfl.data.sc.pardis.ir.Expression[_]],ch.epfl.data.sc.pardis.ir.PardisBlock[_])]"></a>
+      <a id="functionsList:ArrayBuffer[(ExpressionSymbol[_],List[Expression[_]],PardisBlock[_])]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">functionsList</span><span class="result">: <span class="extype" name="scala.collection.mutable.ArrayBuffer">ArrayBuffer</span>[(<span class="extype" name="ch.epfl.data.sc.pardis.ir.ExpressionSymbol">ExpressionSymbol</span>[_], <span class="extype" name="scala.collection.immutable.List">List</span>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.Expression">Expression</span>[_]], <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisBlock">PardisBlock</span>[_])]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@functionsList:scala.collection.mutable.ArrayBuffer[(ch.epfl.data.sc.pardis.ir.ExpressionSymbol[_],List[ch.epfl.data.sc.pardis.ir.Expression[_]],ch.epfl.data.sc.pardis.ir.PardisBlock[_])]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator#generate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="generate(program:ch.epfl.data.sc.pardis.ir.PardisProgram,outputFileName:String):Unit"></a>
+      <a id="generate(PardisProgram,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">generate</span><span class="params">(<span name="program">program: <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisProgram">PardisProgram</span></span>, <span name="outputFileName">outputFileName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@generate(program:ch.epfl.data.sc.pardis.ir.PardisProgram,outputFileName:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#getBlockResult" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getBlockResult(block:ch.epfl.data.sc.pardis.ir.PardisBlock[_],useReturn:Boolean):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="getBlockResult(PardisBlock[_],Boolean):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getBlockResult</span><span class="params">(<span name="block">block: <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisBlock">PardisBlock</span>[_]</span>, <span name="useReturn">useReturn: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@getBlockResult(block:ch.epfl.data.sc.pardis.ir.PardisBlock[_],useReturn:Boolean):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator</dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#getFooter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getFooter():ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="getFooter():Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getFooter</span><span class="params">()</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@getFooter():ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator → CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#getHeader" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getHeader():ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="getHeader():Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getHeader</span><span class="params">()</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@getHeader():ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator → CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#getStruct" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getStruct(structDef:ch.epfl.data.sc.pardis.ir.PardisStructDef[_]):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="getStruct(PardisStructDef[_]):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getStruct</span><span class="params">(<span name="structDef">structDef: <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisStructDef">PardisStructDef</span>[_]</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@getStruct(structDef:ch.epfl.data.sc.pardis.ir.PardisStructDef[_]):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator → CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#getStructs" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getStructs(structDefs:List[ch.epfl.data.sc.pardis.ir.PardisStructDef[_]]):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="getStructs(List[PardisStructDef[_]]):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getStructs</span><span class="params">(<span name="structDefs">structDefs: <span class="extype" name="scala.List">List</span>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisStructDef">PardisStructDef</span>[_]]</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@getStructs(structDefs:List[ch.epfl.data.sc.pardis.ir.PardisStructDef[_]]):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator → CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#getTraitSignature" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getTraitSignature():ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="getTraitSignature():Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getTraitSignature</span><span class="params">()</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@getTraitSignature():ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator → CodeGenerator</dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator#header" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="header:ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="header:Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">header</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@header:ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator">QueryEngineCGenerator</a> → CodeGenerator → DocumentGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#isGlobalVar" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isGlobalVar[T](sym:ch.epfl.data.sc.pardis.ir.Expression[T]):Boolean"></a>
+      <a id="isGlobalVar[T](Expression[T]):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isGlobalVar</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="sym">sym: <span class="extype" name="ch.epfl.data.sc.pardis.ir.Expression">Expression</span>[<span class="extype" name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator.isGlobalVar.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@isGlobalVar[T](sym:ch.epfl.data.sc.pardis.ir.Expression[T]):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator#mapScalaConstruct" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="mapScalaConstruct[A](t:ch.epfl.data.sc.pardis.types.PardisType[A]):String"></a>
+      <a id="mapScalaConstruct[A](PardisType[A]):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mapScalaConstruct</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="t">t: <span class="extype" name="ch.epfl.data.sc.pardis.types.PardisType">PardisType</span>[<span class="extype" name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator.mapScalaConstruct.A">A</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@mapScalaConstruct[A](t:ch.epfl.data.sc.pardis.types.PardisType[A]):String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator">QueryEngineCGenerator</a> → CUtils</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator#mergeDocs" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="mergeDocs(other:List[ch.epfl.data.sc.pardis.utils.document.Document],appendNewLine:Boolean):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="mergeDocs(List[Document],Boolean):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mergeDocs</span><span class="params">(<span name="other">other: <span class="extype" name="scala.List">List</span>[<span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span>]</span>, <span name="appendNewLine">appendNewLine: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@mergeDocs(other:List[ch.epfl.data.sc.pardis.utils.document.Document],appendNewLine:Boolean):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CodeGenerator</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator#nodeToDocument" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="nodeToDocument(node:ch.epfl.data.sc.pardis.ir.PardisNode[_]):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="nodeToDocument(PardisNode[_]):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">nodeToDocument</span><span class="params">(<span name="node">node: <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisNode">PardisNode</span>[_]</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@nodeToDocument(node:ch.epfl.data.sc.pardis.ir.PardisNode[_]):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator">QueryEngineCGenerator</a> → CCodeGenerator → CodeGenerator</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator#outputFileName" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="outputFileName:String"></a>
+      <a id="outputFileName:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">outputFileName</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@outputFileName:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">the name of output file</p>
+    </li><li name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator#papiProfile" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="papiProfile:Boolean"></a>
+      <a id="papiProfile:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">papiProfile</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@papiProfile:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CUtils#pardisTypeToString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="pardisTypeToString[A](t:ch.epfl.data.sc.pardis.types.PardisType[A]):String"></a>
+      <a id="pardisTypeToString[A](PardisType[A]):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">pardisTypeToString</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="t">t: <span class="extype" name="ch.epfl.data.sc.pardis.types.PardisType">PardisType</span>[<span class="extype" name="ch.epfl.data.sc.pardis.prettyprinter.CUtils.pardisTypeToString.A">A</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@pardisTypeToString[A](t:ch.epfl.data.sc.pardis.types.PardisType[A]):String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CUtils</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#printFuncProto" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="printFuncProto(f:(ch.epfl.data.sc.pardis.ir.ExpressionSymbol[_],List[ch.epfl.data.sc.pardis.ir.Expression[_]],ch.epfl.data.sc.pardis.ir.PardisBlock[_])):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="printFuncProto((ExpressionSymbol[_],List[Expression[_]],PardisBlock[_])):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">printFuncProto</span><span class="params">(<span name="f">f: (<span class="extype" name="ch.epfl.data.sc.pardis.ir.ExpressionSymbol">ExpressionSymbol</span>[_], <span class="extype" name="scala.List">List</span>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.Expression">Expression</span>[_]], <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisBlock">PardisBlock</span>[_])</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@printFuncProto(f:(ch.epfl.data.sc.pardis.ir.ExpressionSymbol[_],List[ch.epfl.data.sc.pardis.ir.Expression[_]],ch.epfl.data.sc.pardis.ir.PardisBlock[_])):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#removedObjectPrefixList" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="removedObjectPrefixList:List[String]"></a>
+      <a id="removedObjectPrefixList:List[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">removedObjectPrefixList</span><span class="result">: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@removedObjectPrefixList:List[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#stmtToDocument" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="stmtToDocument(stmt:ch.epfl.data.sc.pardis.ir.Statement[_]):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="stmtToDocument(Statement[_]):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">stmtToDocument</span><span class="params">(<span name="stmt">stmt: <span class="extype" name="ch.epfl.data.sc.pardis.ir.Statement">Statement</span>[_]</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@stmtToDocument(stmt:ch.epfl.data.sc.pardis.ir.Statement[_]):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator → CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator#strToDoc" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="strToDoc(str:String):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="strToDoc(String):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">strToDoc</span><span class="params">(<span name="str">str: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@strToDoc(str:String):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#suffix" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="suffix:String"></a>
+      <a id="suffix:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">suffix</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@suffix:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator → CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#symToDocument" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="symToDocument(sym:ch.epfl.data.sc.pardis.ir.ExpressionSymbol[_]):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="symToDocument(ExpressionSymbol[_]):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">symToDocument</span><span class="params">(<span name="sym">sym: <span class="extype" name="ch.epfl.data.sc.pardis.ir.ExpressionSymbol">ExpressionSymbol</span>[_]</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@symToDocument(sym:ch.epfl.data.sc.pardis.ir.ExpressionSymbol[_]):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator → CodeGenerator</dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@toString():String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator#tpeLiftable" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="tpeLiftable[T]:ch.epfl.data.sc.pardis.utils.document.Liftable[ch.epfl.data.sc.pardis.types.PardisType[T]]"></a>
+      <a id="tpeLiftable[T]:Liftable[PardisType[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">tpeLiftable</span><span class="tparams">[<span name="T">T</span>]</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Liftable">Liftable</span>[<span class="extype" name="ch.epfl.data.sc.pardis.types.PardisType">PardisType</span>[<span class="extype" name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator.tpeLiftable.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@tpeLiftable[T]:ch.epfl.data.sc.pardis.utils.document.Liftable[ch.epfl.data.sc.pardis.types.PardisType[T]]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#tpeToDocument" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="tpeToDocument[T](tp:ch.epfl.data.sc.pardis.types.PardisType[T]):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="tpeToDocument[T](PardisType[T]):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">tpeToDocument</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="tp">tp: <span class="extype" name="ch.epfl.data.sc.pardis.types.PardisType">PardisType</span>[<span class="extype" name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator.tpeToDocument.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@tpeToDocument[T](tp:ch.epfl.data.sc.pardis.types.PardisType[T]):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator → CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator#varArgToDocument" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="varArgToDocument(fun:ch.epfl.data.sc.pardis.ir.PardisVarArg):ch.epfl.data.sc.pardis.utils.document.Document"></a>
+      <a id="varArgToDocument(PardisVarArg):Document"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">varArgToDocument</span><span class="params">(<span name="fun">fun: <span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisVarArg">PardisVarArg</span></span>)</span><span class="result">: <span class="extype" name="ch.epfl.data.sc.pardis.utils.document.Document">Document</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@varArgToDocument(fun:ch.epfl.data.sc.pardis.ir.PardisVarArg):ch.epfl.data.sc.pardis.utils.document.Document" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CCodeGenerator → CodeGenerator</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator#verbose" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="verbose:Boolean"></a>
+      <a id="verbose:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">verbose</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@verbose:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">outputs comments inside the code to provide more information about specific variable
+definitions.</p><div class="fullcomment"><div class="comment cmt"><p>outputs comments inside the code to provide more information about specific variable
+definitions. For example, in the case of defining mutable variables an appropriate comment in front
+of that variable definition.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator">QueryEngineCGenerator</a> → CCodeGenerator</dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#ch.epfl.data.dblab.prettyprinter.QueryEngineCGenerator@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="ch.epfl.data.sc.pardis.deep.scalalib.ScalaCoreCCodeGen">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ScalaCoreCCodeGen">ScalaCoreCCodeGen</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayCCodeGen">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.deep.scalalib.ArrayCCodeGen">ArrayCCodeGen</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.prettyprinter.CCodeGenerator">CCodeGenerator</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.prettyprinter.CUtils">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.prettyprinter.CUtils">CUtils</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.prettyprinter.CodeGenerator">CodeGenerator</span></h3>
+            </div><div class="parent" name="ch.epfl.data.sc.pardis.prettyprinter.DocumentGenerator">
+              <h3>Inherited from <span class="extype" name="ch.epfl.data.sc.pardis.prettyprinter.DocumentGenerator">DocumentGenerator</span>[<span class="extype" name="ch.epfl.data.sc.pardis.ir.PardisProgram">PardisProgram</span>]</h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

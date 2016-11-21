@@ -1,0 +1,340 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>monad - ch.epfl.data.dblab.transformers.monad</title>
+          <meta name="description" content="monad - ch.epfl.data.dblab.transformers.monad" />
+          <meta name="keywords" content="monad ch.epfl.data.dblab.transformers.monad" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../../index.html';
+            var hash = 'ch.epfl.data.dblab.transformers.monad.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../../../package.html" class="extype" name="ch">ch</a>.<a href="../../../../package.html" class="extype" name="ch.epfl">epfl</a>.<a href="../../../package.html" class="extype" name="ch.epfl.data">data</a>.<a href="../../package.html" class="extype" name="ch.epfl.data.dblab">dblab</a>.<a href="../package.html" class="extype" name="ch.epfl.data.dblab.transformers">transformers</a></p>
+        <h1>monad</h1><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.monad.package" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">monad</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="ch.epfl.data.dblab.transformers.monad.QueryMonadCPSLowering" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryMonadCPSLoweringextendsQueryMonadLoweringInterface"></a>
+      <a id="QueryMonadCPSLowering:QueryMonadCPSLowering"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryMonadCPSLowering.html"><span class="name">QueryMonadCPSLowering</span></a><span class="result"> extends <a href="QueryMonadLoweringInterface.html" class="extype" name="ch.epfl.data.dblab.transformers.monad.QueryMonadLoweringInterface">QueryMonadLoweringInterface</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.monad.package@QueryMonadCPSLoweringextendsQueryMonadLoweringInterface" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Lowers query monad operations using church encoding of lists.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.monad.QueryMonadHoisting" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryMonadHoistingextendsOptimizer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]"></a>
+      <a id="QueryMonadHoisting:QueryMonadHoisting"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryMonadHoisting.html"><span class="name">QueryMonadHoisting</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.Optimizer">Optimizer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.monad.package@QueryMonadHoistingextendsOptimizer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.transformers.monad.QueryMonadHorizontalFusion" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryMonadHorizontalFusionextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withQueryMonadHorizontalFusionAnalyzer"></a>
+      <a id="QueryMonadHorizontalFusion:QueryMonadHorizontalFusion"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryMonadHorizontalFusion.html"><span class="name">QueryMonadHorizontalFusion</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="QueryMonadHorizontalFusionAnalyzer.html" class="extype" name="ch.epfl.data.dblab.transformers.monad.QueryMonadHorizontalFusionAnalyzer">QueryMonadHorizontalFusionAnalyzer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.monad.package@QueryMonadHorizontalFusionextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withQueryMonadHorizontalFusionAnalyzer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.transformers.monad.QueryMonadHorizontalFusionAnalyzer" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="QueryMonadHorizontalFusionAnalyzerextendsTraverser[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]"></a>
+      <a id="QueryMonadHorizontalFusionAnalyzer:QueryMonadHorizontalFusionAnalyzer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryMonadHorizontalFusionAnalyzer.html"><span class="name">QueryMonadHorizontalFusionAnalyzer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.Traverser">Traverser</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.monad.package@QueryMonadHorizontalFusionAnalyzerextendsTraverser[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.transformers.monad.QueryMonadIteratorLowering" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryMonadIteratorLoweringextendsQueryMonadLoweringInterface"></a>
+      <a id="QueryMonadIteratorLowering:QueryMonadIteratorLowering"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryMonadIteratorLowering.html"><span class="name">QueryMonadIteratorLowering</span></a><span class="result"> extends <a href="QueryMonadLoweringInterface.html" class="extype" name="ch.epfl.data.dblab.transformers.monad.QueryMonadLoweringInterface">QueryMonadLoweringInterface</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.monad.package@QueryMonadIteratorLoweringextendsQueryMonadLoweringInterface" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Lowers query monad operations using continuation-passing style.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.monad.QueryMonadLowering" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryMonadLoweringextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withStructProcessing[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]"></a>
+      <a id="QueryMonadLowering:QueryMonadLowering"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryMonadLowering.html"><span class="name">QueryMonadLowering</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="StructProcessing.html" class="extype" name="ch.epfl.data.dblab.transformers.monad.StructProcessing">StructProcessing</a>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.monad.package@QueryMonadLoweringextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withStructProcessing[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Lowers query monad operations.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.monad.QueryMonadLoweringInterface" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="QueryMonadLoweringInterfaceextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withStructProcessing[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]"></a>
+      <a id="QueryMonadLoweringInterface:QueryMonadLoweringInterface"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryMonadLoweringInterface.html"><span class="name">QueryMonadLoweringInterface</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="StructProcessing.html" class="extype" name="ch.epfl.data.dblab.transformers.monad.StructProcessing">StructProcessing</a>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.monad.package@QueryMonadLoweringInterfaceextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withStructProcessing[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Interface for lowering query monad operations.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.monad.QueryMonadNoHorizontalVerifyer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryMonadNoHorizontalVerifyerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withQueryMonadHorizontalFusionAnalyzer"></a>
+      <a id="QueryMonadNoHorizontalVerifyer:QueryMonadNoHorizontalVerifyer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryMonadNoHorizontalVerifyer.html"><span class="name">QueryMonadNoHorizontalVerifyer</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>] with <a href="QueryMonadHorizontalFusionAnalyzer.html" class="extype" name="ch.epfl.data.dblab.transformers.monad.QueryMonadHorizontalFusionAnalyzer">QueryMonadHorizontalFusionAnalyzer</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.monad.package@QueryMonadNoHorizontalVerifyerextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]withQueryMonadHorizontalFusionAnalyzer" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.transformers.monad.QueryMonadOptimization" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryMonadOptimizationextendsTransformerHandler"></a>
+      <a id="QueryMonadOptimization:QueryMonadOptimization"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryMonadOptimization.html"><span class="name">QueryMonadOptimization</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.TransformerHandler">TransformerHandler</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.monad.package@QueryMonadOptimizationextendsTransformerHandler" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Query monad optimizations.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.monad.QueryMonadPostHoisting" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryMonadPostHoistingextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]"></a>
+      <a id="QueryMonadPostHoisting:QueryMonadPostHoisting"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryMonadPostHoisting.html"><span class="name">QueryMonadPostHoisting</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.monad.package@QueryMonadPostHoistingextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Pushes the filter operation of filteredGroupBy into the computation happening
+after the groupBy.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.monad.QueryMonadStreamLowering" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryMonadStreamLoweringextendsQueryMonadLoweringInterface"></a>
+      <a id="QueryMonadStreamLowering:QueryMonadStreamLowering"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryMonadStreamLowering.html"><span class="name">QueryMonadStreamLowering</span></a><span class="result"> extends <a href="QueryMonadLoweringInterface.html" class="extype" name="ch.epfl.data.dblab.transformers.monad.QueryMonadLoweringInterface">QueryMonadLoweringInterface</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.monad.package@QueryMonadStreamLoweringextendsQueryMonadLoweringInterface" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Lowers query monad operations using the stream fusion technique.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.monad.QueryMonadUnfoldLowering" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryMonadUnfoldLoweringextendsQueryMonadLoweringInterface"></a>
+      <a id="QueryMonadUnfoldLowering:QueryMonadUnfoldLowering"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryMonadUnfoldLowering.html"><span class="name">QueryMonadUnfoldLowering</span></a><span class="result"> extends <a href="QueryMonadLoweringInterface.html" class="extype" name="ch.epfl.data.dblab.transformers.monad.QueryMonadLoweringInterface">QueryMonadLoweringInterface</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.monad.package@QueryMonadUnfoldLoweringextendsQueryMonadLoweringInterface" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Lowers query monad operations using continuation-passing style.</p>
+    </li><li name="ch.epfl.data.dblab.transformers.monad.QueryMonadVerticalFusion" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="QueryMonadVerticalFusionextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]"></a>
+      <a id="QueryMonadVerticalFusion:QueryMonadVerticalFusion"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="QueryMonadVerticalFusion.html"><span class="name">QueryMonadVerticalFusion</span></a><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.RuleBasedTransformer">RuleBasedTransformer</span>[<a href="../../deep/dsls/QueryEngineExp.html" class="extype" name="ch.epfl.data.dblab.deep.dsls.QueryEngineExp">QueryEngineExp</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.monad.package@QueryMonadVerticalFusionextendsRuleBasedTransformer[ch.epfl.data.dblab.deep.dsls.QueryEngineExp]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.transformers.monad.StructProcessing" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="StructProcessing[Lang&lt;:ch.epfl.data.sc.pardis.ir.Base]extendsStructCollector[Lang]"></a>
+      <a id="StructProcessing[Lang&lt;:Base]:StructProcessing[Lang]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="StructProcessing.html"><span class="name">StructProcessing</span></a><span class="tparams">[<span name="Lang">Lang &lt;: <span class="extype" name="ch.epfl.data.sc.pardis.ir.Base">Base</span></span>]</span><span class="result"> extends <span class="extype" name="ch.epfl.data.sc.pardis.optimization.StructCollector">StructCollector</span>[<span class="extype" name="ch.epfl.data.dblab.transformers.monad.StructProcessing.Lang">Lang</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.transformers.monad.package@StructProcessing[Lang&lt;:ch.epfl.data.sc.pardis.ir.Base]extendsStructCollector[Lang]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
