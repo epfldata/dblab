@@ -4,6 +4,9 @@ import Keys._
 import Process._
 import com.typesafe.sbt.SbtScalariform
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
+import com.typesafe.sbt.SbtSite.site
+import com.typesafe.sbt.SbtGhPages.ghpages
+import com.typesafe.sbt.SbtGit.GitKeys.gitRemoteRepo
 import ch.epfl.data.sc.purgatory.plugin.PurgatoryPlugin._
 
 object DBLABBuild extends Build {
@@ -61,10 +64,13 @@ object DBLABBuild extends Build {
     generatePlugins += "ch.epfl.data.sc.purgatory.generator.QuasiGenerator",
     pluginLibraries += "ch.epfl.data" % "sc-purgatory-quasi_2.11" % sc_version) 
 
-  lazy val dblab_components       = Project(id = "dblab-components",        base = file("components"),
-   settings = defaults ++ purgatorySettings("components-compiler") ++  Seq(
+  lazy val dblab_components: Project       = Project(id = "dblab-components",        base = file("components"),
+   settings = defaults ++ site.settings ++ ghpages.settings ++ purgatorySettings("components-compiler") ++  Seq(
      name := "dblab-components",
      scalacOptions ++= Seq("-optimize"),
+     site.addMappingsToSiteDir(mappings in packageDoc in Compile in dblab_components, "components-api"),
+     site.addMappingsToSiteDir(mappings in packageDoc in Compile in dblab_components_compiler, "components-compiler-api"),
+     gitRemoteRepo := "git@github.com:epfldata/dblab.git",
      libraryDependencies += "ch.epfl.data" % "sc-pardis-library_2.11" % sc_version))
 
   lazy val dblab_components_compiler       = Project(id = "dblab-components-compiler",        base = file("components-compiler"),
