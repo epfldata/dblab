@@ -22,7 +22,9 @@ object ContainerLowering extends TransformerHandler {
 }
 
 /**
- * A lowering transformation for converting container objects into records.
+ * A lowering transformation for converting Cont objects (Cont is a class that encodes singly linked lists) into records.
+ * Note: the output record can be viewed as recursive, but this is hidden in the StructTags.ClassTag
+ *
  * Example:
  * {{{
  *    // class Container[T] { val elem: T, var next: Container[T] }

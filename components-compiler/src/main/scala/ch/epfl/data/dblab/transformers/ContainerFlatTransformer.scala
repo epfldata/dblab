@@ -23,9 +23,8 @@ object ContainerFlatTransformer extends TransformerHandler {
 
 // FIXME check if EscapeLowering can be used here
 /**
- * A transformer which flattens the next field of a container of a record to the record itself
- *
- * This transformer is useful when a linked-list is used.
+ * A transformer which converts a singly linked list of records to an intrusive linked list (where the record now stores
+ * the `next` pointer alongside its own fields)
  *
  * Example:
  * {{{
