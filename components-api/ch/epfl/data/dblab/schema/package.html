@@ -171,7 +171,7 @@ the offset between the index of a row and the value of the attribute.
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">An interpreter for DDL.</p>
+      <p class="shortcomment cmt">Interprets the given DDL AST and constructs a schema for it.</p>
     </li><li name="ch.epfl.data.dblab.schema.DataRow" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="DataRowextendsRecord"></a>
       <a id="DataRow:DataRow"></a>
@@ -189,7 +189,7 @@ the offset between the index of a row and the value of the attribute.
       </a>
     </span>
       <p class="shortcomment cmt">Represents a row in a database relation.</p>
-    </li><li name="ch.epfl.data.dblab.schema.DynamicDataRow" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="ch.epfl.data.dblab.schema.DynamicDataRow" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="DynamicDataRowextendsDataRowwithDynamic"></a>
       <a id="DynamicDataRow:DynamicDataRow"></a>
       <h4 class="signature">
@@ -205,7 +205,9 @@ the offset between the index of a row and the value of the attribute.
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt">Represents dynamic data rows, with the ability to access the attributes through field access.</p><div class="fullcomment"><div class="comment cmt"><p>Represents dynamic data rows, with the ability to access the attributes through field access.</p><p>For example, instead of accessing an attribute using <code>row.getField(&quot;attr&quot;).get</code> it uses
+<code>row.attr[Int]</code>.
+</p></div></div>
     </li><li name="ch.epfl.data.dblab.schema.ForeignKey" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ForeignKeyextendsConstraintwithProductwithSerializable"></a>
       <a id="ForeignKey:ForeignKey"></a>
@@ -308,7 +310,7 @@ the offset between the index of a row and the value of the attribute.
       </a>
     </span>
       
-    </li><li name="ch.epfl.data.dblab.schema.TableType" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="ch.epfl.data.dblab.schema.TableType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="TableTypeextendsPardisType[ch.epfl.data.dblab.schema.Table]withProductwithSerializable"></a>
       <a id="TableType:TableType"></a>
       <h4 class="signature">
@@ -324,7 +326,8 @@ the offset between the index of a row and the value of the attribute.
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt">Specifies the type of tables.</p><div class="fullcomment"><div class="comment cmt"><p>Specifies the type of tables.</p><p>The type contains the schema and table information.
+</p></div></div>
     </li><li name="ch.epfl.data.dblab.schema.Unique" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="UniqueextendsConstraintwithProductwithSerializable"></a>
       <a id="Unique:Unique"></a>
@@ -342,7 +345,7 @@ the offset between the index of a row and the value of the attribute.
       </a>
     </span>
       
-    </li><li name="ch.epfl.data.dblab.schema.VarCharType" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="ch.epfl.data.dblab.schema.VarCharType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="VarCharTypeextendsPardisType[String]withProductwithSerializable"></a>
       <a id="VarCharType:VarCharType"></a>
       <h4 class="signature">
@@ -358,7 +361,8 @@ the offset between the index of a row and the value of the attribute.
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt">Specifies the type of fixed-length string attributes.</p><div class="fullcomment"><div class="comment cmt"><p>Specifies the type of fixed-length string attributes.</p><p>The type contains the maximum length of string values.
+</p></div></div>
     </li></ol>
             </div>
 
@@ -416,7 +420,7 @@ the offset between the index of a row and the value of the attribute.
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt">Specifies the type of date attributes.</p>
     </li><li name="ch.epfl.data.dblab.schema.DynamicDataRow" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="DynamicDataRow"></a>
       <a id="DynamicDataRow:DynamicDataRow"></a>
@@ -433,7 +437,7 @@ the offset between the index of a row and the value of the attribute.
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt">Factory module for the <a href="DynamicDataRow.html" class="extype" name="ch.epfl.data.dblab.schema.DynamicDataRow">DynamicDataRow</a> class.</p>
     </li></ol>
             </div>
 

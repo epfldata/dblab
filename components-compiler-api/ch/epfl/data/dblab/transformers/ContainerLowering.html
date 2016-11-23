@@ -51,8 +51,8 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A lowering transformation for converting container objects into records.
-Example:</p><pre><span class="cmt">// class Container[T] { val elem: T, var next: Container[T] }</span>
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A lowering transformation for converting Cont objects (Cont is a class that encodes singly linked lists) into records.
+Note: the output record can be viewed as recursive, but this is hidden in the StructTags.ClassTag</p><p>Example:</p><pre><span class="cmt">// class Container[T] { val elem: T, var next: Container[T] }</span>
 <span class="cmt">// struct RecordA { val fieldA: Int, val fieldB: String }</span>
 <span class="kw">val</span> rec1 = <span class="kw">new</span> RecordA(...)
 <span class="kw">val</span> contRecA = <span class="kw">new</span> Containter[RecordA](rec1)</pre><p>is converted to:</p><pre><span class="cmt">// struct RecordA { val fieldA: Int, val fieldB: String }</span>

@@ -51,7 +51,8 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A transformer which flattens the next field of a container of a record to the record itself</p><p>This transformer is useful when a linked-list is used.</p><p>Example:</p><pre><span class="cmt">// class Container[T] { val elem: T, var next: Container[T] }</span>
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A transformer which converts a singly linked list of records to an intrusive linked list (where the record now stores
+the <code>next</code> pointer alongside its own fields)</p><p>Example:</p><pre><span class="cmt">// class Container[T] { val elem: T, var next: Container[T] }</span>
 <span class="cmt">// struct RecordA { val fieldA: Int, val fieldB: String }</span>
 <span class="kw">val</span> rec1 = <span class="kw">new</span> RecordA(...)
 <span class="kw">val</span> rec2 = <span class="kw">new</span> RecordA(...)

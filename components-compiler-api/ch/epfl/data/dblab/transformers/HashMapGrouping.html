@@ -49,9 +49,8 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A transformer for partitioning and indexing the MultiMaps. As a result, this transformation
-converts a MultiMap and the corresponding operations into an Array (either one dimensional or
-two dimensional).</p><p>As an example the following program:</p><pre><span class="kw">val</span> multiMap = <span class="kw">new</span> MultiMap[<span class="std">Int</span>, LeftRelation]
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A transformer for partitioning and indexing MultiMaps created by the hash join operator. This transformation
+converts a MultiMap and the corresponding operations into an Array (either one- or two-dimensional).</p><p>As an example the following program:</p><pre><span class="kw">val</span> multiMap = <span class="kw">new</span> MultiMap[<span class="std">Int</span>, LeftRelation]
 <span class="kw">var</span> leftIndex = <span class="num">0</span>
 <span class="kw">while</span>(leftIndex &lt; leftArray.length) {
   <span class="kw">val</span> leftElement = leftArray(leftIndex)

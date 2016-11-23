@@ -212,7 +212,9 @@ process(record.arr, record.arr_1)</pre></div></div>
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">A transformer which flattens the next field of a container of a record to the record itself</p><div class="fullcomment"><div class="comment cmt"><p>A transformer which flattens the next field of a container of a record to the record itself</p><p>This transformer is useful when a linked-list is used.</p><p>Example:</p><pre><span class="cmt">// class Container[T] { val elem: T, var next: Container[T] }</span>
+      <p class="shortcomment cmt">A transformer which converts a singly linked list of records to an intrusive linked list (where the record now stores
+the <code>next</code> pointer alongside its own fields)</p><div class="fullcomment"><div class="comment cmt"><p>A transformer which converts a singly linked list of records to an intrusive linked list (where the record now stores
+the <code>next</code> pointer alongside its own fields)</p><p>Example:</p><pre><span class="cmt">// class Container[T] { val elem: T, var next: Container[T] }</span>
 <span class="cmt">// struct RecordA { val fieldA: Int, val fieldB: String }</span>
 <span class="kw">val</span> rec1 = <span class="kw">new</span> RecordA(...)
 <span class="kw">val</span> rec2 = <span class="kw">new</span> RecordA(...)
@@ -240,8 +242,8 @@ process(rec1)</pre></div></div>
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">A lowering transformation for converting container objects into records.</p><div class="fullcomment"><div class="comment cmt"><p>A lowering transformation for converting container objects into records.
-Example:</p><pre><span class="cmt">// class Container[T] { val elem: T, var next: Container[T] }</span>
+      <p class="shortcomment cmt">A lowering transformation for converting Cont objects (Cont is a class that encodes singly linked lists) into records.</p><div class="fullcomment"><div class="comment cmt"><p>A lowering transformation for converting Cont objects (Cont is a class that encodes singly linked lists) into records.
+Note: the output record can be viewed as recursive, but this is hidden in the StructTags.ClassTag</p><p>Example:</p><pre><span class="cmt">// class Container[T] { val elem: T, var next: Container[T] }</span>
 <span class="cmt">// struct RecordA { val fieldA: Int, val fieldB: String }</span>
 <span class="kw">val</span> rec1 = <span class="kw">new</span> RecordA(...)
 <span class="kw">val</span> contRecA = <span class="kw">new</span> Containter[RecordA](rec1)</pre><p>is converted to:</p><pre><span class="cmt">// struct RecordA { val fieldA: Int, val fieldB: String }</span>
@@ -282,9 +284,8 @@ Example:</p><pre><span class="cmt">// class Container[T] { val elem: T, var next
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">A transformer for partitioning and indexing the MultiMaps.</p><div class="fullcomment"><div class="comment cmt"><p>A transformer for partitioning and indexing the MultiMaps. As a result, this transformation
-converts a MultiMap and the corresponding operations into an Array (either one dimensional or
-two dimensional).</p><p>As an example the following program:</p><pre><span class="kw">val</span> multiMap = <span class="kw">new</span> MultiMap[<span class="std">Int</span>, LeftRelation]
+      <p class="shortcomment cmt">A transformer for partitioning and indexing MultiMaps created by the hash join operator.</p><div class="fullcomment"><div class="comment cmt"><p>A transformer for partitioning and indexing MultiMaps created by the hash join operator. This transformation
+converts a MultiMap and the corresponding operations into an Array (either one- or two-dimensional).</p><p>As an example the following program:</p><pre><span class="kw">val</span> multiMap = <span class="kw">new</span> MultiMap[<span class="std">Int</span>, LeftRelation]
 <span class="kw">var</span> leftIndex = <span class="num">0</span>
 <span class="kw">while</span>(leftIndex &lt; leftArray.length) {
   <span class="kw">val</span> leftElement = leftArray(leftIndex)
@@ -376,7 +377,7 @@ processQuery()</pre></div></div>
 in the case that the key has a continuous value into a one dimensional Array.</p><div class="fullcomment"><div class="comment cmt"><p>Transforms HashMaps which have no collision in the hash function computation and also
 in the case that the key has a continuous value into a one dimensional Array.
 The assumptions for this transformation is similar to <a href="HashMapToSetTransformation.html" class="extype" name="ch.epfl.data.dblab.transformers.HashMapToSetTransformation">HashMapToSetTransformation</a>.
-In addition, we the assumption that there is no collision.</p><p>Example:</p><pre><span class="cmt">// RecordA { key: Int, fieldA: Int, fieldB: String }</span>
+In addition, we make the assumption that there is no collision.</p><p>Example:</p><pre><span class="cmt">// RecordA { key: Int, fieldA: Int, fieldB: String }</span>
 <span class="kw">val</span> hm = <span class="kw">new</span> HashMap[<span class="std">Int</span>, RecordA]
 <span class="cmt">// Add some element into the HashMap</span>
 hm.foreach( { <span class="kw">case</span> (key, value) <span class="kw">=&gt;</span>

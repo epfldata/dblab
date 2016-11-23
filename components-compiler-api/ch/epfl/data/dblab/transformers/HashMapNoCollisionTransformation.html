@@ -52,7 +52,7 @@
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Transforms HashMaps which have no collision in the hash function computation and also
 in the case that the key has a continuous value into a one dimensional Array.
 The assumptions for this transformation is similar to <a href="HashMapToSetTransformation.html" class="extype" name="ch.epfl.data.dblab.transformers.HashMapToSetTransformation">HashMapToSetTransformation</a>.
-In addition, we the assumption that there is no collision.</p><p>Example:</p><pre><span class="cmt">// RecordA { key: Int, fieldA: Int, fieldB: String }</span>
+In addition, we make the assumption that there is no collision.</p><p>Example:</p><pre><span class="cmt">// RecordA { key: Int, fieldA: Int, fieldB: String }</span>
 <span class="kw">val</span> hm = <span class="kw">new</span> HashMap[<span class="std">Int</span>, RecordA]
 <span class="cmt">// Add some element into the HashMap</span>
 hm.foreach( { <span class="kw">case</span> (key, value) <span class="kw">=&gt;</span>
