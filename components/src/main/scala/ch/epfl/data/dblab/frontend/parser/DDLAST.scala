@@ -4,6 +4,7 @@ package frontend
 package parser
 
 /**
+ * A module containing AST nodes for DDL constructs.
  *
  * @author Yannis Klonatos
  */
