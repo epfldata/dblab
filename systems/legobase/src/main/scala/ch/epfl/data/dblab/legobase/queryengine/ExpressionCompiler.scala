@@ -5,7 +5,7 @@ package queryengine
 import schema._
 import legobase.deep.LegoBaseQueryEngineExp
 import frontend.parser.OperatorAST._
-import frontend.parser._
+import frontend.parser.SQLAST._
 import ch.epfl.data.sc.pardis.types.{ PardisType, RecordType }
 import ch.epfl.data.sc.pardis.shallow.Record
 import scala.reflect.runtime.universe._

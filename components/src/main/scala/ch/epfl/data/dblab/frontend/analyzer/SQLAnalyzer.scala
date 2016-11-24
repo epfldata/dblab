@@ -7,7 +7,7 @@ import sc.pardis.types._
 import schema._
 import scala.reflect.runtime.{ universe => ru }
 import ru._
-import parser._
+import parser.SQLAST._
 import sc.pardis.shallow.OptimalString
 
 /**
@@ -232,7 +232,7 @@ class SQLAnalyzer(schema: Schema) {
     case dflt           => throw new Exception("Unknown class type " + dflt + " encountered in SQLSemanticCheckerAndTypeInference component!")
   }
 
-  def checkAndInfer(node: Node) {
+  def checkAndInfer(node: SQLNode) {
     node match {
       case UnionIntersectSequence(top, bottom, _) =>
         checkAndInfer(top)

@@ -7,6 +7,7 @@ import schema._
 import scala.reflect._
 import parser._
 import parser.OperatorAST._
+import parser.SQLAST._
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 import queryengine.GenericEngine
@@ -230,7 +231,7 @@ class SQLToQueryPlan(schema: Schema) {
 
   case class QueryTree(topOperator: OperatorNode, projections: Projections, limit: Option[Limit])
 
-  def convertQuery(node: Node): QueryTree = node match {
+  def convertQuery(node: SQLNode): QueryTree = node match {
     case UnionIntersectSequence(top, bottom, connectionType) =>
       val topQueryTree = convertQuery(top)
       val bottomQueryTree = convertQuery(bottom)
@@ -258,7 +259,7 @@ class SQLToQueryPlan(schema: Schema) {
     })
   }
 
-  def convert(node: Node): QueryPlanTree = {
+  def convert(node: SQLNode): QueryPlanTree = {
     val queryTree = convertQuery(node)
     val printOp = createPrintOperator(queryTree.topOperator, queryTree.projections, queryTree.limit)
     QueryPlanTree(printOp, temporaryViewMap)

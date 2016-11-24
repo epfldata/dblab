@@ -3,7 +3,7 @@ package dblab
 package frontend
 package optimizer
 
-import parser._
+import parser.SQLAST._
 
 /**
  * The general interface each SQL normalizer of DBLAB must abide to.

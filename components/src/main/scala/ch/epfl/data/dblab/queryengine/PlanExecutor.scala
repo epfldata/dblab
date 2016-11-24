@@ -4,7 +4,7 @@ package queryengine
 
 import utils._
 import schema._
-import frontend.parser._
+import frontend.parser.SQLAST._
 import frontend.parser.OperatorAST._
 import storagemanager._
 import scala.reflect._
