@@ -121,7 +121,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="SQLToQueryPlan$QueryTree.html"><span class="name">QueryTree</span></a><span class="params">(<span name="topOperator">topOperator: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>, <span name="projections">projections: <a href="../parser/Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Projections">Projections</a></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/Limit.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Limit">Limit</a>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="SQLToQueryPlan$QueryTree.html"><span class="name">QueryTree</span></a><span class="params">(<span name="topOperator">topOperator: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>, <span name="projections">projections: <a href="../parser/SQLAST$$Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Projections">Projections</a></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/SQLAST$$Limit.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Limit">Limit</a>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
       <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@QueryTreeextendsProductwithSerializable" title="Permalink" target="_top">
@@ -188,7 +188,7 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#analyzeExprForSubquery" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="analyzeExprForSubquery(expr:ch.epfl.data.dblab.frontend.parser.Expression,parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode,isHaving:Boolean):ch.epfl.data.dblab.frontend.parser.OperatorAST.SelectOpNode"></a>
+      <a id="analyzeExprForSubquery(expr:ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode,isHaving:Boolean):ch.epfl.data.dblab.frontend.parser.OperatorAST.SelectOpNode"></a>
       <a id="analyzeExprForSubquery(Expression,OperatorNode,Boolean):SelectOpNode"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -196,10 +196,10 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">analyzeExprForSubquery</span><span class="params">(<span name="expr">expr: <a href="../parser/Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a></span>, <span name="parentOp">parentOp: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>, <span name="isHaving">isHaving: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="../parser/OperatorAST$$SelectOpNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.SelectOpNode">SelectOpNode</a></span>
+        <span class="name">analyzeExprForSubquery</span><span class="params">(<span name="expr">expr: <a href="../parser/SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="parentOp">parentOp: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>, <span name="isHaving">isHaving: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="../parser/OperatorAST$$SelectOpNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.SelectOpNode">SelectOpNode</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@analyzeExprForSubquery(expr:ch.epfl.data.dblab.frontend.parser.Expression,parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode,isHaving:Boolean):ch.epfl.data.dblab.frontend.parser.OperatorAST.SelectOpNode" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@analyzeExprForSubquery(expr:ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode,isHaving:Boolean):ch.epfl.data.dblab.frontend.parser.OperatorAST.SelectOpNode" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -245,41 +245,41 @@
               
         </dd></dl></div>
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#convert" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="convert(node:ch.epfl.data.dblab.frontend.parser.Node):ch.epfl.data.dblab.frontend.parser.OperatorAST.QueryPlanTree"></a>
-      <a id="convert(Node):QueryPlanTree"></a>
+      <a id="convert(node:ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.QueryPlanTree"></a>
+      <a id="convert(SQLNode):QueryPlanTree"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">convert</span><span class="params">(<span name="node">node: <a href="../parser/Node.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Node">Node</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$QueryPlanTree.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.QueryPlanTree">QueryPlanTree</a></span>
+        <span class="name">convert</span><span class="params">(<span name="node">node: <a href="../parser/SQLAST$$SQLNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode">SQLNode</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$QueryPlanTree.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.QueryPlanTree">QueryPlanTree</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@convert(node:ch.epfl.data.dblab.frontend.parser.Node):ch.epfl.data.dblab.frontend.parser.OperatorAST.QueryPlanTree" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@convert(node:ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.QueryPlanTree" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#convertQuery" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="convertQuery(node:ch.epfl.data.dblab.frontend.parser.Node):SQLToQueryPlan.this.QueryTree"></a>
-      <a id="convertQuery(Node):QueryTree"></a>
+      <a id="convertQuery(node:ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode):SQLToQueryPlan.this.QueryTree"></a>
+      <a id="convertQuery(SQLNode):QueryTree"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">convertQuery</span><span class="params">(<span name="node">node: <a href="../parser/Node.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Node">Node</a></span>)</span><span class="result">: <a href="SQLToQueryPlan$QueryTree.html" class="extype" name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan.QueryTree">QueryTree</a></span>
+        <span class="name">convertQuery</span><span class="params">(<span name="node">node: <a href="../parser/SQLAST$$SQLNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode">SQLNode</a></span>)</span><span class="result">: <a href="SQLToQueryPlan$QueryTree.html" class="extype" name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan.QueryTree">QueryTree</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@convertQuery(node:ch.epfl.data.dblab.frontend.parser.Node):SQLToQueryPlan.this.QueryTree" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@convertQuery(node:ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode):SQLToQueryPlan.this.QueryTree" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#createMainOperatorTree" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="createMainOperatorTree(sqlTree:ch.epfl.data.dblab.frontend.parser.SelectStatement):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode"></a>
+      <a id="createMainOperatorTree(sqlTree:ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode"></a>
       <a id="createMainOperatorTree(SelectStatement):OperatorNode"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -287,16 +287,16 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">createMainOperatorTree</span><span class="params">(<span name="sqlTree">sqlTree: <a href="../parser/SelectStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SelectStatement">SelectStatement</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>
+        <span class="name">createMainOperatorTree</span><span class="params">(<span name="sqlTree">sqlTree: <a href="../parser/SQLAST$$SelectStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement">SelectStatement</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@createMainOperatorTree(sqlTree:ch.epfl.data.dblab.frontend.parser.SelectStatement):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@createMainOperatorTree(sqlTree:ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#createPrintOperator" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="createPrintOperator(parent:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode,e:ch.epfl.data.dblab.frontend.parser.Projections,limit:Option[ch.epfl.data.dblab.frontend.parser.Limit]):ch.epfl.data.dblab.frontend.parser.OperatorAST.PrintOpNode"></a>
+      <a id="createPrintOperator(parent:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode,e:ch.epfl.data.dblab.frontend.parser.SQLAST.Projections,limit:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.Limit]):ch.epfl.data.dblab.frontend.parser.OperatorAST.PrintOpNode"></a>
       <a id="createPrintOperator(OperatorNode,Projections,Option[Limit]):PrintOpNode"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -304,16 +304,16 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">createPrintOperator</span><span class="params">(<span name="parent">parent: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>, <span name="e">e: <a href="../parser/Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Projections">Projections</a></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/Limit.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Limit">Limit</a>]</span>)</span><span class="result">: <a href="../parser/OperatorAST$$PrintOpNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.PrintOpNode">PrintOpNode</a></span>
+        <span class="name">createPrintOperator</span><span class="params">(<span name="parent">parent: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>, <span name="e">e: <a href="../parser/SQLAST$$Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Projections">Projections</a></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/SQLAST$$Limit.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Limit">Limit</a>]</span>)</span><span class="result">: <a href="../parser/OperatorAST$$PrintOpNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.PrintOpNode">PrintOpNode</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@createPrintOperator(parent:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode,e:ch.epfl.data.dblab.frontend.parser.Projections,limit:Option[ch.epfl.data.dblab.frontend.parser.Limit]):ch.epfl.data.dblab.frontend.parser.OperatorAST.PrintOpNode" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@createPrintOperator(parent:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode,e:ch.epfl.data.dblab.frontend.parser.SQLAST.Projections,limit:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.Limit]):ch.epfl.data.dblab.frontend.parser.OperatorAST.PrintOpNode" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#createScanOperators" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="createScanOperators(sqlTree:ch.epfl.data.dblab.frontend.parser.SelectStatement):Seq[(String,ProductwithSerializablewithch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode)]"></a>
+      <a id="createScanOperators(sqlTree:ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement):Seq[(String,ProductwithSerializablewithch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode)]"></a>
       <a id="createScanOperators(SelectStatement):Seq[(String,ProductwithSerializablewithOperatorNode)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -321,16 +321,16 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">createScanOperators</span><span class="params">(<span name="sqlTree">sqlTree: <a href="../parser/SelectStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SelectStatement">SelectStatement</a></span>)</span><span class="result">: <span class="extype" name="scala.collection.Seq">Seq</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span> with <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a>)]</span>
+        <span class="name">createScanOperators</span><span class="params">(<span name="sqlTree">sqlTree: <a href="../parser/SQLAST$$SelectStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement">SelectStatement</a></span>)</span><span class="result">: <span class="extype" name="scala.collection.Seq">Seq</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span> with <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a>)]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@createScanOperators(sqlTree:ch.epfl.data.dblab.frontend.parser.SelectStatement):Seq[(String,ProductwithSerializablewithch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode)]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@createScanOperators(sqlTree:ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement):Seq[(String,ProductwithSerializablewithch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode)]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#createSubquery" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="createSubquery(sq:ch.epfl.data.dblab.frontend.parser.SelectStatement):ch.epfl.data.dblab.frontend.parser.OperatorAST.GetSingleResult"></a>
+      <a id="createSubquery(sq:ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement):ch.epfl.data.dblab.frontend.parser.OperatorAST.GetSingleResult"></a>
       <a id="createSubquery(SelectStatement):GetSingleResult"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -338,10 +338,10 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">createSubquery</span><span class="params">(<span name="sq">sq: <a href="../parser/SelectStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SelectStatement">SelectStatement</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$GetSingleResult.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.GetSingleResult">GetSingleResult</a></span>
+        <span class="name">createSubquery</span><span class="params">(<span name="sq">sq: <a href="../parser/SQLAST$$SelectStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement">SelectStatement</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$GetSingleResult.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.GetSingleResult">GetSingleResult</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@createSubquery(sq:ch.epfl.data.dblab.frontend.parser.SelectStatement):ch.epfl.data.dblab.frontend.parser.OperatorAST.GetSingleResult" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@createSubquery(sq:ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement):ch.epfl.data.dblab.frontend.parser.OperatorAST.GetSingleResult" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -421,7 +421,7 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#getExpressionName" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="getExpressionName(expr:ch.epfl.data.dblab.frontend.parser.Expression):String"></a>
+      <a id="getExpressionName(expr:ch.epfl.data.dblab.frontend.parser.SQLAST.Expression):String"></a>
       <a id="getExpressionName(Expression):String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -429,10 +429,10 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getExpressionName</span><span class="params">(<span name="expr">expr: <a href="../parser/Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a></span>)</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+        <span class="name">getExpressionName</span><span class="params">(<span name="expr">expr: <a href="../parser/SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@getExpressionName(expr:ch.epfl.data.dblab.frontend.parser.Expression):String" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@getExpressionName(expr:ch.epfl.data.dblab.frontend.parser.SQLAST.Expression):String" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -523,7 +523,7 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#parseAggregations" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseAggregations(e:ch.epfl.data.dblab.frontend.parser.Projections,gb:Option[ch.epfl.data.dblab.frontend.parser.GroupBy],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode"></a>
+      <a id="parseAggregations(e:ch.epfl.data.dblab.frontend.parser.SQLAST.Projections,gb:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.GroupBy],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode"></a>
       <a id="parseAggregations(Projections,Option[GroupBy],OperatorNode):OperatorNode"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -531,16 +531,16 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseAggregations</span><span class="params">(<span name="e">e: <a href="../parser/Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Projections">Projections</a></span>, <span name="gb">gb: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/GroupBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.GroupBy">GroupBy</a>]</span>, <span name="parentOp">parentOp: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>
+        <span class="name">parseAggregations</span><span class="params">(<span name="e">e: <a href="../parser/SQLAST$$Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Projections">Projections</a></span>, <span name="gb">gb: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/SQLAST$$GroupBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.GroupBy">GroupBy</a>]</span>, <span name="parentOp">parentOp: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@parseAggregations(e:ch.epfl.data.dblab.frontend.parser.Projections,gb:Option[ch.epfl.data.dblab.frontend.parser.GroupBy],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@parseAggregations(e:ch.epfl.data.dblab.frontend.parser.SQLAST.Projections,gb:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.GroupBy],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#parseGroupBy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseGroupBy(gb:Option[ch.epfl.data.dblab.frontend.parser.GroupBy],proj:Seq[(ch.epfl.data.dblab.frontend.parser.Expression,Option[String])]):Seq[(ch.epfl.data.dblab.frontend.parser.Expression,String)]"></a>
+      <a id="parseGroupBy(gb:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.GroupBy],proj:Seq[(ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,Option[String])]):Seq[(ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,String)]"></a>
       <a id="parseGroupBy(Option[GroupBy],Seq[(Expression,Option[String])]):Seq[(Expression,String)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -548,16 +548,16 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseGroupBy</span><span class="params">(<span name="gb">gb: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/GroupBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.GroupBy">GroupBy</a>]</span>, <span name="proj">proj: <span class="extype" name="scala.Seq">Seq</span>[(<a href="../parser/Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>])]</span>)</span><span class="result">: <span class="extype" name="scala.collection.Seq">Seq</span>[(<a href="../parser/Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>, <span class="extype" name="scala.Predef.String">String</span>)]</span>
+        <span class="name">parseGroupBy</span><span class="params">(<span name="gb">gb: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/SQLAST$$GroupBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.GroupBy">GroupBy</a>]</span>, <span name="proj">proj: <span class="extype" name="scala.Seq">Seq</span>[(<a href="../parser/SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>])]</span>)</span><span class="result">: <span class="extype" name="scala.collection.Seq">Seq</span>[(<a href="../parser/SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>, <span class="extype" name="scala.Predef.String">String</span>)]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@parseGroupBy(gb:Option[ch.epfl.data.dblab.frontend.parser.GroupBy],proj:Seq[(ch.epfl.data.dblab.frontend.parser.Expression,Option[String])]):Seq[(ch.epfl.data.dblab.frontend.parser.Expression,String)]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@parseGroupBy(gb:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.GroupBy],proj:Seq[(ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,Option[String])]):Seq[(ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,String)]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#parseHaving" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseHaving(having:Option[ch.epfl.data.dblab.frontend.parser.Having],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode"></a>
+      <a id="parseHaving(having:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.Having],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode"></a>
       <a id="parseHaving(Option[Having],OperatorNode):OperatorNode"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -565,10 +565,10 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseHaving</span><span class="params">(<span name="having">having: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/Having.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Having">Having</a>]</span>, <span name="parentOp">parentOp: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>
+        <span class="name">parseHaving</span><span class="params">(<span name="having">having: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/SQLAST$$Having.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Having">Having</a>]</span>, <span name="parentOp">parentOp: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@parseHaving(having:Option[ch.epfl.data.dblab.frontend.parser.Having],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@parseHaving(having:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.Having],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -591,7 +591,7 @@
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#parseJoinTree" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseJoinTree(e:Option[ch.epfl.data.dblab.frontend.parser.Relation],inputOps:Seq[(String,ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode)]):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode"></a>
+      <a id="parseJoinTree(e:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.Relation],inputOps:Seq[(String,ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode)]):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode"></a>
       <a id="parseJoinTree(Option[Relation],Seq[(String,OperatorNode)]):OperatorNode"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -599,16 +599,16 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseJoinTree</span><span class="params">(<span name="e">e: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Relation">Relation</a>]</span>, <span name="inputOps">inputOps: <span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="scala.Predef.String">String</span>, <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a>)]</span>)</span><span class="result">: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>
+        <span class="name">parseJoinTree</span><span class="params">(<span name="e">e: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/SQLAST$$Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Relation">Relation</a>]</span>, <span name="inputOps">inputOps: <span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="scala.Predef.String">String</span>, <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a>)]</span>)</span><span class="result">: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@parseJoinTree(e:Option[ch.epfl.data.dblab.frontend.parser.Relation],inputOps:Seq[(String,ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode)]):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@parseJoinTree(e:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.Relation],inputOps:Seq[(String,ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode)]):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#parseOrderBy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseOrderBy(ob:Option[ch.epfl.data.dblab.frontend.parser.OrderBy],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode"></a>
+      <a id="parseOrderBy(ob:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.OrderBy],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode"></a>
       <a id="parseOrderBy(Option[OrderBy],OperatorNode):OperatorNode"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -616,16 +616,16 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseOrderBy</span><span class="params">(<span name="ob">ob: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/OrderBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OrderBy">OrderBy</a>]</span>, <span name="parentOp">parentOp: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>
+        <span class="name">parseOrderBy</span><span class="params">(<span name="ob">ob: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/SQLAST$$OrderBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.OrderBy">OrderBy</a>]</span>, <span name="parentOp">parentOp: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@parseOrderBy(ob:Option[ch.epfl.data.dblab.frontend.parser.OrderBy],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@parseOrderBy(ob:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.OrderBy],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#parseProjections" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseProjections(e:ch.epfl.data.dblab.frontend.parser.Projections,gb:Option[ch.epfl.data.dblab.frontend.parser.GroupBy],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode"></a>
+      <a id="parseProjections(e:ch.epfl.data.dblab.frontend.parser.SQLAST.Projections,gb:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.GroupBy],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode"></a>
       <a id="parseProjections(Projections,Option[GroupBy],OperatorNode):OperatorNode"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -633,16 +633,16 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseProjections</span><span class="params">(<span name="e">e: <a href="../parser/Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Projections">Projections</a></span>, <span name="gb">gb: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/GroupBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.GroupBy">GroupBy</a>]</span>, <span name="parentOp">parentOp: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>
+        <span class="name">parseProjections</span><span class="params">(<span name="e">e: <a href="../parser/SQLAST$$Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Projections">Projections</a></span>, <span name="gb">gb: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/SQLAST$$GroupBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.GroupBy">GroupBy</a>]</span>, <span name="parentOp">parentOp: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@parseProjections(e:ch.epfl.data.dblab.frontend.parser.Projections,gb:Option[ch.epfl.data.dblab.frontend.parser.GroupBy],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@parseProjections(e:ch.epfl.data.dblab.frontend.parser.SQLAST.Projections,gb:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.GroupBy],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#parseWhereClauses" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseWhereClauses(e:Option[ch.epfl.data.dblab.frontend.parser.Expression],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode"></a>
+      <a id="parseWhereClauses(e:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode"></a>
       <a id="parseWhereClauses(Option[Expression],OperatorNode):OperatorNode"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -650,16 +650,16 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseWhereClauses</span><span class="params">(<span name="e">e: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>, <span name="parentOp">parentOp: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>
+        <span class="name">parseWhereClauses</span><span class="params">(<span name="e">e: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>]</span>, <span name="parentOp">parentOp: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>)</span><span class="result">: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@parseWhereClauses(e:Option[ch.epfl.data.dblab.frontend.parser.Expression],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@parseWhereClauses(e:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression],parentOp:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode):ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan#subqueryHasSingleTupleResult" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="subqueryHasSingleTupleResult(sq:ch.epfl.data.dblab.frontend.parser.SelectStatement):Boolean"></a>
+      <a id="subqueryHasSingleTupleResult(sq:ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement):Boolean"></a>
       <a id="subqueryHasSingleTupleResult(SelectStatement):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -667,10 +667,10 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">subqueryHasSingleTupleResult</span><span class="params">(<span name="sq">sq: <a href="../parser/SelectStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SelectStatement">SelectStatement</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span class="name">subqueryHasSingleTupleResult</span><span class="params">(<span name="sq">sq: <a href="../parser/SQLAST$$SelectStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement">SelectStatement</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@subqueryHasSingleTupleResult(sq:ch.epfl.data.dblab.frontend.parser.SelectStatement):Boolean" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan@subqueryHasSingleTupleResult(sq:ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement):Boolean" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

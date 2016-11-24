@@ -167,7 +167,7 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer#aliasesList" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="aliasesList:Seq[(ch.epfl.data.dblab.frontend.parser.Expression,String,Int)]"></a>
+      <a id="aliasesList:Seq[(ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,String,Int)]"></a>
       <a id="aliasesList:Seq[(Expression,String,Int)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -175,10 +175,10 @@
         <span class="kind">var</span>
       </span>
       <span class="symbol">
-        <span class="name">aliasesList</span><span class="result">: <span class="extype" name="scala.Seq">Seq</span>[(<a href="../parser/Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>, <span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Int">Int</span>)]</span>
+        <span class="name">aliasesList</span><span class="result">: <span class="extype" name="scala.Seq">Seq</span>[(<a href="../parser/SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>, <span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Int">Int</span>)]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer@aliasesList:Seq[(ch.epfl.data.dblab.frontend.parser.Expression,String,Int)]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer@aliasesList:Seq[(ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,String,Int)]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -201,7 +201,7 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer#checkAndInfer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="checkAndInfer(sqlTree:ch.epfl.data.dblab.frontend.parser.SelectStatement):Unit"></a>
+      <a id="checkAndInfer(sqlTree:ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement):Unit"></a>
       <a id="checkAndInfer(SelectStatement):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -209,33 +209,33 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">checkAndInfer</span><span class="params">(<span name="sqlTree">sqlTree: <a href="../parser/SelectStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SelectStatement">SelectStatement</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">checkAndInfer</span><span class="params">(<span name="sqlTree">sqlTree: <a href="../parser/SQLAST$$SelectStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement">SelectStatement</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer@checkAndInfer(sqlTree:ch.epfl.data.dblab.frontend.parser.SelectStatement):Unit" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer@checkAndInfer(sqlTree:ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement):Unit" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer#checkAndInfer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="checkAndInfer(node:ch.epfl.data.dblab.frontend.parser.Node):Unit"></a>
-      <a id="checkAndInfer(Node):Unit"></a>
+      <a id="checkAndInfer(node:ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode):Unit"></a>
+      <a id="checkAndInfer(SQLNode):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">checkAndInfer</span><span class="params">(<span name="node">node: <a href="../parser/Node.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Node">Node</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">checkAndInfer</span><span class="params">(<span name="node">node: <a href="../parser/SQLAST$$SQLNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode">SQLNode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer@checkAndInfer(node:ch.epfl.data.dblab.frontend.parser.Node):Unit" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer@checkAndInfer(node:ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode):Unit" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer#checkAndInferExpr" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="checkAndInferExpr(expr:ch.epfl.data.dblab.frontend.parser.Expression):Unit"></a>
+      <a id="checkAndInferExpr(expr:ch.epfl.data.dblab.frontend.parser.SQLAST.Expression):Unit"></a>
       <a id="checkAndInferExpr(Expression):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -243,16 +243,16 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">checkAndInferExpr</span><span class="params">(<span name="expr">expr: <a href="../parser/Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">checkAndInferExpr</span><span class="params">(<span name="expr">expr: <a href="../parser/SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer@checkAndInferExpr(expr:ch.epfl.data.dblab.frontend.parser.Expression):Unit" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer@checkAndInferExpr(expr:ch.epfl.data.dblab.frontend.parser.SQLAST.Expression):Unit" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer#checkAndInferJoinTree" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="checkAndInferJoinTree(root:ch.epfl.data.dblab.frontend.parser.Relation):Unit"></a>
+      <a id="checkAndInferJoinTree(root:ch.epfl.data.dblab.frontend.parser.SQLAST.Relation):Unit"></a>
       <a id="checkAndInferJoinTree(Relation):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -260,10 +260,10 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">checkAndInferJoinTree</span><span class="params">(<span name="root">root: <a href="../parser/Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Relation">Relation</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">checkAndInferJoinTree</span><span class="params">(<span name="root">root: <a href="../parser/SQLAST$$Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Relation">Relation</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer@checkAndInferJoinTree(root:ch.epfl.data.dblab.frontend.parser.Relation):Unit" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer@checkAndInferJoinTree(root:ch.epfl.data.dblab.frontend.parser.SQLAST.Relation):Unit" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -451,7 +451,7 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer#setResultType" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="setResultType(e:ch.epfl.data.dblab.frontend.parser.Expression,left:ch.epfl.data.dblab.frontend.parser.Expression,right:ch.epfl.data.dblab.frontend.parser.Expression):Unit"></a>
+      <a id="setResultType(e:ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,left:ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,right:ch.epfl.data.dblab.frontend.parser.SQLAST.Expression):Unit"></a>
       <a id="setResultType(Expression,Expression,Expression):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -459,10 +459,10 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">setResultType</span><span class="params">(<span name="e">e: <a href="../parser/Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a></span>, <span name="left">left: <a href="../parser/Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a></span>, <span name="right">right: <a href="../parser/Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">setResultType</span><span class="params">(<span name="e">e: <a href="../parser/SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="left">left: <a href="../parser/SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="right">right: <a href="../parser/SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer@setResultType(e:ch.epfl.data.dblab.frontend.parser.Expression,left:ch.epfl.data.dblab.frontend.parser.Expression,right:ch.epfl.data.dblab.frontend.parser.Expression):Unit" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer@setResultType(e:ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,left:ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,right:ch.epfl.data.dblab.frontend.parser.SQLAST.Expression):Unit" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -519,7 +519,7 @@
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer#views" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="views:Seq[ch.epfl.data.dblab.frontend.parser.View]"></a>
+      <a id="views:Seq[ch.epfl.data.dblab.frontend.parser.SQLAST.View]"></a>
       <a id="views:Seq[View]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -527,10 +527,10 @@
         <span class="kind">var</span>
       </span>
       <span class="symbol">
-        <span class="name">views</span><span class="result">: <span class="extype" name="scala.Seq">Seq</span>[<a href="../parser/View.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.View">View</a>]</span>
+        <span class="name">views</span><span class="result">: <span class="extype" name="scala.Seq">Seq</span>[<a href="../parser/SQLAST$$View.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.View">View</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer@views:Seq[ch.epfl.data.dblab.frontend.parser.View]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.analyzer.SQLAnalyzer@views:Seq[ch.epfl.data.dblab.frontend.parser.SQLAST.View]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

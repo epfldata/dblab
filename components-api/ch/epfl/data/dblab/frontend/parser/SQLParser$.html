@@ -684,7 +684,7 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#exprToSQLNode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="exprToSQLNode(acc:ch.epfl.data.dblab.frontend.parser.Expression,elem:Any):ch.epfl.data.dblab.frontend.parser.Expression"></a>
+      <a id="exprToSQLNode(acc:ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,elem:Any):ch.epfl.data.dblab.frontend.parser.SQLAST.Expression"></a>
       <a id="exprToSQLNode(Expression,Any):Expression"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -692,10 +692,10 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">exprToSQLNode</span><span class="params">(<span name="acc">acc: <a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a></span>, <span name="elem">elem: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a></span>
+        <span class="name">exprToSQLNode</span><span class="params">(<span name="acc">acc: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="elem">elem: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@exprToSQLNode(acc:ch.epfl.data.dblab.frontend.parser.Expression,elem:Any):ch.epfl.data.dblab.frontend.parser.Expression" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@exprToSQLNode(acc:ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,elem:Any):ch.epfl.data.dblab.frontend.parser.SQLAST.Expression" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -1030,7 +1030,7 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Parsers</dd></dl></div>
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parse" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parse(statement:String):ch.epfl.data.dblab.frontend.parser.TopLevelStatement"></a>
+      <a id="parse(statement:String):ch.epfl.data.dblab.frontend.parser.SQLAST.TopLevelStatement"></a>
       <a id="parse(String):TopLevelStatement"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1038,16 +1038,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parse</span><span class="params">(<span name="statement">statement: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="TopLevelStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.TopLevelStatement">TopLevelStatement</a></span>
+        <span class="name">parse</span><span class="params">(<span name="statement">statement: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="SQLAST$$TopLevelStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.TopLevelStatement">TopLevelStatement</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parse(statement:String):ch.epfl.data.dblab.frontend.parser.TopLevelStatement" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parse(statement:String):ch.epfl.data.dblab.frontend.parser.SQLAST.TopLevelStatement" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseAddition" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseAddition:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parseAddition:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]"></a>
       <a id="parseAddition:Parser[Expression]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1055,10 +1055,10 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseAddition</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+        <span class="name">parseAddition</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseAddition:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseAddition:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -1081,7 +1081,7 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseAliasedExpression" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseAliasedExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[(ch.epfl.data.dblab.frontend.parser.Expression,Option[String])]"></a>
+      <a id="parseAliasedExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[(ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,Option[String])]"></a>
       <a id="parseAliasedExpression:Parser[(Expression,Option[String])]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1089,16 +1089,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseAliasedExpression</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[(<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>])]</span>
+        <span class="name">parseAliasedExpression</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[(<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>])]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseAliasedExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[(ch.epfl.data.dblab.frontend.parser.Expression,Option[String])]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseAliasedExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[(ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,Option[String])]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseAllCTEs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseAllCTEs:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[List[ch.epfl.data.dblab.frontend.parser.View]]"></a>
+      <a id="parseAllCTEs:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[List[ch.epfl.data.dblab.frontend.parser.SQLAST.View]]"></a>
       <a id="parseAllCTEs:Parser[List[View]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1106,16 +1106,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseAllCTEs</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.List">List</span>[<a href="View.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.View">View</a>]]</span>
+        <span class="name">parseAllCTEs</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.List">List</span>[<a href="SQLAST$$View.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.View">View</a>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseAllCTEs:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[List[ch.epfl.data.dblab.frontend.parser.View]]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseAllCTEs:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[List[ch.epfl.data.dblab.frontend.parser.SQLAST.View]]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseCTE" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseCTE:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.View]"></a>
+      <a id="parseCTE:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.View]"></a>
       <a id="parseCTE:Parser[View]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1123,10 +1123,10 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseCTE</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="View.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.View">View</a>]</span>
+        <span class="name">parseCTE</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$View.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.View">View</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseCTE:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.View]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseCTE:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.View]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -1149,7 +1149,7 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseExpression" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parseExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]"></a>
       <a id="parseExpression:Parser[Expression]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1157,16 +1157,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseExpression</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+        <span class="name">parseExpression</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <p class="shortcomment cmt">*******************</p>
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseFrom" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseFrom:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Relation]"></a>
+      <a id="parseFrom:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Relation]"></a>
       <a id="parseFrom:Parser[Relation]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1174,16 +1174,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseFrom</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Relation">Relation</a>]</span>
+        <span class="name">parseFrom</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Relation">Relation</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseFrom:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Relation]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseFrom:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Relation]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseFunction" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseFunction:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parseFunction:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]"></a>
       <a id="parseFunction:Parser[Expression]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1191,16 +1191,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseFunction</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+        <span class="name">parseFunction</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseFunction:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseFunction:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseGroupBy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseGroupBy:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.GroupBy]"></a>
+      <a id="parseGroupBy:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.GroupBy]"></a>
       <a id="parseGroupBy:Parser[GroupBy]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1208,16 +1208,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseGroupBy</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="GroupBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.GroupBy">GroupBy</a>]</span>
+        <span class="name">parseGroupBy</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$GroupBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.GroupBy">GroupBy</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseGroupBy:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.GroupBy]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseGroupBy:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.GroupBy]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseHaving" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseHaving:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Having]"></a>
+      <a id="parseHaving:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Having]"></a>
       <a id="parseHaving:Parser[Having]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1225,16 +1225,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseHaving</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Having.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Having">Having</a>]</span>
+        <span class="name">parseHaving</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$Having.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Having">Having</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseHaving:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Having]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseHaving:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Having]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseJoinType" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseJoinType:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.JoinType]"></a>
+      <a id="parseJoinType:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.JoinType]"></a>
       <a id="parseJoinType:Parser[JoinType]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1242,16 +1242,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseJoinType</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="JoinType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.JoinType">JoinType</a>]</span>
+        <span class="name">parseJoinType</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$JoinType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.JoinType">JoinType</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseJoinType:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.JoinType]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseJoinType:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.JoinType]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseLimit" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseLimit:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Limit]"></a>
+      <a id="parseLimit:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Limit]"></a>
       <a id="parseLimit:Parser[Limit]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1259,16 +1259,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseLimit</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Limit.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Limit">Limit</a>]</span>
+        <span class="name">parseLimit</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$Limit.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Limit">Limit</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseLimit:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Limit]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseLimit:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Limit]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseLiteral" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseLiteral:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parseLiteral:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]"></a>
       <a id="parseLiteral:Parser[Expression]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1276,16 +1276,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseLiteral</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+        <span class="name">parseLiteral</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseLiteral:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseLiteral:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseMultiplication" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseMultiplication:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parseMultiplication:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]"></a>
       <a id="parseMultiplication:Parser[Expression]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1293,16 +1293,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseMultiplication</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+        <span class="name">parseMultiplication</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseMultiplication:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseMultiplication:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseOperandExpression" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseOperandExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parseOperandExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]"></a>
       <a id="parseOperandExpression:Parser[Expression]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1310,10 +1310,10 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseOperandExpression</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+        <span class="name">parseOperandExpression</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseOperandExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseOperandExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -1336,7 +1336,7 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseOrderBy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseOrderBy:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.OrderBy]"></a>
+      <a id="parseOrderBy:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.OrderBy]"></a>
       <a id="parseOrderBy:Parser[OrderBy]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1344,16 +1344,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseOrderBy</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="OrderBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OrderBy">OrderBy</a>]</span>
+        <span class="name">parseOrderBy</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$OrderBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.OrderBy">OrderBy</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseOrderBy:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.OrderBy]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseOrderBy:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.OrderBy]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseOrderKey" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseOrderKey:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[(ch.epfl.data.dblab.frontend.parser.Expression,ch.epfl.data.dblab.frontend.parser.OrderType)]"></a>
+      <a id="parseOrderKey:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[(ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,ch.epfl.data.dblab.frontend.parser.SQLAST.OrderType)]"></a>
       <a id="parseOrderKey:Parser[(Expression,OrderType)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1361,16 +1361,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseOrderKey</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[(<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>, <a href="OrderType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OrderType">OrderType</a>)]</span>
+        <span class="name">parseOrderKey</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[(<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>, <a href="SQLAST$$OrderType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.OrderType">OrderType</a>)]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseOrderKey:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[(ch.epfl.data.dblab.frontend.parser.Expression,ch.epfl.data.dblab.frontend.parser.OrderType)]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseOrderKey:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[(ch.epfl.data.dblab.frontend.parser.SQLAST.Expression,ch.epfl.data.dblab.frontend.parser.SQLAST.OrderType)]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseOtherRelations" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseOtherRelations:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[Seq[(ch.epfl.data.dblab.frontend.parser.JoinType,ch.epfl.data.dblab.frontend.parser.Relation,ch.epfl.data.dblab.frontend.parser.Expression)]]"></a>
+      <a id="parseOtherRelations:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[Seq[(ch.epfl.data.dblab.frontend.parser.SQLAST.JoinType,ch.epfl.data.dblab.frontend.parser.SQLAST.Relation,ch.epfl.data.dblab.frontend.parser.SQLAST.Expression)]]"></a>
       <a id="parseOtherRelations:Parser[Seq[(JoinType,Relation,Expression)]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1378,16 +1378,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseOtherRelations</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Seq">Seq</span>[(<a href="JoinType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.JoinType">JoinType</a>, <a href="Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Relation">Relation</a>, <a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>)]]</span>
+        <span class="name">parseOtherRelations</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<span class="extype" name="scala.Seq">Seq</span>[(<a href="SQLAST$$JoinType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.JoinType">JoinType</a>, <a href="SQLAST$$Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Relation">Relation</a>, <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>)]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseOtherRelations:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[Seq[(ch.epfl.data.dblab.frontend.parser.JoinType,ch.epfl.data.dblab.frontend.parser.Relation,ch.epfl.data.dblab.frontend.parser.Expression)]]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseOtherRelations:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[Seq[(ch.epfl.data.dblab.frontend.parser.SQLAST.JoinType,ch.epfl.data.dblab.frontend.parser.SQLAST.Relation,ch.epfl.data.dblab.frontend.parser.SQLAST.Expression)]]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parsePrimaryExpression" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parsePrimaryExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parsePrimaryExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]"></a>
       <a id="parsePrimaryExpression:Parser[Expression]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1395,16 +1395,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parsePrimaryExpression</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+        <span class="name">parsePrimaryExpression</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parsePrimaryExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parsePrimaryExpression:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseProjections" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseProjections:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Projections]"></a>
+      <a id="parseProjections:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Projections]"></a>
       <a id="parseProjections:Parser[Projections]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1412,16 +1412,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseProjections</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Projections">Projections</a>]</span>
+        <span class="name">parseProjections</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Projections">Projections</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseProjections:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Projections]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseProjections:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Projections]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseQuery" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseQuery:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.TopLevelStatement]"></a>
+      <a id="parseQuery:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.TopLevelStatement]"></a>
       <a id="parseQuery:Parser[TopLevelStatement]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1429,16 +1429,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseQuery</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="TopLevelStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.TopLevelStatement">TopLevelStatement</a>]</span>
+        <span class="name">parseQuery</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$TopLevelStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.TopLevelStatement">TopLevelStatement</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseQuery:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.TopLevelStatement]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseQuery:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.TopLevelStatement]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseSelectStatement" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseSelectStatement:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SelectStatement]"></a>
+      <a id="parseSelectStatement:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement]"></a>
       <a id="parseSelectStatement:Parser[SelectStatement]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1446,16 +1446,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseSelectStatement</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SelectStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SelectStatement">SelectStatement</a>]</span>
+        <span class="name">parseSelectStatement</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$SelectStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement">SelectStatement</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseSelectStatement:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SelectStatement]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseSelectStatement:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <p class="shortcomment cmt">*******************************************************</p>
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseSingleRelation" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseSingleRelation:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Relation]"></a>
+      <a id="parseSingleRelation:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Relation]"></a>
       <a id="parseSingleRelation:Parser[Relation]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1463,16 +1463,16 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseSingleRelation</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Relation">Relation</a>]</span>
+        <span class="name">parseSingleRelation</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Relation">Relation</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseSingleRelation:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Relation]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseSingleRelation:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Relation]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="ch.epfl.data.dblab.frontend.parser.SQLParser#parseWhere" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="parseWhere:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]"></a>
+      <a id="parseWhere:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]"></a>
       <a id="parseWhere:Parser[Expression]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -1480,10 +1480,10 @@ Based on: https://github.com/stephentu/scala-sql-parser but heavily modified for
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseWhere</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Expression">Expression</a>]</span>
+        <span class="name">parseWhere</span><span class="result">: <a href="#Parser[+T]extendsParsers.this.Input=&gt;Parsers.this.ParseResult[T]" class="extmbr" name="ch.epfl.data.dblab.frontend.parser.SQLParser.Parser">Parser</a>[<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseWhere:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.Expression]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLParser$@parseWhere:ch.epfl.data.dblab.frontend.parser.SQLParser.Parser[ch.epfl.data.dblab.frontend.parser.SQLAST.Expression]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

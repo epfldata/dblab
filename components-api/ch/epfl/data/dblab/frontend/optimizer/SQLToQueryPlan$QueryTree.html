@@ -45,7 +45,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">QueryTree</span><span class="params">(<span name="topOperator">topOperator: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>, <span name="projections">projections: <a href="../parser/Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Projections">Projections</a></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/Limit.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Limit">Limit</a>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <span class="name">QueryTree</span><span class="params">(<span name="topOperator">topOperator: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>, <span name="projections">projections: <a href="../parser/SQLAST$$Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Projections">Projections</a></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/SQLAST$$Limit.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Limit">Limit</a>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
@@ -89,7 +89,7 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan.QueryTree#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(topOperator:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode,projections:ch.epfl.data.dblab.frontend.parser.Projections,limit:Option[ch.epfl.data.dblab.frontend.parser.Limit]):SQLToQueryPlan.this.QueryTree"></a>
+      <a id="&lt;init&gt;(topOperator:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode,projections:ch.epfl.data.dblab.frontend.parser.SQLAST.Projections,limit:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.Limit]):SQLToQueryPlan.this.QueryTree"></a>
       <a id="&lt;init&gt;:QueryTree"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -97,10 +97,10 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">QueryTree</span><span class="params">(<span name="topOperator">topOperator: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>, <span name="projections">projections: <a href="../parser/Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Projections">Projections</a></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/Limit.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Limit">Limit</a>]</span>)</span>
+        <span class="name">QueryTree</span><span class="params">(<span name="topOperator">topOperator: <a href="../parser/OperatorAST$$OperatorNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode">OperatorNode</a></span>, <span name="projections">projections: <a href="../parser/SQLAST$$Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Projections">Projections</a></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/SQLAST$$Limit.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Limit">Limit</a>]</span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan$QueryTree@&lt;init&gt;(topOperator:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode,projections:ch.epfl.data.dblab.frontend.parser.Projections,limit:Option[ch.epfl.data.dblab.frontend.parser.Limit]):SQLToQueryPlan.this.QueryTree" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan$QueryTree@&lt;init&gt;(topOperator:ch.epfl.data.dblab.frontend.parser.OperatorAST.OperatorNode,projections:ch.epfl.data.dblab.frontend.parser.SQLAST.Projections,limit:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.Limit]):SQLToQueryPlan.this.QueryTree" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -280,7 +280,7 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan.QueryTree#limit" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="limit:Option[ch.epfl.data.dblab.frontend.parser.Limit]"></a>
+      <a id="limit:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.Limit]"></a>
       <a id="limit:Option[Limit]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -288,10 +288,10 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">limit</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/Limit.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Limit">Limit</a>]</span>
+        <span class="name">limit</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<a href="../parser/SQLAST$$Limit.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Limit">Limit</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan$QueryTree@limit:Option[ch.epfl.data.dblab.frontend.parser.Limit]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan$QueryTree@limit:Option[ch.epfl.data.dblab.frontend.parser.SQLAST.Limit]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -348,7 +348,7 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan.QueryTree#projections" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="projections:ch.epfl.data.dblab.frontend.parser.Projections"></a>
+      <a id="projections:ch.epfl.data.dblab.frontend.parser.SQLAST.Projections"></a>
       <a id="projections:Projections"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -356,10 +356,10 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">projections</span><span class="result">: <a href="../parser/Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.Projections">Projections</a></span>
+        <span class="name">projections</span><span class="result">: <a href="../parser/SQLAST$$Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Projections">Projections</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan$QueryTree@projections:ch.epfl.data.dblab.frontend.parser.Projections" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.optimizer.SQLToQueryPlan$QueryTree@projections:ch.epfl.data.dblab.frontend.parser.SQLAST.Projections" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

@@ -1,0 +1,1830 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>SQLAST - ch.epfl.data.dblab.frontend.parser.SQLAST</title>
+          <meta name="description" content="SQLAST - ch.epfl.data.dblab.frontend.parser.SQLAST" />
+          <meta name="keywords" content="SQLAST ch.epfl.data.dblab.frontend.parser.SQLAST" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../../index.html';
+            var hash = 'ch.epfl.data.dblab.frontend.parser.SQLAST$';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Object" src="../../../../../../lib/object_big.png" />
+        <p id="owner"><a href="../../../../../package.html" class="extype" name="ch">ch</a>.<a href="../../../../package.html" class="extype" name="ch.epfl">epfl</a>.<a href="../../../package.html" class="extype" name="ch.epfl.data">data</a>.<a href="../../package.html" class="extype" name="ch.epfl.data.dblab">dblab</a>.<a href="../package.html" class="extype" name="ch.epfl.data.dblab.frontend">frontend</a>.<a href="package.html" class="extype" name="ch.epfl.data.dblab.frontend.parser">parser</a></p>
+        <h1>SQLAST</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="ch.epfl.data.dblab.frontend.parser">package parser</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">SQLAST</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>AST for SQL select statement.
+Based on: https://github.com/stephentu/scala-sql-parser
+</p></div><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="ch.epfl.data.dblab.frontend.parser.SQLAST"><span>SQLAST</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Abs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AbsextendsSQLAST.UnaryOperatorwithProductwithSerializable"></a>
+      <a id="Abs:Abs"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Abs.html"><span class="name">Abs</span></a><span class="params">(<span name="expr">expr: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$UnaryOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.UnaryOperator">UnaryOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@AbsextendsSQLAST.UnaryOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Add" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AddextendsSQLAST.BinaryOperatorwithProductwithSerializable"></a>
+      <a id="Add:Add"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Add.html"><span class="name">Add</span></a><span class="params">(<span name="left">left: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="right">right: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$BinaryOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.BinaryOperator">BinaryOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@AddextendsSQLAST.BinaryOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Aggregation" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="AggregationextendsSQLAST.Expression"></a>
+      <a id="Aggregation:Aggregation"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Aggregation.html"><span class="name">Aggregation</span></a><span class="result"> extends <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@AggregationextendsSQLAST.Expression" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.AllColumns" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AllColumnsextendsSQLAST.ProjectionswithProductwithSerializable"></a>
+      <a id="AllColumns:AllColumns"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$AllColumns.html"><span class="name">AllColumns</span></a><span class="params">()</span><span class="result"> extends <a href="SQLAST$$Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Projections">Projections</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@AllColumnsextendsSQLAST.ProjectionswithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.And" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AndextendsSQLAST.BinaryOperatorwithProductwithSerializable"></a>
+      <a id="And:And"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$And.html"><span class="name">And</span></a><span class="params">(<span name="left">left: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="right">right: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$BinaryOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.BinaryOperator">BinaryOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@AndextendsSQLAST.BinaryOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Avg" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AvgextendsSQLAST.AggregationwithProductwithSerializable"></a>
+      <a id="Avg:Avg"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Avg.html"><span class="name">Avg</span></a><span class="params">(<span name="expr">expr: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$Aggregation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Aggregation">Aggregation</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@AvgextendsSQLAST.AggregationwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.BinaryOperator" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="BinaryOperatorextendsSQLAST.Expression"></a>
+      <a id="BinaryOperator:BinaryOperator"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$BinaryOperator.html"><span class="name">BinaryOperator</span></a><span class="result"> extends <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@BinaryOperatorextendsSQLAST.Expression" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Case" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CaseextendsSQLAST.ExpressionwithProductwithSerializable"></a>
+      <a id="Case:Case"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Case.html"><span class="name">Case</span></a><span class="params">(<span name="cond">cond: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="thenp">thenp: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="elsep">elsep: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@CaseextendsSQLAST.ExpressionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.CharLiteral" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CharLiteralextendsSQLAST.LiteralExpressionwithProductwithSerializable"></a>
+      <a id="CharLiteral:CharLiteral"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$CharLiteral.html"><span class="name">CharLiteral</span></a><span class="params">(<span name="v">v: <span class="extype" name="scala.Char">Char</span></span>)</span><span class="result"> extends <a href="SQLAST$$LiteralExpression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.LiteralExpression">LiteralExpression</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@CharLiteralextendsSQLAST.LiteralExpressionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.CountAll" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CountAllextendsSQLAST.AggregationwithProductwithSerializable"></a>
+      <a id="CountAll:CountAll"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$CountAll.html"><span class="name">CountAll</span></a><span class="params">()</span><span class="result"> extends <a href="SQLAST$$Aggregation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Aggregation">Aggregation</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@CountAllextendsSQLAST.AggregationwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.CountExpr" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CountExprextendsSQLAST.AggregationwithProductwithSerializable"></a>
+      <a id="CountExpr:CountExpr"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$CountExpr.html"><span class="name">CountExpr</span></a><span class="params">(<span name="expr">expr: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$Aggregation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Aggregation">Aggregation</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@CountExprextendsSQLAST.AggregationwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.DateLiteral" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DateLiteralextendsSQLAST.LiteralExpressionwithProductwithSerializable"></a>
+      <a id="DateLiteral:DateLiteral"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$DateLiteral.html"><span class="name">DateLiteral</span></a><span class="params">(<span name="v">v: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="SQLAST$$LiteralExpression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.LiteralExpression">LiteralExpression</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@DateLiteralextendsSQLAST.LiteralExpressionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Distinct" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DistinctextendsSQLAST.ExpressionwithProductwithSerializable"></a>
+      <a id="Distinct:Distinct"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Distinct.html"><span class="name">Distinct</span></a><span class="params">(<span name="e">e: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@DistinctextendsSQLAST.ExpressionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Divide" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DivideextendsSQLAST.BinaryOperatorwithProductwithSerializable"></a>
+      <a id="Divide:Divide"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Divide.html"><span class="name">Divide</span></a><span class="params">(<span name="left">left: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="right">right: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$BinaryOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.BinaryOperator">BinaryOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@DivideextendsSQLAST.BinaryOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.DoubleLiteral" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DoubleLiteralextendsSQLAST.LiteralExpressionwithProductwithSerializable"></a>
+      <a id="DoubleLiteral:DoubleLiteral"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$DoubleLiteral.html"><span class="name">DoubleLiteral</span></a><span class="params">(<span name="v">v: <span class="extype" name="scala.Double">Double</span></span>)</span><span class="result"> extends <a href="SQLAST$$LiteralExpression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.LiteralExpression">LiteralExpression</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@DoubleLiteralextendsSQLAST.LiteralExpressionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.EqualityOperator" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="EqualityOperatorextendsSQLAST.BinaryOperator"></a>
+      <a id="EqualityOperator:EqualityOperator"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$EqualityOperator.html"><span class="name">EqualityOperator</span></a><span class="result"> extends <a href="SQLAST$$BinaryOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.BinaryOperator">BinaryOperator</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@EqualityOperatorextendsSQLAST.BinaryOperator" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Equals" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="EqualsextendsSQLAST.EqualityOperatorwithProductwithSerializable"></a>
+      <a id="Equals:Equals"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Equals.html"><span class="name">Equals</span></a><span class="params">(<span name="left">left: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="right">right: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$EqualityOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.EqualityOperator">EqualityOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@EqualsextendsSQLAST.EqualityOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Exists" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ExistsextendsSQLAST.UnaryOperatorwithProductwithSerializable"></a>
+      <a id="Exists:Exists"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Exists.html"><span class="name">Exists</span></a><span class="params">(<span name="expr">expr: <a href="SQLAST$$SelectStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement">SelectStatement</a></span>)</span><span class="result"> extends <a href="SQLAST$$UnaryOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.UnaryOperator">UnaryOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@ExistsextendsSQLAST.UnaryOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ExpressionextendsSQLAST.SQLNode"></a>
+      <a id="Expression:Expression"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Expression.html"><span class="name">Expression</span></a><span class="result"> extends <a href="SQLAST$$SQLNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode">SQLNode</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@ExpressionextendsSQLAST.SQLNode" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.ExpressionProjections" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ExpressionProjectionsextendsSQLAST.ProjectionswithProductwithSerializable"></a>
+      <a id="ExpressionProjections:ExpressionProjections"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$ExpressionProjections.html"><span class="name">ExpressionProjections</span></a><span class="params">(<span name="lst">lst: <span class="extype" name="scala.Seq">Seq</span>[(<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>])]</span>)</span><span class="result"> extends <a href="SQLAST$$Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Projections">Projections</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@ExpressionProjectionsextendsSQLAST.ProjectionswithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.FieldIdent" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FieldIdentextendsSQLAST.ExpressionwithProductwithSerializable"></a>
+      <a id="FieldIdent:FieldIdent"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$FieldIdent.html"><span class="name">FieldIdent</span></a><span class="params">(<span name="qualifier">qualifier: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="symbol">symbol: <span class="extype" name="scala.reflect.api.Symbols.Symbol">scala.reflect.api.JavaUniverse.Symbol</span> = <span class="symbol">null</span></span>)</span><span class="result"> extends <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@FieldIdentextendsSQLAST.ExpressionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.FloatLiteral" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FloatLiteralextendsSQLAST.LiteralExpressionwithProductwithSerializable"></a>
+      <a id="FloatLiteral:FloatLiteral"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$FloatLiteral.html"><span class="name">FloatLiteral</span></a><span class="params">(<span name="v">v: <span class="extype" name="scala.Float">Float</span></span>)</span><span class="result"> extends <a href="SQLAST$$LiteralExpression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.LiteralExpression">LiteralExpression</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@FloatLiteralextendsSQLAST.LiteralExpressionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.GreaterOrEqual" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GreaterOrEqualextendsSQLAST.InEqualityOperatorwithProductwithSerializable"></a>
+      <a id="GreaterOrEqual:GreaterOrEqual"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$GreaterOrEqual.html"><span class="name">GreaterOrEqual</span></a><span class="params">(<span name="left">left: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="right">right: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$InEqualityOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.InEqualityOperator">InEqualityOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@GreaterOrEqualextendsSQLAST.InEqualityOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.GreaterThan" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GreaterThanextendsSQLAST.InEqualityOperatorwithProductwithSerializable"></a>
+      <a id="GreaterThan:GreaterThan"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$GreaterThan.html"><span class="name">GreaterThan</span></a><span class="params">(<span name="left">left: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="right">right: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$InEqualityOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.InEqualityOperator">InEqualityOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@GreaterThanextendsSQLAST.InEqualityOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.GroupBy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GroupByextendsSQLAST.SQLNodewithProductwithSerializable"></a>
+      <a id="GroupBy:GroupBy"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$GroupBy.html"><span class="name">GroupBy</span></a><span class="params">(<span name="keys">keys: <span class="extype" name="scala.Seq">Seq</span>[<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>]</span>)</span><span class="result"> extends <a href="SQLAST$$SQLNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode">SQLNode</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@GroupByextendsSQLAST.SQLNodewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Having" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HavingextendsSQLAST.SQLNodewithProductwithSerializable"></a>
+      <a id="Having:Having"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Having.html"><span class="name">Having</span></a><span class="params">(<span name="having">having: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$SQLNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode">SQLNode</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@HavingextendsSQLAST.SQLNodewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.In" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="InextendsSQLAST.ExpressionwithProductwithSerializable"></a>
+      <a id="In:In"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$In.html"><span class="name">In</span></a><span class="params">(<span name="elem">elem: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="set">set: <span class="extype" name="scala.Seq">Seq</span>[<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>]</span>)</span><span class="result"> extends <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@InextendsSQLAST.ExpressionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.InEqualityOperator" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="InEqualityOperatorextendsSQLAST.BinaryOperator"></a>
+      <a id="InEqualityOperator:InEqualityOperator"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$InEqualityOperator.html"><span class="name">InEqualityOperator</span></a><span class="result"> extends <a href="SQLAST$$BinaryOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.BinaryOperator">BinaryOperator</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@InEqualityOperatorextendsSQLAST.BinaryOperator" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.IntLiteral" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="IntLiteralextendsSQLAST.LiteralExpressionwithProductwithSerializable"></a>
+      <a id="IntLiteral:IntLiteral"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$IntLiteral.html"><span class="name">IntLiteral</span></a><span class="params">(<span name="v">v: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result"> extends <a href="SQLAST$$LiteralExpression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.LiteralExpression">LiteralExpression</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@IntLiteralextendsSQLAST.LiteralExpressionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Join" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JoinextendsSQLAST.RelationwithProductwithSerializable"></a>
+      <a id="Join:Join"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Join.html"><span class="name">Join</span></a><span class="params">(<span name="left">left: <a href="SQLAST$$Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Relation">Relation</a></span>, <span name="right">right: <a href="SQLAST$$Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Relation">Relation</a></span>, <span name="tpe">tpe: <a href="SQLAST$$JoinType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.JoinType">JoinType</a></span>, <span name="clause">clause: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Relation">Relation</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@JoinextendsSQLAST.RelationwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.JoinType" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="JoinTypeextendsAnyRef"></a>
+      <a id="JoinType:JoinType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$JoinType.html"><span class="name">JoinType</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@JoinTypeextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.LessOrEqual" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LessOrEqualextendsSQLAST.InEqualityOperatorwithProductwithSerializable"></a>
+      <a id="LessOrEqual:LessOrEqual"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$LessOrEqual.html"><span class="name">LessOrEqual</span></a><span class="params">(<span name="left">left: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="right">right: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$InEqualityOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.InEqualityOperator">InEqualityOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@LessOrEqualextendsSQLAST.InEqualityOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.LessThan" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LessThanextendsSQLAST.InEqualityOperatorwithProductwithSerializable"></a>
+      <a id="LessThan:LessThan"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$LessThan.html"><span class="name">LessThan</span></a><span class="params">(<span name="left">left: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="right">right: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$InEqualityOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.InEqualityOperator">InEqualityOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@LessThanextendsSQLAST.InEqualityOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Like" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LikeextendsSQLAST.BinaryOperatorwithProductwithSerializable"></a>
+      <a id="Like:Like"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Like.html"><span class="name">Like</span></a><span class="params">(<span name="left">left: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="right">right: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$BinaryOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.BinaryOperator">BinaryOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@LikeextendsSQLAST.BinaryOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Limit" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LimitextendsSQLAST.SQLNodewithProductwithSerializable"></a>
+      <a id="Limit:Limit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Limit.html"><span class="name">Limit</span></a><span class="params">(<span name="rows">rows: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result"> extends <a href="SQLAST$$SQLNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode">SQLNode</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@LimitextendsSQLAST.SQLNodewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.LiteralExpression" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LiteralExpressionextendsSQLAST.Expression"></a>
+      <a id="LiteralExpression:LiteralExpression"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$LiteralExpression.html"><span class="name">LiteralExpression</span></a><span class="result"> extends <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@LiteralExpressionextendsSQLAST.Expression" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Max" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MaxextendsSQLAST.AggregationwithProductwithSerializable"></a>
+      <a id="Max:Max"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Max.html"><span class="name">Max</span></a><span class="params">(<span name="expr">expr: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$Aggregation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Aggregation">Aggregation</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@MaxextendsSQLAST.AggregationwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Min" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MinextendsSQLAST.AggregationwithProductwithSerializable"></a>
+      <a id="Min:Min"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Min.html"><span class="name">Min</span></a><span class="params">(<span name="expr">expr: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$Aggregation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Aggregation">Aggregation</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@MinextendsSQLAST.AggregationwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Multiply" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MultiplyextendsSQLAST.BinaryOperatorwithProductwithSerializable"></a>
+      <a id="Multiply:Multiply"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Multiply.html"><span class="name">Multiply</span></a><span class="params">(<span name="left">left: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="right">right: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$BinaryOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.BinaryOperator">BinaryOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@MultiplyextendsSQLAST.BinaryOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Not" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="NotextendsSQLAST.UnaryOperatorwithProductwithSerializable"></a>
+      <a id="Not:Not"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Not.html"><span class="name">Not</span></a><span class="params">(<span name="expr">expr: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$UnaryOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.UnaryOperator">UnaryOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@NotextendsSQLAST.UnaryOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.NotEquals" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="NotEqualsextendsSQLAST.EqualityOperatorwithProductwithSerializable"></a>
+      <a id="NotEquals:NotEquals"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$NotEquals.html"><span class="name">NotEquals</span></a><span class="params">(<span name="left">left: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="right">right: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$EqualityOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.EqualityOperator">EqualityOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@NotEqualsextendsSQLAST.EqualityOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Or" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OrextendsSQLAST.BinaryOperatorwithProductwithSerializable"></a>
+      <a id="Or:Or"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Or.html"><span class="name">Or</span></a><span class="params">(<span name="left">left: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="right">right: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$BinaryOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.BinaryOperator">BinaryOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@OrextendsSQLAST.BinaryOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.OrderBy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OrderByextendsSQLAST.SQLNodewithProductwithSerializable"></a>
+      <a id="OrderBy:OrderBy"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$OrderBy.html"><span class="name">OrderBy</span></a><span class="params">(<span name="keys">keys: <span class="extype" name="scala.Seq">Seq</span>[(<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>, <a href="SQLAST$$OrderType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.OrderType">OrderType</a>)]</span>)</span><span class="result"> extends <a href="SQLAST$$SQLNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode">SQLNode</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@OrderByextendsSQLAST.SQLNodewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.OrderType" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="OrderTypeextendsAnyRef"></a>
+      <a id="OrderType:OrderType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$OrderType.html"><span class="name">OrderType</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@OrderTypeextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Projections" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ProjectionsextendsSQLAST.SQLNode"></a>
+      <a id="Projections:Projections"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Projections.html"><span class="name">Projections</span></a><span class="result"> extends <a href="SQLAST$$SQLNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode">SQLNode</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@ProjectionsextendsSQLAST.SQLNode" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.QueryRelationType" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="QueryRelationTypeextendsAnyRef"></a>
+      <a id="QueryRelationType:QueryRelationType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$QueryRelationType.html"><span class="name">QueryRelationType</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@QueryRelationTypeextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Relation" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="RelationextendsSQLAST.SQLNode"></a>
+      <a id="Relation:Relation"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Relation.html"><span class="name">Relation</span></a><span class="result"> extends <a href="SQLAST$$SQLNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode">SQLNode</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@RelationextendsSQLAST.SQLNode" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="SQLNodeextendsAnyRef"></a>
+      <a id="SQLNode:SQLNode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$SQLNode.html"><span class="name">SQLNode</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@SQLNodeextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.SQLTable" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SQLTableextendsSQLAST.RelationwithProductwithSerializable"></a>
+      <a id="SQLTable:SQLTable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$SQLTable.html"><span class="name">SQLTable</span></a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="alias">alias: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <a href="SQLAST$$Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Relation">Relation</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@SQLTableextendsSQLAST.RelationwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.SelectStatement" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SelectStatementextendsSQLAST.TopLevelStatementwithProductwithSerializable"></a>
+      <a id="SelectStatement:SelectStatement"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$SelectStatement.html"><span class="name">SelectStatement</span></a><span class="params">(<span name="withs">withs: <span class="extype" name="scala.Seq">Seq</span>[<a href="SQLAST$$View.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.View">View</a>]</span>, <span name="projections">projections: <a href="SQLAST$$Projections.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Projections">Projections</a></span>, <span name="joinTree">joinTree: <span class="extype" name="scala.Option">Option</span>[<a href="SQLAST$$Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Relation">Relation</a>]</span>, <span name="where">where: <span class="extype" name="scala.Option">Option</span>[<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>]</span>, <span name="groupBy">groupBy: <span class="extype" name="scala.Option">Option</span>[<a href="SQLAST$$GroupBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.GroupBy">GroupBy</a>]</span>, <span name="having">having: <span class="extype" name="scala.Option">Option</span>[<a href="SQLAST$$Having.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Having">Having</a>]</span>, <span name="orderBy">orderBy: <span class="extype" name="scala.Option">Option</span>[<a href="SQLAST$$OrderBy.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.OrderBy">OrderBy</a>]</span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<a href="SQLAST$$Limit.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Limit">Limit</a>]</span>, <span name="aliases">aliases: <span class="extype" name="scala.Seq">Seq</span>[(<a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a>, <span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Int">Int</span>)]</span>)</span><span class="result"> extends <a href="SQLAST$$TopLevelStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.TopLevelStatement">TopLevelStatement</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@SelectStatementextendsSQLAST.TopLevelStatementwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.StringConcat" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="StringConcatextendsSQLAST.BinaryOperatorwithProductwithSerializable"></a>
+      <a id="StringConcat:StringConcat"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$StringConcat.html"><span class="name">StringConcat</span></a><span class="params">(<span name="left">left: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="right">right: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$BinaryOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.BinaryOperator">BinaryOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@StringConcatextendsSQLAST.BinaryOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.StringLiteral" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="StringLiteralextendsSQLAST.LiteralExpressionwithProductwithSerializable"></a>
+      <a id="StringLiteral:StringLiteral"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$StringLiteral.html"><span class="name">StringLiteral</span></a><span class="params">(<span name="v">v: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="SQLAST$$LiteralExpression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.LiteralExpression">LiteralExpression</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@StringLiteralextendsSQLAST.LiteralExpressionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Subquery" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SubqueryextendsSQLAST.RelationwithProductwithSerializable"></a>
+      <a id="Subquery:Subquery"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Subquery.html"><span class="name">Subquery</span></a><span class="params">(<span name="subquery">subquery: <a href="SQLAST$$TopLevelStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.TopLevelStatement">TopLevelStatement</a></span>, <span name="alias">alias: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="SQLAST$$Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Relation">Relation</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@SubqueryextendsSQLAST.RelationwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Substring" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SubstringextendsSQLAST.ExpressionwithProductwithSerializable"></a>
+      <a id="Substring:Substring"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Substring.html"><span class="name">Substring</span></a><span class="params">(<span name="expr">expr: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="idx1">idx1: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="idx2">idx2: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@SubstringextendsSQLAST.ExpressionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Subtract" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SubtractextendsSQLAST.BinaryOperatorwithProductwithSerializable"></a>
+      <a id="Subtract:Subtract"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Subtract.html"><span class="name">Subtract</span></a><span class="params">(<span name="left">left: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>, <span name="right">right: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$BinaryOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.BinaryOperator">BinaryOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@SubtractextendsSQLAST.BinaryOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Sum" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SumextendsSQLAST.AggregationwithProductwithSerializable"></a>
+      <a id="Sum:Sum"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Sum.html"><span class="name">Sum</span></a><span class="params">(<span name="expr">expr: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$Aggregation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Aggregation">Aggregation</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@SumextendsSQLAST.AggregationwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.TopLevelStatement" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="TopLevelStatementextendsSQLAST.SQLNodewithSQLAST.Expression"></a>
+      <a id="TopLevelStatement:TopLevelStatement"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$TopLevelStatement.html"><span class="name">TopLevelStatement</span></a><span class="result"> extends <a href="SQLAST$$SQLNode.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.SQLNode">SQLNode</a> with <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@TopLevelStatementextendsSQLAST.SQLNodewithSQLAST.Expression" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.UnaryMinus" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="UnaryMinusextendsSQLAST.UnaryOperatorwithProductwithSerializable"></a>
+      <a id="UnaryMinus:UnaryMinus"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$UnaryMinus.html"><span class="name">UnaryMinus</span></a><span class="params">(<span name="expr">expr: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$UnaryOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.UnaryOperator">UnaryOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@UnaryMinusextendsSQLAST.UnaryOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.UnaryOperator" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="UnaryOperatorextendsSQLAST.Expression"></a>
+      <a id="UnaryOperator:UnaryOperator"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$UnaryOperator.html"><span class="name">UnaryOperator</span></a><span class="result"> extends <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@UnaryOperatorextendsSQLAST.Expression" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.UnaryPlus" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="UnaryPlusextendsSQLAST.UnaryOperatorwithProductwithSerializable"></a>
+      <a id="UnaryPlus:UnaryPlus"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$UnaryPlus.html"><span class="name">UnaryPlus</span></a><span class="params">(<span name="expr">expr: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$UnaryOperator.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.UnaryOperator">UnaryOperator</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@UnaryPlusextendsSQLAST.UnaryOperatorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.UnionIntersectSequence" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="UnionIntersectSequenceextendsSQLAST.TopLevelStatementwithProductwithSerializable"></a>
+      <a id="UnionIntersectSequence:UnionIntersectSequence"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$UnionIntersectSequence.html"><span class="name">UnionIntersectSequence</span></a><span class="params">(<span name="top">top: <a href="SQLAST$$TopLevelStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.TopLevelStatement">TopLevelStatement</a></span>, <span name="bottom">bottom: <a href="SQLAST$$TopLevelStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.TopLevelStatement">TopLevelStatement</a></span>, <span name="connectionType">connectionType: <a href="SQLAST$$QueryRelationType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.QueryRelationType">QueryRelationType</a></span>)</span><span class="result"> extends <a href="SQLAST$$TopLevelStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.TopLevelStatement">TopLevelStatement</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@UnionIntersectSequenceextendsSQLAST.TopLevelStatementwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Upper" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="UpperextendsSQLAST.ExpressionwithProductwithSerializable"></a>
+      <a id="Upper:Upper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Upper.html"><span class="name">Upper</span></a><span class="params">(<span name="expr">expr: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@UpperextendsSQLAST.ExpressionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.View" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ViewextendsSQLAST.RelationwithProductwithSerializable"></a>
+      <a id="View:View"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$View.html"><span class="name">View</span></a><span class="params">(<span name="subquery">subquery: <a href="SQLAST$$TopLevelStatement.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.TopLevelStatement">TopLevelStatement</a></span>, <span name="alias">alias: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="SQLAST$$Relation.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Relation">Relation</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@ViewextendsSQLAST.RelationwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Year" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="YearextendsSQLAST.ExpressionwithProductwithSerializable"></a>
+      <a id="Year:Year"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Year.html"><span class="name">Year</span></a><span class="params">(<span name="expr">expr: <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a></span>)</span><span class="result"> extends <a href="SQLAST$$Expression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.Expression">Expression</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@YearextendsSQLAST.ExpressionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@##():Int" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.ASC" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ASC"></a>
+      <a id="ASC:ASC"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$ASC$.html"><span class="name">ASC</span></a><span class="result"> extends <a href="SQLAST$$OrderType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.OrderType">OrderType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@ASC" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.AntiJoin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AntiJoin"></a>
+      <a id="AntiJoin:AntiJoin"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$AntiJoin$.html"><span class="name">AntiJoin</span></a><span class="result"> extends <a href="SQLAST$$JoinType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.JoinType">JoinType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@AntiJoin" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.DESC" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DESC"></a>
+      <a id="DESC:DESC"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$DESC$.html"><span class="name">DESC</span></a><span class="result"> extends <a href="SQLAST$$OrderType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.OrderType">OrderType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@DESC" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.EXCEPT" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="EXCEPT"></a>
+      <a id="EXCEPT:EXCEPT"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$EXCEPT$.html"><span class="name">EXCEPT</span></a><span class="result"> extends <a href="SQLAST$$QueryRelationType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.QueryRelationType">QueryRelationType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@EXCEPT" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.FullOuterJoin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FullOuterJoin"></a>
+      <a id="FullOuterJoin:FullOuterJoin"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$FullOuterJoin$.html"><span class="name">FullOuterJoin</span></a><span class="result"> extends <a href="SQLAST$$JoinType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.JoinType">JoinType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@FullOuterJoin" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.INTERSECT" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="INTERSECT"></a>
+      <a id="INTERSECT:INTERSECT"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$INTERSECT$.html"><span class="name">INTERSECT</span></a><span class="result"> extends <a href="SQLAST$$QueryRelationType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.QueryRelationType">QueryRelationType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@INTERSECT" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.Identation" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Identation"></a>
+      <a id="Identation:Identation"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$Identation$.html"><span class="name">Identation</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@Identation" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.InnerJoin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="InnerJoin"></a>
+      <a id="InnerJoin:InnerJoin"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$InnerJoin$.html"><span class="name">InnerJoin</span></a><span class="result"> extends <a href="SQLAST$$JoinType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.JoinType">JoinType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@InnerJoin" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.LeftOuterJoin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LeftOuterJoin"></a>
+      <a id="LeftOuterJoin:LeftOuterJoin"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$LeftOuterJoin$.html"><span class="name">LeftOuterJoin</span></a><span class="result"> extends <a href="SQLAST$$JoinType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.JoinType">JoinType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@LeftOuterJoin" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.LeftSemiJoin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LeftSemiJoin"></a>
+      <a id="LeftSemiJoin:LeftSemiJoin"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$LeftSemiJoin$.html"><span class="name">LeftSemiJoin</span></a><span class="result"> extends <a href="SQLAST$$JoinType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.JoinType">JoinType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@LeftSemiJoin" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.NullLiteral" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="NullLiteral"></a>
+      <a id="NullLiteral:NullLiteral"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$NullLiteral$.html"><span class="name">NullLiteral</span></a><span class="result"> extends <a href="SQLAST$$LiteralExpression.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.LiteralExpression">LiteralExpression</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@NullLiteral" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.RightOuterJoin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RightOuterJoin"></a>
+      <a id="RightOuterJoin:RightOuterJoin"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$RightOuterJoin$.html"><span class="name">RightOuterJoin</span></a><span class="result"> extends <a href="SQLAST$$JoinType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.JoinType">JoinType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@RightOuterJoin" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.SEQUENCE" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SEQUENCE"></a>
+      <a id="SEQUENCE:SEQUENCE"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$SEQUENCE$.html"><span class="name">SEQUENCE</span></a><span class="result"> extends <a href="SQLAST$$QueryRelationType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.QueryRelationType">QueryRelationType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@SEQUENCE" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.UNION" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="UNION"></a>
+      <a id="UNION:UNION"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$UNION$.html"><span class="name">UNION</span></a><span class="result"> extends <a href="SQLAST$$QueryRelationType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.QueryRelationType">QueryRelationType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@UNION" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="ch.epfl.data.dblab.frontend.parser.SQLAST.UNIONALL" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="UNIONALL"></a>
+      <a id="UNIONALL:UNIONALL"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SQLAST$$UNIONALL$.html"><span class="name">UNIONALL</span></a><span class="result"> extends <a href="SQLAST$$QueryRelationType.html" class="extype" name="ch.epfl.data.dblab.frontend.parser.SQLAST.QueryRelationType">QueryRelationType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@UNIONALL" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@toString():String" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#ch.epfl.data.dblab.frontend.parser.SQLAST$@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
