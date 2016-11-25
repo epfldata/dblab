@@ -6,6 +6,7 @@ package optimizer
 import schema._
 import parser._
 import parser.OperatorAST._
+import parser.SQLAST._
 import scala.collection.mutable.ArrayBuffer
 
 /**

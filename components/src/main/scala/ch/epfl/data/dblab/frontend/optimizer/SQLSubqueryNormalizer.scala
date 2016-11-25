@@ -5,8 +5,10 @@ package optimizer
 
 import schema.Schema
 import parser._
+import parser.SQLAST._
 
 /**
+ * Converts SQL queries with subqueries into normalized queries without subqueries.
  *
  * @author Yannis Klonatos
  */

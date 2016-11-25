@@ -14,13 +14,13 @@ import ch.epfl.data.dblab.storagemanager.{ Loader => ShallowLoader }
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
 import frontend.parser.OperatorAST._
-import frontend.parser._
+import frontend.parser.SQLAST._
 import config.Config
 
 /**
  * The main module for compiling query plans.
  *
- * @author Yannis Klonatos
+ * @author Daniel Espino
  */
 object PlanCompiler { this: LegoBaseQueryEngineExp =>
   type Rep[T] = LegoBaseQueryEngineExp#Rep[T]

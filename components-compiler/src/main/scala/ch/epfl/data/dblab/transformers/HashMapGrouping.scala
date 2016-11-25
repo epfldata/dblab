@@ -18,9 +18,8 @@ import quasi._
 import scala.collection.mutable
 
 /**
- * A transformer for partitioning and indexing the MultiMaps. As a result, this transformation
- * converts a MultiMap and the corresponding operations into an Array (either one dimensional or
- * two dimensional).
+ * A transformer for partitioning and indexing MultiMaps created by the hash join operator. This transformation
+ * converts a MultiMap and the corresponding operations into an Array (either one- or two-dimensional).
  *
  * As an example the following program:
  * {{{

@@ -30,7 +30,7 @@ import scala.reflect._
 trait Loader
 
 /**
- * A module that defines loaders for relations.
+ * A module that defines data loading facilities.
  */
 object Loader {
 

@@ -4,7 +4,7 @@ package queryengine
 
 import utils._
 import schema._
-import frontend.parser._
+import frontend.parser.SQLAST._
 import frontend.parser.OperatorAST._
 import storagemanager._
 import scala.reflect._
@@ -16,7 +16,7 @@ import sc.pardis.shallow.{ OptimalString, Record, DynamicCompositeRecord }
 import config.Config
 
 /**
- * The main module for executing query plans.
+ * The main module for executing (interpreting) query plans.
  *
  * @author Yannis Klonatos
  */

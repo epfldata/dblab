@@ -10,6 +10,7 @@ import scala.util.parsing.combinator.lexical._
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.token._
 import scala.util.parsing.input.CharArrayReader.EofCh
+import SQLAST._
 
 /**
  * A simple SQL parser.

@@ -10,7 +10,7 @@ import sc.pardis.annotations._
 import sc.pardis.shallow.OptimalString
 
 /**
- * A Scanner defined for reading from files.
+ * An efficient Scanner defined for reading from files.
  *
  * @param filename the input file name
  */

@@ -5,6 +5,8 @@ package schema
 import sc.pardis.shallow.{ Record, OptimalString }
 
 /**
+ * Represents a row in a database relation.
+ *
  * @author Yannis Klonatos
  */
 class DataRow(val values: Seq[(String, Any)]) extends Record {
@@ -40,12 +42,21 @@ class DataRow(val values: Seq[(String, Any)]) extends Record {
 
 import scala.language.dynamics
 
+/**
+ * Represents dynamic data rows, with the ability to access the attributes through field access.
+ *
+ * For example, instead of accessing an attribute using `row.getField("attr").get` it uses
+ * `row.attr[Int]`.
+ */
 class DynamicDataRow(val className: String, override val values: Seq[(String, Any)]) extends DataRow(values) with Dynamic {
   def selectDynamic[T](key: String): T = {
     getField(key).getOrElse(sys.error(s"$this does not have $key field")).asInstanceOf[T]
   }
 }
 
+/**
+ * Factory module for the [[DynamicDataRow]] class.
+ */
 object DynamicDataRow {
   def apply(className: String)(values: (String, Any)*): DynamicDataRow =
     new DynamicDataRow(className, values.toSeq)

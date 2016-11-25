@@ -6,6 +6,9 @@ import scala.language.implicitConversions
 import scala.collection.immutable.ListMap
 
 // FIXME make the return types for the values consistent (i.e. all of them Long or Double!)
+/**
+ * A class for managing the runtime statistics information.
+ */
 case class Statistics() {
   private val QS_MEM_PREFIX = "QS_MEM_"
   private val CONFLICT_PREFIX = "CONFLICT_"

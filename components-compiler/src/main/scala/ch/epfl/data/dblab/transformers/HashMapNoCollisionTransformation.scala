@@ -18,7 +18,7 @@ import sc.pardis.deep.scalalib.collection._
  * Transforms HashMaps which have no collision in the hash function computation and also
  * in the case that the key has a continuous value into a one dimensional Array.
  * The assumptions for this transformation is similar to [[HashMapToSetTransformation]].
- * In addition, we the assumption that there is no collision.
+ * In addition, we make the assumption that there is no collision.
  *
  * Example:
  * {{{

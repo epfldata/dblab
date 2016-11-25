@@ -6,8 +6,10 @@ package parser
 import schema._
 import scala.reflect._
 import scala.collection.mutable.ArrayBuffer
+import SQLAST._
 
 /**
+ * A module containing AST of physical query operators.
  *
  * @author Yannis Klonatos
  */

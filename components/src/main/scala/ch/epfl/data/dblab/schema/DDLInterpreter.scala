@@ -11,14 +11,14 @@ import sys.process._
 import config.Config
 
 /**
+ * Interprets the given DDL AST and constructs a schema for it.
+ *
  * @author Yannis Klonatos
  */
 class DDLInterpreter(val catalog: Catalog) {
-  var currSchema: Option[Schema] = None
+  private var currSchema: Option[Schema] = None
 
-  // TODO -- This can go away (and thus DDLTypes becoming SCTypes) 
-  // if SC types become generic enough to handle precision of SQL
-  // e.g. in doubles and char types
+  // TODO handle precision in double type
   def ddlTypeToSCType(ddlType: AttributeType) = {
     ddlType match {
       case c: DDLInteger => IntType
