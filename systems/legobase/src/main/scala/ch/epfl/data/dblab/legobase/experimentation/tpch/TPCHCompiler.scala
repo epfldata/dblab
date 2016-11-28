@@ -156,6 +156,7 @@ object TPCHCompiler extends TPCHRunner {
         case "Q10"               => (10, () => Q10(unit(Config.numRuns)))
         case "Q11"               => (11, () => Q11(unit(Config.numRuns)))
         case "Q12"               => (12, () => Q12(unit(Config.numRuns)))
+        case "Q12_p2"            => (12, () => Q12_p2(unit(Config.numRuns)))
         case "Q13"               => (13, () => Q13(unit(Config.numRuns)))
         case "Q14"               => (14, () => Q14(unit(Config.numRuns)))
         case "Q15"               => (15, () => Q15(unit(Config.numRuns)))

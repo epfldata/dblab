@@ -261,6 +261,21 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
         stop,
         ("defaultB", false, dflt))(tp).asInstanceOf[to.Def[T]]
     }
+    case mo: MergeJoinOpNew[_, _] => {
+      class A
+      class B
+      implicit val ma = apply(mo.typeA).asInstanceOf[TypeRep[A]]
+      implicit val mb = apply(mo.typeB).asInstanceOf[TypeRep[B]]
+      type MergeJoinOpTp = MergeJoinOp[sc.pardis.shallow.Record, sc.pardis.shallow.Record]
+      val tp = mo.tp.asInstanceOf[TypeRep[MergeJoinOpTp]]
+      import to._
+      to.__newDef[MergeJoinOpTp](
+        ("leftRelation", false, to.__newArray[A](unit(1 << 25))),
+        ("leftIndex", true, to.unit[Int](0)),
+        ("leftSize", true, to.unit[Int](0)),
+        stop)(tp).asInstanceOf[to.Def[T]]
+
+    }
     case pc @ PardisCast(exp) => {
       PardisCast(transformExp[Any, Any](exp))(transformType(exp.tp), transformType(pc.castTp)).asInstanceOf[to.Def[T]]
     }
@@ -281,7 +296,10 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
   object LoweredNew extends RepExtractor {
     def unapply[T](exp: Rep[T]): Option[Rep[T]] = exp.tp match {
       case x if x.isRecord => Some(exp)
-      case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) | AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) | SortOpType(_) | NestedLoopsJoinOpType(_, _) | SubquerySingleResultType(_) | ViewOpType(_) | HashJoinAntiType(_, _, _) | LeftOuterJoinOpType(_, _, _) => Some(exp)
+      case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) |
+        AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) |
+        SortOpType(_) | NestedLoopsJoinOpType(_, _) | SubquerySingleResultType(_) | ViewOpType(_) |
+        HashJoinAntiType(_, _, _) | LeftOuterJoinOpType(_, _, _) | MergeJoinOpType(_, _) => Some(exp)
       case _ => None
     }
   }
