@@ -785,6 +785,33 @@ object Queries {
     }
   }
 
+  def Q12_p2(numRuns: Int) {
+    val lineitemTable = loadLineitem()
+    val ordersTable = loadOrders()
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val mail = parseString("MAIL")
+        val ship = parseString("SHIP")
+        val constantDate = parseDate("1995-01-01")
+        val constantDate2 = parseDate("1994-01-01")
+        val so1 = new ScanOp(ordersTable)
+        val so2 = new SelectOp(new ScanOp(lineitemTable))(x =>
+          x.L_RECEIPTDATE < constantDate && x.L_COMMITDATE < constantDate && x.L_SHIPDATE < constantDate && x.L_SHIPDATE < x.L_COMMITDATE && x.L_COMMITDATE < x.L_RECEIPTDATE && x.L_RECEIPTDATE >= constantDate2 && (x.L_SHIPMODE === mail || x.L_SHIPMODE === ship))
+        val jo = new MergeJoinOp(so1, so2)((x, y) => x.O_ORDERKEY - y.L_ORDERKEY)
+        val URGENT = parseString("1-URGENT")
+        val HIGH = parseString("2-HIGH")
+        val aggOp = new AggOp(jo, 2)(x => x.L_SHIPMODE[OptimalString])(
+          (t, currAgg) => { if (t.O_ORDERPRIORITY[OptimalString] === URGENT || t.O_ORDERPRIORITY[OptimalString] === HIGH) currAgg + 1 else currAgg },
+
+          (t, currAgg) => { if (t.O_ORDERPRIORITY[OptimalString] =!= URGENT && t.O_ORDERPRIORITY[OptimalString] =!= HIGH) currAgg + 1 else currAgg })
+        val sortOp = new SortOp(aggOp)((x, y) => x.key diff y.key)
+        val po = new PrintOp(sortOp)(kv => printf("%s|%.0f|%.0f\n", kv.key.string, kv.aggs(0), kv.aggs(1)), -1)
+        po.run()
+        ()
+      })
+    }
+  }
+
   def Q12_functional(numRuns: Int) {
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()

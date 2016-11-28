@@ -44,6 +44,7 @@ trait QueriesOps extends Base with TPCHLoaderOps with Q1GRPRecordOps with Q3GRPR
     def Q11(numRuns: Rep[Int]): Rep[Unit] = queriesQ11Object(numRuns)
     def Q11_functional(numRuns: Rep[Int]): Rep[Unit] = queriesQ11_functionalObject(numRuns)
     def Q12(numRuns: Rep[Int]): Rep[Unit] = queriesQ12Object(numRuns)
+    def Q12_p2(numRuns: Rep[Int]): Rep[Unit] = queriesQ12_p2Object(numRuns)
     def Q12_functional(numRuns: Rep[Int]): Rep[Unit] = queriesQ12_functionalObject(numRuns)
     def Q12_functional_p2(numRuns: Rep[Int]): Rep[Unit] = queriesQ12_functional_p2Object(numRuns)
     def Q13(numRuns: Rep[Int]): Rep[Unit] = queriesQ13Object(numRuns)
@@ -108,6 +109,8 @@ trait QueriesOps extends Base with TPCHLoaderOps with Q1GRPRecordOps with Q3GRPR
   type QueriesQ11_functionalObject = QueriesIRs.QueriesQ11_functionalObject
   val QueriesQ12Object = QueriesIRs.QueriesQ12Object
   type QueriesQ12Object = QueriesIRs.QueriesQ12Object
+  val QueriesQ12_p2Object = QueriesIRs.QueriesQ12_p2Object
+  type QueriesQ12_p2Object = QueriesIRs.QueriesQ12_p2Object
   val QueriesQ12_functionalObject = QueriesIRs.QueriesQ12_functionalObject
   type QueriesQ12_functionalObject = QueriesIRs.QueriesQ12_functionalObject
   val QueriesQ12_functional_p2Object = QueriesIRs.QueriesQ12_functional_p2Object
@@ -163,6 +166,7 @@ trait QueriesOps extends Base with TPCHLoaderOps with Q1GRPRecordOps with Q3GRPR
   def queriesQ11Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ11Object(numRuns)
   def queriesQ11_functionalObject(numRuns: Rep[Int]): Rep[Unit] = QueriesQ11_functionalObject(numRuns)
   def queriesQ12Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ12Object(numRuns)
+  def queriesQ12_p2Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ12_p2Object(numRuns)
   def queriesQ12_functionalObject(numRuns: Rep[Int]): Rep[Unit] = QueriesQ12_functionalObject(numRuns)
   def queriesQ12_functional_p2Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ12_functional_p2Object(numRuns)
   def queriesQ13Object(numRuns: Rep[Int]): Rep[Unit] = QueriesQ13Object(numRuns)
@@ -286,6 +290,10 @@ object QueriesIRs extends Base {
   }
 
   case class QueriesQ12Object(numRuns: Rep[Int]) extends FunctionDef[Unit](None, "Queries.Q12", List(List(numRuns))) {
+    override def curriedConstructor = (copy _)
+  }
+
+  case class QueriesQ12_p2Object(numRuns: Rep[Int]) extends FunctionDef[Unit](None, "Queries.Q12_p2", List(List(numRuns))) {
     override def curriedConstructor = (copy _)
   }
 
@@ -905,6 +913,28 @@ trait QueriesImplementations extends QueriesOps { this: ch.epfl.data.dblab.deep.
         val so1: this.Rep[ch.epfl.data.dblab.queryengine.push.ScanOp[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord]] = __newScanOp(ordersTable);
         val so2: this.Rep[ch.epfl.data.dblab.queryengine.push.SelectOp[ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]] = __newSelectOp(__newScanOp(lineitemTable))(__lambda(((x: this.Rep[ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]) => x.L_RECEIPTDATE.$less(constantDate).$amp$amp(x.L_COMMITDATE.$less(constantDate)).$amp$amp(x.L_SHIPDATE.$less(constantDate)).$amp$amp(x.L_SHIPDATE.$less(x.L_COMMITDATE)).$amp$amp(x.L_COMMITDATE.$less(x.L_RECEIPTDATE)).$amp$amp(x.L_RECEIPTDATE.$greater$eq(constantDate2)).$amp$amp(x.L_SHIPMODE.$eq$eq$eq(mail).$bar$bar(x.L_SHIPMODE.$eq$eq$eq(ship))))));
         val jo: this.Rep[ch.epfl.data.dblab.queryengine.push.HashJoinOp[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord, ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord, Int]] = __newHashJoinOp(so1, so2)(__lambda(((x: this.Rep[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord], y: this.Rep[ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]) => infix_$eq$eq(x.O_ORDERKEY, y.L_ORDERKEY))))(__lambda(((x: this.Rep[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord]) => x.O_ORDERKEY)))(__lambda(((x: this.Rep[ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]) => x.L_ORDERKEY)));
+        val URGENT: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("1-URGENT"));
+        val HIGH: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("2-HIGH"));
+        val aggOp: this.Rep[ch.epfl.data.dblab.queryengine.push.AggOp[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord, ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord], ch.epfl.data.sc.pardis.shallow.OptimalString]] = __newAggOp(jo, unit(2))(__lambda(((x: this.Rep[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord, ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]]) => x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("L_SHIPMODE")))))(__lambda(((t: this.Rep[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord, ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]], currAgg: this.Rep[Double]) => __ifThenElse(t.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("O_ORDERPRIORITY")).$eq$eq$eq(URGENT).$bar$bar(t.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("O_ORDERPRIORITY")).$eq$eq$eq(HIGH)), currAgg.$plus(unit(1)), currAgg))), __lambda(((t: this.Rep[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord, ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]], currAgg: this.Rep[Double]) => __ifThenElse(t.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("O_ORDERPRIORITY")).$eq$bang$eq(URGENT).$amp$amp(t.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("O_ORDERPRIORITY")).$eq$bang$eq(HIGH)), currAgg.$plus(unit(1)), currAgg))));
+        val sortOp: this.Rep[ch.epfl.data.dblab.queryengine.push.SortOp[ch.epfl.data.dblab.queryengine.AGGRecord[ch.epfl.data.sc.pardis.shallow.OptimalString]]] = __newSortOp(aggOp)(__lambda(((x: this.Rep[ch.epfl.data.dblab.queryengine.AGGRecord[ch.epfl.data.sc.pardis.shallow.OptimalString]], y: this.Rep[ch.epfl.data.dblab.queryengine.AGGRecord[ch.epfl.data.sc.pardis.shallow.OptimalString]]) => x.key.diff(y.key))));
+        val po: this.Rep[ch.epfl.data.dblab.queryengine.push.PrintOp[ch.epfl.data.dblab.queryengine.AGGRecord[ch.epfl.data.sc.pardis.shallow.OptimalString]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.dblab.queryengine.AGGRecord[ch.epfl.data.sc.pardis.shallow.OptimalString]]) => printf(unit("%s|%.0f|%.0f\n"), kv.key.string, kv.aggs.apply(unit(0)), kv.aggs.apply(unit(1))))), unit(-1));
+        po.run();
+        unit(())
+      }))))
+    }
+  }
+  override def queriesQ12_p2Object(numRuns: Rep[Int]): Rep[Unit] = {
+    {
+      val lineitemTable: this.Rep[Array[ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]] = TPCHLoader.loadLineitem();
+      val ordersTable: this.Rep[Array[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord]] = TPCHLoader.loadOrders();
+      intWrapper(unit(0)).until(numRuns).foreach[Unit](__lambda(((i: this.Rep[Int]) => GenericEngine.runQuery[Unit]({
+        val mail: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("MAIL"));
+        val ship: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("SHIP"));
+        val constantDate: this.Rep[Int] = GenericEngine.parseDate(unit("1995-01-01"));
+        val constantDate2: this.Rep[Int] = GenericEngine.parseDate(unit("1994-01-01"));
+        val so1: this.Rep[ch.epfl.data.dblab.queryengine.push.ScanOp[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord]] = __newScanOp(ordersTable);
+        val so2: this.Rep[ch.epfl.data.dblab.queryengine.push.SelectOp[ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]] = __newSelectOp(__newScanOp(lineitemTable))(__lambda(((x: this.Rep[ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]) => x.L_RECEIPTDATE.$less(constantDate).$amp$amp(x.L_COMMITDATE.$less(constantDate)).$amp$amp(x.L_SHIPDATE.$less(constantDate)).$amp$amp(x.L_SHIPDATE.$less(x.L_COMMITDATE)).$amp$amp(x.L_COMMITDATE.$less(x.L_RECEIPTDATE)).$amp$amp(x.L_RECEIPTDATE.$greater$eq(constantDate2)).$amp$amp(x.L_SHIPMODE.$eq$eq$eq(mail).$bar$bar(x.L_SHIPMODE.$eq$eq$eq(ship))))));
+        val jo: this.Rep[ch.epfl.data.dblab.queryengine.push.MergeJoinOp[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord, ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]] = __newMergeJoinOp(so1, so2)(__lambda(((x: this.Rep[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord], y: this.Rep[ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]) => x.O_ORDERKEY.$minus(y.L_ORDERKEY))));
         val URGENT: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("1-URGENT"));
         val HIGH: this.Rep[ch.epfl.data.sc.pardis.shallow.OptimalString] = GenericEngine.parseString(unit("2-HIGH"));
         val aggOp: this.Rep[ch.epfl.data.dblab.queryengine.push.AggOp[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord, ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord], ch.epfl.data.sc.pardis.shallow.OptimalString]] = __newAggOp(jo, unit(2))(__lambda(((x: this.Rep[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord, ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]]) => x.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("L_SHIPMODE")))))(__lambda(((t: this.Rep[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord, ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]], currAgg: this.Rep[Double]) => __ifThenElse(t.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("O_ORDERPRIORITY")).$eq$eq$eq(URGENT).$bar$bar(t.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("O_ORDERPRIORITY")).$eq$eq$eq(HIGH)), currAgg.$plus(unit(1)), currAgg))), __lambda(((t: this.Rep[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[ch.epfl.data.dblab.experimentation.tpch.ORDERSRecord, ch.epfl.data.dblab.experimentation.tpch.LINEITEMRecord]], currAgg: this.Rep[Double]) => __ifThenElse(t.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("O_ORDERPRIORITY")).$eq$bang$eq(URGENT).$amp$amp(t.selectDynamic[ch.epfl.data.sc.pardis.shallow.OptimalString](unit("O_ORDERPRIORITY")).$eq$bang$eq(HIGH)), currAgg.$plus(unit(1)), currAgg))));
