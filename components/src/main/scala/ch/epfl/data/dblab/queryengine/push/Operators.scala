@@ -646,3 +646,52 @@ class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Ope
     }
   }
 }
+
+/**
+ * Merge Join Operator
+ *
+ * @param leftParent the left parent operator of this operator
+ * @param rightParent the right parent operator of this operator
+ * @param joinCond the join condition
+ */
+@needs[ArrayBuffer[Any]]
+@deep
+@noDeepExt
+@onlineInliner
+class MergeJoinOp[A <: Record, B <: Record](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Int) extends Operator[DynamicCompositeRecord[A, B]] {
+  @inline var mode: scala.Int = 0
+
+  val leftRelation = ArrayBuffer[A]()
+  var leftIndex = 0
+
+  def reset() {
+    rightParent.reset; leftParent.reset; leftRelation.clear;
+  }
+  def open() = {
+    leftParent.child = this
+    rightParent.child = this
+    leftParent.open
+    rightParent.open
+  }
+  def init() {
+    leftParent.init()
+    mode += 1
+    rightParent.init()
+    mode += 1
+  }
+  def consume(tuple: Record) {
+    if (mode == 0) {
+      leftRelation.append(tuple.asInstanceOf[A])
+    } else if (mode == 1) {
+      val rightTuple = tuple.asInstanceOf[B]
+      val leftSize = leftRelation.size
+      while (leftIndex < leftSize && joinCond(leftRelation(leftIndex), rightTuple) < 0) {
+        leftIndex += 1
+      }
+      if (leftIndex < leftSize && joinCond(leftRelation(leftIndex), rightTuple) == 0) {
+        val res = leftRelation(leftIndex).concatenateDynamic(rightTuple, "", "")
+        child.consume(res)
+      }
+    }
+  }
+}
