@@ -654,44 +654,53 @@ class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Ope
  * @param rightParent the right parent operator of this operator
  * @param joinCond the join condition
  */
-@needs[ArrayBuffer[Any]]
+@needs[Array[Any]]
 @deep
 @noDeepExt
 @onlineInliner
-class MergeJoinOp[A <: Record, B <: Record](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Int) extends Operator[DynamicCompositeRecord[A, B]] {
+class MergeJoinOp[A <: Record: Manifest, B <: Record](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Int) extends Operator[DynamicCompositeRecord[A, B]] {
   @inline var mode: scala.Int = 0
 
-  val leftRelation = ArrayBuffer[A]()
+  val leftRelation = new Array[A](1 << 25) // TODO-GEN: make this from statistics
   var leftIndex = 0
+  var leftSize = 0
 
-  def reset() {
-    rightParent.reset; leftParent.reset; leftRelation.clear;
+  def reset(): Unit = {
+    rightParent.reset
+    leftParent.reset
+    leftSize = 0
   }
-  def open() = {
+
+  def open(): Unit = {
     leftParent.child = this
     rightParent.child = this
-    leftParent.open
-    rightParent.open
+    leftParent.open()
+    rightParent.open()
   }
-  def init() {
+  def init(): Unit = {
     leftParent.init()
     mode += 1
     rightParent.init()
     mode += 1
   }
-  def consume(tuple: Record) {
+  def consumeLeft(leftTuple: A): Unit = {
+    leftRelation(leftSize) = leftTuple
+    leftSize += 1
+  }
+  def consumeRight(rightTuple: B): Unit = {
+    while (leftIndex < leftSize && joinCond(leftRelation(leftIndex), rightTuple) < 0) {
+      leftIndex += 1
+    }
+    if (leftIndex < leftSize && joinCond(leftRelation(leftIndex), rightTuple) == 0) {
+      val res = leftRelation(leftIndex).concatenateDynamic(rightTuple, "", "")
+      child.consume(res)
+    }
+  }
+  def consume(tuple: Record): Unit = {
     if (mode == 0) {
-      leftRelation.append(tuple.asInstanceOf[A])
+      consumeLeft(tuple.asInstanceOf[A])
     } else if (mode == 1) {
-      val rightTuple = tuple.asInstanceOf[B]
-      val leftSize = leftRelation.size
-      while (leftIndex < leftSize && joinCond(leftRelation(leftIndex), rightTuple) < 0) {
-        leftIndex += 1
-      }
-      if (leftIndex < leftSize && joinCond(leftRelation(leftIndex), rightTuple) == 0) {
-        val res = leftRelation(leftIndex).concatenateDynamic(rightTuple, "", "")
-        child.consume(res)
-      }
+      consumeRight(tuple.asInstanceOf[B])
     }
   }
 }

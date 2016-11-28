@@ -3402,21 +3402,26 @@ trait LeftOuterJoinOpPartialEvaluation extends LeftOuterJoinOpComponent with Bas
   // Pure function partial evaluation
 }
 
-trait MergeJoinOpOps extends Base with ArrayBufferOps with OperatorOps { this: OperatorsComponent =>
+trait MergeJoinOpOps extends Base with ArrayOps with OperatorOps { this: OperatorsComponent =>
   // Type representation
   val MergeJoinOpType = MergeJoinOpIRs.MergeJoinOpType
   type MergeJoinOpType[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = MergeJoinOpIRs.MergeJoinOpType[A, B]
   implicit def typeMergeJoinOp[A <: ch.epfl.data.sc.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.sc.pardis.shallow.Record: TypeRep]: TypeRep[MergeJoinOp[A, B]] = MergeJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
-  implicit class MergeJoinOpRep[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]) {
-    def reset(): Rep[Unit] = mergeJoinOpReset[A, B](self)(typeA, typeB)
-    def open(): Rep[Unit] = mergeJoinOpOpen[A, B](self)(typeA, typeB)
-    def init(): Rep[Unit] = mergeJoinOpInit[A, B](self)(typeA, typeB)
-    def consume(tuple: Rep[Record]): Rep[Unit] = mergeJoinOpConsume[A, B](self, tuple)(typeA, typeB)
+  implicit class MergeJoinOpRep[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$4: Manifest[A]) {
+    def reset(): Rep[Unit] = mergeJoinOpReset[A, B](self)(typeA, typeB, evidence$4)
+    def open(): Rep[Unit] = mergeJoinOpOpen[A, B](self)(typeA, typeB, evidence$4)
+    def init(): Rep[Unit] = mergeJoinOpInit[A, B](self)(typeA, typeB, evidence$4)
+    def consumeLeft(leftTuple: Rep[A]): Rep[Unit] = mergeJoinOpConsumeLeft[A, B](self, leftTuple)(typeA, typeB, evidence$4)
+    def consumeRight(rightTuple: Rep[B]): Rep[Unit] = mergeJoinOpConsumeRight[A, B](self, rightTuple)(typeA, typeB, evidence$4)
+    def consume(tuple: Rep[Record]): Rep[Unit] = mergeJoinOpConsume[A, B](self, tuple)(typeA, typeB, evidence$4)
+    def leftSize_=(x$1: Rep[Int]): Rep[Unit] = mergeJoinOp_Field_LeftSize_$eq[A, B](self, x$1)(typeA, typeB)
+    def leftSize: Rep[Int] = mergeJoinOp_Field_LeftSize[A, B](self)(typeA, typeB)
     def leftIndex_=(x$1: Rep[Int]): Rep[Unit] = mergeJoinOp_Field_LeftIndex_$eq[A, B](self, x$1)(typeA, typeB)
     def leftIndex: Rep[Int] = mergeJoinOp_Field_LeftIndex[A, B](self)(typeA, typeB)
-    def leftRelation: Rep[ArrayBuffer[A]] = mergeJoinOp_Field_LeftRelation[A, B](self)(typeA, typeB)
+    def leftRelation: Rep[Array[A]] = mergeJoinOp_Field_LeftRelation[A, B](self)(typeA, typeB)
     def mode_=(x$1: Rep[Int]): Rep[Unit] = mergeJoinOp_Field_Mode_$eq[A, B](self, x$1)(typeA, typeB)
     def mode: Rep[Int] = mergeJoinOp_Field_Mode[A, B](self)(typeA, typeB)
+    def evidence$4: Rep[Manifest[A]] = mergeJoinOp_Field_Evidence$4[A, B](self)(typeA, typeB)
     def joinCond: Rep[((A, B) => Int)] = mergeJoinOp_Field_JoinCond[A, B](self)(typeA, typeB)
     def rightParent: Rep[Operator[B]] = mergeJoinOp_Field_RightParent[A, B](self)(typeA, typeB)
     def leftParent: Rep[Operator[A]] = mergeJoinOp_Field_LeftParent[A, B](self)(typeA, typeB)
@@ -3429,7 +3434,7 @@ trait MergeJoinOpOps extends Base with ArrayBufferOps with OperatorOps { this: O
 
   }
   // constructors
-  def __newMergeJoinOp[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]])(joinCond: Rep[((A, B) => Int)])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[MergeJoinOp[A, B]] = mergeJoinOpNew[A, B](leftParent, rightParent, joinCond)(typeA, typeB)
+  def __newMergeJoinOp[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]])(joinCond: Rep[((A, B) => Int)])(implicit evidence$4: Manifest[A], typeA: TypeRep[A], typeB: TypeRep[B]): Rep[MergeJoinOp[A, B]] = mergeJoinOpNew[A, B](leftParent, rightParent, joinCond)(typeA, typeB, evidence$4)
   // IR defs
   val MergeJoinOpNew = MergeJoinOpIRs.MergeJoinOpNew
   type MergeJoinOpNew[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = MergeJoinOpIRs.MergeJoinOpNew[A, B]
@@ -3439,8 +3444,16 @@ trait MergeJoinOpOps extends Base with ArrayBufferOps with OperatorOps { this: O
   type MergeJoinOpOpen[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = MergeJoinOpIRs.MergeJoinOpOpen[A, B]
   val MergeJoinOpInit = MergeJoinOpIRs.MergeJoinOpInit
   type MergeJoinOpInit[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = MergeJoinOpIRs.MergeJoinOpInit[A, B]
+  val MergeJoinOpConsumeLeft = MergeJoinOpIRs.MergeJoinOpConsumeLeft
+  type MergeJoinOpConsumeLeft[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = MergeJoinOpIRs.MergeJoinOpConsumeLeft[A, B]
+  val MergeJoinOpConsumeRight = MergeJoinOpIRs.MergeJoinOpConsumeRight
+  type MergeJoinOpConsumeRight[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = MergeJoinOpIRs.MergeJoinOpConsumeRight[A, B]
   val MergeJoinOpConsume = MergeJoinOpIRs.MergeJoinOpConsume
   type MergeJoinOpConsume[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = MergeJoinOpIRs.MergeJoinOpConsume[A, B]
+  val MergeJoinOp_Field_LeftSize__eq = MergeJoinOpIRs.MergeJoinOp_Field_LeftSize__eq
+  type MergeJoinOp_Field_LeftSize__eq[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = MergeJoinOpIRs.MergeJoinOp_Field_LeftSize__eq[A, B]
+  val MergeJoinOp_Field_LeftSize = MergeJoinOpIRs.MergeJoinOp_Field_LeftSize
+  type MergeJoinOp_Field_LeftSize[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = MergeJoinOpIRs.MergeJoinOp_Field_LeftSize[A, B]
   val MergeJoinOp_Field_LeftIndex__eq = MergeJoinOpIRs.MergeJoinOp_Field_LeftIndex__eq
   type MergeJoinOp_Field_LeftIndex__eq[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = MergeJoinOpIRs.MergeJoinOp_Field_LeftIndex__eq[A, B]
   val MergeJoinOp_Field_LeftIndex = MergeJoinOpIRs.MergeJoinOp_Field_LeftIndex
@@ -3451,6 +3464,8 @@ trait MergeJoinOpOps extends Base with ArrayBufferOps with OperatorOps { this: O
   type MergeJoinOp_Field_Mode__eq[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = MergeJoinOpIRs.MergeJoinOp_Field_Mode__eq[A, B]
   val MergeJoinOp_Field_Mode = MergeJoinOpIRs.MergeJoinOp_Field_Mode
   type MergeJoinOp_Field_Mode[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = MergeJoinOpIRs.MergeJoinOp_Field_Mode[A, B]
+  val MergeJoinOp_Field_Evidence$4 = MergeJoinOpIRs.MergeJoinOp_Field_Evidence$4
+  type MergeJoinOp_Field_Evidence$4[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = MergeJoinOpIRs.MergeJoinOp_Field_Evidence$4[A, B]
   val MergeJoinOp_Field_JoinCond = MergeJoinOpIRs.MergeJoinOp_Field_JoinCond
   type MergeJoinOp_Field_JoinCond[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = MergeJoinOpIRs.MergeJoinOp_Field_JoinCond[A, B]
   val MergeJoinOp_Field_RightParent = MergeJoinOpIRs.MergeJoinOp_Field_RightParent
@@ -3466,16 +3481,21 @@ trait MergeJoinOpOps extends Base with ArrayBufferOps with OperatorOps { this: O
   val MergeJoinOp_Field_Child = MergeJoinOpIRs.MergeJoinOp_Field_Child
   type MergeJoinOp_Field_Child[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = MergeJoinOpIRs.MergeJoinOp_Field_Child[A, B]
   // method definitions
-  def mergeJoinOpNew[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Int)])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[MergeJoinOp[A, B]] = MergeJoinOpNew[A, B](leftParent, rightParent, joinCond)
-  def mergeJoinOpReset[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = MergeJoinOpReset[A, B](self)
-  def mergeJoinOpOpen[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = MergeJoinOpOpen[A, B](self)
-  def mergeJoinOpInit[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = MergeJoinOpInit[A, B](self)
-  def mergeJoinOpConsume[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = MergeJoinOpConsume[A, B](self, tuple)
+  def mergeJoinOpNew[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Int)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$4: Manifest[A]): Rep[MergeJoinOp[A, B]] = MergeJoinOpNew[A, B](leftParent, rightParent, joinCond)
+  def mergeJoinOpReset[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$4: Manifest[A]): Rep[Unit] = MergeJoinOpReset[A, B](self)
+  def mergeJoinOpOpen[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$4: Manifest[A]): Rep[Unit] = MergeJoinOpOpen[A, B](self)
+  def mergeJoinOpInit[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$4: Manifest[A]): Rep[Unit] = MergeJoinOpInit[A, B](self)
+  def mergeJoinOpConsumeLeft[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], leftTuple: Rep[A])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$4: Manifest[A]): Rep[Unit] = MergeJoinOpConsumeLeft[A, B](self, leftTuple)
+  def mergeJoinOpConsumeRight[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], rightTuple: Rep[B])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$4: Manifest[A]): Rep[Unit] = MergeJoinOpConsumeRight[A, B](self, rightTuple)
+  def mergeJoinOpConsume[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$4: Manifest[A]): Rep[Unit] = MergeJoinOpConsume[A, B](self, tuple)
+  def mergeJoinOp_Field_LeftSize_$eq[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = MergeJoinOp_Field_LeftSize__eq[A, B](self, x$1)
+  def mergeJoinOp_Field_LeftSize[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = MergeJoinOp_Field_LeftSize[A, B](self)
   def mergeJoinOp_Field_LeftIndex_$eq[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = MergeJoinOp_Field_LeftIndex__eq[A, B](self, x$1)
   def mergeJoinOp_Field_LeftIndex[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = MergeJoinOp_Field_LeftIndex[A, B](self)
-  def mergeJoinOp_Field_LeftRelation[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[ArrayBuffer[A]] = MergeJoinOp_Field_LeftRelation[A, B](self)
+  def mergeJoinOp_Field_LeftRelation[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Array[A]] = MergeJoinOp_Field_LeftRelation[A, B](self)
   def mergeJoinOp_Field_Mode_$eq[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], x$1: Rep[Int])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = MergeJoinOp_Field_Mode__eq[A, B](self, x$1)
   def mergeJoinOp_Field_Mode[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Int] = MergeJoinOp_Field_Mode[A, B](self)
+  def mergeJoinOp_Field_Evidence$4[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Manifest[A]] = MergeJoinOp_Field_Evidence$4[A, B](self)
   def mergeJoinOp_Field_JoinCond[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[((A, B) => Int)] = MergeJoinOp_Field_JoinCond[A, B](self)
   def mergeJoinOp_Field_RightParent[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[B]] = MergeJoinOp_Field_RightParent[A, B](self)
   def mergeJoinOp_Field_LeftParent[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Operator[A]] = MergeJoinOp_Field_LeftParent[A, B](self)
@@ -3486,7 +3506,7 @@ trait MergeJoinOpOps extends Base with ArrayBufferOps with OperatorOps { this: O
   type MergeJoinOp[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record] = ch.epfl.data.dblab.queryengine.push.MergeJoinOp[A, B]
 }
 object MergeJoinOpIRs extends Base {
-  import ArrayBufferIRs._
+  import ArrayIRs._
   import OperatorIRs._
   // Type representation
   case class MergeJoinOpType[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](typeA: TypeRep[A], typeB: TypeRep[B]) extends TypeRep[MergeJoinOp[A, B]] {
@@ -3496,24 +3516,40 @@ object MergeJoinOpIRs extends Base {
   }
   implicit def typeMergeJoinOp[A <: ch.epfl.data.sc.pardis.shallow.Record: TypeRep, B <: ch.epfl.data.sc.pardis.shallow.Record: TypeRep]: TypeRep[MergeJoinOp[A, B]] = MergeJoinOpType(implicitly[TypeRep[A]], implicitly[TypeRep[B]])
   // case classes
-  case class MergeJoinOpNew[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Int)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends ConstructorDef[MergeJoinOp[A, B]](List(typeA, typeB), "MergeJoinOp", List(List(leftParent, rightParent), List(joinCond))) {
+  case class MergeJoinOpNew[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Int)])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$4: Manifest[A]) extends ConstructorDef[MergeJoinOp[A, B]](List(typeA, typeB), "MergeJoinOp", List(List(leftParent, rightParent), List(joinCond))) {
     override def curriedConstructor = (copy[A, B] _).curried
   }
 
-  case class MergeJoinOpReset[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
+  case class MergeJoinOpReset[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$4: Manifest[A]) extends FunctionDef[Unit](Some(self), "reset", List(List())) {
     override def curriedConstructor = (copy[A, B] _)
   }
 
-  case class MergeJoinOpOpen[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
+  case class MergeJoinOpOpen[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$4: Manifest[A]) extends FunctionDef[Unit](Some(self), "open", List(List())) {
     override def curriedConstructor = (copy[A, B] _)
   }
 
-  case class MergeJoinOpInit[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[Unit](Some(self), "init", List(List())) {
+  case class MergeJoinOpInit[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$4: Manifest[A]) extends FunctionDef[Unit](Some(self), "init", List(List())) {
     override def curriedConstructor = (copy[A, B] _)
   }
 
-  case class MergeJoinOpConsume[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], tuple: Rep[Record])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FunctionDef[Unit](Some(self), "consume", List(List(tuple))) {
+  case class MergeJoinOpConsumeLeft[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], leftTuple: Rep[A])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$4: Manifest[A]) extends FunctionDef[Unit](Some(self), "consumeLeft", List(List(leftTuple))) {
     override def curriedConstructor = (copy[A, B] _).curried
+  }
+
+  case class MergeJoinOpConsumeRight[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], rightTuple: Rep[B])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$4: Manifest[A]) extends FunctionDef[Unit](Some(self), "consumeRight", List(List(rightTuple))) {
+    override def curriedConstructor = (copy[A, B] _).curried
+  }
+
+  case class MergeJoinOpConsume[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], tuple: Rep[Record])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B], val evidence$4: Manifest[A]) extends FunctionDef[Unit](Some(self), "consume", List(List(tuple))) {
+    override def curriedConstructor = (copy[A, B] _).curried
+  }
+
+  case class MergeJoinOp_Field_LeftSize__eq[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], x$1: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[Int](self, "leftSize", x$1) {
+    override def curriedConstructor = (copy[A, B] _).curried
+  }
+
+  case class MergeJoinOp_Field_LeftSize[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldGetter[Int](self, "leftSize") {
+    override def curriedConstructor = (copy[A, B] _)
   }
 
   case class MergeJoinOp_Field_LeftIndex__eq[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], x$1: Rep[Int])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldSetter[Int](self, "leftIndex", x$1) {
@@ -3524,11 +3560,11 @@ object MergeJoinOpIRs extends Base {
     override def curriedConstructor = (copy[A, B] _)
   }
 
-  case class MergeJoinOp_Field_LeftRelation[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[ArrayBuffer[A]](self, "leftRelation") {
+  case class MergeJoinOp_Field_LeftRelation[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[Array[A]](self, "leftRelation") {
     override def curriedConstructor = (copy[A, B] _)
     override def isPure = true
 
-    override def partiallyEvaluate(children: Any*): ArrayBuffer[A] = {
+    override def partiallyEvaluate(children: Any*): Array[A] = {
       val self = children(0).asInstanceOf[MergeJoinOp[A, B]]
       self.leftRelation
     }
@@ -3542,6 +3578,12 @@ object MergeJoinOpIRs extends Base {
 
   case class MergeJoinOp_Field_Mode[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldGetter[Int](self, "mode") {
     override def curriedConstructor = (copy[A, B] _)
+  }
+
+  case class MergeJoinOp_Field_Evidence$4[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[Manifest[A]](self, "evidence$4") {
+    override def curriedConstructor = (copy[A, B] _)
+    override def isPure = true
+
   }
 
   case class MergeJoinOp_Field_JoinCond[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit val typeA: TypeRep[A], val typeB: TypeRep[B]) extends FieldDef[((A, B) => Int)](self, "joinCond") {
@@ -3604,14 +3646,14 @@ trait MergeJoinOpImplicits extends MergeJoinOpOps { this: OperatorsComponent =>
 trait MergeJoinOpComponent extends MergeJoinOpOps with MergeJoinOpImplicits { this: OperatorsComponent => }
 
 trait MergeJoinOpImplementations extends MergeJoinOpOps { this: OperatorsComponent =>
-  override def mergeJoinOpReset[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
+  override def mergeJoinOpReset[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$4: Manifest[A]): Rep[Unit] = {
     {
       self.rightParent.reset();
       self.leftParent.reset();
-      self.leftRelation.clear()
+      self.leftSize_$eq(unit(0))
     }
   }
-  override def mergeJoinOpOpen[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
+  override def mergeJoinOpOpen[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$4: Manifest[A]): Rep[Unit] = {
     {
       self.leftParent.child_$eq(self);
       self.rightParent.child_$eq(self);
@@ -3619,7 +3661,7 @@ trait MergeJoinOpImplementations extends MergeJoinOpOps { this: OperatorsCompone
       self.rightParent.open()
     }
   }
-  override def mergeJoinOpInit[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
+  override def mergeJoinOpInit[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$4: Manifest[A]): Rep[Unit] = {
     {
       self.leftParent.init();
       self.mode_$eq(self.mode.$plus(unit(1)));
@@ -3627,16 +3669,23 @@ trait MergeJoinOpImplementations extends MergeJoinOpOps { this: OperatorsCompone
       self.mode_$eq(self.mode.$plus(unit(1)))
     }
   }
-  override def mergeJoinOpConsume[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B]): Rep[Unit] = {
-    __ifThenElse(infix_$eq$eq(self.mode, unit(0)), self.leftRelation.append(infix_asInstanceOf[A](tuple)), __ifThenElse(infix_$eq$eq(self.mode, unit(1)), {
-      val rightTuple: this.Rep[B] = infix_asInstanceOf[B](tuple);
-      val leftSize: this.Rep[Int] = self.leftRelation.size;
-      __whileDo(self.leftIndex.$less(leftSize).$amp$amp(__app[A, B, Int](self.joinCond).apply(self.leftRelation.apply(self.leftIndex), rightTuple).$less(unit(0))), self.leftIndex_$eq(self.leftIndex.$plus(unit(1))));
-      __ifThenElse(self.leftIndex.$less(leftSize).$amp$amp(infix_$eq$eq(__app[A, B, Int](self.joinCond).apply(self.leftRelation.apply(self.leftIndex), rightTuple), unit(0))), {
+  override def mergeJoinOpConsumeLeft[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], leftTuple: Rep[A])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$4: Manifest[A]): Rep[Unit] = {
+    {
+      self.leftRelation.update(self.leftSize, leftTuple);
+      self.leftSize_$eq(self.leftSize.$plus(unit(1)))
+    }
+  }
+  override def mergeJoinOpConsumeRight[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], rightTuple: Rep[B])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$4: Manifest[A]): Rep[Unit] = {
+    {
+      __whileDo(self.leftIndex.$less(self.leftSize).$amp$amp(__app[A, B, Int](self.joinCond).apply(self.leftRelation.apply(self.leftIndex), rightTuple).$less(unit(0))), self.leftIndex_$eq(self.leftIndex.$plus(unit(1))));
+      __ifThenElse(self.leftIndex.$less(self.leftSize).$amp$amp(infix_$eq$eq(__app[A, B, Int](self.joinCond).apply(self.leftRelation.apply(self.leftIndex), rightTuple), unit(0))), {
         val res: this.Rep[ch.epfl.data.sc.pardis.shallow.DynamicCompositeRecord[A, B]] = RecordOps[A](self.leftRelation.apply(self.leftIndex)).concatenateDynamic[B](rightTuple, unit(""), unit(""));
         self.child.consume(res)
       }, unit(()))
-    }, unit(())))
+    }
+  }
+  override def mergeJoinOpConsume[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record](self: Rep[MergeJoinOp[A, B]], tuple: Rep[Record])(implicit typeA: TypeRep[A], typeB: TypeRep[B], evidence$4: Manifest[A]): Rep[Unit] = {
+    __ifThenElse(infix_$eq$eq(self.mode, unit(0)), self.consumeLeft(infix_asInstanceOf[A](tuple)), __ifThenElse(infix_$eq$eq(self.mode, unit(1)), self.consumeRight(infix_asInstanceOf[B](tuple)), unit(())))
   }
 }
 
@@ -3753,7 +3802,7 @@ trait OperatorDynamicDispatch extends OperatorComponent { this: OperatorsCompone
       type T1 = ch.epfl.data.sc.pardis.shallow.Record
       type T2 = ch.epfl.data.sc.pardis.shallow.Record
       val newNode = node.asInstanceOf[MergeJoinOpNew[T1, T2]]
-      mergeJoinOpOpen[T1, T2](self.asInstanceOf[Rep[MergeJoinOp[T1, T2]]])(newNode.typeA, newNode.typeB)
+      mergeJoinOpOpen[T1, T2](self.asInstanceOf[Rep[MergeJoinOp[T1, T2]]])(newNode.typeA, newNode.typeB, newNode.evidence$4)
     case _ => super.operatorOpen[A](self)(typeA)
   }
   override def operatorInit[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = self match {
@@ -3835,7 +3884,7 @@ trait OperatorDynamicDispatch extends OperatorComponent { this: OperatorsCompone
       type T1 = ch.epfl.data.sc.pardis.shallow.Record
       type T2 = ch.epfl.data.sc.pardis.shallow.Record
       val newNode = node.asInstanceOf[MergeJoinOpNew[T1, T2]]
-      mergeJoinOpInit[T1, T2](self.asInstanceOf[Rep[MergeJoinOp[T1, T2]]])(newNode.typeA, newNode.typeB)
+      mergeJoinOpInit[T1, T2](self.asInstanceOf[Rep[MergeJoinOp[T1, T2]]])(newNode.typeA, newNode.typeB, newNode.evidence$4)
     case _ => super.operatorInit[A](self)(typeA)
   }
   override def operatorReset[A](self: Rep[Operator[A]])(implicit typeA: TypeRep[A]): Rep[Unit] = self match {
@@ -3917,7 +3966,7 @@ trait OperatorDynamicDispatch extends OperatorComponent { this: OperatorsCompone
       type T1 = ch.epfl.data.sc.pardis.shallow.Record
       type T2 = ch.epfl.data.sc.pardis.shallow.Record
       val newNode = node.asInstanceOf[MergeJoinOpNew[T1, T2]]
-      mergeJoinOpReset[T1, T2](self.asInstanceOf[Rep[MergeJoinOp[T1, T2]]])(newNode.typeA, newNode.typeB)
+      mergeJoinOpReset[T1, T2](self.asInstanceOf[Rep[MergeJoinOp[T1, T2]]])(newNode.typeA, newNode.typeB, newNode.evidence$4)
     case _ => super.operatorReset[A](self)(typeA)
   }
   override def operatorConsume[A](self: Rep[Operator[A]], tuple: Rep[Record])(implicit typeA: TypeRep[A]): Rep[Unit] = self match {
@@ -3999,7 +4048,7 @@ trait OperatorDynamicDispatch extends OperatorComponent { this: OperatorsCompone
       type T1 = ch.epfl.data.sc.pardis.shallow.Record
       type T2 = ch.epfl.data.sc.pardis.shallow.Record
       val newNode = node.asInstanceOf[MergeJoinOpNew[T1, T2]]
-      mergeJoinOpConsume[T1, T2](self.asInstanceOf[Rep[MergeJoinOp[T1, T2]]], tuple)(newNode.typeA, newNode.typeB)
+      mergeJoinOpConsume[T1, T2](self.asInstanceOf[Rep[MergeJoinOp[T1, T2]]], tuple)(newNode.typeA, newNode.typeB, newNode.evidence$4)
     case _ => super.operatorConsume[A](self, tuple)(typeA)
   }
 }
