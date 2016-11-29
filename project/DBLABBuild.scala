@@ -47,7 +47,7 @@ object DBLABBuild extends Build {
     .setPreference(AlignSingleLineCaseStatements, true)
   }
   val scala_version = "2.11.7"
-  val sc_version = "0.1.3-SNAPSHOT"
+  val sc_version = "0.1.31-SNAPSHOT"
 
   // addCommandAlias("test-gen", ";project legobase; project root; clean")
 
@@ -75,7 +75,8 @@ object DBLABBuild extends Build {
         "ch.epfl.data" % "sc-pardis-compiler_2.11" % sc_version,
         "ch.epfl.data" % "sc-c-scala-lib_2.11" % sc_version,
         "ch.epfl.data" % "sc-c-scala-deep_2.11" % sc_version,
-        "ch.epfl.data" % "sc-pardis-quasi_2.11" % sc_version
+        "ch.epfl.data" % "sc-pardis-quasi_2.11" % sc_version,
+        "ch.epfl.data" % "squid-sc-backend_2.11" % "0.1-SNAPSHOT"
         ))) dependsOn dblab_components
 
   lazy val dblab_experimentation       = Project(id = "dblab-experimentation",        base = file("experimentation"),
