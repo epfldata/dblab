@@ -1,6 +1,6 @@
 DBLAB
 ======
-[![Build Status](https://travis-ci.org/epfldata/dblab.svg)](https://travis-ci.org/epfldata/dblab)
+[![Build Status](https://travis-ci.org/epfldata/dblab.svg?branch=develop)](https://travis-ci.org/epfldata/dblab)
 
 DBLAB is a framework for building database systems by high-level programming, 
 and getting really good performance nevertheless. This is achieved by a new DSL
@@ -34,12 +34,3 @@ sharing no common code with the previous system. To be more concrete,
 this implementation only contains a pipeline of the transformers 
 existing in the [DBLAB Components Compiler](components-compiler) project.
 
-
-Roadmap
--------
-
-The roadmap for DBLAB includes the open-source release of a second DBMS, a 
-main-memory OLTP system, in the summer of 2016. Subsequently to this, we will
-start converging DBLAB towards our vision of a framework and component library
-for quickly creating new high-performance database systems and a testbed for
-experimenting with new database technology.
