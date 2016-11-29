@@ -646,3 +646,89 @@ class LeftOuterJoinOp[A <: Record, B <: Record: Manifest, C](val leftParent: Ope
     }
   }
 }
+
+/**
+ * Merge Join Operator
+ *
+ * Precondition: The tuples coming from the two parent operators should be sorted
+ * on the join key.
+ *
+ * @param leftParent the left parent operator of this operator
+ * @param rightParent the right parent operator of this operator
+ * @param joinCond the join condition which in addition to specifying whether two
+ *   tuples can be joined, specifies the ordering of the join keys of two tuples.
+ */
+@needs[Array[Any]]
+@deep
+@noDeepExt
+@onlineInliner
+class MergeJoinOp[A <: Record: Manifest, B <: Record](val leftParent: Operator[A], val rightParent: Operator[B])(val joinCond: (A, B) => Int) extends Operator[DynamicCompositeRecord[A, B]] {
+  @inline var mode: scala.Int = 0
+
+  val leftRelation = new Array[A](1 << 25) // TODO-GEN: make this from statistics
+  var leftIndex = 0
+  var leftSize = 0
+
+  def reset(): Unit = {
+    rightParent.reset
+    leftParent.reset
+    leftSize = 0
+  }
+
+  def open(): Unit = {
+    leftParent.child = this
+    rightParent.child = this
+    leftParent.open()
+    rightParent.open()
+  }
+  def init(): Unit = {
+    leftParent.init()
+    mode += 1
+    rightParent.init()
+    mode += 1
+  }
+  /**
+   * Consumes the tuples coming from the left parent operator. These tuples
+   * are added to an intermediate array. This intermediate array is used while
+   * consuming the tuples of the right parent operator.
+   */
+  def consumeLeft(leftTuple: A): Unit = {
+    leftRelation(leftSize) = leftTuple
+    leftSize += 1
+  }
+  /**
+   * Consumes the tuples coming from the right parent operator. The tuples of
+   * the left parent operator, which are stored in an intermediate array, are
+   * compared against this tuple to see if they can be joined or not. As the tuples
+   * of both arrays are assumed to be sorted on the join key, once the join key of
+   * an element from the left parent operator is less than the join key of the
+   * tuple from the right parent operator, it is no longer needed to be checked for
+   * the next coming tuples from the right parent operator. If two tuples can be joined,
+   * the consume method of the child operator is invoked for the joined tuple.
+   */
+  def consumeRight(rightTuple: B): Unit = {
+    while (leftIndex < leftSize && joinCond(leftRelation(leftIndex), rightTuple) < 0) {
+      leftIndex += 1
+    }
+    if (leftIndex < leftSize && joinCond(leftRelation(leftIndex), rightTuple) == 0) {
+      val res = leftRelation(leftIndex).concatenateDynamic(rightTuple, "", "")
+      child.consume(res)
+    }
+  }
+  /**
+   * Consumes tuples of two parent operators in two phases.
+   *
+   * In the first phase, the tuples of left relation are consumed and are written
+   * into an intermediate array. This means that the pipeline coming from the left
+   * opertator is broken at this phase.
+   * The second phase, consumes the elements of the right parent operator. This phase
+   * does not require breaking the pipeline of the right parent operator.
+   */
+  def consume(tuple: Record): Unit = {
+    if (mode == 0) {
+      consumeLeft(tuple.asInstanceOf[A])
+    } else if (mode == 1) {
+      consumeRight(tuple.asInstanceOf[B])
+    }
+  }
+}

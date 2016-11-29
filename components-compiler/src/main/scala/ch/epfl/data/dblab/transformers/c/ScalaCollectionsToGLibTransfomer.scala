@@ -352,7 +352,7 @@ class ScalaCollectionsToGLibTransfomer(override val IR: QueryEngineExp) extends 
   }
   rewrite += rule {
     case ArrayBufferSize(a) =>
-      CLang.->[GArray, Int](a.asInstanceOf[Rep[LPointer[GArray]]], unit("len"))
+      fieldGetter[Int](apply(a), "len")
   }
   rewrite += rule {
     case ArrayBufferRemove(a, e) =>
