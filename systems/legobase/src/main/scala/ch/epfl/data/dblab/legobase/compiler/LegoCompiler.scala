@@ -118,6 +118,7 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
 
   if (!settings.noSingletonHashMap)
     pipeline += SingletonHashMapToValueTransformer
+    // pipeline += SingletonHashMapToValueTransformer2
 
   if (settings.hashMapToArray) {
     pipeline += ConstSizeArrayToLocalVars
