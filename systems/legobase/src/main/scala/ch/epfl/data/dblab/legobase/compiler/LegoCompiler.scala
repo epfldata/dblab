@@ -76,10 +76,10 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
   val recordLowering = RecordLowering(DSL, shouldRemoveUnusedFields, settings.forceCompliant)
   pipeline += recordLowering
   // pipeline += TreeDumper(false)
+
   pipeline += ParameterPromotion
   pipeline += DCE
   pipeline += PartiallyEvaluate
-
   if (settings.queryMonadLowering) {
     if (settings.queryMonadOptimization) {
       pipeline += new QueryMonadOptimization(settings.queryMonadHoisting)
@@ -127,7 +127,7 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
   }
 
   if (settings.hashMapPartitioning) {
-    pipeline += new HashMapGrouping(DSL, schema, settings.forceCompliant)
+    pipeline += new HashMapGrouping(DSL, schema, settings.forceCompliant, Some(settings.queryName))
     pipeline += ParameterPromotion
     pipeline += PartiallyEvaluate
     pipeline += DCE
@@ -244,13 +244,10 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
   }
 
   // pipeline += TreeDumper(false)
-
-  if (settings.targetLanguage == CCoreLanguage) pipeline += new CTransformersPipeline(settings.cSettings)
+  if (settings.targetLanguage == CCoreLanguage) pipeline += new CTransformersPipeline(settings.cSettings, Some(settings.queryName))
 
   pipeline += DCECLang //NEVER REMOVE!!!!
-
   // pipeline += TreeDumper(true)
-
   val codeGenerator =
     if (settings.targetLanguage == CCoreLanguage) {
       if (settings.noLetBinding)

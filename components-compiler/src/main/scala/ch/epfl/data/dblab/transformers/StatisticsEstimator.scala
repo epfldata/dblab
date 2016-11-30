@@ -154,6 +154,12 @@ class StatisticsEstimator(override val IR: QueryEngineExp, val schema: Schema) e
         val rightParentES = analyzeQuery(rightParent)
         msg = s"${scala.Console.YELLOW}Assumes 100% selectivity for now (i.e. that all tuples of leftParent are returned).${scala.Console.RESET}"
         leftParentES
+      case LeftOuterJoinOpNew(leftParent, rightParent, _, _, _) =>
+        val leftParentES = analyzeQuery(leftParent)
+        val rightParentES = analyzeQuery(rightParent)
+        msg = s"${scala.Console.YELLOW}Assumes 100% selectivity for now (i.e. that all tuples of leftParent are returned).${scala.Console.RESET}"
+        leftParentES
+
       //case other @ _ => System.out.println(other.asInstanceOf[Rep[Any]].correspondingNode)
     }
     val sb = new StringBuilder

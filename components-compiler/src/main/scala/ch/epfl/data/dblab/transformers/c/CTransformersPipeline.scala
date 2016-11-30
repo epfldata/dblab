@@ -15,7 +15,7 @@ import sc.pardis.optimization._
  *
  * @param settings the compiler settings provided as command line arguments (TODO should be removed)
  */
-class CTransformersPipeline(val settings: CTransformersPipelineSettings) extends TransformerHandler {
+class CTransformersPipeline(val settings: CTransformersPipelineSettings, val queryName: Option[String]) extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
     apply[T](context.asInstanceOf[QueryEngineExp], block)
   }
@@ -41,7 +41,7 @@ class CTransformersPipeline(val settings: CTransformersPipelineSettings) extends
     pipeline += new ScalaCollectionsToGLibTransfomer(context)
     pipeline += new Tuple2ToCTransformer(context)
     pipeline += new OptionToCTransformer(context)
-    pipeline += new HashEqualsFuncsToCTransformer(context)
+    pipeline += new HashEqualsFuncsToCTransformer(context, queryName)
     pipeline += new OptimalStringToCTransformer(context)
     pipeline += new RangeToCTransformer(context)
     pipeline += new ScalaConstructsToCTranformer(context, settings.ifAggressive)

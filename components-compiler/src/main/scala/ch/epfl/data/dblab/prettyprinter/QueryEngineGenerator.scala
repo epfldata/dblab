@@ -138,11 +138,8 @@ class QueryEngineCGenerator(val outputFileName: String, val papiProfile: Boolean
       if (papiProfile)
         Document.break :: doc"""#include <papi.h>""" :/: {
           if (branch_mis_pred)
-            doc"""#define NUM_EVENTS 7
-int event[NUM_EVENTS] = {PAPI_TOT_INS, PAPI_TOT_CYC, PAPI_BR_MSP, 
-  PAPI_L1_DCM, PAPI_L2_DCA, PAPI_BR_INS,
-  PAPI_REF_CYC
-   };
+            doc"""#define NUM_EVENTS 1
+int event[NUM_EVENTS] = {PAPI_TOT_INS};
 """
           else
             doc"""#define NUM_EVENTS 5
@@ -191,14 +188,7 @@ if (PAPI_read_counters(values, NUM_EVENTS) != PAPI_OK) {
 }""" :/: {
         if (branch_mis_pred)
           doc"""printf("Total instructions: %lld$BN", values[0]);
-printf("Total cycles: %lld$BN", values[1]);
-printf("Instr per cycle: %2.3f$BN", (double)values[0] / (double) values[1]);
-printf("Branches mispredicted: %lld$BN", values[2]);
-printf("L1 data cache misses: %lld$BN", values[3]);
-printf("L2 data cache access: %lld$BN", values[4]);
-printf("Branch instructions: %lld$BN", values[5]);
-printf("Branch missprediction rate: %.6f$BN", (double)values[2] / (double)values[5]);
-printf("Total ref cycles: %lld$BN", values[6]);"""
+"""
         else
           doc"""printf("Total ref cycles: %lld$BN", values[4]);
 printf("L1 data cache misses: %lld$BN", values[0]);

@@ -69,6 +69,7 @@ class ScanOp[A](table: Array[A]) extends Operator[A] {
         child.consume(table(i + j).asInstanceOf[Record])
       }
       i += 16*/
+
       child.consume(table(i).asInstanceOf[Record])
       i += 1
     }
@@ -137,10 +138,14 @@ class SelectOp[A](parent: Operator[A])(selectPred: A => Boolean) extends Operato
   def open() {
     parent.child = this; parent.open
   }
-  def next() = parent.next
+  def next() = {
+    parent.next
+  }
   def reset() { parent.reset }
   def consume(tuple: Record) {
-    if (selectPred(tuple.asInstanceOf[A])) child.consume(tuple)
+    if (selectPred(tuple.asInstanceOf[A])) {
+      child.consume(tuple)
+    }
   }
 }
 
@@ -248,7 +253,9 @@ class AggOpGeneric[A, B: TypeTag](parent: Operator[A], numAggs: Int)(val grp: Fu
 class MapOp[A](parent: Operator[A])(mapFuncs: Function1[A, Unit]*) extends Operator[A] {
   def reset { parent.reset }
   def open() { parent.child = this; parent.open }
-  def next() { parent.next }
+  def next() {
+    parent.next
+  }
   def consume(tuple: Record) {
     mapFuncs foreach (mf => mf(tuple.asInstanceOf[A]))
     if (child != null) child.consume(tuple)
@@ -448,7 +455,9 @@ class NestedLoopsJoinOp[A <: Record, B <: Record](leftParent: Operator[A], right
     leftParent.open
   }
   def reset() = { rightParent.reset; leftParent.reset; leftTuple = null.asInstanceOf[A] }
-  def next() { leftParent.next }
+  def next() {
+    leftParent.next
+  }
   def consume(tuple: Record) {
     if (mode == 0) {
       leftTuple = tuple.asInstanceOf[A]

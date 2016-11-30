@@ -116,7 +116,7 @@ class Settings(val args: List[String]) {
   def hasOptimizationLevel: Boolean = hasSetting(OptimizationLevelSetting)
   def getOptimizationLevel: Int = args.find(a => OptimizationLevelSetting.matches(a)).get.substring("-levels=".size).toInt
 
-  def queryName: String = args(2)
+  var queryName: String = args(2)
 
   def cSettings: CTransformersPipelineSettings = CTransformersPipelineSettings(ifAggressive,
     onlyLoading, mallocProfile, papiProfile, oldCArrayHandling, pointerStore, containerFlattenning)

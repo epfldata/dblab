@@ -77,7 +77,7 @@ trait QueryRunner {
               System.out.println("Result obtained from execution:")
               System.out.println(resq)
               System.out.println("-----------------------------------------")
-              System.exit(0)
+              //System.exit(0)
             } else System.out.println("CHECK RESULT FOR QUERY " + currQuery + ": [OK]")
           } else {
             System.out.println(s"Reference result file '$resultFileName' not found. Skipping checking of result")

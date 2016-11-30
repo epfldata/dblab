@@ -43,6 +43,9 @@ trait Queries
 object Queries {
 
   def Q1(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
       runQuery {
@@ -71,9 +74,15 @@ object Queries {
         ()
       }
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q1_functional(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = Query(loadLineitem())
     for (i <- 0 until numRuns) {
       runQuery {
@@ -102,6 +111,9 @@ object Queries {
   }
 
   def Q1_functional_p2(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
       runQuery {
@@ -145,6 +157,10 @@ object Queries {
   }
 
   def Q2(numRuns: Int) {
+
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val partTable = loadPart()
     val partsuppTable = loadPartsupp()
     val nationTable = loadNation()
@@ -184,9 +200,15 @@ object Queries {
         ()
       }
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q2_functional(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val partTable = loadPart()
     val partsuppTable = loadPartsupp()
     val nationTable = loadNation()
@@ -214,6 +236,9 @@ object Queries {
   }
 
   def Q3(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
     val customerTable = loadCustomer()
@@ -246,9 +271,55 @@ object Queries {
         ()
       }
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
+  //Modified no date filtering
+  /*def Q3(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
+    val lineitemTable = loadLineitem()
+    val ordersTable = loadOrders()
+    val customerTable = loadCustomer()
+    for (i <- 0 until numRuns) {
+      runQuery {
+        val scanCustomer = new ScanOp(customerTable)
+        val scanOrders = new ScanOp(ordersTable)
+        val scanLineitem = new ScanOp(lineitemTable)
+        val jo1 = new HashJoinOp(scanCustomer, scanOrders)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY)
+	    val jo2 = new HashJoinOp(jo1, scanLineitem)((x, y) => x.O_ORDERKEY[Int] == y.L_ORDERKEY)(x => x.O_ORDERKEY[Int])(x => x.L_ORDERKEY)
+//val aggOp = new AggOp(jo2, 1)(x => "Total")((t, currAgg) => {currAgg + 1})
+        val aggOp = new AggOp(jo2, 1)(x => new Q3GRPRecord(x.L_ORDERKEY[Int], x.O_ORDERDATE[Int], x.O_SHIPPRIORITY[Int]))((t, currAgg) => { currAgg + (t.L_EXTENDEDPRICE[Double] * (1.0 - t.L_DISCOUNT[Double])) })
+		
+        val sortOp = new SortOp(aggOp)((kv1, kv2) => {
+          val agg1 = kv1.aggs(0); val agg2 = kv2.aggs(0)
+          if (agg1 < agg2) 1
+          else if (agg1 > agg2) -1
+          else {
+            val k1 = kv1.key.O_ORDERDATE
+            val k2 = kv2.key.O_ORDERDATE
+            if (k1 < k2) -1
+            else if (k1 > k2) 1
+            else 0
+          }
+        })
+        val po = new PrintOp(sortOp)(kv => {
+//			printf("%f %f\n", kv.aggs(0), kv.aggs(1))
+          printf("%d|%.4f|%s|%d\n", kv.key.L_ORDERKEY, kv.aggs(0), dateToString(kv.key.O_ORDERDATE), kv.key.O_SHIPPRIORITY)
+        }, 10)
+        po.run()
+        ()
+      }
+    }
+  }*/
+
   def Q3_functional(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
     val customerTable = loadCustomer()
@@ -271,6 +342,9 @@ object Queries {
   }
 
   def Q4(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
     for (i <- 0 until numRuns) {
@@ -291,9 +365,15 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q4_functional(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
     for (i <- 0 until numRuns) {
@@ -312,6 +392,9 @@ object Queries {
   }
 
   def Q5(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val nationTable = loadNation()
     val regionTable = loadRegion()
     val supplierTable = loadSupplier()
@@ -349,9 +432,15 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q5_functional(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val nationTable = loadNation()
     val regionTable = loadRegion()
     val supplierTable = loadSupplier()
@@ -397,6 +486,9 @@ object Queries {
   }
 
   def Q6(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
       runQuery({
@@ -410,9 +502,15 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q6_functional(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     for (i <- 0 until numRuns) {
       runQuery {
@@ -427,6 +525,9 @@ object Queries {
   }
 
   def Q7(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val nationTable = loadNation()
     val ordersTable = loadOrders()
     val lineitemTable = loadLineitem()
@@ -470,9 +571,15 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q8(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val partTable = loadPart()
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
@@ -495,7 +602,6 @@ object Queries {
         val scanRegion = new SelectOp(new ScanOp(regionTable))(x => x.R_NAME === asia)
         val scanSupplier = new ScanOp(supplierTable)
         val scanNation2 = new ScanOp(nationTable)
-
         val jo1 = new HashJoinOp(scanLineitem, scanPart)((x, y) => x.L_PARTKEY == y.P_PARTKEY)(x => x.L_PARTKEY)(x => x.P_PARTKEY)
         val jo2 = new HashJoinOp(jo1, scanOrders)((x, y) => x.L_ORDERKEY[Int] == y.O_ORDERKEY)(x => x.L_ORDERKEY[Int])(x => x.O_ORDERKEY)
         val jo3 = new HashJoinOp(jo2, scanCustomer)((x, y) => x.O_CUSTKEY[Int] == y.C_CUSTKEY)(x => x.O_CUSTKEY[Int])(x => x.C_CUSTKEY)
@@ -520,9 +626,15 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q9(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val partTable = loadPart()
     val nationTable = loadNation()
     val ordersTable = loadOrders()
@@ -559,9 +671,15 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q9_functional(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val partTable = loadPart()
     val nationTable = loadNation()
     val ordersTable = loadOrders()
@@ -592,6 +710,9 @@ object Queries {
 
   // adapted from http://www.qdpma.com/tpch/TPCH100_Query_plans.html
   @dontLift def Q9_functional_p2(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val partTable = loadPart()
     val nationTable = loadNation()
     val ordersTable = loadOrders()
@@ -630,6 +751,9 @@ object Queries {
   }
 
   def Q10(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val nationTable = loadNation()
     val customerTable = loadCustomer()
@@ -668,9 +792,15 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q10_functional(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val nationTable = loadNation()
     val customerTable = loadCustomer()
@@ -702,6 +832,9 @@ object Queries {
   }
 
   def Q11(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val partsuppTable = loadPartsupp()
     val supplierTable = loadSupplier()
     val nationTable = loadNation()
@@ -734,9 +867,15 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q11_functional(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val partsuppTable = loadPartsupp()
     val supplierTable = loadSupplier()
     val nationTable = loadNation()
@@ -759,6 +898,9 @@ object Queries {
   }
 
   def Q12(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
     for (i <- 0 until numRuns) {
@@ -783,9 +925,15 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q12_functional(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
     for (i <- 0 until numRuns) {
@@ -820,6 +968,9 @@ object Queries {
   }
 
   def Q12_functional_p2(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
     for (i <- 0 until numRuns) {
@@ -854,6 +1005,40 @@ object Queries {
     }
   }
 
+  /*def Q13(numRuns: Int) {
+    val customerTable = loadCustomer()
+    val ordersTable = loadOrders()
+    for (i <- 0 until numRuns) {
+      runQuery({
+        val unusual = parseString("unusual")
+        val packages = parseString("packages")
+        val scanCustomer = new ScanOp(customerTable)
+        val scanOrders = new SelectOp(new ScanOp(ordersTable))(x => {
+          val idxu = x.O_COMMENT.indexOfSlice(unusual, 0)
+          val idxp = x.O_COMMENT.indexOfSlice(packages, idxu)
+          !(idxu != -1 && idxp != -1)
+        })
+        val jo = new LeftOuterJoinOp(scanCustomer, scanOrders)((x, y) => x.C_CUSTKEY == y.O_CUSTKEY)(x => x.C_CUSTKEY)(x => x.O_CUSTKEY)
+        val aggOp1 = new AggOp(jo, 1)(x => x.C_CUSTKEY[Int])(
+          (t, currAgg) => { if (t.O_ORDERKEY != 0.0) currAgg + 1 else currAgg })
+        val aggOp2 = new AggOp(aggOp1, 1)(x => x.aggs(0))(
+          (t, currAgg) => { currAgg + 1 })
+        val sortOp = new SortOp(aggOp2)((x, y) => {
+          if (x.aggs(0) < y.aggs(0)) 1
+          else if (x.aggs(0) > y.aggs(0)) -1
+          else {
+            if (x.key < y.key) 1
+            else if (x.key > y.key) -1
+            else 0
+          }
+        })
+        val po = new PrintOp(sortOp)(kv => printf("%.0f|%.0f\n", kv.key, kv.aggs(0)), -1)
+        po.run()
+        ()
+      })
+    }
+  }*/
+
   def Q13(numRuns: Int) {
     val customerTable = loadCustomer()
     val ordersTable = loadOrders()
@@ -886,13 +1071,17 @@ object Queries {
           }
         })
         val po = new PrintOp(sortOp)(kv => printf("%d|%.0f\n", kv.key, kv.aggs(0)), -1)
-        po.run()
+        po.open
+        po.next
         ()
       })
     }
   }
 
   def Q14(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val partTable = loadPart()
     for (i <- 0 until numRuns) {
@@ -916,9 +1105,15 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q14_functional(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val partTable = loadPart()
     for (i <- 0 until numRuns) {
@@ -945,6 +1140,9 @@ object Queries {
   }
 
   def Q15(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val supplierTable = loadSupplier()
     for (i <- 0 until numRuns) {
@@ -971,9 +1169,15 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q16(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val supplierTable = loadSupplier()
     val partTable = loadPart()
     val partsuppTable = loadPartsupp()
@@ -1014,9 +1218,15 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q17(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val partTable = loadPart()
     for (i <- 0 until numRuns) {
@@ -1041,11 +1251,17 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   // Danger, Will Robinson!: Query takes a long time to complete in Scala (but we 
   // knew that already)
   def Q18(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
     val customerTable = loadCustomer()
@@ -1082,9 +1298,15 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q18_functional(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val ordersTable = loadOrders()
     val customerTable = loadCustomer()
@@ -1107,6 +1329,9 @@ object Queries {
   }
 
   def Q19(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val partTable = loadPart()
     for (i <- 0 until numRuns) {
@@ -1155,9 +1380,15 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q19_functional(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val partTable = loadPart()
     for (i <- 0 until numRuns) {
@@ -1207,6 +1438,9 @@ object Queries {
   }
 
   def Q20(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val nationTable = loadNation()
     val supplierTable = loadSupplier()
     val partTable = loadPart()
@@ -1237,9 +1471,15 @@ object Queries {
         ()
       }
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q20_functional(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val nationTable = loadNation()
     val supplierTable = loadSupplier()
     val partTable = loadPart()
@@ -1269,6 +1509,9 @@ object Queries {
   }
 
   def Q21(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
     val lineitemTable = loadLineitem()
     val supplierTable = loadSupplier()
     val ordersTable = loadOrders()
@@ -1303,9 +1546,16 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 
   def Q22(numRuns: Int) {
+    //ProfileFunctionCalls.numberTuplesSelect = 0
+    //ProfileFunctionCalls.numberTuplesFiltered = 0
+    //ProfileFunctionCalls.numberTuplesScanned = 0
+
     val customerTable = loadCustomer()
     val ordersTable = loadOrders()
     for (i <- 0 until numRuns) {
@@ -1353,5 +1603,8 @@ object Queries {
         ()
       })
     }
+    //FunctionCalls.numberTuplesSelect: " + //ProfileFunctionCalls.numberTuplesSelect)
+    //FunctionCalls.numberTuplesFiltered: " + //ProfileFunctionCalls.numberTuplesFiltered)
+    //FunctionCalls.numberTuplesScanned: " + //ProfileFunctionCalls.numberTuplesScanned);
   }
 }

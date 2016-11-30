@@ -80,7 +80,8 @@ import scala.collection.mutable
  */
 class HashMapGrouping(override val IR: QueryEngineExp,
                       val schema: Schema,
-                      val compliant: Boolean)
+                      val compliant: Boolean,
+                      val queryName: Option[String] = None)
   extends RuleBasedTransformer[QueryEngineExp](IR)
   with WhileRangeProcessing {
   import IR.{ __struct_field => _, __block => _, _ }
@@ -117,6 +118,57 @@ class HashMapGrouping(override val IR: QueryEngineExp,
     }
   }
 
+  //val ignoredTableForPartition: List[String] = List() -- Useful if you want to disable partitioning of a table all-together
+
+  /*  val ignoredPartitioningAttributes: List[String] = queryName.map(x => x match {
+    case "Q1" =>
+      List()
+    case "Q2" =>
+      List()
+    case "Q3" =>
+      List()
+    case "Q4" =>
+      List()
+    case "Q5" =>
+      List("O_CUSTKEY", "C_NATIONKEY")
+    case "Q6" =>
+      List()
+    case "Q7" =>
+      List("O_CUSTKEY", "L_SUPPKEY", "S_NATIONKEY")
+    case "Q8" =>
+      List()
+    case "Q9" =>
+      List("L_PARTKEY", "PS_PARTKEY")
+    case "Q10" =>
+      List()
+    case "Q11" =>
+      List("PS_SUPPKEY")
+    case "Q12" =>
+      List()
+    case "Q13" =>
+      List()
+    case "Q14" =>
+      List()
+    case "Q15" =>
+      List()
+    case "Q16" =>
+      List()
+    case "Q17" =>
+      List()
+    case "Q18" =>
+      List()
+    case "Q19" =>
+      List()
+    case "Q20" =>
+      List("L_PARTKEY")
+    case "Q21" =>
+      List("L_SUPPKEY")
+    case "Q22" =>
+      List("O_CUSTKEY")
+    case _ => List()
+  }).asInstanceOf[Option[List[String]]].getOrElse(List[String]())*/
+  val ignoredPartitioningAttributes: List[String] = List()
+
   /**
    * Keeps the information about a MultiMap
    */
@@ -135,6 +187,18 @@ class HashMapGrouping(override val IR: QueryEngineExp,
     }
     def isAnti: Boolean = isPotentiallyAnti && isPotentiallyWindow
     def shouldBePartitioned: Boolean = {
+      if (leftRelationInfo.isDefined) {
+        for (ipa <- ignoredPartitioningAttributes)
+          if (leftRelationInfo.get.partitioningField.contains(ipa)) return false
+        //for (itfp <- ignoredTableForPartition)
+        //if (leftRelationInfo.get.tpe.toString.contains(itfp)) return false
+      }
+      if (rightRelationInfo.isDefined) {
+        for (ipa <- ignoredPartitioningAttributes)
+          if (rightRelationInfo.get.partitioningField.contains(ipa)) return false
+        //for (itfp <- ignoredTableForPartition)
+        //if (rightRelationInfo.get.tpe.toString.contains(itfp)) return false
+      }
       val result = isPartitioned && (leftRelationInfo.nonEmpty || rightRelationInfo.nonEmpty)
       if (compliant)
         result && partitionedRelationInfo.reuseOriginal1DArray && partitionedRelationInfo.is1D
@@ -218,6 +282,7 @@ class HashMapGrouping(override val IR: QueryEngineExp,
     case dsl"($mm : MultiMap[Any, Any]).get(__struct_field($struct, ${ Constant(field) }))" if allMaps.contains(mm) =>
       mm.updateInfo(_.copy(isPartitioned = true))
       for (array <- getCorrespondingArray(struct)) {
+        System.out.println("right = " + field)
         mm.updateInfo(_.copy(rightRelationInfo =
           Some(RelationInfo(field, currentWhileLoop, array))))
       }

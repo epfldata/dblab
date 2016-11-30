@@ -985,7 +985,8 @@ trait QueriesImplementations extends QueriesOps { this: ch.epfl.data.dblab.deep.
         val aggOp2: this.Rep[ch.epfl.data.dblab.queryengine.push.AggOp[ch.epfl.data.dblab.experimentation.tpch.Q13IntRecord, Int]] = __newAggOp(aggScan, unit(1))(__lambda(((x: this.Rep[ch.epfl.data.dblab.experimentation.tpch.Q13IntRecord]) => x.count)))(__lambda(((t: this.Rep[ch.epfl.data.dblab.experimentation.tpch.Q13IntRecord], currAgg: this.Rep[Double]) => currAgg.$plus(unit(1)))));
         val sortOp: this.Rep[ch.epfl.data.dblab.queryengine.push.SortOp[ch.epfl.data.dblab.queryengine.AGGRecord[Int]]] = __newSortOp(aggOp2)(__lambda(((x: this.Rep[ch.epfl.data.dblab.queryengine.AGGRecord[Int]], y: this.Rep[ch.epfl.data.dblab.queryengine.AGGRecord[Int]]) => __ifThenElse(x.aggs.apply(unit(0)).$less(y.aggs.apply(unit(0))), unit(1), __ifThenElse(x.aggs.apply(unit(0)).$greater(y.aggs.apply(unit(0))), unit(-1), __ifThenElse(x.key.$less(y.key), unit(1), __ifThenElse(x.key.$greater(y.key), unit(-1), unit(0))))))));
         val po: this.Rep[ch.epfl.data.dblab.queryengine.push.PrintOp[ch.epfl.data.dblab.queryengine.AGGRecord[Int]]] = __newPrintOp(sortOp)(__lambda(((kv: this.Rep[ch.epfl.data.dblab.queryengine.AGGRecord[Int]]) => printf(unit("%d|%.0f\n"), kv.key, kv.aggs.apply(unit(0))))), unit(-1));
-        po.run();
+        po.open();
+        po.next();
         unit(())
       }))))
     }
