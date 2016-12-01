@@ -14,6 +14,7 @@ import sc.pardis.deep.scalalib.io._
 import sc.pardis.quasi.anf.BaseQuasiExt
 import dblab.deep.queryengine._
 import dblab.deep.storagemanager._
+import squid.scback.PardisBinding
 
 /** A polymophic embedding cake which chains all other cakes together */
 abstract class QueryEngineExp
@@ -21,7 +22,8 @@ abstract class QueryEngineExp
   with ScalaCoreDSLInlined
   with QPlanDSLInlined
   with QMonadDSLInlined
-  with BaseQuasiExp {
+  with BaseQuasiExp
+  with PardisBinding.DefaultPardisMixin {
   /**
    * Keeps the link between the lowered symbols and the original (higher level) symbol node definition
    *
@@ -38,6 +40,12 @@ abstract class QueryEngineExp
   def getLoweredSymbolOriginalDef[T](sym: Rep[T]): Option[Def[Any]] = {
     loweredSymbolToOriginalDef.get(sym.asInstanceOf[Rep[Any]])
   }
+
+  // Tells Squid's AutoBinder not to try and generate bindings for these (they have problems):
+  protected type `ignore java.lang.Exception.<init>` = Nothing
+  protected type `ignore ch.epfl.data.dblab.deep.queryengine.push.LeftOuterJoinOpOps.LeftOuterJoinOpRep` = Nothing
+  protected type `ignore ch.epfl.data.dblab.deep.queryengine.push.ViewOpOps.ViewOpRep` = Nothing
+  protected type `ignore ch.epfl.data.dblab.deep.queryengine.push.HashJoinAntiOps.HashJoinAntiRep` = Nothing
 }
 
 abstract class QueryEngineExt extends BaseQuasiExt

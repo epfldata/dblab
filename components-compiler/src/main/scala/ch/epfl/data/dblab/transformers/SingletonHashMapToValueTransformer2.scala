@@ -3,16 +3,15 @@ package dblab
 package transformers
 
 import deep.newqq._
+import deep.dsls.QueryEngineExp
 
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ArrayBuffer
 import ch.epfl.data.sc.pardis
+import ch.epfl.data.sc.pardis.ir.ANFNode
 import pardis.ir.Constant
 import squid.utils._
 import squid.ir.RewriteAbort
-import QueryEngineIR.Sqd
-import Sqd.Predef._
-import Sqd.Quasicodes._
 import pardis.ir.ExpressionSymbol
 import squid.ir.SimpleRuleBasedTransformer
 import squid.ir.TopDownTransformer
@@ -20,13 +19,15 @@ import sc.pardis.optimization.TransformerHandler
 import sc.pardis.ir.Base
 import sc.pardis.types.PardisType
 
-object SingletonHashMapToValueTransformer2 extends SimpleRuleBasedTransformer with TopDownTransformer with Sqd.SelfTransformer with TransformerHandler {
-  QueryEngineIR
-
+object SingletonHashMapToValueTransformer2 extends TransformerHandler {
   def apply[Lang <: Base, T: PardisType](context: Lang)(block: context.Block[T]): context.Block[T] = {
-    //base debugFor
-    this.transform(block).asInstanceOf[context.Block[T]]
+    new SingletonHashMapToValueTransformer2(context.asInstanceOf[QueryEngineExp]).pipeline(block).asInstanceOf[context.Block[T]]
   }
+}
+
+class SingletonHashMapToValueTransformer2(override val SC: QueryEngineExp) extends SquidSCTransformerBase(SC) with SimpleRuleBasedTransformer with TopDownTransformer {
+  import Sqd.Predef._
+  import Sqd.Quasicodes._
 
   rewrite {
 
@@ -52,9 +53,9 @@ object SingletonHashMapToValueTransformer2 extends SimpleRuleBasedTransformer wi
         case ir"$$hm foreach ($f: (($$kt,$$vt)) => $rt)" =>
           // TODO warn inferred Nothing!!
 
-          ir"$f($$key: $kt, $$value: $vt); ()"
-        // TODO inline:
-        //ir"${ QueryEngineIR.Sqd.inline(f, ir"($$key: $kt, $$value: $vt)") }; ()"
+          //ir"$f($$key: $kt, $$value: $vt); ()"
+          // ^ above is equivalent to below, but below we explicitly ask for inlining
+          ir"${Sqd.inline(f, ir"($$key: $kt, $$value: $vt)")}; ()"
 
       }
 
@@ -69,7 +70,14 @@ object SingletonHashMapToValueTransformer2 extends SimpleRuleBasedTransformer wi
       ir"val value = ${uniqueUse map (_._2) getOrElse giveUp}; val key = ${Const(uniqueUse.get._1)}; $body3"
   }
 
+  //
+
+  //
+
+  //
+
   // TODO use as test:
+
   /*
     rewrite {
       
