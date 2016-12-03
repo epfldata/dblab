@@ -63,7 +63,7 @@ class SingletonHashMapToValueTransformer2(override val SC: QueryEngineExp) exten
 
       //val body3 = body2 subs ('hm -> giveUp)
       val body3 = body2 subs ('hm -> {
-        System.out.println(s"Found remaining usage of `hm` in $body2")
+        println(s"Found remaining usage of `hm` in $body2")
         giveUp
       })
 
