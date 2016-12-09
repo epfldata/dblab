@@ -99,7 +99,7 @@ object QueryCompiler {
         if (Config.debugQueryPlan)
           System.out.println("After Optimizer:\n" + optimizerTree + "\n\n")
 
-        val qp = PlanCompiler.executeQuery(optimizerTree, schema)
+        val qp = PlanCompiler.executeQuery(optimizerTree, schema, queryName)
 
         // PlanExecutor.executeQuery(optimizerTree, schema)
 
