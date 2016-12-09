@@ -46,6 +46,7 @@ abstract class QueryEngineExp
   protected type `ignore ch.epfl.data.dblab.deep.queryengine.push.LeftOuterJoinOpOps.LeftOuterJoinOpRep` = Nothing
   protected type `ignore ch.epfl.data.dblab.deep.queryengine.push.ViewOpOps.ViewOpRep` = Nothing
   protected type `ignore ch.epfl.data.dblab.deep.queryengine.push.HashJoinAntiOps.HashJoinAntiRep` = Nothing
+  protected type `ignore ch.epfl.data.dblab.deep.queryengine.push.MergeJoinOpOps.MergeJoinOpRep` = Nothing
 }
 
 abstract class QueryEngineExt extends BaseQuasiExt
