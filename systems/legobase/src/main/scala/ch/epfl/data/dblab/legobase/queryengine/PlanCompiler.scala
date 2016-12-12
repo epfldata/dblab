@@ -28,7 +28,7 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
   type Rep[T] = LegoBaseQueryEngineExp#Rep[T]
   val context = new LegoBaseQueryEngineExp {}
   val SqdContext = new SquidLegoBase(context)
-  import context._
+  import context.{ Double => _, Int => _, _ }
   import SqdContext.Sqd.Predef._
   import SqdContext.Sqd.Quasicodes._
 
@@ -153,10 +153,10 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
             addition[Double](currAgg, e.asRep[Double])
           case Min(e) =>
             val newMin = e.asRep[Double]
-            // ir"if($currAgg == 0 || $newMin < $currAgg) $newMin else $currAgg".rep.asInstanceOf[this.Rep[Double]] // TODO -- Assumes that 0 cannot occur naturally in the data as a min value. FIXME
-            // ir"if($currAgg == 0 || $newMin < $currAgg) 1.0 else 2.0".rep.asInstanceOf[this.Rep[Double]]
-            __ifThenElse((currAgg __== unit(0)) || newMin < currAgg, newMin, currAgg)
-          case CountAll()       => currAgg + unit[Int](1)
+            ir"if($currAgg == 0 || $newMin < $currAgg) $newMin else $currAgg".toRep // TODO -- Assumes that 0 cannot occur naturally in the data as a min value. FIXME
+          // ir"if($currAgg == 0 || $newMin < $currAgg) 1.0 else 2.0".rep.asInstanceOf[this.Rep[Double]]
+          // __ifThenElse((currAgg __== unit(0)) || newMin < currAgg, newMin, currAgg)
+          case CountAll()       => ir"$currAgg + 1".toRep
           // case CountExpr(expr) => {
           //   // From http://www.techonthenet.com/sql/count.php: "Not everyone realizes this, but the SQL COUNT function will only include the
           //   // records in the count where the value of expression in COUNT(expression) is NOT NULL".
@@ -239,16 +239,17 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
       // otherwise we check the next expression.
       // TODO: a expression shouldn't be computed if a previous one has already
       // returned != 0
-      val result = expressions.foldLeft(unit(0)) { (acc, exp) =>
-        __ifThenElse[Int](acc __!= unit(0), acc, exp)
+      // val result = expressions.foldLeft(unit(0)) { (acc, exp) =>
+      //   __ifThenElse[Int](acc __!= unit(0), acc, exp)
+      // }
+      // TODO the removal of case requires a fix in Squid
+      val result = expressions.foldLeft(ir"0".asInstanceOf[IR[Int, AnyRef]]) { (acc, exp) =>
+        ir"if($acc != 0) $acc else $exp"
       }
-      // val result = expressions.foldLeft(ir"0".asInstanceOf[IR[Int, AnyRef]]) { (acc, exp) =>
-      //   // __ifThenElse[Int](acc __!= unit(0), acc, exp)
-      //   ir"if($acc != 0) $acc else $exp"
-      // }.rep.asInstanceOf[Rep[Int]]
 
       // Break ties arbitrarily
-      __ifThenElse[Int](result __!= unit(0), result, infix_hashCode(kv1) - infix_hashCode(kv2))
+      // __ifThenElse[Int](result __!= unit(0), result, infix_hashCode(kv1) - infix_hashCode(kv2))
+      ir"if($result != 0) $result else $kv1.## - $kv2.##".toRep
     }(parentOp.resultType.pardisType, parentOp.resultType.pardisType, typeInt))(node.resultType.pardisType)
   }
 
@@ -286,6 +287,11 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
       }
       if (name != fieldNames.last) printf(unit("|"))
     }
+    // TODO requires a fix in Squid
+    //   if (name != fieldNames.last) ir"""printf("|")"""
+    // }
+
+    // ir"""printf("\n")""".toRep
 
     printf(unit("\n"))
   }
