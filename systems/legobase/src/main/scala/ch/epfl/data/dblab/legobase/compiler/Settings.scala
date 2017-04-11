@@ -118,6 +118,8 @@ class Settings(val args: List[String]) {
 
   def queryName: String = args(2)
 
+  def specializeLoader = !hasSetting(NoSpecializedLoaderSetting)
+
   def cSettings: CTransformersPipelineSettings = CTransformersPipelineSettings(ifAggressive,
     onlyLoading, mallocProfile, papiProfile, oldCArrayHandling, pointerStore, containerFlattenning)
 }
@@ -155,6 +157,7 @@ object Settings {
     Profilers.MallocProfileSetting,
     OptimalSetting,
     CompliantSetting,
+    NoSpecializedLoaderSetting,
     ScalaCGSetting,
     QueryMonadLoweringSetting,
     QueryMonadIteratorSetting,
@@ -352,6 +355,8 @@ case object OptimalSetting extends OptionSetting("optimal",
   "Considers the best combiniation of optimization flags")
 case object CompliantSetting extends OptionSetting("compliant",
   "Considers the best compliant combiniation of optimization flags")
+case object NoSpecializedLoaderSetting extends OptionSetting("no-spec-loader",
+  "Disables specialization of the loader")
 case object ScalaCGSetting extends OptionSetting("scala",
   "Generates Scala code instead of C code")
 case object OptimizationLevelSetting extends OptionSetting("levels",

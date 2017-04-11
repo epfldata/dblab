@@ -24,4 +24,6 @@ object Config {
   val gatherStats: Boolean = false
   /** Specifies whether to show information about the query plan generation during execution */
   val debugQueryPlan: Boolean = true
+  /** Specifies whether to specialize the loader or not */
+  var specializeLoader: Boolean = true
 }
