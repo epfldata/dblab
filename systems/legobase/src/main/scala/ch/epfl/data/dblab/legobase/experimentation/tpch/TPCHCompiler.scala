@@ -201,8 +201,7 @@ object TPCHCompiler extends TPCHRunner {
       argsString.split(" ").toList
     }
     val validatedSettings = settings.validate()
-    Config.specializeLoader = validatedSettings.specializeLoader
-
+    validatedSettings.init()
     val compiler = new LegoCompiler(context, validatedSettings, schema, "ch.epfl.data.dblab.experimentation.tpch.TPCHRunner")
     compiler.compile(queryFunction())
   }

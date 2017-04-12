@@ -51,8 +51,9 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
     }
 
     import legobase.compiler._
-    val settings = new Settings(List("-scala", "+no-sing-hm"))
+    val settings = new Settings(List("-scala", "+no-sing-hm", "-no-spec-loader"))
     val validatedSettings = settings.validate()
+    validatedSettings.init()
     val compiler = new LegoCompiler(context, validatedSettings, schema, "ch.epfl.data.dblab.experimentation.tpch.TPCHRunner") {
       override def outputFile = queryName
     }
@@ -389,13 +390,15 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
         override def getField[T: PardisType](qualifier: Option[String], fieldName: String): Option[Rep[T]] = {
           val nameWithQualifier = qualifier.getOrElse("") + fieldName
           val field = if (fieldNames.contains(nameWithQualifier)) nameWithQualifier else fieldName
+          // System.out.println(s"**$field , $record : ${record.tp.getClass}")
           fields.get(field).map {
             _ match {
               case SimpleField(tp, _) =>
-                record_select(record, field)(typeRecord, tp).asInstanceOf[Rep[T]]
+                record_select(record, field)(record.tp, tp).asInstanceOf[Rep[T]]
               case AggKeyField(tp, _) =>
                 val rec = record.asInstanceOf[Rep[AGGRecord[Record]]]
-                record_select(rec.key, field)(typeRecord, tp).asInstanceOf[Rep[T]]
+                // System.out.println(s"***$field , $record : $tp")
+                record_select(rec.key, field)(record.tp, tp).asInstanceOf[Rep[T]]
               case AggResultField(index, tp, _) if tp == typeInt =>
                 val rec = record.asInstanceOf[Rep[AGGRecord[Record]]]
                 rec.aggs(unit(index)).toInt.asInstanceOf[Rep[T]]

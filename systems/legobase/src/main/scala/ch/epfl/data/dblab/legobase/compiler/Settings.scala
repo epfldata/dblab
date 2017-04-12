@@ -66,6 +66,9 @@ class Settings(val args: List[String]) {
       this
     }
   }
+  def init(): Unit = {
+    config.Config.specializeLoader = specializeLoader
+  }
   @inline def hasSetting(setting: Setting): Boolean = args.exists(a => setting.matches(a))
   // TODO the following methods are not needed
   def hashMapLowering: Boolean = hasSetting(HashMapToSetSetting)
