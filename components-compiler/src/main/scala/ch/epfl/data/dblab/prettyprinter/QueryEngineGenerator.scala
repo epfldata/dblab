@@ -10,6 +10,7 @@ import sc.pardis.prettyprinter._
 import scala.language.implicitConversions
 import sc.pardis.deep.scalalib._
 import deep.dsls.{ PAPIStart, PAPIEnd }
+import schema.Table
 
 /**
  * The class responsible for Scala code generation in ANF.
@@ -52,7 +53,8 @@ import storagemanager.Loader
 import queryengine.GenericEngine
 import sc.pardis.shallow.OptimalString
 import sc.pardis.shallow.scalalib.collection.Cont
-import schema.Schema
+import sc.pardis.types._
+import schema._
 
 class MultiMap[T, S] extends HashMap[T, Set[S]] with scala.collection.mutable.MultiMap[T, S]
 
@@ -65,7 +67,24 @@ object OrderingFactory {
 
   override def expToDocument(exp: Expression[_]): Document = exp match {
     case Constant(b: Boolean) => doc"${b.toString}"
-    case _                    => super.expToDocument(exp)
+    case Constant(t: Table) =>
+      val attrs = t.attributes.map(a => doc"""Attribute("${a.name}", ${a.dataType.toString})""").mkDocument(", ")
+      doc"""Table("${t.name}", List($attrs), ArrayBuffer(), "${t.resourceLocator}")"""
+    case _ => super.expToDocument(exp)
+  }
+
+  // override def nodeToDocument(node: PardisNode[_]): Document = node match {
+  //   // case PardisStructImmutableField(rec, f) if rec.tp.isInstanceOf[deep.schema.DynamicDataRowIRs.DynamicDataRowRecordType] => doc"$rec.$f[${node.tp}]"
+  //   // case PardisStructImmutableField(rec, f) =>
+  //   //   System.out.println(s"===$f , $rec : ${rec.tp.getClass}")
+  //   //   super.nodeToDocument(node)
+  //   case _ => super.nodeToDocument(node)
+  // }
+
+  override def stmtToDocument(stmt: Statement[_]): Document = stmt.rhs match {
+    // FIXME the if condition is a hack!
+    case PardisStructImmutableField(rec, f) if stmt.sym.tp != AbstractRecordType => doc"val ${stmt.sym}: ${stmt.sym.tp} = $rec.$f"
+    case _ => super.stmtToDocument(stmt)
   }
 
   /**
