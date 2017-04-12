@@ -60,6 +60,61 @@ object TPCHCompiler extends TPCHRunner {
     }
   }
 
+  // TODO should be refactored to a separate module
+  def acceptInputFromConsole(cmd: String => Boolean): Unit = {
+    val sc = new java.util.Scanner(System.in)
+    var exit = false
+    val CMD_PREFIX = ">> "
+    System.out.print(CMD_PREFIX)
+    while (!exit && sc.hasNext) {
+      val str = sc.nextLine
+      exit = cmd(str)
+      if (!exit) {
+        System.out.print(CMD_PREFIX)
+      }
+    }
+  }
+
+  def compileOptimizedQuery(folder: String, sf: String, query: String): Unit = {
+    utils.Utilities.time({
+      turnOffConsoleOutput {
+        parseArgs(Array(folder, sf, query, "-optimal"))
+      }
+    }, s"Compilation of $query")
+  }
+
+  def turnOffConsoleOutput[T](e: => T): T = {
+    import java.io.PrintStream
+    val outOriginal = new PrintStream(System.out);
+    val errOriginal = new PrintStream(System.err);
+    System.setOut(new PrintStream("compilation-out.out.txt"))
+    System.setErr(new PrintStream("compilation-err.out.txt"))
+    val res = e
+    System.setOut(outOriginal)
+    System.setErr(errOriginal)
+    res
+  }
+
+  def warmUpJIT(): Unit = {
+    for (i <- 1 to 25) {
+      System.out.println(s"Warming up ($i)")
+      compileOptimizedQuery("dummy", "1", "Q16")
+      compileOptimizedQuery("dummy", "1", "Q2_functional")
+    }
+    // To reset book-keepings in SC
+    ExpressionSymbol.globalId = 0
+  }
+
+  // sealed trait Command {
+  //   def name: String
+  //   def run(): Unit
+  //   def matches(arg: String): Boolean
+  // }
+  // case object WarmUpJIT extends Command {
+  //   def name: String = "warm-up"
+  //   def matches(arg: String): Boolean = arg == name
+  // }
+
   def main(args: Array[String]) {
     args.toList match {
       case List("interactive") =>
@@ -73,40 +128,12 @@ object TPCHCompiler extends TPCHRunner {
         System.out.println("    Compiles the given query using the given arguments")
         System.out.println("  exit")
         System.out.println("    Exits the interactive mode")
-        val sc = new java.util.Scanner(System.in)
-        var exit = false
-        val CMD_PREFIX = ">> "
-        System.out.print(CMD_PREFIX)
-        while (!exit && sc.hasNext) {
-          val str = sc.nextLine
-          def compileOptimizedQuery(folder: String, sf: String, query: String): Unit = {
-            utils.Utilities.time({
-              turnOffConsoleOutput {
-                parseArgs(Array(folder, sf, query, "-optimal"))
-              }
-            }, s"Compilation of $query")
-          }
-          def turnOffConsoleOutput[T](e: => T): T = {
-            import java.io.PrintStream
-            val outOriginal = new PrintStream(System.out);
-            val errOriginal = new PrintStream(System.err);
-            System.setOut(new PrintStream("compilation-out.out.txt"))
-            System.setErr(new PrintStream("compilation-err.out.txt"))
-            val res = e
-            System.setOut(outOriginal)
-            System.setErr(errOriginal)
-            res
-          }
+        acceptInputFromConsole { str =>
+          var exit = false
           str match {
             case "exit" => exit = true
             case "warm-up" =>
-              for (i <- 1 to 25) {
-                System.out.println(s"Warming up ($i)")
-                compileOptimizedQuery("dummy", "1", "Q16")
-                compileOptimizedQuery("dummy", "1", "Q2_functional")
-              }
-              // To reset book-keepings in SC
-              ExpressionSymbol.globalId = 0
+              warmUpJIT()
             case _ if str.startsWith("all-tpch ") =>
               val Array(_, folder, sf) = str.split(" ")
               compileOptimizedQuery(folder, sf, "Q1_functional")
@@ -116,9 +143,7 @@ object TPCHCompiler extends TPCHRunner {
             case _ if str.startsWith("compile ") => parseArgs(str.split(" ").tail)
             case _                               => System.out.println(s"Command $str not available!")
           }
-          if (!exit) {
-            System.out.print(CMD_PREFIX)
-          }
+          exit
         }
       case _ => parseArgs(args)
     }
