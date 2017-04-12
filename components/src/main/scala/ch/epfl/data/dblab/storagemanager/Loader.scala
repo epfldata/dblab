@@ -65,29 +65,37 @@ object Loader {
 
   @dontInline
   def loadUntypedTable(table: Table): Array[DynamicDataRow] = {
-    val size = fileLineCount(table.resourceLocator)
-    val arr = new Array[DynamicDataRow](size)
-    val ldr = new FastScanner(table.resourceLocator)
+    if (Config.cacheLoading && cachedTables.contains(table)) {
+      System.out.println(s"Loading cached ${table.name}!")
+      cachedTables(table).asInstanceOf[Array[DynamicDataRow]]
+    } else {
+      val size = fileLineCount(table.resourceLocator)
+      val arr = new Array[DynamicDataRow](size)
+      val ldr = new FastScanner(table.resourceLocator)
 
-    var i = 0
+      var i = 0
 
-    val argNames = table.attributes.map(_.name).toSeq
+      val argNames = table.attributes.map(_.name).toSeq
 
-    while (i < size && ldr.hasNext()) {
-      val values = table.attributes.map(arg =>
-        arg.dataType match {
-          case IntType          => ldr.next_int
-          case DoubleType       => ldr.next_double
-          case DecimalType(_)   => ldr.next_double
-          case CharType         => ldr.next_char
-          case DateType         => ldr.next_date
-          case VarCharType(len) => loadString(len, ldr)
-        })
-      val rec = new DynamicDataRow(table.name, table.attributes.map(_.name) zip values)
-      arr(i) = rec
-      i += 1
+      while (i < size && ldr.hasNext()) {
+        val values = table.attributes.map(arg =>
+          arg.dataType match {
+            case IntType          => ldr.next_int
+            case DoubleType       => ldr.next_double
+            case DecimalType(_)   => ldr.next_double
+            case CharType         => ldr.next_char
+            case DateType         => ldr.next_date
+            case VarCharType(len) => loadString(len, ldr)
+          })
+        val rec = new DynamicDataRow(table.name, table.attributes.map(_.name) zip values)
+        arr(i) = rec
+        i += 1
+      }
+      if (Config.cacheLoading) {
+        cachedTables(table) = arr
+      }
+      arr
     }
-    arr
 
     //TODO update statistics
   }
