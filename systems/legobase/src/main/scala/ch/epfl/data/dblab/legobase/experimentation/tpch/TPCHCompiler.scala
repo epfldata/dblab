@@ -105,43 +105,68 @@ object TPCHCompiler extends TPCHRunner {
     ExpressionSymbol.globalId = 0
   }
 
-  // sealed trait Command {
-  //   def name: String
-  //   def run(): Unit
-  //   def matches(arg: String): Boolean
-  // }
-  // case object WarmUpJIT extends Command {
-  //   def name: String = "warm-up"
-  //   def matches(arg: String): Boolean = arg == name
-  // }
+  sealed trait Command {
+    def name: String
+    def shortDescription: String = name
+    def description: String
+    def run(args: String*): Unit
+    def unapplySeq(args: String): Option[Seq[String]] = {
+      val argsList = args.split(" ").toList
+      val firstArg = argsList.head
+      if (firstArg == name) {
+        Some(argsList.tail.toSeq)
+      } else {
+        None
+      }
+    }
+  }
+  case object WarmUpJIT extends Command {
+    def name: String = "warm-up"
+    def description: String = "Warms up the underlying just-in-time (JIT) compiler"
+    def run(args: String*): Unit = warmUpJIT()
+  }
+  case object Exit extends Command {
+    def name: String = "exit"
+    def description: String = "Warms up the underlying just-in-time (JIT) compiler"
+    def run(args: String*): Unit = ()
+  }
+  case object AllTpch extends Command {
+    def name: String = "all-tpch"
+    override def shortDescription: String = "all-tpch <data_folder> <scaling_factor_number>"
+    def description: String = "Generates the most optimized C code of all TPCH queries"
+    def run(args: String*): Unit = () // TODO
+  }
+
+  case object CompileQuery extends Command {
+    def name: String = "compile"
+    override def shortDescription: String = "compile <data_folder> <scaling_factor_number> <queries> <options>"
+    def description: String = "Compiles the given query using the given arguments"
+    def run(args: String*): Unit = () // TODO
+  }
 
   def main(args: Array[String]) {
     args.toList match {
       case List("interactive") =>
         System.out.println("*** Interactive Mode ***")
         System.out.println("Available commands:")
-        System.out.println("  warm-up")
-        System.out.println("    Warms up the underlying just-in-time (JIT) compiler")
-        System.out.println("  all-tpch <data_folder> <scaling_factor_number>")
-        System.out.println("    Generates the most optimized C code of all TPCH queries")
-        System.out.println("  compile <data_folder> <scaling_factor_number> <queries> <options>")
-        System.out.println("    Compiles the given query using the given arguments")
-        System.out.println("  exit")
-        System.out.println("    Exits the interactive mode")
+        val cmds = List(WarmUpJIT, AllTpch, CompileQuery, Exit)
+        for (cmd <- cmds) {
+          System.out.println(s"  ${cmd.shortDescription}")
+          System.out.println(s"    ${cmd.description}")
+        }
         acceptInputFromConsole { str =>
           var exit = false
           str match {
-            case "exit" => exit = true
-            case "warm-up" =>
-              warmUpJIT()
-            case _ if str.startsWith("all-tpch ") =>
-              val Array(_, folder, sf) = str.split(" ")
+            case Exit() => exit = true
+            case WarmUpJIT() =>
+              WarmUpJIT.run()
+            case AllTpch(folder, sf) =>
               compileOptimizedQuery(folder, sf, "Q1_functional")
               for (q <- 2 to 22) {
                 compileOptimizedQuery(folder, sf, s"Q$q")
               }
-            case _ if str.startsWith("compile ") => parseArgs(str.split(" ").tail)
-            case _                               => System.out.println(s"Command $str not available!")
+            case CompileQuery(_*) => parseArgs(str.split(" ").tail)
+            case _                => System.out.println(s"Command $str not available!")
           }
           exit
         }
