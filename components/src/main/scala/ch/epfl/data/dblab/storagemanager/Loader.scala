@@ -78,6 +78,7 @@ object Loader {
         arg.dataType match {
           case IntType          => ldr.next_int
           case DoubleType       => ldr.next_double
+          case DecimalType(_)   => ldr.next_double
           case CharType         => ldr.next_char
           case DateType         => ldr.next_date
           case VarCharType(len) => loadString(len, ldr)
@@ -120,10 +121,11 @@ object Loader {
       while (i < size && ldr.hasNext()) {
         val values = arguments.map(arg =>
           arg._3.dataType match {
-            case IntType    => ldr.next_int
-            case DoubleType => ldr.next_double
-            case CharType   => ldr.next_char
-            case DateType   => ldr.next_date
+            case IntType        => ldr.next_int
+            case DoubleType     => ldr.next_double
+            case DecimalType(_) => ldr.next_double
+            case CharType       => ldr.next_char
+            case DateType       => ldr.next_date
             case VarCharType(len) => //loadString(len, ldr)
               ldr.next_string
           })
