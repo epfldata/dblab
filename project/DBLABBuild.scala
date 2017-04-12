@@ -56,6 +56,7 @@ object DBLABBuild extends Build {
 
   val generate_test = InputKey[Unit]("generate-test")
   // val test_run = InputKey[Unit]("test-run")
+  val olap_engine = InputKey[Unit]("olap-engine")
 
   def purgatorySettings(projectFolder: String) = generatorSettings ++ Seq(
     outputFolder := s"$projectFolder/src/main/scala/ch/epfl/data/dblab/deep",
@@ -123,11 +124,10 @@ object DBLABBuild extends Build {
           // test_run.value
         }
       },
-      // fullRunInputTask(
-      //   test_run
-      //   ,
-      //   Test,
-      //   "ch.epfl.data.legobase.LEGO_QUERY"
-      // ),
+      fullRunInputTask(
+        olap_engine,
+        Compile,
+        "ch.epfl.data.dblab.legobase.queryengine.OLAPEngine"
+      ),
       scalacOptions in Test ++= Seq("-optimize"))) dependsOn(dblab_experimentation_compiler)
 }
