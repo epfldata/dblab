@@ -105,7 +105,7 @@ object TPCHCompiler extends TPCHRunner {
     ExpressionSymbol.globalId = 0
   }
 
-  sealed trait Command {
+  trait Command {
     def name: String
     def shortDescription: String = name
     def description: String

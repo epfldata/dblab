@@ -13,6 +13,7 @@ import config._
 import schema._
 import deep._
 import legobase.experimentation.tpch.TPCHCompiler
+import storagemanager.Loader
 
 /**
  * The module responsbile for executing the OLAP DBMS.
@@ -25,6 +26,17 @@ object OLAPEngine {
   case object Start extends State
   case object Loaded extends State
 
+  import TPCHCompiler._
+
+  case object Load extends Command {
+    def name: String = "load"
+    override def shortDescription: String = "load <data_folder> <list of .ddl or .ri files>"
+    def description: String = "Loads the provided ddl file into the main-memory"
+    def run(args: String*): Unit = ()
+  }
+
+  val ddlInterpreter = new DDLInterpreter(new Catalog(scala.collection.mutable.Map()))
+
   var currentState: State = Start
   /**
    * The starting point of the OLAP DBMS.
@@ -34,19 +46,50 @@ object OLAPEngine {
       System.out.println("You should not use any arguments")
       System.exit(1)
     }
-    import TPCHCompiler._
     System.out.println("*** Legobase OLAP Engine ***")
     System.out.println("Available commands:")
-    System.out.println("  warm-up")
-    System.out.println("    Warms up the underlying just-in-time (JIT) compiler")
-    System.out.println("  exit")
-    System.out.println("    Exits the interactive mode")
+    val cmds = List(WarmUpJIT, Exit, Load)
+    for (cmd <- cmds) {
+      System.out.println(s"  ${cmd.shortDescription}")
+      System.out.println(s"    ${cmd.description}")
+    }
     acceptInputFromConsole { str =>
       var exit = false
       str match {
-        case "exit" => exit = true
-        case "warm-up" =>
+        case Exit() => exit = true
+        case WarmUpJIT() =>
           warmUpJIT()
+        case Load(args @ _*) =>
+          // if (currentState != Start) {
+          //   System.out.println(s"System is not in $Start state, but $currentState.");
+          //   System.exit(1)
+          // }
+          // Set the folder containing data
+          Config.datapath = args(0)
+          System.out.println(Config.datapath)
+          val dataFolder = new java.io.File(Config.datapath)
+          if (!dataFolder.exists || !dataFolder.isDirectory) {
+            System.out.println("Data folder " + Config.datapath + " does not exist or is not a directory. Cannot proceed");
+            System.exit(1)
+          }
+          val filesToExecute = args.tail
+          if (!filesToExecute.forall(f => f.endsWith(".ddl") || f.endsWith(".ri"))) {
+            System.out.println("Files should have .ddl or .ri prefix");
+            System.exit(1)
+          }
+          for (ddlFile <- filesToExecute) {
+            System.out.println("Executing file " + ddlFile)
+            val ddlDefStr = scala.io.Source.fromFile(ddlFile).mkString
+            val ddlObj = DDLParser.parse(ddlDefStr)
+            ddlInterpreter.interpret(ddlObj)
+          }
+          val schema = ddlInterpreter.getCurrSchema
+          System.out.println("Loading Started!")
+          for (table <- schema.tables) {
+            Loader.loadUntypedTable(table)
+            System.out.println(s"${table.name} Loaded!")
+          }
+          currentState = Loaded
         case _ => System.out.println(s"Command $str not available!")
       }
       exit
