@@ -13,7 +13,7 @@ import dblab.schema._
 import config._
 
 /** A polymorphic embedding cake for manually inlining some methods of [[ch.epfl.data.dblab.storagemanager.Loader]] */
-trait LoaderInlined extends storagemanager.LoaderImplementations
+trait LoaderInlined extends LoaderImplementations
   with schema.SchemaOps with sc.pardis.deep.scalalib.BooleanComponent {
   def componentType: Type = throw new Exception("Provide a componentType for the LoaderInlined component.")
   override def loaderGetFullPathObject(fileName: Rep[String]): Rep[String] = fileName match {
@@ -21,6 +21,10 @@ trait LoaderInlined extends storagemanager.LoaderImplementations
     case _                      => throw new Exception(s"file name should be constant but here it is $fileName")
   }
   override def loaderLoadTableObject[R](_table: Rep[Table])(implicit typeR: TypeRep[R], c: ClassTag[R]): Rep[Array[R]] = {
+    if (!Config.specializeLoader) {
+      // return super[LoaderImplementations].loaderLoadTableObject[R](_table)
+      return super[LoaderImplementations].loaderLoadUntypedTableObject(_table).asInstanceOf[Rep[Array[R]]]
+    }
     val table = _table match {
       case Constant(v: Table) => v
     }
@@ -72,6 +76,10 @@ trait LoaderInlined extends storagemanager.LoaderImplementations
       case Constant(v: Table) => v
     }
     implicit val tableType = dataRowTypeForTable(table)
+    if (!Config.specializeLoader) {
+      // return infix_asInstanceOf(super[LoaderImplementations].loaderLoadUntypedTableObject(_table))(ArrayType(tableType))
+      return super[LoaderImplementations].loaderLoadUntypedTableObject(_table)
+    }
 
     val size = Loader.fileLineCount(unit(table.resourceLocator))
     val arr = __newArray(size)(tableType)
