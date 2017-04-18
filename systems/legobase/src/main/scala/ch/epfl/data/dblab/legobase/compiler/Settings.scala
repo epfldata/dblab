@@ -68,6 +68,7 @@ class Settings(val args: List[String]) {
   }
   def init(): Unit = {
     config.Config.specializeLoader = specializeLoader
+    config.Config.specializeEngine = specializeEngine
   }
   @inline def hasSetting(setting: Setting): Boolean = args.exists(a => setting.matches(a))
   // TODO the following methods are not needed
@@ -122,6 +123,7 @@ class Settings(val args: List[String]) {
   def queryName: String = args(2)
 
   def specializeLoader = !hasSetting(NoSpecializedLoaderSetting)
+  def specializeEngine = !hasSetting(NoSpecializedEngineSetting)
 
   def cSettings: CTransformersPipelineSettings = CTransformersPipelineSettings(ifAggressive,
     onlyLoading, mallocProfile, papiProfile, oldCArrayHandling, pointerStore, containerFlattenning)
@@ -161,6 +163,7 @@ object Settings {
     OptimalSetting,
     CompliantSetting,
     NoSpecializedLoaderSetting,
+    NoSpecializedEngineSetting,
     ScalaCGSetting,
     QueryMonadLoweringSetting,
     QueryMonadIteratorSetting,
@@ -360,6 +363,8 @@ case object CompliantSetting extends OptionSetting("compliant",
   "Considers the best compliant combiniation of optimization flags")
 case object NoSpecializedLoaderSetting extends OptionSetting("no-spec-loader",
   "Disables specialization of the loader")
+case object NoSpecializedEngineSetting extends OptionSetting("no-spec-engine",
+  "Disables specialization of the query engine")
 case object ScalaCGSetting extends OptionSetting("scala",
   "Generates Scala code instead of C code")
 case object OptimizationLevelSetting extends OptionSetting("levels",

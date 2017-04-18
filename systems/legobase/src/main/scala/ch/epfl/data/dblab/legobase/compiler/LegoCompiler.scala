@@ -261,9 +261,9 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
         new QueryEngineCGenerator(outputFile, settings.papiProfile, true)
     } else {
       if (settings.noLetBinding)
-        new QueryEngineScalaASTGenerator(DSL, false, outputFile, runnerClassName)
+        new QueryEngineScalaASTGenerator(DSL, !settings.specializeEngine, outputFile, runnerClassName)
       else
-        new QueryEngineScalaGenerator(false, outputFile, runnerClassName)
+        new QueryEngineScalaGenerator(!settings.specializeEngine, outputFile, runnerClassName)
     }
 
 }

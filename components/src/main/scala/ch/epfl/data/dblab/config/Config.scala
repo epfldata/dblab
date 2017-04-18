@@ -26,4 +26,6 @@ object Config {
   val debugQueryPlan: Boolean = true
   /** Specifies whether to specialize the loader or not */
   var specializeLoader: Boolean = true
+  /** Specifies whether to specialize the query engine or not */
+  var specializeEngine: Boolean = true
 }
