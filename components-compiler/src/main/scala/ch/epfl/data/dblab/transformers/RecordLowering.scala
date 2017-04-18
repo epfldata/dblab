@@ -11,6 +11,7 @@ import deep.dsls.QueryEngineExp
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.optimization._
+import config._
 
 object RecordLowering {
   def apply(originalContext: QueryEngineExp, removeUnusedFields: Boolean, compliant: Boolean) = new TransformerHandler {
@@ -81,6 +82,14 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     }
     // System.out.println(s"sorted ${sorted.mkString("\n")}")
   }
+
+  // override def createTag[T](tp: TypeRep[T], caseClassNew: Option[Def[T]] = None): StructTags.StructTag[Any] = {
+  //   if (isOperatorType(tp)) {
+  //     super.createTag(tp, caseClassNew)
+  //   } else {
+  //     super.createTag(tp, caseClassNew)
+  //   }
+  // }
 
   override def lower[T: TypeRep](node: Block[T]): to.Block[T] = {
     phase = FieldExtractionPhase
@@ -289,18 +298,29 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     def unapply[T](exp: Def[T]): Option[Def[T]] =
       exp match {
         case _: ConstructorDef[_] if exp.tp.isRecord => Some(exp)
-        case _                                       => None
+        case _ if !Config.specializeEngine && isOperatorType(exp.tp) => Some(exp)
+        case _ => None
       }
+  }
+
+  def isOperatorType[T](tp: PardisType[T]): Boolean =
+    OperatorsType.unapply(tp).nonEmpty
+
+  object OperatorsType {
+    def unapply[T](tp: PardisType[T]): Option[PardisType[T]] = tp match {
+      case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) |
+        AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) |
+        SortOpType(_) | NestedLoopsJoinOpType(_, _) | SubquerySingleResultType(_) | ViewOpType(_) |
+        HashJoinAntiType(_, _, _) | LeftOuterJoinOpType(_, _, _) | MergeJoinOpType(_, _) => Some(tp)
+      case _ => None
+    }
   }
 
   object LoweredNew extends RepExtractor {
     def unapply[T](exp: Rep[T]): Option[Rep[T]] = exp.tp match {
-      case x if x.isRecord => Some(exp)
-      case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) |
-        AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) |
-        SortOpType(_) | NestedLoopsJoinOpType(_, _) | SubquerySingleResultType(_) | ViewOpType(_) |
-        HashJoinAntiType(_, _, _) | LeftOuterJoinOpType(_, _, _) | MergeJoinOpType(_, _) => Some(exp)
-      case _ => None
+      case x if x.isRecord  => Some(exp)
+      case OperatorsType(_) => Some(exp)
+      case _                => None
     }
   }
 }

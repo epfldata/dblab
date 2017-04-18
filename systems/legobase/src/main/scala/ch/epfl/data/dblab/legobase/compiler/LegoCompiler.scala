@@ -74,7 +74,9 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
 
   // pipeline += TreeDumper(false)
   val recordLowering = RecordLowering(DSL, shouldRemoveUnusedFields, settings.forceCompliant)
-  pipeline += recordLowering
+  // TODO should be handled inside recordLowering
+  if (settings.specializeEngine)
+    pipeline += recordLowering
   // pipeline += TreeDumper(false)
   pipeline += ParameterPromotion
   pipeline += DCE
