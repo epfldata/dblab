@@ -170,7 +170,10 @@ class QueryEngineCGenerator(val outputFileName: String, val papiProfile: Boolean
 
   val branch_mis_pred = true
 
-  override def header: Document = super.header :/: doc"""#include "dblab_clib.h" """ ::
+  override def header: Document = super.header :/: doc"""
+#include "dblab_clib.h" 
+#include "dblab_engine.h" 
+""" ::
     {
       if (papiProfile)
         Document.break :: doc"""#include <papi.h>""" :/: {
@@ -192,6 +195,7 @@ int event[NUM_EVENTS] = {PAPI_L1_DCM, PAPI_L2_DCM, PAPI_L2_DCA,
     }
 
   import sc.cscala.deep.GArrayHeaderIRs.GArrayHeaderG_array_indexObject
+  import ch.epfl.data.dblab.deep.queryengine.push.PrintOpIRs.PrintOpRun
 
   val BN = "\\n"
 
@@ -212,6 +216,8 @@ int event[NUM_EVENTS] = {PAPI_L1_DCM, PAPI_L2_DCM, PAPI_L2_DCA,
   override def functionNodeToDocument(fun: FunctionNode[_]) = fun match {
     case GArrayHeaderG_array_indexObject(array, i) =>
       doc"g_array_index($array, ${fun.tp}, $i)"
+    case PrintOpRun(op) =>
+      doc"printop_run($op)"
     case PAPIStart() =>
       doc"""
 /* Start counting events */
