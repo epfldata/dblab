@@ -33,10 +33,8 @@ class CTransformersPipeline(val settings: CTransformersPipelineSettings) extends
       } else {
         pipeline += new ScalaArrayToPointerTransformer(context, settings)
       }
-
       pipeline += new ScalaStructToMallocTransformer(context)
     }
-
     pipeline += new sc.cscala.deep.ManualGLibMultiMapTransformation(context)
     pipeline += new ScalaCollectionsToGLibTransfomer(context)
     pipeline += new Tuple2ToCTransformer(context)

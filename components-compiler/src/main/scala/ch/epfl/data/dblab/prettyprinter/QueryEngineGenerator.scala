@@ -150,6 +150,24 @@ class QueryEngineCGenerator(val outputFileName: String, val papiProfile: Boolean
     case _         => super.mapScalaConstruct(t)
   }
 
+  override def printFuncProto(f: Tuple3[ExpressionSymbol[_], List[Expression[_]], PardisBlock[_]]) = {
+    var result: Document = Document.empty
+    val ret = tpeToDocument(f._1.tp.typeArguments.last) // TODO for some reason type info is lost!
+    result = result :/: ret :: " x" + f._1.id + "("
+    // TODO: This can probably be refactored
+    f._2.foldLeft(1)((c, a) => {
+      result = result :: tpeToDocument(a.tp) :: " " :: expToDocument(a)
+      if (c != f._2.size) result = result :: ", "
+      c + 1
+    })
+    result :: ")"
+  }
+
+  override def pardisTypeToString[A](t: PardisType[A]): String = t.name match {
+    case "String" => "char*"
+    case _        => super.pardisTypeToString(t)
+  }
+
   val branch_mis_pred = true
 
   override def header: Document = super.header :/: doc"""#include "dblab_clib.h" """ ::

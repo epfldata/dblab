@@ -17,15 +17,16 @@ trait CScalaExtra extends ScalaCoreDSL with CFunctions {
   import CTypes._
   override def structName[T](m: PardisType[T]): String = {
     m match {
-      case CArrayType(args)                    => "ArrayOf" + structName(args)
-      case ArrayType(args)                     => structName(args)
-      case PointerType(args)                   => structName(args)
-      case IntType                             => "int"
+      case CArrayType(args) => "ArrayOf" + structName(args)
+      case ArrayType(args) => structName(args)
+      case PointerType(args) => structName(args)
+      case IntType => "int"
       case ByteType | CharType | CharacterType => "char"
-      case DoubleType                          => "double"
-      case OptimalStringType                   => "OptimalString"
-      case c if c.isRecord                     => m.name.replaceAll("struct ", "")
-      case _                                   => super.structName(m)
+      case DoubleType => "double"
+      case OptimalStringType => "OptimalString"
+      // TODO why we need it here?
+      case c if c.isRecord && config.Config.specializeEngine => m.name.replaceAll("struct ", "")
+      case _ => super.structName(m)
     }
   }
   def papi_start(): Rep[Unit] = PAPIStart()
