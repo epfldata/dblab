@@ -104,6 +104,13 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     res
   }
 
+  object OperatorTags {
+    val AggOp = 1
+    val PrintOp = 2
+    val ScanOp = 3
+    val SelectOp = 4
+  }
+
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = node match {
     case an @ ArrayNew(size) =>
       ArrayNew(size)(apply(an.tp.typeArguments(0)))
@@ -156,7 +163,9 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
       implicit val magg = apply(typeRep[AGGRecord[Any]].rebuild(mb)).asInstanceOf[TypeRep[AGGRecord[A]]]
       def aggNew(key: Rep[A], values: Rep[Array[Double]]) =
         __new(("key", false, key), ("aggs", false, values))(magg)
-      to.__newDef[AggOp[Any, Any]](("parent", false, apply(ag.parent)(ag.parent.tp)),
+      to.__newDef[AggOp[Any, Any]](
+        ("tag", false, unit(OperatorTags.AggOp)),
+        ("parent", false, apply(ag.parent)(ag.parent.tp)),
         ("numAggs", false, ag.numAggs),
         ("grp", false, ag.grp),
         ("agger", false, __lambda((x: Rep[A]) => aggNew(x, __newArray[Double](ag.numAggs)))),
@@ -177,7 +186,9 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     case po: PrintOpNew[_] if !Config.specializeEngine => {
       val ma = apply(po.typeA)
       val maa = ma.asInstanceOf[TypeRep[Any]]
-      to.__newDef[PrintOp[Any]](("parent", false, apply(po.parent)),
+      to.__newDef[PrintOp[Any]](
+        ("tag", false, unit(OperatorTags.PrintOp)),
+        ("parent", false, apply(po.parent)),
         ("printFunc", false, apply(po.printFunc)),
         ("limit", false, po.limit)).asInstanceOf[to.Def[T]]
     }
@@ -190,7 +201,9 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     case so: ScanOpNew[_] if !Config.specializeEngine => {
       val ma = so.typeA
       val maa = ma.asInstanceOf[TypeRep[Any]]
-      to.__newDef[ScanOp[Any]](("table", false, so.table)).asInstanceOf[to.Def[T]]
+      to.__newDef[ScanOp[Any]](
+        ("tag", false, unit(OperatorTags.ScanOp)),
+        ("table", false, so.table)).asInstanceOf[to.Def[T]]
     }
     case so: ScanOpNew[_] => {
       val ma = so.typeA
@@ -207,7 +220,9 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     case so: SelectOpNew[_] if !Config.specializeEngine => {
       val ma = so.typeA
       val maa = ma.asInstanceOf[TypeRep[Any]]
-      to.__newDef[SelectOp[Any]](("parent", false, apply(so.parent)),
+      to.__newDef[SelectOp[Any]](
+        ("tag", false, unit(OperatorTags.SelectOp)),
+        ("parent", false, apply(so.parent)),
         ("selectPred", false, so.selectPred)).asInstanceOf[to.Def[T]]
     }
     case so: SelectOpNew[_] => {
