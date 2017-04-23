@@ -165,7 +165,9 @@ class QueryEngineCGenerator(val outputFileName: String, val papiProfile: Boolean
 
   override def pardisTypeToString[A](t: PardisType[A]): String = t.name match {
     case "String" => "char*"
-    case _        => super.pardisTypeToString(t)
+    // TODO check the applicability in the general case!
+    case _ if t.isFunction && !config.Config.specializeEngine => "lambda_t"
+    case _ => super.pardisTypeToString(t)
   }
 
   val branch_mis_pred = true
