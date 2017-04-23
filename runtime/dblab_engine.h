@@ -27,6 +27,8 @@ typedef record_t (*lambda_t)();
 
 typedef double (*lambda_double_t)();
 
+typedef boolean_t (*lambda_boolean_t)();
+
 struct scanop_t {
   numeric_int_t tag;
   numeric_int_t table_size;
@@ -54,6 +56,12 @@ struct aggop_t {
   GList* aggFuncsOutput;
 };
 
+struct selectop_t {
+  numeric_int_t tag;
+  struct operator_t* parent;
+  lambda_boolean_t selectPred;
+};
+
 struct agg_rec_t {
   record_t key;
   double* aggs;
@@ -68,16 +76,24 @@ GList* Seq(void* e1) {
 	return result;
 }
 
-// TODO
 void selectop_open(struct operator_t* op) {
   struct operator_t* parent = op->parent;
   operator_open(parent);
 }
 
-// TODO
 record_t selectop_next(struct operator_t* op) {
   struct operator_t* parent = op->parent;
-  return operator_next(parent);
+  struct selectop_t* selectop = (struct selectop_t*)op;
+  while(true) {
+    record_t t = operator_next(parent);
+    if(t == NULL) {
+      return NULL;
+    } else if (selectop->selectPred(t)){
+      return t;
+    } else {
+      continue;
+    }
+  }
 }
 
 void aggop_open(struct operator_t* op) {
