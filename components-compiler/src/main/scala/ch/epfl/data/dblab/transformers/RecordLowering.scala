@@ -163,10 +163,14 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
       implicit val magg = apply(typeRep[AGGRecord[Any]].rebuild(mb)).asInstanceOf[TypeRep[AGGRecord[A]]]
       def aggNew(key: Rep[A], values: Rep[Array[Double]]) =
         __new(("key", false, key), ("aggs", false, values))(magg)
+      val hm = to.__newHashMap[Any, Any]()(apply(mb), apply(magg.asInstanceOf[TypeRep[Any]]))
       to.__newDef[AggOp[Any, Any]](
         ("tag", false, unit(OperatorTags.AggOp)),
         ("parent", false, apply(ag.parent)(ag.parent.tp)),
         ("numAggs", false, ag.numAggs),
+        ("hm", false, hm),
+        ("hm_keys", true, hm.keySet),
+        ("hm_iter_counter", true, unit(0)),
         ("grp", false, ag.grp),
         ("agger", false, __lambda((x: Rep[A]) => aggNew(x, __newArray[Double](ag.numAggs)))),
         ("aggFuncsOutput", false, ag.aggFuncsOutput)).asInstanceOf[to.Def[T]]
