@@ -203,6 +203,9 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
       val maa = ma.asInstanceOf[TypeRep[Any]]
       to.__newDef[ScanOp[Any]](
         ("tag", false, unit(OperatorTags.ScanOp)),
+        ("table_size", false, so.table.asInstanceOf[Rep[Array[Any]]].length),
+        ("i", true, to.unit[Int](0)),
+        ("record_size", false, to.sizeof()(maa)),
         ("table", false, so.table)).asInstanceOf[to.Def[T]]
     }
     case so: ScanOpNew[_] => {
