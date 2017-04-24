@@ -207,12 +207,21 @@ record_t hashjoinop_next(struct operator_t* op) {
       GList** values = (GList**){g_hash_table_lookup(hjop->hm, key)};
       if(values != NULL) {
         GList* list = *values;
-        if(g_list_length(list) != 1) {
-          printf("**list is not size 1**");
+        int n = g_list_length(list);
+        boolean_t found = false;
+        record_t result_value = NULL;
+        for(int i = 0; i<n; i++) {
+          record_t leftElem = g_list_nth_data(list, i);
+          if(hjop->joinCond(leftElem, t)) {
+            if(found) {
+              printf("WARNING! ** The relationship is not 1-N in HashJoin! **\n");
+            }
+            result_value = hjop->concatenator(leftElem, t); 
+            found = true;
+          }  
         }
-        record_t leftElem = g_list_nth_data(list, 0);
-        if(hjop->joinCond(leftElem, t)) {
-          return hjop->concatenator(leftElem, t);  
+        if(found) {
+          return result_value;
         }
       }
     }
@@ -315,7 +324,7 @@ void printop_run(void* raw_op) {
 
 // TODO rest of operators
 void operator_open(struct operator_t* op) {  
-  printf("Open with tag %d!\n", op->tag);
+  // printf("Open with tag %d!\n", op->tag);
   switch(op->tag) {
     case AGG_OP_TAG: aggop_open(op); break;
     case PRINT_OP_TAG: printop_open(op); break;
