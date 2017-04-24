@@ -277,13 +277,10 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     case so: SortOpNew[_] if !Config.specializeEngine => {
       val ma = so.typeA
       val maa = ma.asInstanceOf[TypeRep[Any]]
-      val sortFun = apply(so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]])
       to.__newDef[SortOp[Any]](
         ("tag", false, unit(OperatorTags.SortOp)),
         ("parent", false, apply(so.parent)),
-        ("sortFun", false, sortFun),
-        ("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](sortFun)(apply(maa)))(apply(maa))),
-        stop).asInstanceOf[to.Def[T]]
+        ("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](apply(so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]]))(apply(maa)))(apply(maa)))).asInstanceOf[to.Def[T]]
     }
     case so: SortOpNew[_] => {
       val ma = so.typeA

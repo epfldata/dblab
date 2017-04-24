@@ -75,6 +75,12 @@ struct hashjoin_t {
   lambda_t concatenator;
 };
 
+struct sortop_t {
+  numeric_int_t tag;
+  struct operator_t* parent;
+  GTree* sortedTree;
+};
+
 struct agg_rec_t {
   record_t key;
   double* aggs;
@@ -103,19 +109,37 @@ record_t selectop_next(struct operator_t* op) {
   }
 }
 
-// TODO
 void sortop_open(struct operator_t* op) {
-  struct operator_t* parent = op->parent;
-  operator_open(parent);
+  struct sortop_t* sop = (struct sortop_t*)op;
+  operator_open(sop->parent);
+  while(true) {
+    record_t t = operator_next(sop->parent);
+    if(t == NULL) {
+      break;
+    } else {
+      g_tree_insert(sop->sortedTree, t, t);
+    }
+  }
 }
 
-// TODO
+numeric_int_t treeHead(void* x6081, void* x6082, void* x6083) {
+  pointer_assign((record_t*)x6083, x6082);
+  return 1; 
+}
+
 record_t sortop_next(struct operator_t* op) {
-  struct operator_t* parent = op->parent;
-  return operator_next(parent);
+  struct sortop_t* sop = (struct sortop_t*)op;
+  int size = g_tree_nnodes(sop->sortedTree);
+  if(size == 0) {
+    return NULL;
+  } else {
+    record_t result_tuple = NULL;
+    g_tree_foreach(sop->sortedTree, treeHead, &result_tuple);
+    g_tree_remove(sop->sortedTree, result_tuple);
+    return result_tuple;
+  }
 }
 
-// TODO
 void hashjoinop_open(struct operator_t* op) {
   struct hashjoin_t* hjop = (struct hashjoin_t*)op;
   operator_open(hjop->leftParent);
@@ -128,10 +152,6 @@ void hashjoinop_open(struct operator_t* op) {
     } else {
       record_t key = (record_t){hjop->leftHash(t)};
       GList** values = (GList**){g_hash_table_lookup(hjop->hm, key)};
-      // GList** x4842 = (GList**){x4841};
-      // GList** x4843 = NULL;
-      // boolean_t x4844 = x4842==(x4843);
-      // /* VAR */ GList** ite14610 = 0;
       if(values == NULL) {
         GList** tmpList = malloc(8);
         GList* tmpList1 = NULL;
