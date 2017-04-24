@@ -83,21 +83,6 @@ struct agg_rec_t {
 void operator_open(struct operator_t* op);
 record_t operator_next(struct operator_t* op);
 
-// FIXME make all versions of Seq work together
-
-GList* Seq(void* e1) {
-	GList* result = NULL;
-	result = g_list_append (result, e1);
-	return result;
-}
-
-// GList* Seq(void* e1, void* e2) {
-//   GList* result = NULL;
-//   result = g_list_append (result, e1);
-//   result = g_list_append (result, e2);
-//   return result;
-// }
-
 void selectop_open(struct operator_t* op) {
   struct operator_t* parent = op->parent;
   operator_open(parent);

@@ -209,6 +209,17 @@ int event[NUM_EVENTS] = {PAPI_L1_DCM, PAPI_L2_DCM, PAPI_L2_DCA,
     case _ => super.nodeToDocument(node)
   }
 
+  override def stmtToDocument(stmt: Statement[_]): Document = {
+    val sym = stmt.sym
+    stmt.rhs match {
+      case PardisLiftedSeq(seq) =>
+        val inits = seq.map(x => doc"$sym = g_list_append($sym, $x);").mkDocument("")
+        doc"${sym.tp} $sym = NULL;$inits"
+      case _ =>
+        super.stmtToDocument(stmt)
+    }
+  }
+
   /**
    * Generates the code for the given function definition node
    *
