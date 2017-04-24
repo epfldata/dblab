@@ -191,10 +191,14 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
       def aggNew(key: Rep[A], values: Rep[Array[Double]]) =
         __new(("key", false, key), ("aggs", false, values))(magg)
       val hm = to.__newHashMap[Any, Any]()(apply(mb), apply(magg.asInstanceOf[TypeRep[Any]]))
+      val aggNums = ag.aggFuncsOutput match {
+        case Def(LiftedSeq(seq)) => unit(seq.length)
+        case _                   => throw new Exception("Couldn't compute the number of agg functions")
+      }
       to.__newDef[AggOp[Any, Any]](
         ("tag", false, unit(OperatorTags.AggOp)),
         ("parent", false, apply(ag.parent)(ag.parent.tp)),
-        ("numAggs", false, ag.numAggs),
+        ("numAggs", false, aggNums),
         ("hm", false, hm),
         ("hm_keys", true, hm.keySet),
         ("hm_iter_counter", true, unit(0)),
@@ -246,13 +250,18 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
         stop).asInstanceOf[to.Def[T]]
     }
     case mo: MapOpNew[_] if !Config.specializeEngine => {
-      // val ma = mo.typeA
-      // val maa = ma.asInstanceOf[TypeRep[Any]]
-      // to.__newDef[MapOp[Any]](
-      //   ("tag", false, unit(OperatorTags.MapOp)),
-      //   ("parent", false, apply(mo.parent)),
-      //   stop).asInstanceOf[to.Def[T]]
-      throw new Exception("MapOp not supported yet for a non-specialized engine!")
+      val ma = mo.typeA
+      val maa = ma.asInstanceOf[TypeRep[Any]]
+      val mapNums = mo.mapFuncsOutput match {
+        case Def(LiftedSeq(seq)) => unit(seq.length)
+        case _                   => throw new Exception("Couldn't compute the number of map functions")
+      }
+      to.__newDef[MapOp[Any]](
+        ("tag", false, unit(OperatorTags.MapOp)),
+        ("parent", false, apply(mo.parent)),
+        ("mapNums", false, mapNums),
+        ("mapFuncs", false, apply(mo.mapFuncsOutput))).asInstanceOf[to.Def[T]]
+      // throw new Exception("MapOp not supported yet for a non-specialized engine!")
     }
     case mo: MapOpNew[_] => {
       val ma = mo.typeA

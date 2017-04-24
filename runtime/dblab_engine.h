@@ -16,6 +16,7 @@
 #define SCAN_OP_TAG 3
 #define SELECT_OP_TAG 4
 #define SORT_OP_TAG 5
+#define MAP_OP_TAG 6
 #define HASHJOIN_OP_TAG 7
 
 struct operator_t {
@@ -81,6 +82,13 @@ struct sortop_t {
   GTree* sortedTree;
 };
 
+struct mapop_t {
+  numeric_int_t tag;
+  struct operator_t* parent;
+  numeric_int_t mapNums;
+  GList** mapFuncs;
+};
+
 struct agg_rec_t {
   record_t key;
   double* aggs;
@@ -106,6 +114,26 @@ record_t selectop_next(struct operator_t* op) {
     } else {
       continue;
     }
+  }
+}
+
+void mapop_open(struct operator_t* op) {
+  struct operator_t* parent = op->parent;
+  operator_open(parent);
+}
+
+record_t mapop_next(struct operator_t* op) {
+  struct operator_t* parent = op->parent;
+  struct mapop_t* mapop = (struct mapop_t*)op;
+  record_t t = operator_next(parent);
+  if(t == NULL) {
+    return NULL;
+  } else {
+    for(int i=0; i<mapop->mapNums; i++) {
+      lambda_t func = g_list_nth_data(mapop->mapFuncs, i);
+      func(t);
+    }
+    return t;
   }
 }
 
@@ -287,13 +315,14 @@ void printop_run(void* raw_op) {
 
 // TODO rest of operators
 void operator_open(struct operator_t* op) {  
-  // printf("Open with tag %d!\n", op->tag);
+  printf("Open with tag %d!\n", op->tag);
   switch(op->tag) {
     case AGG_OP_TAG: aggop_open(op); break;
     case PRINT_OP_TAG: printop_open(op); break;
     case SCAN_OP_TAG: scanop_open(op); break;
     case SELECT_OP_TAG: selectop_open(op); break;
     case SORT_OP_TAG: sortop_open(op); break;
+    case MAP_OP_TAG: mapop_open(op); break;
     case HASHJOIN_OP_TAG: hashjoinop_open(op); break;
     default: printf("Default Open with tag %d!\n", op->tag);
   }
@@ -308,6 +337,7 @@ void* operator_next(struct operator_t* op) {
     case SCAN_OP_TAG: return scanop_next(op);
     case SELECT_OP_TAG: return selectop_next(op);
     case SORT_OP_TAG: return sortop_next(op);
+    case MAP_OP_TAG: return mapop_next(op);
     case HASHJOIN_OP_TAG: return hashjoinop_next(op);
     default: printf("Default Next with tag %d!\n", op->tag); return 0;
   }
