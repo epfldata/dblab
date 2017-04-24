@@ -109,6 +109,33 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     val PrintOp = 2
     val ScanOp = 3
     val SelectOp = 4
+    val SortOp = 5
+    val MapOp = 6
+    val HashJoinOp = 7
+  }
+
+  // TODO refactor with StructProcessing
+  // def getRegisteredFieldsOfType[A: TypeRep]: List[String] = {
+  //   typeRep[A] match {
+  //     case rt: RecordType[_] if rt.originalType.nonEmpty => getRegisteredFieldsOfType(rt.originalType.get)
+  //     case t => getRegisteredFieldsOfType(t)
+  //   }
+  // }
+
+  // TODO refactor with StructProcessing
+  def concat_records[T: TypeRep, S: TypeRep, Res: TypeRep](elem1: Rep[T], elem2: Rep[S]): Rep[Res] = {
+    val resultType = typeRep[Res]
+    val regFields = getRegisteredFieldsOfType(elem1.tp) ++ getRegisteredFieldsOfType(elem2.tp)
+    def getFields[TR: TypeRep] = getElems(typeRep[TR] match {
+      case rt: RecordType[_] if rt.originalType.nonEmpty => rt.originalType.get
+      case t => t
+    })
+    // System.out.println(s"regFields: $regFields")
+    def fieldIsRegistered(f: StructElemInformation): Boolean = regFields.contains(f.name) || !removeUnusedFields
+    val elems1 = getFields[T].filter(fieldIsRegistered).map(x => PardisStructArg(x.name, x.mutable, field(elem1, x.name)(x.tpe)))
+    val elems2 = getFields[S].filter(fieldIsRegistered).map(x => PardisStructArg(x.name, x.mutable, field(elem2, x.name)(x.tpe)))
+    val structFields = elems1 ++ elems2
+    struct(structFields: _*)(resultType)
   }
 
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = node match {
@@ -218,6 +245,15 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
       to.__newDef[ScanOp[Any]](("i", true, to.unit[Int](0)),
         stop).asInstanceOf[to.Def[T]]
     }
+    case mo: MapOpNew[_] if !Config.specializeEngine => {
+      // val ma = mo.typeA
+      // val maa = ma.asInstanceOf[TypeRep[Any]]
+      // to.__newDef[MapOp[Any]](
+      //   ("tag", false, unit(OperatorTags.MapOp)),
+      //   ("parent", false, apply(mo.parent)),
+      //   stop).asInstanceOf[to.Def[T]]
+      throw new Exception("MapOp not supported yet for a non-specialized engine!")
+    }
     case mo: MapOpNew[_] => {
       val ma = mo.typeA
       val maa = ma.asInstanceOf[TypeRep[Any]]
@@ -238,12 +274,55 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
       to.__newDef[SelectOp[Any]](
         stop).asInstanceOf[to.Def[T]]
     }
+    case so: SortOpNew[_] if !Config.specializeEngine => {
+      val ma = so.typeA
+      val maa = ma.asInstanceOf[TypeRep[Any]]
+      val sortFun = apply(so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]])
+      to.__newDef[SortOp[Any]](
+        ("tag", false, unit(OperatorTags.SortOp)),
+        ("parent", false, apply(so.parent)),
+        ("sortFun", false, sortFun),
+        ("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](sortFun)(apply(maa)))(apply(maa))),
+        stop).asInstanceOf[to.Def[T]]
+    }
     case so: SortOpNew[_] => {
       val ma = so.typeA
       val maa = ma.asInstanceOf[TypeRep[Any]]
       to.__newDef[SortOp[Any]](
         ("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](apply(so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]]))(apply(maa)))(apply(maa))),
         stop).asInstanceOf[to.Def[T]]
+    }
+    case ho: HashJoinOpNew1[_, _, _] if !Config.specializeEngine => {
+      val ma = ho.typeA
+      val mb = ho.typeB
+      val mc = ho.typeC
+      trait A extends sc.pardis.shallow.Record
+      trait B extends sc.pardis.shallow.Record
+      trait Res
+      val mba = mb.asInstanceOf[TypeRep[Any]]
+      type HashJoinOpTp = HashJoinOp[sc.pardis.shallow.Record, sc.pardis.shallow.Record, Any]
+      val tp = ho.tp.asInstanceOf[TypeRep[HashJoinOpTp]]
+      val marrBuffA = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(ma).asInstanceOf[TypeRep[Any]]
+      val mCompRec = implicitly[TypeRep[DynamicCompositeRecord[sc.pardis.shallow.Record, sc.pardis.shallow.Record]]].rebuild(ma, mb).asInstanceOf[TypeRep[Any]]
+      implicit val tpA = apply(ma).asInstanceOf[TypeRep[A]]
+      implicit val tpB = apply(mb).asInstanceOf[TypeRep[B]]
+      implicit val tpRes = apply(mCompRec).asInstanceOf[TypeRep[Res]]
+      val hm = to.__newMultiMap[Any, Any]()(apply(mc), apply(ma.asInstanceOf[TypeRep[Any]]))
+      System.out.println(s"tp for hm: ${hm.tp}")
+      to.__newDef[HashJoinOpTp](
+        ("tag", false, unit(OperatorTags.HashJoinOp)),
+        ("leftParent", false, apply(ho.leftParent)),
+        ("rightParent", false, apply(ho.rightParent)),
+        ("hm", false, hm),
+        ("joinCond", false, apply(ho.joinCond)),
+        ("leftHash", false, apply(ho.leftHash)),
+        ("rightHash", false, apply(ho.rightHash)),
+        ("concatenator", false, __lambda((x: Rep[A], y: Rep[B]) => {
+          // val expNode = apply(ConcatDynamic(x, y, unit(""), unit("")))
+          // to.toAtom(expNode)(expNode.tp)
+          concat_records[A, B, Res](x, y)
+        })))(tp).asInstanceOf[to.Def[T]]
+
     }
     case ho: HashJoinOpNew1[_, _, _] => {
       val ma = ho.typeA

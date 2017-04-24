@@ -15,6 +15,8 @@
 #define PRINT_OP_TAG 2 
 #define SCAN_OP_TAG 3
 #define SELECT_OP_TAG 4
+#define SORT_OP_TAG 5
+#define HASHJOIN_OP_TAG 7
 
 struct operator_t {
   numeric_int_t tag;
@@ -62,6 +64,17 @@ struct selectop_t {
   lambda_boolean_t selectPred;
 };
 
+struct hashjoin_t {
+  numeric_int_t tag;
+  struct operator_t* leftParent;
+  struct operator_t* rightParent;
+  GHashTable* hm;
+  lambda_boolean_t joinCond;
+  lambda_t leftHash;
+  lambda_t rightHash;
+  lambda_t concatenator;
+};
+
 struct agg_rec_t {
   record_t key;
   double* aggs;
@@ -70,11 +83,20 @@ struct agg_rec_t {
 void operator_open(struct operator_t* op);
 record_t operator_next(struct operator_t* op);
 
+// FIXME make all versions of Seq work together
+
 GList* Seq(void* e1) {
 	GList* result = NULL;
 	result = g_list_append (result, e1);
 	return result;
 }
+
+// GList* Seq(void* e1, void* e2) {
+//   GList* result = NULL;
+//   result = g_list_append (result, e1);
+//   result = g_list_append (result, e2);
+//   return result;
+// }
 
 void selectop_open(struct operator_t* op) {
   struct operator_t* parent = op->parent;
@@ -94,6 +116,75 @@ record_t selectop_next(struct operator_t* op) {
       continue;
     }
   }
+}
+
+// TODO
+void sortop_open(struct operator_t* op) {
+  struct operator_t* parent = op->parent;
+  operator_open(parent);
+}
+
+// TODO
+record_t sortop_next(struct operator_t* op) {
+  struct operator_t* parent = op->parent;
+  return operator_next(parent);
+}
+
+// TODO
+void hashjoinop_open(struct operator_t* op) {
+  struct hashjoin_t* hjop = (struct hashjoin_t*)op;
+  operator_open(hjop->leftParent);
+  operator_open(hjop->rightParent);
+  hjop->hm = g_hash_table_new(g_direct_hash, g_direct_equal);
+  while (true) {
+    record_t t = operator_next(hjop->leftParent);
+    if(t == NULL) {
+      break;
+    } else {
+      record_t key = (record_t){hjop->leftHash(t)};
+      GList** values = (GList**){g_hash_table_lookup(hjop->hm, key)};
+      // GList** x4842 = (GList**){x4841};
+      // GList** x4843 = NULL;
+      // boolean_t x4844 = x4842==(x4843);
+      // /* VAR */ GList** ite14610 = 0;
+      if(values == NULL) {
+        GList** tmpList = malloc(8);
+        GList* tmpList1 = NULL;
+        pointer_assign(tmpList, tmpList1);
+        values = tmpList;
+      }
+      GList* valuesList = *(values);
+      valuesList = g_list_prepend(valuesList, t);
+      pointer_assign(values, valuesList);
+      g_hash_table_insert(hjop->hm, key, (void*){values});
+    }
+  }
+}
+
+// only supports 1 to N cases
+record_t hashjoinop_next(struct operator_t* op) {
+  struct hashjoin_t* hjop = (struct hashjoin_t*)op;
+  // printf("size of table %d\n", g_hash_table_size(hjop->hm));
+  while (true) {
+    record_t t = operator_next(hjop->rightParent);
+    if(t == NULL) {
+      break;
+    } else {
+      record_t key = (record_t){hjop->rightHash(t)};
+      GList** values = (GList**){g_hash_table_lookup(hjop->hm, key)};
+      if(values != NULL) {
+        GList* list = *values;
+        if(g_list_length(list) != 1) {
+          printf("**list is not size 1**");
+        }
+        record_t leftElem = g_list_nth_data(list, 0);
+        if(hjop->joinCond(leftElem, t)) {
+          return hjop->concatenator(leftElem, t);  
+        }
+      }
+    }
+  }
+  return NULL;
 }
 
 void aggop_open(struct operator_t* op) {
@@ -191,22 +282,28 @@ void printop_run(void* raw_op) {
 
 // TODO rest of operators
 void operator_open(struct operator_t* op) {  
+  // printf("Open with tag %d!\n", op->tag);
   switch(op->tag) {
     case AGG_OP_TAG: aggop_open(op); break;
     case PRINT_OP_TAG: printop_open(op); break;
     case SCAN_OP_TAG: scanop_open(op); break;
     case SELECT_OP_TAG: selectop_open(op); break;
+    case SORT_OP_TAG: sortop_open(op); break;
+    case HASHJOIN_OP_TAG: hashjoinop_open(op); break;
     default: printf("Default Open with tag %d!\n", op->tag);
   }
 }
 
 // TODO rest of operators
 void* operator_next(struct operator_t* op) {
+  // printf("Next with tag %d!\n", op->tag);
   switch(op->tag) {
     case AGG_OP_TAG: return aggop_next(op); 
     case PRINT_OP_TAG: return printop_next(op);
     case SCAN_OP_TAG: return scanop_next(op);
     case SELECT_OP_TAG: return selectop_next(op);
+    case SORT_OP_TAG: return sortop_next(op);
+    case HASHJOIN_OP_TAG: return hashjoinop_next(op);
     default: printf("Default Next with tag %d!\n", op->tag); return 0;
   }
 }
