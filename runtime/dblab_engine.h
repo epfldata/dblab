@@ -19,6 +19,8 @@
 #define MAP_OP_TAG 6
 #define HASHJOIN_OP_TAG 7
 #define MERGEJOIN_OP_TAG 8
+#define WINDOW_OP_TAG 9
+#define LEFTSEMIHASHJOIN_OP_TAG 10
 
 struct operator_t {
   numeric_int_t tag;
@@ -102,6 +104,26 @@ struct mapop_t {
   numeric_int_t mapNums;
   GList** mapFuncs;
 };
+
+struct windowop_t {
+  numeric_int_t tag;
+  struct operator_t* parent;
+  lambda_t grp;
+  lambda_t wndFunction;
+  lambda_t wndFactory;
+  GHashTable* hm;
+};
+
+struct leftsemihashjoin_t {
+  numeric_int_t tag;
+  struct operator_t* leftParent;
+  struct operator_t* rightParent;
+  GHashTable* hm;
+  lambda_t joinCond;
+  lambda_t leftHash;
+  lambda_t rightHash;
+};
+
 
 struct agg_rec_t {
   record_t key;
@@ -227,15 +249,72 @@ record_t hashjoinop_next(struct operator_t* op) {
         for(int i = 0; i<n; i++) {
           record_t leftElem = g_list_nth_data(list, i);
           if(hjop->joinCond(leftElem, t)) {
-            if(found) {
-              printf("WARNING! ** The relationship is not 1-N in HashJoin! **\n");
-            }
+            // if(found) {
+            //   printf("WARNING! ** The relationship is not 1-N in HashJoin! **\n");
+            // }
             result_value = hjop->concatenator(leftElem, t); 
             found = true;
           }  
         }
         if(found) {
           return result_value;
+        }
+      }
+    }
+  }
+  return NULL;
+}
+
+void leftsemihashjoinop_open(struct operator_t* op) {
+  struct leftsemihashjoin_t* hjop = (struct leftsemihashjoin_t*)op;
+  operator_open(hjop->leftParent);
+  operator_open(hjop->rightParent);
+  hjop->hm = g_hash_table_new(g_direct_hash, g_direct_equal);
+  while (true) {
+    record_t t = operator_next(hjop->rightParent);
+    if(t == NULL) {
+      break;
+    } else {
+      record_t key = (record_t){hjop->rightHash(t)};
+      GList** values = (GList**){g_hash_table_lookup(hjop->hm, key)};
+      if(values == NULL) {
+        GList** tmpList = malloc(8);
+        GList* tmpList1 = NULL;
+        pointer_assign(tmpList, tmpList1);
+        values = tmpList;
+      }
+      GList* valuesList = *(values);
+      valuesList = g_list_prepend(valuesList, t);
+      pointer_assign(values, valuesList);
+      g_hash_table_insert(hjop->hm, key, (void*){values});
+    }
+  }
+}
+
+// only supports 1 to N cases
+record_t leftsemihashjoinop_next(struct operator_t* op) {
+  struct leftsemihashjoin_t* hjop = (struct leftsemihashjoin_t*)op;
+  // printf("size of table %d\n", g_hash_table_size(hjop->hm));
+  while (true) {
+    record_t t = operator_next(hjop->leftParent);
+    if(t == NULL) {
+      break;
+    } else {
+      record_t key = (record_t){hjop->leftHash(t)};
+      GList** values = (GList**){g_hash_table_lookup(hjop->hm, key)};
+      if(values != NULL) {
+        GList* list = *values;
+        int n = g_list_length(list);
+        boolean_t found = false;
+        for(int i = 0; i<n; i++) {
+          record_t rightElem = g_list_nth_data(list, i);
+          if(hjop->joinCond(t, rightElem)) {
+            found = true;
+            break;
+          }  
+        }
+        if(found) {
+          return t;
         }
       }
     }
@@ -322,6 +401,53 @@ record_t aggop_next(struct operator_t* op) {
   }
 }
 
+// TODO needs to be moved to the windowop struct
+GList* windowop_hm_keys;
+int windowop_hm_iter_counter;
+
+void windowop_open(struct operator_t* op) {
+  struct operator_t* parent = op->parent;
+  operator_open(parent);
+  struct windowop_t* windowop = (struct windowop_t*)op;
+  windowop->hm = g_hash_table_new(g_direct_hash, g_direct_equal);
+  while (true) {
+    record_t t = operator_next(parent);
+    if(t == NULL) {
+      break;
+    } else {
+      record_t key = (record_t){windowop->grp(t)};
+      GList** values = (GList**){g_hash_table_lookup(windowop->hm, key)};
+      if(values == NULL) {
+        GList** tmpList = malloc(8);
+        GList* tmpList1 = NULL;
+        pointer_assign(tmpList, tmpList1);
+        values = tmpList;
+      }
+      GList* valuesList = *(values);
+      valuesList = g_list_prepend(valuesList, t);
+      pointer_assign(values, valuesList);
+      g_hash_table_insert(windowop->hm, key, (void*){values});
+    }
+  }
+  // printf("Size of table = %d\n", g_hash_table_size(windowop->hm));
+  windowop_hm_keys = g_hash_table_get_keys(windowop->hm);
+}
+
+record_t windowop_next(struct operator_t* op) {
+  struct windowop_t* windowop = (struct windowop_t*)op;
+  int size = g_hash_table_size(windowop->hm);
+  // printf("%d size of table\n", size);
+  if(windowop_hm_iter_counter < size) {
+    record_t key = g_list_nth_data(windowop_hm_keys, windowop_hm_iter_counter);
+    record_t elem = g_hash_table_lookup(windowop->hm, key);
+    windowop_hm_iter_counter++;
+    record_t result = windowop->wndFactory(key, windowop->wndFunction(elem));
+    return result;
+  } else {
+    return NULL;
+  }
+}
+
 void scanop_open(struct operator_t* op) {
   struct scanop_t* scanop = (struct scanop_t*)op;
   // printf("scan op relation of size %d\n", scanop->table_size);
@@ -384,6 +510,8 @@ void operator_open(struct operator_t* op) {
     case MAP_OP_TAG: mapop_open(op); break;
     case HASHJOIN_OP_TAG: hashjoinop_open(op); break;
     case MERGEJOIN_OP_TAG: mergejoinop_open(op); break;
+    case WINDOW_OP_TAG: windowop_open(op); break;
+    case LEFTSEMIHASHJOIN_OP_TAG: leftsemihashjoinop_open(op); break;
     default: printf("Default Open with tag %d!\n", op->tag);
   }
 }
@@ -400,6 +528,8 @@ void* operator_next(struct operator_t* op) {
     case MAP_OP_TAG: return mapop_next(op);
     case HASHJOIN_OP_TAG: return hashjoinop_next(op);
     case MERGEJOIN_OP_TAG: return mergejoinop_next(op);
+    case WINDOW_OP_TAG: return windowop_next(op);
+    case LEFTSEMIHASHJOIN_OP_TAG: return leftsemihashjoinop_next(op);
     default: printf("Default Next with tag %d!\n", op->tag); return 0;
   }
 }
