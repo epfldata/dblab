@@ -53,7 +53,33 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     val tag = getTag(tp)
     val regFields = getRegisteredFieldsOfType(tp)
     def fieldIsRegistered(f: StructElemInformation): Boolean = regFields.contains(f.name) || !removeUnusedFields
-    getStructElems(tag).filter(fieldIsRegistered).map(x => StructElemInformation(aliasing + x.name, x.tpe, x.mutable))
+    // logger.debug(s"getElems($tp) = ${getStructElems(tag)}\n*** $tag")
+    getStructElems(tag).filter(fieldIsRegistered).map(x => StructElemInformation(aliasing + x.name, apply(x.tpe), x.mutable))
+  }
+
+  // FIXME HACK!
+  override def createTag[T](tp: TypeRep[T], caseClassNew: Option[Def[T]] = None): StructTags.StructTag[Any] = {
+    tp match {
+      case AGGRecordType(v) if !Config.specializeEngine =>
+        val elems = scala.Seq(StructElemInformation("key", v, false), StructElemInformation("aggs", typeRep[Array[Double]].asInstanceOf[TypeRep[Any]], false))
+
+        val newTag = {
+          def tpToString(tp: TypeRep[_]): String = tp match {
+            case rt: ReflectionType[_] => {
+              val tpe = rt.tpe
+              if (tpe.typeArgs.isEmpty) tpe.typeSymbol.name.toString
+              else tpe.typeSymbol.name.toString + "_" + rt.typeArguments.map(tpToString(_)).mkString("_")
+            }
+            case _ if tp.typeArguments.isEmpty => tp.name
+            case _                             => ???
+          }
+          StructTags.ClassTag[Any](tpToString(tp))
+        }
+        structs += newTag -> elems
+        manifestTags += tp -> newTag
+        newTag
+      case _ => super.createTag(tp, caseClassNew)
+    }
   }
 
   def computeConcatTypeEtc(): Unit = {
@@ -65,18 +91,21 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     }
 
     val sorted = notSeenDynamicRecordTypes.toList.sortBy(x => types(x).size)
+    // logger.debug(s"structs: ${structs.mkString("\n--")}")
     // logger.debug(s"notSeenDynamicRecordTypes: $notSeenDynamicRecordTypes")
     for (tp <- sorted) {
       import scala.language.existentials
       val dtp = tp.asInstanceOf[DynamicCompositeRecordType[_, _]]
-      logger.debug(s"dtp: $dtp")
+      // logger.debug(s"dtp: ${dtp.rightType.asInstanceOf[ReflectionType[_]].tpe}")
       val (lt, rt) = dtp.leftType -> dtp.rightType
       val leftTag = getTag(lt)
       val rightTag = getTag(rt)
       System.err.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: No tag found for type $tp. Hence assuming no aliasing!")
       val concatTag = StructTags.CompositeTag[Any, Any]("", "", leftTag, rightTag)
       val newElems = getElems(lt) ++ getElems(rt)
-      // System.out.println(s"concatTag $tp -> $concatTag -> $newElems")
+      // logger.debug(s"concatTag $tp -> $concatTag -> ${newElems.mkString("\n--")}")
+      // logger.debug(s"lt $lt -> ${getElems(lt).mkString("\n--")}")
+      // logger.debug(s"rt $rt -> ${getElems(rt).mkString("\n--")}")
       structs += concatTag -> newElems
       manifestTags += tp.asInstanceOf[TypeRep[Any]] -> concatTag
     }
@@ -88,7 +117,7 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     try {
       manifestTags.get(tp) match {
         case Some(tag) => new RecordType(tag, Some(tp)).asInstanceOf[TypeRep[Any]]
-        case None if tp.isRecord && !tp.isInstanceOf[RecordType[_]] => new RecordType(createTag(tp), Some(tp)).asInstanceOf[TypeRep[Any]]
+        case None if !Config.specializeEngine && tp.isRecord && !tp.isInstanceOf[RecordType[_]] => new RecordType(createTag(tp), Some(tp)).asInstanceOf[TypeRep[Any]]
         case None => super.transformType(tp)
       }
     } catch {
@@ -96,6 +125,14 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
         super.transformType(tp)
     }
 
+  }
+
+  override def getTag(tp: TypeRep[_]): StructTags.StructTag[Any] = {
+    manifestTags.get(tp) match {
+      case Some(v) => v
+      case None if !Config.specializeEngine && tp.isRecord && !tp.isInstanceOf[RecordType[_]] => createTag(tp)
+      case None => super.getTag(tp)
+    }
   }
 
   // override def createTag[T](tp: TypeRep[T], caseClassNew: Option[Def[T]] = None): StructTags.StructTag[Any] = {
@@ -129,6 +166,7 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     val HashJoinOp = 7
     val MergeJoinOp = 8
     val WindowOp = 9
+    val LeftHashSemiJoinOp = 10
   }
 
   // TODO refactor with StructProcessing
@@ -390,6 +428,21 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
         // ("hm", false, to.__newHashMap3[Any, Any](wo.grp.asInstanceOf[Rep[Any => Any]], newSize * 100)(apply(mb), apply(ma))),
         ("hm", false, to.__newMultiMap[Any, Any]()(apply(mb), apply(ma))),
         stop).asInstanceOf[to.Def[T]]
+    }
+    case lho: LeftHashSemiJoinOpNew[_, _, _] if !Config.specializeEngine => {
+      val ma = lho.typeA
+      val mb = lho.typeB
+      val mc = lho.typeC
+      val maa = ma.asInstanceOf[TypeRep[Any]]
+      val marrBuffB = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(mb).asInstanceOf[TypeRep[Any]]
+      to.__newDef[LeftHashSemiJoinOp[Any, Any, Any]](
+        ("tag", false, unit(OperatorTags.LeftHashSemiJoinOp)),
+        ("leftParent", false, apply(lho.leftParent)),
+        ("rightParent", false, apply(lho.rightParent)),
+        ("hm", false, to.__newMultiMap[Any, Any]()(apply(mc), apply(mb))),
+        ("joinCond", false, apply(lho.joinCond)),
+        ("leftHash", false, apply(lho.leftHash)),
+        ("rightHash", false, apply(lho.rightHash))).asInstanceOf[to.Def[T]]
     }
     case lho: LeftHashSemiJoinOpNew[_, _, _] => {
       val ma = lho.typeA
