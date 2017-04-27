@@ -18,6 +18,7 @@
 #define SORT_OP_TAG 5
 #define MAP_OP_TAG 6
 #define HASHJOIN_OP_TAG 7
+#define MERGEJOIN_OP_TAG 8
 
 struct operator_t {
   numeric_int_t tag;
@@ -29,6 +30,8 @@ typedef void* record_t;
 typedef record_t (*lambda_t)();
 
 typedef double (*lambda_double_t)();
+
+typedef numeric_int_t (*lambda_int_t)();
 
 typedef boolean_t (*lambda_boolean_t)();
 
@@ -73,6 +76,17 @@ struct hashjoin_t {
   lambda_boolean_t joinCond;
   lambda_t leftHash;
   lambda_t rightHash;
+  lambda_t concatenator;
+};
+
+struct mergejoin_t {
+  numeric_int_t tag;
+  struct operator_t* leftParent;
+  struct operator_t* rightParent;
+  lambda_int_t joinCond;
+  record_t* leftRelation;
+  numeric_int_t leftIndex;
+  numeric_int_t leftSize;
   lambda_t concatenator;
 };
 
@@ -229,6 +243,41 @@ record_t hashjoinop_next(struct operator_t* op) {
   return NULL;
 }
 
+record_t mjop_leftElem;
+record_t mjop_rightElem;
+
+void mergejoinop_open(struct operator_t* op) {
+  struct mergejoin_t* mjop = (struct mergejoin_t*)op;
+  operator_open(mjop->leftParent);
+  operator_open(mjop->rightParent);
+  mjop_leftElem = operator_next(mjop->leftParent);
+  mjop_rightElem = operator_next(mjop->rightParent);
+}
+
+// only supports 1 to N cases
+record_t mergejoinop_next(struct operator_t* op) {
+  struct mergejoin_t* mjop = (struct mergejoin_t*)op;
+  while (true) {
+    if(mjop_leftElem == NULL || mjop_rightElem == NULL)
+      break;
+    int condRes = mjop->joinCond(mjop_leftElem, mjop_rightElem);
+    record_t res = NULL;
+    if(condRes == 0) {
+      res = mjop->concatenator(mjop_leftElem, mjop_rightElem);
+      // mjop_leftElem = operator_next(mjop->leftParent);
+      mjop_rightElem = operator_next(mjop->rightParent);
+    } else if (condRes < 0) {
+      mjop_leftElem = operator_next(mjop->leftParent);
+    } else {
+      mjop_rightElem = operator_next(mjop->rightParent);
+    }
+    if(res != NULL) {
+      return res;
+    }
+  }
+  return NULL;
+}
+
 void aggop_open(struct operator_t* op) {
   struct operator_t* parent = op->parent;
   operator_open(parent);
@@ -333,6 +382,7 @@ void operator_open(struct operator_t* op) {
     case SORT_OP_TAG: sortop_open(op); break;
     case MAP_OP_TAG: mapop_open(op); break;
     case HASHJOIN_OP_TAG: hashjoinop_open(op); break;
+    case MERGEJOIN_OP_TAG: mergejoinop_open(op); break;
     default: printf("Default Open with tag %d!\n", op->tag);
   }
 }
@@ -348,6 +398,7 @@ void* operator_next(struct operator_t* op) {
     case SORT_OP_TAG: return sortop_next(op);
     case MAP_OP_TAG: return mapop_next(op);
     case HASHJOIN_OP_TAG: return hashjoinop_next(op);
+    case MERGEJOIN_OP_TAG: return mergejoinop_next(op);
     default: printf("Default Next with tag %d!\n", op->tag); return 0;
   }
 }

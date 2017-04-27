@@ -112,6 +112,7 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     val SortOp = 5
     val MapOp = 6
     val HashJoinOp = 7
+    val MergeJoinOp = 8
   }
 
   // TODO refactor with StructProcessing
@@ -324,8 +325,6 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
         ("leftHash", false, apply(ho.leftHash)),
         ("rightHash", false, apply(ho.rightHash)),
         ("concatenator", false, __lambda((x: Rep[A], y: Rep[B]) => {
-          // val expNode = apply(ConcatDynamic(x, y, unit(""), unit("")))
-          // to.toAtom(expNode)(expNode.tp)
           concat_records[A, B, Res](x, y)
         })))(tp).asInstanceOf[to.Def[T]]
 
@@ -416,6 +415,28 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
         ("hm", false, hm),
         stop,
         ("defaultB", false, dflt))(tp).asInstanceOf[to.Def[T]]
+    }
+    case mo: MergeJoinOpNew[_, _] if !Config.specializeEngine => {
+      class A
+      class B
+      trait Res
+      implicit val ma = apply(mo.typeA).asInstanceOf[TypeRep[A]]
+      implicit val mb = apply(mo.typeB).asInstanceOf[TypeRep[B]]
+      implicit val mRes = apply(implicitly[TypeRep[DynamicCompositeRecord[sc.pardis.shallow.Record, sc.pardis.shallow.Record]]].rebuild(mo.typeA, mo.typeB)).asInstanceOf[TypeRep[Res]]
+      type MergeJoinOpTp = MergeJoinOp[sc.pardis.shallow.Record, sc.pardis.shallow.Record]
+      val tp = mo.tp.asInstanceOf[TypeRep[MergeJoinOpTp]]
+      import to._
+      to.__newDef[MergeJoinOpTp](
+        ("tag", false, unit[Int](OperatorTags.MergeJoinOp)),
+        ("leftParent", false, apply(mo.leftParent)),
+        ("rightParent", false, apply(mo.rightParent)),
+        ("joinCond", false, apply(mo.joinCond)),
+        ("leftRelation", false, to.__newArray[A](unit(1 << 25))),
+        ("leftIndex", true, to.unit[Int](0)),
+        ("leftSize", true, to.unit[Int](0)),
+        ("concatenator", false, __lambda((x: Rep[A], y: Rep[B]) => {
+          concat_records[A, B, Res](x, y)
+        })))(tp).asInstanceOf[to.Def[T]]
     }
     case mo: MergeJoinOpNew[_, _] => {
       class A
