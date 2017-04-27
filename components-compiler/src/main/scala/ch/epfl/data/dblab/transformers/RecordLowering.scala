@@ -83,6 +83,21 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     // System.out.println(s"sorted ${sorted.mkString("\n")}")
   }
 
+  override def transformType[T: TypeRep]: TypeRep[Any] = {
+    val tp = implicitly[TypeRep[T]].asInstanceOf[TypeRep[Any]]
+    try {
+      manifestTags.get(tp) match {
+        case Some(tag) => new RecordType(tag, Some(tp)).asInstanceOf[TypeRep[Any]]
+        case None if tp.isRecord && !tp.isInstanceOf[RecordType[_]] => new RecordType(createTag(tp), Some(tp)).asInstanceOf[TypeRep[Any]]
+        case None => super.transformType(tp)
+      }
+    } catch {
+      case ex: NullPointerException => // this means that this type is already transformed
+        super.transformType(tp)
+    }
+
+  }
+
   // override def createTag[T](tp: TypeRep[T], caseClassNew: Option[Def[T]] = None): StructTags.StructTag[Any] = {
   //   if (isOperatorType(tp)) {
   //     super.createTag(tp, caseClassNew)
@@ -348,14 +363,14 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
       trait A
       trait B
       trait C
+      trait Wnd
       implicit val ma = wo.typeA.asInstanceOf[TypeRep[A]]
       implicit val mb = apply(wo.typeB).asInstanceOf[TypeRep[B]]
       implicit val mc = apply(wo.typeC).asInstanceOf[TypeRep[C]]
-      val maa = ma.asInstanceOf[TypeRep[Any]]
-      val marrBuffA = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(ma).asInstanceOf[TypeRep[Any]]
-      val mwinRecBC = implicitly[TypeRep[WindowRecord[Any, Any]]].rebuild(mb, mc).asInstanceOf[TypeRep[Any]]
-      def wndNew(key: Rep[B], wnd: Rep[C]) =
-        __new(("key", false, key), ("wnd", false, wnd))(apply(mwinRecBC))
+      val mwinRecBC = implicitly[TypeRep[WindowRecord[Any, Any]]].rebuild(wo.typeB, wo.typeC).asInstanceOf[TypeRep[Any]]
+      implicit val tpWnd = apply(mwinRecBC).asInstanceOf[TypeRep[Wnd]]
+      def wndNew(key: Rep[B], wnd: Rep[C]): Rep[Wnd] =
+        __new(("key", false, key), ("wnd", false, wnd))(apply(mwinRecBC)).asInstanceOf[Rep[Wnd]]
       to.__newDef[WindowOp[Any, Any, Any]](
         ("tag", false, unit(OperatorTags.WindowOp)),
         ("parent", false, apply(wo.parent)),
