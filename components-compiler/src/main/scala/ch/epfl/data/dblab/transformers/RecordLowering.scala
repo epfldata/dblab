@@ -113,6 +113,7 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     val MapOp = 6
     val HashJoinOp = 7
     val MergeJoinOp = 8
+    val WindowOp = 9
   }
 
   // TODO refactor with StructProcessing
@@ -342,6 +343,26 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
         ("hm", false, to.__newMultiMap[Any, Any]()(apply(mc), apply(ma.asInstanceOf[TypeRep[Any]]))),
         stop)(tp).asInstanceOf[to.Def[T]]
 
+    }
+    case wo: WindowOpNew[_, _, _] if !Config.specializeEngine => {
+      trait A
+      trait B
+      trait C
+      implicit val ma = wo.typeA.asInstanceOf[TypeRep[A]]
+      implicit val mb = apply(wo.typeB).asInstanceOf[TypeRep[B]]
+      implicit val mc = apply(wo.typeC).asInstanceOf[TypeRep[C]]
+      val maa = ma.asInstanceOf[TypeRep[Any]]
+      val marrBuffA = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(ma).asInstanceOf[TypeRep[Any]]
+      val mwinRecBC = implicitly[TypeRep[WindowRecord[Any, Any]]].rebuild(mb, mc).asInstanceOf[TypeRep[Any]]
+      def wndNew(key: Rep[B], wnd: Rep[C]) =
+        __new(("key", false, key), ("wnd", false, wnd))(apply(mwinRecBC))
+      to.__newDef[WindowOp[Any, Any, Any]](
+        ("tag", false, unit(OperatorTags.WindowOp)),
+        ("parent", false, apply(wo.parent)),
+        ("grp", false, apply(wo.grp)),
+        ("wndFunction", false, apply(wo.wndf)),
+        ("wndFactory", false, __lambda((x: Rep[B], y: Rep[C]) => wndNew(x, y))),
+        ("hm", false, to.__newMultiMap[Any, Any]()(apply(mb), apply(ma)))).asInstanceOf[to.Def[T]]
     }
     case wo: WindowOpNew[_, _, _] => {
       val ma = wo.typeA

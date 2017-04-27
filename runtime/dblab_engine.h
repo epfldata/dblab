@@ -243,6 +243,7 @@ record_t hashjoinop_next(struct operator_t* op) {
   return NULL;
 }
 
+// hack! should be in the mergejoin struct itself!
 record_t mjop_leftElem;
 record_t mjop_rightElem;
 

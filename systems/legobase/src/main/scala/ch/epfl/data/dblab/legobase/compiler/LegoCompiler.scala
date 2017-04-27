@@ -245,13 +245,13 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
     pipeline += new LargeOutputPrintHoister(DSL, schema)
   }
 
-  // pipeline += TreeDumper(false)
+  pipeline += TreeDumper(false)
 
   if (settings.targetLanguage == CCoreLanguage) pipeline += new CTransformersPipeline(settings.cSettings)
 
   pipeline += DCECLang //NEVER REMOVE!!!!
 
-  pipeline += TreeDumper(false)
+  // pipeline += TreeDumper(false)
 
   val codeGenerator =
     if (settings.targetLanguage == CCoreLanguage) {

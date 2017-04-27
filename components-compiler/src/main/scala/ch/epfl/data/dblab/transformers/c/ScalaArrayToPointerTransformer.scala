@@ -54,6 +54,8 @@ class ScalaArrayToPointerTransformer(override val IR: QueryEngineExp, val settin
             typePointer(transformType(t))
           else
             typePointer(tp)
+        case _ =>
+          throw new Exception(s"Does not know how to transform type $tp")
       }
       case SetType(args) => typePointer(typeLPointer(typeGList))
       case _             => super.transformType[T]
