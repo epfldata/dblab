@@ -21,17 +21,6 @@ import config.Config
  */
 object TPCHCompiler extends TPCHRunner {
 
-  object Q12SynthesizedExtract {
-    val Pat = "Q12S(_\\w)?_(\\d*)".r
-    def unapply(str: String): Option[(Boolean, Int)] = str match {
-      case Pat(target, numFieldsStr) =>
-        val isCCode = if (target == null) false else true
-        val numFields = numFieldsStr.toInt
-        Some(isCCode -> numFields)
-      case _ => None
-    }
-  }
-
   var settings: Settings = _
 
   def parseArgs(args: Array[String]): Unit = {
@@ -235,9 +224,6 @@ object TPCHCompiler extends TPCHRunner {
         case "Q18_functional"    => (18, () => Q18_functional(unit(Config.numRuns)))
         case "Q19_functional"    => (19, () => Q19_functional(unit(Config.numRuns)))
         case "Q20_functional"    => (20, () => Q20_functional(unit(Config.numRuns)))
-        case Q12SynthesizedExtract(targetCode, numFields) => {
-          (12, () => context.Q12Synthesized(unit(Config.numRuns), numFields))
-        }
       }
 
     settings.optimalArgsHandler = (propName: String) => {
