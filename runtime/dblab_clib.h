@@ -13,6 +13,9 @@
 typedef int numeric_int_t;
 typedef int boolean_t;
 
+#define true 1
+#define false 0
+
 unsigned long long timeval_subtract(struct timeval *result, struct timeval *t2, struct timeval *t1) {
    	int diff = (t2->tv_usec + 1000000 * t2->tv_sec) - (t1->tv_usec + 1000000 * t1->tv_sec);
 	result->tv_sec = diff / 1000000;
@@ -114,6 +117,20 @@ char** tokenizeString(char *sentence) {
   }
 
   return words;
+}
+
+struct timeval tic() {
+	struct timeval res = (struct timeval){0};
+	gettimeofday(&res, NULL);
+	return res;
+}
+
+unsigned long long toc(struct timeval* start) {
+	struct timeval end = (struct timeval){0};
+	gettimeofday(&end, NULL);
+	struct timeval tmp = (struct timeval){0};
+	unsigned long long result = timeval_subtract(&tmp, &end, start);
+	return result;
 }
 
 #endif
