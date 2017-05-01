@@ -117,8 +117,8 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
   pipeline += HashMapHoist
 
   if (!settings.noSingletonHashMap)
-    //pipeline += SingletonHashMapToValueTransformer
-    pipeline += SingletonHashMapToValueTransformer2
+    pipeline += SingletonHashMapToValueTransformer
+  // pipeline += SingletonHashMapToValueTransformer2
   //pipeline += TreeDumper(true)
 
   if (settings.hashMapToArray) {
