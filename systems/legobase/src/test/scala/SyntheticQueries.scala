@@ -28,8 +28,11 @@ import sc.pardis.shallow.OptimalString
  * Or to generate all the micro benchmarks for fusion run the following command:
  * test:run /mnt/ramdisk/tpch fusion_micro
  * test:run /mnt/ramdisk/tpch fusion_tpch
+ * test:run /mnt/ramdisk/tpch fusion_tpch_inter
  * test:run /mnt/ramdisk/tpch mem_cons_tpch
  * test:run /mnt/ramdisk/tpch vary_sel [MICRO_QUERY]
+ * test:run /mnt/ramdisk/tpch vary_sel_papi [MICRO_QUERY]
+ *    // don't forget to add `papi --libs glib-2.0 papi` flags in front of `pkg-config`.
  */
 object SyntheticQueries extends TPCHRunner {
 
@@ -65,6 +68,7 @@ object SyntheticQueries extends TPCHRunner {
     newContext()
     Config.checkResults = false
     settings = new Settings(args.toList)
+    settings.init()
 
     // if (ONE_LOADER_FOR_ALL) {
     //   run(args)
@@ -113,7 +117,21 @@ object SyntheticQueries extends TPCHRunner {
     }, scenarios)
   }
 
-  def varySelBenchmark(args: Array[String]): Unit = {
+  def fusionTPCHInterpretBenchmark(args: Array[String], additionalFlags: List[String]): Unit = {
+    tpchBenchmark = true
+    val folder = args(0)
+    val SFs = List(8)
+    // val queryNumbers = (1 to 6).toList ++ (9 to 12).toList ++ List(14)
+    val queryNumbers = (1 to 6).toList ++ List(9, 10, 12, 14, 19, 20)
+    val queries = queryNumbers.map(x => s"Q${x}")
+    for (sf <- SFs) {
+      for (q <- queries) {
+        process(folder :: sf.toString :: q :: "-name-with-flag" :: "-no-spec-engine" :: additionalFlags)
+      }
+    }
+  }
+
+  def varySelBenchmark(args: Array[String], additionalFlags: List[String]): Unit = {
     val folder = args(0)
     val SFs = List(8)
     val query = args(2)
@@ -121,7 +139,7 @@ object SyntheticQueries extends TPCHRunner {
       for (sf <- SFs) {
         for (d <- datesGenerator) {
           param = d
-          process(folder :: sf.toString :: query :: flags)
+          process(folder :: sf.toString :: query :: (additionalFlags ++ flags))
         }
       }
     }
@@ -133,7 +151,7 @@ object SyntheticQueries extends TPCHRunner {
     val SFs1 = List(8)
     val queries1 = List("fc", "fs", "ffs")
     val SFs2 = List(1)
-    val queries2 = List("fm", "fmt", "fot")
+    val queries2 = List("fst", "fmt", "fot")
     val SFs3 = List(8)
     val queries3 = List("fmjs", "fhjs", "fhsjs")
     fusionBenchmarkProcess { flags =>
@@ -144,6 +162,8 @@ object SyntheticQueries extends TPCHRunner {
         }
       }
 
+      param = "1998-10-01"
+      // param = singleDate
       for (sf <- SFs2) {
         for (q <- queries2) {
           process(folder :: sf.toString :: q :: flags)
@@ -168,6 +188,8 @@ object SyntheticQueries extends TPCHRunner {
         List("+monad-stream", "+monad-no-escape"),
         List("+monad-iterator", "+monad-iterator-bad-filter")),
         List(14, 19))
+    } else if (args.length == 2 && args(1) == "fusion_tpch_inter") {
+      fusionTPCHInterpretBenchmark(args, Nil)
     } else if (args.length == 2 && args(1) == "mem_cons_tpch") {
       tpchRuns = 1
       fusionTPCHBenchmark(args, List("-malloc-profile"), List(
@@ -175,7 +197,9 @@ object SyntheticQueries extends TPCHRunner {
         List("+monad-stream", "+monad-church")),
         List(14, 19))
     } else if (args.length == 3 && args(1) == "vary_sel") {
-      varySelBenchmark(args)
+      varySelBenchmark(args, Nil)
+    } else if (args.length == 3 && args(1) == "vary_sel_papi") {
+      varySelBenchmark(args, List("-papi-profile"))
     } else if (args.length < 3) {
       System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
       System.exit(0)
@@ -333,7 +357,7 @@ object SyntheticQueries extends TPCHRunner {
     import dblab.queryengine.GenericEngine._
     val loadedLineitemTable = dsl"loadLineitem()"
     def lineitemTable = dsl"""Query($loadedLineitemTable)"""
-    val startDate = "1998-10-01"
+    val startDate = param
     for (i <- 0 until numRuns) {
       dsl"""
         runQuery {
@@ -348,13 +372,33 @@ object SyntheticQueries extends TPCHRunner {
     dsl"()"
   }
 
+  def filterSumTake(numRuns: Int): Rep[Unit] = {
+    import dblab.queryengine.monad.Query
+    import dblab.experimentation.tpch.TPCHLoader._
+    import dblab.queryengine.GenericEngine._
+    val loadedLineitemTable = dsl"loadLineitem()"
+    def lineitemTable = dsl"""Query($loadedLineitemTable)"""
+    val startDate = param
+    for (i <- 0 until numRuns) {
+      dsl"""
+        runQuery {
+          val constantDate1: Int = parseDate($startDate)
+          val result = $lineitemTable.filter(_.L_SHIPDATE >= constantDate1).take(1000).
+            foldLeft(0.0)((acc, cur) => acc + cur.L_EXTENDEDPRICE * cur.L_DISCOUNT)
+          printf("%.4f\n", result)
+        }
+      """
+    }
+    dsl"()"
+  }
+
   def filterSortByTake(numRuns: Int): Rep[Unit] = {
     import dblab.queryengine.monad.Query
     import dblab.experimentation.tpch.TPCHLoader._
     import dblab.queryengine.GenericEngine._
     val loadedLineitemTable = dsl"loadLineitem()"
     def lineitemTable = dsl"""Query($loadedLineitemTable)"""
-    val startDate = "1998-10-01"
+    val startDate = param
     for (i <- 0 until numRuns) {
       dsl"""
         runQuery {
@@ -593,6 +637,7 @@ object SyntheticQueries extends TPCHRunner {
       case "ffs"            => (24, () => filterFilterSum(MICRO_RUNS))
       case "fm"             => (26, () => filterMap(MICRO_RUNS))
       case "fmt"            => (27, () => filterMapTake(MICRO_RUNS))
+      case "fst"            => (32, () => filterSumTake(MICRO_RUNS))
       case "fot"            => (30, () => filterSortByTake(MICRO_RUNS))
       case "fmjs"           => (28, () => filterMergeJoinSum(MICRO_JOIN_RUNS))
       case "fhjs"           => (29, () => filterHashJoinSum(MICRO_JOIN_RUNS))
@@ -610,6 +655,19 @@ object SyntheticQueries extends TPCHRunner {
       case "Q14_functional" => (14, () => Q14_functional(unit(tpchRuns)))
       case "Q19_functional" => (19, () => Q19_functional(unit(tpchRuns)))
       case "Q20_functional" => (20, () => Q20_functional(unit(tpchRuns)))
+      case "Q1"             => (1, () => Q1(unit(tpchRuns)))
+      case "Q2"             => (2, () => Q2(unit(tpchRuns)))
+      case "Q3"             => (3, () => Q3(unit(tpchRuns)))
+      case "Q4"             => (4, () => Q4(unit(tpchRuns)))
+      case "Q5"             => (5, () => Q5(unit(tpchRuns)))
+      case "Q6"             => (6, () => Q6(unit(tpchRuns)))
+      case "Q9"             => (9, () => Q9_p2(unit(tpchRuns)))
+      case "Q10"            => (10, () => Q10_p2(unit(tpchRuns)))
+      case "Q11"            => (11, () => Q11(unit(tpchRuns)))
+      case "Q12"            => (12, () => Q12_p2(unit(tpchRuns)))
+      case "Q14"            => (14, () => Q14(unit(tpchRuns)))
+      case "Q19"            => (19, () => Q19_p2(unit(tpchRuns)))
+      case "Q20"            => (20, () => Q20(unit(tpchRuns)))
       case "Q12_synthetic"  => (12, () => query12_p2(1))
     }
 
