@@ -254,7 +254,8 @@ record_t hashjoinop_next(struct operator_t* op) {
         boolean_t found = false;
         record_t result_value = NULL;
         for(int i = 0; i<n; i++) {
-          record_t leftElem = g_list_nth_data(list, i);
+          record_t leftElem = g_list_nth_data(list, 0);
+          list = g_list_next(list);
           if(hjop->joinCond(leftElem, t)) {
             // if(found) {
             //   printf("WARNING! ** The relationship is not 1-N in HashJoin! **\n");
@@ -314,7 +315,8 @@ record_t leftsemihashjoinop_next(struct operator_t* op) {
         int n = g_list_length(list);
         boolean_t found = false;
         for(int i = 0; i<n; i++) {
-          record_t rightElem = g_list_nth_data(list, i);
+          record_t rightElem = g_list_nth_data(list, 0);
+          list = g_list_next(list);
           if(hjop->joinCond(t, rightElem)) {
             found = true;
             break;
@@ -446,7 +448,8 @@ record_t windowop_next(struct operator_t* op) {
   int size = g_hash_table_size(windowop->hm);
   // printf("%d size of table\n", size);
   if(windowop_hm_iter_counter < size) {
-    record_t key = g_list_nth_data(windowop_hm_keys, windowop_hm_iter_counter);
+    record_t key = g_list_nth_data(windowop_hm_keys, 0);
+    windowop_hm_keys = g_list_next(windowop_hm_keys);
     record_t elem = g_hash_table_lookup(windowop->hm, key);
     windowop_hm_iter_counter++;
     record_t result = windowop->wndFactory(key, windowop->wndFunction(elem));
