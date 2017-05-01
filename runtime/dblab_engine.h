@@ -176,6 +176,9 @@ record_t mapop_next(struct operator_t* op) {
 void sortop_open(struct operator_t* op) {
   struct sortop_t* sop = (struct sortop_t*)op;
   operator_open(sop->parent);
+// #ifdef PROFILE
+//   struct timeval start = tic();
+// #endif
   while(true) {
     record_t t = operator_next(sop->parent);
     if(t == NULL) {
@@ -184,6 +187,10 @@ void sortop_open(struct operator_t* op) {
       g_tree_insert(sop->sortedTree, t, t);
     }
   }
+// #ifdef PROFILE
+//   long diff = toc(&start);
+//   printf("time for agg next is %ld milliseconds.\n", diff);
+// #endif
 }
 
 numeric_int_t treeHead(void* x6081, void* x6082, void* x6083) {
@@ -383,7 +390,7 @@ void aggop_open(struct operator_t* op) {
     }
   }
   // printf("Size of table = %d\n", g_hash_table_size(aggop->hm));
-  g_hash_table_get_keys(aggop->hm);
+  // g_hash_table_get_keys(aggop->hm);
   aggop->hm_keys = g_hash_table_get_keys(aggop->hm);
 }
 
@@ -392,7 +399,8 @@ record_t aggop_next(struct operator_t* op) {
   int size = g_hash_table_size(aggop->hm);
   // printf("%d size of table\n", size);
   if(aggop->hm_iter_counter < size) {
-    record_t key = g_list_nth_data(aggop->hm_keys, aggop->hm_iter_counter);
+    record_t key = g_list_nth_data(aggop->hm_keys, 0);
+    aggop->hm_keys = g_list_next(aggop->hm_keys);
     record_t elem = g_hash_table_lookup(aggop->hm, key);
     aggop->hm_iter_counter++;
     return elem;
@@ -500,6 +508,9 @@ void printop_run(void* raw_op) {
 
 // TODO rest of operators
 void operator_open(struct operator_t* op) {  
+// #ifdef PROFILE
+//   struct timeval start = tic();
+// #endif
   // printf("Open with tag %d!\n", op->tag);
   switch(op->tag) {
     case AGG_OP_TAG: aggop_open(op); break;
@@ -514,6 +525,10 @@ void operator_open(struct operator_t* op) {
     case LEFTSEMIHASHJOIN_OP_TAG: leftsemihashjoinop_open(op); break;
     default: printf("Default Open with tag %d!\n", op->tag);
   }
+// #ifdef PROFILE
+//   long diff = toc(&start);
+//   printf("total time for %d is %ld milliseconds.\n", op->tag, diff);
+// #endif
 }
 
 // TODO rest of operators
