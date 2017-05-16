@@ -117,6 +117,35 @@ object SyntheticQueries extends TPCHRunner {
     }, scenarios)
   }
 
+  def fusionTPCHBenchmarkCompilationTime(args: Array[String], additionalFlags: List[String],
+                                         scenarios: List[List[String]] = VARIABLE_OPTIMIZATION_FLAGS, queryNumbers: List[Int] = (1 to 6).toList ++ List(9, 10, 12, 14, 19, 20)): Unit = {
+    tpchBenchmark = true
+    val folder = args(0)
+    val SFs = List(8)
+    // val queryNumbers = (1 to 6).toList ++ (9 to 12).toList ++ List(14)
+    val queries = queryNumbers.map(x => s"Q${x}_functional")
+    val warmUpQueries = List(2, 9).map(x => s"Q${x}_functional")
+    fusionBenchmarkProcess({ flags =>
+      for (sf <- SFs) {
+        def compileQuery(q: String): Unit = {
+          utils.Utilities.time({
+            TPCHCompiler.turnOffConsoleOutput {
+              process(folder :: sf.toString :: q :: flags ++ additionalFlags)
+            }
+          }, s"Compilation of $q")
+        }
+        for (i <- 0 until 25) {
+          for (wq <- warmUpQueries) {
+            compileQuery(wq)
+          }
+        }
+        for (q <- queries) {
+          compileQuery(q)
+        }
+      }
+    }, List(scenarios.last))
+  }
+
   def fusionTPCHInterpretBenchmark(args: Array[String], additionalFlags: List[String]): Unit = {
     tpchBenchmark = true
     val folder = args(0)
@@ -190,6 +219,8 @@ object SyntheticQueries extends TPCHRunner {
         List(14, 19))
     } else if (args.length == 2 && args(1) == "fusion_tpch_inter") {
       fusionTPCHInterpretBenchmark(args, Nil)
+    } else if (args.length == 2 && args(1) == "fusion_tpch_ctime") {
+      fusionTPCHBenchmarkCompilationTime(args, Nil)
     } else if (args.length == 2 && args(1) == "mem_cons_tpch") {
       tpchRuns = 1
       fusionTPCHBenchmark(args, List("-malloc-profile"), List(
