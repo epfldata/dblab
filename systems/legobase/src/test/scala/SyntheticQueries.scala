@@ -150,8 +150,8 @@ object SyntheticQueries extends TPCHRunner {
 
     val SFs1 = List(8)
     val queries1 = List("fc", "fs", "ffs")
-    val SFs2 = List(1)
-    val queries2 = List("fst", "fmt", "fot")
+    val SFs2 = List(8)
+    val queries2 = List("fst", "fmt", "ts")
     val SFs3 = List(8)
     val queries3 = List("fmjs", "fhjs", "fhsjs")
     fusionBenchmarkProcess { flags =>
@@ -162,8 +162,8 @@ object SyntheticQueries extends TPCHRunner {
         }
       }
 
-      param = "1998-10-01"
-      // param = singleDate
+      // param = "1998-10-01"
+      param = singleDate
       for (sf <- SFs2) {
         for (q <- queries2) {
           process(folder :: sf.toString :: q :: flags)
@@ -372,7 +372,27 @@ object SyntheticQueries extends TPCHRunner {
     dsl"()"
   }
 
-  def filterSumTake(numRuns: Int): Rep[Unit] = {
+  def takeSum(numRuns: Int): Rep[Unit] = {
+    import dblab.queryengine.monad.Query
+    import dblab.experimentation.tpch.TPCHLoader._
+    import dblab.queryengine.GenericEngine._
+    val loadedLineitemTable = dsl"loadLineitem()"
+    def lineitemTable = dsl"""Query($loadedLineitemTable)"""
+    val startDate = param
+    for (i <- 0 until numRuns) {
+      dsl"""
+        runQuery {
+          val constantDate1: Int = parseDate($startDate)
+          val result = $lineitemTable.take(1000).
+            foldLeft(0.0)((acc, cur) => acc + cur.L_EXTENDEDPRICE * cur.L_DISCOUNT)
+          printf("%.4f\n", result)
+        }
+      """
+    }
+    dsl"()"
+  }
+
+  def filterTakeSum(numRuns: Int): Rep[Unit] = {
     import dblab.queryengine.monad.Query
     import dblab.experimentation.tpch.TPCHLoader._
     import dblab.queryengine.GenericEngine._
@@ -637,7 +657,8 @@ object SyntheticQueries extends TPCHRunner {
       case "ffs"            => (24, () => filterFilterSum(MICRO_RUNS))
       case "fm"             => (26, () => filterMap(MICRO_RUNS))
       case "fmt"            => (27, () => filterMapTake(MICRO_RUNS))
-      case "fst"            => (32, () => filterSumTake(MICRO_RUNS))
+      case "fst"            => (32, () => filterTakeSum(MICRO_RUNS))
+      case "ts"             => (33, () => takeSum(MICRO_RUNS))
       case "fot"            => (30, () => filterSortByTake(MICRO_RUNS))
       case "fmjs"           => (28, () => filterMergeJoinSum(MICRO_JOIN_RUNS))
       case "fhjs"           => (29, () => filterHashJoinSum(MICRO_JOIN_RUNS))
