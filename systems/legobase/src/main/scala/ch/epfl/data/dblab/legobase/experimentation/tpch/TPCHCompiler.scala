@@ -116,7 +116,7 @@ object TPCHCompiler extends TPCHRunner {
   }
   case object Exit extends Command {
     def name: String = "exit"
-    def description: String = "Warms up the underlying just-in-time (JIT) compiler"
+    def description: String = "Exit!"
     def run(args: String*): Unit = ()
   }
   case object AllTpch extends Command {

@@ -100,6 +100,46 @@ object Loader {
     //TODO update statistics
   }
 
+  @dontLift
+  def loadTablePage(table: Table): Array[PageRow] = {
+    if (Config.cacheLoading && cachedTables.contains(table)) {
+      System.out.println(s"Loading cached ${table.name}!")
+      cachedTables(table).asInstanceOf[Array[PageRow]]
+    } else {
+      val size = fileLineCount(table.resourceLocator)
+      val arr = new Array[PageRow](size)
+      val ldr = new FastScanner(table.resourceLocator)
+
+      var i = 0
+
+      val argNames = table.attributes.map(_.name).toSeq
+
+      val page = Page(table)
+
+      while (i < size && ldr.hasNext()) {
+        val values = table.attributes.map(arg =>
+          arg.dataType match {
+            case IntType          => ldr.next_int
+            case DoubleType       => ldr.next_double
+            case DecimalType(_)   => ldr.next_double
+            case CharType         => ldr.next_char
+            case DateType         => ldr.next_date
+            case VarCharType(len) => loadString(len, ldr)
+          })
+
+        val rec = PageRow(page, i, values.toArray)
+        arr(i) = rec
+        i += 1
+      }
+      if (Config.cacheLoading) {
+        cachedTables(table) = arr
+      }
+      arr
+    }
+
+    //TODO update statistics
+  }
+
   @dontInline
   def loadTable[R](table: Table)(implicit c: ClassTag[R]): Array[R] = {
     if (Config.cacheLoading && cachedTables.contains(table)) {

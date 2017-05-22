@@ -86,7 +86,8 @@ object OLAPEngine {
           val schema = ddlInterpreter.getCurrSchema
           System.out.println("Loading Started!")
           for (table <- schema.tables) {
-            Loader.loadUntypedTable(table)
+            // Loader.loadUntypedTable(table)
+            Loader.loadTablePage(table)
             System.out.println(s"${table.name} Loaded!")
           }
           currentState = Loaded
