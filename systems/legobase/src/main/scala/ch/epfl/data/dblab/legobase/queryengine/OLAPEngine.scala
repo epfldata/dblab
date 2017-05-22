@@ -42,7 +42,42 @@ object OLAPEngine {
     def run(args: String*): Unit = ()
   }
 
+  case object Compile extends Command {
+    def name: String = "compile"
+    override def shortDescription: String = "compile <.sql file>"
+    def description: String = "Compiles the given SQL query using the loaded schema"
+    def run(args: String*): Unit = ()
+  }
+
   val ddlInterpreter = new DDLInterpreter(new Catalog(scala.collection.mutable.Map()))
+
+  def parseAndOptimize(queryFile: String) = {
+    val sqlParserTree = SQLParser.parse(scala.io.Source.fromFile(queryFile).mkString)
+    val schema = ddlInterpreter.getCurrSchema
+    val subqNorm = new SQLSubqueryNormalizer(schema)
+    val subqueryNormalizedqTree = subqNorm.normalize(sqlParserTree)
+    new SQLAnalyzer(schema).checkAndInfer(subqueryNormalizedqTree)
+    val operatorTree = new SQLToQueryPlan(schema).convert(subqueryNormalizedqTree)
+    val optimizerTree = new QueryPlanNaiveOptimizer(schema).optimize(operatorTree)
+    optimizerTree
+  }
+
+  def getQueryName(queryFile: String): String = {
+    queryFile.substring(queryFile.lastIndexOf('/') + 1, queryFile.length).replace(".sql", "")
+  }
+
+  def compileQuery(queryFile: String): Unit = {
+    val optimizerTree = parseAndOptimize(queryFile)
+    val schema = ddlInterpreter.getCurrSchema
+    val queryName = getQueryName(queryFile)
+    dblab.queryengine.PlanCompiler.executeQuery(optimizerTree, schema, queryName)
+  }
+
+  def interpretQuery(queryFile: String): Unit = {
+    val optimizerTree = parseAndOptimize(queryFile)
+    val schema = ddlInterpreter.getCurrSchema
+    dblab.queryengine.PlanExecutor.executeQuery(optimizerTree, schema)
+  }
 
   var currentState: State = Start
   /**
@@ -55,7 +90,7 @@ object OLAPEngine {
     }
     System.out.println("*** Legobase OLAP Engine ***")
     System.out.println("Available commands:")
-    val cmds = List(WarmUpJIT, Load, Run, Exit)
+    val cmds = List(WarmUpJIT, Load, Run, Compile, Exit)
     for (cmd <- cmds) {
       System.out.println(s"  ${cmd.shortDescription}")
       System.out.println(s"    ${cmd.description}")
@@ -102,18 +137,22 @@ object OLAPEngine {
           if (currentState != Loaded) {
             System.out.println(s"You forgot to load the data!");
           } else {
-            val fileToExecute = args(0)
-            if (!fileToExecute.endsWith(".sql")) {
+            val queryFile = args(0)
+            if (!queryFile.endsWith(".sql")) {
               System.out.println("You should provide an SQL file!");
             } else {
-              val sqlParserTree = SQLParser.parse(scala.io.Source.fromFile(fileToExecute).mkString)
-              val schema = ddlInterpreter.getCurrSchema
-              val subqNorm = new SQLSubqueryNormalizer(schema)
-              val subqueryNormalizedqTree = subqNorm.normalize(sqlParserTree)
-              new SQLAnalyzer(schema).checkAndInfer(subqueryNormalizedqTree)
-              val operatorTree = new SQLToQueryPlan(schema).convert(subqueryNormalizedqTree)
-              val optimizerTree = new QueryPlanNaiveOptimizer(schema).optimize(operatorTree)
-              dblab.queryengine.PlanExecutor.executeQuery(optimizerTree, schema)
+              interpretQuery(queryFile)
+            }
+          }
+        case Compile(args @ _*) =>
+          if (currentState != Loaded) {
+            System.out.println(s"You forgot to load the data!");
+          } else {
+            val queryFile = args(0)
+            if (!queryFile.endsWith(".sql")) {
+              System.out.println("You should provide an SQL file!");
+            } else {
+              compileQuery(queryFile)
             }
           }
         case _ => System.out.println(s"Command $str not available!")
