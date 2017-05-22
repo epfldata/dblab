@@ -323,7 +323,8 @@ class QueryMonadStreamLowering(override val schema: Schema, override val IR: Que
         hm.addBinding(leftHash(elem), elem)
       })
       def stream(): Rep[Stream[Res]] = {
-        val rightElem = q2.stream().materialize()
+        /* Not sure why `.materialize()` was introduced in the first place! */
+        val rightElem = q2.stream() //.materialize() 
         buildS { (done, skip, yld: Rep[Res] => Rep[BUILDRESULT]) =>
           rightElem.semiFold(
             () => done(),
