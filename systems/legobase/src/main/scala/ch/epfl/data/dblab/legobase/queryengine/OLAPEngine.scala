@@ -35,6 +35,13 @@ object OLAPEngine {
     def run(args: String*): Unit = ()
   }
 
+  case object Run extends Command {
+    def name: String = "run"
+    override def shortDescription: String = "run <.sql file>"
+    def description: String = "Runs the given SQL query using the loaded data"
+    def run(args: String*): Unit = ()
+  }
+
   val ddlInterpreter = new DDLInterpreter(new Catalog(scala.collection.mutable.Map()))
 
   var currentState: State = Start
@@ -48,7 +55,7 @@ object OLAPEngine {
     }
     System.out.println("*** Legobase OLAP Engine ***")
     System.out.println("Available commands:")
-    val cmds = List(WarmUpJIT, Exit, Load)
+    val cmds = List(WarmUpJIT, Load, Run, Exit)
     for (cmd <- cmds) {
       System.out.println(s"  ${cmd.shortDescription}")
       System.out.println(s"    ${cmd.description}")
@@ -60,13 +67,13 @@ object OLAPEngine {
         case WarmUpJIT() =>
           warmUpJIT()
         case Load(args @ _*) =>
-          // if (currentState != Start) {
-          //   System.out.println(s"System is not in $Start state, but $currentState.");
-          //   System.exit(1)
-          // }
+          if (currentState != Start) {
+            System.out.println(s"System is not in $Start state, but $currentState.");
+            System.exit(1)
+          }
           // Set the folder containing data
           Config.datapath = args(0)
-          System.out.println(Config.datapath)
+          // System.out.println(Config.datapath)
           val dataFolder = new java.io.File(Config.datapath)
           if (!dataFolder.exists || !dataFolder.isDirectory) {
             System.out.println("Data folder " + Config.datapath + " does not exist or is not a directory. Cannot proceed");
@@ -91,6 +98,24 @@ object OLAPEngine {
             System.out.println(s"${table.name} Loaded!")
           }
           currentState = Loaded
+        case Run(args @ _*) =>
+          if (currentState != Loaded) {
+            System.out.println(s"You forgot to load the data!");
+          } else {
+            val fileToExecute = args(0)
+            if (!fileToExecute.endsWith(".sql")) {
+              System.out.println("You should provide an SQL file!");
+            } else {
+              val sqlParserTree = SQLParser.parse(scala.io.Source.fromFile(fileToExecute).mkString)
+              val schema = ddlInterpreter.getCurrSchema
+              val subqNorm = new SQLSubqueryNormalizer(schema)
+              val subqueryNormalizedqTree = subqNorm.normalize(sqlParserTree)
+              new SQLAnalyzer(schema).checkAndInfer(subqueryNormalizedqTree)
+              val operatorTree = new SQLToQueryPlan(schema).convert(subqueryNormalizedqTree)
+              val optimizerTree = new QueryPlanNaiveOptimizer(schema).optimize(operatorTree)
+              dblab.queryengine.PlanExecutor.executeQuery(optimizerTree, schema)
+            }
+          }
         case _ => System.out.println(s"Command $str not available!")
       }
       exit

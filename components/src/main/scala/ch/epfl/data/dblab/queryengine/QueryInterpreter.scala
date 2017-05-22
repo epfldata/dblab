@@ -101,13 +101,17 @@ object QueryInterpreter {
 
         PlanExecutor.executeQuery(optimizerTree, schema)
 
+        val resq = scala.io.Source.fromFile(getOutputName).mkString
+
+        if (Config.debugQueryPlan)
+          System.out.println(resq)
+
         // Check results
         if (Config.checkResults) {
           val resultFile = filesToExecute.get(".result").toList.flatten.filter(f => f.contains(queryName + ".result")) match {
             case elem :: _ => elem
             case List()    => ""
           }
-          val resq = scala.io.Source.fromFile(getOutputName).mkString
           if (new java.io.File(resultFile).exists) {
             val resc = {
               val str = scala.io.Source.fromFile(resultFile).mkString
