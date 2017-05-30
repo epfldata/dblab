@@ -33,6 +33,7 @@ import sc.pardis.shallow.OptimalString
  * test:run /mnt/ramdisk/tpch vary_sel [MICRO_QUERY]
  * test:run /mnt/ramdisk/tpch vary_sel_papi [MICRO_QUERY]
  *    // don't forget to add `papi --libs glib-2.0 papi` flags in front of `pkg-config`.
+ * test:run /mnt/ramdisk/tpch fusion_micro_cstore
  */
 object SyntheticQueries extends TPCHRunner {
 
@@ -174,7 +175,7 @@ object SyntheticQueries extends TPCHRunner {
     }
   }
 
-  def fusionMicroBenchmark(args: Array[String]): Unit = {
+  def fusionMicroBenchmark(args: Array[String], additionalFlags: List[String]): Unit = {
     val folder = args(0)
 
     val SFs1 = List(8)
@@ -187,7 +188,7 @@ object SyntheticQueries extends TPCHRunner {
       param = singleDate
       for (sf <- SFs1) {
         for (q <- queries1) {
-          process(folder :: sf.toString :: q :: flags)
+          process(folder :: sf.toString :: q :: (additionalFlags ++ flags))
         }
       }
 
@@ -195,14 +196,14 @@ object SyntheticQueries extends TPCHRunner {
       param = singleDate
       for (sf <- SFs2) {
         for (q <- queries2) {
-          process(folder :: sf.toString :: q :: flags)
+          process(folder :: sf.toString :: q :: (additionalFlags ++ flags))
         }
       }
 
       param = joinDate
       for (sf <- SFs3) {
         for (q <- queries3) {
-          process(folder :: sf.toString :: q :: flags)
+          process(folder :: sf.toString :: q :: (additionalFlags ++ flags))
         }
       }
     }
@@ -210,7 +211,9 @@ object SyntheticQueries extends TPCHRunner {
 
   def main(args: Array[String]): Unit = {
     if (args.length == 2 && args(1) == "fusion_micro") {
-      fusionMicroBenchmark(args)
+      fusionMicroBenchmark(args, Nil)
+    } else if (args.length == 2 && args(1) == "fusion_micro_cstore") {
+      fusionMicroBenchmark(args, List("+relation-column"))
     } else if (args.length == 2 && args(1) == "fusion_tpch") {
       fusionTPCHBenchmark(args, Nil)
       fusionTPCHBenchmark(args, Nil, List(
