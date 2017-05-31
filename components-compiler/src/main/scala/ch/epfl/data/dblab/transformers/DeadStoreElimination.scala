@@ -57,6 +57,17 @@ class DeadStoreAnalysis(override val IR: QueryEngineExp) extends BackwardAnalysi
   def isUsed(sym: Sym[_]): Boolean = usedSymbols.contains(sym)
   def isUsed(v: Var[_]): Boolean = usedVars.contains(v)
 
+  override def traverse(block: Block[_]): Unit = {
+    var usedVarsSize = 0
+    var usedSymsSize = 0
+    do {
+      usedVarsSize = usedVars.size
+      usedSymsSize = usedSymbols.size
+      traverseBlock(block)
+    } while (usedVarsSize != usedVars.size || usedSymsSize != usedSymbols.size)
+    postprocess(block)
+  }
+
   override def postprocess(block: Block[_]): Unit = {
     super.postprocess(block)
     logger.debug(s"allVars: ${allVars.size}, usedVars: ${usedVars.size}")
