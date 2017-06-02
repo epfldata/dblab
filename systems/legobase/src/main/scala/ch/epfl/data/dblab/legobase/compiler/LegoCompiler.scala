@@ -221,6 +221,7 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
     pipeline += new ParameterPromotionWithVar(DSL)
     pipeline += PartiallyEvaluate
     pipeline += DCE
+    pipeline += new DeadStoreElimination(DSL)
   }
 
   if (settings.queryMonadLowering) {

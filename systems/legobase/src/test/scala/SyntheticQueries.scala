@@ -33,6 +33,7 @@ import sc.pardis.shallow.OptimalString
  * test:run /mnt/ramdisk/tpch vary_sel [MICRO_QUERY]
  * test:run /mnt/ramdisk/tpch vary_sel_papi [MICRO_QUERY]
  *    // don't forget to add `papi --libs glib-2.0 papi` flags in front of `pkg-config`.
+ * test:run /mnt/ramdisk/tpch fusion_micro_cstore
  */
 object SyntheticQueries extends TPCHRunner {
 
@@ -174,7 +175,7 @@ object SyntheticQueries extends TPCHRunner {
     }
   }
 
-  def fusionMicroBenchmark(args: Array[String]): Unit = {
+  def fusionMicroBenchmark(args: Array[String], additionalFlags: List[String]): Unit = {
     val folder = args(0)
 
     val SFs1 = List(8)
@@ -187,7 +188,7 @@ object SyntheticQueries extends TPCHRunner {
       param = singleDate
       for (sf <- SFs1) {
         for (q <- queries1) {
-          process(folder :: sf.toString :: q :: flags)
+          process(folder :: sf.toString :: q :: (additionalFlags ++ flags))
         }
       }
 
@@ -195,14 +196,29 @@ object SyntheticQueries extends TPCHRunner {
       param = singleDate
       for (sf <- SFs2) {
         for (q <- queries2) {
-          process(folder :: sf.toString :: q :: flags)
+          process(folder :: sf.toString :: q :: (additionalFlags ++ flags))
         }
       }
 
       param = joinDate
       for (sf <- SFs3) {
         for (q <- queries3) {
-          process(folder :: sf.toString :: q :: flags)
+          process(folder :: sf.toString :: q :: (additionalFlags ++ flags))
+        }
+      }
+    }
+  }
+
+  def fusionMicroBenchmarkCStore2(args: Array[String], additionalFlags: List[String]): Unit = {
+    val folder = args(0)
+
+    val SFs = List(8)
+    val queries = List("fc", "fs1", "fs", "fs3")
+    fusionBenchmarkProcess { flags =>
+      param = singleDate
+      for (sf <- SFs) {
+        for (q <- queries) {
+          process(folder :: sf.toString :: q :: (additionalFlags ++ flags))
         }
       }
     }
@@ -210,7 +226,9 @@ object SyntheticQueries extends TPCHRunner {
 
   def main(args: Array[String]): Unit = {
     if (args.length == 2 && args(1) == "fusion_micro") {
-      fusionMicroBenchmark(args)
+      fusionMicroBenchmark(args, Nil)
+    } else if (args.length == 2 && args(1) == "fusion_micro_cstore") {
+      fusionMicroBenchmark(args, List("+relation-column"))
     } else if (args.length == 2 && args(1) == "fusion_tpch") {
       fusionTPCHBenchmark(args, Nil)
       fusionTPCHBenchmark(args, Nil, List(
@@ -354,6 +372,46 @@ object SyntheticQueries extends TPCHRunner {
           val constantDate1: Int = parseDate($startDate)
           val result = $lineitemTable.filter(_.L_SHIPDATE >= constantDate1).
             foldLeft(0.0)((acc, cur) => acc + cur.L_EXTENDEDPRICE * cur.L_DISCOUNT)
+          printf("%.4f\n", result)
+        }
+      """
+    }
+    dsl"()"
+  }
+
+  def filterSum1(numRuns: Int): Rep[Unit] = {
+    import dblab.queryengine.monad.Query
+    import dblab.experimentation.tpch.TPCHLoader._
+    import dblab.queryengine.GenericEngine._
+    val loadedLineitemTable = dsl"loadLineitem()"
+    def lineitemTable = dsl"""Query($loadedLineitemTable)"""
+    val startDate = param
+    for (i <- 0 until numRuns) {
+      dsl"""
+        runQuery {
+          val constantDate1: Int = parseDate($startDate)
+          val result = $lineitemTable.filter(_.L_SHIPDATE >= constantDate1).
+            foldLeft(0.0)((acc, cur) => acc + cur.L_EXTENDEDPRICE)
+          printf("%.4f\n", result)
+        }
+      """
+    }
+    dsl"()"
+  }
+
+  def filterSum3(numRuns: Int): Rep[Unit] = {
+    import dblab.queryengine.monad.Query
+    import dblab.experimentation.tpch.TPCHLoader._
+    import dblab.queryengine.GenericEngine._
+    val loadedLineitemTable = dsl"loadLineitem()"
+    def lineitemTable = dsl"""Query($loadedLineitemTable)"""
+    val startDate = param
+    for (i <- 0 until numRuns) {
+      dsl"""
+        runQuery {
+          val constantDate1: Int = parseDate($startDate)
+          val result = $lineitemTable.filter(_.L_SHIPDATE >= constantDate1).
+            foldLeft(0.0)((acc, cur) => acc + cur.L_EXTENDEDPRICE * cur.L_DISCOUNT * cur.L_TAX)
           printf("%.4f\n", result)
         }
       """
@@ -685,6 +743,8 @@ object SyntheticQueries extends TPCHRunner {
       case "QSimple"        => (0, () => querySimple(1))
       case "fc"             => (25, () => filterCount(MICRO_RUNS))
       case "fs"             => (23, () => filterSum(MICRO_RUNS))
+      case "fs1"            => (32, () => filterSum1(MICRO_RUNS))
+      case "fs3"            => (33, () => filterSum3(MICRO_RUNS))
       case "ffs"            => (24, () => filterFilterSum(MICRO_RUNS))
       case "fm"             => (26, () => filterMap(MICRO_RUNS))
       case "fmt"            => (27, () => filterMapTake(MICRO_RUNS))
