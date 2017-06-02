@@ -3,4 +3,4 @@ scala:
    - 2.11.7
 script:
   - source experimentation/scripts/download_tpchdata_sf0.1.sh
-  - sbt ++$TRAVIS_SCALA_VERSION embedAll test
+  - travis_wait sbt ++$TRAVIS_SCALA_VERSION embedAll test
