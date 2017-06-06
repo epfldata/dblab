@@ -26,4 +26,6 @@ class OptionToCTransformer(override val IR: QueryEngineExp) extends RecursiveRul
 
   rewrite += rule { case OptionNonEmpty(x) => infix_!=(x, unit(null)) }
 
+  rewrite += symRule { case Constant(None) => unit(null) }
+
 }

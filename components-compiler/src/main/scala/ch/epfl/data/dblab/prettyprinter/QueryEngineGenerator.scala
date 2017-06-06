@@ -67,6 +67,8 @@ object OrderingFactory {
 
   override def expToDocument(exp: Expression[_]): Document = exp match {
     case Constant(b: Boolean) => doc"${b.toString}"
+    case Constant(None)       => doc"None"
+    // case Constant(Some(v))    => doc"Some(${v.toString})" // TODO needs to recursively call expToDocument
     case Constant(t: Table) =>
       val attrs = t.attributes.map(a => doc"""Attribute("${a.name}", ${a.dataType.toString})""").mkDocument(", ")
       doc"""Table("${t.name}", List($attrs), ArrayBuffer(), "${t.resourceLocator}")"""
@@ -218,6 +220,11 @@ int event[NUM_EVENTS] = {PAPI_L1_DCM, PAPI_L2_DCM, PAPI_L2_DCA,
       case _ =>
         super.stmtToDocument(stmt)
     }
+  }
+
+  override def expToDocument(exp: Expression[_]): Document = exp match {
+    case Constant(None) => doc"NULL"
+    case _              => super.expToDocument(exp)
   }
 
   /**
