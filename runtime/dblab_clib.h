@@ -10,7 +10,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-typedef int numeric_int_t;
+typedef long long numeric_int_t;
+// TODO needs to be a struct with a scale parameter for a more precise implementation.
+typedef long long decimal_t; 
 typedef int boolean_t;
 
 #define true 1
@@ -55,6 +57,11 @@ static const double fractions[] = {
 	1.0e-16, 1.0e-17, 1.0e-18, 1.0e-19
 };
 
+static const numeric_int_t pow10[] = {
+	1, 10,  100, 1000, 10 * 1000, 100 * 1000,
+	1000 * 1000, 10 * 1000 * 1000, 100 * 1000 * 1000
+};
+
 char* strntod_unchecked(char *s, double* num)
 {
 	int n = 0;
@@ -84,6 +91,38 @@ char* strntod_unchecked(char *s, double* num)
 	s++; // skip '|'
 
 	*num = sign * (n + d * fractions[dlen - 1]);
+	return s;
+}
+
+char* strntodec_unchecked(char *s, decimal_t* num, int scale)
+{
+	int n = 0;
+	int d = 0;
+	int dlen = 0;
+	int sign = 1;
+
+	if (*s == '-') {
+		s++;
+		sign = -1;
+	}
+
+	while (*s != '|' && *s != '\n' && *s != '.') {
+		n *= 10;
+		n += *s++ - '0';
+	}
+
+	if (*s != '|' && *s != '\n') {
+		s++;
+		while (*s != '|' && *s != '\n') {
+			d *= 10;
+			d += *s++ - '0';
+			dlen++;
+		}
+	}
+
+	s++; // skip '|'
+
+	*num = sign * (n * pow10[scale] + d * pow10[scale - dlen]);
 	return s;
 }
 
