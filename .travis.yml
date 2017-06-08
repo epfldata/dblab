@@ -1,7 +1,19 @@
-group: deprecated-2017Q1
+# Use container-based infrastructure
+sudo: false
+
 language: scala
 scala:
    - 2.11.7
+
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt/boot
+
 script:
   - source experimentation/scripts/download_tpchdata_sf0.1.sh
-  - sbt ++$TRAVIS_SCALA_VERSION embedAll test
+  - sbt ++$TRAVIS_SCALA_VERSION clean embedAll && sbt ++$TRAVIS_SCALA_VERSION compile
+  # Cleanup the cached directories to avoid unnecessary cache updates
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
+  - sbt test
