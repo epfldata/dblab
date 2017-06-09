@@ -206,10 +206,12 @@ object TPCHSchema {
     tpchSchema.stats += "DISTINCT_P_BRAND" -> 25
     tpchSchema.stats += "DISTINCT_P_SIZE" -> 50
     tpchSchema.stats += "DISTINCT_P_TYPE" -> 150
+    tpchSchema.stats += "DISTINCT_P_NAME" -> partTable.rowCount
     tpchSchema.stats += "DISTINCT_PS_PARTKEY" -> partTable.rowCount
     tpchSchema.stats += "DISTINCT_PS_SUPPKEY" -> supplierTable.rowCount
     tpchSchema.stats += "DISTINCT_PS_AVAILQTY" -> 9999
     tpchSchema.stats += "DISTINCT_S_NAME" -> supplierTable.rowCount
+    tpchSchema.stats += "DISTINCT_S_COMMENT" -> supplierTable.rowCount
     tpchSchema.stats += "DISTINCT_S_NATIONKEY" -> nationTable.rowCount
     tpchSchema.stats += "DISTINCT_S_SUPPKEY" -> supplierTable.rowCount
     tpchSchema.stats += "DISTINCT_C_CUSTKEY" -> customerTable.rowCount

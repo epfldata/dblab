@@ -76,7 +76,13 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
       tokenizedStrings.foreach(ts => {
         max_num_words_map.getOrElseUpdate(ts, {
           logger.debug("StringDictionaryTransformer: Creating array for field " + ts)
-          val numBuckets = schema.stats.distinctAttributes(ts).getOrElse(schema.stats.getLargestCardinality().toInt) * MAX_NUM_WORDS
+          val numBuckets = {
+            val value = schema.stats.distinctAttributes(ts) getOrElse {
+              logger.debug("StringDictionaryTransformer: Cannot find distinct values for " + ts)
+              schema.stats.getLargestCardinality().toInt
+            }
+            value * MAX_NUM_WORDS
+          }
           (__newVar[Int](unit(0)), __newArray[Int](unit(numBuckets)))
         })
       })
