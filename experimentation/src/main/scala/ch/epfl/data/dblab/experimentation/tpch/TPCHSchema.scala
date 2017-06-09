@@ -200,6 +200,7 @@ object TPCHSchema {
     tpchSchema.stats += "DISTINCT_O_ORDERDATE" -> 365 * YEARS
     tpchSchema.stats += "DISTINCT_O_ORDERPRIORITY" -> 5
     tpchSchema.stats += "DISTINCT_O_ORDERKEY" -> ordersTable.rowCount * 5
+    tpchSchema.stats += "DISTINCT_O_COMMENT" -> ordersTable.rowCount
     tpchSchema.stats += "DISTINCT_O_CUSTKEY" -> customerTable.rowCount
     tpchSchema.stats += "DISTINCT_P_PARTKEY" -> partTable.rowCount
     tpchSchema.stats += "DISTINCT_P_BRAND" -> 25

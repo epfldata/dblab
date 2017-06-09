@@ -75,7 +75,9 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
       // Generate maps needed for tokenizing
       tokenizedStrings.foreach(ts => {
         max_num_words_map.getOrElseUpdate(ts, {
-          (__newVar[Int](unit(0)), __newArray[Int](unit(12000000))) // todo: fix with proper value
+          logger.debug("StringDictionaryTransformer: Creating array for field " + ts)
+          val numBuckets = schema.stats.distinctAttributes(ts).getOrElse(schema.stats.getLargestCardinality().toInt) * MAX_NUM_WORDS
+          (__newVar[Int](unit(0)), __newArray[Int](unit(numBuckets)))
         })
       })
       // Now generate rest of program
