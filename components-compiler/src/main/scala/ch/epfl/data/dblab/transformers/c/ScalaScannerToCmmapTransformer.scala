@@ -39,6 +39,8 @@ class ScalaScannerToCmmapTransformer(override val IR: QueryEngineExp, val settin
     num
   }
 
+  // val allMmaps = new scala.collection.mutable.ArrayBuffer[(Var[Pointer[Char]], Rep[SIZE_T])]
+
   // rewritings
   rewrite += rule {
     case FastScannerNew(f) => {
@@ -46,7 +48,10 @@ class ScalaScannerToCmmapTransformer(override val IR: QueryEngineExp, val settin
       val st = &(__newVar[StructStat](infix_asInstanceOf(unit(0))(typeStat)))
       stat(f, st)
       val size = field(st, "st_size")(typeSize_T)
-      NameAlias[Pointer[Char]](None, "mmap", List(List(Constant(null), size, PROT_READ, MAP_PRIVATE, fd, Constant(0))))
+      val mmapResult = toAtom(NameAlias[Pointer[Char]](None, "mmap", List(List(Constant(null), size, PROT_READ, MAP_PRIVATE, fd, Constant(0)))))
+      val v = __newVar(mmapResult)
+      // allMmaps += v -> size
+      ReadVar(v)
     }
   }
 
@@ -137,4 +142,8 @@ class ScalaScannerToCmmapTransformer(override val IR: QueryEngineExp, val settin
       pclose(p)
       cnt
   }
+  rewrite += rule {
+    case FastScannerClose(s) => unit()
+  }
+
 }

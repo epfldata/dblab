@@ -69,6 +69,7 @@ trait LoaderInlined extends LoaderImplementations
       arr(i) = rec
       __assign(i, (i: Rep[Int]) + unit(1))
     })
+    ldr.close()
     arr
   }
 
@@ -108,6 +109,7 @@ trait LoaderInlined extends LoaderImplementations
       (ArrayRep(arr)(tableType))(i) = rec
       __assign(i, (i: Rep[Int]) + unit(1))
     })
+    ldr.close()
     arr
   }
 
