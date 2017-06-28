@@ -135,7 +135,7 @@ char* strntodec_unchecked(char *s, decimal_t* num, int scale)
 typedef GHashTable LGHashTable;
 typedef GList LGList;
 
-#define MAX_NUM_WORDS 15
+#define MAX_NUM_WORDS 16
 #define MAX_WORD_LENGTH 16
 
 char** tokenizeString(char *sentence) {

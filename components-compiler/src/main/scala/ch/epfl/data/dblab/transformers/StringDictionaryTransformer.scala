@@ -41,7 +41,7 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
   case class ConstantStringInfo(val poolName: String, val isStartsWithOperation: Boolean)
   val constantStrings = collection.mutable.Map[Rep[Any], ConstantStringInfo]()
   val nameAliases = collection.mutable.Map[String, String]()
-  val MAX_NUM_WORDS = 15;
+  val MAX_NUM_WORDS = 16
   val max_num_words_map = scala.collection.mutable.Map[String, (Var[Int], Rep[Array[Int]])]()
 
   def shouldTokenize(name: String): Boolean = wordTokinizingStringCompressionNeeded && tokenizedStrings.contains(name)
