@@ -14,22 +14,24 @@ import pardis.deep.scalalib.Tuple2IRs.Tuple2New
 /** This deep class is manually created */
 trait DynamicDataRowOps extends Base with TableOps {
   type DynamicDataRow = ch.epfl.data.dblab.schema.DynamicDataRow
-  implicit val typeDynamicDataRow: TypeRep[DynamicDataRow] = DynamicDataRowIRs.DynamicDataRowType
+  implicit val typeDynamicDataRow: TypeRep[DynamicDataRow] = DynamicDataRowIRs.dynamicDataRowType
 
   def dataRowTypeForTable(table: Table): TypeRep[DynamicDataRow] = {
-    DynamicDataRowIRs.DynamicDataRowRecordType(table.name)
+    DynamicDataRowIRs.dynamicDataRowRecordType(table.name)
   }
   def dataRowTypeForName(className: String): TypeRep[DynamicDataRow] = {
-    DynamicDataRowIRs.DynamicDataRowRecordType(className)
+    DynamicDataRowIRs.dynamicDataRowRecordType(className)
   }
 
   object DynamicDataRow {
     def apply(className: Rep[String])(values: Rep[(String, Any)]*): Rep[DynamicDataRow] = {
       val Constant(classNameString) = className
       val valuesConstant = values map { case Def(Tuple2New(Constant(_1: String), _2)) => (_1, false, _2) }
-      val tp = DynamicDataRowIRs.DynamicDataRowRecordType(classNameString)
+      implicit val tp: TypeRep[DynamicDataRow] = DynamicDataRowIRs.dynamicDataRowRecordType(classNameString)
+      // val tag = tp.asInstanceOf[RecordType[DynamicDataRow]].tag
 
       record_new(valuesConstant)(tp)
+      // toAtom(Struct[DynamicDataRow](tag, createFieldsSyms(valuesConstant), Nil)(tp))(tp)
     }
   }
 
@@ -43,11 +45,12 @@ trait DynamicDataRowOps extends Base with TableOps {
 }
 
 object DynamicDataRowIRs extends Base {
-  def DynamicDataRowRecordType(name: String): TypeRep[ch.epfl.data.dblab.schema.DynamicDataRow] = {
-    new RecordType(StructTags.ClassTag(name), None)
+  def dynamicDataRowRecordType(name: String): TypeRep[ch.epfl.data.dblab.schema.DynamicDataRow] = {
+    DynamicDataRowRecordType(name).asInstanceOf[TypeRep[DynamicDataRow]]
   }
-  val DynamicDataRowType: TypeRep[ch.epfl.data.dblab.schema.DynamicDataRow] =
-    DynamicDataRowRecordType("DynamicDataRow")
-  implicit val typeDynamicDataRow: TypeRep[ch.epfl.data.dblab.schema.DynamicDataRow] = DynamicDataRowType
+  case class DynamicDataRowRecordType(recordName: String) extends RecordType(StructTags.ClassTag("DDR_" + recordName), None)
+  val dynamicDataRowType: TypeRep[ch.epfl.data.dblab.schema.DynamicDataRow] =
+    dynamicDataRowRecordType("DynamicDataRow")
+  implicit val typeDynamicDataRow: TypeRep[ch.epfl.data.dblab.schema.DynamicDataRow] = dynamicDataRowType
   type DynamicDataRow = ch.epfl.data.dblab.schema.DynamicDataRow
 }

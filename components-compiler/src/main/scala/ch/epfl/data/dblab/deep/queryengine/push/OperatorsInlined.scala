@@ -16,6 +16,7 @@ import deep.dsls._
 trait OperatorsInlined extends queryengine.push.OperatorsComponent with sc.pardis.ir.InlineFunctions
   with OperatorImplementations with ScanOpImplementations with SelectOpImplementations
   with AggOpImplementations with SortOpImplementations with MapOpImplementations
+  with PrintOpOps
   with PrintOpImplementations with WindowOpImplementations with HashJoinOpImplementations
   with LeftHashSemiJoinOpImplementations with NestedLoopsJoinOpImplementations
   with SubquerySingleResultImplementations with ViewOpImplementations
@@ -31,4 +32,11 @@ trait OperatorsInlined extends queryengine.push.OperatorsComponent with sc.pardi
   with sc.pardis.deep.scalalib.Tuple2PartialEvaluation
   with OperatorDynamicDispatch with BaseOptimization with sc.pardis.deep.scalalib.ArrayOptimization {
   override def hashJoinOpNew2[A <: ch.epfl.data.sc.pardis.shallow.Record, B <: ch.epfl.data.sc.pardis.shallow.Record, C](leftParent: Rep[Operator[A]], rightParent: Rep[Operator[B]], joinCond: Rep[((A, B) => Boolean)], leftHash: Rep[((A) => C)], rightHash: Rep[((B) => C)])(implicit typeA: TypeRep[A], typeB: TypeRep[B], typeC: TypeRep[C]): Rep[HashJoinOp[A, B, C]] = hashJoinOpNew1[A, B, C](leftParent, rightParent, unit(""), unit(""), joinCond, leftHash, rightHash)
+  override def printOpRun[A](self: Rep[PrintOp[A]])(implicit typeA: TypeRep[A]): Rep[Unit] =
+    if (config.Config.specializeEngine) {
+      super[PrintOpImplementations].printOpRun(self)
+    } else {
+      super[PrintOpOps].printOpRun(self)
+    }
+
 }

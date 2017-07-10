@@ -37,14 +37,15 @@ class ScalaCollectionsToGLibTransfomer(override val IR: QueryEngineExp) extends 
   override def transformType[T: PardisType]: PardisType[Any] = ({
     val tp = typeRep[T]
     tp match {
-      case ArrayBufferType(t)  => typePointer(typeGArray)
-      case SeqType(t)          => typePointer(typeLPointer(typeGList))
-      case TreeSetType(t)      => typePointer(typeGTree)
-      case SetType(t)          => typePointer(typeLPointer(typeGList))
-      case OptionType(t)       => typePointer(transformType(t))
-      case HashMapType(t1, t2) => typePointer(typeGHashTable)
-      case CArrayType(t1)      => tp
-      case _                   => super.transformType[T]
+      case ArrayBufferType(t)   => typePointer(typeGArray)
+      case SeqType(t)           => typePointer(typeLPointer(typeGList))
+      case TreeSetType(t)       => typePointer(typeGTree)
+      case SetType(t)           => typePointer(typeLPointer(typeGList))
+      case OptionType(t)        => typePointer(transformType(t))
+      case HashMapType(t1, t2)  => typePointer(typeGHashTable)
+      case MultiMapType(t1, t2) => typePointer(typeGHashTable)
+      case CArrayType(t1)       => tp
+      case _                    => super.transformType[T]
     }
   }).asInstanceOf[PardisType[Any]]
 

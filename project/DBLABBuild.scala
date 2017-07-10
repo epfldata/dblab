@@ -49,13 +49,14 @@ object DBLABBuild extends Build {
     .setPreference(AlignParameters, true)
     .setPreference(AlignSingleLineCaseStatements, true)
   }
-  val scala_version = "2.11.7"
-  val sc_version = "0.1.3-SNAPSHOT"
+  val scala_version = "2.11.8"
+  val sc_version = "0.1.4-SNAPSHOT"
 
   // addCommandAlias("test-gen", ";project legobase; project root; clean")
 
   val generate_test = InputKey[Unit]("generate-test")
   // val test_run = InputKey[Unit]("test-run")
+  val olap_engine = InputKey[Unit]("olap-engine")
 
   def purgatorySettings(projectFolder: String) = generatorSettings ++ Seq(
     outputFolder := s"$projectFolder/src/main/scala/ch/epfl/data/dblab/deep",
@@ -81,7 +82,8 @@ object DBLABBuild extends Build {
         "ch.epfl.data" % "sc-pardis-compiler_2.11" % sc_version,
         "ch.epfl.data" % "sc-c-scala-lib_2.11" % sc_version,
         "ch.epfl.data" % "sc-c-scala-deep_2.11" % sc_version,
-        "ch.epfl.data" % "sc-pardis-quasi_2.11" % sc_version
+        "ch.epfl.data" % "sc-pardis-quasi_2.11" % sc_version,
+        "ch.epfl.data" % "squid-sc-backend_2.11" % "0.1-SNAPSHOT"
         ))) dependsOn dblab_components
 
   lazy val dblab_experimentation       = Project(id = "dblab-experimentation",        base = file("experimentation"),
@@ -122,11 +124,10 @@ object DBLABBuild extends Build {
           // test_run.value
         }
       },
-      // fullRunInputTask(
-      //   test_run
-      //   ,
-      //   Test,
-      //   "ch.epfl.data.legobase.LEGO_QUERY"
-      // ),
+      fullRunInputTask(
+        olap_engine,
+        Compile,
+        "ch.epfl.data.dblab.legobase.queryengine.OLAPEngine"
+      ),
       scalacOptions in Test ++= Seq("-optimize"))) dependsOn(dblab_experimentation_compiler)
 }

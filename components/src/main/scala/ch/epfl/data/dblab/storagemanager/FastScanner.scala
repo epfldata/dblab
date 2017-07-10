@@ -114,4 +114,8 @@ class FastScanner(filename: String) {
     if (!f) br.close
     f
   }
+
+  def close() = {
+    br.close()
+  }
 }

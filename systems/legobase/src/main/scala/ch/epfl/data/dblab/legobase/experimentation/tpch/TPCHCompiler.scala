@@ -21,17 +21,6 @@ import config.Config
  */
 object TPCHCompiler extends TPCHRunner {
 
-  object Q12SynthesizedExtract {
-    val Pat = "Q12S(_\\w)?_(\\d*)".r
-    def unapply(str: String): Option[(Boolean, Int)] = str match {
-      case Pat(target, numFieldsStr) =>
-        val isCCode = if (target == null) false else true
-        val numFields = numFieldsStr.toInt
-        Some(isCCode -> numFields)
-      case _ => None
-    }
-  }
-
   var settings: Settings = _
 
   def parseArgs(args: Array[String]): Unit = {
@@ -60,65 +49,115 @@ object TPCHCompiler extends TPCHRunner {
     }
   }
 
+  // TODO should be refactored to a separate module
+  def acceptInputFromConsole(cmd: String => Boolean): Unit = {
+    val sc = new java.util.Scanner(System.in)
+    var exit = false
+    val CMD_PREFIX = ">> "
+    System.out.print(CMD_PREFIX)
+    while (!exit && sc.hasNext) {
+      val str = sc.nextLine
+      exit = cmd(str)
+      if (!exit) {
+        System.out.print(CMD_PREFIX)
+      }
+    }
+  }
+
+  def compileOptimizedQuery(folder: String, sf: String, query: String): Unit = {
+    utils.Utilities.time({
+      turnOffConsoleOutput {
+        parseArgs(Array(folder, sf, query, "-optimal"))
+      }
+    }, s"Compilation of $query")
+  }
+
+  def turnOffConsoleOutput[T](e: => T): T = {
+    import java.io.PrintStream
+    val outOriginal = new PrintStream(System.out);
+    val errOriginal = new PrintStream(System.err);
+    System.setOut(new PrintStream("compilation-out.out.txt"))
+    System.setErr(new PrintStream("compilation-err.out.txt"))
+    val res = e
+    System.setOut(outOriginal)
+    System.setErr(errOriginal)
+    res
+  }
+
+  def warmUpJIT(): Unit = {
+    for (i <- 1 to 25) {
+      System.out.println(s"Warming up ($i)")
+      compileOptimizedQuery("dummy", "1", "Q16")
+      compileOptimizedQuery("dummy", "1", "Q2_functional")
+    }
+    // To reset book-keepings in SC
+    ExpressionSymbol.globalId = 0
+  }
+
+  trait Command {
+    def name: String
+    def shortDescription: String = name
+    def description: String
+    def run(args: String*): Unit
+    def unapplySeq(args: String): Option[Seq[String]] = {
+      val argsList = args.split(" ").toList
+      val firstArg = argsList.head
+      if (firstArg == name) {
+        Some(argsList.tail.toSeq)
+      } else {
+        None
+      }
+    }
+  }
+  case object WarmUpJIT extends Command {
+    def name: String = "warm-up"
+    def description: String = "Warms up the underlying just-in-time (JIT) compiler"
+    def run(args: String*): Unit = warmUpJIT()
+  }
+  case object Exit extends Command {
+    def name: String = "exit"
+    def description: String = "Exit!"
+    def run(args: String*): Unit = ()
+  }
+  case object AllTpch extends Command {
+    def name: String = "all-tpch"
+    override def shortDescription: String = "all-tpch <data_folder> <scaling_factor_number>"
+    def description: String = "Generates the most optimized C code of all TPCH queries"
+    def run(args: String*): Unit = () // TODO
+  }
+
+  case object CompileQuery extends Command {
+    def name: String = "compile"
+    override def shortDescription: String = "compile <data_folder> <scaling_factor_number> <queries> <options>"
+    def description: String = "Compiles the given query using the given arguments"
+    def run(args: String*): Unit = () // TODO
+  }
+
   def main(args: Array[String]) {
     args.toList match {
       case List("interactive") =>
         System.out.println("*** Interactive Mode ***")
         System.out.println("Available commands:")
-        System.out.println("  warm-up")
-        System.out.println("    Warms up the underlying just-in-time (JIT) compiler")
-        System.out.println("  all-tpch <data_folder> <scaling_factor_number>")
-        System.out.println("    Generates the most optimized C code of all TPCH queries")
-        System.out.println("  compile <data_folder> <scaling_factor_number> <queries> <options>")
-        System.out.println("    Compiles the given query using the given arguments")
-        System.out.println("  exit")
-        System.out.println("    Exits the interactive mode")
-        val sc = new java.util.Scanner(System.in)
-        var exit = false
-        val CMD_PREFIX = ">> "
-        System.out.print(CMD_PREFIX)
-        while (!exit && sc.hasNext) {
-          val str = sc.nextLine
-          def compileOptimizedQuery(folder: String, sf: String, query: String): Unit = {
-            utils.Utilities.time({
-              turnOffConsoleOutput {
-                parseArgs(Array(folder, sf, query, "-optimal"))
-              }
-            }, s"Compilation of $query")
-          }
-          def turnOffConsoleOutput[T](e: => T): T = {
-            import java.io.PrintStream
-            val outOriginal = new PrintStream(System.out);
-            val errOriginal = new PrintStream(System.err);
-            System.setOut(new PrintStream("compilation-out.out.txt"))
-            System.setErr(new PrintStream("compilation-err.out.txt"))
-            val res = e
-            System.setOut(outOriginal)
-            System.setErr(errOriginal)
-            res
-          }
+        val cmds = List(WarmUpJIT, AllTpch, CompileQuery, Exit)
+        for (cmd <- cmds) {
+          System.out.println(s"  ${cmd.shortDescription}")
+          System.out.println(s"    ${cmd.description}")
+        }
+        acceptInputFromConsole { str =>
+          var exit = false
           str match {
-            case "exit" => exit = true
-            case "warm-up" =>
-              for (i <- 1 to 25) {
-                System.out.println(s"Warming up ($i)")
-                compileOptimizedQuery("dummy", "1", "Q16")
-                compileOptimizedQuery("dummy", "1", "Q2_functional")
-              }
-              // To reset book-keepings in SC
-              ExpressionSymbol.globalId = 0
-            case _ if str.startsWith("all-tpch ") =>
-              val Array(_, folder, sf) = str.split(" ")
+            case Exit() => exit = true
+            case WarmUpJIT() =>
+              WarmUpJIT.run()
+            case AllTpch(folder, sf) =>
               compileOptimizedQuery(folder, sf, "Q1_functional")
               for (q <- 2 to 22) {
                 compileOptimizedQuery(folder, sf, s"Q$q")
               }
-            case _ if str.startsWith("compile ") => parseArgs(str.split(" ").tail)
-            case _                               => System.out.println(s"Command $str not available!")
+            case CompileQuery(_*) => parseArgs(str.split(" ").tail)
+            case _                => System.out.println(s"Command $str not available!")
           }
-          if (!exit) {
-            System.out.print(CMD_PREFIX)
-          }
+          exit
         }
       case _ => parseArgs(args)
     }
@@ -153,7 +192,9 @@ object TPCHCompiler extends TPCHRunner {
         case "Q7"                => (7, () => Q7(unit(Config.numRuns)))
         case "Q8"                => (8, () => Q8(unit(Config.numRuns)))
         case "Q9"                => (9, () => Q9(unit(Config.numRuns)))
+        case "Q9_p2"             => (9, () => Q9_p2(unit(Config.numRuns)))
         case "Q10"               => (10, () => Q10(unit(Config.numRuns)))
+        case "Q10_p2"            => (10, () => Q10_p2(unit(Config.numRuns)))
         case "Q11"               => (11, () => Q11(unit(Config.numRuns)))
         case "Q12"               => (12, () => Q12(unit(Config.numRuns)))
         case "Q12_p2"            => (12, () => Q12_p2(unit(Config.numRuns)))
@@ -164,6 +205,7 @@ object TPCHCompiler extends TPCHRunner {
         case "Q17"               => (17, () => Q17(unit(Config.numRuns)))
         case "Q18"               => (18, () => Q18(unit(Config.numRuns)))
         case "Q19"               => (19, () => Q19(unit(Config.numRuns)))
+        case "Q19_p2"            => (19, () => Q19_p2(unit(Config.numRuns)))
         case "Q20"               => (20, () => Q20(unit(Config.numRuns)))
         case "Q21"               => (21, () => Q21(unit(Config.numRuns)))
         case "Q22"               => (22, () => Q22(unit(Config.numRuns)))
@@ -182,9 +224,6 @@ object TPCHCompiler extends TPCHRunner {
         case "Q18_functional"    => (18, () => Q18_functional(unit(Config.numRuns)))
         case "Q19_functional"    => (19, () => Q19_functional(unit(Config.numRuns)))
         case "Q20_functional"    => (20, () => Q20_functional(unit(Config.numRuns)))
-        case Q12SynthesizedExtract(targetCode, numFields) => {
-          (12, () => context.Q12Synthesized(unit(Config.numRuns), numFields))
-        }
       }
 
     settings.optimalArgsHandler = (propName: String) => {
@@ -201,7 +240,7 @@ object TPCHCompiler extends TPCHRunner {
       argsString.split(" ").toList
     }
     val validatedSettings = settings.validate()
-
+    validatedSettings.init()
     val compiler = new LegoCompiler(context, validatedSettings, schema, "ch.epfl.data.dblab.experimentation.tpch.TPCHRunner")
     compiler.compile(queryFunction())
   }

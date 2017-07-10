@@ -732,3 +732,83 @@ class MergeJoinOp[A <: Record: Manifest, B <: Record](val leftParent: Operator[A
     }
   }
 }
+
+/**
+ * A restricted version of Hash Join Operator which assumes a 1-to-N relationship between the relations.
+ *
+ * In this restricted version, for every tuple in the right relation there should exist at most
+ * one tuple from the left relation which can be joined with it. However, there is no limitation
+ * on the number of elements from the right relation that can be joined with an element from the
+ * left relation.
+ *
+ * @param leftParent the left parent operator of this operator
+ * @param rightParent the right parent operator of this operator
+ * @param leftAlias the String that should be prepended to the field names of the records
+ * of the left operator
+ * @param rightAlias the String that should be prepended to the field names of the records
+ * of the right operator
+ * @param joinCond the join condition
+ * @param leftHash the hashing function used to convert the values of the records of the
+ * left operator to the key that is used by the HashMap of hash-join operator
+ * @param rightHash the hashing function used to convert the values of the records of the
+ * right operator to the key that is used by the HashMap of hash-join operator
+ */
+class HashJoinOneToManyOp[A <: Record, B <: Record, C](val leftParent: Operator[A], val rightParent: Operator[B], leftAlias: String, rightAlias: String)(val joinCond: (A, B) => Boolean)(val leftHash: A => C)(val rightHash: B => C) extends Operator[DynamicCompositeRecord[A, B]] {
+  def this(leftParent: Operator[A], rightParent: Operator[B])(joinCond: (A, B) => Boolean)(leftHash: A => C)(rightHash: B => C) = this(leftParent, rightParent, "", "")(joinCond)(leftHash)(rightHash)
+  @inline var mode: scala.Int = 0
+
+  val hm = new HashMap[C, A]
+
+  def reset() {
+    rightParent.reset; leftParent.reset; hm.clear;
+  }
+  def open() = {
+    leftParent.child = this
+    rightParent.child = this
+    leftParent.open
+    rightParent.open
+  }
+  def init() {
+    leftParent.init
+    mode += 1
+    rightParent.init
+    mode += 1
+  }
+  /**
+   * Consumes the tuples coming from the left parent operator.
+   */
+  def consumeLeft(leftTuple: A): Unit = {
+    val k = leftHash(leftTuple)
+    hm(k) = leftTuple
+  }
+  /**
+   * Consumes the tuples coming from the right parent operator.
+   */
+  def consumeRight(rightTuple: B): Unit = {
+    val k = rightHash(rightTuple)
+    hm.get(k) foreach { elem =>
+      if (joinCond(elem, rightTuple)) {
+        val res = elem.concatenateDynamic(rightTuple, leftAlias, rightAlias)
+        child.consume(res)
+      }
+    }
+  }
+  /**
+   * Consumes tuples of two parent operators in two phases.
+   *
+   * In the first phase, called the build phase, the tuples of left relation are consumed
+   * and result in building a hash table.
+   * The second phase, called the probe phase, consumes the elements of the right parent operator.
+   * While doing so, it probes the constructd hash table to find a matching element from
+   * the right relation. If it finds a match, the consume method of the child operator
+   * is invoked by passing the joined tuple.
+   * This phase does not require breaking the pipeline of the right parent operator.
+   */
+  def consume(tuple: Record) {
+    if (mode == 0) {
+      consumeLeft(tuple.asInstanceOf[A])
+    } else if (mode == 1) {
+      consumeRight(tuple.asInstanceOf[B])
+    }
+  }
+}

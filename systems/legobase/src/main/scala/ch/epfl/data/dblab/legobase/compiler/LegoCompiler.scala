@@ -118,6 +118,8 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
 
   if (!settings.noSingletonHashMap)
     pipeline += SingletonHashMapToValueTransformer
+  // pipeline += SingletonHashMapToValueTransformer2
+  //pipeline += TreeDumper(true)
 
   if (settings.hashMapToArray) {
     pipeline += ConstSizeArrayToLocalVars
@@ -219,6 +221,7 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
     pipeline += new ParameterPromotionWithVar(DSL)
     pipeline += PartiallyEvaluate
     pipeline += DCE
+    pipeline += new DeadStoreElimination(DSL)
   }
 
   if (settings.queryMonadLowering) {
@@ -243,13 +246,13 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
     pipeline += new LargeOutputPrintHoister(DSL, schema)
   }
 
-  // pipeline += TreeDumper(false)
+  pipeline += TreeDumper(false)
 
   if (settings.targetLanguage == CCoreLanguage) pipeline += new CTransformersPipeline(settings.cSettings)
 
   pipeline += DCECLang //NEVER REMOVE!!!!
 
-  // pipeline += TreeDumper(true)
+  // pipeline += TreeDumper(false)
 
   val codeGenerator =
     if (settings.targetLanguage == CCoreLanguage) {
@@ -259,9 +262,9 @@ class LegoCompiler(val DSL: LegoBaseQueryEngineExp,
         new QueryEngineCGenerator(outputFile, settings.papiProfile, true)
     } else {
       if (settings.noLetBinding)
-        new QueryEngineScalaASTGenerator(DSL, false, outputFile, runnerClassName)
+        new QueryEngineScalaASTGenerator(DSL, !settings.specializeEngine, outputFile, runnerClassName)
       else
-        new QueryEngineScalaGenerator(false, outputFile, runnerClassName)
+        new QueryEngineScalaGenerator(!settings.specializeEngine, outputFile, runnerClassName)
     }
 
 }

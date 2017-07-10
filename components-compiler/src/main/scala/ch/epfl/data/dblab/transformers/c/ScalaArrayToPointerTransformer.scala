@@ -48,8 +48,14 @@ class ScalaArrayToPointerTransformer(override val IR: QueryEngineExp, val settin
     tp match {
       case ArrayType(args) => typePointer(args)
       case c if c.isRecord => tp.typeArguments match {
-        case Nil     => typePointer(tp)
-        case List(t) => typePointer(transformType(t))
+        case Nil => typePointer(tp)
+        case List(t) =>
+          if (config.Config.specializeEngine)
+            typePointer(transformType(t))
+          else
+            typePointer(tp)
+        case _ =>
+          throw new Exception(s"Does not know how to transform type $tp")
       }
       case SetType(args) => typePointer(typeLPointer(typeGList))
       case _             => super.transformType[T]

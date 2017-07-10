@@ -41,7 +41,7 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
   case class ConstantStringInfo(val poolName: String, val isStartsWithOperation: Boolean)
   val constantStrings = collection.mutable.Map[Rep[Any], ConstantStringInfo]()
   val nameAliases = collection.mutable.Map[String, String]()
-  val MAX_NUM_WORDS = 15;
+  val MAX_NUM_WORDS = 16
   val max_num_words_map = scala.collection.mutable.Map[String, (Var[Int], Rep[Array[Int]])]()
 
   def shouldTokenize(name: String): Boolean = wordTokinizingStringCompressionNeeded && tokenizedStrings.contains(name)
@@ -75,7 +75,15 @@ class StringDictionaryTransformer(override val IR: QueryEngineExp, val schema: S
       // Generate maps needed for tokenizing
       tokenizedStrings.foreach(ts => {
         max_num_words_map.getOrElseUpdate(ts, {
-          (__newVar[Int](unit(0)), __newArray[Int](unit(12000000))) // todo: fix with proper value
+          logger.debug("StringDictionaryTransformer: Creating array for field " + ts)
+          val numBuckets = {
+            val value = schema.stats.distinctAttributes(ts) getOrElse {
+              logger.debug("StringDictionaryTransformer: Cannot find distinct values for " + ts)
+              schema.stats.getLargestCardinality().toInt
+            }
+            value * MAX_NUM_WORDS
+          }
+          (__newVar[Int](unit(0)), __newArray[Int](unit(numBuckets)))
         })
       })
       // Now generate rest of program

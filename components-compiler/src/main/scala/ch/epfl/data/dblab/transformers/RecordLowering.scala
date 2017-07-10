@@ -11,6 +11,7 @@ import deep.dsls.QueryEngineExp
 import sc.pardis.types._
 import sc.pardis.types.PardisTypeImplicits._
 import sc.pardis.optimization._
+import config._
 
 object RecordLowering {
   def apply(originalContext: QueryEngineExp, removeUnusedFields: Boolean, compliant: Boolean) = new TransformerHandler {
@@ -52,7 +53,33 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     val tag = getTag(tp)
     val regFields = getRegisteredFieldsOfType(tp)
     def fieldIsRegistered(f: StructElemInformation): Boolean = regFields.contains(f.name) || !removeUnusedFields
-    getStructElems(tag).filter(fieldIsRegistered).map(x => StructElemInformation(aliasing + x.name, x.tpe, x.mutable))
+    // logger.debug(s"getElems($tp) = ${getStructElems(tag)}\n*** $tag")
+    getStructElems(tag).filter(fieldIsRegistered).map(x => StructElemInformation(aliasing + x.name, apply(x.tpe), x.mutable))
+  }
+
+  // FIXME HACK!
+  override def createTag[T](tp: TypeRep[T], caseClassNew: Option[Def[T]] = None): StructTags.StructTag[Any] = {
+    tp match {
+      case AGGRecordType(v) if !Config.specializeEngine =>
+        val elems = scala.Seq(StructElemInformation("key", v, false), StructElemInformation("aggs", typeRep[Array[Double]].asInstanceOf[TypeRep[Any]], false))
+
+        val newTag = {
+          def tpToString(tp: TypeRep[_]): String = tp match {
+            case rt: ReflectionType[_] => {
+              val tpe = rt.tpe
+              if (tpe.typeArgs.isEmpty) tpe.typeSymbol.name.toString
+              else tpe.typeSymbol.name.toString + "_" + rt.typeArguments.map(tpToString(_)).mkString("_")
+            }
+            case _ if tp.typeArguments.isEmpty => tp.name
+            case _                             => ???
+          }
+          StructTags.ClassTag[Any](tpToString(tp))
+        }
+        structs += newTag -> elems
+        manifestTags += tp -> newTag
+        newTag
+      case _ => super.createTag(tp, caseClassNew)
+    }
   }
 
   def computeConcatTypeEtc(): Unit = {
@@ -64,23 +91,57 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     }
 
     val sorted = notSeenDynamicRecordTypes.toList.sortBy(x => types(x).size)
+    // logger.debug(s"structs: ${structs.mkString("\n--")}")
     // logger.debug(s"notSeenDynamicRecordTypes: $notSeenDynamicRecordTypes")
     for (tp <- sorted) {
       import scala.language.existentials
       val dtp = tp.asInstanceOf[DynamicCompositeRecordType[_, _]]
-      logger.debug(s"dtp: $dtp")
+      // logger.debug(s"dtp: ${dtp.rightType.asInstanceOf[ReflectionType[_]].tpe}")
       val (lt, rt) = dtp.leftType -> dtp.rightType
       val leftTag = getTag(lt)
       val rightTag = getTag(rt)
       System.err.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: No tag found for type $tp. Hence assuming no aliasing!")
       val concatTag = StructTags.CompositeTag[Any, Any]("", "", leftTag, rightTag)
       val newElems = getElems(lt) ++ getElems(rt)
-      // System.out.println(s"concatTag $tp -> $concatTag -> $newElems")
+      // logger.debug(s"concatTag $tp -> $concatTag -> ${newElems.mkString("\n--")}")
+      // logger.debug(s"lt $lt -> ${getElems(lt).mkString("\n--")}")
+      // logger.debug(s"rt $rt -> ${getElems(rt).mkString("\n--")}")
       structs += concatTag -> newElems
       manifestTags += tp.asInstanceOf[TypeRep[Any]] -> concatTag
     }
     // System.out.println(s"sorted ${sorted.mkString("\n")}")
   }
+
+  override def transformType[T: TypeRep]: TypeRep[Any] = {
+    val tp = implicitly[TypeRep[T]].asInstanceOf[TypeRep[Any]]
+    try {
+      manifestTags.get(tp) match {
+        case Some(tag) => new RecordType(tag, Some(tp)).asInstanceOf[TypeRep[Any]]
+        case None if !Config.specializeEngine && tp.isRecord && !tp.isInstanceOf[RecordType[_]] => new RecordType(createTag(tp), Some(tp)).asInstanceOf[TypeRep[Any]]
+        case None => super.transformType(tp)
+      }
+    } catch {
+      case ex: NullPointerException => // this means that this type is already transformed
+        super.transformType(tp)
+    }
+
+  }
+
+  override def getTag(tp: TypeRep[_]): StructTags.StructTag[Any] = {
+    manifestTags.get(tp) match {
+      case Some(v) => v
+      case None if !Config.specializeEngine && tp.isRecord && !tp.isInstanceOf[RecordType[_]] => createTag(tp)
+      case None => super.getTag(tp)
+    }
+  }
+
+  // override def createTag[T](tp: TypeRep[T], caseClassNew: Option[Def[T]] = None): StructTags.StructTag[Any] = {
+  //   if (isOperatorType(tp)) {
+  //     super.createTag(tp, caseClassNew)
+  //   } else {
+  //     super.createTag(tp, caseClassNew)
+  //   }
+  // }
 
   override def lower[T: TypeRep](node: Block[T]): to.Block[T] = {
     phase = FieldExtractionPhase
@@ -93,6 +154,43 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     computeConcatTypeEtc()
     val res = transformProgram(node)
     res
+  }
+
+  object OperatorTags {
+    val AggOp = 1
+    val PrintOp = 2
+    val ScanOp = 3
+    val SelectOp = 4
+    val SortOp = 5
+    val MapOp = 6
+    val HashJoinOp = 7
+    val MergeJoinOp = 8
+    val WindowOp = 9
+    val LeftHashSemiJoinOp = 10
+  }
+
+  // TODO refactor with StructProcessing
+  // def getRegisteredFieldsOfType[A: TypeRep]: List[String] = {
+  //   typeRep[A] match {
+  //     case rt: RecordType[_] if rt.originalType.nonEmpty => getRegisteredFieldsOfType(rt.originalType.get)
+  //     case t => getRegisteredFieldsOfType(t)
+  //   }
+  // }
+
+  // TODO refactor with StructProcessing
+  def concat_records[T: TypeRep, S: TypeRep, Res: TypeRep](elem1: Rep[T], elem2: Rep[S]): Rep[Res] = {
+    val resultType = typeRep[Res]
+    val regFields = getRegisteredFieldsOfType(elem1.tp) ++ getRegisteredFieldsOfType(elem2.tp)
+    def getFields[TR: TypeRep] = getElems(typeRep[TR] match {
+      case rt: RecordType[_] if rt.originalType.nonEmpty => rt.originalType.get
+      case t => t
+    })
+    // System.out.println(s"regFields: $regFields")
+    def fieldIsRegistered(f: StructElemInformation): Boolean = regFields.contains(f.name) || !removeUnusedFields
+    val elems1 = getFields[T].filter(fieldIsRegistered).map(x => PardisStructArg(x.name, x.mutable, field(elem1, x.name)(x.tpe)))
+    val elems2 = getFields[S].filter(fieldIsRegistered).map(x => PardisStructArg(x.name, x.mutable, field(elem2, x.name)(x.tpe)))
+    val structFields = elems1 ++ elems2
+    struct(structFields: _*)(resultType)
   }
 
   override def transformDef[T: TypeRep](node: Def[T]): to.Def[T] = node match {
@@ -130,7 +228,39 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
       val newTpe = new RecordType(concatTag, Some(tp))
       super.transformDef(PardisStruct(concatTag, structFields, Nil)(newTpe).asInstanceOf[to.Def[T]])
     }
+    case ag: AggOpNew[_, _] if !Config.specializeEngine => {
+      class A
+      val ma = ag.typeA
+      implicit val mb = ag.typeB.asInstanceOf[TypeRep[A]]
+      val maa = ma.asInstanceOf[TypeRep[Any]]
+      val marrDouble = implicitly[to.TypeRep[to.Array[to.Double]]]
 
+      // implicit val magg = {
+      //   val t = typeRep[AGGRecord[Any]].rebuild(mb).asInstanceOf[TypeRep[AGGRecord[A]]]
+      //   val tag = getClassTag(t)
+      //   System.out.println(s"tag -> $tag -> ${t.name.replace('[', '_').replace("]", "").replace(" ", "").replace(',', '_')}")
+      //   new RecordType(tag, Some(t))
+      // }
+      // System.out.println(s"magg -> $magg")
+      implicit val magg = apply(typeRep[AGGRecord[Any]].rebuild(mb)).asInstanceOf[TypeRep[AGGRecord[A]]]
+      def aggNew(key: Rep[A], values: Rep[Array[Double]]) =
+        __new(("key", false, key), ("aggs", false, values))(magg)
+      val hm = to.__newHashMap[Any, Any]()(apply(mb), apply(magg.asInstanceOf[TypeRep[Any]]))
+      val aggNums = ag.aggFuncsOutput match {
+        case Def(LiftedSeq(seq)) => unit(seq.length)
+        case _                   => throw new Exception("Couldn't compute the number of agg functions")
+      }
+      to.__newDef[AggOp[Any, Any]](
+        ("tag", false, unit(OperatorTags.AggOp)),
+        ("parent", false, apply(ag.parent)(ag.parent.tp)),
+        ("numAggs", false, aggNums),
+        ("hm", false, hm),
+        ("hm_keys", true, hm.keySet),
+        ("hm_iter_counter", true, unit(0)),
+        ("grp", false, ag.grp),
+        ("agger", false, __lambda((x: Rep[A]) => aggNew(x, __newArray[Double](ag.numAggs)))),
+        ("aggFuncsOutput", false, ag.aggFuncsOutput)).asInstanceOf[to.Def[T]]
+    }
     case ag: AggOpNew[_, _] => {
       val ma = ag.typeA
       val mb = ag.typeB
@@ -143,11 +273,30 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
         // ("keySet", true, to.Set()(apply(mb), to.overloaded2)),
         stop).asInstanceOf[to.Def[T]]
     }
+    case po: PrintOpNew[_] if !Config.specializeEngine => {
+      val ma = apply(po.typeA)
+      val maa = ma.asInstanceOf[TypeRep[Any]]
+      to.__newDef[PrintOp[Any]](
+        ("tag", false, unit(OperatorTags.PrintOp)),
+        ("parent", false, apply(po.parent)),
+        ("printFunc", false, apply(po.printFunc)),
+        ("limit", false, po.limit)).asInstanceOf[to.Def[T]]
+    }
     case po: PrintOpNew[_] => {
       val ma = po.typeA
       val maa = ma.asInstanceOf[TypeRep[Any]]
       to.__newDef[PrintOp[Any]](("numRows", true, to.unit[Int](0)),
         stop).asInstanceOf[to.Def[T]]
+    }
+    case so: ScanOpNew[_] if !Config.specializeEngine => {
+      val ma = so.typeA
+      val maa = ma.asInstanceOf[TypeRep[Any]]
+      to.__newDef[ScanOp[Any]](
+        ("tag", false, unit(OperatorTags.ScanOp)),
+        ("table_size", false, so.table.asInstanceOf[Rep[Array[Any]]].length),
+        ("i", true, to.unit[Int](0)),
+        ("record_size", false, to.sizeof()(maa)),
+        ("table", false, so.table)).asInstanceOf[to.Def[T]]
     }
     case so: ScanOpNew[_] => {
       val ma = so.typeA
@@ -155,11 +304,33 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
       to.__newDef[ScanOp[Any]](("i", true, to.unit[Int](0)),
         stop).asInstanceOf[to.Def[T]]
     }
+    case mo: MapOpNew[_] if !Config.specializeEngine => {
+      val ma = mo.typeA
+      val maa = ma.asInstanceOf[TypeRep[Any]]
+      val mapNums = mo.mapFuncsOutput match {
+        case Def(LiftedSeq(seq)) => unit(seq.length)
+        case _                   => throw new Exception("Couldn't compute the number of map functions")
+      }
+      to.__newDef[MapOp[Any]](
+        ("tag", false, unit(OperatorTags.MapOp)),
+        ("parent", false, apply(mo.parent)),
+        ("mapNums", false, mapNums),
+        ("mapFuncs", false, apply(mo.mapFuncsOutput))).asInstanceOf[to.Def[T]]
+      // throw new Exception("MapOp not supported yet for a non-specialized engine!")
+    }
     case mo: MapOpNew[_] => {
       val ma = mo.typeA
       val maa = ma.asInstanceOf[TypeRep[Any]]
       to.__newDef[MapOp[Any]](
         stop).asInstanceOf[to.Def[T]]
+    }
+    case so: SelectOpNew[_] if !Config.specializeEngine => {
+      val ma = so.typeA
+      val maa = ma.asInstanceOf[TypeRep[Any]]
+      to.__newDef[SelectOp[Any]](
+        ("tag", false, unit(OperatorTags.SelectOp)),
+        ("parent", false, apply(so.parent)),
+        ("selectPred", false, so.selectPred)).asInstanceOf[to.Def[T]]
     }
     case so: SelectOpNew[_] => {
       val ma = so.typeA
@@ -167,12 +338,50 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
       to.__newDef[SelectOp[Any]](
         stop).asInstanceOf[to.Def[T]]
     }
+    case so: SortOpNew[_] if !Config.specializeEngine => {
+      val ma = so.typeA
+      val maa = ma.asInstanceOf[TypeRep[Any]]
+      to.__newDef[SortOp[Any]](
+        ("tag", false, unit(OperatorTags.SortOp)),
+        ("parent", false, apply(so.parent)),
+        ("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](apply(so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]]))(apply(maa)))(apply(maa)))).asInstanceOf[to.Def[T]]
+    }
     case so: SortOpNew[_] => {
       val ma = so.typeA
       val maa = ma.asInstanceOf[TypeRep[Any]]
       to.__newDef[SortOp[Any]](
         ("sortedTree", false, to.__newTreeSet2(to.Ordering[Any](apply(so.orderingFunc.asInstanceOf[Rep[(Any, Any) => Int]]))(apply(maa)))(apply(maa))),
         stop).asInstanceOf[to.Def[T]]
+    }
+    case ho: HashJoinOpNew1[_, _, _] if !Config.specializeEngine => {
+      val ma = ho.typeA
+      val mb = ho.typeB
+      val mc = ho.typeC
+      trait A extends sc.pardis.shallow.Record
+      trait B extends sc.pardis.shallow.Record
+      trait Res
+      val mba = mb.asInstanceOf[TypeRep[Any]]
+      type HashJoinOpTp = HashJoinOp[sc.pardis.shallow.Record, sc.pardis.shallow.Record, Any]
+      val tp = ho.tp.asInstanceOf[TypeRep[HashJoinOpTp]]
+      val marrBuffA = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(ma).asInstanceOf[TypeRep[Any]]
+      val mCompRec = implicitly[TypeRep[DynamicCompositeRecord[sc.pardis.shallow.Record, sc.pardis.shallow.Record]]].rebuild(ma, mb).asInstanceOf[TypeRep[Any]]
+      implicit val tpA = apply(ma).asInstanceOf[TypeRep[A]]
+      implicit val tpB = apply(mb).asInstanceOf[TypeRep[B]]
+      implicit val tpRes = apply(mCompRec).asInstanceOf[TypeRep[Res]]
+      val hm = to.__newMultiMap[Any, Any]()(apply(mc), apply(ma.asInstanceOf[TypeRep[Any]]))
+      System.out.println(s"tp for hm: ${hm.tp}")
+      to.__newDef[HashJoinOpTp](
+        ("tag", false, unit(OperatorTags.HashJoinOp)),
+        ("leftParent", false, apply(ho.leftParent)),
+        ("rightParent", false, apply(ho.rightParent)),
+        ("hm", false, hm),
+        ("joinCond", false, apply(ho.joinCond)),
+        ("leftHash", false, apply(ho.leftHash)),
+        ("rightHash", false, apply(ho.rightHash)),
+        ("concatenator", false, __lambda((x: Rep[A], y: Rep[B]) => {
+          concat_records[A, B, Res](x, y)
+        })))(tp).asInstanceOf[to.Def[T]]
+
     }
     case ho: HashJoinOpNew1[_, _, _] => {
       val ma = ho.typeA
@@ -188,6 +397,26 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
         stop)(tp).asInstanceOf[to.Def[T]]
 
     }
+    case wo: WindowOpNew[_, _, _] if !Config.specializeEngine => {
+      trait A
+      trait B
+      trait C
+      trait Wnd
+      implicit val ma = wo.typeA.asInstanceOf[TypeRep[A]]
+      implicit val mb = apply(wo.typeB).asInstanceOf[TypeRep[B]]
+      implicit val mc = apply(wo.typeC).asInstanceOf[TypeRep[C]]
+      val mwinRecBC = implicitly[TypeRep[WindowRecord[Any, Any]]].rebuild(wo.typeB, wo.typeC).asInstanceOf[TypeRep[Any]]
+      implicit val tpWnd = apply(mwinRecBC).asInstanceOf[TypeRep[Wnd]]
+      def wndNew(key: Rep[B], wnd: Rep[C]): Rep[Wnd] =
+        __new(("key", false, key), ("wnd", false, wnd))(apply(mwinRecBC)).asInstanceOf[Rep[Wnd]]
+      to.__newDef[WindowOp[Any, Any, Any]](
+        ("tag", false, unit(OperatorTags.WindowOp)),
+        ("parent", false, apply(wo.parent)),
+        ("grp", false, apply(wo.grp)),
+        ("wndFunction", false, apply(wo.wndf)),
+        ("wndFactory", false, __lambda((x: Rep[B], y: Rep[C]) => wndNew(x, y))),
+        ("hm", false, to.__newMultiMap[Any, Any]()(apply(mb), apply(ma)))).asInstanceOf[to.Def[T]]
+    }
     case wo: WindowOpNew[_, _, _] => {
       val ma = wo.typeA
       val mb = wo.typeB
@@ -199,6 +428,21 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
         // ("hm", false, to.__newHashMap3[Any, Any](wo.grp.asInstanceOf[Rep[Any => Any]], newSize * 100)(apply(mb), apply(ma))),
         ("hm", false, to.__newMultiMap[Any, Any]()(apply(mb), apply(ma))),
         stop).asInstanceOf[to.Def[T]]
+    }
+    case lho: LeftHashSemiJoinOpNew[_, _, _] if !Config.specializeEngine => {
+      val ma = lho.typeA
+      val mb = lho.typeB
+      val mc = lho.typeC
+      val maa = ma.asInstanceOf[TypeRep[Any]]
+      val marrBuffB = implicitly[TypeRep[ArrayBuffer[Any]]].rebuild(mb).asInstanceOf[TypeRep[Any]]
+      to.__newDef[LeftHashSemiJoinOp[Any, Any, Any]](
+        ("tag", false, unit(OperatorTags.LeftHashSemiJoinOp)),
+        ("leftParent", false, apply(lho.leftParent)),
+        ("rightParent", false, apply(lho.rightParent)),
+        ("hm", false, to.__newMultiMap[Any, Any]()(apply(mc), apply(mb))),
+        ("joinCond", false, apply(lho.joinCond)),
+        ("leftHash", false, apply(lho.leftHash)),
+        ("rightHash", false, apply(lho.rightHash))).asInstanceOf[to.Def[T]]
     }
     case lho: LeftHashSemiJoinOpNew[_, _, _] => {
       val ma = lho.typeA
@@ -261,6 +505,28 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
         stop,
         ("defaultB", false, dflt))(tp).asInstanceOf[to.Def[T]]
     }
+    case mo: MergeJoinOpNew[_, _] if !Config.specializeEngine => {
+      class A
+      class B
+      trait Res
+      implicit val ma = apply(mo.typeA).asInstanceOf[TypeRep[A]]
+      implicit val mb = apply(mo.typeB).asInstanceOf[TypeRep[B]]
+      implicit val mRes = apply(implicitly[TypeRep[DynamicCompositeRecord[sc.pardis.shallow.Record, sc.pardis.shallow.Record]]].rebuild(mo.typeA, mo.typeB)).asInstanceOf[TypeRep[Res]]
+      type MergeJoinOpTp = MergeJoinOp[sc.pardis.shallow.Record, sc.pardis.shallow.Record]
+      val tp = mo.tp.asInstanceOf[TypeRep[MergeJoinOpTp]]
+      import to._
+      to.__newDef[MergeJoinOpTp](
+        ("tag", false, unit[Int](OperatorTags.MergeJoinOp)),
+        ("leftParent", false, apply(mo.leftParent)),
+        ("rightParent", false, apply(mo.rightParent)),
+        ("joinCond", false, apply(mo.joinCond)),
+        ("leftRelation", false, to.__newArray[A](unit(1 << 25))),
+        ("leftIndex", true, to.unit[Int](0)),
+        ("leftSize", true, to.unit[Int](0)),
+        ("concatenator", false, __lambda((x: Rep[A], y: Rep[B]) => {
+          concat_records[A, B, Res](x, y)
+        })))(tp).asInstanceOf[to.Def[T]]
+    }
     case mo: MergeJoinOpNew[_, _] => {
       class A
       class B
@@ -289,18 +555,29 @@ class RecordLowering(override val from: QueryEngineExp, override val to: QueryEn
     def unapply[T](exp: Def[T]): Option[Def[T]] =
       exp match {
         case _: ConstructorDef[_] if exp.tp.isRecord => Some(exp)
+        // case _ if !Config.specializeEngine && isOperatorType(exp.tp) => Some(exp)
         case _                                       => None
       }
   }
 
-  object LoweredNew extends RepExtractor {
-    def unapply[T](exp: Rep[T]): Option[Rep[T]] = exp.tp match {
-      case x if x.isRecord => Some(exp)
+  def isOperatorType[T](tp: PardisType[T]): Boolean =
+    OperatorsType.unapply(tp).nonEmpty
+
+  object OperatorsType {
+    def unapply[T](tp: PardisType[T]): Option[PardisType[T]] = tp match {
       case LeftHashSemiJoinOpType(_, _, _) | HashJoinOpType(_, _, _) | WindowOpType(_, _, _) |
         AggOpType(_, _) | PrintOpType(_) | ScanOpType(_) | MapOpType(_) | SelectOpType(_) |
         SortOpType(_) | NestedLoopsJoinOpType(_, _) | SubquerySingleResultType(_) | ViewOpType(_) |
-        HashJoinAntiType(_, _, _) | LeftOuterJoinOpType(_, _, _) | MergeJoinOpType(_, _) => Some(exp)
+        HashJoinAntiType(_, _, _) | LeftOuterJoinOpType(_, _, _) | MergeJoinOpType(_, _) => Some(tp)
       case _ => None
+    }
+  }
+
+  object LoweredNew extends RepExtractor {
+    def unapply[T](exp: Rep[T]): Option[Rep[T]] = exp.tp match {
+      case x if x.isRecord  => Some(exp)
+      case OperatorsType(_) => Some(exp)
+      case _                => None
     }
   }
 }

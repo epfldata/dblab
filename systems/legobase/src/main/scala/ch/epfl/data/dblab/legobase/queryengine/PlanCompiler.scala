@@ -2,15 +2,16 @@ package ch.epfl.data
 package dblab
 package queryengine
 
-import ch.epfl.data.dblab.schema._
-import ch.epfl.data.sc.pardis.ir.Constant
-import ch.epfl.data.sc.pardis.types.{ PardisType, RecordType }
-import ch.epfl.data.sc.pardis.types.PardisTypeImplicits._
-import ch.epfl.data.sc.pardis.shallow.Record
+import legobase.deep.quasi._
+import dblab.schema._
+import sc.pardis.ir.Constant
+import sc.pardis.types.{ PardisType, RecordType }
+import sc.pardis.types.PardisTypeImplicits._
+import sc.pardis.shallow.Record
 import legobase.deep.LegoBaseQueryEngineExp
-import ch.epfl.data.sc.pardis.deep.scalalib.ArrayOps
+import sc.pardis.deep.scalalib.ArrayOps
 
-import ch.epfl.data.dblab.storagemanager.{ Loader => ShallowLoader }
+import dblab.storagemanager.{ Loader => ShallowLoader }
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
 import frontend.parser.OperatorAST._
@@ -21,11 +22,15 @@ import config.Config
  * The main module for compiling query plans.
  *
  * @author Daniel Espino
+ * @author Amir Shaikhha
  */
 object PlanCompiler { this: LegoBaseQueryEngineExp =>
   type Rep[T] = LegoBaseQueryEngineExp#Rep[T]
   val context = new LegoBaseQueryEngineExp {}
-  import context._
+  val SqdContext = new SquidLegoBase(context)
+  import context.{ Double => _, Int => _, _ }
+  import SqdContext.Sqd.Predef._
+  import SqdContext.Sqd.Quasicodes._
 
   val activeViews = new scala.collection.mutable.HashMap[String, ViewOp[_]]()
 
@@ -35,7 +40,7 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
    * @param query the input operator tree
    * @param schema the input schema
    */
-  def executeQuery(operatorTree: QueryPlanTree, schema: Schema): Unit = {
+  def executeQuery(operatorTree: QueryPlanTree, schema: Schema, queryName: String): Unit = {
     def block = {
       // Execute main query plan tree
       val qp = queryToOperator(operatorTree, schema).asInstanceOf[Rep[PrintOp[Record]]]
@@ -46,10 +51,11 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
     }
 
     import legobase.compiler._
-    val settings = new Settings(List("-scala", "+no-sing-hm"))
+    val settings = new Settings(List("-scala", "+no-sing-hm", "-no-spec-loader"))
     val validatedSettings = settings.validate()
+    validatedSettings.init()
     val compiler = new LegoCompiler(context, validatedSettings, schema, "ch.epfl.data.dblab.experimentation.tpch.TPCHRunner") {
-      override def outputFile = "out"
+      override def outputFile = queryName
     }
     compiler.compile(block)
   }
@@ -148,8 +154,10 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
             addition[Double](currAgg, e.asRep[Double])
           case Min(e) =>
             val newMin = e.asRep[Double]
-            __ifThenElse((currAgg __== unit(0)) || newMin < currAgg, newMin, currAgg) // TODO -- Assumes that 0 cannot occur naturally in the data as a min value. FIXME
-          case CountAll()       => currAgg + unit[Int](1)
+            ir"if($currAgg == 0 || $newMin < $currAgg) $newMin else $currAgg".toRep // TODO -- Assumes that 0 cannot occur naturally in the data as a min value. FIXME
+          // ir"if($currAgg == 0 || $newMin < $currAgg) 1.0 else 2.0".rep.asInstanceOf[this.Rep[Double]]
+          // __ifThenElse((currAgg __== unit(0)) || newMin < currAgg, newMin, currAgg)
+          case CountAll()       => ir"$currAgg + 1".toRep
           // case CountExpr(expr) => {
           //   // From http://www.techonthenet.com/sql/count.php: "Not everyone realizes this, but the SQL COUNT function will only include the
           //   // records in the count where the value of expression in COUNT(expression) is NOT NULL".
@@ -232,12 +240,17 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
       // otherwise we check the next expression.
       // TODO: a expression shouldn't be computed if a previous one has already
       // returned != 0
-      val result = expressions.foldLeft(unit(0)) { (acc, exp) =>
-        __ifThenElse[Int](acc __!= unit(0), acc, exp)
+      // val result = expressions.foldLeft(unit(0)) { (acc, exp) =>
+      //   __ifThenElse[Int](acc __!= unit(0), acc, exp)
+      // }
+      // TODO the removal of case requires a fix in Squid
+      val result = expressions.foldLeft(ir"0".asInstanceOf[IR[Int, AnyRef]]) { (acc, exp) =>
+        ir"if($acc != 0) $acc else $exp"
       }
 
       // Break ties arbitrarily
-      __ifThenElse[Int](result __!= unit(0), result, infix_hashCode(kv1) - infix_hashCode(kv2))
+      // __ifThenElse[Int](result __!= unit(0), result, infix_hashCode(kv1) - infix_hashCode(kv2))
+      ir"if($result != 0) $result else $kv1.## - $kv2.##".toRep
     }(parentOp.resultType.pardisType, parentOp.resultType.pardisType, typeInt))(node.resultType.pardisType)
   }
 
@@ -275,6 +288,11 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
       }
       if (name != fieldNames.last) printf(unit("|"))
     }
+    // TODO requires a fix in Squid
+    //   if (name != fieldNames.last) ir"""printf("|")"""
+    // }
+
+    // ir"""printf("\n")""".toRep
 
     printf(unit("\n"))
   }
@@ -372,13 +390,15 @@ object PlanCompiler { this: LegoBaseQueryEngineExp =>
         override def getField[T: PardisType](qualifier: Option[String], fieldName: String): Option[Rep[T]] = {
           val nameWithQualifier = qualifier.getOrElse("") + fieldName
           val field = if (fieldNames.contains(nameWithQualifier)) nameWithQualifier else fieldName
+          // System.out.println(s"**$field , $record : ${record.tp.getClass}")
           fields.get(field).map {
             _ match {
               case SimpleField(tp, _) =>
-                record_select(record, field)(typeRecord, tp).asInstanceOf[Rep[T]]
+                record_select(record, field)(record.tp, tp).asInstanceOf[Rep[T]]
               case AggKeyField(tp, _) =>
                 val rec = record.asInstanceOf[Rep[AGGRecord[Record]]]
-                record_select(rec.key, field)(typeRecord, tp).asInstanceOf[Rep[T]]
+                // System.out.println(s"***$field , $record : $tp")
+                record_select(rec.key, field)(record.tp, tp).asInstanceOf[Rep[T]]
               case AggResultField(index, tp, _) if tp == typeInt =>
                 val rec = record.asInstanceOf[Rep[AGGRecord[Record]]]
                 rec.aggs(unit(index)).toInt.asInstanceOf[Rep[T]]

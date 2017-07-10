@@ -34,10 +34,10 @@ def genc(outputDir: String, compareDir: Option[String] = None, gen: Boolean = tr
 		or see this: http://stackoverflow.com/questions/13335010/redirect-string-to-scala-sys-process
 	  */
 	  
-	  "echo project lego-compiler" #> in !
+	  "echo project legobase" #> in !
 	  
 	  for (i <- queryNums)
-	  	s"echo run DATA_FOLDER 1 Q$i -optimal" #>> in !
+	  	s"echo run /mnt/ramdisk/tpch 8 Q$i -optimal" #>> in !
 	  
 	  "echo exit" #>> in !
 	  

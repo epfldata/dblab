@@ -140,6 +140,7 @@ object SQLAST {
 
   // Expressions
   trait Expression extends SQLNode {
+    // FIXME why TypeTag[_] ?
     private var tpe: TypeTag[_] = null
     val isAggregateOpExpr = true
     def tp = tpe match {

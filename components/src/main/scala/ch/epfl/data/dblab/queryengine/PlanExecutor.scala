@@ -440,7 +440,8 @@ object PlanExecutor {
 
   def convertOperator(node: OperatorNode): Operator[_] = node match {
     case ScanOpNode(table, _, _) =>
-      new ScanOp(Loader.loadUntypedTable(table))
+      // new ScanOp(Loader.loadUntypedTable(table))
+      new ScanOp(Loader.loadTablePage(table))
     case SelectOpNode(parent, cond, _) =>
       createSelectOperator(parent, cond)
     case JoinOpNode(leftParent, rightParent, joinCond, joinType, leftAlias, rightAlias) =>

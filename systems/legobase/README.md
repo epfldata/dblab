@@ -18,6 +18,23 @@ by following these steps:
 
 sbt takes care of fetching the necessary dependencies. 
 
+Experimental OLAP Engine
+========================
+
+You can run the fully functional OLAP engine as follows:
+
+`legobase/olap-engine`
+
+Below you can find an example scenario of using this OLAP engine:
+
+```
+warm-up
+load sf0.1/ experimentation/tpch-sql/dss.ddl experimentation/tpch-sql/dss.ri
+run experimentation/tpch-sql/Q6.sql
+compile experimentation/tpch-sql/Q6.sql
+```
+
+
 
 Testing
 =======

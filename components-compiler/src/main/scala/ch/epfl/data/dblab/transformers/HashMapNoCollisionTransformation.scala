@@ -87,6 +87,6 @@ class HashMapNoCollisionTransformation(val LB: QueryEngineExp, val schema: Schem
     case Some(fieldInfo) =>
       unit(schema.stats.getDistinctAttrValues(fieldInfo.field) * 2)
     case _ =>
-      unit(1 << 21)
+      unit(schema.stats.getLargestCardinality().toInt)
   }
 }

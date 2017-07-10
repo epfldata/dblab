@@ -9,6 +9,5 @@ import dblab.deep.experimentation.tpch._
 
 /** A polymophic embedding cake which chains all cakes needed for the LegoBase query engine */
 abstract class LegoBaseQueryEngineExp extends QueryEngineExp
-  with SynthesizedQueriesComponent
   with QueriesImplementations
   with TPCHLoaderInlined

@@ -10,8 +10,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-typedef int numeric_int_t;
+typedef long long numeric_int_t;
+// TODO needs to be a struct with a scale parameter for a more precise implementation.
+typedef long long decimal_t; 
 typedef int boolean_t;
+
+#define true 1
+#define false 0
 
 unsigned long long timeval_subtract(struct timeval *result, struct timeval *t2, struct timeval *t1) {
    	int diff = (t2->tv_usec + 1000000 * t2->tv_sec) - (t1->tv_usec + 1000000 * t1->tv_sec);
@@ -52,6 +57,11 @@ static const double fractions[] = {
 	1.0e-16, 1.0e-17, 1.0e-18, 1.0e-19
 };
 
+static const numeric_int_t pow10[] = {
+	1, 10,  100, 1000, 10 * 1000, 100 * 1000,
+	1000 * 1000, 10 * 1000 * 1000, 100 * 1000 * 1000
+};
+
 char* strntod_unchecked(char *s, double* num)
 {
 	int n = 0;
@@ -84,6 +94,38 @@ char* strntod_unchecked(char *s, double* num)
 	return s;
 }
 
+char* strntodec_unchecked(char *s, decimal_t* num, int scale)
+{
+	int n = 0;
+	int d = 0;
+	int dlen = 0;
+	int sign = 1;
+
+	if (*s == '-') {
+		s++;
+		sign = -1;
+	}
+
+	while (*s != '|' && *s != '\n' && *s != '.') {
+		n *= 10;
+		n += *s++ - '0';
+	}
+
+	if (*s != '|' && *s != '\n') {
+		s++;
+		while (*s != '|' && *s != '\n') {
+			d *= 10;
+			d += *s++ - '0';
+			dlen++;
+		}
+	}
+
+	s++; // skip '|'
+
+	*num = sign * (n * pow10[scale] + d * pow10[scale - dlen]);
+	return s;
+}
+
 #define pointer_assign(x, y) (*x = y)
 
 #define pointer_add(x, y) (x + y)
@@ -93,7 +135,7 @@ char* strntod_unchecked(char *s, double* num)
 typedef GHashTable LGHashTable;
 typedef GList LGList;
 
-#define MAX_NUM_WORDS 15
+#define MAX_NUM_WORDS 16
 #define MAX_WORD_LENGTH 16
 
 char** tokenizeString(char *sentence) {
@@ -114,6 +156,20 @@ char** tokenizeString(char *sentence) {
   }
 
   return words;
+}
+
+struct timeval tic() {
+	struct timeval res = (struct timeval){0};
+	gettimeofday(&res, NULL);
+	return res;
+}
+
+unsigned long long toc(struct timeval* start) {
+	struct timeval end = (struct timeval){0};
+	gettimeofday(&end, NULL);
+	struct timeval tmp = (struct timeval){0};
+	unsigned long long result = timeval_subtract(&tmp, &end, start);
+	return result;
 }
 
 #endif

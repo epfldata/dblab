@@ -28,6 +28,18 @@ case class VarCharType(maxLength: Int) extends PardisType[String] {
 }
 
 /**
+ * Specifies the type of fixed-point decimal attributes.
+ *
+ * The type contains the number of digits for the fractional part.
+ */
+case class DecimalType(length: Int) extends PardisType[Double] {
+  def rebuild(newArguments: PardisType[_]*) = DecimalType(length)
+  val name = "Double"
+  val typeArguments = Nil
+  val typeTag = tag[Double]
+}
+
+/**
  * Specifies the type of tables.
  *
  * The type contains the schema and table information.
