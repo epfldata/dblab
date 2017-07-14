@@ -28,6 +28,9 @@ object SQLParser extends StandardTokenParsers {
     }
   }
 
+  // TODO maybe we can define parseStream which 
+  // first parses CREATE STREAM statements and then the select statement
+
   def parseQuery: Parser[TopLevelStatement] = (
     parseSelectStatement ~ ((("UNION" ~ "ALL".?) | "INTERSECT" | "EXCEPT" | ";") ~ parseQuery.?).? ^^ {
       case stmt ~ None => stmt

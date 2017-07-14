@@ -29,7 +29,8 @@ object QueryInterpreter {
    *
    * @param args the setting arguments passed through command line
    */
-  def main(args: Array[String]) {
+  // FIXME revert the name back to main
+  def main2(args: Array[String]) {
     if (args.size < 1) {
       System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
       System.out.println("USAGE: run <data_folder> <list of DDL files and SQL queries>")
