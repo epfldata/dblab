@@ -36,7 +36,7 @@ object Driver {
 
     for (q <- args) {
       // TODO change to parseStream
-      val sqlParserTree = SQLParser.parse(scala.io.Source.fromFile(q).mkString)
+      val sqlParserTree = SQLParser.parseStream(scala.io.Source.fromFile(q).mkString)
       if (Config.debugQueryPlan)
         System.out.println("Original SQL Parser Tree:\n" + sqlParserTree + "\n\n")
     }

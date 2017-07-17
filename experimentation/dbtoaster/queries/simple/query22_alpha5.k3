@@ -1,0 +1,309 @@
+--------------------- SCHEMA ----------------------
+CREATE STREAM ORDERS(ORDERS_ORDERKEY int, ORDERS_CUSTKEY int, ORDERS_ORDERSTATUS string, ORDERS_TOTALPRICE float, ORDERS_ORDERDATE date, ORDERS_ORDERPRIORITY string, ORDERS_CLERK string, ORDERS_SHIPPRIORITY int, ORDERS_COMMENT string)
+  FROM FILE '../../experiments/data/tpch/big/orders.csv' LINE DELIMITED
+  CSV(delimiter := '|');
+
+CREATE STREAM CUSTOMER(CUSTOMER_CUSTKEY int, CUSTOMER_NAME string, CUSTOMER_ADDRESS string, CUSTOMER_NATIONKEY int, CUSTOMER_PHONE string, CUSTOMER_ACCTBAL float, CUSTOMER_MKTSEGMENT string, CUSTOMER_COMMENT string)
+  FROM FILE '../../experiments/data/tpch/big/customer.csv' LINE DELIMITED
+  CSV(delimiter := '|');
+--------------------- MAPS ----------------------
+NATION(int)[][NATION_NATIONKEY : int,NATION_NAME : string,NATION_REGIONKEY : int,NATION_COMMENT : string];
+
+REGION(int)[][REGION_REGIONKEY : int,REGION_NAME : string,REGION_COMMENT : string];
+
+QUERY22(float)[][C1_NATIONKEY : int];
+
+QUERY22_mCUSTOMER1(float)[][C1_CUSTKEY : int,C1_NATIONKEY : int,C1_ACCTBAL : float];
+
+QUERY22_mCUSTOMER1_L2_1(float)[][];
+
+QUERY22_mCUSTOMER1_L3_1(int)[][C1_CUSTKEY : int];
+
+-------------------- QUERIES --------------------
+QUERY QUERY22 := $QUERY22;
+
+-------------------- PATTERNS --------------------
+/*
+QUERY22_mCUSTOMER1: out{} , out{0:ORDERS_CUSTKEY};
+QUERY22: out{};
+*/
+--------------------- TRIGGERS ----------------------
+ON + ORDERS(ORDERS_ORDERKEY, ORDERS_CUSTKEY, ORDERS_ORDERSTATUS, ORDERS_TOTALPRICE, ORDERS_ORDERDATE, ORDERS_ORDERPRIORITY, ORDERS_CLERK, ORDERS_SHIPPRIORITY, ORDERS_COMMENT)
+{
+if( Member($QUERY22_mCUSTOMER1_L3_1,[ORDERS_CUSTKEY:int]) )
+  Iterate(
+    Lambda(<C1_NATIONKEY:int; __prod_ret_1_11:float>) {
+      if( Member($QUERY22,[C1_NATIONKEY:int]) )
+        Apply(
+          Lambda(__cse_var_1:int) {
+            PCValueUpdate($QUERY22,[],[C1_NATIONKEY:int],
+              ((Lookup($QUERY22,[C1_NATIONKEY:int])) + 
+                ((__prod_ret_1_11:float * 
+                   (((Apply(
+                        Lambda(<__sql_inline_agg_1:int; prod:int>) {
+                          (0 + prod:int)},
+                        <0;(1 * ((((__cse_var_1:int + 1)) == 0)))>)) + 
+                      (((Apply(
+                           Lambda(<__sql_inline_agg_1:int; prod:int>) {
+                             (0 + prod:int)},
+                           <0;(1 * ((__cse_var_1:int == 0)))>)) * -1))))))))},
+          Lookup($QUERY22_mCUSTOMER1_L3_1,[ORDERS_CUSTKEY:int]))
+      else
+        Apply(
+          Lambda(__cse_var_1:int) {
+            PCValueUpdate($QUERY22,[],[C1_NATIONKEY:int],
+              (__prod_ret_1_11:float * 
+                (((Apply(
+                     Lambda(<__sql_inline_agg_1:int; prod:int>) {(0 + prod:int)
+                       },<0;(1 * ((((__cse_var_1:int + 1)) == 0)))>)) + 
+                   (((Apply(
+                        Lambda(<__sql_inline_agg_1:int; prod:int>) {
+                          (0 + prod:int)},<0;(1 * ((__cse_var_1:int == 0)))>))
+                      * -1))))))},
+          Lookup($QUERY22_mCUSTOMER1_L3_1,[ORDERS_CUSTKEY:int]))},
+    GroupByAggregate(
+      Lambda(<ORDERS_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; map_ret:float>,
+        __accv_1:float) {
+        (__accv_1:float + 
+          ((((1 * map_ret:float)) * 
+             ((C1_ACCTBAL:float < $QUERY22_mCUSTOMER1_L2_1)))))},0.,
+      Lambda(<ORDERS_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; map_ret:float>) 
+        {C1_NATIONKEY:int},
+      Slice($QUERY22_mCUSTOMER1,[C1_CUSTKEY => (ORDERS_CUSTKEY:int);])))
+else
+  Iterate(
+    Lambda(<C1_NATIONKEY:int; __prod_ret_1_11:float>) {
+      if( Member($QUERY22,[C1_NATIONKEY:int]) )
+        PCValueUpdate($QUERY22,[],[C1_NATIONKEY:int],
+          ((Lookup($QUERY22,[C1_NATIONKEY:int])) + 
+            ((__prod_ret_1_11:float * 
+               (((Apply(
+                    Lambda(<__sql_inline_agg_1:int; prod:int>) {(0 + prod:int)},
+                    <0;(1 * ((1 == 0)))>)) + 
+                  (((Apply(
+                       Lambda(<__sql_inline_agg_1:int; prod:int>) {
+                         (0 + prod:int)},<0;(1 * ((0 == 0)))>)) * -1))))))))
+      else
+        PCValueUpdate($QUERY22,[],[C1_NATIONKEY:int],
+          (__prod_ret_1_11:float * 
+            (((Apply(
+                 Lambda(<__sql_inline_agg_1:int; prod:int>) {(0 + prod:int)},
+                 <0;(1 * ((1 == 0)))>)) + 
+               (((Apply(
+                    Lambda(<__sql_inline_agg_1:int; prod:int>) {(0 + prod:int)},
+                    <0;(1 * ((0 == 0)))>)) * -1))))))},
+    GroupByAggregate(
+      Lambda(<ORDERS_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; map_ret:float>,
+        __accv_1:float) {
+        (__accv_1:float + 
+          ((((1 * map_ret:float)) * 
+             ((C1_ACCTBAL:float < $QUERY22_mCUSTOMER1_L2_1)))))},0.,
+      Lambda(<ORDERS_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; map_ret:float>) 
+        {C1_NATIONKEY:int},
+      Slice($QUERY22_mCUSTOMER1,[C1_CUSTKEY => (ORDERS_CUSTKEY:int);])));
+
+if( Member($QUERY22_mCUSTOMER1_L3_1,[ORDERS_CUSTKEY:int]) )
+  PCValueUpdate($QUERY22_mCUSTOMER1_L3_1,[],[ORDERS_CUSTKEY:int],
+    ((Lookup($QUERY22_mCUSTOMER1_L3_1,[ORDERS_CUSTKEY:int])) + 1))
+else
+  PCValueUpdate($QUERY22_mCUSTOMER1_L3_1,[],[ORDERS_CUSTKEY:int],1);
+
+}
+
+ON - ORDERS(ORDERS_ORDERKEY, ORDERS_CUSTKEY, ORDERS_ORDERSTATUS, ORDERS_TOTALPRICE, ORDERS_ORDERDATE, ORDERS_ORDERPRIORITY, ORDERS_CLERK, ORDERS_SHIPPRIORITY, ORDERS_COMMENT)
+{
+Apply(
+  Lambda(__cse_var_3:Collection(<int; float>)) {
+    Apply(
+      Lambda(__cse_var_2:Collection(<int; float>)) {
+        Iterate(
+          Lambda(<C1_NATIONKEY:int; sum:float>) {
+            if( Member($QUERY22,[C1_NATIONKEY:int]) )
+              PCValueUpdate($QUERY22,[],[C1_NATIONKEY:int],
+                ((Lookup($QUERY22,[C1_NATIONKEY:int])) + sum:float))
+            else
+              PCValueUpdate($QUERY22,[],[C1_NATIONKEY:int],sum:float)},
+          Combine{__cse_var_3:Collection(<int; float>);
+            __cse_var_2:Collection(<int; float>)})},
+      Map(
+        Lambda(<C1_NATIONKEY:int; __prod_ret_1_31:float>) {
+          <C1_NATIONKEY:int;(__prod_ret_1_31:float * -1)>},
+        GroupByAggregate(
+          Lambda(<__sql_inline_agg_2:float; __sql_inline_agg_1:int; C1_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; __prod_ret_1_27:float>,
+            __accv_5:float) {
+            if( Member($QUERY22_mCUSTOMER1_L3_1,[C1_CUSTKEY:int]) )
+              (__accv_5:float + 
+                ((((__prod_ret_1_27:float * 
+                     (((Lookup($QUERY22_mCUSTOMER1_L3_1,[C1_CUSTKEY:int])) == 
+                        __sql_inline_agg_1:int)))) * 
+                   ((C1_ACCTBAL:float < __sql_inline_agg_2:float)))))
+            else
+              (__accv_5:float + 
+                ((((__prod_ret_1_27:float * ((0 == __sql_inline_agg_1:int)))) * 
+                   ((C1_ACCTBAL:float < __sql_inline_agg_2:float)))))},
+          0.,
+          Lambda(<__sql_inline_agg_2:float; __sql_inline_agg_1:int; C1_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; __prod_ret_1_27:float>) 
+            {C1_NATIONKEY:int},
+          Apply(
+            Lambda(<__sql_inline_agg_2:float; __sql_inline_agg_1:int; __prod_ret_1_25:int>) 
+              {
+              Map(
+                Lambda(<C1_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; __prod_ret_2_26:float>) 
+                  {
+                  <__sql_inline_agg_2:float;__sql_inline_agg_1:int;
+                    C1_CUSTKEY:int;C1_NATIONKEY:int;C1_ACCTBAL:float;
+                    (__prod_ret_1_25:int * __prod_ret_2_26:float)>},
+                $QUERY22_mCUSTOMER1)},<$QUERY22_mCUSTOMER1_L2_1;0;1>))))},
+  GroupByAggregate(
+    Lambda(<__sql_inline_agg_2:float; __sql_inline_agg_1:int; C1_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; __prod_ret_1_19:float>,
+      __accv_4:float) {
+      if( Member($QUERY22_mCUSTOMER1_L3_1,[C1_CUSTKEY:int]) )
+        (__accv_4:float + 
+          ((((__prod_ret_1_19:float * 
+               (((((Lookup($QUERY22_mCUSTOMER1_L3_1,[C1_CUSTKEY:int])) + 
+                    ((((ORDERS_CUSTKEY:int == C1_CUSTKEY:int)) * -1)))) == 
+                  __sql_inline_agg_1:int)))) * 
+             ((C1_ACCTBAL:float < __sql_inline_agg_2:float)))))
+      else
+        (__accv_4:float + 
+          ((((__prod_ret_1_19:float * 
+               ((((((ORDERS_CUSTKEY:int == C1_CUSTKEY:int)) * -1)) == 
+                  __sql_inline_agg_1:int)))) * 
+             ((C1_ACCTBAL:float < __sql_inline_agg_2:float)))))},0.,
+    Lambda(<__sql_inline_agg_2:float; __sql_inline_agg_1:int; C1_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; __prod_ret_1_19:float>) 
+      {C1_NATIONKEY:int},
+    Apply(
+      Lambda(<__sql_inline_agg_2:float; __sql_inline_agg_1:int; __prod_ret_1_17:int>) 
+        {
+        Map(
+          Lambda(<C1_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; __prod_ret_2_18:float>) 
+            {
+            <__sql_inline_agg_2:float;__sql_inline_agg_1:int;C1_CUSTKEY:int;
+              C1_NATIONKEY:int;C1_ACCTBAL:float;
+              (__prod_ret_1_17:int * __prod_ret_2_18:float)>},
+          $QUERY22_mCUSTOMER1)},<$QUERY22_mCUSTOMER1_L2_1;0;1>)));
+
+if( Member($QUERY22_mCUSTOMER1_L3_1,[ORDERS_CUSTKEY:int]) )
+  PCValueUpdate($QUERY22_mCUSTOMER1_L3_1,[],[ORDERS_CUSTKEY:int],
+    ((Lookup($QUERY22_mCUSTOMER1_L3_1,[ORDERS_CUSTKEY:int])) + -1))
+else
+  PCValueUpdate($QUERY22_mCUSTOMER1_L3_1,[],[ORDERS_CUSTKEY:int],-1);
+
+}
+
+ON + CUSTOMER(CUSTOMER_CUSTKEY, CUSTOMER_NAME, CUSTOMER_ADDRESS, CUSTOMER_NATIONKEY, CUSTOMER_PHONE, CUSTOMER_ACCTBAL, CUSTOMER_MKTSEGMENT, CUSTOMER_COMMENT)
+{
+if( Member($QUERY22_mCUSTOMER1,[CUSTOMER_CUSTKEY:int;CUSTOMER_NATIONKEY:int;
+      CUSTOMER_ACCTBAL:float]) )
+  PCValueUpdate($QUERY22_mCUSTOMER1,[],[CUSTOMER_CUSTKEY:int;
+    CUSTOMER_NATIONKEY:int;CUSTOMER_ACCTBAL:float],
+    ((Lookup($QUERY22_mCUSTOMER1,[CUSTOMER_CUSTKEY:int;CUSTOMER_NATIONKEY:int;
+        CUSTOMER_ACCTBAL:float])) + CUSTOMER_ACCTBAL:float))
+else
+  PCValueUpdate($QUERY22_mCUSTOMER1,[],[CUSTOMER_CUSTKEY:int;
+    CUSTOMER_NATIONKEY:int;CUSTOMER_ACCTBAL:float],CUSTOMER_ACCTBAL:float);
+
+PCValueUpdate($QUERY22_mCUSTOMER1_L2_1,[],[],
+  ($QUERY22_mCUSTOMER1_L2_1 + 
+    ((((0 < CUSTOMER_ACCTBAL:float)) * CUSTOMER_ACCTBAL:float))));
+
+Apply(
+  Lambda(__cse_var_4:Collection(<int; float>)) {
+    {
+       Iterate(
+         Lambda(<C1_NATIONKEY:int; prod:float>) {
+           PCElementRemove($QUERY22,[],[C1_NATIONKEY:int])},$QUERY22);
+       Iterate(
+         Lambda(<C1_NATIONKEY:int; prod:float>) {
+           PCValueUpdate($QUERY22,[],[C1_NATIONKEY:int],prod:float)},
+         __cse_var_4:Collection(<int; float>));
+    }},
+  GroupByAggregate(
+    Lambda(<__sql_inline_agg_2:float; __sql_inline_agg_1:int; C1_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; __prod_ret_1_39:float>,
+      __accv_6:float) {
+      if( Member($QUERY22_mCUSTOMER1_L3_1,[C1_CUSTKEY:int]) )
+        (__accv_6:float + 
+          ((((__prod_ret_1_39:float * 
+               (((Lookup($QUERY22_mCUSTOMER1_L3_1,[C1_CUSTKEY:int])) == 
+                  __sql_inline_agg_1:int)))) * 
+             ((C1_ACCTBAL:float < __sql_inline_agg_2:float)))))
+      else
+        (__accv_6:float + 
+          ((((__prod_ret_1_39:float * ((0 == __sql_inline_agg_1:int)))) * 
+             ((C1_ACCTBAL:float < __sql_inline_agg_2:float)))))},0.,
+    Lambda(<__sql_inline_agg_2:float; __sql_inline_agg_1:int; C1_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; __prod_ret_1_39:float>) 
+      {C1_NATIONKEY:int},
+    Apply(
+      Lambda(<__sql_inline_agg_2:float; __sql_inline_agg_1:int; __prod_ret_1_37:int>) 
+        {
+        Map(
+          Lambda(<C1_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; __prod_ret_2_38:float>) 
+            {
+            <__sql_inline_agg_2:float;__sql_inline_agg_1:int;C1_CUSTKEY:int;
+              C1_NATIONKEY:int;C1_ACCTBAL:float;
+              (__prod_ret_1_37:int * __prod_ret_2_38:float)>},
+          $QUERY22_mCUSTOMER1)},<$QUERY22_mCUSTOMER1_L2_1;0;1>)));
+
+}
+
+ON - CUSTOMER(CUSTOMER_CUSTKEY, CUSTOMER_NAME, CUSTOMER_ADDRESS, CUSTOMER_NATIONKEY, CUSTOMER_PHONE, CUSTOMER_ACCTBAL, CUSTOMER_MKTSEGMENT, CUSTOMER_COMMENT)
+{
+if( Member($QUERY22_mCUSTOMER1,[CUSTOMER_CUSTKEY:int;CUSTOMER_NATIONKEY:int;
+      CUSTOMER_ACCTBAL:float]) )
+  PCValueUpdate($QUERY22_mCUSTOMER1,[],[CUSTOMER_CUSTKEY:int;
+    CUSTOMER_NATIONKEY:int;CUSTOMER_ACCTBAL:float],
+    ((Lookup($QUERY22_mCUSTOMER1,[CUSTOMER_CUSTKEY:int;CUSTOMER_NATIONKEY:int;
+        CUSTOMER_ACCTBAL:float])) + ((-1 * CUSTOMER_ACCTBAL:float))))
+else
+  PCValueUpdate($QUERY22_mCUSTOMER1,[],[CUSTOMER_CUSTKEY:int;
+    CUSTOMER_NATIONKEY:int;CUSTOMER_ACCTBAL:float],
+    (-1 * CUSTOMER_ACCTBAL:float));
+
+PCValueUpdate($QUERY22_mCUSTOMER1_L2_1,[],[],
+  ($QUERY22_mCUSTOMER1_L2_1 + 
+    ((((((0 < CUSTOMER_ACCTBAL:float)) * -1)) * CUSTOMER_ACCTBAL:float))));
+
+Apply(
+  Lambda(__cse_var_5:Collection(<int; float>)) {
+    {
+       Iterate(
+         Lambda(<C1_NATIONKEY:int; prod:float>) {
+           PCElementRemove($QUERY22,[],[C1_NATIONKEY:int])},$QUERY22);
+       Iterate(
+         Lambda(<C1_NATIONKEY:int; prod:float>) {
+           PCValueUpdate($QUERY22,[],[C1_NATIONKEY:int],prod:float)},
+         __cse_var_5:Collection(<int; float>));
+    }},
+  GroupByAggregate(
+    Lambda(<__sql_inline_agg_2:float; __sql_inline_agg_1:int; C1_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; __prod_ret_1_53:float>,
+      __accv_7:float) {
+      if( Member($QUERY22_mCUSTOMER1_L3_1,[C1_CUSTKEY:int]) )
+        (__accv_7:float + 
+          ((((__prod_ret_1_53:float * 
+               (((Lookup($QUERY22_mCUSTOMER1_L3_1,[C1_CUSTKEY:int])) == 
+                  __sql_inline_agg_1:int)))) * 
+             ((C1_ACCTBAL:float < __sql_inline_agg_2:float)))))
+      else
+        (__accv_7:float + 
+          ((((__prod_ret_1_53:float * ((0 == __sql_inline_agg_1:int)))) * 
+             ((C1_ACCTBAL:float < __sql_inline_agg_2:float)))))},0.,
+    Lambda(<__sql_inline_agg_2:float; __sql_inline_agg_1:int; C1_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; __prod_ret_1_53:float>) 
+      {C1_NATIONKEY:int},
+    Apply(
+      Lambda(<__sql_inline_agg_2:float; __sql_inline_agg_1:int; __prod_ret_1_51:int>) 
+        {
+        Map(
+          Lambda(<C1_CUSTKEY:int; C1_NATIONKEY:int; C1_ACCTBAL:float; __prod_ret_2_52:float>) 
+            {
+            <__sql_inline_agg_2:float;__sql_inline_agg_1:int;C1_CUSTKEY:int;
+              C1_NATIONKEY:int;C1_ACCTBAL:float;
+              (__prod_ret_1_51:int * __prod_ret_2_52:float)>},
+          $QUERY22_mCUSTOMER1)},<$QUERY22_mCUSTOMER1_L2_1;0;1>)));
+
+}
+
+ON SYSTEM READY
+{
+
+}
+
