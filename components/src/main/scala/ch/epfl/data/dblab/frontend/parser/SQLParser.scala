@@ -338,7 +338,7 @@ object SQLParser extends StandardTokenParsers {
       }
     }
     | "NULL" ^^ { case _ => NullLiteral }
-    | "DATE" ~> "(" ~> stringLit <~ ")" ^^ { case s => DateLiteral(s) })
+    | "DATE" ~> "(".? ~> stringLit <~ ")".? ^^ { case s => DateLiteral(s) })
 
   // ----------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -360,6 +360,10 @@ object SQLParser extends StandardTokenParsers {
       super.processIdent(tkn)
     }
 
+    override def whitespace: Parser[Any] = rep(
+      whitespaceChar
+        | '-' ~ '-' ~ rep(chrExcept(EofCh, '\n')))
+
     override def token: Parser[Token] =
       (identChar ~ rep(identChar | digit) ^^ {
         case first ~ rest => processIdent(first :: rest mkString "")
@@ -370,6 +374,7 @@ object SQLParser extends StandardTokenParsers {
         }
         | '\'' ~ rep(chrExcept('\'', '\n', EofCh)) ~ '\'' ^^ { case '\'' ~ chars ~ '\'' => StringLit(chars mkString "") }
         | '\"' ~ rep(chrExcept('\"', '\n', EofCh)) ~ '\"' ^^ { case '\"' ~ chars ~ '\"' => StringLit(chars mkString "") }
+        //        | "--" ~ rep(chrExcept('\n', EofCh)) ~ '\"' ^^ { case _ ~ chars ~ _ => comment }
         | EofCh ^^^ EOF
         | '\'' ~> failure("unclosed string literal")
         | '\"' ~> failure("unclosed string literal")
@@ -411,5 +416,4 @@ object SQLParser extends StandardTokenParsers {
 
   lexical.delimiters += (
     "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "||", "/", "(", ")", ",", ".", ";")
-  //----------------------------------------------------------------------------------------------------------------------------------------------
 }

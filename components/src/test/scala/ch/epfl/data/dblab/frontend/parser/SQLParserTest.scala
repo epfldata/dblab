@@ -118,4 +118,19 @@ class SQLParserTest extends FlatSpec {
     val r = parser.parse("SELECT * FROM table LIMIT 20")
     r should not be None
   }
+
+  "SQLParser" should "parse DBToaster simple queries" in {
+    val parser = SQLParser
+    val folder = "experimentation/dbtoaster/queries/simple"
+    val f = new java.io.File(folder)
+    val files = if (!f.exists) {
+      throw new Exception(s"$f does not exist!")
+    } else
+      f.listFiles.map(folder + "/" + _.getName).toList
+    for (file <- files) {
+      println(s"parsing $file")
+      val r = parser.parseStream(scala.io.Source.fromFile(file).mkString)
+      r should not be None
+    }
+  }
 }
