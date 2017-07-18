@@ -5,7 +5,7 @@ package parser
 
 import com.sun.xml.internal.ws.client.sei.ResponseBuilder.Body
 
-import scala.reflect.runtime.{universe => ru}
+import scala.reflect.runtime.{ universe => ru }
 import ru._
 
 /**
@@ -104,8 +104,7 @@ object SQLAST {
   case object INTERSECT extends QueryRelationType
   case object SEQUENCE extends QueryRelationType
   case object EXCEPT extends QueryRelationType
-  case class IncludeString(content: String, body: TopLevelStatement) extends TopLevelStatement
-  case class createStream (name: String, columns: Seq[(String, String)], file: String, body: TopLevelStatement) extends TopLevelStatement
+  case class IncludeAndStream(name: String, columns: Seq[(String, String)], file: String, include: String, body: TopLevelStatement) extends TopLevelStatement
 
   trait Projections extends SQLNode {
     def size(): Int
