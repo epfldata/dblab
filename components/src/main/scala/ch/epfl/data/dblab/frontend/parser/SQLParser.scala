@@ -11,6 +11,7 @@ import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.token._
 import scala.util.parsing.input.CharArrayReader.EofCh
 import SQLAST._
+import ch.epfl.data.dblab.frontend.parser.SQLParser.ident
 
 /**
  * A simple SQL parser.
@@ -51,11 +52,11 @@ object SQLParser extends StandardTokenParsers {
     })
 
   def parseStreamQuery: Parser[TopLevelStatement] = (
-    (parseIncludeStatement.?) ~ (parseCreateStream.?) ~ parseQuery ^^ {
-      case Some(inc) ~ Some(stream) ~ body => IncludeAndStream(stream.name, stream.columns, stream.file, inc, body)
-      case None ~ Some(stream) ~ body      => IncludeAndStream(stream.name, stream.columns, stream.file, null, body)
-      case Some(inc) ~ None ~ body         => IncludeAndStream(null, null, null, inc, body)
-      case None ~ None ~ body              => body
+    (parseIncludeStatement.?) ~ (parseCreateStream).? ~ parseQuery ^^ {
+      case Some(inc) ~ Some(streams) ~ body => IncludeStatement(inc, streams, body)
+      case None ~ Some(streams) ~ body      => IncludeStatement(null, streams, body)
+      case Some(inc) ~ None ~ body          => IncludeStatement(inc, null, body)
+      case None ~ None ~ body               => body
 
     })
 
@@ -64,13 +65,48 @@ object SQLParser extends StandardTokenParsers {
       case inc ~ lit => lit
     })
 
-  def parseCreateStream: Parser[IncludeAndStream] = (
-    "CREATE" ~> "STREAM" ~> ident ~ "(" ~ parseStreamColumns.? ~ ")" ~ "FROM" ~ "FILE" ~ stringLit ^^ {
-      case nameStr ~ _ ~ Some(cols) ~ _ ~ _ ~ _ ~ fileStr => IncludeAndStream(nameStr, cols, fileStr, null, null)
+  def parseCreateStream: Parser[Seq[createStream]] = (
+    parseSingleCreateStream ~ parseCreateStream.? ^^ {
+      case str ~ Some(strs) => strs :+ str
+      case str ~ None       => Seq() :+ str
+    })
+  def parseSingleCreateStream: Parser[createStream] = (
+    "CREATE" ~> "STREAM" ~> ident ~ "(" ~ parseStreamColumns.? ~ ")" ~ ("FROM" ~> parseSrcStatement).? <~ ";" ^^ {
+      case nameStr ~ _ ~ Some(cols) ~ _ ~ Some(src) => createStream(nameStr, cols, src)
+      case nameStr ~ _ ~ Some(cols) ~ _ ~ None      => createStream(nameStr, cols, null)
+      case nameStr ~ _ ~ None ~ _ ~ Some(src)       => createStream(nameStr, null, src)
+      case nameStr ~ _ ~ None ~ _ ~ None            => createStream(nameStr, null, null)
+
     })
 
+  def parseSrcStatement: Parser[String] = (
+    //TODO socket
+    "FILE" ~ stringLit ~ parseByteParams ^^ {
+      case _ ~ s ~ param => s + param
+    })
+  def parseByteParams: Parser[String] = (
+    parseFramingStatement ~ parseAdaptorStatement ^^ {
+      case f ~ a => f + a
+    })
+
+  def parseFramingStatement: Parser[String] = (
+    "FIXEDWIDTH" ~ numericLit ^^ { case _ ~ num => "FIXEDWIDTH " + num }
+    | "LINE" ~ "DELIMITED" ^^ { case l ~ d => l + d }
+    | stringLit ~ "DELIMITED" ^^ { case s ~ d => s + d })
+
+  def parseAdaptorStatement: Parser[String] = (
+    ident <~ ("(" <~ ")").? ^^ {
+      case id => id
+    }
+    | ident ~ "(" ~ parseAdaptorParams ~ ")" ^^ {
+      case id ~ _ ~ param ~ _ => id + param
+    })
+  def parseAdaptorParams: Parser[String] = (
+    rep(ident ~ "SET VALUE" ~ stringLit ~ ",").? ~ ident ~ "SET VALUE" ~ stringLit ^^ {
+      case Some(s) ~ id ~ sv ~ str => s + id + sv + str
+    })
   def parseStreamColumns: Parser[Seq[(String, String)]] = (
-    ident ~ ident ~ ("," ~> parseStreamColumns).? ^^ {
+    ident ~ parseDataType ~ ("," ~> parseStreamColumns).? ^^ {
       case col ~ colType ~ Some(cols) => cols :+ (col, colType)
       case col ~ colType ~ None       => Seq() :+ (col, colType)
     })
@@ -368,7 +404,7 @@ object SQLParser extends StandardTokenParsers {
     "AVG", "MIN", "MAX", "YEAR", "DATE", "TOP", "LIMIT", "CASE", "WHEN", "THEN", "ELSE",
     "END", "SUBSTRING", "SUBSTR", "UNION", "ALL", "CAST", "DECIMAL", "DISTINCT", "NUMERIC",
     "INT", "DAYS", "COALESCE", "ROUND", "OVER", "PARTITION", "BY", "ROWS", "INTERSECT",
-    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE")
+    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED", "SET VALUE", "FIXEDWIDTH", "LINE")
 
   for (token <- tokens)
     lexical.reserved += token

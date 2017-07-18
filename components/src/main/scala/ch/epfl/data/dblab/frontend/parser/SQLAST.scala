@@ -104,8 +104,8 @@ object SQLAST {
   case object INTERSECT extends QueryRelationType
   case object SEQUENCE extends QueryRelationType
   case object EXCEPT extends QueryRelationType
-  case class IncludeAndStream(name: String, columns: Seq[(String, String)], file: String, include: String, body: TopLevelStatement) extends TopLevelStatement
-
+  case class IncludeStatement(include: String, streams: Seq[createStream], body: TopLevelStatement) extends TopLevelStatement
+  case class createStream(name: String, cols: Seq[(String, String)], rest: String)
   trait Projections extends SQLNode {
     def size(): Int
     def get(n: Int): (Expression, Option[String])
