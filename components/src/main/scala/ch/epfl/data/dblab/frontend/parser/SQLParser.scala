@@ -61,7 +61,7 @@ object SQLParser extends StandardTokenParsers {
     })
 
   def parseIncludeStatement: Parser[String] = (
-    "INCLUDE" ~ stringLit ^^ {
+    "INCLUDE" ~ stringLit <~ ";".? ^^ {
       case inc ~ lit => lit
     })
 
@@ -106,19 +106,48 @@ object SQLParser extends StandardTokenParsers {
       case Some(s) ~ id ~ sv ~ str => s + id + sv + str
     })
   def parseStreamColumns: Parser[Seq[(String, String)]] = (
-    ident ~ parseDataType ~ ("," ~> parseStreamColumns).? ^^ {
+    ident ~ (parseStreamDataType) ~ ("," ~> parseStreamColumns).? ^^ {
       case col ~ colType ~ Some(cols) => cols :+ (col, colType)
       case col ~ colType ~ None       => Seq() :+ (col, colType)
+    })
+
+  def parseStreamDataType: Parser[String] = (
+    "DECIMAL" ~ "(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")" ^^^ {
+      "DECIMAL"
+    } |
+    "NUMERIC" ~ "(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")" ^^^ {
+      "NUMERIC"
+    } |
+    "INT" ^^^ {
+      "INTEGER"
+    } |
+    "DATE" ^^^ {
+      "DATE"
+    } |
+    "STRING" ^^^ {
+      "STRING"
+    } |
+    "FLOAT" ^^^ {
+      "FLOAT"
+    } | "CHAR" ~ ("(" ~ numericLit ~ ")").? ^^^ {
+      "CHAR"
+    } | "VARCHAR" ~ "(" ~ numericLit ~ ")" ^^^ {
+      "VARCHAR"
     })
   /** ********************************************************/
   /* Parse parts of individual select statements in a query */
   /** ********************************************************/
   def parseSelectStatement: Parser[SelectStatement] = (
-    parseAllCTEs ~ "SELECT" ~ parseProjections ~ "FROM" ~ parseFrom ~ parseWhere.? ~ parseGroupBy.? ~ parseHaving.? ~ parseOrderBy.? ~ parseLimit.? ^^ {
-      case withs ~ _ ~ pro ~ _ ~ tab ~ whe ~ grp ~ hav ~ ord ~ lim => {
+    parseAllCTEs ~ "SELECT" ~ parseProjections ~ "FROM".? ~ parseFrom.? ~ parseWhere.? ~ parseGroupBy.? ~ parseHaving.? ~ parseOrderBy.? ~ parseLimit.? ^^ {
+      case withs ~ _ ~ pro ~ _ ~ Some(tab) ~ whe ~ grp ~ hav ~ ord ~ lim => {
         val aliases = pro.extractAliases ++ withs.map(w => w.subquery.extractAliases).flatten ++ tab.extractSubqueries.map(sq => sq.subquery.extractAliases).flatten
         SelectStatement(withs, pro, Some(tab), whe, grp, hav, ord, lim, aliases)
       }
+      case withs ~ _ ~ pro ~ _ ~ None ~ whe ~ grp ~ hav ~ ord ~ lim => {
+        val aliases = pro.extractAliases ++ withs.map(w => w.subquery.extractAliases).flatten
+        SelectStatement(withs, pro, None, whe, grp, hav, ord, lim, aliases)
+      }
+
     })
 
   def parseAllCTEs: Parser[List[View]] =
@@ -290,6 +319,9 @@ object SQLParser extends StandardTokenParsers {
           case Some("NOT") => Not(Exists(stmt))
           case None        => Exists(stmt)
         }
+      }
+      | "NOT" ~> parseExpression ^^ {
+        case exp => Not(exp)
       })
 
   def parseDataType: Parser[String] = (
@@ -409,7 +441,7 @@ object SQLParser extends StandardTokenParsers {
     "AVG", "MIN", "MAX", "YEAR", "DATE", "TOP", "LIMIT", "CASE", "WHEN", "THEN", "ELSE",
     "END", "SUBSTRING", "SUBSTR", "UNION", "ALL", "CAST", "DECIMAL", "DISTINCT", "NUMERIC",
     "INT", "DAYS", "COALESCE", "ROUND", "OVER", "PARTITION", "BY", "ROWS", "INTERSECT",
-    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED", "SET VALUE", "FIXEDWIDTH", "LINE")
+    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED", "SET VALUE", "FIXEDWIDTH", "LINE", "STRING", "FLOAT", "CHAR", "VARCHAR")
 
   for (token <- tokens)
     lexical.reserved += token
