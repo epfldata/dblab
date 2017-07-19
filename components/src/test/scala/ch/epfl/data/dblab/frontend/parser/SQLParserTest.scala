@@ -55,7 +55,7 @@ class SQLParserTest extends FlatSpec {
 
   "SQLParser" should "parse simple SELECT/FROM correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT * FROM table t")
+    val r = parser.parse("SELECT * FROM tbl t")
     r should not be None
   }
 
@@ -67,43 +67,43 @@ class SQLParserTest extends FlatSpec {
 
   "SQLParser" should "parse single expression correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT column1 FROM table")
+    val r = parser.parse("SELECT column1 FROM tbl")
     r should not be None
   }
 
   "SQLParser" should "parse explicit columns correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT column1, ident.column2 FROM table")
+    val r = parser.parse("SELECT column1, ident.column2 FROM tbl")
     r should not be None
   }
 
   "SQLParser" should "parse aggregate functions correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT SUM(column1), MIN(ident.column2) FROM table")
+    val r = parser.parse("SELECT SUM(column1), MIN(ident.column2) FROM tbl")
     r should not be None
   }
 
   "SQLParser" should "parse aliased expression correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT SUM(column1) AS theSum, MIN(ident.column2) AS minimum FROM table")
+    val r = parser.parse("SELECT SUM(column1) AS theSum, MIN(ident.column2) AS minimum FROM tbl")
     r should not be None
   }
 
   "SQLParser" should "parse arithmetic operations correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT SUM(column1) / 10, MIN(ident.column2) + 125.50 FROM table")
+    val r = parser.parse("SELECT SUM(column1) / 10, MIN(ident.column2) + 125.50 FROM tbl")
     r should not be None
   }
 
   "SQLParser" should "parse GROUP BY with HAVING correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT column1 FROM table GROUP BY column1, table.column2 HAVING SUM(table.column3) > 12345")
+    val r = parser.parse("SELECT column1 FROM tbl GROUP BY column1, tbl.column2 HAVING SUM(tbl.column3) > 12345")
     r should not be None
   }
 
   "SQLParser" should "parse WHERE correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT column1 FROM table WHERE column2 > 2.51 AND 1 != 0 AND table.column3 BETWEEN 5 AND 10")
+    val r = parser.parse("SELECT column1 FROM tbl WHERE column2 > 2.51 AND 1 != 0 AND tbl.column3 BETWEEN 5 AND 10")
     r should not be None
   }
 
@@ -115,8 +115,23 @@ class SQLParserTest extends FlatSpec {
 
   "SQLParser" should "parse LIMIT correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT * FROM table LIMIT 20")
+    val r = parser.parse("SELECT * FROM tbl LIMIT 20")
     r should not be None
+  }
+
+  "SQLParser" should "parse TPCH queries" in {
+    val parser = SQLParser
+    val folder = "experimentation/tpch-sql"
+    val f = new java.io.File(folder)
+    val files = if (!f.exists) {
+      throw new Exception(s"$f does not exist!")
+    } else
+      f.listFiles.filter(x => x.getName.startsWith("Q")).map(folder + "/" + _.getName).toList
+    for (file <- files) {
+      println(s"parsing $file")
+      val r = parser.parseStream(scala.io.Source.fromFile(file).mkString)
+      r should not be None
+    }
   }
 
   "SQLParser" should "parse DBToaster simple queries" in {

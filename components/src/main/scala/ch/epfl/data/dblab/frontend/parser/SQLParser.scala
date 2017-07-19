@@ -104,6 +104,9 @@ object SQLParser extends StandardTokenParsers {
   def parseAdaptorParams: Parser[String] = (
     rep(ident ~ "SET VALUE" ~ stringLit ~ ",").? ~ ident ~ "SET VALUE" ~ stringLit ^^ {
       case Some(s) ~ id ~ sv ~ str => s + id + sv + str
+    }
+    | stringLit ^^ {
+      case s => s
     })
   def parseStreamColumns: Parser[Seq[(String, String)]] = (
     ident ~ (parseStreamDataType) ~ ("," ~> parseStreamColumns).? ^^ {
@@ -112,7 +115,7 @@ object SQLParser extends StandardTokenParsers {
     })
 
   def parseStreamDataType: Parser[String] = (
-    "DECIMAL" ~ "(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")" ^^^ {
+    "DECIMAL" ~ ("(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")").? ^^^ {
       "DECIMAL"
     } |
     "NUMERIC" ~ "(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")" ^^^ {
@@ -160,7 +163,7 @@ object SQLParser extends StandardTokenParsers {
     ident ~ "AS" ~ "(" ~ parseQuery <~ ")" ^^ { case name ~ _ ~ _ ~ stmt => View(stmt, name) }
 
   def parseProjections: Parser[Projections] = (
-    "*" ^^^ AllColumns()
+    "*" ^^^ AllColumns() // TODO change it so that it uses StarExpression instead (or completely remove this line)
     | rep1sep(parseAliasedExpression, ",") ^^ { case lst => ExpressionProjections(lst) })
 
   def parseAliasedExpression: Parser[(Expression, Option[String])] =
@@ -293,9 +296,11 @@ object SQLParser extends StandardTokenParsers {
       ("ROWS" ~ "BETWEEN" ~ rep(parsePrimaryExpression) ~ "AND" ~ rep(parsePrimaryExpression)).? ~ ")").? ^^ {
         case fun ~ _ => fun
       }
-      | ident ~ opt("." ~> ident | "(" ~> repsep(parseExpression, ",") <~ ")") ^^ {
-        case id ~ None           => FieldIdent(None, id)
-        case a ~ Some(b: String) => FieldIdent(Some(a), b)
+      | "*" ^^^ { StarExpression(None) }
+      | ident ~ opt("." ~> (ident | "*") /*| ("(" ~> repsep(parseExpression, ",") <~ ")")*/ ) ^^ {
+        case id ~ None      => FieldIdent(None, id)
+        case id ~ Some("*") => StarExpression(Some(FieldIdent(None, id)))
+        case id ~ Some(b)   => FieldIdent(Some(id), b)
       }
       | "(" ~> (parseExpression | parseSelectStatement) <~ ")"
       | "DISTINCT" ~> parseExpression ^^ { case e => Distinct(e) }
@@ -329,12 +334,23 @@ object SQLParser extends StandardTokenParsers {
       | "ALL" ~> "(" ~> parseSelectStatement <~ ")" ^^ {
         case exp => AllExp(exp)
       }
-      | "Some" ~> "(" ~> parseSelectStatement <~ ")" ^^ {
+      | "SOME" ~> "(" ~> parseSelectStatement <~ ")" ^^ {
         case exp => SomeExp(exp)
+      }
+      | "ANY" ~> "(" ~> parseSelectStatement <~ ")" ^^ {
+        case exp => SomeExp(exp)
+      }
+      | "EXTRACT" ~> "(" ~> ident ~ "FROM" ~ ident ~ ("." ~ ident).? <~ ")" ^^ {
+        case f ~ _ ~ s ~ Some(t) => ExtractExp(f, s + t)
+        case f ~ _ ~ s ~ None    => ExtractExp(f, s)
+
+      }
+      | "IN" ~> "LIST" ~> "(" ~> stringLit ~ (rep("," ~> stringLit)).? <~ ")" ^^ {
+        case s ~ Some(l) => InList(l :+ s)
       })
 
   def parseDataType: Parser[String] = (
-    "DECIMAL" ~ "(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")" ^^^ {
+    "DECIMAL" ~ ("(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")").? ^^^ {
       "DECIMAL"
     } |
     "NUMERIC" ~ "(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")" ^^^ {
@@ -403,7 +419,13 @@ object SQLParser extends StandardTokenParsers {
 
     override def whitespace: Parser[Any] = rep(
       whitespaceChar
-        | '-' ~ '-' ~ rep(chrExcept(EofCh, '\n')))
+        | '-' ~ '-' ~ rep(chrExcept(EofCh, '\n'))
+        | '/' ~ '*' ~ comment)
+
+    //    override protected def comment: Parser[Any] = (
+    //      	      '*' ~ '/'  ^^ { case _ => ' '  }
+    //    	    | chrExcept(EofCh) ~ comment
+    //    	    )
 
     override def token: Parser[Token] =
       (identChar ~ rep(identChar | digit) ^^ {
@@ -450,7 +472,8 @@ object SQLParser extends StandardTokenParsers {
     "AVG", "MIN", "MAX", "YEAR", "DATE", "TOP", "LIMIT", "CASE", "WHEN", "THEN", "ELSE",
     "END", "SUBSTRING", "SUBSTR", "UNION", "ALL", "CAST", "DECIMAL", "DISTINCT", "NUMERIC",
     "INT", "DAYS", "COALESCE", "ROUND", "OVER", "PARTITION", "BY", "ROWS", "INTERSECT",
-    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED", "SET VALUE", "FIXEDWIDTH", "LINE", "STRING", "FLOAT", "CHAR", "VARCHAR", "NATURAL", "SOME")
+    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED", "SET VALUE", "FIXEDWIDTH",
+    "LINE", "STRING", "FLOAT", "CHAR", "VARCHAR", "NATURAL", "SOME", "TABLE", "ANY", "EXTRACT", "LIST")
 
   for (token <- tokens)
     lexical.reserved += token

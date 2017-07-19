@@ -153,6 +153,7 @@ object SQLAST {
     def findProjection(e: Expression, alias: String) = ???
   }
 
+  case class StarExpression(relation: Option[Expression]) extends Expression
   // Expressions
   trait Expression extends SQLNode {
     // FIXME why TypeTag[_] ?
@@ -209,6 +210,8 @@ object SQLAST {
   case class Distinct(e: Expression) extends Expression
   case class AllExp(e: SelectStatement) extends Expression
   case class SomeExp(e: SelectStatement) extends Expression
+  case class ExtractExp(first: String, second: String) extends Expression
+  case class InList(list: List[String]) extends Expression
 
   case class Year(expr: Expression) extends Expression {
     override val isAggregateOpExpr = false
