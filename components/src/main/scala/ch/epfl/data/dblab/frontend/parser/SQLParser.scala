@@ -181,6 +181,9 @@ object SQLParser extends StandardTokenParsers {
     }
       | "," ~> parseSingleRelation ^^ {
         case r => (InnerJoin, r, Equals(IntLiteral(1), IntLiteral(1)))
+      }
+      | "NATURAL" ~> "JOIN" ~> parseSingleRelation ^^ {
+        case r => (NaturalJoin, r, null)
       }))
 
   def parseSingleRelation: Parser[Relation] = (
@@ -441,7 +444,7 @@ object SQLParser extends StandardTokenParsers {
     "AVG", "MIN", "MAX", "YEAR", "DATE", "TOP", "LIMIT", "CASE", "WHEN", "THEN", "ELSE",
     "END", "SUBSTRING", "SUBSTR", "UNION", "ALL", "CAST", "DECIMAL", "DISTINCT", "NUMERIC",
     "INT", "DAYS", "COALESCE", "ROUND", "OVER", "PARTITION", "BY", "ROWS", "INTERSECT",
-    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED", "SET VALUE", "FIXEDWIDTH", "LINE", "STRING", "FLOAT", "CHAR", "VARCHAR")
+    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED", "SET VALUE", "FIXEDWIDTH", "LINE", "STRING", "FLOAT", "CHAR", "VARCHAR", "NATURAL")
 
   for (token <- tokens)
     lexical.reserved += token
