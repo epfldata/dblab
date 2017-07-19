@@ -105,7 +105,10 @@ object SQLAST {
   case object SEQUENCE extends QueryRelationType
   case object EXCEPT extends QueryRelationType
   case class IncludeStatement(include: String, streams: Seq[createStream], body: TopLevelStatement) extends TopLevelStatement
-  case class createStream(name: String, cols: Seq[(String, String)], rest: String)
+  case class createStream(tag: String, name: String, cols: Seq[(String, String)], rest: String) {
+    def isTable: Boolean = tag == "TABLE"
+    def isStream: Boolean = !isTable
+  }
   trait Projections extends SQLNode {
     def size(): Int
     def get(n: Int): (Expression, Option[String])
@@ -204,6 +207,9 @@ object SQLAST {
   case class In(elem: Expression, set: Seq[Expression]) extends Expression
   case class Case(cond: Expression, thenp: Expression, elsep: Expression) extends Expression
   case class Distinct(e: Expression) extends Expression
+  case class AllExp(e: SelectStatement) extends Expression
+  case class SomeExp(e: SelectStatement) extends Expression
+
   case class Year(expr: Expression) extends Expression {
     override val isAggregateOpExpr = false
   }

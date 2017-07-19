@@ -71,11 +71,11 @@ object SQLParser extends StandardTokenParsers {
       case str ~ None       => Seq() :+ str
     })
   def parseSingleCreateStream: Parser[createStream] = (
-    "CREATE" ~> "STREAM" ~> ident ~ "(" ~ parseStreamColumns.? ~ ")" ~ ("FROM" ~> parseSrcStatement).? <~ ";" ^^ {
-      case nameStr ~ _ ~ Some(cols) ~ _ ~ Some(src) => createStream(nameStr, cols, src)
-      case nameStr ~ _ ~ Some(cols) ~ _ ~ None      => createStream(nameStr, cols, null)
-      case nameStr ~ _ ~ None ~ _ ~ Some(src)       => createStream(nameStr, null, src)
-      case nameStr ~ _ ~ None ~ _ ~ None            => createStream(nameStr, null, null)
+    "CREATE" ~> ("STREAM" | "TABLE") ~ ident ~ "(" ~ parseStreamColumns.? ~ ")" ~ ("FROM" ~> parseSrcStatement).? <~ ";" ^^ {
+      case sot ~ nameStr ~ _ ~ Some(cols) ~ _ ~ Some(src) => createStream(sot, nameStr, cols, src)
+      case sot ~ nameStr ~ _ ~ Some(cols) ~ _ ~ None      => createStream(sot, nameStr, cols, null)
+      case sot ~ nameStr ~ _ ~ None ~ _ ~ Some(src)       => createStream(sot, nameStr, null, src)
+      case sot ~ nameStr ~ _ ~ None ~ _ ~ None            => createStream(sot, nameStr, null, null)
 
     })
 
@@ -325,6 +325,12 @@ object SQLParser extends StandardTokenParsers {
       }
       | "NOT" ~> parseExpression ^^ {
         case exp => Not(exp)
+      }
+      | "ALL" ~> "(" ~> parseSelectStatement <~ ")" ^^ {
+        case exp => AllExp(exp)
+      }
+      | "Some" ~> "(" ~> parseSelectStatement <~ ")" ^^ {
+        case exp => SomeExp(exp)
       })
 
   def parseDataType: Parser[String] = (
@@ -444,7 +450,7 @@ object SQLParser extends StandardTokenParsers {
     "AVG", "MIN", "MAX", "YEAR", "DATE", "TOP", "LIMIT", "CASE", "WHEN", "THEN", "ELSE",
     "END", "SUBSTRING", "SUBSTR", "UNION", "ALL", "CAST", "DECIMAL", "DISTINCT", "NUMERIC",
     "INT", "DAYS", "COALESCE", "ROUND", "OVER", "PARTITION", "BY", "ROWS", "INTERSECT",
-    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED", "SET VALUE", "FIXEDWIDTH", "LINE", "STRING", "FLOAT", "CHAR", "VARCHAR", "NATURAL")
+    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED", "SET VALUE", "FIXEDWIDTH", "LINE", "STRING", "FLOAT", "CHAR", "VARCHAR", "NATURAL", "SOME")
 
   for (token <- tokens)
     lexical.reserved += token
