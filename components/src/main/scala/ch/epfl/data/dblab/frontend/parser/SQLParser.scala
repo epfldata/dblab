@@ -52,25 +52,29 @@ object SQLParser extends StandardTokenParsers {
     })
 
   def parseStreamQuery: Parser[TopLevelStatement] = (
-    (parseIncludeStatement.?) ~ (parseCreateStream).? ~ parseQuery ^^ {
+    (parseIncludeStatement.?) ~ (parseCreate).? ~ parseQuery ^^ {
       case Some(inc) ~ Some(streams) ~ body => IncludeStatement(inc, streams, body)
       case None ~ Some(streams) ~ body      => IncludeStatement(null, streams, body)
       case Some(inc) ~ None ~ body          => IncludeStatement(inc, null, body)
       case None ~ None ~ body               => body
 
     })
-
   def parseIncludeStatement: Parser[String] = (
     "INCLUDE" ~ stringLit <~ ";".? ^^ {
       case inc ~ lit => lit
     })
 
-  def parseCreateStream: Parser[Seq[createStream]] = (
-    parseSingleCreateStream ~ parseCreateStream.? ^^ {
-      case str ~ Some(strs) => strs :+ str
-      case str ~ None       => Seq() :+ str
-    })
-  def parseSingleCreateStream: Parser[createStream] = (
+  def parseCreate: Parser[List[CreateStatement]] =
+    rep(parseCreateStreamOrTable | parseCreateFunction) ^^ {
+      case cs => cs
+    }
+
+  def parseCreateFunction: Parser[CreateFunction] =
+    "CREATE" ~> "FUNCTION" ~> ident ~ "(" ~ parseStreamColumns ~ ")" ~ "RETURNS" ~ parseStreamDataType ~ "AS" ~ "EXTERNAL" ~ stringLit <~ ";" ^^ {
+      case name ~ _ ~ cols ~ _ ~ _ ~ ret ~ _ ~ _ ~ ext => CreateFunction(name, cols, ret, ext)
+    }
+
+  def parseCreateStreamOrTable: Parser[createStream] = (
     "CREATE" ~> ("STREAM" | "TABLE") ~ ident ~ "(" ~ parseStreamColumns.? ~ ")" ~ ("FROM" ~> parseSrcStatement).? <~ ";" ^^ {
       case sot ~ nameStr ~ _ ~ Some(cols) ~ _ ~ Some(src) => createStream(sot, nameStr, cols, src)
       case sot ~ nameStr ~ _ ~ Some(cols) ~ _ ~ None      => createStream(sot, nameStr, cols, null)
@@ -274,6 +278,9 @@ object SQLParser extends StandardTokenParsers {
     | "IN" ~ "(" ~ (parseSelectStatement | rep1sep(parseExpression, ",")) ~ ")" ^^ {
       case op ~ _ ~ a ~ _ => (op, a)
     }
+    | "IN" ~> "LIST" ~> "(" ~> numericLit ~ (rep("," ~> numericLit)).? <~ ")" ^^ {
+      case num ~ Some(l) => ("IN LIST", l :+ num)
+    }
     | "LIKE" ~ parseAddition ^^ { case op ~ a => (op, a) }
     | "NOT" ~ parseOperation ^^ { case op ~ a => (op, a) }
     | "||" ~ parseAddition ^^ { case op ~ a => (op, a) }
@@ -344,9 +351,6 @@ object SQLParser extends StandardTokenParsers {
         case f ~ _ ~ s ~ Some(t) => ExtractExp(f, s + t)
         case f ~ _ ~ s ~ None    => ExtractExp(f, s)
 
-      }
-      | "IN" ~> "LIST" ~> "(" ~> stringLit ~ (rep("," ~> stringLit)).? <~ ")" ^^ {
-        case s ~ Some(l) => InList(l :+ s)
       })
 
   def parseDataType: Parser[String] = (
@@ -356,11 +360,17 @@ object SQLParser extends StandardTokenParsers {
     "NUMERIC" ~ "(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")" ^^^ {
       "NUMERIC"
     } |
-    "INT" ^^^ {
+    "INT" | "INTEGER" ^^^ {
       "INTEGER"
     } |
     "DATE" ^^^ {
       "DATE"
+    } |
+    "FLOAT" ^^^ {
+      "FLOAT"
+    } |
+    "STRING" ^^^ {
+      "STRING"
     })
 
   def parseFunction: Parser[Expression] = (
@@ -378,6 +388,12 @@ object SQLParser extends StandardTokenParsers {
     // TODO: Coalesce function is for the moment always returning the first argument
     | "COALESCE" ~ "(" ~> parseExpression ~ "," ~ parseExpression <~ ")" ^^ {
       case left ~ _ ~ right => left
+    }
+    | ident ~ "(" ~ parseExpression.? ~ (rep("," ~> parseExpression)).? <~ ")" ^^ {
+      case name ~ _ ~ Some(inp) ~ Some(inps) => FunctionExp(name, inps :+ inp)
+      case name ~ _ ~ Some(inp) ~ None       => FunctionExp(name, List(inp))
+      case name ~ _ ~ None ~ None            => FunctionExp(name, List())
+
     })
 
   def parseLiteral: Parser[Expression] = (
@@ -473,7 +489,7 @@ object SQLParser extends StandardTokenParsers {
     "END", "SUBSTRING", "SUBSTR", "UNION", "ALL", "CAST", "DECIMAL", "DISTINCT", "NUMERIC",
     "INT", "DAYS", "COALESCE", "ROUND", "OVER", "PARTITION", "BY", "ROWS", "INTERSECT",
     "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED", "SET VALUE", "FIXEDWIDTH",
-    "LINE", "STRING", "FLOAT", "CHAR", "VARCHAR", "NATURAL", "SOME", "TABLE", "ANY", "EXTRACT", "LIST")
+    "LINE", "STRING", "FLOAT", "CHAR", "VARCHAR", "NATURAL", "SOME", "TABLE", "ANY", "EXTRACT", "LIST", "INTEGER", "FUNCTION", "EXTERNAL", "RETURNS")
 
   for (token <- tokens)
     lexical.reserved += token
