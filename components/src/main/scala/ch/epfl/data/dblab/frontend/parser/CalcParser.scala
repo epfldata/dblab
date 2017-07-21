@@ -1,6 +1,6 @@
 package ch.epfl.data.dblab.frontend.parser
 
-import ch.epfl.data.dblab.frontend.parser.CalcAST.{CalcExpr, Rel, VarT}
+import ch.epfl.data.dblab.frontend.parser.CalcAST._
 
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.lexical.StdLexical
@@ -12,6 +12,8 @@ import scala.util.parsing.input.CharArrayReader.EofCh
  *
  * @author Parand Alizadeh
  */
+
+
 object CalcParser extends StandardTokenParsers {
 
   def parse(statement: String): CalcExpr = {
@@ -79,7 +81,7 @@ object CalcParser extends StandardTokenParsers {
       case id ~ _ ~ param ~ _ => id + param
     })
   def parseAdaptorParams: Parser[String] = (
-    rep(ident ~ "SET VALUE" ~ stringLit ~ ",").? ~ ident ~ "SET VALUE" ~ stringLit ^^ {
+    rep(ident ~ "SET VALUE" ~ stringLit ~ ",").? ~ ident ~ ":=" ~ stringLit ^^ {
       case Some(s) ~ id ~ sv ~ str => s + id + sv + str
     }
     | stringLit ^^ {
@@ -87,7 +89,69 @@ object CalcParser extends StandardTokenParsers {
     })
 
 
-  def parseQuery: Parser[CalcExpr] = {
+  def parseQuery: Parser[CalcExpr] =
+    "DECLARE" ~> "QUERY" ~> ident ~ ":=" ~ parseCalcExpr ^^{
+      case name ~_~ exp => CalcQuery(name, exp)
+    }
+
+
+  def parseCalcExpr: Parser[CalcExpr] =
+    parseIvcCalcExpr ^^ {
+      case ivc => ivc
+    }
+
+  def parseIvcCalcExpr : Parser[CalcExpr] = {
+    "NEG" ~> "*" ~> parseIvcCalcExpr ^^ {
+      case ivc => CalcNeg(ivc)
+    } |
+      "(" ~> parseIvcCalcExpr <~ ")" ^^ {
+        case ivc => ivc
+      } |
+      parseIvcCalcExpr ~ "*" ~ parseIvcCalcExpr ^^ {
+        case i1 ~ _ ~ i2 => CalcProd(List(i1, i2))
+      } |
+      parseIvcCalcExpr ~ "+" ~ parseIvcCalcExpr ^^ {
+        case i1 ~ _ ~ i2 => CalcSum(List(i1, i2))
+      } |
+      parseIvcCalcExpr ~ "-" ~ parseIvcCalcExpr ^^ {
+        case i1 ~ _ ~ i2 => CalcSum(List(i1, CalcNeg(i2)))
+      } |
+      "-" ~> parseIvcCalcExpr ^^ {
+        case ivc => CalcNeg(ivc)
+      }|
+      "[" ~> parseValueExpr <~ "]" ^^ {
+        case ve => CalcValue(ve)
+      }
+
+  }
+
+
+
+
+  def parseValueExpr: Parser[ArithExpr] = {
+    "(" ~> parseValueExpr <~ ")" ^^{
+      case ve => ve
+    }|
+    parseValueExpr ~ "*" ~ parseValueExpr ^^{
+      case v1 ~_~ v2 => ArithProd(List(v1, v2))
+    }|
+    parseValueExpr ~ "+" ~ parseValueExpr ^^{
+      case v1 ~_~ v2 => ArithSum(List(v1,v2))
+    }|
+    parseValueExpr ~ "-" ~ parseValueExpr ^^{
+      case v1 ~ _ ~ v2 => ArithSum(List(v1, ArithNeg(v2)))
+    }|
+    "-" ~> parseValueExpr ^^{
+      case v => ArithNeg(v)
+    }|
+    parseValueLeaf ^^{
+      case v => v
+    }
+
+  }
+
+
+  def parseValueLeaf: Parser[ArithExpr] = {
 
   }
 
@@ -159,5 +223,5 @@ object CalcParser extends StandardTokenParsers {
     lexical.reserved += token
 
   lexical.delimiters += (
-    "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "||", "/", "(", ")", ",", ".", ";")
+    "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "||", "/", "(", ")", ",", ".", ";" , ":=" )
 }

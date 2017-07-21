@@ -13,6 +13,7 @@ import sc.pardis.types.PardisType
  */
 object CalcAST {
   trait CalcExpr
+  case class CalcQuery(name: String, expr: CalcExpr) extends CalcExpr
   case class CalcSum(exprs: List[CalcExpr]) extends CalcExpr // Why ?
   case class CalcProd(exprs: List[CalcExpr]) extends CalcExpr
   case class CalcNeg(expr: CalcExpr) extends CalcExpr

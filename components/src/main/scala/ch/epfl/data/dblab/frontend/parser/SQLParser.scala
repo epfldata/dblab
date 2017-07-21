@@ -107,7 +107,7 @@ object SQLParser extends StandardTokenParsers {
       case id ~ _ ~ param ~ _ => id + param
     })
   def parseAdaptorParams: Parser[String] = (
-    rep(ident ~ "SET VALUE" ~ stringLit ~ ",").? ~ ident ~ "SET VALUE" ~ stringLit ^^ {
+    rep(ident ~ ":=" ~ stringLit ~ ",").? ~ ident ~ ":=" ~ stringLit ^^ {
       case Some(s) ~ id ~ sv ~ str => s + id + sv + str
     }
     | stringLit ^^ {
@@ -489,12 +489,12 @@ object SQLParser extends StandardTokenParsers {
     "AVG", "MIN", "MAX", "YEAR", "DATE", "TOP", "LIMIT", "CASE", "WHEN", "THEN", "ELSE",
     "END", "SUBSTRING", "SUBSTR", "UNION", "ALL", "CAST", "DECIMAL", "DISTINCT", "NUMERIC",
     "INT", "DAYS", "COALESCE", "ROUND", "OVER", "PARTITION", "BY", "ROWS", "INTERSECT",
-    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED", "SET VALUE", "FIXEDWIDTH",
+    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED", "FIXEDWIDTH",
     "LINE", "STRING", "FLOAT", "CHAR", "VARCHAR", "NATURAL", "SOME", "TABLE", "ANY", "EXTRACT", "LIST", "INTEGER", "FUNCTION", "EXTERNAL", "RETURNS")
 
   for (token <- tokens)
     lexical.reserved += token
 
   lexical.delimiters += (
-    "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "||", "/", "(", ")", ",", ".", ";")
+    "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "||", "/", "(", ")", ",", ".", ";", ":=")
 }
