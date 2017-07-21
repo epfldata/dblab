@@ -17,7 +17,7 @@ object CalcAST {
   case class CalcProd(exprs: List[CalcExpr]) extends CalcExpr
   case class CalcNeg(expr: CalcExpr) extends CalcExpr
   case class AggSum(vars: List[VarT], expr: CalcExpr) extends CalcExpr
-  case class Rel(name: String, vars: List[VarT]) extends CalcExpr
+  case class Rel(tag: String, name: String, vars: List[VarT], rest: String) extends CalcExpr
   case class External(e: CalcExpr, et: External_t) extends CalcExpr
   case class Cmp(cmp: Cmp_t, first: ArithExpr, second: ArithExpr) extends CalcExpr
   case class CmpOrList(v: ArithExpr, consts: List[Const_t]) extends CalcExpr
@@ -33,7 +33,7 @@ object CalcAST {
   case class ArithVar(v: VarT) extends ArithExpr
   case class ArithFunc(name: String, terms: List[ArithExpr], tp: PardisType[_]) extends ArithExpr
 
-  case class VarT(name: String, tp: PardisType[_])
+  case class VarT(name: String, tp: String)
 
   case class External_t(name: String, inps: List[VarT], outs: List[VarT], tp: PardisType[_], meta: CalcExpr) //TODO meta should be optional
 

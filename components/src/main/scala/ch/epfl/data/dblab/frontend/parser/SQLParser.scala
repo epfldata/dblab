@@ -19,6 +19,7 @@ import ch.epfl.data.dblab.frontend.parser.SQLParser.ident
  *
  * @author Yannis Klonatos
  * @author Florian Chlan
+ * @author Parand Alizadeh
  */
 object SQLParser extends StandardTokenParsers {
 
@@ -36,7 +37,7 @@ object SQLParser extends StandardTokenParsers {
     }
   }
 
-  def parseQuery: Parser[TopLevelStatement] = (
+  def parseQuery: Parser[TopLevelStatement] =
     parseSelectStatement ~ ((("UNION" ~ "ALL".?) | "INTERSECT" | "EXCEPT" | ";") ~ parseQuery.?).? ^^ {
       case stmt ~ None => stmt
       case stmt ~ Some(bottomQuery) => bottomQuery match {
@@ -49,20 +50,20 @@ object SQLParser extends StandardTokenParsers {
           case None    => stmt
         }
       }
-    })
+    }
 
-  def parseStreamQuery: Parser[TopLevelStatement] = (
-    (parseIncludeStatement.?) ~ (parseCreate).? ~ parseQuery ^^ {
+  def parseStreamQuery: Parser[TopLevelStatement] =
+    parseIncludeStatement.? ~ parseCreate.? ~ parseQuery ^^ {
       case Some(inc) ~ Some(streams) ~ body => IncludeStatement(inc, streams, body)
       case None ~ Some(streams) ~ body      => IncludeStatement(null, streams, body)
       case Some(inc) ~ None ~ body          => IncludeStatement(inc, null, body)
       case None ~ None ~ body               => body
 
-    })
-  def parseIncludeStatement: Parser[String] = (
+    }
+  def parseIncludeStatement: Parser[String] =
     "INCLUDE" ~ stringLit <~ ";".? ^^ {
       case inc ~ lit => lit
-    })
+    }
 
   def parseCreate: Parser[List[CreateStatement]] =
     rep(parseCreateStreamOrTable | parseCreateFunction) ^^ {
@@ -74,24 +75,24 @@ object SQLParser extends StandardTokenParsers {
       case name ~ _ ~ cols ~ _ ~ _ ~ ret ~ _ ~ _ ~ ext => CreateFunction(name, cols, ret, ext)
     }
 
-  def parseCreateStreamOrTable: Parser[createStream] = (
+  def parseCreateStreamOrTable: Parser[createStream] =
     "CREATE" ~> ("STREAM" | "TABLE") ~ ident ~ "(" ~ parseStreamColumns.? ~ ")" ~ ("FROM" ~> parseSrcStatement).? <~ ";" ^^ {
       case sot ~ nameStr ~ _ ~ Some(cols) ~ _ ~ Some(src) => createStream(sot, nameStr, cols, src)
       case sot ~ nameStr ~ _ ~ Some(cols) ~ _ ~ None      => createStream(sot, nameStr, cols, null)
       case sot ~ nameStr ~ _ ~ None ~ _ ~ Some(src)       => createStream(sot, nameStr, null, src)
       case sot ~ nameStr ~ _ ~ None ~ _ ~ None            => createStream(sot, nameStr, null, null)
 
-    })
+    }
 
-  def parseSrcStatement: Parser[String] = (
+  def parseSrcStatement: Parser[String] =
     //TODO socket
     "FILE" ~ stringLit ~ parseByteParams ^^ {
       case _ ~ s ~ param => s + param
-    })
-  def parseByteParams: Parser[String] = (
+    }
+  def parseByteParams: Parser[String] =
     parseFramingStatement ~ parseAdaptorStatement ^^ {
       case f ~ a => f + a
-    })
+    }
 
   def parseFramingStatement: Parser[String] = (
     "FIXEDWIDTH" ~ numericLit ^^ { case _ ~ num => "FIXEDWIDTH " + num }
@@ -112,39 +113,39 @@ object SQLParser extends StandardTokenParsers {
     | stringLit ^^ {
       case s => s
     })
-  def parseStreamColumns: Parser[Seq[(String, String)]] = (
+  def parseStreamColumns: Parser[Seq[(String, String)]] =
     ident ~ (parseStreamDataType) ~ ("," ~> parseStreamColumns).? ^^ {
       case col ~ colType ~ Some(cols) => cols :+ (col, colType)
       case col ~ colType ~ None       => Seq() :+ (col, colType)
-    })
+    }
 
-  def parseStreamDataType: Parser[String] = (
+  def parseStreamDataType: Parser[String] =
     "DECIMAL" ~ ("(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")").? ^^^ {
       "DECIMAL"
     } |
-    "NUMERIC" ~ "(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")" ^^^ {
-      "NUMERIC"
-    } |
-    "INT" ^^^ {
-      "INTEGER"
-    } |
-    "DATE" ^^^ {
-      "DATE"
-    } |
-    "STRING" ^^^ {
-      "STRING"
-    } |
-    "FLOAT" ^^^ {
-      "FLOAT"
-    } | "CHAR" ~ ("(" ~ numericLit ~ ")").? ^^^ {
-      "CHAR"
-    } | "VARCHAR" ~ "(" ~ numericLit ~ ")" ^^^ {
-      "VARCHAR"
-    })
+      "NUMERIC" ~ "(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")" ^^^ {
+        "NUMERIC"
+      } |
+      "INT" ^^^ {
+        "INTEGER"
+      } |
+      "DATE" ^^^ {
+        "DATE"
+      } |
+      "STRING" ^^^ {
+        "STRING"
+      } |
+      "FLOAT" ^^^ {
+        "FLOAT"
+      } | "CHAR" ~ ("(" ~ numericLit ~ ")").? ^^^ {
+        "CHAR"
+      } | "VARCHAR" ~ "(" ~ numericLit ~ ")" ^^^ {
+        "VARCHAR"
+      }
   /** ********************************************************/
   /* Parse parts of individual select statements in a query */
   /** ********************************************************/
-  def parseSelectStatement: Parser[SelectStatement] = (
+  def parseSelectStatement: Parser[SelectStatement] =
     parseAllCTEs ~ "SELECT" ~ parseProjections ~ "FROM".? ~ parseFrom.? ~ parseWhere.? ~ parseGroupBy.? ~ parseHaving.? ~ parseOrderBy.? ~ parseLimit.? ^^ {
       case withs ~ _ ~ pro ~ _ ~ Some(tab) ~ whe ~ grp ~ hav ~ ord ~ lim => {
         val aliases = pro.extractAliases ++ withs.map(w => w.subquery.extractAliases).flatten ++ tab.extractSubqueries.map(sq => sq.subquery.extractAliases).flatten
@@ -155,7 +156,7 @@ object SQLParser extends StandardTokenParsers {
         SelectStatement(withs, pro, None, whe, grp, hav, ord, lim, aliases)
       }
 
-    })
+    }
 
   def parseAllCTEs: Parser[List[View]] =
     opt("WITH" ~> rep1sep(parseCTE, ",")) ^^ {
@@ -177,12 +178,12 @@ object SQLParser extends StandardTokenParsers {
     ("AS".? ~> ident) ^^ { case ident => ident } |
       ("AS".? ~> stringLit) ^^ { case lit => lit }
 
-  def parseFrom: Parser[Relation] = (
+  def parseFrom: Parser[Relation] =
     parseSingleRelation ~ parseOtherRelations ^^ {
       case rel ~ elems => elems.foldLeft(rel) { case (x, r) => Join(x, r._2, r._1, r._3) }
-    })
+    }
 
-  def parseOtherRelations: Parser[Seq[Tuple3[JoinType, Relation, Expression]]] = (
+  def parseOtherRelations: Parser[Seq[Tuple3[JoinType, Relation, Expression]]] =
     rep(opt(parseJoinType) ~ "JOIN" ~ parseSingleRelation ~ "ON" ~ parseExpression ^^ {
       case tpe ~ _ ~ r ~ _ ~ e => (tpe.getOrElse(InnerJoin), r, e)
     }
@@ -191,7 +192,7 @@ object SQLParser extends StandardTokenParsers {
       }
       | "NATURAL" ~> "JOIN" ~> parseSingleRelation ^^ {
         case r => (NaturalJoin, r, null)
-      }))
+      })
 
   def parseSingleRelation: Parser[Relation] = (
     ident ~ parseAlias.? ^^ {
@@ -227,12 +228,12 @@ object SQLParser extends StandardTokenParsers {
   def parseOrderBy: Parser[OrderBy] =
     "ORDER" ~> "BY" ~> rep1sep(parseOrderKey, ",") ^^ { case keys => OrderBy(keys) }
 
-  def parseOrderKey: Parser[(Expression, OrderType)] = (
+  def parseOrderKey: Parser[(Expression, OrderType)] =
     parseExpression ~ ("ASC" | "DESC").? ^^ {
       case v ~ Some("DESC") => (v, DESC)
       case v ~ Some("ASC")  => (v, ASC)
       case v ~ None         => (v, ASC)
-    })
+    }
 
   def parseLimit: Parser[Limit] =
     "LIMIT" ~> numericLit ^^ { case lim => Limit(lim.toInt) }
@@ -264,11 +265,11 @@ object SQLParser extends StandardTokenParsers {
     case (acc, (("ISNULL", null)))                          => Equals(acc, NullLiteral)
   }
 
-  def parseOperandExpression: Parser[Expression] = (
+  def parseOperandExpression: Parser[Expression] =
     parseAddition ~ rep(parseOperation) ^^ {
       case leftOperator ~ expressions =>
         expressions.foldLeft(leftOperator)((acc, elem) => exprToSQLNode(acc, elem))
-    })
+    }
 
   def parseOperation: Parser[Product] = (
     ("=" | "<>" | "!=" | "<" | "<=" | ">" | ">=") ~ parseAddition ^^ { case op ~ right => (op, right) }
@@ -278,7 +279,7 @@ object SQLParser extends StandardTokenParsers {
     | "IN" ~ "(" ~ (parseSelectStatement | rep1sep(parseExpression, ",")) ~ ")" ^^ {
       case op ~ _ ~ a ~ _ => (op, a)
     }
-    | "IN" ~> "LIST" ~> "(" ~> numericLit ~ (rep("," ~> numericLit)).? <~ ")" ^^ {
+    | "IN" ~> "LIST" ~> "(" ~> numericLit ~ rep("," ~> numericLit).? <~ ")" ^^ {
       case num ~ Some(l) => ("IN LIST", l :+ num)
     }
     | "LIKE" ~ parseAddition ^^ { case op ~ a => (op, a) }
@@ -353,25 +354,25 @@ object SQLParser extends StandardTokenParsers {
 
       })
 
-  def parseDataType: Parser[String] = (
+  def parseDataType: Parser[String] =
     "DECIMAL" ~ ("(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")").? ^^^ {
       "DECIMAL"
     } |
-    "NUMERIC" ~ "(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")" ^^^ {
-      "NUMERIC"
-    } |
-    "INT" | "INTEGER" ^^^ {
-      "INTEGER"
-    } |
-    "DATE" ^^^ {
-      "DATE"
-    } |
-    "FLOAT" ^^^ {
-      "FLOAT"
-    } |
-    "STRING" ^^^ {
-      "STRING"
-    })
+      "NUMERIC" ~ "(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")" ^^^ {
+        "NUMERIC"
+      } |
+      "INT" | "INTEGER" ^^^ {
+        "INTEGER"
+      } |
+      "DATE" ^^^ {
+        "DATE"
+      } |
+      "FLOAT" ^^^ {
+        "FLOAT"
+      } |
+      "STRING" ^^^ {
+        "STRING"
+      }
 
   def parseFunction: Parser[Expression] = (
     "COUNT" ~> "(" ~> ("*" ^^^ CountAll() | parseExpression ^^ { case expr => CountExpr(expr) }) <~ ")"
