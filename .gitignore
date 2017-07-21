@@ -4,6 +4,8 @@
 *.swo
 *.swn
 
+*.iml
+
 # sbt specific
 .cache/
 .history/
@@ -30,3 +32,5 @@ result.csv
 run_config.cfg
 
 tpchdata/
+
+.idea/
