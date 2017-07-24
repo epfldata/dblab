@@ -83,8 +83,8 @@ object CalcParser extends StandardTokenParsers {
     ident ~ ":=" ~ stringLit ^^ {
       case id ~ sv ~ str => id + sv + str
     }) | (stringLit ^^ {
-    case s => s
-  })
+      case s => s
+    })
 
   def parseQuery: Parser[CalcExpr] =
     "DECLARE" ~> "QUERY" ~> ident ~ ":=" ~ parseCalcExpr ^^ {
@@ -118,40 +118,100 @@ object CalcParser extends StandardTokenParsers {
       ("[" ~> parseValueExpr <~ "]" ^^ {
         case ve => CalcValue(ve)
       }) |
-      (parseValueLeaf ^^{
+      (parseValueLeaf ^^ {
         case vl => CalcValue(vl)
       }) |
-      ("AGGSUM" ~> "(" ~> "[" ~> (parseVarList).? ~ "]" ~ "," ~ parseIvcCalcExpr <~ ")" ^^{
-        case Some(l) ~_~_~ calc => AggSum(l, calc)
-        case None ~_~_~ calc => AggSum(List(), calc)
+      ("AGGSUM" ~> "(" ~> "[" ~> (parseVarList).? ~ "]" ~ "," ~ parseIvcCalcExpr <~ ")" ^^ {
+        case Some(l) ~ _ ~ _ ~ calc => AggSum(l, calc)
+        case None ~ _ ~ _ ~ calc    => AggSum(List(), calc)
       }) |
       (parseRelationDef ^^ {
         case r => r
       }) |
       (parseDeltaRelationDef ^^ {
         case dr => dr
+      }) |
+      (parseExternalDef ^^ {
+        case e => e
+      }) |
+      ("[" ~> parseValueExpr ~ parseComparison ~ parseValueExpr <~ "]" ^^ {
+        case v1 ~ c ~ v2 => Cmp(c, v1, v2)
+      }) |
+      ("(" ~> ident ~ (parseDataType).? ~ "^=" ~ parseIvcCalcExpr <~ ")" ^^ {
+        case id ~ Some(t) ~ _ ~ ivc => Lift(VarT(id, t), ivc)
+        case id ~ None ~ _ ~ ivc    => Lift(VarT(id, null), ivc)
+      }) |
+      ("EXISTS" ~> "(" ~> parseCalcExpr <~ ")" ^^ {
+        case c => Exists(c)
       })
 
+    //TODO
 
+    /*("DOMAIN" ~> "(" ~> parseCalcExpr <~ ")" ^^ {
+        Dom
+      }*/
 
   }
 
-  def parseDeltaRelationDef: Parser[Rel]= {
+  def parseComparison: Parser[Cmp_t] = {
+    ("=" ^^^ {
+      Eq
+    }) |
+      ("!=" ^^^ {
+        Neq
+      }) |
+      ("<" ^^^ {
+        Lt
+      }) |
+      ("<=" ^^^ {
+        Lte
+      }) |
+      (">" ^^^ {
+        Gt
+      }) |
+      (">=" ^^^ {
+        Gte
+      })
+  }
+  def parseExternalDef: Parser[External] = {
+    parseExternalWithoutMeta ~ (":".? ~> "(" ~> parseIvcCalcExpr <~ ")").? ^^ {
+      case et ~ Some(calc) => External(calc, et)
+      case et ~ None       => External(null, et)
+    }
+  }
+
+  def parseExternalWithoutMeta: Parser[External_t] = {
+    (ident ~ "[" ~ parseVarList.? ~ "]" ~ "[" ~ parseVarList.? ~ "]" ^^ {
+      case id ~ _ ~ Some(l1) ~ _ ~ _ ~ Some(l2) ~ _ => External_t(id, l1, l2, null, None)
+      case id ~ _ ~ Some(l1) ~ _ ~ _ ~ None ~ _     => External_t(id, l1, List(), null, None)
+      case id ~ _ ~ None ~ _ ~ _ ~ Some(l2) ~ _     => External_t(id, List(), l2, null, None)
+      case id ~ _ ~ None ~ _ ~ _ ~ None ~ _         => External_t(id, List(), List(), null, None)
+
+    }) |
+      (ident ~ "(" ~ parseDataType ~ ")" ~ "[" ~ parseVarList.? ~ "]" ~ "[" ~ parseVarList.? ~ "]" ^^ {
+        case id ~ _ ~ tp ~ _ ~ _ ~ Some(l1) ~ _ ~ _ ~ Some(l2) ~ _ => External_t(id, l1, l2, tp, None)
+        case id ~ _ ~ tp ~ _ ~ _ ~ Some(l1) ~ _ ~ _ ~ None ~ _     => External_t(id, l1, List(), tp, None)
+        case id ~ _ ~ tp ~ _ ~ _ ~ None ~ _ ~ _ ~ Some(l2) ~ _     => External_t(id, List(), l2, tp, None)
+        case id ~ _ ~ tp ~ _ ~ _ ~ None ~ _ ~ _ ~ None ~ _         => External_t(id, List(), List(), tp, None)
+      })
+
+  }
+  def parseDeltaRelationDef: Parser[Rel] = {
     ("(" ~> "DELTA" ~> ident ~ ")" ~ "(" ~ ")" ^^ {
-      case id ~ _ ~ _ ~_ => Rel("Delta Rel", id , List(), "")
+      case id ~ _ ~ _ ~ _ => Rel("Delta Rel", id, List(), "") //TODO type ?
     }) |
-      ("(" ~> "DELTA" ~> ident ~ ")"~ "(" ~ parseVarList ~ ")" ^^{
-        case id ~_ ~ _ ~ l ~_ => Rel("Delta Rel", id, l, "")
-      } )
+      ("(" ~> "DELTA" ~> ident ~ ")" ~ "(" ~ parseVarList ~ ")" ^^ {
+        case id ~ _ ~ _ ~ l ~ _ => Rel("Delta Rel", id, l, "")
+      })
   }
 
-  def parseRelationDef: Parser[Rel] ={
+  def parseRelationDef: Parser[Rel] = {
     (ident ~ "(" ~ ")" ^^ {
-      case id ~ _ ~ _ => Rel("Rel", id , List(), "")
+      case id ~ _ ~ _ => Rel("Rel", id, List(), "")
     }) |
-      (ident ~ "(" ~ parseVarList ~ ")" ^^{
-        case id ~_~ l ~_ => Rel("Rel", id, l, "")
-      } )
+      (ident ~ "(" ~ parseVarList ~ ")" ^^ {
+        case id ~ _ ~ l ~ _ => Rel("Rel", id, l, "")
+      })
   }
   def parseValueExpr: Parser[ArithExpr] = {
     ("(" ~> parseValueExpr <~ ")" ^^ {
@@ -178,36 +238,33 @@ object CalcParser extends StandardTokenParsers {
   def parseValueLeaf: Parser[ArithExpr] = {
     (parseConstant ^^ {
       case c => c
-    })|
+    }) |
       (ident ~ (":" ~> parseDataType).? ^^ {
-        case id ~ Some(t) => ArithVar(VarT(id , t))
-    })|
-      (parseFuncDef ^^{
+        case id ~ Some(t) => ArithVar(VarT(id, t))
+      }) |
+      (parseFuncDef ^^ {
         case func => func
-    })
+      })
 
   }
-
-
 
   def parseConstant: Parser[ArithConst] = { //TODO
     ???
   }
 
-
   def parseFuncDef: Parser[ArithFunc] = {
-    "[" ~> (ident|"/") ~ ":" ~ parseDataType ~ "]" ~ "(" ~ parseValExpList.? <~ ")" ^^{
-      case id ~_~ tp ~_~_~ Some(varl) => ArithFunc(id, varl, tp)
-      case id ~_~ tp ~_~_~ None => ArithFunc(id, List(), tp)
+    "[" ~> (ident | "/") ~ ":" ~ parseDataType ~ "]" ~ "(" ~ parseValExpList.? <~ ")" ^^ {
+      case id ~ _ ~ tp ~ _ ~ _ ~ Some(varl) => ArithFunc(id, varl, tp)
+      case id ~ _ ~ tp ~ _ ~ _ ~ None       => ArithFunc(id, List(), tp)
     }
   }
 
   def parseValExpList: Parser[List[ArithExpr]] = {
     rep(parseValueExpr <~ ",").? ~ parseValueExpr.? ^^ {
       case Some(vl) ~ Some(v) => vl :+ v
-      case Some(vl) ~ None => vl
-      case None ~ None => List()
-      case None ~ Some(v) => List(v)
+      case Some(vl) ~ None    => vl
+      case None ~ None        => List()
+      case None ~ Some(v)     => List(v)
 
     }
   }
@@ -215,9 +272,9 @@ object CalcParser extends StandardTokenParsers {
   def parseVarList: Parser[List[VarT]] = {
     (ident ~ (":" ~> parseDataType).? ~ parseVarList.?) ^^ {
       case id ~ Some(t) ~ Some(l) => l :+ VarT(id, t)
-      case id ~ Some(t) ~ None => List(VarT(id, t))
-      case id ~ None ~ Some(l) => l :+ VarT(id, null)
-      case id ~ None ~ None => List(VarT(id, null))
+      case id ~ Some(t) ~ None    => List(VarT(id, t))
+      case id ~ None ~ Some(l)    => l :+ VarT(id, null)
+      case id ~ None ~ None       => List(VarT(id, null))
 
     }
   }

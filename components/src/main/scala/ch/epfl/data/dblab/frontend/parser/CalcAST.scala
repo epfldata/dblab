@@ -36,7 +36,7 @@ object CalcAST {
 
   case class VarT(name: String, tp: Tpe)
 
-  case class External_t(name: String, inps: List[VarT], outs: List[VarT], tp: PardisType[_], meta: CalcExpr) //TODO meta should be optional
+  case class External_t(name: String, inps: List[VarT], outs: List[VarT], tp: Tpe, meta: Option[CalcExpr])
 
   trait Cmp_t
   case object Eq extends Cmp_t // Equals
