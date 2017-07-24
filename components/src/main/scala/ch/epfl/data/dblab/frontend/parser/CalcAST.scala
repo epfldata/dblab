@@ -3,7 +3,7 @@ package dblab
 package frontend
 package parser
 
-import sc.pardis.types.PardisType
+import sc.pardis.types.{ PardisType, Tpe }
 
 /**
  * A module containing AST nodes for AG
@@ -32,9 +32,9 @@ object CalcAST {
   case class ArithNeg(expr: ArithExpr) extends ArithExpr
   case class ArithConst(lit: SQLAST.LiteralExpression) extends ArithExpr
   case class ArithVar(v: VarT) extends ArithExpr
-  case class ArithFunc(name: String, terms: List[ArithExpr], tp: PardisType[_]) extends ArithExpr
+  case class ArithFunc(name: String, terms: List[ArithExpr], tp: Tpe) extends ArithExpr
 
-  case class VarT(name: String, tp: String)
+  case class VarT(name: String, tp: Tpe)
 
   case class External_t(name: String, inps: List[VarT], outs: List[VarT], tp: PardisType[_], meta: CalcExpr) //TODO meta should be optional
 

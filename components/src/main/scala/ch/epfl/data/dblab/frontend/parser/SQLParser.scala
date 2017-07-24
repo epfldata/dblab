@@ -99,18 +99,14 @@ object SQLParser extends StandardTokenParsers {
     | "LINE" ~ "DELIMITED" ^^ { case l ~ d => l + d }
     | stringLit ~ "DELIMITED" ^^ { case s ~ d => s + d })
 
-  def parseAdaptorStatement: Parser[String] = (
-    ident <~ ("(" <~ ")").? ^^ {
-      case id => id
+  def parseAdaptorStatement: Parser[String] =
+    ident ~ ("(" ~> parseAdaptorParams.? <~ ")").? ^^ {
+      case id ~ param => id + param
     }
-    | ident ~ "(" ~ parseAdaptorParams ~ ")" ^^ {
-      case id ~ _ ~ param ~ _ => id + param
-    })
   def parseAdaptorParams: Parser[String] = (
-    rep(ident ~ ":=" ~ stringLit ~ ",").? ~ ident ~ ":=" ~ stringLit ^^ {
-      case Some(s) ~ id ~ sv ~ str => s + id + sv + str
-    }
-    | stringLit ^^ {
+    ident ~ ":=" ~ stringLit ^^ {
+      case id ~ sv ~ str => id + sv + str
+    }) | (stringLit ^^ {
       case s => s
     })
   def parseStreamColumns: Parser[Seq[(String, String)]] =
@@ -496,5 +492,5 @@ object SQLParser extends StandardTokenParsers {
     lexical.reserved += token
 
   lexical.delimiters += (
-    "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "||", "/", "(", ")", ",", ".", ";", ":=")
+    "*", "+", "-", "<", ":=", "=", "<>", "!=", "<=", ">=", ">", "||", "/", "(", ")", ",", ".", ";")
 }

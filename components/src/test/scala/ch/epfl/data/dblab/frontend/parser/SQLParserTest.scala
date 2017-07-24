@@ -119,6 +119,20 @@ class SQLParserTest extends FlatSpec {
     r should not be None
   }
 
+  "SQLParser" should "parse csv adaptor" in {
+    val parser = SQLParser
+    val r = parser.parseStream(
+      """CREATE STREAM FOO (ok INT) FROM FILE 'foo.csv'
+        LINE DELIMITED CSV (delimiter := '|'); SELECT * FROM FOO;""")
+    r should not be None
+  }
+
+  "SQLParser" should "parse IN LIST" in {
+    val parser = SQLParser
+    val r = parser.parseStream("SELECT * FROM R WHERE A IN LIST (1, 2, 3);")
+    r should not be None
+  }
+
   "SQLParser" should "parse TPCH queries" in {
     val parser = SQLParser
     val folder = "experimentation/tpch-sql"
@@ -128,7 +142,7 @@ class SQLParserTest extends FlatSpec {
     } else
       f.listFiles.filter(x => x.getName.startsWith("Q")).map(folder + "/" + _.getName).toList
     for (file <- files) {
-      println(s"parsing $file")
+      //      println(s"parsing $file")
       val r = parser.parseStream(scala.io.Source.fromFile(file).mkString)
       r should not be None
     }
@@ -156,7 +170,7 @@ class SQLParserTest extends FlatSpec {
     val files = if (!f.exists) {
       throw new Exception(s"$f does not exist!")
     } else
-      f.listFiles.map(folder + "/" + _.getName).toList
+      f.listFiles.filter(x => x.getName.startsWith("query") && x.getName.endsWith(".sql")).map(folder + "/" + _.getName).toList
     for (file <- files) {
       println(s"parsing $file")
       val r = parser.parseStream(scala.io.Source.fromFile(file).mkString)

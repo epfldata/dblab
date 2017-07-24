@@ -213,7 +213,7 @@ object SQLAST {
   case class AllExp(e: SelectStatement) extends Expression
   case class SomeExp(e: SelectStatement) extends Expression
   case class ExtractExp(first: String, second: String) extends Expression
-  case class InList(list: List[String]) extends Expression
+  case class InList(list: List[Expression]) extends Expression
 
   case class FunctionExp(name: String, inputs: List[Expression]) extends Expression
 
