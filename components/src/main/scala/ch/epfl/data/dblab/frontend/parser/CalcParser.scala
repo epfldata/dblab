@@ -1,6 +1,8 @@
 package ch.epfl.data.dblab.frontend.parser
 
 import ch.epfl.data.dblab.frontend.parser.CalcAST._
+import ch.epfl.data.dblab.frontend.parser.SQLAST.{ DoubleLiteral, IntLiteral, StringLiteral }
+import ch.epfl.data.dblab.frontend.parser.SQLParser.{ elem, floatLit, lexical }
 import ch.epfl.data.dblab.schema.{ DateType, VarCharType }
 import ch.epfl.data.sc.pardis.types._
 
@@ -87,41 +89,48 @@ object CalcParser extends StandardTokenParsers {
     })
 
   def parseQuery: Parser[CalcExpr] =
-    "DECLARE" ~> "QUERY" ~> ident ~ ":=" ~ parseCalcExpr ^^ {
+    ("DECLARE" ~> "QUERY" ~> ident ~ ":=" ~ parseCalcExpr <~ ";" ^^ {
       case name ~ _ ~ exp => CalcQuery(name, exp)
-    }
+    }) | (((ident <~ ":") ~ parseCalcExpr) ^^ { case name ~ exp => CalcQuery(name, exp) })
 
   def parseCalcExpr: Parser[CalcExpr] =
-    parseIvcCalcExpr ^^ {
+    parseAddition ^^ {
       case ivc => ivc
     }
 
+  def parseAddition: Parser[CalcExpr] =
+    parseMultiplication * (
+      "+" ^^^ { (a: CalcExpr, b: CalcExpr) => CalcSum(List(a, b)) } |
+      "-" ^^^ { (a: CalcExpr, b: CalcExpr) => CalcSum(List(a, CalcNeg(b))) })
+
+  def parseMultiplication: Parser[CalcExpr] =
+    parseIvcCalcExpr * (
+      "*" ^^^ { (a: CalcExpr, b: CalcExpr) => CalcProd(List(a, b)) })
+
   def parseIvcCalcExpr: Parser[CalcExpr] = {
-    ("NEG" ~> "*" ~> parseIvcCalcExpr ^^ {
+    //        ("NEG" ~> "*" ~> parseIvcCalcExpr ^^ {
+    //          case ivc => CalcNeg(ivc)
+    //        }) |
+    //      (parseIvcCalcExpr ~ "*" ~ parseIvcCalcExpr ^^ {
+    //        case i1 ~ _ ~ i2 => CalcProd(List(i1, i2))
+    //      }) |
+    //      (parseIvcCalcExpr ~ "+" ~ parseIvcCalcExpr ^^ {
+    //        case i1 ~ _ ~ i2 => CalcSum(List(i1, i2))
+    //      }) |
+    //      (parseIvcCalcExpr ~ "-" ~ parseIvcCalcExpr ^^ {
+    //        case i1 ~ _ ~ i2 => CalcSum(List(i1, CalcNeg(i2)))
+    //      }) |
+    ("(" ~> (parseCalcExpr) <~ ")" ^^ { case x => x })
+    ("-" ~> parseIvcCalcExpr ^^ {
       case ivc => CalcNeg(ivc)
     }) |
-      ("(" ~> parseIvcCalcExpr <~ ")" ^^ {
-        case ivc => ivc
-      }) |
-      (parseIvcCalcExpr ~ "*" ~ parseIvcCalcExpr ^^ {
-        case i1 ~ _ ~ i2 => CalcProd(List(i1, i2))
-      }) |
-      (parseIvcCalcExpr ~ "+" ~ parseIvcCalcExpr ^^ {
-        case i1 ~ _ ~ i2 => CalcSum(List(i1, i2))
-      }) |
-      (parseIvcCalcExpr ~ "-" ~ parseIvcCalcExpr ^^ {
-        case i1 ~ _ ~ i2 => CalcSum(List(i1, CalcNeg(i2)))
-      }) |
-      ("-" ~> parseIvcCalcExpr ^^ {
-        case ivc => CalcNeg(ivc)
-      }) |
       ("[" ~> parseValueExpr <~ "]" ^^ {
         case ve => CalcValue(ve)
       }) |
       (parseValueLeaf ^^ {
         case vl => CalcValue(vl)
       }) |
-      ("AGGSUM" ~> "(" ~> "[" ~> (parseVarList).? ~ "]" ~ "," ~ parseIvcCalcExpr <~ ")" ^^ {
+      ("AGGSUM" ~> "(" ~> "[" ~> (parseVarList).? ~ "]" ~ "," ~ parseCalcExpr <~ ")" ^^ {
         case Some(l) ~ _ ~ _ ~ calc => AggSum(l, calc)
         case None ~ _ ~ _ ~ calc    => AggSum(List(), calc)
       }) |
@@ -134,7 +143,7 @@ object CalcParser extends StandardTokenParsers {
       (parseExternalDef ^^ {
         case e => e
       }) |
-      ("[" ~> parseValueExpr ~ parseComparison ~ parseValueExpr <~ "]" ^^ {
+      ("{" ~> parseValueExpr ~ parseComparison ~ parseValueExpr <~ "}" ^^ {
         case v1 ~ c ~ v2 => Cmp(c, v1, v2)
       }) |
       ("(" ~> ident ~ (parseDataType).? ~ "^=" ~ parseIvcCalcExpr <~ ")" ^^ {
@@ -217,15 +226,15 @@ object CalcParser extends StandardTokenParsers {
     ("(" ~> parseValueExpr <~ ")" ^^ {
       case ve => ve
     }) |
-      (parseValueExpr ~ "*" ~ parseValueExpr ^^ {
-        case v1 ~ _ ~ v2 => ArithProd(List(v1, v2))
-      }) |
-      (parseValueExpr ~ "+" ~ parseValueExpr ^^ {
-        case v1 ~ _ ~ v2 => ArithSum(List(v1, v2))
-      }) |
-      (parseValueExpr ~ "-" ~ parseValueExpr ^^ {
-        case v1 ~ _ ~ v2 => ArithSum(List(v1, ArithNeg(v2)))
-      }) |
+      //      (parseValueExpr ~ "*" ~ parseValueExpr ^^ {
+      //        case v1 ~ _ ~ v2 => ArithProd(List(v1, v2))
+      //      }) |
+      //      (parseValueExpr ~ "+" ~ parseValueExpr ^^ {
+      //        case v1 ~ _ ~ v2 => ArithSum(List(v1, v2))
+      //      }) |
+      //      (parseValueExpr ~ "-" ~ parseValueExpr ^^ {
+      //        case v1 ~ _ ~ v2 => ArithSum(List(v1, ArithNeg(v2)))
+      //      }) |
       ("-" ~> parseValueExpr ^^ {
         case v => ArithNeg(v)
       }) |
@@ -248,8 +257,16 @@ object CalcParser extends StandardTokenParsers {
 
   }
 
-  def parseConstant: Parser[ArithConst] = { //TODO
-    ???
+  def parseConstant: Parser[ArithConst] = {
+    (numericLit ^^ {
+      case i => ArithConst(IntLiteral(i.toInt))
+    }) |
+      (stringLit ^^ {
+        case s => ArithConst(StringLiteral(s))
+      }) |
+      (floatLit ^^ {
+        case f => ArithConst(DoubleLiteral(f.toDouble))
+      })
   }
 
   def parseFuncDef: Parser[ArithFunc] = {
@@ -299,10 +316,10 @@ object CalcParser extends StandardTokenParsers {
         | '-' ~ '-' ~ rep(chrExcept(EofCh, '\n'))
         | '/' ~ '*' ~ comment)
 
-    //    override protected def comment: Parser[Any] = (
-    //      	      '*' ~ '/'  ^^ { case _ => ' '  }
-    //    	    | chrExcept(EofCh) ~ comment
-    //    	    )
+    //        override protected def comment: Parser[Any] = (
+    //          	      '*' ~ '/'  ^^ { case _ => ' '  }
+    //        	    | chrExcept(EofCh) ~ comment
+    //        	    )
 
     override def token: Parser[Token] =
       (identChar ~ rep(identChar | digit) ^^ {
@@ -339,6 +356,9 @@ object CalcParser extends StandardTokenParsers {
 
   override val lexical = new CalcLexical
 
+  def floatLit: Parser[String] =
+    elem("decimal", _.isInstanceOf[lexical.FloatLit]) ^^ (_.chars)
+
   val tokens = List("CREATE", "TABLE", "STREAM", "FROM", "INT", "DATE", "STRING", "FLOAT", "CHAR", "VARCHAR",
     "FILE", "FIXEDWIDTH", "DELIMITED", "LINE", "DECLARE", "QUERY", "NEG", "AGGSUM", "EXISTS", "DELTA")
 
@@ -346,5 +366,5 @@ object CalcParser extends StandardTokenParsers {
     lexical.reserved += token
 
   lexical.delimiters += (
-    "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "||", "/", "(", ")", ",", ".", ";", ":=", "^=", "[", "]", ":")
+    "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "||", "/", "(", ")", ",", ".", ";", ":=", "^=", "[", "]", ":", "{", "}")
 }
