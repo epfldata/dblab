@@ -213,7 +213,7 @@ object SQLAST {
   case class AllExp(e: SelectStatement) extends Expression
   case class SomeExp(e: SelectStatement) extends Expression
   case class ExtractExp(first: String, second: String) extends Expression
-  case class InList(list: List[Expression]) extends Expression
+  case class InList(e: Expression, list: List[Expression]) extends Expression
 
   case class FunctionExp(name: String, inputs: List[Expression]) extends Expression
 
@@ -262,6 +262,9 @@ object SQLAST {
   case object NullLiteral extends LiteralExpression
   case class DateLiteral(v: String) extends LiteralExpression {
     override def toString = "DATE '" + v.toString + "'"
+  }
+  case class IntervalLiteral(s: String, id: String, num: Option[Int]) extends LiteralExpression {
+    override def toString: String = id + ": " + s
   }
 
   trait Relation extends SQLNode {

@@ -259,6 +259,7 @@ object SQLParser extends StandardTokenParsers {
     case (acc, (("||", e: Expression)))                     => StringConcat(acc, e)
     case (acc, (("ISNOTNULL", null)))                       => Not(Equals(acc, NullLiteral))
     case (acc, (("ISNULL", null)))                          => Equals(acc, NullLiteral)
+    case (acc, (("IN LIST", l: List[Expression])))          => InList(acc, l)
   }
 
   def parseOperandExpression: Parser[Expression] =
@@ -275,7 +276,7 @@ object SQLParser extends StandardTokenParsers {
     | "IN" ~ "(" ~ (parseSelectStatement | rep1sep(parseExpression, ",")) ~ ")" ^^ {
       case op ~ _ ~ a ~ _ => (op, a)
     }
-    | "IN" ~> "LIST" ~> "(" ~> numericLit ~ rep("," ~> numericLit).? <~ ")" ^^ {
+    | "IN" ~> "LIST" ~> "(" ~> parseExpression ~ rep("," ~> parseExpression).? <~ ")" ^^ {
       case num ~ Some(l) => ("IN LIST", l :+ num)
     }
     | "LIKE" ~ parseAddition ^^ { case op ~ a => (op, a) }
@@ -408,7 +409,13 @@ object SQLParser extends StandardTokenParsers {
       }
     }
     | "NULL" ^^ { case _ => NullLiteral }
-    | "DATE" ~> "(".? ~> stringLit <~ ")".? ^^ { case s => DateLiteral(s) })
+    | "DATE" ~> "(".? ~> stringLit <~ ")".? ^^ { case s => DateLiteral(s) }
+    | ("INTERVAL" ~> stringLit ~ ident ^^ {
+      case s ~ id => IntervalLiteral(s, id, None)
+    })
+    | ("INTERVAL" ~> stringLit ~ ident ~ "(" ~ numericLit <~ ")" ^^ {
+      case s ~ id ~ _ ~ num => IntervalLiteral(s, id, Some(num.toInt))
+    }))
 
   // ----------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -485,7 +492,7 @@ object SQLParser extends StandardTokenParsers {
     "AVG", "MIN", "MAX", "YEAR", "DATE", "TOP", "LIMIT", "CASE", "WHEN", "THEN", "ELSE",
     "END", "SUBSTRING", "SUBSTR", "UNION", "ALL", "CAST", "DECIMAL", "DISTINCT", "NUMERIC",
     "INT", "DAYS", "COALESCE", "ROUND", "OVER", "PARTITION", "BY", "ROWS", "INTERSECT",
-    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED", "FIXEDWIDTH",
+    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED", "FIXEDWIDTH", "INTERVAL",
     "LINE", "STRING", "FLOAT", "CHAR", "VARCHAR", "NATURAL", "SOME", "TABLE", "ANY", "EXTRACT", "LIST", "INTEGER", "FUNCTION", "EXTERNAL", "RETURNS")
 
   for (token <- tokens)

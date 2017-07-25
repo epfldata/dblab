@@ -339,11 +339,12 @@ object CalcParser extends StandardTokenParsers {
 
   override val lexical = new CalcLexical
 
-  val tokens = List("CREATE", "TABLE", "STREAM", "AGGSUM")
+  val tokens = List("CREATE", "TABLE", "STREAM", "FROM", "INT", "DATE", "STRING", "FLOAT", "CHAR", "VARCHAR",
+    "FILE", "FIXEDWIDTH", "DELIMITED", "LINE", "DECLARE", "QUERY", "NEG", "AGGSUM", "EXISTS", "DELTA")
 
   for (token <- tokens)
     lexical.reserved += token
 
   lexical.delimiters += (
-    "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "||", "/", "(", ")", ",", ".", ";", ":=")
+    "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "||", "/", "(", ")", ",", ".", ";", ":=", "^=", "[", "]", ":")
 }
