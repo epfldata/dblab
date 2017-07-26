@@ -3,7 +3,8 @@ package dblab
 package frontend
 package parser
 
-import sc.pardis.types.{ PardisType, Tpe }
+import ch.epfl.data.dblab.schema.{DateType, VarCharType}
+import sc.pardis.types._
 
 /**
  * A module containing AST nodes for AG
@@ -58,5 +59,27 @@ object CalcAST {
   trait Interval_t
   case class CYearMonth(y: Int, m: Int) extends Interval_t
   case class CDay(value: Int) extends Interval_t
+
+  def prettyprint(calcExpr: CalcExpr): String = {
+    def rcr(c: CalcExpr): String = prettyprint(c)
+    calcExpr match{
+      case CalcQuery(id , expr) => s"${id}: ${rcr(expr)}"
+      case CalcNeg(e) => s"-(${rcr(e)})"
+      case CalcSum(hd :: tl) => tl.foldLeft(rcr(hd))((acc, cur) => s"$acc + ${rcr(cur)}")
+      case CalcProd(hd :: tl) => tl.foldLeft(rcr(hd))((acc, cur) => s"$acc * ${rcr(cur)}")
+      case AggSum(vars, expr) => vars.foldLeft("AGGSUM([")((acc, cur) => s"$acc + ${prettyprint(cur)}") + s"], ${rcr(expr)})"
+
+    }
+  }
+
+  def prettyprint(vt: VarT): String = {
+    vt.tp match{
+      case IntType => s"${vt.name}: INT"
+      case StringType => s"${vt.name}: STRING"
+      case FloatType => s"${vt.name}: FLOAT"
+      case VarCharType(mx) => s"${vt.name}: VARCHAR(${mx})"
+      case DateType => s"${vt.name}: DATE"
+    }
+  }
 
 }
