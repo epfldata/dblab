@@ -275,6 +275,8 @@ object SQLAST {
       case vw: View => Seq(vw)
     }
 
+    def extractTables: Seq[SQLTable] = extractRelations collect { case x : SQLTable => x }
+
     def extractSubqueries: Seq[Subquery] = this match {
       case Join(left, right, _, _) => left.extractSubqueries ++ right.extractSubqueries
       case tbl: SQLTable           => Seq()
