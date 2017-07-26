@@ -13,7 +13,22 @@ class CalcParserTest extends FlatSpec {
 
   "CalcParser" should "parse DBToaster simple queries" in {
     val parser = CalcParser
-    val folder = "experimentation/dbtoaster/queries/calc"
+    val folder = "experimentation/dbtoaster/queries/calcsimple"
+    val f = new java.io.File(folder)
+    val files = if (!f.exists) {
+      throw new Exception(s"$f does not exist!")
+    } else
+      f.listFiles.map(folder + "/" + _.getName).toList
+    for (file <- files) {
+      println(s"parsing $file")
+      val r = parser.parse(scala.io.Source.fromFile(file).mkString)
+      r should not be None
+    }
+  }
+
+  "CalcParser" should "parse DBToaster tpch queries" in {
+    val parser = CalcParser
+    val folder = "experimentation/dbtoaster/queries/calctpch"
     val f = new java.io.File(folder)
     val files = if (!f.exists) {
       throw new Exception(s"$f does not exist!")

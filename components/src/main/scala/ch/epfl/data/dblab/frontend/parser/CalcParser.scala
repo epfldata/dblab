@@ -1,7 +1,7 @@
 package ch.epfl.data.dblab.frontend.parser
 
 import ch.epfl.data.dblab.frontend.parser.CalcAST._
-import ch.epfl.data.dblab.frontend.parser.SQLAST.{ DoubleLiteral, IntLiteral, StringLiteral }
+import ch.epfl.data.dblab.frontend.parser.SQLAST.{ DateLiteral, DoubleLiteral, IntLiteral, StringLiteral }
 import ch.epfl.data.dblab.frontend.parser.SQLParser.{ elem, floatLit, lexical }
 import ch.epfl.data.dblab.schema.{ DateType, VarCharType }
 import ch.epfl.data.sc.pardis.types._
@@ -52,6 +52,9 @@ object CalcParser extends StandardTokenParsers {
     "INT" ^^^ {
       IntType
     } |
+      ("DATE" ~> "(".? ~> stringLit <~ ")".? ^^^ {
+        DateType
+      }) |
       "DATE" ^^^ {
         DateType
       } |
@@ -122,7 +125,7 @@ object CalcParser extends StandardTokenParsers {
         ("-" ~> parseIvcCalcExpr ^^ {
           case ivc => CalcNeg(ivc)
         }) |
-        ("[" ~> parseValueExpr <~ "]" ^^ {
+        ("{" ~> parseValueExpr <~ "}" ^^ {
           case ve => CalcValue(ve)
         }) |
         ("AGGSUM" ~> "(" ~> "[" ~> (parseVarList).? ~ "]" ~ "," ~ parseCalcExpr <~ ")" ^^ {
@@ -150,6 +153,9 @@ object CalcParser extends StandardTokenParsers {
         }) |
         (parseValueLeaf ^^ {
           case vl => CalcValue(vl)
+        }) |
+        ("{" ~> parseValueExpr ~ "IN" ~ "[" ~ parseValExpList <~ "]" <~ "}" ^^ {
+          case id ~ _ ~ _ ~ l => In(id, l)
         })
 
     //TODO
@@ -271,6 +277,9 @@ object CalcParser extends StandardTokenParsers {
       }) |
       (floatLit ^^ {
         case f => ArithConst(DoubleLiteral(f.toDouble))
+      }) |
+      ("DATE" ~> "(" ~> stringLit <~ ")" ^^ {
+        case d => ArithConst(DateLiteral(d))
       })
   }
 
@@ -366,7 +375,7 @@ object CalcParser extends StandardTokenParsers {
     elem("decimal", _.isInstanceOf[lexical.FloatLit]) ^^ (_.chars)
 
   val tokens = List("CREATE", "TABLE", "STREAM", "FROM", "INT", "DATE", "STRING", "FLOAT", "CHAR", "VARCHAR",
-    "FILE", "FIXEDWIDTH", "DELIMITED", "LINE", "DECLARE", "QUERY", "NEG", "AGGSUM", "EXISTS", "DELTA")
+    "FILE", "FIXEDWIDTH", "DELIMITED", "LINE", "DECLARE", "QUERY", "NEG", "AGGSUM", "EXISTS", "DELTA", "IN")
 
   for (token <- tokens)
     lexical.reserved += token

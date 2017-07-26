@@ -25,6 +25,7 @@ object CalcAST {
   case class Lift(vr: VarT, expr: CalcExpr) extends CalcExpr
   case class Exists(term: CalcExpr) extends CalcExpr
   case class CalcValue(v: ArithExpr) extends CalcExpr
+  case class In(first: ArithExpr, vars: List[ArithExpr]) extends CalcExpr
 
   trait ArithExpr
   case class ArithSum(expr: List[ArithExpr]) extends ArithExpr
