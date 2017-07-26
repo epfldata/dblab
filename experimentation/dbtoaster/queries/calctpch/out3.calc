@@ -1,0 +1,43 @@
+QUERY11: 
+(EXISTS(
+   AggSum([P_PARTKEY, P_NATIONKEY], 
+     (AggSum([PS_PARTKEY, PS_SUPPKEY], 
+        (PARTSUPP(PARTSUPP_PARTKEY, PARTSUPP_SUPPKEY, PARTSUPP_AVAILQTY,
+                    PARTSUPP_SUPPLYCOST, PARTSUPP_COMMENT) *
+          (PS_SUPPKEY ^= PARTSUPP_SUPPKEY) *
+          (PS_PARTKEY ^= PARTSUPP_PARTKEY))) *
+       (P_PARTKEY ^= PS_PARTKEY) *
+       AggSum([PS_SUPPKEY, S_NATIONKEY], 
+         (SUPPLIER(PS_SUPPKEY, SUPPLIER_NAME, SUPPLIER_ADDRESS,
+                     SUPPLIER_NATIONKEY, SUPPLIER_PHONE, SUPPLIER_ACCTBAL,
+                     SUPPLIER_COMMENT) *
+           (S_NATIONKEY ^= SUPPLIER_NATIONKEY))) *
+       (P_NATIONKEY ^= S_NATIONKEY)))) *
+  AggSum([], 
+    ((P_VALUE ^=
+       AggSum([P_PARTKEY, P_NATIONKEY], 
+         (AggSum([PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST], 
+            (PARTSUPP(PARTSUPP_PARTKEY, PARTSUPP_SUPPKEY, PARTSUPP_AVAILQTY,
+                        PARTSUPP_SUPPLYCOST, PARTSUPP_COMMENT) *
+              (PS_SUPPLYCOST ^= PARTSUPP_SUPPLYCOST) *
+              (PS_AVAILQTY ^= PARTSUPP_AVAILQTY) *
+              (PS_SUPPKEY ^= PARTSUPP_SUPPKEY) *
+              (PS_PARTKEY ^= PARTSUPP_PARTKEY))) *
+           (P_PARTKEY ^= PS_PARTKEY) *
+           AggSum([PS_SUPPKEY, S_NATIONKEY], 
+             (SUPPLIER(PS_SUPPKEY, SUPPLIER_NAME, SUPPLIER_ADDRESS,
+                         SUPPLIER_NATIONKEY, SUPPLIER_PHONE,
+                         SUPPLIER_ACCTBAL, SUPPLIER_COMMENT) *
+               (S_NATIONKEY ^= SUPPLIER_NATIONKEY))) *
+           (P_NATIONKEY ^= S_NATIONKEY) * PS_SUPPLYCOST * PS_AVAILQTY))) *
+      AggSum([], 
+        ((__sql_inline_agg_1 ^=
+           (AggSum([P_NATIONKEY], 
+              (PARTSUPP(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST,
+                          PS_COMMENT) *
+                SUPPLIER(PS_SUPPKEY, S_NAME, S_ADDRESS, P_NATIONKEY, S_PHONE,
+                           S_ACCTBAL, S_COMMENT) *
+                {(PS_SUPPLYCOST * PS_AVAILQTY)})) *
+             0.001)) *
+          {P_VALUE > __sql_inline_agg_1})) *
+      P_VALUE)))

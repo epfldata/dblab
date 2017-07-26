@@ -1,0 +1,70 @@
+NUMCUST: 
+AggSum([CUSTSALE_CNTRYCODE], 
+  (CUSTOMER(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL,
+              C_MKTSEGMENT, C_COMMENT) *
+    {[substring:string](C_PHONE, 0, 2) IN ['13', '31', '23', '29', '30',
+      '18', '17']} *
+    (CUSTSALE_CNTRYCODE ^= {[substring:string](C_PHONE, 0, 2)}) *
+    AggSum([], 
+      ((__sql_inline_agg_3 ^=
+         (AggSum([], 
+            (CUSTOMER(C2_CUSTKEY, C2_NAME, C2_ADDRESS, C2_NATIONKEY,
+                        C2_PHONE, C2_ACCTBAL, C2_MKTSEGMENT, C2_COMMENT) *
+              {[substring:string](C2_PHONE, 0, 2) IN ['13', '31', '23', '29',
+                '30', '18', '17']} *
+              {C2_ACCTBAL > 0.} * C2_ACCTBAL)) *
+           AggSum([], 
+             ((__sql_inline_average_count_2 ^=
+                AggSum([], 
+                  (CUSTOMER(C2_CUSTKEY, C2_NAME, C2_ADDRESS, C2_NATIONKEY,
+                              C2_PHONE, C2_ACCTBAL, C2_MKTSEGMENT, C2_COMMENT) *
+                    {[substring:string](C2_PHONE, 0, 2) IN ['13', '31', '23',
+                      '29', '30', '18', '17']} *
+                    {C2_ACCTBAL > 0.}))) *
+               {0 != __sql_inline_average_count_2} *
+               {[/:float]([listmax:int](1, __sql_inline_average_count_2))})))) *
+        {C_ACCTBAL > __sql_inline_agg_3})) *
+    AggSum([], 
+      ((__domain_1 ^=
+         AggSum([C_CUSTKEY], 
+           ORDERS(O_ORDERKEY, C_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE,
+                    O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY,
+                    O_COMMENT))) *
+        (__domain_1 ^= 0)))))
+TOTALACCTBAL: 
+AggSum([CUSTSALE_CNTRYCODE], 
+  (AggSum([CUSTSALE_CNTRYCODE, CUSTSALE_ACCTBAL], 
+     (CUSTOMER(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL,
+                 C_MKTSEGMENT, C_COMMENT) *
+       {[substring:string](C_PHONE, 0, 2) IN ['13', '31', '23', '29', '30',
+         '18', '17']} *
+       (CUSTSALE_ACCTBAL ^= C_ACCTBAL) *
+       (CUSTSALE_CNTRYCODE ^= {[substring:string](C_PHONE, 0, 2)}) *
+       AggSum([], 
+         ((__sql_inline_agg_3 ^=
+            (AggSum([], 
+               (CUSTOMER(C2_CUSTKEY, C2_NAME, C2_ADDRESS, C2_NATIONKEY,
+                           C2_PHONE, C2_ACCTBAL, C2_MKTSEGMENT, C2_COMMENT) *
+                 {[substring:string](C2_PHONE, 0, 2) IN ['13', '31', '23',
+                   '29', '30', '18', '17']} *
+                 {C2_ACCTBAL > 0.} * C2_ACCTBAL)) *
+              AggSum([], 
+                ((__sql_inline_average_count_2 ^=
+                   AggSum([], 
+                     (CUSTOMER(C2_CUSTKEY, C2_NAME, C2_ADDRESS, C2_NATIONKEY,
+                                 C2_PHONE, C2_ACCTBAL, C2_MKTSEGMENT,
+                                 C2_COMMENT) *
+                       {[substring:string](C2_PHONE, 0, 2) IN ['13', '31',
+                         '23', '29', '30', '18', '17']} *
+                       {C2_ACCTBAL > 0.}))) *
+                  {0 != __sql_inline_average_count_2} *
+                  {[/:float]([listmax:int](1, __sql_inline_average_count_2))})))) *
+           {C_ACCTBAL > __sql_inline_agg_3})) *
+       AggSum([], 
+         ((__domain_1 ^=
+            AggSum([C_CUSTKEY], 
+              ORDERS(O_ORDERKEY, C_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE,
+                       O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY,
+                       O_COMMENT))) *
+           (__domain_1 ^= 0))))) *
+    CUSTSALE_ACCTBAL))
