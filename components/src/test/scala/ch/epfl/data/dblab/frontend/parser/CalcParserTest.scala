@@ -7,7 +7,7 @@ class CalcParserTest extends FlatSpec {
 
   "CalcParser" should "parse simpler query w/o relation correctly" in {
     val parser = CalcParser
-    val r = parser.parse("q2: AggSum([], (C ^= 0) * {C:int > 0})")
+    val r = parser.parse("declare query q2 := AggSum([], (C ^= 0) * {C:int > 0});")
     r should not be None
   }
 }

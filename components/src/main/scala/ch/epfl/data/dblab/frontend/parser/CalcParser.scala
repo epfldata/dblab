@@ -19,15 +19,21 @@ import scala.util.parsing.input.CharArrayReader.EofCh
 
 object CalcParser extends StandardTokenParsers {
 
-  def parse(statement: String): CalcExpr = {
-    phrase(parseRel | parseQuery)(new lexical.Scanner(statement)) match {
+  def parse(statement: String): List[CalcExpr] = {
+    phrase(parseAll)(new lexical.Scanner(statement)) match {
       case Success(r, q) => r
       case failure       => throw new Exception("Unable to parse CALC query!\n" + failure)
     }
   }
 
+  def parseAll: Parser[List[CalcExpr]] = {
+    rep(parseRel).? ~ rep(parseQuery) ^^ {
+      case Some(l) ~ q => l ++ q
+      case None ~ q    => q
+    }
+  }
   def parseRel: Parser[CalcExpr] = {
-    "CREATE" ~> ("TABLE" | "STREAM") ~ ident ~ "(" ~ parseFieldList.? ~ ")" ~ ("FROM" ~> parseSrcStatement).? ^^ {
+    "CREATE" ~> ("TABLE" | "STREAM") ~ ident ~ "(" ~ parseFieldList.? ~ ")" ~ ("FROM" ~> parseSrcStatement).? <~ ";" ^^ {
       case ts ~ name ~ _ ~ Some(fieldlist) ~ _ ~ Some(src) => Rel(ts, name, fieldlist, src)
       case ts ~ name ~ _ ~ Some(fieldlist) ~ _ ~ None      => Rel(ts, name, fieldlist, "")
       case ts ~ name ~ _ ~ None ~ _ ~ Some(src)            => Rel(ts, name, null, src)
@@ -108,19 +114,10 @@ object CalcParser extends StandardTokenParsers {
       "*" ^^^ { (a: CalcExpr, b: CalcExpr) => CalcProd(List(a, b)) })
 
   def parseIvcCalcExpr: Parser[CalcExpr] = {
-    //        ("NEG" ~> "*" ~> parseIvcCalcExpr ^^ {
-    //          case ivc => CalcNeg(ivc)
-    //        }) |
-    //      (parseIvcCalcExpr ~ "*" ~ parseIvcCalcExpr ^^ {
-    //        case i1 ~ _ ~ i2 => CalcProd(List(i1, i2))
-    //      }) |
-    //      (parseIvcCalcExpr ~ "+" ~ parseIvcCalcExpr ^^ {
-    //        case i1 ~ _ ~ i2 => CalcSum(List(i1, i2))
-    //      }) |
-    //      (parseIvcCalcExpr ~ "-" ~ parseIvcCalcExpr ^^ {
-    //        case i1 ~ _ ~ i2 => CalcSum(List(i1, CalcNeg(i2)))
-    //      }) |
-    ("(" ~> (parseCalcExpr) <~ ")" ^^ { case x => x })
+    ("NEG" ~> "*" ~> parseIvcCalcExpr ^^ {
+      case ivc => CalcNeg(ivc)
+    }) |
+      ("(" ~> (parseCalcExpr) <~ ")" ^^ { case x => x })
     ("-" ~> parseIvcCalcExpr ^^ {
       case ivc => CalcNeg(ivc)
     }) |
@@ -183,7 +180,7 @@ object CalcParser extends StandardTokenParsers {
       })
   }
   def parseExternalDef: Parser[External] = {
-    parseExternalWithoutMeta ~ (":".? ~> "(" ~> parseIvcCalcExpr <~ ")").? ^^ {
+    parseExternalWithoutMeta ~ (":".? ~> "(" ~> parseCalcExpr <~ ")").? ^^ {
       case et ~ Some(calc) => External(calc, et)
       case et ~ None       => External(null, et)
     }
@@ -222,19 +219,25 @@ object CalcParser extends StandardTokenParsers {
         case id ~ _ ~ l ~ _ => Rel("Rel", id, l, "")
       })
   }
-  def parseValueExpr: Parser[ArithExpr] = {
+
+  def parseValueExpr: Parser[ArithExpr] =
+    parseValueAddition ^^ {
+      case e => e
+    }
+
+  def parseValueAddition: Parser[ArithExpr] =
+    parseValueMultiplication * (
+      "+" ^^^ { (a: ArithExpr, b: ArithExpr) => ArithSum(List(a, b)) } |
+      "-" ^^^ { (a: ArithExpr, b: ArithExpr) => ArithSum(List(a, ArithNeg(b))) })
+
+  def parseValueMultiplication: Parser[ArithExpr] =
+    parsePrimaryValueExpr * (
+      "*" ^^^ { (a: ArithExpr, b: ArithExpr) => ArithProd(List(a, b)) })
+
+  def parsePrimaryValueExpr: Parser[ArithExpr] = {
     ("(" ~> parseValueExpr <~ ")" ^^ {
       case ve => ve
     }) |
-      //      (parseValueExpr ~ "*" ~ parseValueExpr ^^ {
-      //        case v1 ~ _ ~ v2 => ArithProd(List(v1, v2))
-      //      }) |
-      //      (parseValueExpr ~ "+" ~ parseValueExpr ^^ {
-      //        case v1 ~ _ ~ v2 => ArithSum(List(v1, v2))
-      //      }) |
-      //      (parseValueExpr ~ "-" ~ parseValueExpr ^^ {
-      //        case v1 ~ _ ~ v2 => ArithSum(List(v1, ArithNeg(v2)))
-      //      }) |
       ("-" ~> parseValueExpr ^^ {
         case v => ArithNeg(v)
       }) |
