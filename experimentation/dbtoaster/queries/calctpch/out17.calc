@@ -1,0 +1,44 @@
+COUNT: 
+(EXISTS(
+   AggSum([S_SUPPKEY], 
+     (LINEITEM(L_ORDERKEY, L_PARTKEY, S_SUPPKEY, L_LINENUMBER, L_QUANTITY,
+                 L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG,
+                 L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE,
+                 L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT) *
+       {L_SHIPDATE >= DATE('1996-1-1')} * {L_SHIPDATE < DATE('1996-4-1')}))) *
+  (R1_TOTAL_REVENUE ^=
+    AggSum([S_SUPPKEY], 
+      (LINEITEM(L_ORDERKEY, L_PARTKEY, S_SUPPKEY, L_LINENUMBER, L_QUANTITY,
+                  L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG,
+                  L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE,
+                  L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT) *
+        {L_SHIPDATE >= DATE('1996-1-1')} * {L_SHIPDATE < DATE('1996-4-1')} *
+        {(L_EXTENDEDPRICE * (1 + (-1 * L_DISCOUNT)))}))) *
+  AggSum([], 
+    ((__domain_1 ^=
+       AggSum([], 
+         (EXISTS(
+            AggSum([R2_SUPPKEY], 
+              (LINEITEM(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER,
+                          L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX,
+                          L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE,
+                          L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT,
+                          L_SHIPMODE, L_COMMENT) *
+                {L_SHIPDATE >= DATE('1996-1-1')} *
+                {L_SHIPDATE < DATE('1996-4-1')} * (R2_SUPPKEY ^= L_SUPPKEY)))) *
+           (R2_TOTAL_REVENUE ^=
+             AggSum([R2_SUPPKEY], 
+               (LINEITEM(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER,
+                           L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX,
+                           L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE,
+                           L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT,
+                           L_SHIPMODE, L_COMMENT) *
+                 {L_SHIPDATE >= DATE('1996-1-1')} *
+                 {L_SHIPDATE < DATE('1996-4-1')} *
+                 (R2_SUPPKEY ^= L_SUPPKEY) *
+                 {(L_EXTENDEDPRICE * (1 + (-1 * L_DISCOUNT)))}))) *
+           {R2_TOTAL_REVENUE > R1_TOTAL_REVENUE}))) *
+      (__domain_1 ^= 0))) *
+  AggSum([S_SUPPKEY, S_NAME, S_ADDRESS, S_PHONE], 
+    SUPPLIER(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL,
+               S_COMMENT)))

@@ -1,6 +1,8 @@
 package ch.epfl.data.dblab.frontend.parser
 
 import ch.epfl.data.dblab.frontend.parser.CalcAST._
+import ch.epfl.data.dblab.frontend.parser.SQLAST.{ DateLiteral, DoubleLiteral, IntLiteral, StringLiteral }
+import ch.epfl.data.dblab.frontend.parser.SQLParser.{ elem, floatLit, lexical }
 import ch.epfl.data.dblab.schema.{ DateType, VarCharType }
 import ch.epfl.data.sc.pardis.types._
 
@@ -17,15 +19,21 @@ import scala.util.parsing.input.CharArrayReader.EofCh
 
 object CalcParser extends StandardTokenParsers {
 
-  def parse(statement: String): CalcExpr = {
-    phrase(parseRel | parseQuery)(new lexical.Scanner(statement)) match {
+  def parse(statement: String): List[CalcExpr] = {
+    phrase(parseAll)(new lexical.Scanner(statement)) match {
       case Success(r, q) => r
       case failure       => throw new Exception("Unable to parse CALC query!\n" + failure)
     }
   }
 
+  def parseAll: Parser[List[CalcExpr]] = {
+    rep(parseRel).? ~ rep(parseQuery) ^^ {
+      case Some(l) ~ q => l ++ q
+      case None ~ q    => q
+    }
+  }
   def parseRel: Parser[CalcExpr] = {
-    "CREATE" ~> ("TABLE" | "STREAM") ~ ident ~ "(" ~ parseFieldList.? ~ ")" ~ ("FROM" ~> parseSrcStatement).? ^^ {
+    "CREATE" ~> ("TABLE" | "STREAM") ~ ident ~ "(" ~ parseFieldList.? ~ ")" ~ ("FROM" ~> parseSrcStatement).? <~ ";" ^^ {
       case ts ~ name ~ _ ~ Some(fieldlist) ~ _ ~ Some(src) => Rel(ts, name, fieldlist, src)
       case ts ~ name ~ _ ~ Some(fieldlist) ~ _ ~ None      => Rel(ts, name, fieldlist, "")
       case ts ~ name ~ _ ~ None ~ _ ~ Some(src)            => Rel(ts, name, null, src)
@@ -44,6 +52,9 @@ object CalcParser extends StandardTokenParsers {
     "INT" ^^^ {
       IntType
     } |
+      ("DATE" ~> "(".? ~> stringLit <~ ")".? ^^^ {
+        DateType
+      }) |
       "DATE" ^^^ {
         DateType
       } |
@@ -83,89 +94,157 @@ object CalcParser extends StandardTokenParsers {
     ident ~ ":=" ~ stringLit ^^ {
       case id ~ sv ~ str => id + sv + str
     }) | (stringLit ^^ {
-    case s => s
-  })
+      case s => s
+    })
 
   def parseQuery: Parser[CalcExpr] =
-    "DECLARE" ~> "QUERY" ~> ident ~ ":=" ~ parseCalcExpr ^^ {
+    ("DECLARE" ~> "QUERY" ~> ident ~ ":=" ~ parseCalcExpr <~ ";" ^^ {
       case name ~ _ ~ exp => CalcQuery(name, exp)
-    }
+    }) | (((ident <~ ":") ~ parseCalcExpr) ^^ { case name ~ exp => CalcQuery(name, exp) })
 
   def parseCalcExpr: Parser[CalcExpr] =
-    parseIvcCalcExpr ^^ {
+    parseAddition ^^ {
       case ivc => ivc
     }
+
+  def parseAddition: Parser[CalcExpr] =
+    parseMultiplication * (
+      "+" ^^^ { (a: CalcExpr, b: CalcExpr) => CalcSum(List(a, b)) } |
+      "-" ^^^ { (a: CalcExpr, b: CalcExpr) => CalcSum(List(a, CalcNeg(b))) })
+
+  def parseMultiplication: Parser[CalcExpr] =
+    parseIvcCalcExpr * (
+      "*" ^^^ { (a: CalcExpr, b: CalcExpr) => CalcProd(List(a, b)) })
 
   def parseIvcCalcExpr: Parser[CalcExpr] = {
     ("NEG" ~> "*" ~> parseIvcCalcExpr ^^ {
       case ivc => CalcNeg(ivc)
     }) |
-      ("(" ~> parseIvcCalcExpr <~ ")" ^^ {
-        case ivc => ivc
+      ("(" ~> parseCalcExpr <~ ")" ^^
+        { case x => x }) |
+        ("-" ~> parseIvcCalcExpr ^^ {
+          case ivc => CalcNeg(ivc)
+        }) |
+        ("{" ~> parseValueExpr <~ "}" ^^ {
+          case ve => CalcValue(ve)
+        }) |
+        ("AGGSUM" ~> "(" ~> "[" ~> (parseVarList).? ~ "]" ~ "," ~ parseCalcExpr <~ ")" ^^ {
+          case Some(l) ~ _ ~ _ ~ calc => AggSum(l, calc)
+          case None ~ _ ~ _ ~ calc    => AggSum(List(), calc)
+        }) |
+        (parseRelationDef ^^ {
+          case r => r
+        }) |
+        (parseDeltaRelationDef ^^ {
+          case dr => dr
+        }) |
+        (parseExternalDef ^^ {
+          case e => e
+        }) |
+        ("{" ~> parseValueExpr ~ parseComparison ~ parseValueExpr <~ "}" ^^ {
+          case v1 ~ c ~ v2 => Cmp(c, v1, v2)
+        }) |
+        ("(" ~> ident ~ (parseDataType).? ~ "^=" ~ parseIvcCalcExpr <~ ")" ^^ {
+          case id ~ Some(t) ~ _ ~ ivc => Lift(VarT(id, t), ivc)
+          case id ~ None ~ _ ~ ivc    => Lift(VarT(id, null), ivc)
+        }) |
+        ("EXISTS" ~> "(" ~> parseCalcExpr <~ ")" ^^ {
+          case c => Exists(c)
+        }) |
+        (parseValueLeaf ^^ {
+          case vl => CalcValue(vl)
+        }) |
+        ("{" ~> parseValueExpr ~ "IN" ~ "[" ~ parseValExpList <~ "]" <~ "}" ^^ {
+          case id ~ _ ~ _ ~ l => In(id, l)
+        })
+
+    //TODO
+
+    /*("DOMAIN" ~> "(" ~> parseCalcExpr <~ ")" ^^ {
+        Dom
+      }*/
+
+  }
+
+  def parseComparison: Parser[Cmp_t] = {
+    ("=" ^^^ {
+      Eq
+    }) |
+      ("!=" ^^^ {
+        Neq
       }) |
-      (parseIvcCalcExpr ~ "*" ~ parseIvcCalcExpr ^^ {
-        case i1 ~ _ ~ i2 => CalcProd(List(i1, i2))
+      ("<" ^^^ {
+        Lt
       }) |
-      (parseIvcCalcExpr ~ "+" ~ parseIvcCalcExpr ^^ {
-        case i1 ~ _ ~ i2 => CalcSum(List(i1, i2))
+      ("<=" ^^^ {
+        Lte
       }) |
-      (parseIvcCalcExpr ~ "-" ~ parseIvcCalcExpr ^^ {
-        case i1 ~ _ ~ i2 => CalcSum(List(i1, CalcNeg(i2)))
+      (">" ^^^ {
+        Gt
       }) |
-      ("-" ~> parseIvcCalcExpr ^^ {
-        case ivc => CalcNeg(ivc)
-      }) |
-      ("[" ~> parseValueExpr <~ "]" ^^ {
-        case ve => CalcValue(ve)
-      }) |
-      (parseValueLeaf ^^{
-        case vl => CalcValue(vl)
-      }) |
-      ("AGGSUM" ~> "(" ~> "[" ~> (parseVarList).? ~ "]" ~ "," ~ parseIvcCalcExpr <~ ")" ^^{
-        case Some(l) ~_~_~ calc => AggSum(l, calc)
-        case None ~_~_~ calc => AggSum(List(), calc)
-      }) |
-      (parseRelationDef ^^ {
-        case r => r
-      }) |
-      (parseDeltaRelationDef ^^ {
-        case dr => dr
+      (">=" ^^^ {
+        Gte
+      })
+  }
+  def parseExternalDef: Parser[External] = {
+    parseExternalWithoutMeta ~ (":".? ~> "(" ~> parseCalcExpr <~ ")").? ^^ {
+      case et ~ Some(calc) => External(calc, et)
+      case et ~ None       => External(null, et)
+    }
+  }
+
+  def parseExternalWithoutMeta: Parser[External_t] = {
+    (ident ~ "[" ~ parseVarList.? ~ "]" ~ "[" ~ parseVarList.? ~ "]" ^^ {
+      case id ~ _ ~ Some(l1) ~ _ ~ _ ~ Some(l2) ~ _ => External_t(id, l1, l2, null, None)
+      case id ~ _ ~ Some(l1) ~ _ ~ _ ~ None ~ _     => External_t(id, l1, List(), null, None)
+      case id ~ _ ~ None ~ _ ~ _ ~ Some(l2) ~ _     => External_t(id, List(), l2, null, None)
+      case id ~ _ ~ None ~ _ ~ _ ~ None ~ _         => External_t(id, List(), List(), null, None)
+
+    }) |
+      (ident ~ "(" ~ parseDataType ~ ")" ~ "[" ~ parseVarList.? ~ "]" ~ "[" ~ parseVarList.? ~ "]" ^^ {
+        case id ~ _ ~ tp ~ _ ~ _ ~ Some(l1) ~ _ ~ _ ~ Some(l2) ~ _ => External_t(id, l1, l2, tp, None)
+        case id ~ _ ~ tp ~ _ ~ _ ~ Some(l1) ~ _ ~ _ ~ None ~ _     => External_t(id, l1, List(), tp, None)
+        case id ~ _ ~ tp ~ _ ~ _ ~ None ~ _ ~ _ ~ Some(l2) ~ _     => External_t(id, List(), l2, tp, None)
+        case id ~ _ ~ tp ~ _ ~ _ ~ None ~ _ ~ _ ~ None ~ _         => External_t(id, List(), List(), tp, None)
       })
 
-
-
   }
-
-  def parseDeltaRelationDef: Parser[Rel]= {
+  def parseDeltaRelationDef: Parser[Rel] = {
     ("(" ~> "DELTA" ~> ident ~ ")" ~ "(" ~ ")" ^^ {
-      case id ~ _ ~ _ ~_ => Rel("Delta Rel", id , List(), "")
+      case id ~ _ ~ _ ~ _ => Rel("Delta Rel", id, List(), "") //TODO type ?
     }) |
-      ("(" ~> "DELTA" ~> ident ~ ")"~ "(" ~ parseVarList ~ ")" ^^{
-        case id ~_ ~ _ ~ l ~_ => Rel("Delta Rel", id, l, "")
-      } )
+      ("(" ~> "DELTA" ~> ident ~ ")" ~ "(" ~ parseVarList ~ ")" ^^ {
+        case id ~ _ ~ _ ~ l ~ _ => Rel("Delta Rel", id, l, "")
+      })
   }
 
-  def parseRelationDef: Parser[Rel] ={
+  def parseRelationDef: Parser[Rel] = {
     (ident ~ "(" ~ ")" ^^ {
-      case id ~ _ ~ _ => Rel("Rel", id , List(), "")
+      case id ~ _ ~ _ => Rel("Rel", id, List(), "")
     }) |
-      (ident ~ "(" ~ parseVarList ~ ")" ^^{
-        case id ~_~ l ~_ => Rel("Rel", id, l, "")
-      } )
+      (ident ~ "(" ~ parseVarList ~ ")" ^^ {
+        case id ~ _ ~ l ~ _ => Rel("Rel", id, l, "")
+      })
   }
-  def parseValueExpr: Parser[ArithExpr] = {
+
+  def parseValueExpr: Parser[ArithExpr] =
+    parseValueAddition ^^ {
+      case e => e
+    }
+
+  def parseValueAddition: Parser[ArithExpr] =
+    parseValueMultiplication * (
+      "+" ^^^ { (a: ArithExpr, b: ArithExpr) => ArithSum(List(a, b)) } |
+      "-" ^^^ { (a: ArithExpr, b: ArithExpr) => ArithSum(List(a, ArithNeg(b))) })
+
+  def parseValueMultiplication: Parser[ArithExpr] =
+    parsePrimaryValueExpr * (
+      "*" ^^^ { (a: ArithExpr, b: ArithExpr) => ArithProd(List(a, b)) })
+
+  def parsePrimaryValueExpr: Parser[ArithExpr] = {
     ("(" ~> parseValueExpr <~ ")" ^^ {
       case ve => ve
     }) |
-      (parseValueExpr ~ "*" ~ parseValueExpr ^^ {
-        case v1 ~ _ ~ v2 => ArithProd(List(v1, v2))
-      }) |
-      (parseValueExpr ~ "+" ~ parseValueExpr ^^ {
-        case v1 ~ _ ~ v2 => ArithSum(List(v1, v2))
-      }) |
-      (parseValueExpr ~ "-" ~ parseValueExpr ^^ {
-        case v1 ~ _ ~ v2 => ArithSum(List(v1, ArithNeg(v2)))
-      }) |
       ("-" ~> parseValueExpr ^^ {
         case v => ArithNeg(v)
       }) |
@@ -178,48 +257,58 @@ object CalcParser extends StandardTokenParsers {
   def parseValueLeaf: Parser[ArithExpr] = {
     (parseConstant ^^ {
       case c => c
-    })|
+    }) |
       (ident ~ (":" ~> parseDataType).? ^^ {
-        case id ~ Some(t) => ArithVar(VarT(id , t))
-    })|
-      (parseFuncDef ^^{
+        case id ~ Some(t) => ArithVar(VarT(id, t))
+        case id ~ None    => ArithVar(VarT(id, null))
+      }) |
+      (parseFuncDef ^^ {
         case func => func
-    })
+      })
 
   }
 
-
-
-  def parseConstant: Parser[ArithConst] = { //TODO
-    ???
+  def parseConstant: Parser[ArithConst] = {
+    (numericLit ^^ {
+      case i => ArithConst(IntLiteral(i.toInt))
+    }) |
+      (stringLit ^^ {
+        case s => ArithConst(StringLiteral(s))
+      }) |
+      (floatLit ^^ {
+        case f => ArithConst(DoubleLiteral(f.toDouble))
+      }) |
+      ("DATE" ~> "(" ~> stringLit <~ ")" ^^ {
+        case d => ArithConst(DateLiteral(d))
+      })
   }
-
 
   def parseFuncDef: Parser[ArithFunc] = {
-    "[" ~> (ident|"/") ~ ":" ~ parseDataType ~ "]" ~ "(" ~ parseValExpList.? <~ ")" ^^{
-      case id ~_~ tp ~_~_~ Some(varl) => ArithFunc(id, varl, tp)
-      case id ~_~ tp ~_~_~ None => ArithFunc(id, List(), tp)
+    "[" ~> (ident | "/") ~ ":" ~ parseDataType ~ "]" ~ "(" ~ parseValExpList.? <~ ")" ^^ {
+      case id ~ _ ~ tp ~ _ ~ _ ~ Some(varl) => ArithFunc(id, varl, tp)
+      case id ~ _ ~ tp ~ _ ~ _ ~ None       => ArithFunc(id, List(), tp)
     }
   }
 
   def parseValExpList: Parser[List[ArithExpr]] = {
     rep(parseValueExpr <~ ",").? ~ parseValueExpr.? ^^ {
       case Some(vl) ~ Some(v) => vl :+ v
-      case Some(vl) ~ None => vl
-      case None ~ None => List()
-      case None ~ Some(v) => List(v)
+      case Some(vl) ~ None    => vl
+      case None ~ None        => List()
+      case None ~ Some(v)     => List(v)
 
     }
   }
 
   def parseVarList: Parser[List[VarT]] = {
-    (ident ~ (":" ~> parseDataType).? ~ parseVarList.?) ^^ {
+    (ident ~ (":" ~> parseDataType).? ~ ("," ~> parseVarList).?) ^^ {
       case id ~ Some(t) ~ Some(l) => l :+ VarT(id, t)
-      case id ~ Some(t) ~ None => List(VarT(id, t))
-      case id ~ None ~ Some(l) => l :+ VarT(id, null)
-      case id ~ None ~ None => List(VarT(id, null))
+      case id ~ Some(t) ~ None    => List(VarT(id, t))
+      case id ~ None ~ Some(l)    => l :+ VarT(id, null)
+      case id ~ None ~ None       => List(VarT(id, null))
 
     }
+
   }
 
   class CalcLexical extends StdLexical {
@@ -242,10 +331,10 @@ object CalcParser extends StandardTokenParsers {
         | '-' ~ '-' ~ rep(chrExcept(EofCh, '\n'))
         | '/' ~ '*' ~ comment)
 
-    //    override protected def comment: Parser[Any] = (
-    //      	      '*' ~ '/'  ^^ { case _ => ' '  }
-    //    	    | chrExcept(EofCh) ~ comment
-    //    	    )
+    //        override protected def comment: Parser[Any] = (
+    //          	      '*' ~ '/'  ^^ { case _ => ' '  }
+    //        	    | chrExcept(EofCh) ~ comment
+    //        	    )
 
     override def token: Parser[Token] =
       (identChar ~ rep(identChar | digit) ^^ {
@@ -282,11 +371,15 @@ object CalcParser extends StandardTokenParsers {
 
   override val lexical = new CalcLexical
 
-  val tokens = List("CREATE", "TABLE", "STREAM", "AGGSUM")
+  def floatLit: Parser[String] =
+    elem("decimal", _.isInstanceOf[lexical.FloatLit]) ^^ (_.chars)
+
+  val tokens = List("CREATE", "TABLE", "STREAM", "FROM", "INT", "DATE", "STRING", "FLOAT", "CHAR", "VARCHAR",
+    "FILE", "FIXEDWIDTH", "DELIMITED", "LINE", "DECLARE", "QUERY", "NEG", "AGGSUM", "EXISTS", "DELTA", "IN")
 
   for (token <- tokens)
     lexical.reserved += token
 
   lexical.delimiters += (
-    "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "||", "/", "(", ")", ",", ".", ";", ":=")
+    "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "||", "/", "(", ")", ",", ".", ";", ":=", "^=", "[", "]", ":", "{", "}")
 }

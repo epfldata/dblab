@@ -1,0 +1,6 @@
+COUNT: 
+(EXISTS(
+   AggSum([], 
+     ((__sql_inline_agg_1 ^= (AggSum([], R(R_A, R_B)) * 0.5)) *
+       R(R3_A, R3_B) * (__sql_inline_agg_1 ^= R3_A)))) *
+  AggSum([R1_A], R(R1_A, R1_B)))

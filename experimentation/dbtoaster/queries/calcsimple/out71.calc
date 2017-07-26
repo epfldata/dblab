@@ -1,0 +1,5 @@
+D: 
+((EXISTS( AggSum([C], (R(R_A, R_B) * (C ^= R_A)))) *
+   (D ^= AggSum([C], (R(R_A, R_B) * (C ^= R_A) * R_B)))) +
+  (EXISTS( AggSum([C], (R(R_A, R_B) * (C ^= R_B)))) *
+    (D ^= AggSum([C], (R(R_A, R_B) * (C ^= R_B) * R_A)))))

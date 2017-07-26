@@ -1,0 +1,3 @@
+COUNT: 
+((__SQL_CONSTANT_1 ^= 1) *
+  EXISTS( AggSum([], (R(R3_A, R3_B) * {5. = R3_A}))))
