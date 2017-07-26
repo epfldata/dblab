@@ -1,0 +1,2 @@
+__SQL_COUNT_AGGREGATE_1: 
+AggSum([R_A], EXISTS( AggSum([R_A, S_C], (R(R_A, R_B) * S(R_B, S_C)))))

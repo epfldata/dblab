@@ -1,0 +1,4 @@
+QUERY_1_COUNT: 
+(R(R_A, R_B) * {R_A IN [1, 2, 3]})
+QUERY_2_COUNT: 
+(R(R_A, R_B) * {1 != R_A} * {2 != R_A} * {3 != R_A})

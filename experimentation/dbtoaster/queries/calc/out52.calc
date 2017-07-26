@@ -1,0 +1,4 @@
+QUERY_1_COUNT: 
+EXISTS( AggSum([Q_FOO], (R(R_A, R_B) * (Q_FOO ^= R_A))))
+QUERY_2_COUNT: 
+EXISTS( AggSum([Q_FOO], (R(R_A, R_B) * (Q_FOO ^= R_A))))

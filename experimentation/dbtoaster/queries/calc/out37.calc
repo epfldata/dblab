@@ -1,0 +1,2 @@
+COUNT: 
+(R(R2_A, R2_B) * EXISTS( AggSum([], (R(R1_A, R1_B) * {R2_B > R1_A}))))

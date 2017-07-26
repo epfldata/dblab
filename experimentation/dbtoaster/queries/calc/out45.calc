@@ -1,0 +1,5 @@
+COUNT: 
+(R(R2_A, R2_B) *
+  AggSum([], 
+    ((__sql_inline_agg_1 ^= (AggSum([], (R(R1_A, R1_B) * R1_A)) * 0.1)) *
+      {R2_B < __sql_inline_agg_1})))

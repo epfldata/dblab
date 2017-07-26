@@ -117,39 +117,40 @@ object CalcParser extends StandardTokenParsers {
     ("NEG" ~> "*" ~> parseIvcCalcExpr ^^ {
       case ivc => CalcNeg(ivc)
     }) |
-      ("(" ~> (parseCalcExpr) <~ ")" ^^ { case x => x })
-    ("-" ~> parseIvcCalcExpr ^^ {
-      case ivc => CalcNeg(ivc)
-    }) |
-      ("[" ~> parseValueExpr <~ "]" ^^ {
-        case ve => CalcValue(ve)
-      }) |
-      (parseValueLeaf ^^ {
-        case vl => CalcValue(vl)
-      }) |
-      ("AGGSUM" ~> "(" ~> "[" ~> (parseVarList).? ~ "]" ~ "," ~ parseCalcExpr <~ ")" ^^ {
-        case Some(l) ~ _ ~ _ ~ calc => AggSum(l, calc)
-        case None ~ _ ~ _ ~ calc    => AggSum(List(), calc)
-      }) |
-      (parseRelationDef ^^ {
-        case r => r
-      }) |
-      (parseDeltaRelationDef ^^ {
-        case dr => dr
-      }) |
-      (parseExternalDef ^^ {
-        case e => e
-      }) |
-      ("{" ~> parseValueExpr ~ parseComparison ~ parseValueExpr <~ "}" ^^ {
-        case v1 ~ c ~ v2 => Cmp(c, v1, v2)
-      }) |
-      ("(" ~> ident ~ (parseDataType).? ~ "^=" ~ parseIvcCalcExpr <~ ")" ^^ {
-        case id ~ Some(t) ~ _ ~ ivc => Lift(VarT(id, t), ivc)
-        case id ~ None ~ _ ~ ivc    => Lift(VarT(id, null), ivc)
-      }) |
-      ("EXISTS" ~> "(" ~> parseCalcExpr <~ ")" ^^ {
-        case c => Exists(c)
-      })
+      ("(" ~> parseCalcExpr <~ ")" ^^
+        { case x => x }) |
+        ("-" ~> parseIvcCalcExpr ^^ {
+          case ivc => CalcNeg(ivc)
+        }) |
+        ("[" ~> parseValueExpr <~ "]" ^^ {
+          case ve => CalcValue(ve)
+        }) |
+        ("AGGSUM" ~> "(" ~> "[" ~> (parseVarList).? ~ "]" ~ "," ~ parseCalcExpr <~ ")" ^^ {
+          case Some(l) ~ _ ~ _ ~ calc => AggSum(l, calc)
+          case None ~ _ ~ _ ~ calc    => AggSum(List(), calc)
+        }) |
+        (parseRelationDef ^^ {
+          case r => r
+        }) |
+        (parseDeltaRelationDef ^^ {
+          case dr => dr
+        }) |
+        (parseExternalDef ^^ {
+          case e => e
+        }) |
+        ("{" ~> parseValueExpr ~ parseComparison ~ parseValueExpr <~ "}" ^^ {
+          case v1 ~ c ~ v2 => Cmp(c, v1, v2)
+        }) |
+        ("(" ~> ident ~ (parseDataType).? ~ "^=" ~ parseIvcCalcExpr <~ ")" ^^ {
+          case id ~ Some(t) ~ _ ~ ivc => Lift(VarT(id, t), ivc)
+          case id ~ None ~ _ ~ ivc    => Lift(VarT(id, null), ivc)
+        }) |
+        ("EXISTS" ~> "(" ~> parseCalcExpr <~ ")" ^^ {
+          case c => Exists(c)
+        }) |
+        (parseValueLeaf ^^ {
+          case vl => CalcValue(vl)
+        })
 
     //TODO
 
@@ -253,6 +254,7 @@ object CalcParser extends StandardTokenParsers {
     }) |
       (ident ~ (":" ~> parseDataType).? ^^ {
         case id ~ Some(t) => ArithVar(VarT(id, t))
+        case id ~ None    => ArithVar(VarT(id, null))
       }) |
       (parseFuncDef ^^ {
         case func => func
@@ -290,13 +292,14 @@ object CalcParser extends StandardTokenParsers {
   }
 
   def parseVarList: Parser[List[VarT]] = {
-    (ident ~ (":" ~> parseDataType).? ~ parseVarList.?) ^^ {
+    (ident ~ (":" ~> parseDataType).? ~ ("," ~> parseVarList).?) ^^ {
       case id ~ Some(t) ~ Some(l) => l :+ VarT(id, t)
       case id ~ Some(t) ~ None    => List(VarT(id, t))
       case id ~ None ~ Some(l)    => l :+ VarT(id, null)
       case id ~ None ~ None       => List(VarT(id, null))
 
     }
+
   }
 
   class CalcLexical extends StdLexical {

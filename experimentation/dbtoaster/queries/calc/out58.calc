@@ -1,0 +1,2 @@
+COUNT: 
+AggSum([R1_A], R(R1_A, R1_B))

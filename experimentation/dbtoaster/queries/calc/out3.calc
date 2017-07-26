@@ -1,0 +1,2 @@
+COUNT: 
+(__SQL_EXPRESSION_1 ^= {[ATOI:int]('3')})
