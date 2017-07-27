@@ -116,12 +116,8 @@ object SQLParser extends StandardTokenParsers {
     }
 
   def parseStreamDataType: Parser[String] =
-    "DECIMAL" ~ ("(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")").? ^^^ {
-      "DECIMAL"
-    } |
-      "NUMERIC" ~ "(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")" ^^^ {
-        "NUMERIC"
-      } |
+    "DECIMAL" ~ ("(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")").? ^^^ { "DECIMAL" } |
+      "NUMERIC" ~ "(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")" ^^^ { "NUMERIC" } |
       "INT" ^^^ {
         "INTEGER"
       } |
@@ -277,7 +273,7 @@ object SQLParser extends StandardTokenParsers {
       case op ~ _ ~ a ~ _ => (op, a)
     }
     | "IN" ~> "LIST" ~> "(" ~> parseExpression ~ rep("," ~> parseExpression).? <~ ")" ^^ {
-      case num ~ Some(l) => ("IN LIST", l :+ num)
+      case num ~ Some(l) => ("IN LIST", num :: l)
     }
     | "LIKE" ~ parseAddition ^^ { case op ~ a => (op, a) }
     | "NOT" ~ parseOperation ^^ { case op ~ a => (op, a) }
@@ -388,7 +384,7 @@ object SQLParser extends StandardTokenParsers {
       case left ~ _ ~ right => left
     }
     | ident ~ "(" ~ parseExpression.? ~ (rep("," ~> parseExpression)).? <~ ")" ^^ {
-      case name ~ _ ~ Some(inp) ~ Some(inps) => FunctionExp(name, inps :+ inp)
+      case name ~ _ ~ Some(inp) ~ Some(inps) => FunctionExp(name, inp :: inps)
       case name ~ _ ~ Some(inp) ~ None       => FunctionExp(name, List(inp))
       case name ~ _ ~ None ~ None            => FunctionExp(name, List())
 

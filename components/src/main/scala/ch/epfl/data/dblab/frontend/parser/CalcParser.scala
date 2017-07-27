@@ -43,7 +43,7 @@ object CalcParser extends StandardTokenParsers {
 
   def parseFieldList: Parser[List[VarT]] = {
     ident ~ parseDataType ~ ("," ~> parseFieldList).? ^^ {
-      case name ~ tp ~ Some(fields) => fields :+ VarT(name, tp)
+      case name ~ tp ~ Some(fields) => VarT(name, tp) :: fields
       case name ~ tp ~ None         => List(VarT(name, tp))
     }
   }
@@ -302,9 +302,9 @@ object CalcParser extends StandardTokenParsers {
 
   def parseVarList: Parser[List[VarT]] = {
     (ident ~ (":" ~> parseDataType).? ~ ("," ~> parseVarList).?) ^^ {
-      case id ~ Some(t) ~ Some(l) => l :+ VarT(id, t)
+      case id ~ Some(t) ~ Some(l) => VarT(id, t) :: l
       case id ~ Some(t) ~ None    => List(VarT(id, t))
-      case id ~ None ~ Some(l)    => l :+ VarT(id, null)
+      case id ~ None ~ Some(l)    => VarT(id, null) :: l
       case id ~ None ~ None       => List(VarT(id, null))
 
     }

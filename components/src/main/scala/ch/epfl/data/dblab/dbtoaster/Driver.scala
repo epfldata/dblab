@@ -36,9 +36,10 @@ object Driver {
 
     for (q <- args) {
       // TODO change to parseStream
-      val sqlParserTree = CalcParser.parse(scala.io.Source.fromFile(q).mkString)
-      if (Config.debugQueryPlan)
-        System.out.println("Original SQL Parser Tree:\n" + sqlParserTree + "\n\n")
+      val ParserTree = CalcParser.parse(scala.io.Source.fromFile(q).mkString)
+      println("RESULT: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(cur)}"))
+      //if (Config.debugQueryPlan)
+      //System.out.println("Original SQL Parser Tree:\n" + ParserTree + "\n\n")
     }
   }
 }

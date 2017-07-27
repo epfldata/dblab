@@ -63,14 +63,14 @@ object CalcAST {
   def prettyprint(calcExpr: CalcExpr): String = {
     def rcr(c: CalcExpr): String = prettyprint(c)
     calcExpr match {
-      case CalcQuery(id, expr) => s"${id}: ${rcr(expr)}"
+      case CalcQuery(id, expr) => s"${id}:\n ${rcr(expr)}"
       case CalcNeg(e)          => s"-(${rcr(e)})"
-      case CalcSum(hd :: tl)   => tl.foldLeft(rcr(hd))((acc, cur) => s"$acc + ${rcr(cur)}")
-      case CalcProd(hd :: tl)  => tl.foldLeft(rcr(hd))((acc, cur) => s"$acc * ${rcr(cur)}")
-      case AggSum(vars, expr)  => vars.foldLeft("AGGSUM([")((acc, cur) => s"$acc + ${pprint(cur)}") + s"], ${rcr(expr)})"
-      case Rel(tag, name, hd :: tl, rest) => tag match {
-        case "TABLE" | "STREAM" => s"CREATE ${tag} ${name} ( ${tl.foldLeft(pprint(hd))((acc, cur) => s", ${pprint(cur)}")})" + (if (rest == "") s"" else s"FROM ${rest}")
-        case "Rel"              => s"${name}(${tl.foldLeft(pprint(hd))((acc, cur) => s", ${pprint(cur)}")})"
+      case CalcSum(list)       => list.map(rcr).mkString(" + ")
+      case CalcProd(list)      => list.map(rcr).mkString(" * ")
+      case AggSum(list, expr)  => s"AGGSUM([${list.map(pprint).mkString(", ")}], ${rcr(expr)})"
+      case Rel(tag, name, vars, rest) => tag match {
+        case "TABLE" | "STREAM" => s"CREATE ${tag} ${name} ( ${vars.map(pprint).mkString(", ")})" + (if (rest == "") s"" else s"FROM ${rest}")
+        case "Rel"              => s"${name}(${vars.map(pprint).mkString(", ")})"
       }
       case Lift(vr, expr) => s"(${pprint(vr)} ^= ${rcr(expr)})"
       case Exists(expr)   => s"EXISTS (${rcr(expr)}) "
@@ -78,9 +78,9 @@ object CalcAST {
         case null => s"${pprint(et)}"
         case _    => s"${pprint(et)}:(${rcr(e)})"
       }
-      case Cmp(cmp, first, second) => s"{${pprint(first)} ${pprint(cmp)} ${pprint(second)}"
+      case Cmp(cmp, first, second) => s"{${pprint(first)} ${pprint(cmp)} ${pprint(second)}}"
       case CalcValue(v)            => s"{${pprint(v)}}"
-      case In(first, hd :: tl)     => s"{${pprint(first)} IN [${tl.foldLeft(pprint(hd))((acc, cur) => s", ${pprint(cur)}")}]}"
+      case In(first, list)         => s"{${pprint(first)} IN [${list.map(pprint).mkString(", ")}]}"
 
     }
   }
@@ -97,18 +97,18 @@ object CalcAST {
   }
   def pprint(et: External_t): String = {
     et match {
-      case External_t(name, inh :: intl, outh :: outtl, tp, meta) => s"${name}[${intl.foldLeft(pprint(inh))((acc, cur) => s", ${pprint(cur)}")}][${outtl.foldLeft(pprint(outh))((acc, cur) => s", ${pprint(cur)}")}]"
+      case External_t(name, inps, outs, tp, meta) => s"${name}[${inps.map(pprint).mkString(", ")}][${outs.map(pprint).mkString(", ")}]"
     }
   }
 
   def pprint(exp: ArithExpr): String = {
     exp match {
-      case ArithSum(hd :: tl)             => s"${tl.foldLeft(pprint(hd))((acc, cur) => s"+ ${pprint(cur)}")}"
-      case ArithProd(hd :: tl)            => s"${tl.foldLeft(pprint(hd))((acc, cur) => s"* ${pprint(cur)}")}"
-      case ArithNeg(expr)                 => s"-(${pprint(expr)})"
-      case ArithConst(lit)                => lit.toString
-      case ArithVar(varT)                 => pprint(varT)
-      case ArithFunc(name, hd :: tl, tpe) => s"[${name}: ${pprint(tpe)}](${tl.foldLeft(pprint(hd))((acc, cur) => s", ${pprint(cur)}")})"
+      case ArithSum(list)             => s"${list.map(pprint).mkString(" + ")}"
+      case ArithProd(list)            => s"${list.map(pprint).mkString(" * ")}"
+      case ArithNeg(expr)             => s"-(${pprint(expr)})"
+      case ArithConst(lit)            => lit.toString
+      case ArithVar(varT)             => pprint(varT)
+      case ArithFunc(name, list, tpe) => s"[${name}: ${pprint(tpe)}](${list.map(pprint).mkString(", ")})"
     }
   }
   def pprint(cmp_t: Cmp_t): String = {
