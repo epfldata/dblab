@@ -3,7 +3,7 @@ package dblab
 package frontend
 package parser
 
-import ch.epfl.data.dblab.schema.{DateType, VarCharType}
+import ch.epfl.data.dblab.schema.{ DateType, VarCharType }
 import sc.pardis.types._
 
 /**
@@ -64,64 +64,71 @@ object CalcAST {
     def rcr(c: CalcExpr): String = prettyprint(c)
     calcExpr match {
       case CalcQuery(id, expr) => s"${id}: ${rcr(expr)}"
-      case CalcNeg(e) => s"-(${rcr(e)})"
-      case CalcSum(hd :: tl) => tl.foldLeft(rcr(hd))((acc, cur) => s"$acc + ${rcr(cur)}")
-      case CalcProd(hd :: tl) => tl.foldLeft(rcr(hd))((acc, cur) => s"$acc * ${rcr(cur)}")
-      case AggSum(vars, expr) => vars.foldLeft("AGGSUM([")((acc, cur) => s"$acc + ${pprint(cur)}") + s"], ${rcr(expr)})"
+      case CalcNeg(e)          => s"-(${rcr(e)})"
+      case CalcSum(hd :: tl)   => tl.foldLeft(rcr(hd))((acc, cur) => s"$acc + ${rcr(cur)}")
+      case CalcProd(hd :: tl)  => tl.foldLeft(rcr(hd))((acc, cur) => s"$acc * ${rcr(cur)}")
+      case AggSum(vars, expr)  => vars.foldLeft("AGGSUM([")((acc, cur) => s"$acc + ${pprint(cur)}") + s"], ${rcr(expr)})"
       case Rel(tag, name, hd :: tl, rest) => tag match {
         case "TABLE" | "STREAM" => s"CREATE ${tag} ${name} ( ${tl.foldLeft(pprint(hd))((acc, cur) => s", ${pprint(cur)}")})" + (if (rest == "") s"" else s"FROM ${rest}")
-        case "Rel" => s"${name}(${tl.foldLeft(pprint(hd))((acc, cur) => s", ${pprint(cur)}")})"
+        case "Rel"              => s"${name}(${tl.foldLeft(pprint(hd))((acc, cur) => s", ${pprint(cur)}")})"
       }
       case Lift(vr, expr) => s"(${pprint(vr)} ^= ${rcr(expr)})"
-      case Exists(expr) => s"EXISTS (${rcr(expr)}) "
+      case Exists(expr)   => s"EXISTS (${rcr(expr)}) "
       case External(e, et) => e match {
         case null => s"${pprint(et)}"
-        case _ => s"${pprint(et)}:(${rcr(e)})"
+        case _    => s"${pprint(et)}:(${rcr(e)})"
       }
       case Cmp(cmp, first, second) => s"{${pprint(first)} ${pprint(cmp)} ${pprint(second)}"
-      case CalcValue(v) => s"{${pprint(v)}}"
-      case In(first, hd::tl) => s"{${pprint(first)} IN [${tl.foldLeft(pprint(hd))((acc, cur) => s", ${pprint(cur)}")}]}"
+      case CalcValue(v)            => s"{${pprint(v)}}"
+      case In(first, hd :: tl)     => s"{${pprint(first)} IN [${tl.foldLeft(pprint(hd))((acc, cur) => s", ${pprint(cur)}")}]}"
 
     }
   }
 
   def pprint(vt: VarT): String = {
-    vt.tp match{
-      case IntType => s"${vt.name}: INT"
-      case StringType => s"${vt.name}: STRING"
-      case FloatType => s"${vt.name}: FLOAT"
+    vt.tp match {
+      case IntType         => s"${vt.name}: INT"
+      case StringType      => s"${vt.name}: STRING"
+      case FloatType       => s"${vt.name}: FLOAT"
       case VarCharType(mx) => s"${vt.name}: VARCHAR(${mx})"
-      case DateType => s"${vt.name}: DATE"
-      case null => s"${vt.name}"
+      case DateType        => s"${vt.name}: DATE"
+      case null            => s"${vt.name}"
     }
   }
-  def pprint(et: External_t): String ={
-    case External_t(name, inh::intl, outh::outtl, _, _) => s"${name}[${intl.foldLeft(pprint(inh))((acc,cur) => s", ${pprint(cur)}")}][${outtl.foldLeft(pprint(outh))((acc,cur) => s", ${pprint(cur)}")}]"
+  def pprint(et: External_t): String = {
+    et match {
+      case External_t(name, inh :: intl, outh :: outtl, tp, meta) => s"${name}[${intl.foldLeft(pprint(inh))((acc, cur) => s", ${pprint(cur)}")}][${outtl.foldLeft(pprint(outh))((acc, cur) => s", ${pprint(cur)}")}]"
+    }
   }
 
-  def pprint(exp: ArithExpr): String ={
-    case ArithSum(hd::tl) => s"${tl.foldLeft(pprint(hd))((acc, cur) => s"+ ${pprint(cur)}")}"
-    case ArithProd(hd::tl) => s"${tl.foldLeft(pprint(hd))((acc, cur) => s"* ${pprint(cur)}")}"
-    case ArithNeg(expr) => s"-(${pprint(expr)})"
-    case ArithConst(lit) => lit.toString
-    case ArithVar(varT) =>  pprint(varT)
-    case ArithFunc(name, hd::tl, tpe) => s"[${name}: ${pprint(tpe)}](${tl.foldLeft(pprint(hd))((acc,cur) => s", ${pprint(cur)}")})"
-
+  def pprint(exp: ArithExpr): String = {
+    exp match {
+      case ArithSum(hd :: tl)             => s"${tl.foldLeft(pprint(hd))((acc, cur) => s"+ ${pprint(cur)}")}"
+      case ArithProd(hd :: tl)            => s"${tl.foldLeft(pprint(hd))((acc, cur) => s"* ${pprint(cur)}")}"
+      case ArithNeg(expr)                 => s"-(${pprint(expr)})"
+      case ArithConst(lit)                => lit.toString
+      case ArithVar(varT)                 => pprint(varT)
+      case ArithFunc(name, hd :: tl, tpe) => s"[${name}: ${pprint(tpe)}](${tl.foldLeft(pprint(hd))((acc, cur) => s", ${pprint(cur)}")})"
+    }
   }
-  def pprint(cmp_t: Cmp_t): String ={
-    case Eq => "="
-    case Neq => "!="
-    case Lt => "<"
-    case Lte => "<="
-    case Gt => ">"
-    case Gte => ">="
+  def pprint(cmp_t: Cmp_t): String = {
+    cmp_t match {
+      case Eq  => "="
+      case Neq => "!="
+      case Lt  => "<"
+      case Lte => "<="
+      case Gt  => ">"
+      case Gte => ">="
+    }
   }
-  def pprint(tpe: Tpe): String ={
-    case IntType => s"INT"
-    case DoubleType => s"FLOAT"
-    case DateType => s"DATE"
-    case StringType => s"STRING"
-    case VarCharType(num) => s"VARCHAR(${num})"
+  def pprint(tpe: Tpe): String = {
+    tpe match {
+      case IntType          => s"INT"
+      case DoubleType       => s"FLOAT"
+      case DateType         => s"DATE"
+      case StringType       => s"STRING"
+      case VarCharType(num) => s"VARCHAR(${num})"
+    }
   }
 
 }
