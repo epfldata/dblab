@@ -166,7 +166,7 @@ object CalcParser extends StandardTokenParsers {
 
   }
 
-  def parseComparison: Parser[Cmp_t] = {
+  def parseComparison: Parser[CmpTag] = {
     ("=" ^^^ {
       Eq
     }) |
