@@ -14,12 +14,21 @@ object CalcOptimizer {
     var consts: List[Int] = List()
     var nonconsts: List[CalcExpr] = List()
 
-    calcProd.exprs.foldLeft(consts, nonconsts) {
-      case ((acc1, acc2), cur) => cur match {
-        case CalcValue(ArithConst(IntLiteral(t))) => (t :: consts, nonconsts)
+    consts = calcProd.exprs.foldLeft(consts) {
+      case (acc1, cur) => cur match {
+        case CalcValue(ArithConst(IntLiteral(t))) => (t :: acc1)
         //TODO
         //case CalcValue(ArithConst(DoubleLiteral(t))) => (t::consts, nonconsts)
-        case _                                    => (consts, cur :: nonconsts)
+        case _                                    => (acc1)
+      }
+    }
+
+    nonconsts = calcProd.exprs.foldLeft(nonconsts) {
+      case (acc1, cur) => cur match {
+        case CalcValue(ArithConst(IntLiteral(t))) => (acc1)
+        //TODO
+        //case CalcValue(ArithConst(DoubleLiteral(t))) => (t::consts, nonconsts)
+        case _                                    => (cur :: acc1)
       }
     }
 
@@ -32,19 +41,32 @@ object CalcOptimizer {
     else if (res == 1)
       return CalcProd(nonconsts)
 
-    return CalcProd(CalcValue(ArithConst(DoubleLiteral(res))) :: nonconsts)
+    if (nonconsts.length > 0)
+      return CalcProd(CalcValue(ArithConst(IntLiteral(res))) :: nonconsts)
+    else
+      return CalcValue(ArithConst(IntLiteral(res)))
+
   }
 
   def Sum(calcSum: CalcSum): CalcExpr = {
     var consts: List[Int] = List()
     var nonconsts: List[CalcExpr] = List()
 
-    calcSum.exprs.foldLeft(consts, nonconsts) {
-      case ((acc1, acc2), cur) => cur match {
-        case CalcValue(ArithConst(IntLiteral(t))) => (t :: consts, nonconsts)
+    consts = calcSum.exprs.foldLeft(consts) {
+      case (acc1, cur) => cur match {
+        case CalcValue(ArithConst(IntLiteral(t))) => (t :: acc1)
         //TODO
         //case CalcValue(ArithConst(DoubleLiteral(t))) => (t::consts, nonconsts)
-        case _                                    => (consts, cur :: nonconsts)
+        case _                                    => (acc1)
+      }
+    }
+
+    nonconsts = calcSum.exprs.foldLeft(nonconsts) {
+      case (acc1, cur) => cur match {
+        case CalcValue(ArithConst(IntLiteral(t))) => (acc1)
+        //TODO
+        //case CalcValue(ArithConst(DoubleLiteral(t))) => (t::consts, nonconsts)
+        case _                                    => (cur :: acc1)
       }
     }
 
@@ -54,7 +76,10 @@ object CalcOptimizer {
 
     if (res == 0)
       return CalcSum(nonconsts)
-    return CalcSum(CalcValue(ArithConst(DoubleLiteral(res))) :: nonconsts)
+    if (nonconsts.length > 0)
+      return CalcSum(CalcValue(ArithConst(IntLiteral(res))) :: nonconsts)
+    else
+      return CalcValue(ArithConst(IntLiteral(res)))
   }
 
   def Neg(expr: CalcExpr): CalcExpr = {

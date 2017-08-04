@@ -67,8 +67,8 @@ object CalcAST {
     calcExpr match {
       case CalcQuery(id, expr) => s"${id}:\n ${rcr(expr)}"
       case CalcNeg(e)          => s"-(${rcr(e)})"
-      case CalcSum(list)       => list.map(rcr).mkString(" + ")
-      case CalcProd(list)      => list.map(rcr).mkString(" * ")
+      case CalcSum(list)       => s"(${list.map(rcr).mkString(" + ")})"
+      case CalcProd(list)      => s"(${list.map(rcr).mkString(" * ")})"
       case AggSum(list, expr)  => s"AGGSUM([${list.map(pprint).mkString(", ")}], ${rcr(expr)})"
       case Rel(tag, name, vars, rest) => tag match {
         case "TABLE" | "STREAM" => s"CREATE ${tag} ${name} ( ${vars.map(pprint).mkString(", ")})" + (if (rest == "") s"" else s"FROM ${rest}")
