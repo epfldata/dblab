@@ -1,6 +1,6 @@
 package ch.epfl.data
 package dblab
-package queryengine
+package dbtoaster
 
 import schema._
 import frontend.parser._
@@ -8,6 +8,8 @@ import frontend.optimizer._
 import frontend.analyzer._
 import utils.Utilities._
 import java.io.PrintStream
+
+import ch.epfl.data.dblab.frontend.parser.SQLAST._
 import frontend.parser.OperatorAST._
 import config._
 import schema._
@@ -19,7 +21,7 @@ object Driver {
    * @param args the setting arguments passed through command line
    */
   def main(args: Array[String]) {
-    if (args.size < 1) {
+    if (args.length < 1) {
       System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
       System.out.println("USAGE: run <SQL query>")
       System.out.println("Example: run experimentation/tpch-sql/Q6.sql")
@@ -36,7 +38,13 @@ object Driver {
 
     for (q <- args) {
       // TODO change to parseStream
-      val sqlParserTree = CalcParser.parse(scala.io.Source.fromFile(q).mkString)
+      val sqlParserTree = SQLParser.parseStream(scala.io.Source.fromFile(q).mkString)
+      val sqlProgram = sqlParserTree.asInstanceOf[IncludeStatement]
+      val tables = sqlProgram.streams.toList.map(x => x.asInstanceOf[createStream]) // ok ?
+      val queries = sqlProgram.body
+      val calc_expr = SQLToCalc.CalcOfQuery(None, tables, queries)
+      //calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + CalcAST.prettyprint(tgt_calc) }).foreach(println)
+      calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + tgt_calc }).foreach(println) // TODO this is for test
       if (Config.debugQueryPlan)
         System.out.println("Original SQL Parser Tree:\n" + sqlParserTree + "\n\n")
     }

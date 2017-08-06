@@ -57,7 +57,7 @@ object SQLParser extends StandardTokenParsers {
       case Some(inc) ~ Some(streams) ~ body => IncludeStatement(inc, streams, body)
       case None ~ Some(streams) ~ body      => IncludeStatement(null, streams, body)
       case Some(inc) ~ None ~ body          => IncludeStatement(inc, null, body)
-      case None ~ None ~ body               => body
+      case None ~ None ~ body               => IncludeStatement(null, null, body)
 
     }
   def parseIncludeStatement: Parser[String] =
