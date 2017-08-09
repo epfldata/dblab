@@ -22,8 +22,8 @@ object CalcAST {
   case class CalcNeg(expr: CalcExpr) extends CalcExpr
   case class AggSum(vars: List[VarT], expr: CalcExpr) extends CalcExpr
   case class Rel(tag: String, name: String, vars: List[VarT], rest: String) extends CalcExpr
-  case class External(e: CalcExpr, et: External_t) extends CalcExpr
   case class Cmp(cmp: Cmp_t, first: ArithExpr, second: ArithExpr) extends CalcExpr
+  case class External(name: String, inps: List[VarT], outs: List[VarT], tp: Tpe, meta: Option[CalcExpr]) extends CalcExpr
   case class CmpOrList(v: ArithExpr, consts: List[Const_t]) extends CalcExpr
   case class Lift(vr: VarT, expr: CalcExpr) extends CalcExpr
   case class Exists(term: CalcExpr) extends CalcExpr
@@ -39,8 +39,6 @@ object CalcAST {
   case class ArithFunc(name: String, terms: List[ArithExpr], tp: Tpe) extends ArithExpr
 
   case class VarT(name: String, tp: Tpe)
-
-  case class External_t(name: String, inps: List[VarT], outs: List[VarT], tp: Tpe, meta: Option[CalcExpr])
 
   trait Cmp_t
   case object Eq extends Cmp_t // Equals
@@ -76,9 +74,9 @@ object CalcAST {
       }
       case Lift(vr, expr) => s"(${pprint(vr)} ^= ${rcr(expr)})"
       case Exists(expr)   => s"EXISTS (${rcr(expr)}) "
-      case External(e, et) => e match {
-        case null => s"${pprint(et)}"
-        case _    => s"${pprint(et)}:(${rcr(e)})"
+      case External(name, inps, outs, tp, meta) => meta match {
+        case None           => s"${name}[${inps.map(pprint).mkString(", ")}][${outs.map(pprint).mkString(", ")}]"
+        case Some(calcExpr) => s"${name}[${inps.map(pprint).mkString(", ")}][${outs.map(pprint).mkString(", ")}]:(${rcr(calcExpr)})"
       }
       case Cmp(cmp, first, second) => s"{${pprint(first)} ${pprint(cmp)} ${pprint(second)}}"
       case CalcValue(v)            => s"{${pprint(v)}}"
@@ -95,11 +93,6 @@ object CalcAST {
       case VarCharType(mx) => s"${vt.name}: VARCHAR(${mx})"
       case DateType        => s"${vt.name}: DATE"
       case null            => s"${vt.name}"
-    }
-  }
-  def pprint(et: External_t): String = {
-    et match {
-      case External_t(name, inps, outs, tp, meta) => s"${name}[${inps.map(pprint).mkString(", ")}][${outs.map(pprint).mkString(", ")}]"
     }
   }
 

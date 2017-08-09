@@ -188,24 +188,24 @@ object CalcParser extends StandardTokenParsers {
   }
   def parseExternalDef: Parser[External] = {
     parseExternalWithoutMeta ~ (":".? ~> "(" ~> parseCalcExpr <~ ")").? ^^ {
-      case et ~ Some(calc) => External(calc, et)
-      case et ~ None       => External(null, et)
+      case et ~ Some(calc) => External(et.name, et.inps, et.outs, et.tp, Some(calc))
+      case et ~ None       => et
     }
   }
 
-  def parseExternalWithoutMeta: Parser[External_t] = {
+  def parseExternalWithoutMeta: Parser[External] = {
     (ident ~ "[" ~ parseVarList.? ~ "]" ~ "[" ~ parseVarList.? ~ "]" ^^ {
-      case id ~ _ ~ Some(l1) ~ _ ~ _ ~ Some(l2) ~ _ => External_t(id, l1, l2, null, None)
-      case id ~ _ ~ Some(l1) ~ _ ~ _ ~ None ~ _     => External_t(id, l1, List(), null, None)
-      case id ~ _ ~ None ~ _ ~ _ ~ Some(l2) ~ _     => External_t(id, List(), l2, null, None)
-      case id ~ _ ~ None ~ _ ~ _ ~ None ~ _         => External_t(id, List(), List(), null, None)
+      case id ~ _ ~ Some(l1) ~ _ ~ _ ~ Some(l2) ~ _ => External(id, l1, l2, null, None)
+      case id ~ _ ~ Some(l1) ~ _ ~ _ ~ None ~ _     => External(id, l1, List(), null, None)
+      case id ~ _ ~ None ~ _ ~ _ ~ Some(l2) ~ _     => External(id, List(), l2, null, None)
+      case id ~ _ ~ None ~ _ ~ _ ~ None ~ _         => External(id, List(), List(), null, None)
 
     }) |
       (ident ~ "(" ~ parseDataType ~ ")" ~ "[" ~ parseVarList.? ~ "]" ~ "[" ~ parseVarList.? ~ "]" ^^ {
-        case id ~ _ ~ tp ~ _ ~ _ ~ Some(l1) ~ _ ~ _ ~ Some(l2) ~ _ => External_t(id, l1, l2, tp, None)
-        case id ~ _ ~ tp ~ _ ~ _ ~ Some(l1) ~ _ ~ _ ~ None ~ _     => External_t(id, l1, List(), tp, None)
-        case id ~ _ ~ tp ~ _ ~ _ ~ None ~ _ ~ _ ~ Some(l2) ~ _     => External_t(id, List(), l2, tp, None)
-        case id ~ _ ~ tp ~ _ ~ _ ~ None ~ _ ~ _ ~ None ~ _         => External_t(id, List(), List(), tp, None)
+        case id ~ _ ~ tp ~ _ ~ _ ~ Some(l1) ~ _ ~ _ ~ Some(l2) ~ _ => External(id, l1, l2, tp, None)
+        case id ~ _ ~ tp ~ _ ~ _ ~ Some(l1) ~ _ ~ _ ~ None ~ _     => External(id, l1, List(), tp, None)
+        case id ~ _ ~ tp ~ _ ~ _ ~ None ~ _ ~ _ ~ Some(l2) ~ _     => External(id, List(), l2, tp, None)
+        case id ~ _ ~ tp ~ _ ~ _ ~ None ~ _ ~ _ ~ None ~ _         => External(id, List(), List(), tp, None)
       })
 
   }

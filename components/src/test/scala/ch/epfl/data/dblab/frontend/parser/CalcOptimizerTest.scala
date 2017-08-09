@@ -15,6 +15,9 @@ class CalcOptimizerTest extends FlatSpec {
     val optimizer = CalcOptimizer
     val r = CalcProd(List(CalcValue(ArithConst(IntLiteral(2))), CalcValue(ArithConst(IntLiteral(3))), CalcValue(ArithConst(IntLiteral(4))), CalcValue(ArithConst(IntLiteral(5))), CalcSum(List(CalcValue(ArithConst(IntLiteral(3))), CalcValue(ArithConst(IntLiteral(0))), CalcValue(ArithConst(IntLiteral(4)))))))
     val res = optimizer.Normalize(r)
+    println("#######")
+    println(prettyprint(r))
+    println(prettyprint(res))
     res should not be None
   }
 
