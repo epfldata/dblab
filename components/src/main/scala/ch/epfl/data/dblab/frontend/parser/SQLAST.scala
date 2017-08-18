@@ -6,7 +6,7 @@ package parser
 import com.sun.xml.internal.ws.client.sei.ResponseBuilder.Body
 
 import scala.reflect.runtime.{ universe => ru }
-import ru._
+//import ru._
 
 /**
  * AST for SQL select statement.
@@ -115,6 +115,7 @@ object SQLAST {
     def size(): Int
     def get(n: Int): (Expression, Option[String])
     def extractAliases(): Seq[(Expression, String, Int)]
+    def extractExpretions(): Seq[(Expression, Int)]
     def findProjection(e: Expression, alias: String): Seq[Expression]
   }
   case class ExpressionProjections(lst: Seq[(Expression, Option[String])]) extends Projections {
@@ -147,11 +148,14 @@ object SQLAST {
       case c if c.isAggregateOpExpr => p._2.get
     })
     def extractAliases(): Seq[(Expression, String, Int)] = lst.zipWithIndex.filter(p => p._1._2.isDefined).map(al => (al._1._1, al._1._2.get, al._2))
+    override def extractExpretions(): Seq[(Expression, Int)] = lst.zipWithIndex.map(al => (al._1._1, al._2))
+    //TODO p._1._2 ?? AVG(A)
   }
   case class AllColumns() extends Projections {
     def size(): Int = ???
     def get(n: Int) = ???
     def extractAliases(): Seq[(Expression, String, Int)] = Seq()
+    def extractExpretions(): Seq[(Expression, Int)] = Seq()
     def findProjection(e: Expression, alias: String) = ???
   }
 
@@ -159,13 +163,13 @@ object SQLAST {
   // Expressions
   trait Expression extends SQLNode {
     // FIXME why TypeTag[_] ?
-    private var tpe: TypeTag[_] = null
+    private var tpe: ru.TypeTag[_] = null
     val isAggregateOpExpr = true
     def tp = tpe match {
       case t if t == null => tpe // TODO -- Introduce check here?
       case _              => tpe
     }
-    def setTp[A](tt: TypeTag[A]) {
+    def setTp[A](tt: ru.TypeTag[A]) {
       if (tt == null && this != NullLiteral)
         throw new Exception("SQL Type Inferrence BUG: type of Expression " + this + " cannot be set to null.")
       this.tpe = tt

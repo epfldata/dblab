@@ -45,8 +45,8 @@ object Driver {
       val calc_expr = SQLToCalc.CalcOfQuery(None, tables, queries)
       //calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + CalcAST.prettyprint(tgt_calc) }).foreach(println)
       calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + tgt_calc }).foreach(println) // TODO this is for test
-      if (Config.debugQueryPlan)
-        System.out.println("Original SQL Parser Tree:\n" + sqlParserTree + "\n\n")
+      //      if (Config.debugQueryPlan)
+      //        System.out.println("Original SQL Parser Tree:\n" + sqlParserTree + "\n\n")
     }
   }
 }
