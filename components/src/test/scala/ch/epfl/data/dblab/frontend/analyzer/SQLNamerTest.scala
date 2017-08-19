@@ -19,6 +19,7 @@ class SQLNamerTest extends FlatSpec {
     val tables = sqlProgram.streams.toList.map(x => x.asInstanceOf[CreateStream])
     val ddlInterpreter = new DDLInterpreter(new Catalog(scala.collection.mutable.Map()))
     val query = sqlProgram.body
+    println(query)
     starExpressionCount(query) should not be (0)
     val schema = ddlInterpreter.interpret(UseSchema("DBToaster") :: tables)
     val namedQuery = new SQLNamer(schema).nameQuery(query)
@@ -29,10 +30,12 @@ class SQLNamerTest extends FlatSpec {
   def starExpressionCount(queryTree: TopLevelStatement): Int = {
     queryTree match {
       case st: SelectStatement =>
-        st.projections match {
+        val countProj = st.projections match {
           case ExpressionProjections(lst) =>
             lst.collect({ case (StarExpression(_), _) => 1 }).sum
         }
+        val countTarget = st.joinTree.map(_.extractSubqueries.map(x => starExpressionCount(x.subquery)).sum).getOrElse(0)
+        countProj + countTarget
       case _ => 0
     }
   }
@@ -58,6 +61,15 @@ class SQLNamerTest extends FlatSpec {
   "SQLNamer" should "infer the names correctly for a joined select part start query" in {
     val folder = "experimentation/dbtoaster/queries/simple"
     val file = new java.io.File(s"$folder/rs_selectpartstar.sql")
+    // println(s"naming $file")
+    val namedQuery = parseAndNameQuery(file)
+    // println(namedQuery)
+    starExpressionCount(namedQuery) should be(0)
+  }
+
+  "SQLNamer" should "infer the names correctly for a select all of subquery" in {
+    val folder = "experimentation/dbtoaster/queries/simple"
+    val file = new java.io.File(s"$folder/r_starofnested.sql")
     // println(s"naming $file")
     val namedQuery = parseAndNameQuery(file)
     println(namedQuery)
