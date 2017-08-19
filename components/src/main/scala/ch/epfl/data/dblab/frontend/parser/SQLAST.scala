@@ -149,6 +149,7 @@ object SQLAST {
     override def extractExpretions(): Seq[(Expression, Int)] = lst.zipWithIndex.map(al => (al._1._1, al._2))
     //TODO p._1._2 ?? AVG(A)
   }
+  @deprecated("", "")
   case class AllColumns() extends Projections {
     def size(): Int = ???
     def get(n: Int) = ???
