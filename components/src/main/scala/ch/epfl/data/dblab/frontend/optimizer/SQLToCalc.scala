@@ -19,7 +19,7 @@ import sc.pardis.types._
 
 object SQLToCalc {
 
-  def CalcOfQuery(query_name: Option[String], tables: List[createStream], query: TopLevelStatement): List[(String, CalcExpr)] = {
+  def CalcOfQuery(query_name: Option[String], tables: List[CreateStream], query: TopLevelStatement): List[(String, CalcExpr)] = {
 
     println("query:\n" + query)
     val re_hv_query = rewrite_having_query(tables, query)
@@ -33,7 +33,7 @@ object SQLToCalc {
     }
   }
 
-  def CalcOfSelect(query_name: Option[String], tables: List[createStream], sqlTree: SelectStatement): List[(String, CalcExpr)] = {
+  def CalcOfSelect(query_name: Option[String], tables: List[CreateStream], sqlTree: SelectStatement): List[(String, CalcExpr)] = {
 
     val targets = sqlTree.projections
     val sources = sqlTree.joinTree
@@ -105,7 +105,7 @@ object SQLToCalc {
   }
 
   // sources shouldn't be optional and maybe list ?
-  def calc_of_source(tables: List[createStream], sources: Option[Relation]): CalcExpr = {
+  def calc_of_source(tables: List[CreateStream], sources: Option[Relation]): CalcExpr = {
 
     val rels = sources match {
       case Some(x) => x.extractTables.toList
@@ -127,20 +127,20 @@ object SQLToCalc {
         ++
         List())
 
-//        subqs.map( {x =>
-//          val q = x.subquery
-//          val ref_name = x.alias
-//          if ( is_agg_query(q))
-//          {
-//            CalcProd( CalcOfQuery(ref_name,tables,q).map({case(tgt_name,subq) =>
-//              mk_domain_restricted_lift ( var_of_sql_var( ref_name,tgt_name,"INTEGER") )
-//            })
-//          }
-//        })
+    //        subqs.map( {x =>
+    //          val q = x.subquery
+    //          val ref_name = x.alias
+    //          if ( is_agg_query(q))
+    //          {
+    //            CalcProd( CalcOfQuery(ref_name,tables,q).map({case(tgt_name,subq) =>
+    //              mk_domain_restricted_lift ( var_of_sql_var( ref_name,tgt_name,"INTEGER") )
+    //            })
+    //          }
+    //        })
     //TODO uncomment when mk_domain_restricted_lift is defined
   }
 
-  def calc_of_condition(tables: List[createStream], sources: Relation, cond: Expression): CalcExpr = {
+  def calc_of_condition(tables: List[CreateStream], sources: Relation, cond: Expression): CalcExpr = {
 
     //TODO push_down_nots
     cond match {
@@ -176,7 +176,7 @@ object SQLToCalc {
 
   //TODO type of tgt_var ?
   def calc_of_sql_expr(tgt_var: Option[Unit], materialize_query: Option[(Aggregation, CalcExpr) => CalcExpr],
-                       tables: List[createStream], sources: Relation, expr: SQLNode): CalcExpr = {
+                       tables: List[CreateStream], sources: Relation, expr: SQLNode): CalcExpr = {
 
     def rcr_e(is_agg: Option[Boolean], e: Expression): CalcExpr = {
       if (is_agg.isDefined && is_agg.get) {
@@ -250,7 +250,7 @@ object SQLToCalc {
     }
   }
 
-  def cast_query_to_aggregate(tables: List[createStream], query: TopLevelStatement): TopLevelStatement = {
+  def cast_query_to_aggregate(tables: List[CreateStream], query: TopLevelStatement): TopLevelStatement = {
 
     println(is_agg_query(query))
 
@@ -314,7 +314,7 @@ object SQLToCalc {
   //
   //  }
 
-  def find_table(rel_name: String, tables: List[createStream]): Option[createStream] = {
+  def find_table(rel_name: String, tables: List[CreateStream]): Option[CreateStream] = {
     tables.find(x => x.name == rel_name)
   }
 
@@ -358,12 +358,12 @@ object SQLToCalc {
 
   }
 
-  def rewrite_having_query(tables: List[createStream], query: TopLevelStatement): TopLevelStatement = {
+  def rewrite_having_query(tables: List[CreateStream], query: TopLevelStatement): TopLevelStatement = {
     query
     // TODO
   }
 
-  def expr_type(strict: Option[Boolean], expr: Expression, tables: List[createStream], sources: Relation): Symbol = {
+  def expr_type(strict: Option[Boolean], expr: Expression, tables: List[CreateStream], sources: Relation): Symbol = {
     'INTEGER
     // TODO
   }
@@ -403,10 +403,10 @@ object SQLToCalc {
   //
   //  }
 
-//    def mk_domain_restricted_lift ( lift_v:VarT , lift_expr:CalcExpr ): CalcExpr = {
-//      val lift = Lift(lift_v,lift_expr)
-//
-//
-//    }
+  //    def mk_domain_restricted_lift ( lift_v:VarT , lift_expr:CalcExpr ): CalcExpr = {
+  //      val lift = Lift(lift_v,lift_expr)
+  //
+  //
+  //    }
 
 }

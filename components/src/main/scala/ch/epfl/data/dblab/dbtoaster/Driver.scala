@@ -40,7 +40,7 @@ object Driver {
       // TODO change to parseStream
       val sqlParserTree = SQLParser.parseStream(scala.io.Source.fromFile(q).mkString)
       val sqlProgram = sqlParserTree.asInstanceOf[IncludeStatement]
-      val tables = sqlProgram.streams.toList.map(x => x.asInstanceOf[createStream]) // ok ?
+      val tables = sqlProgram.streams.toList.map(x => x.asInstanceOf[CreateStream]) // ok ?
       val queries = sqlProgram.body
       val calc_expr = SQLToCalc.CalcOfQuery(None, tables, queries)
       //calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + CalcAST.prettyprint(tgt_calc) }).foreach(println)

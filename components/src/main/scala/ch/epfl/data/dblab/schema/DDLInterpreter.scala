@@ -3,6 +3,7 @@ package dblab
 package schema
 
 import frontend.parser.DDLAST._
+import frontend.parser.SQLAST.CreateStream
 import utils._
 import sc.pardis.types._
 import scala.collection.immutable.Set
@@ -26,6 +27,17 @@ class DDLInterpreter(val catalog: Catalog) {
       case c: DDLVarChar => VarCharType(c.numChars)
       case c: DDLChar    => if (c.numChars == 1) CharType else VarCharType(c.numChars) // TODO -- Make SC Char take numChars as arg
       case c: DDLDate    => DateType
+    }
+  }
+
+  // TODO handle precision in double type
+  def typeNameToSCType(typeName: String) = {
+    typeName match {
+      case "NUMERIC" => DoubleType
+      case "INTEGER" => IntType
+      case "DATE"    => DateType
+      case "FLOAT"   => DoubleType
+      case _         => throw new Exception(s"Doesn't handle the type $typeName yet!")
     }
   }
 
@@ -72,6 +84,12 @@ class DDLInterpreter(val catalog: Catalog) {
             }
           })
         }
+        getCurrSchema
+      // TODO add the file path.
+      case cs @ CreateStream(_, name, cols, _) =>
+        val colsDef = cols.toList.map(c => Attribute(c._1, typeNameToSCType(c._2), Nil))
+        val constraints: ArrayBuffer[Constraint] = if (cs.isStream) ArrayBuffer(StreamingTable) else ArrayBuffer()
+        getCurrSchema.tables += new Table(name, colsDef, constraints, "")
         getCurrSchema
       case ConstraintOp(add, cons) => add match {
         case true => /* add */

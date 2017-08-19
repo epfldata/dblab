@@ -3,8 +3,6 @@ package dblab
 package frontend
 package parser
 
-import com.sun.xml.internal.ws.client.sei.ResponseBuilder.Body
-
 import scala.reflect.runtime.{ universe => ru }
 //import ru._
 
@@ -106,7 +104,7 @@ object SQLAST {
   case object EXCEPT extends QueryRelationType
   case class IncludeStatement(include: String, streams: Seq[CreateStatement], body: TopLevelStatement) extends TopLevelStatement
   trait CreateStatement
-  case class createStream(tag: String, name: String, cols: Seq[(String, String)], rest: String) extends CreateStatement {
+  case class CreateStream(tag: String, name: String, cols: Seq[(String, String)], rest: String) extends CreateStatement {
     def isTable: Boolean = tag == "TABLE"
     def isStream: Boolean = !isTable
   }
