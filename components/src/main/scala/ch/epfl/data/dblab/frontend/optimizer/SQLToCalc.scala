@@ -142,13 +142,29 @@ object SQLToCalc {
 
   def calc_of_condition(tables: List[CreateStream], sources: Relation, cond: Option[Expression]): CalcExpr = {
 
+    def rcr_c(c: Option[Expression]): CalcExpr = {
+      calc_of_condition(tables, sources, c)
+    }
+
     //TODO push_down_nots
     cond match {
       //TODO or
       case Some(a: And) =>
-        CalcProd(List(calc_of_condition(tables, sources, Some(a.left)), calc_of_condition(tables, sources, Some(a.right))))
-      case Some(b: BinaryOperator) =>
+        CalcProd(List(rcr_c(Some(a.left)), rcr_c(Some(a.right))))
 
+      //      case Some(o: Or) =>
+      //        def extract_ors ( inner:Expression ): List[Expression] =
+      //        {
+      //          inner match {
+      //            case o:Or =>
+      //              extract_ors(o.left)++extract_ors(o.right)
+      //            case c => List(c)
+      //          }
+      //        }
+      //        
+      //        val sum_calc = () CalcSum( )
+
+      case Some(b: BinaryOperator) =>
         val e1_calc = calc_of_sql_expr(None, None, tables, sources, b.left)
         val e2_calc = calc_of_sql_expr(None, None, tables, sources, b.right)
 
@@ -370,9 +386,11 @@ object SQLToCalc {
   }
 
   // ********Calcules********** :
+
   def mk_aggsum(gb_vars: List[VarT], expr: CalcExpr): CalcExpr = {
     // TODO use schema_of_expr from Parand's code
-    expr
+    //    expr
+    AggSum(gb_vars, expr)
     //AggSum(new_gb_vars,expr)
   }
 
