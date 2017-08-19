@@ -40,7 +40,7 @@ object SQLToCalc {
     val cond = sqlTree.where
     val gb_vars = sqlTree.groupBy.map(_.keys.collect { case x: FieldIdent => x }).getOrElse(Nil).toList
     val source_calc = calc_of_source(tables, sources)
-    val cond_calc = calc_of_condition(tables, sources.get, cond.get)
+    val cond_calc = calc_of_condition(tables, sources.get, cond)
     println("source :\n" + source_calc)
     //println(CalcAST.prettyprint(source_calc))
     println("cond : \n" + cond_calc)
@@ -127,27 +127,27 @@ object SQLToCalc {
         ++
         List())
 
-//        subqs.map( {x =>
-//          val q = x.subquery
-//          val ref_name = x.alias
-//          if ( is_agg_query(q))
-//          {
-//            CalcProd( CalcOfQuery(ref_name,tables,q).map({case(tgt_name,subq) =>
-//              mk_domain_restricted_lift ( var_of_sql_var( ref_name,tgt_name,"INTEGER") )
-//            })
-//          }
-//        })
+    //        subqs.map( {x =>
+    //          val q = x.subquery
+    //          val ref_name = x.alias
+    //          if ( is_agg_query(q))
+    //          {
+    //            CalcProd( CalcOfQuery(ref_name,tables,q).map({case(tgt_name,subq) =>
+    //              mk_domain_restricted_lift ( var_of_sql_var( ref_name,tgt_name,"INTEGER") )
+    //            })
+    //          }
+    //        })
     //TODO uncomment when mk_domain_restricted_lift is defined
   }
 
-  def calc_of_condition(tables: List[createStream], sources: Relation, cond: Expression): CalcExpr = {
+  def calc_of_condition(tables: List[createStream], sources: Relation, cond: Option[Expression]): CalcExpr = {
 
     //TODO push_down_nots
     cond match {
       //TODO or
-      case a: And =>
-        CalcProd(List(calc_of_condition(tables, sources, a.left), calc_of_condition(tables, sources, a.right)))
-      case b: BinaryOperator =>
+      case Some(a: And) =>
+        CalcProd(List(calc_of_condition(tables, sources, Some(a.left)), calc_of_condition(tables, sources, Some(a.right))))
+      case Some(b: BinaryOperator) =>
 
         val e1_calc = calc_of_sql_expr(None, None, tables, sources, b.left)
         val e2_calc = calc_of_sql_expr(None, None, tables, sources, b.right)
@@ -155,7 +155,7 @@ object SQLToCalc {
         val (e1_val, e1_calc2) = lift_if_necessary(e1_calc)
         val (e2_val, e2_calc2) = lift_if_necessary(e2_calc)
 
-        cond match {
+        b match {
           case _: Equals         => mk_aggsum(List(), CalcProd(List(e1_calc2, e2_calc2, Cmp(Eq, e1_val, e2_val))))
           case _: NotEquals      => mk_aggsum(List(), CalcProd(List(e1_calc2, e2_calc2, Cmp(Neq, e1_val, e2_val))))
           case _: LessOrEqual    => mk_aggsum(List(), CalcProd(List(e1_calc2, e2_calc2, Cmp(Lte, e1_val, e2_val))))
@@ -237,7 +237,7 @@ object SQLToCalc {
         if (is_agg_query(q))
           (CalcOfQuery(None, tables, q).head._2, false)
         else
-          (CalcProd(List(calc_of_condition(tables, sources, q.where.getOrElse(throw new Exception("orElse"))),
+          (CalcProd(List(calc_of_condition(tables, sources, q.where),
             rcr_e(None, q.projections.extractExpretions().head._1))), false)
       //TODO other cases
 
@@ -285,6 +285,7 @@ object SQLToCalc {
 
     tp match {
       case "INTEGER" => VarT(R_name + "_" + col_name, IntType)
+      case "STRING"  => VarT(R_name + "_" + col_name, StringType)
       case "ANY"     => VarT(R_name + "_" + col_name, AnyType)
 
       //TODO rest cases
@@ -403,10 +404,10 @@ object SQLToCalc {
   //
   //  }
 
-//    def mk_domain_restricted_lift ( lift_v:VarT , lift_expr:CalcExpr ): CalcExpr = {
-//      val lift = Lift(lift_v,lift_expr)
-//
-//
-//    }
+  //    def mk_domain_restricted_lift ( lift_v:VarT , lift_expr:CalcExpr ): CalcExpr = {
+  //      val lift = Lift(lift_v,lift_expr)
+  //
+  //
+  //    }
 
 }
