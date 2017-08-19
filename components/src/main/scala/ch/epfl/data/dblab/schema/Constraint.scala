@@ -24,4 +24,9 @@ case class AutoIncrement(attribute: Attribute) extends Constraint
  * the offset between the index of a row and the value of the attribute.
  */
 case class Continuous(attribute: Attribute, offset: Int) extends Constraint
-object Compressed extends Constraint
+case object Compressed extends Constraint
+/**
+ * Specifies that the elements of the table are being streamed. This is mainly
+ * used for DBToaster.
+ */
+case object StreamingTable extends Constraint

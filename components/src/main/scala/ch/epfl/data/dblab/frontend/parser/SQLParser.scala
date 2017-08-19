@@ -75,12 +75,12 @@ object SQLParser extends StandardTokenParsers {
       case name ~ _ ~ cols ~ _ ~ _ ~ ret ~ _ ~ _ ~ ext => CreateFunction(name, cols, ret, ext)
     }
 
-  def parseCreateStreamOrTable: Parser[createStream] =
+  def parseCreateStreamOrTable: Parser[CreateStream] =
     "CREATE" ~> ("STREAM" | "TABLE") ~ ident ~ "(" ~ parseStreamColumns.? ~ ")" ~ ("FROM" ~> parseSrcStatement).? <~ ";" ^^ {
-      case sot ~ nameStr ~ _ ~ Some(cols) ~ _ ~ Some(src) => createStream(sot, nameStr, cols, src)
-      case sot ~ nameStr ~ _ ~ Some(cols) ~ _ ~ None      => createStream(sot, nameStr, cols, null)
-      case sot ~ nameStr ~ _ ~ None ~ _ ~ Some(src)       => createStream(sot, nameStr, null, src)
-      case sot ~ nameStr ~ _ ~ None ~ _ ~ None            => createStream(sot, nameStr, null, null)
+      case sot ~ nameStr ~ _ ~ Some(cols) ~ _ ~ Some(src) => CreateStream(sot, nameStr, cols, src)
+      case sot ~ nameStr ~ _ ~ Some(cols) ~ _ ~ None      => CreateStream(sot, nameStr, cols, null)
+      case sot ~ nameStr ~ _ ~ None ~ _ ~ Some(src)       => CreateStream(sot, nameStr, null, src)
+      case sot ~ nameStr ~ _ ~ None ~ _ ~ None            => CreateStream(sot, nameStr, null, null)
 
     }
 
@@ -114,7 +114,7 @@ object SQLParser extends StandardTokenParsers {
       case col ~ colType ~ Some(cols) => cols :+ (col, colType)
       case col ~ colType ~ None       => Seq() :+ (col, colType)
     }
-
+  // TODO change it to SC type or DDL type
   def parseStreamDataType: Parser[String] =
     "DECIMAL" ~ ("(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")").? ^^^ {
       "DECIMAL"
