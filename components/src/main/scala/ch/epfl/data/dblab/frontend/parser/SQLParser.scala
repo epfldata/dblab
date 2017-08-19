@@ -111,8 +111,8 @@ object SQLParser extends StandardTokenParsers {
     })
   def parseStreamColumns: Parser[Seq[(String, String)]] =
     ident ~ (parseStreamDataType) ~ ("," ~> parseStreamColumns).? ^^ {
-      case col ~ colType ~ Some(cols) => cols :+ (col, colType)
-      case col ~ colType ~ None       => Seq() :+ (col, colType)
+      case col ~ colType ~ Some(cols) => (col, colType) +: cols
+      case col ~ colType ~ None       => Seq((col, colType))
     }
   // TODO change it to SC type or DDL type
   def parseStreamDataType: Parser[String] =
@@ -164,8 +164,7 @@ object SQLParser extends StandardTokenParsers {
     ident ~ "AS" ~ "(" ~ parseQuery <~ ")" ^^ { case name ~ _ ~ _ ~ stmt => View(stmt, name) }
 
   def parseProjections: Parser[Projections] = (
-    "*" ^^^ AllColumns() // TODO change it so that it uses StarExpression instead (or completely remove this line)
-    | rep1sep(parseAliasedExpression, ",") ^^ { case lst => ExpressionProjections(lst) })
+    rep1sep(parseAliasedExpression, ",") ^^ { case lst => ExpressionProjections(lst) })
 
   def parseAliasedExpression: Parser[(Expression, Option[String])] =
     parseExpression ~ parseAlias.? ^^ { case expr ~ alias => (expr, alias) }
