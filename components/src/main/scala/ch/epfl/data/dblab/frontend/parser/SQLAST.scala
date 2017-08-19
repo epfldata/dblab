@@ -158,7 +158,7 @@ object SQLAST {
     def findProjection(e: Expression, alias: String) = ???
   }
 
-  case class StarExpression(relation: Option[Expression]) extends Expression
+  case class StarExpression(relation: Option[String]) extends Expression
   // Expressions
   trait Expression extends SQLNode {
     // FIXME why TypeTag[_] ?

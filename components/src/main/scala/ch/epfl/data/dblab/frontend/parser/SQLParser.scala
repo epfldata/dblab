@@ -303,7 +303,7 @@ object SQLParser extends StandardTokenParsers {
       | "*" ^^^ { StarExpression(None) }
       | ident ~ opt("." ~> (ident | "*") /*| ("(" ~> repsep(parseExpression, ",") <~ ")")*/ ) ^^ {
         case id ~ None      => FieldIdent(None, id)
-        case id ~ Some("*") => StarExpression(Some(FieldIdent(None, id)))
+        case id ~ Some("*") => StarExpression(Some(id))
         case id ~ Some(b)   => FieldIdent(Some(id), b)
       }
       | "(" ~> (parseExpression | parseSelectStatement) <~ ")"
