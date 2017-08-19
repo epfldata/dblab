@@ -43,34 +43,27 @@ class SQLNamerTest extends FlatSpec {
   "SQLNamer" should "infer the names correctly for a simple select all query" in {
     val folder = "experimentation/dbtoaster/queries/simple"
     val file = new java.io.File(s"$folder/r_selectstar.sql")
-    // println(s"naming $file")
     val namedQuery = parseAndNameQuery(file)
-    // println(namedQuery)
     starExpressionCount(namedQuery) should be(0)
   }
 
   "SQLNamer" should "infer the names correctly for a join select all query" in {
     val folder = "experimentation/dbtoaster/queries/simple"
     val file = new java.io.File(s"$folder/rs_eqineq.sql")
-    // println(s"naming $file")
     val namedQuery = parseAndNameQuery(file)
-    // println(namedQuery)
     starExpressionCount(namedQuery) should be(0)
   }
 
   "SQLNamer" should "infer the names correctly for a joined select part start query" in {
     val folder = "experimentation/dbtoaster/queries/simple"
     val file = new java.io.File(s"$folder/rs_selectpartstar.sql")
-    // println(s"naming $file")
     val namedQuery = parseAndNameQuery(file)
-    // println(namedQuery)
     starExpressionCount(namedQuery) should be(0)
   }
 
   "SQLNamer" should "infer the names correctly for a select all of subquery" in {
     val folder = "experimentation/dbtoaster/queries/simple"
     val file = new java.io.File(s"$folder/r_starofnested.sql")
-    // println(s"naming $file")
     val namedQuery = parseAndNameQuery(file)
     println(namedQuery)
     starExpressionCount(namedQuery) should be(0)

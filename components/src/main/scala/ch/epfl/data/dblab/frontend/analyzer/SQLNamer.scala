@@ -36,7 +36,7 @@ class SQLNamer(schema: Schema) {
   // TODO maybe add the type!
   type TableSchema = List[String]
 
-  def getSourceNamedSchema(rel: Relation): (TableSchema, String) = rel match {
+  def getSourceLabeledSchema(rel: Relation): (TableSchema, String) = rel match {
     case SQLTable(n, a) => schema.findTable(n).get.attributes.map(_.name) -> a.getOrElse(n)
     case Subquery(e, a) => e match {
       case UnionIntersectSequence(left, right, kind) => ???
@@ -47,32 +47,40 @@ class SQLNamer(schema: Schema) {
   }
 
   def getSelectSchema(select: SelectStatement): TableSchema = {
-    val newSelect = nameSelect(select)
-    val projs = newSelect.projections.asInstanceOf[ExpressionProjections].lst
+    val projs = select.projections.asInstanceOf[ExpressionProjections].lst
     projs.map(_._2.get).toList
+  }
+
+  def nameSource(rel: Relation): Relation = rel match {
+    case SQLTable(_, _)                  => rel
+    case Subquery(e, a)                  => Subquery(nameQuery(e), a)
+    case Join(left, right, kind, clause) => Join(nameSource(left), nameSource(right), kind, clause)
+    case _                               => ???
   }
 
   def nameSelect(select: SelectStatement): SelectStatement = {
     select match {
-      case SelectStatement(withs, projections: ExpressionProjections, joinTree, where, groupBy, having, orderBy, limit, aliases) =>
+      case SelectStatement(withs, projections: ExpressionProjections, source, where, groupBy, having, orderBy, limit, aliases) =>
+        val namedSource = source.map(nameSource)
         val namedProjections = projections.lst.flatMap(exp => exp match {
           case (StarExpression(source), None) =>
-            val rels = joinTree.map(extractSources).getOrElse(Seq()).toList
-            val namedRels = rels.map(getSourceNamedSchema)
-            val filteredNamedRels = source match {
-              case None      => namedRels
-              case Some(rel) => List(namedRels.find(_._2 == rel).get) // intentionally used .get to give an error if the names don't match
+            val rels = namedSource.map(extractSources).getOrElse(Seq()).toList
+            val namedRels = rels.map({
+              case Subquery(e, a) => Subquery(nameQuery(e), a)
+              case rel            => rel
+            })
+            val labeledRels = namedRels.map(getSourceLabeledSchema)
+            val filteredLabeledRels = source match {
+              case None      => labeledRels
+              case Some(rel) => List(labeledRels.find(_._2 == rel).get) // intentionally used .get to give an error if the names don't match
             }
-            // println(s"None * $filteredNamedRels $namedRels")
-            // val aliasedTables = filteredNamedRels.flatMap(x => schema.findTable(x._1).map(t => t -> x._2))
-            // assert(aliasedTables.length == filteredNamedRels.length)
-            filteredNamedRels.flatMap {
+            filteredLabeledRels.flatMap {
               case (table, name) =>
                 table.map(a => FieldIdent(Some(name), a) -> Some(a))
             }
           case _ => List(exp)
         })
-        SelectStatement(withs, ExpressionProjections(namedProjections), joinTree, where, groupBy, having, orderBy, limit, aliases)
+        SelectStatement(withs, ExpressionProjections(namedProjections), namedSource, where, groupBy, having, orderBy, limit, aliases)
     }
   }
 }
