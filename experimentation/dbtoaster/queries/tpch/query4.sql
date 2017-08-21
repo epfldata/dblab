@@ -3,7 +3,7 @@
 --   LIMIT    (ignored)
 --   INTERVAL (inlined into constant)
 
-INCLUDE '../alpha5/test/queries/tpch/schemas.sql';
+INCLUDE 'experimentation/dbtoaster/queries/tpch/schemas.sql';
 
 SELECT o.orderpriority, COUNT(*) AS order_count
 FROM   orders o

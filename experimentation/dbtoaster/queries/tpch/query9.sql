@@ -1,7 +1,7 @@
 -- Unsupported features for this query
 --   ORDER BY (ignored)
 
-INCLUDE '../alpha5/test/queries/tpch/schemas.sql';
+INCLUDE 'experimentation/dbtoaster/queries/tpch/schemas.sql';
 
 SELECT nation, o_year, SUM(amount) AS sum_profit 
 FROM (

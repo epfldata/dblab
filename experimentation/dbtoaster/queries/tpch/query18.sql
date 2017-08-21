@@ -3,7 +3,7 @@
 --   HAVING (rewritten as a nested query)
 
 
-INCLUDE '../alpha5/test/queries/tpch/schemas.sql';
+INCLUDE 'experimentation/dbtoaster/queries/tpch/schemas.sql';
 
 SELECT c.name, c.custkey, o.orderkey, o.orderdate, o.totalprice, 
        sum(l.quantity) AS query18

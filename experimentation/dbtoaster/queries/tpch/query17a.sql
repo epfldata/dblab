@@ -5,7 +5,7 @@
 (1 row)
  */
 
-INCLUDE '../alpha5/test/queries/tpch/schemas.sql';
+INCLUDE 'experimentation/dbtoaster/queries/tpch/schemas.sql';
 
 SELECT sum(l.extendedprice) AS query17
 FROM   lineitem l, part p

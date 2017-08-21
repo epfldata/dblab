@@ -6,7 +6,7 @@
    division is also guaranteed to be 0. */
 
 
-INCLUDE '../alpha5/test/queries/tpch/schemas.sql';
+INCLUDE 'experimentation/dbtoaster/queries/tpch/schemas.sql';
 
 SELECT  total.o_year,
         (SUM(CASE total.name WHEN 'BRAZIL' THEN total.volume ELSE 0 END) / 

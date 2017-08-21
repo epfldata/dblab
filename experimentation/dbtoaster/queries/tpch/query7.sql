@@ -1,7 +1,7 @@
 -- Unsupported features for this query
 --   ORDER BY (ignored)
 
-INCLUDE '../alpha5/test/queries/tpch/schemas.sql';
+INCLUDE 'experimentation/dbtoaster/queries/tpch/schemas.sql';
 
 SELECT supp_nation, cust_nation, l_year, SUM(volume) as revenue
 FROM (

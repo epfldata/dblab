@@ -1,4 +1,4 @@
-INCLUDE 'test/queries/tpch/schemas.sql';
+INCLUDE 'experimentation/dbtoaster/queries/tpch/schemas.sql';
 
 SELECT *
 FROM (

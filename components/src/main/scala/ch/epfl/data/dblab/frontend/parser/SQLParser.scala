@@ -54,15 +54,18 @@ object SQLParser extends StandardTokenParsers {
 
   def parseStreamQuery: Parser[TopLevelStatement] =
     parseIncludeStatement.? ~ parseCreate.? ~ parseQuery ^^ {
-      case Some(inc) ~ Some(streams) ~ body => IncludeStatement(inc, streams, body)
+      case Some(inc) ~ Some(streams) ~ body => IncludeStatement(null, inc ++ streams, body)
       case None ~ Some(streams) ~ body      => IncludeStatement(null, streams, body)
-      case Some(inc) ~ None ~ body          => IncludeStatement(inc, null, body)
+      case Some(inc) ~ None ~ body          => IncludeStatement(null, inc, body)
       case None ~ None ~ body               => IncludeStatement(null, null, body)
 
     }
-  def parseIncludeStatement: Parser[String] =
+  def parseIncludeStatement: Parser[List[CreateStatement]] =
     "INCLUDE" ~ stringLit <~ ";".? ^^ {
-      case inc ~ lit => lit
+      case inc ~ lit => phrase(parseCreate)(new lexical.Scanner(scala.io.Source.fromFile(lit).mkString)) match {
+        case Success(r, q) => r
+        case failure       => throw new Exception("Unable to parse the include file SQL query!\n" + failure)
+      }
     }
 
   def parseCreate: Parser[List[CreateStatement]] =

@@ -5,7 +5,7 @@
    interpreter due to a floating point error in OCaml itself.  Specifically, 
    in OCaml, 0.06+0.01 <> 0.07.  This can not be helped. */
 
-INCLUDE '../alpha5/test/queries/tpch/schemas.sql';
+INCLUDE 'experimentation/dbtoaster/queries/tpch/schemas.sql';
 
 SELECT SUM(l.extendedprice*l.discount) AS revenue
 FROM   lineitem l

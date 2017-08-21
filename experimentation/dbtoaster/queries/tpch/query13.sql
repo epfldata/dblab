@@ -3,7 +3,7 @@
 --   LEFT OUTER JOIN (replaced with a natural join)
 --   Multiple column renaming
 
-INCLUDE '../alpha5/test/queries/tpch/schemas.sql';
+INCLUDE 'experimentation/dbtoaster/queries/tpch/schemas.sql';
 
 SELECT c_count, COUNT(*) AS custdist
 FROM (  
