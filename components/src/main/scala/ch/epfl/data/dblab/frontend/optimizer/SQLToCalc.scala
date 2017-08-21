@@ -6,6 +6,7 @@ package optimizer
 import ch.epfl.data.dblab.frontend.parser.CalcAST
 import parser.SQLAST._
 import parser.CalcAST._
+import optimizer.CalcOptimizer._
 import schema._
 import sc.pardis.types._
 //import scala.reflect.runtime.{ universe => ru }
@@ -41,9 +42,10 @@ object SQLToCalc {
     val gb_vars = sqlTree.groupBy.map(_.keys.collect { case x: FieldIdent => x }).getOrElse(Nil).toList
     val source_calc = calc_of_source(tables, sources)
     val cond_calc = calc_of_condition(tables, sources.get, cond)
-    println("source :\n" + source_calc)
-    //println(CalcAST.prettyprint(source_calc))
-    println("cond : \n" + cond_calc)
+    //    println("source :\n" + source_calc)
+    println("source :\n" + CalcAST.prettyprint(source_calc))
+    //    println("cond : \n" + cond_calc)
+    println("cond :\n" + CalcAST.prettyprint(cond_calc))
     // int of extractAliases is removed and the order is changed to OCaml's order
 
     val (agg_tgts, noagg_tgts) = targets.extractAliases().map(e => (e._2, e._1)).toList.partition(x => is_agg_expr(x._2))
@@ -56,9 +58,10 @@ object SQLToCalc {
         //TODO sql error failwith
         val tgt_name = if (query_name.isEmpty) base_tgt_name else var_of_sql_var(query_name.get, base_tgt_name, "ANY").name
         println(tgt_name)
+        println(tgt_expr.asInstanceOf[FieldIdent].symbol)
         tgt_expr match {
           case f: FieldIdent if (query_name.isEmpty && f.name == tgt_name) ||
-            (var_of_sql_var(f.qualifier.get, f.name, f.symbol match { case Symbol(b) => b }).name == tgt_name) =>
+            (var_of_sql_var(f.qualifier.get, f.name, "INTEGER").name == tgt_name) => //TODO f.symbol
             //(var_of_sql_var(f.qualifier.get, f.name, f.symbol match { case Symbol(b) => b }), CalcValue(ArithConst(IntLiteral(1))))
             (var_of_sql_var(f.qualifier.get, f.name, "INTEGER"), CalcValue(ArithConst(IntLiteral(1))))
 
@@ -97,14 +100,11 @@ object SQLToCalc {
 
     agg_tgts.map({
       case (tgt_name, unnormalized_tgt_expr) =>
-        //        println(tgt_name)
-        //        println(unnormalized_tgt_expr)
         val tgt_expr = normalize_agg_target_expr(None, gb_vars, unnormalized_tgt_expr)
         (tgt_name, calc_of_sql_expr(None, Some(mq), tables, sources.get, tgt_expr))
     })
   }
 
-  // sources shouldn't be optional and maybe list ?
   def calc_of_source(tables: List[CreateStream], sources: Option[Relation]): CalcExpr = {
 
     val rels = sources match {
@@ -148,22 +148,22 @@ object SQLToCalc {
 
     //TODO push_down_nots
     cond match {
-      //TODO or
       case Some(a: And) =>
         CalcProd(List(rcr_c(Some(a.left)), rcr_c(Some(a.right))))
 
-      //      case Some(o: Or) =>
-      //        def extract_ors ( inner:Expression ): List[Expression] =
-      //        {
-      //          inner match {
-      //            case o:Or =>
-      //              extract_ors(o.left)++extract_ors(o.right)
-      //            case c => List(c)
-      //          }
-      //        }
-      //
-      //        val sum_calc = CalcSum( (extract_ors(o.left)++extract_ors(o.right)).map(x=>rcr_c(Some(x))) )
-      //        CalcProd( sum_calc.map() )
+      case Some(o: Or) =>
+        def extract_ors(inner: Expression): List[Expression] =
+          {
+            inner match {
+              case o: Or =>
+                extract_ors(o.left) ++ extract_ors(o.right)
+              case c => List(c)
+            }
+          }
+
+        val sum_calc = CalcSum((extract_ors(o.left) ++ extract_ors(o.right)).map(x => rcr_c(Some(x))))
+        val (or_val, or_calc) = lift_if_necessary(sum_calc, Some("or"), Some(IntType))
+        mk_aggsum(List(), CalcProd(List(or_calc, Cmp(Gt, or_val, ArithConst(IntLiteral(0))))))
 
       case Some(b: BinaryOperator) =>
         val e1_calc = calc_of_sql_expr(None, None, tables, sources, b.left)
@@ -321,17 +321,12 @@ object SQLToCalc {
     }
   }
 
+  var varId = 0
   def tmp_var(vn: String, vt: Tpe): VarT = {
-    val v = VarT("inline " + vn, vt)
+    varId += 1
+    val v = VarT("__sql_inline_" + vn + varId, vt)
     v
-    //TODO inline
   }
-
-  //TODO lift_group_by_vars_are_inputs
-  //  def schema_of_expr ( expr:CalcExpr ): ( List[VarT] , List[VarT]) = {
-  //
-  //
-  //  }
 
   def find_table(rel_name: String, tables: List[CreateStream]): Option[CreateStream] = {
     tables.find(x => x.name == rel_name)
@@ -390,10 +385,12 @@ object SQLToCalc {
   // ********Calcules********** :
 
   def mk_aggsum(gb_vars: List[VarT], expr: CalcExpr): CalcExpr = {
-    // TODO use schema_of_expr from Parand's code
-    //    expr
-    AggSum(gb_vars, expr)
-    //AggSum(new_gb_vars,expr)
+    val expr_ovars = SchemaOfExpression(expr)._2
+    val new_gb_vars = expr_ovars.intersect(gb_vars)
+    if (expr_ovars.equals(new_gb_vars))
+      expr
+    else
+      AggSum(new_gb_vars, expr)
   }
 
   def type_of_expr(expr: CalcExpr): Tpe = {

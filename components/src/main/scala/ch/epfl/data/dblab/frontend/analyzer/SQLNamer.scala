@@ -130,8 +130,10 @@ class SQLNamer(schema: Schema) {
                 case (table, name) =>
                   table.map(a => FieldIdent(Some(name), a) -> Some(a))
               }
-            case (FieldIdent(q, a, s), None) =>
-              List(FieldIdent(q, a, s) -> Some(a))
+            case (FieldIdent(q, a, s), alias) =>
+              val nq = q.getOrElse(findRelationName(a))
+              val newAlias = alias.getOrElse(a)
+              List(FieldIdent(Some(nq), a, s) -> Some(newAlias))
             case (e, None) =>
               List(nameExpr(e) -> Some(newVarName("var")))
             case (e, Some(a)) => List(nameExpr(e) -> Some(a))

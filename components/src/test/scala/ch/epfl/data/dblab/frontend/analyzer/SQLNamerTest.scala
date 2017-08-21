@@ -35,6 +35,7 @@ class SQLNamerTest extends FlatSpec {
             lst.collect({
               case (StarExpression(_), _) => 1
               case (_, None)              => 1
+              case (e, _)                 => unnamedCount(e)
             }).sum
         }
         val countTarget = st.joinTree.map(_.extractSubqueries.map(x => unnamedCount(x.subquery)).sum).getOrElse(0)

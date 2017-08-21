@@ -47,8 +47,8 @@ object Driver {
       val schema = ddlInterpreter.interpret(UseSchema("DBToaster") :: tables)
       val namedQuery = new SQLNamer(schema).nameQuery(query)
       val calc_expr = SQLToCalc.CalcOfQuery(None, tables, namedQuery)
-      //calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + CalcAST.prettyprint(tgt_calc) }).foreach(println)
-      calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + tgt_calc }).foreach(println) // TODO this is for test
+      calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + CalcAST.prettyprint(tgt_calc) }).foreach(println)
+      //      calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + tgt_calc }).foreach(println) // TODO this is for test
       //      if (Config.debugQueryPlan)
       //        System.out.println("Original SQL Parser Tree:\n" + sqlParserTree + "\n\n")
     }
