@@ -41,6 +41,7 @@ class SQLNamerTest extends FlatSpec {
   }
 
   val simpleQueriesFolder = "experimentation/dbtoaster/queries/simple"
+  val tpchQueriesFolder = "experimentation/dbtoaster/queries/tpch"
 
   "SQLNamer" should "infer the names correctly for a simple select all query" in {
     val file = new java.io.File(s"$simpleQueriesFolder/r_selectstar.sql")
@@ -74,6 +75,19 @@ class SQLNamerTest extends FlatSpec {
     } else
       f.listFiles.map(simpleQueriesFolder + "/" + _.getName).toList
     for (file <- files) {
+      val namedQuery = parseAndNameQuery(new java.io.File(file))
+      starExpressionCount(namedQuery) should be(0)
+    }
+  }
+
+  "SQLNamer" should "infer the names correctly for all tpch queries" in {
+    val f = new java.io.File(tpchQueriesFolder)
+    val files = if (!f.exists) {
+      throw new Exception(s"$f does not exist!")
+    } else
+      f.listFiles.filter(_.getName.startsWith("query")).map(tpchQueriesFolder + "/" + _.getName).toList
+    for (file <- files) {
+      // println(s"naming $file")
       val namedQuery = parseAndNameQuery(new java.io.File(file))
       starExpressionCount(namedQuery) should be(0)
     }

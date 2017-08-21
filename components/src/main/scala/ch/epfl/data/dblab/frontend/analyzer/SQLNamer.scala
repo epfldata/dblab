@@ -44,7 +44,10 @@ class SQLNamer(schema: Schema) {
   type TableSchema = List[String]
 
   def getSourceLabeledSchema(rel: Relation): (TableSchema, String) = rel match {
-    case SQLTable(n, a) => schema.findTable(n).get.attributes.map(_.name) -> a.getOrElse(n)
+    case SQLTable(n, a) => schema.findTable(n) match {
+      case Some(t) => t.attributes.map(_.name) -> a.getOrElse(n)
+      case None    => throw new Exception(s"The schema doesn't have table `$n`")
+    }
     case Subquery(e, a) => e match {
       case UnionIntersectSequence(left, right, kind) => ???
       case st: SelectStatement                       => getSelectSchema(st) -> a
