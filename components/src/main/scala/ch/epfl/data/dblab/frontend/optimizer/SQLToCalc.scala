@@ -161,8 +161,9 @@ object SQLToCalc {
       //            case c => List(c)
       //          }
       //        }
-      //        
-      //        val sum_calc = () CalcSum( )
+      //
+      //        val sum_calc = CalcSum( (extract_ors(o.left)++extract_ors(o.right)).map(x=>rcr_c(Some(x))) )
+      //        CalcProd( sum_calc.map() )
 
       case Some(b: BinaryOperator) =>
         val e1_calc = calc_of_sql_expr(None, None, tables, sources, b.left)
@@ -179,10 +180,11 @@ object SQLToCalc {
           case _: GreaterOrEqual => mk_aggsum(List(), CalcProd(List(e1_calc2, e2_calc2, Cmp(Gte, e1_val, e2_val))))
           case _: GreaterThan    => mk_aggsum(List(), CalcProd(List(e1_calc2, e2_calc2, Cmp(Gt, e1_val, e2_val))))
         }
-      //      case e: parser.SQLAST.Exists =>
-      //        val q = e.expr
-      //        val q_calc_unlifted = CalcOfQuery(None,tables,q).head._2
-      //        mk_exists(mk_aggsum(List(),q_calc_unlifted))
+
+      case Some(e: parser.SQLAST.Exists) =>
+        val q = e.expr
+        val q_calc_unlifted = CalcOfQuery(None, tables, q).head._2
+        mk_exists(mk_aggsum(List(), q_calc_unlifted))
       //TODO failwith
 
       case _ => CalcValue(ArithConst(IntLiteral(1)))
@@ -417,10 +419,16 @@ object SQLToCalc {
 
   //   ********CalculusDomains********** :
 
-  //  def mk_exists ( expr:CalcExpr ) : CalcExpr = {
-  //    val dom_expr = maintain(expr)
-  //
-  //  }
+  def maintain(formula: CalcExpr): CalcExpr = {
+    formula
+    // TODO Calcules.fold
+  }
+
+  def mk_exists(expr: CalcExpr): CalcExpr = {
+    val dom_expr = maintain(expr)
+    CalcAST.Exists(dom_expr)
+
+  }
 
   //    def mk_domain_restricted_lift ( lift_v:VarT , lift_expr:CalcExpr ): CalcExpr = {
   //      val lift = Lift(lift_v,lift_expr)
