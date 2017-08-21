@@ -1,22 +1,83 @@
 package ch.epfl.data.dblab.frontend.optimizer
 
 import ch.epfl.data.dblab.frontend.parser.CalcAST._
-import ch.epfl.data.dblab.frontend.parser.SQLAST.{ DoubleLiteral, IntLiteral }
+import ch.epfl.data.dblab.frontend.parser.{ CalcAST, SQLAST }
+import ch.epfl.data.dblab.frontend.parser.SQLAST._
+import ch.epfl.data.dblab.schema.DateType
 import ch.epfl.data.sc.pardis.types._
 
 /**
  * @author Parand Alizadeh
  */
 
-//TODO make sum,prod, aggsum,
-
 object CalcOptimizer {
+  def escalateType(a: Tpe, b: Tpe): Tpe = {
+    (a, b) match {
+      case (at, bt) if (at.equals(bt)) => at
+      case (t, AnyType)                => t
+      case (AnyType, t)                => t
+      case (IntType, BooleanType)      => IntType
+      case (BooleanType, IntType)      => IntType
+      case (IntType, FloatType)        => FloatType
+      case (FloatType, IntType)        => FloatType
 
-  //TODO
+    }
+  }
 
-  // def typeOfExpression(expr: CalcExpr): Tpe = {
+  def escalateTypeList(list: List[Tpe]): Tpe = {
+    if (list.isEmpty)
+      return IntType
+    list.tail.foldLeft(list.head)((acc, cur) => escalateType(acc, cur))
+  }
 
-  //}
+  def typeOfConst(expression: SQLAST.LiteralExpression): Tpe = {
+    expression match {
+      case IntLiteral(_)    => IntType
+      case DoubleLiteral(_) => DoubleType
+      case FloatLiteral(_)  => FloatType
+      case StringLiteral(_) => StringType
+      case DateLiteral(_)   => DateType
+      case CharLiteral(_)   => CharType
+      case _                => AnyType
+    }
+  }
+
+  def typeOfValue(expr: ArithExpr): Tpe = {
+    def neg(tpe: Tpe): Tpe = {
+      tpe match {
+        case IntType   => tpe
+        case FloatType => tpe
+        case _         => throw new Exception
+      }
+    }
+    expr match {
+      case ArithSum(sum)          => escalateTypeList(sum.map(x => typeOfValue(x)))
+      case ArithProd(prod)        => escalateTypeList(prod.map(x => typeOfValue(x)))
+      case ArithNeg(n)            => neg(typeOfValue(n))
+      case ArithConst(c)          => typeOfConst(c)
+      case ArithVar(t)            => t.tp
+      case ArithFunc(_, inps, tp) => tp
+    }
+
+  }
+
+  def typeOfExpression(expr: CalcExpr): Tpe = {
+    def leaf(calcExpr: CalcExpr): Tpe = {
+      calcExpr match {
+        case CalcValue(v)            => typeOfValue(v)
+        case External(_, _, _, e, _) => e
+        case AggSum(_, sub)          => typeOfExpression(sub)
+        case Rel(_, _, _, _)         => IntType
+        case Cmp(_, _, _)            => IntType
+        case CmpOrList(_, _)         => IntType
+        case Lift(_, _)              => IntType
+        case CalcAST.Exists(_)       => IntType
+      }
+    }
+
+    def neg(tpe: Tpe): Tpe = { tpe }
+    return Fold(escalateTypeList, escalateTypeList, neg, leaf, expr)
+  }
   /**
    * Determine whether two expressions safely commute (in a product).
    *
@@ -178,7 +239,7 @@ object CalcOptimizer {
         case Cmp(_, v1, v2)                 => (varsOfValue(v1).toSet.union(varsOfValue(v2).toSet).toList, List())
         case CmpOrList(v, _)                => (varsOfValue(v), List())
         case Lift(target, subexpr)          => lift(target, subexpr)
-        case Exists(expr)                   => SchemaOfExpression(expr)
+        case CalcAST.Exists(expr)           => SchemaOfExpression(expr)
 
       }
     }
@@ -195,9 +256,9 @@ object CalcOptimizer {
         case Some(expr) => External(name, inps, outs, tp, Some(rewrite(expr, sumFunc, prodFunc, negFunc, leafFunc)))
         case None       => expression
       }
-      case Lift(t, expr) => Lift(t, rewrite(expr, sumFunc, prodFunc, negFunc, leafFunc))
-      case Exists(expr)  => Exists(rewrite(expr, sumFunc, prodFunc, negFunc, leafFunc))
-      case _             => leafFunc(expression)
+      case Lift(t, expr)        => Lift(t, rewrite(expr, sumFunc, prodFunc, negFunc, leafFunc))
+      case CalcAST.Exists(expr) => CalcAST.Exists(rewrite(expr, sumFunc, prodFunc, negFunc, leafFunc))
+      case _                    => leafFunc(expression)
     }
   }
 
@@ -241,11 +302,11 @@ object CalcOptimizer {
         case AggSum(gbvars, CalcValue(ArithConst(IntLiteral(0))))      => CalcValue(ArithConst(IntLiteral(0)))
         case AggSum(gbvars, CalcValue(ArithConst(DoubleLiteral(0.0)))) => CalcValue(ArithConst(DoubleLiteral(0.0)))
         case AggSum(gbvars, subterm)                                   => aggsum(gbvars, subterm)
-        case Exists(subterm) => rcr(subterm) match {
+        case CalcAST.Exists(subterm) => rcr(subterm) match {
           case CalcValue(ArithConst(IntLiteral(0))) => CalcValue(ArithConst(IntLiteral(0)))
           case CalcValue(ArithConst(IntLiteral(_))) => CalcValue(ArithConst(IntLiteral(1)))
           case CalcValue(ArithConst(_))             => throw new Exception
-          case _                                    => Exists(rcr(subterm))
+          case _                                    => CalcAST.Exists(rcr(subterm))
         }
 
         case Lift(v, term) => {
@@ -257,10 +318,8 @@ object CalcOptimizer {
             nested match {
               case CalcValue(cmp) => Cmp(Eq, ArithVar(v), cmp)
               case _ => {
-                expr
-
-                //TODO
-                // val tmpVar =
+                val tmpVar = getTmpVar(typeOfExpression(nested))
+                CalcProd(List(Lift(tmpVar, nested), Cmp(Eq, ArithVar(v), ArithVar(tmpVar))))
               }
             }
           } else

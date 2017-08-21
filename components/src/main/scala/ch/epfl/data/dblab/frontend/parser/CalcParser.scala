@@ -1,7 +1,7 @@
 package ch.epfl.data.dblab.frontend.parser
 
 import ch.epfl.data.dblab.frontend.parser.CalcAST._
-import ch.epfl.data.dblab.frontend.parser.SQLAST.{ DateLiteral, DoubleLiteral, IntLiteral, StringLiteral }
+import ch.epfl.data.dblab.frontend.parser.SQLAST._
 import ch.epfl.data.dblab.frontend.parser.SQLParser.{ elem, floatLit, lexical }
 import ch.epfl.data.dblab.schema.{ DateType, VarCharType }
 import ch.epfl.data.sc.pardis.types._
@@ -149,13 +149,13 @@ object CalcParser extends StandardTokenParsers {
           case id ~ None ~ _ ~ ivc    => Lift(VarT(id, null), ivc)
         }) |
         ("EXISTS" ~> "(" ~> parseCalcExpr <~ ")" ^^ {
-          case c => Exists(c)
+          case c => CalcAST.Exists(c)
         }) |
         (parseValueLeaf ^^ {
           case vl => CalcValue(vl)
         }) |
-        ("{" ~> parseValueExpr ~ "IN" ~ "[" ~ parseValExpList <~ "]" <~ "}" ^^ {
-          case id ~ _ ~ _ ~ l => In(id, l)
+        ("{" ~> parseValueExpr ~ "IN" ~ "[" ~ parseCmpOrList <~ "]" <~ "}" ^^ {
+          case id ~ _ ~ _ ~ l => CmpOrList(id, l)
         })
 
     //TODO
@@ -164,6 +164,13 @@ object CalcParser extends StandardTokenParsers {
         Dom
       }*/
 
+  }
+
+  def parseCmpOrList: Parser[List[ArithConst]] = {
+    rep(parseConstant <~ ",").? ~ parseConstant ^^ {
+      case Some(l) ~ c => c :: l
+      case None ~ c    => List(c)
+    }
   }
 
   def parseComparison: Parser[Cmp_t] = {

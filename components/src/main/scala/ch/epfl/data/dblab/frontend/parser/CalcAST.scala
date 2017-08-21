@@ -18,9 +18,9 @@ object CalcAST {
 
   var tmpVarNum = 0
 
-  def getTmpVar(tpe: Tpe): ArithVar = {
+  def getTmpVar(tpe: Tpe): VarT = {
     tmpVarNum = tmpVarNum + 1
-    return ArithVar(VarT("tmpvar" + tmpVarNum, tpe))
+    return VarT("tmpvar" + tmpVarNum, tpe)
   }
 
   trait CalcExpr
@@ -32,11 +32,10 @@ object CalcAST {
   case class Rel(tag: String, name: String, vars: List[VarT], rest: String) extends CalcExpr
   case class Cmp(cmp: Cmp_t, first: ArithExpr, second: ArithExpr) extends CalcExpr
   case class External(name: String, inps: List[VarT], outs: List[VarT], tp: Tpe, meta: Option[CalcExpr]) extends CalcExpr
-  case class CmpOrList(v: ArithExpr, consts: List[Const_t]) extends CalcExpr
+  case class CmpOrList(v: ArithExpr, consts: List[ArithConst]) extends CalcExpr
   case class Lift(vr: VarT, expr: CalcExpr) extends CalcExpr
   case class Exists(term: CalcExpr) extends CalcExpr
   case class CalcValue(v: ArithExpr) extends CalcExpr
-  case class In(first: ArithExpr, vars: List[ArithExpr]) extends CalcExpr
 
   trait ArithExpr
   case class ArithSum(expr: List[ArithExpr]) extends ArithExpr
@@ -88,7 +87,7 @@ object CalcAST {
       }
       case Cmp(cmp, first, second) => s"{${pprint(first)} ${pprint(cmp)} ${pprint(second)}}"
       case CalcValue(v)            => s"{${pprint(v)}}"
-      case In(first, list)         => s"{${pprint(first)} IN [${list.map(pprint).mkString(", ")}]}"
+      case CmpOrList(first, list)  => s"{${pprint(first)} IN [${list.map(pprint).mkString(", ")}]}"
 
     }
   }
