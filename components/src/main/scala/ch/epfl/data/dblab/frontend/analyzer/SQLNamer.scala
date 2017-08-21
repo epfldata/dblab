@@ -33,11 +33,24 @@ class SQLNamer(schema: Schema) {
     }
   }
 
+  var curSchema = schema
+
+  def findRelationName(attr: String): String = {
+    def filterTables(tables: List[Table]): List[String] = tables.filter(t => t.findAttribute(attr).nonEmpty).map(_.name).distinct
+    val relations = filterTables(curSchema.tables.toList)
+    val filteredRelations = if (relations.size > 1) relations diff filterTables(schema.tables.toList) else relations
+    filteredRelations match {
+      case List(rel) => rel
+      case Nil       => throw new Exception(s"No relation found with attribute $attr. Schema: $curSchema")
+      case rels      => throw new Exception(s"Multiple relations found with attribute $attr: ${rels.mkString(", ")}")
+    }
+  }
+
   def nameExpr(exp: Expression): Expression = {
     exp match {
       case tl: TopLevelStatement           => nameQuery(tl)
-      case Exists(s)                       => Exists(nameSelect(s))
       case ExpressionShape(fact, children) => fact(children.map(nameExpr))
+      case FieldIdent(None, a, s)          => FieldIdent(Some(findRelationName(a)), a, s)
       case _                               => exp
     }
   }
@@ -51,9 +64,10 @@ class SQLNamer(schema: Schema) {
 
   // TODO maybe add the type!
   type TableSchema = List[String]
+  type LabeledSchema = (TableSchema, String)
 
-  def getSourceLabeledSchema(rel: Relation): (TableSchema, String) = rel match {
-    case SQLTable(n, a) => schema.findTable(n) match {
+  def getSourceLabeledSchema(rel: Relation): LabeledSchema = rel match {
+    case SQLTable(n, a) => curSchema.findTable(n) match {
       case Some(t) => t.attributes.map(_.name) -> a.getOrElse(n)
       case None    => throw new Exception(s"The schema doesn't have table `$n`")
     }
@@ -70,6 +84,12 @@ class SQLNamer(schema: Schema) {
     projs.map(_._2.get).toList
   }
 
+  def labeledSchemaToTable(ls: LabeledSchema): Table = {
+    val name = ls._2
+    val attrs = ls._1.map(n => Attribute(n, AnyType))
+    Table(name, attrs, collection.mutable.ArrayBuffer(), "")
+  }
+
   def nameSource(rel: Relation): Relation = rel match {
     case SQLTable(name, alias)           => SQLTable(name, Some(alias.getOrElse(name)))
     case Subquery(e, a)                  => Subquery(nameQuery(e), a)
@@ -77,36 +97,47 @@ class SQLNamer(schema: Schema) {
     case _                               => ???
   }
 
+  def withSchema[T](newSchema: Schema)(f: () => T): T = {
+    val oldSchema = curSchema
+    curSchema = newSchema
+    val res = f()
+    curSchema = oldSchema
+    res
+  }
+
   def nameSelect(select: SelectStatement): SelectStatement = {
     select match {
       case SelectStatement(withs, projections: ExpressionProjections, source, where, groupBy, having, orderBy, limit, aliases) =>
         val namedSource = source.map(nameSource)
-        val namedWhere = where.map(nameExpr)
-        val namedProjections = projections.lst.flatMap(exp => exp match {
-          case (StarExpression(source), None) =>
-            val rels = namedSource.map(extractSources).getOrElse(Seq()).toList
-            val namedRels = rels.map({
-              case Subquery(e, a) => Subquery(nameQuery(e), a)
-              case rel            => rel
-            })
-            val labeledRels = namedRels.map(getSourceLabeledSchema)
-            val filteredLabeledRels = source match {
-              case None => labeledRels
-              case Some(rel) => labeledRels.find(_._2 == rel) match {
-                case Some(v) => List(v)
-                case None    => throw new Exception(s"Could not find a reference to relation $rel")
-              } // intentionally used .get to give an error if the names don't match
-            }
-            filteredLabeledRels.flatMap {
-              case (table, name) =>
-                table.map(a => FieldIdent(Some(name), a) -> Some(a))
-            }
-          case (FieldIdent(q, a, s), None) =>
-            List(FieldIdent(q, a, s) -> Some(a))
-          case (e, None) =>
-            List(nameExpr(e) -> Some(newVarName("var")))
-          case (e, Some(a)) => List(nameExpr(e) -> Some(a))
+        val rels = namedSource.map(extractSources).getOrElse(Seq()).toList
+        val namedRels = rels.map({
+          case Subquery(e, a) => Subquery(nameQuery(e), a)
+          case rel            => rel
         })
+        val labeledRels = namedRels.map(getSourceLabeledSchema)
+        val newSchema = curSchema.copy(tables = curSchema.tables ++ labeledRels.map(labeledSchemaToTable))
+        val namedProjections = withSchema(newSchema)(() => {
+          projections.lst.flatMap(exp => exp match {
+            case (StarExpression(source), None) =>
+              val filteredLabeledRels = source match {
+                case None => labeledRels
+                case Some(rel) => labeledRels.find(_._2 == rel) match {
+                  case Some(v) => List(v)
+                  case None    => throw new Exception(s"Could not find a reference to relation $rel")
+                } // intentionally used .get to give an error if the names don't match
+              }
+              filteredLabeledRels.flatMap {
+                case (table, name) =>
+                  table.map(a => FieldIdent(Some(name), a) -> Some(a))
+              }
+            case (FieldIdent(q, a, s), None) =>
+              List(FieldIdent(q, a, s) -> Some(a))
+            case (e, None) =>
+              List(nameExpr(e) -> Some(newVarName("var")))
+            case (e, Some(a)) => List(nameExpr(e) -> Some(a))
+          })
+        })
+        val namedWhere = withSchema(newSchema)(() => where.map(nameExpr))
         SelectStatement(withs, ExpressionProjections(namedProjections), namedSource, namedWhere, groupBy, having, orderBy, limit, aliases)
     }
   }

@@ -107,6 +107,7 @@ object OperatorAST {
   case class SubquerySingleResultNode(parent: OperatorNode) extends OperatorNode {
     override def toString = "SubquerySingleResult" + stringify(parent)
   }
+  // TODO why does it extend SQLAST.Expression ?
   case class GetSingleResult(parent: OperatorNode) extends Expression {
     override def toString() = "GetSingleResult(" + stringify(parent) + ")"
   }

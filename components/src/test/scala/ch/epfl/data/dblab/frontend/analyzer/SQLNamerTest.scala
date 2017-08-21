@@ -43,9 +43,10 @@ class SQLNamerTest extends FlatSpec {
           case Some(v) => unnamedCount(v)
         }
         countProj + countTarget + countWhere
-      case e: UnaryOperator  => unnamedCount(e.expr)
-      case b: BinaryOperator => unnamedCount(b.left) + unnamedCount(b.right)
-      case _                 => 0
+      case UnionIntersectSequence(e1, e2, _) => unnamedCount(e1) + unnamedCount(e2)
+      case FieldIdent(None, _, _)            => 1
+      case ExpressionShape(_, children)      => children.map(unnamedCount).sum
+      case _                                 => 0
     }
   }
 
@@ -80,7 +81,7 @@ class SQLNamerTest extends FlatSpec {
   "SQLNamer" should "infer the names correctly for a select all in an exists subquery" in {
     val file = new java.io.File(s"$simpleQueriesFolder/r_simplenest.sql")
     val namedQuery = parseAndNameQuery(file)
-    println(namedQuery)
+    // println(namedQuery)
     unnamedCount(namedQuery) should be(0)
   }
 
@@ -91,7 +92,7 @@ class SQLNamerTest extends FlatSpec {
     } else
       f.listFiles.map(simpleQueriesFolder + "/" + _.getName).toList
     for (file <- files) {
-      println(s"naming $file")
+      // println(s"naming $file")
       val namedQuery = parseAndNameQuery(new java.io.File(file))
       unnamedCount(namedQuery) should be(0)
     }

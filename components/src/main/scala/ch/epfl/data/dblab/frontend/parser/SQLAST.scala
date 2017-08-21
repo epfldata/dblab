@@ -274,7 +274,7 @@ object SQLAST {
     def unapply(e: Expression): Option[(Seq[Expression] => Expression, Seq[Expression])] =
       e match {
         case tl: TopLevelStatement =>
-          throw new Exception("Make sure that you pattern match TopLevelStatement before ExpressionShape")
+          throw new Exception(s"Make sure that you pattern match TopLevelStatement before ExpressionShape: $tl")
         case Or(e1, e2)             => Some((l) => Or(l(0), l(1)), Seq(e1, e2))
         case And(e1, e2)            => Some((l) => And(l(0), l(1)), Seq(e1, e2))
         case Equals(e1, e2)         => Some((l) => Equals(l(0), l(1)), Seq(e1, e2))
