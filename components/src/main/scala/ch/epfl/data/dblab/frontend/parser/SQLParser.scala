@@ -54,11 +54,7 @@ object SQLParser extends StandardTokenParsers {
 
   def parseStreamQuery: Parser[TopLevelStatement] =
     parseIncludeStatement.? ~ parseCreate.? ~ parseQuery ^^ {
-      case Some(inc) ~ Some(streams) ~ body => IncludeStatement(null, inc ++ streams, body)
-      case None ~ Some(streams) ~ body      => IncludeStatement(null, streams, body)
-      case Some(inc) ~ None ~ body          => IncludeStatement(null, inc, body)
-      case None ~ None ~ body               => IncludeStatement(null, null, body)
-
+      case incOpt ~ streamsOpt ~ body => IncludeStatement("", incOpt.getOrElse(Seq()) ++ streamsOpt.getOrElse(Seq()), body)
     }
   def parseIncludeStatement: Parser[List[CreateStatement]] =
     "INCLUDE" ~ stringLit <~ ";".? ^^ {
@@ -80,10 +76,7 @@ object SQLParser extends StandardTokenParsers {
 
   def parseCreateStreamOrTable: Parser[CreateStream] =
     "CREATE" ~> ("STREAM" | "TABLE") ~ ident ~ "(" ~ parseStreamColumns.? ~ ")" ~ ("FROM" ~> parseSrcStatement).? <~ ";" ^^ {
-      case sot ~ nameStr ~ _ ~ Some(cols) ~ _ ~ Some(src) => CreateStream(sot, nameStr, cols, src)
-      case sot ~ nameStr ~ _ ~ Some(cols) ~ _ ~ None      => CreateStream(sot, nameStr, cols, null)
-      case sot ~ nameStr ~ _ ~ None ~ _ ~ Some(src)       => CreateStream(sot, nameStr, null, src)
-      case sot ~ nameStr ~ _ ~ None ~ _ ~ None            => CreateStream(sot, nameStr, null, null)
+      case sot ~ nameStr ~ _ ~ colsOpt ~ _ ~ restOpt => CreateStream(sot, nameStr.toLowerCase, colsOpt.getOrElse(Seq()), restOpt.getOrElse(""))
 
     }
 
@@ -194,7 +187,7 @@ object SQLParser extends StandardTokenParsers {
 
   def parseSingleRelation: Parser[Relation] = (
     ident ~ parseAlias.? ^^ {
-      case tbl ~ alias => SQLTable(tbl, alias)
+      case tbl ~ alias => SQLTable(tbl.toLowerCase(), alias)
     }
     | ("(" ~> parseQuery <~ ")") ~ parseAlias ^^ {
       case subq ~ alias => Subquery(subq, alias)
@@ -306,8 +299,8 @@ object SQLParser extends StandardTokenParsers {
       | "*" ^^^ { StarExpression(None) }
       | ident ~ opt("." ~> (ident | "*") /*| ("(" ~> repsep(parseExpression, ",") <~ ")")*/ ) ^^ {
         case id ~ None      => FieldIdent(None, id)
-        case id ~ Some("*") => StarExpression(Some(id))
-        case id ~ Some(b)   => FieldIdent(Some(id), b)
+        case id ~ Some("*") => StarExpression(Some(id.toLowerCase()))
+        case id ~ Some(b)   => FieldIdent(Some(id.toLowerCase()), b)
       }
       | "(" ~> (parseExpression | parseSelectStatement) <~ ")"
       | "DISTINCT" ~> parseExpression ^^ { case e => Distinct(e) }
