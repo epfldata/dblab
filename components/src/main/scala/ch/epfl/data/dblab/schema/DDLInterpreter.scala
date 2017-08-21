@@ -37,6 +37,10 @@ class DDLInterpreter(val catalog: Catalog) {
       case "INTEGER" => IntType
       case "DATE"    => DateType
       case "FLOAT"   => DoubleType
+      case "VARCHAR" => VarCharType(128) // FIXME
+      case "CHAR"    => CharType // FIXME
+      case "DECIMAL" => DoubleType // FIXME
+      case "STRING"  => VarCharType(128) // FIXME
       case _         => throw new Exception(s"Doesn't handle the type $typeName yet!")
     }
   }

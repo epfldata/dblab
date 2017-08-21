@@ -16,11 +16,11 @@ class SQLNamerTest extends FlatSpec {
     val parser = SQLParser
     val sqlParserTree = parser.parseStream(scala.io.Source.fromFile(queryFile).mkString)
     val sqlProgram = sqlParserTree.asInstanceOf[IncludeStatement]
-    val tables = sqlProgram.streams.toList.map(x => x.asInstanceOf[CreateStream])
+    val tables = sqlProgram.streams.toList.collect { case x: CreateStream => x }
     val ddlInterpreter = new DDLInterpreter(new Catalog(scala.collection.mutable.Map()))
     val query = sqlProgram.body
-    println(query)
-    starExpressionCount(query) should not be (0)
+    // println(query)
+    // starExpressionCount(query) should not be (0)
     val schema = ddlInterpreter.interpret(UseSchema("DBToaster") :: tables)
     val namedQuery = new SQLNamer(schema).nameQuery(query)
     // println(schema)
@@ -40,32 +40,42 @@ class SQLNamerTest extends FlatSpec {
     }
   }
 
+  val simpleQueriesFolder = "experimentation/dbtoaster/queries/simple"
+
   "SQLNamer" should "infer the names correctly for a simple select all query" in {
-    val folder = "experimentation/dbtoaster/queries/simple"
-    val file = new java.io.File(s"$folder/r_selectstar.sql")
+    val file = new java.io.File(s"$simpleQueriesFolder/r_selectstar.sql")
     val namedQuery = parseAndNameQuery(file)
     starExpressionCount(namedQuery) should be(0)
   }
 
   "SQLNamer" should "infer the names correctly for a join select all query" in {
-    val folder = "experimentation/dbtoaster/queries/simple"
-    val file = new java.io.File(s"$folder/rs_eqineq.sql")
+    val file = new java.io.File(s"$simpleQueriesFolder/rs_eqineq.sql")
     val namedQuery = parseAndNameQuery(file)
     starExpressionCount(namedQuery) should be(0)
   }
 
   "SQLNamer" should "infer the names correctly for a joined select part start query" in {
-    val folder = "experimentation/dbtoaster/queries/simple"
-    val file = new java.io.File(s"$folder/rs_selectpartstar.sql")
+    val file = new java.io.File(s"$simpleQueriesFolder/rs_selectpartstar.sql")
     val namedQuery = parseAndNameQuery(file)
     starExpressionCount(namedQuery) should be(0)
   }
 
   "SQLNamer" should "infer the names correctly for a select all of subquery" in {
-    val folder = "experimentation/dbtoaster/queries/simple"
-    val file = new java.io.File(s"$folder/r_starofnested.sql")
+    val file = new java.io.File(s"$simpleQueriesFolder/r_starofnested.sql")
     val namedQuery = parseAndNameQuery(file)
-    println(namedQuery)
+    // println(namedQuery)
     starExpressionCount(namedQuery) should be(0)
+  }
+
+  "SQLNamer" should "infer the names correctly for all simple queries" in {
+    val f = new java.io.File(simpleQueriesFolder)
+    val files = if (!f.exists) {
+      throw new Exception(s"$f does not exist!")
+    } else
+      f.listFiles.map(simpleQueriesFolder + "/" + _.getName).toList
+    for (file <- files) {
+      val namedQuery = parseAndNameQuery(new java.io.File(file))
+      starExpressionCount(namedQuery) should be(0)
+    }
   }
 }

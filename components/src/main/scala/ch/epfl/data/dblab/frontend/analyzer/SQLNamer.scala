@@ -11,12 +11,19 @@ import parser.SQLAST._
 import sc.pardis.shallow.OptimalString
 
 /**
- * Performs naming on SQL queries, in order to handle aliasing and substituting
- * the asterisk (*) with the actual list of column names.
+ * Performs naming on SQL queries, in order to handle aliasing, substituting
+ * the asterisk (*) with the actual list of column names, and making field
+ * identifiers fully qualified.
  *
- * @author Yannis Klonatos
+ * @author Amir Shaikhha
  */
 class SQLNamer(schema: Schema) {
+  // TODO reuse the existing ones from SC.
+  var globalId = 0
+  def newVarName(prefix: String): String = {
+    globalId += 1
+    s"$prefix$globalId"
+  }
 
   def nameQuery(query: TopLevelStatement): TopLevelStatement = {
     query match {
@@ -71,13 +78,20 @@ class SQLNamer(schema: Schema) {
             })
             val labeledRels = namedRels.map(getSourceLabeledSchema)
             val filteredLabeledRels = source match {
-              case None      => labeledRels
-              case Some(rel) => List(labeledRels.find(_._2 == rel).get) // intentionally used .get to give an error if the names don't match
+              case None => labeledRels
+              case Some(rel) => labeledRels.find(_._2 == rel) match {
+                case Some(v) => List(v)
+                case None    => throw new Exception(s"Could not find a reference to relation $rel")
+              } // intentionally used .get to give an error if the names don't match
             }
             filteredLabeledRels.flatMap {
               case (table, name) =>
                 table.map(a => FieldIdent(Some(name), a) -> Some(a))
             }
+          case (FieldIdent(q, a, s), None) =>
+            List(FieldIdent(q, a, s) -> Some(a))
+          case (e, None) =>
+            List(e -> Some(newVarName("var")))
           case _ => List(exp)
         })
         SelectStatement(withs, ExpressionProjections(namedProjections), namedSource, where, groupBy, having, orderBy, limit, aliases)

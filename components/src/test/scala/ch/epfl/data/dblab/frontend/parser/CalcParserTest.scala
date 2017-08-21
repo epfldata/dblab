@@ -20,7 +20,7 @@ class CalcParserTest extends FlatSpec {
     } else
       f.listFiles.map(folder + "/" + _.getName).toList
     for (file <- files) {
-      println(s"parsing $file")
+      // println(s"parsing $file")
       val r = parser.parse(scala.io.Source.fromFile(file).mkString)
       r should not be None
     }
@@ -35,7 +35,7 @@ class CalcParserTest extends FlatSpec {
     } else
       f.listFiles.map(folder + "/" + _.getName).toList
     for (file <- files) {
-      println(s"parsing $file")
+      // println(s"parsing $file")
       val r = parser.parse(scala.io.Source.fromFile(file).mkString)
       r should not be None
     }
