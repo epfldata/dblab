@@ -38,7 +38,6 @@ object Driver {
     }).flatten.groupBy(f => f.substring(f.lastIndexOf('.'), f.length))
 
     for (q <- args) {
-      // TODO change to parseStream
       val sqlParserTree = SQLParser.parseStream(scala.io.Source.fromFile(q).mkString)
       val sqlProgram = sqlParserTree.asInstanceOf[IncludeStatement]
       val tables = sqlProgram.streams.toList.map(x => x.asInstanceOf[CreateStream]) // ok ?

@@ -1,7 +1,7 @@
 package ch.epfl.data.dblab.frontend.parser
 
 import ch.epfl.data.dblab.frontend.parser.CalcAST._
-import ch.epfl.data.dblab.frontend.parser.SQLAST.{ DateLiteral, DoubleLiteral, IntLiteral, StringLiteral }
+import ch.epfl.data.dblab.frontend.parser.SQLAST._
 import ch.epfl.data.dblab.frontend.parser.SQLParser.{ elem, floatLit, lexical }
 import ch.epfl.data.dblab.schema.{ DateType, VarCharType }
 import ch.epfl.data.sc.pardis.types._
@@ -43,7 +43,7 @@ object CalcParser extends StandardTokenParsers {
 
   def parseFieldList: Parser[List[VarT]] = {
     ident ~ parseDataType ~ ("," ~> parseFieldList).? ^^ {
-      case name ~ tp ~ Some(fields) => fields :+ VarT(name, tp)
+      case name ~ tp ~ Some(fields) => VarT(name, tp) :: fields
       case name ~ tp ~ None         => List(VarT(name, tp))
     }
   }
@@ -149,13 +149,13 @@ object CalcParser extends StandardTokenParsers {
           case id ~ None ~ _ ~ ivc    => Lift(VarT(id, null), ivc)
         }) |
         ("EXISTS" ~> "(" ~> parseCalcExpr <~ ")" ^^ {
-          case c => Exists(c)
+          case c => CalcAST.Exists(c)
         }) |
         (parseValueLeaf ^^ {
           case vl => CalcValue(vl)
         }) |
-        ("{" ~> parseValueExpr ~ "IN" ~ "[" ~ parseValExpList <~ "]" <~ "}" ^^ {
-          case id ~ _ ~ _ ~ l => In(id, l)
+        ("{" ~> parseValueExpr ~ "IN" ~ "[" ~ parseCmpOrList <~ "]" <~ "}" ^^ {
+          case id ~ _ ~ _ ~ l => CmpOrList(id, l)
         })
 
     //TODO
@@ -164,6 +164,13 @@ object CalcParser extends StandardTokenParsers {
         Dom
       }*/
 
+  }
+
+  def parseCmpOrList: Parser[List[ArithConst]] = {
+    rep(parseConstant <~ ",").? ~ parseConstant ^^ {
+      case Some(l) ~ c => c :: l
+      case None ~ c    => List(c)
+    }
   }
 
   def parseComparison: Parser[CmpTag] = {
@@ -188,24 +195,24 @@ object CalcParser extends StandardTokenParsers {
   }
   def parseExternalDef: Parser[External] = {
     parseExternalWithoutMeta ~ (":".? ~> "(" ~> parseCalcExpr <~ ")").? ^^ {
-      case et ~ Some(calc) => External(calc, et)
-      case et ~ None       => External(null, et)
+      case et ~ Some(calc) => External(et.name, et.inps, et.outs, et.tp, Some(calc))
+      case et ~ None       => et
     }
   }
 
-  def parseExternalWithoutMeta: Parser[External_t] = {
+  def parseExternalWithoutMeta: Parser[External] = {
     (ident ~ "[" ~ parseVarList.? ~ "]" ~ "[" ~ parseVarList.? ~ "]" ^^ {
-      case id ~ _ ~ Some(l1) ~ _ ~ _ ~ Some(l2) ~ _ => External_t(id, l1, l2, null, None)
-      case id ~ _ ~ Some(l1) ~ _ ~ _ ~ None ~ _     => External_t(id, l1, List(), null, None)
-      case id ~ _ ~ None ~ _ ~ _ ~ Some(l2) ~ _     => External_t(id, List(), l2, null, None)
-      case id ~ _ ~ None ~ _ ~ _ ~ None ~ _         => External_t(id, List(), List(), null, None)
+      case id ~ _ ~ Some(l1) ~ _ ~ _ ~ Some(l2) ~ _ => External(id, l1, l2, null, None)
+      case id ~ _ ~ Some(l1) ~ _ ~ _ ~ None ~ _     => External(id, l1, List(), null, None)
+      case id ~ _ ~ None ~ _ ~ _ ~ Some(l2) ~ _     => External(id, List(), l2, null, None)
+      case id ~ _ ~ None ~ _ ~ _ ~ None ~ _         => External(id, List(), List(), null, None)
 
     }) |
       (ident ~ "(" ~ parseDataType ~ ")" ~ "[" ~ parseVarList.? ~ "]" ~ "[" ~ parseVarList.? ~ "]" ^^ {
-        case id ~ _ ~ tp ~ _ ~ _ ~ Some(l1) ~ _ ~ _ ~ Some(l2) ~ _ => External_t(id, l1, l2, tp, None)
-        case id ~ _ ~ tp ~ _ ~ _ ~ Some(l1) ~ _ ~ _ ~ None ~ _     => External_t(id, l1, List(), tp, None)
-        case id ~ _ ~ tp ~ _ ~ _ ~ None ~ _ ~ _ ~ Some(l2) ~ _     => External_t(id, List(), l2, tp, None)
-        case id ~ _ ~ tp ~ _ ~ _ ~ None ~ _ ~ _ ~ None ~ _         => External_t(id, List(), List(), tp, None)
+        case id ~ _ ~ tp ~ _ ~ _ ~ Some(l1) ~ _ ~ _ ~ Some(l2) ~ _ => External(id, l1, l2, tp, None)
+        case id ~ _ ~ tp ~ _ ~ _ ~ Some(l1) ~ _ ~ _ ~ None ~ _     => External(id, l1, List(), tp, None)
+        case id ~ _ ~ tp ~ _ ~ _ ~ None ~ _ ~ _ ~ Some(l2) ~ _     => External(id, List(), l2, tp, None)
+        case id ~ _ ~ tp ~ _ ~ _ ~ None ~ _ ~ _ ~ None ~ _         => External(id, List(), List(), tp, None)
       })
 
   }
@@ -302,9 +309,9 @@ object CalcParser extends StandardTokenParsers {
 
   def parseVarList: Parser[List[VarT]] = {
     (ident ~ (":" ~> parseDataType).? ~ ("," ~> parseVarList).?) ^^ {
-      case id ~ Some(t) ~ Some(l) => l :+ VarT(id, t)
+      case id ~ Some(t) ~ Some(l) => VarT(id, t) :: l
       case id ~ Some(t) ~ None    => List(VarT(id, t))
-      case id ~ None ~ Some(l)    => l :+ VarT(id, null)
+      case id ~ None ~ Some(l)    => VarT(id, null) :: l
       case id ~ None ~ None       => List(VarT(id, null))
 
     }
