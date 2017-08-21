@@ -33,6 +33,15 @@ class SQLNamer(schema: Schema) {
     }
   }
 
+  def nameExpr(exp: Expression): Expression = {
+    exp match {
+      case tl: TopLevelStatement           => nameQuery(tl)
+      case Exists(s)                       => Exists(nameSelect(s))
+      case ExpressionShape(fact, children) => fact(children.map(nameExpr))
+      case _                               => exp
+    }
+  }
+
   def extractSources(rel: Relation): List[Relation] = rel match {
     case SQLTable(_, _)          => List(rel)
     case Subquery(_, _)          => List(rel)
@@ -72,6 +81,7 @@ class SQLNamer(schema: Schema) {
     select match {
       case SelectStatement(withs, projections: ExpressionProjections, source, where, groupBy, having, orderBy, limit, aliases) =>
         val namedSource = source.map(nameSource)
+        val namedWhere = where.map(nameExpr)
         val namedProjections = projections.lst.flatMap(exp => exp match {
           case (StarExpression(source), None) =>
             val rels = namedSource.map(extractSources).getOrElse(Seq()).toList
@@ -94,10 +104,10 @@ class SQLNamer(schema: Schema) {
           case (FieldIdent(q, a, s), None) =>
             List(FieldIdent(q, a, s) -> Some(a))
           case (e, None) =>
-            List(e -> Some(newVarName("var")))
-          case _ => List(exp)
+            List(nameExpr(e) -> Some(newVarName("var")))
+          case (e, Some(a)) => List(nameExpr(e) -> Some(a))
         })
-        SelectStatement(withs, ExpressionProjections(namedProjections), namedSource, where, groupBy, having, orderBy, limit, aliases)
+        SelectStatement(withs, ExpressionProjections(namedProjections), namedSource, namedWhere, groupBy, having, orderBy, limit, aliases)
     }
   }
 }
