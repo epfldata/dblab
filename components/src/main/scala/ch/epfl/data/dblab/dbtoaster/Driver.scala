@@ -9,6 +9,7 @@ import frontend.analyzer._
 import utils.Utilities._
 import java.io.PrintStream
 
+import ch.epfl.data.dblab.frontend.parser.DDLAST.UseSchema
 import ch.epfl.data.dblab.frontend.parser.SQLAST._
 import frontend.parser.OperatorAST._
 import config._
@@ -41,8 +42,12 @@ object Driver {
       val sqlParserTree = SQLParser.parseStream(scala.io.Source.fromFile(q).mkString)
       val sqlProgram = sqlParserTree.asInstanceOf[IncludeStatement]
       val tables = sqlProgram.streams.toList.map(x => x.asInstanceOf[CreateStream]) // ok ?
-      val queries = sqlProgram.body
-      val calc_expr = SQLToCalc.CalcOfQuery(None, tables, queries)
+      val ddlInterpreter = new DDLInterpreter(new Catalog(scala.collection.mutable.Map()))
+      val query = sqlProgram.body
+      //      println(query)
+      val schema = ddlInterpreter.interpret(UseSchema("DBToaster") :: tables)
+      val namedQuery = new SQLNamer(schema).nameQuery(query)
+      val calc_expr = SQLToCalc.CalcOfQuery(None, tables, namedQuery)
       //calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + CalcAST.prettyprint(tgt_calc) }).foreach(println)
       calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + tgt_calc }).foreach(println) // TODO this is for test
       //      if (Config.debugQueryPlan)

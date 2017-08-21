@@ -62,7 +62,7 @@ class SQLNamer(schema: Schema) {
   }
 
   def nameSource(rel: Relation): Relation = rel match {
-    case SQLTable(_, _)                  => rel
+    case SQLTable(name, alias)           => SQLTable(name, Some(alias.getOrElse(name)))
     case Subquery(e, a)                  => Subquery(nameQuery(e), a)
     case Join(left, right, kind, clause) => Join(nameSource(left), nameSource(right), kind, clause)
     case _                               => ???
