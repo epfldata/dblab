@@ -29,8 +29,20 @@ object SQLToCalc {
     println("agg_query:\n" + agg_query)
 
     agg_query match {
-      case _: SelectStatement => CalcOfSelect(query_name, tables, agg_query.asInstanceOf[SelectStatement])
-      //TODO union case
+
+      case u: UnionIntersectSequence =>
+        def rcr(stmt: TopLevelStatement): List[(String, CalcExpr)] = {
+          CalcOfQuery(query_name, tables, stmt)
+        }
+        def lift_stmt(name: String, stmt: CalcExpr): CalcExpr = {
+          CalcProd(List(mk_exists(stmt), Lift(VarT(name, typeOfExpression(stmt)), stmt)))
+        }
+        (rcr(u.bottom) zip rcr(u.top)).map({
+          case ((n1, e1), (n2, e2)) =>
+            (n1, CalcSum(List(lift_stmt(n1, e1), lift_stmt(n1, e2))))
+        })
+
+      case s: SelectStatement => CalcOfSelect(query_name, tables, s)
     }
   }
 
@@ -58,20 +70,21 @@ object SQLToCalc {
         //TODO sql error failwith
         val tgt_name = if (query_name.isEmpty) base_tgt_name else var_of_sql_var(query_name.get, base_tgt_name, "ANY").name
         println(tgt_name)
-        println(tgt_expr.asInstanceOf[FieldIdent].symbol)
+        println(tgt_expr.asInstanceOf[FieldIdent].qualifier)
         tgt_expr match {
           case f: FieldIdent if (query_name.isEmpty && f.name == tgt_name) ||
             (var_of_sql_var(f.qualifier.get, f.name, "INTEGER").name == tgt_name) => //TODO f.symbol
             //(var_of_sql_var(f.qualifier.get, f.name, f.symbol match { case Symbol(b) => b }), CalcValue(ArithConst(IntLiteral(1))))
             (var_of_sql_var(f.qualifier.get, f.name, "INTEGER"), CalcValue(ArithConst(IntLiteral(1))))
 
-          case _ => ???
-          //val tgt_var = ( tgt_name, ())
-          //TODO default -> expr_type
+          case _ =>
+            val tgt_var = VarT(tgt_name, IntType) // TODO type should infer with expr_type
+            (tgt_var, calc_of_sql_expr(Some(tgt_var), None, tables, sources.get, tgt_expr))
         }
     }).unzip
 
-    println(gb_vars)
+    println("NO AGGG :\n\n")
+    println(noagg_vars)
 
     val noagg_calc = CalcProd(noagg_terms)
     val new_gb_vars = noagg_vars ++ gb_vars.flatMap(f => if (!noagg_tgts.exists({
@@ -87,6 +100,7 @@ object SQLToCalc {
 
       val ret = agg_type match {
         case s: Sum =>
+          println(prettyprint(noagg_calc))
           mk_aggsum(new_gb_vars, CalcProd(List(source_calc, cond_calc, agg_calc, noagg_calc)))
         case _: CountAll =>
           mk_aggsum(new_gb_vars, CalcProd(List(source_calc, cond_calc, noagg_calc)))
@@ -94,7 +108,7 @@ object SQLToCalc {
         //TODO other cases
       }
       println("  r  e  t : ")
-      println(ret)
+      println(prettyprint(ret))
       ret
     }
 
@@ -192,8 +206,7 @@ object SQLToCalc {
     // TODO rest cases
   }
 
-  //TODO type of tgt_var ?
-  def calc_of_sql_expr(tgt_var: Option[Unit], materialize_query: Option[(Aggregation, CalcExpr) => CalcExpr],
+  def calc_of_sql_expr(tgt_var: Option[VarT], materialize_query: Option[(Aggregation, CalcExpr) => CalcExpr],
                        tables: List[CreateStream], sources: Relation, expr: SQLNode): CalcExpr = {
 
     def rcr_e(is_agg: Option[Boolean], e: Expression): CalcExpr = {
@@ -215,7 +228,7 @@ object SQLToCalc {
       case f: FieldIdent =>
         //(make_CalcExpr(make_ArithExpr(var_of_sql_var(f.qualifier.get, f.name, f.symbol match { case Symbol(b) => b } ))), false) // TODO symbol to string ?
         //        (make_CalcExpr(make_ArithExpr(var_of_sql_var(f.qualifier.get, f.name, "INTEGER"))), false) // TODO this is for test
-        (make_CalcExpr(make_ArithExpr(var_of_sql_var("X", f.name, "INTEGER"))), false) // TODO this is for test2
+        (make_CalcExpr(make_ArithExpr(var_of_sql_var("r", f.name, "INTEGER"))), false) // TODO this is for test2
 
       case b: BinaryOperator =>
         b match {
@@ -261,10 +274,9 @@ object SQLToCalc {
 
     }
 
-    //TODO tgt_var lift
     (tgt_var, contains_target) match {
-      case _ => calc
-
+      case (Some(v), false) => Lift(v, calc)
+      case _                => calc
     }
   }
 
@@ -294,12 +306,21 @@ object SQLToCalc {
           }))
           SelectStatement(s.withs, new_targets, s.joinTree, s.where, Some(new_gb_vars),
             s.having, s.orderBy, s.limit, s.aliases)
+
+        case u: UnionIntersectSequence =>
+          def rcr(stmt: TopLevelStatement): TopLevelStatement = {
+            cast_query_to_aggregate(tables, stmt)
+          }
+          UnionIntersectSequence(rcr(u.bottom), rcr(u.top), UNION)
       }
     }
-    // TODO union
   }
 
   def var_of_sql_var(R_name: String, col_name: String, tp: String): VarT = {
+
+    println(" VAR F ")
+    println(R_name)
+    println(col_name)
 
     tp match {
       case "INTEGER" => VarT(R_name + "_" + col_name, IntType)
@@ -367,6 +388,7 @@ object SQLToCalc {
     stmt match {
       case s: SelectStatement =>
         s.projections.extractExpretions().map(x => x._1).toList.exists(x => is_agg_expr(x))
+      case u: UnionIntersectSequence => is_agg_query(u.bottom) && is_agg_query(u.top)
       //TODO union
     }
 
@@ -387,6 +409,13 @@ object SQLToCalc {
   def mk_aggsum(gb_vars: List[VarT], expr: CalcExpr): CalcExpr = {
     val expr_ovars = SchemaOfExpression(expr)._2
     val new_gb_vars = expr_ovars.intersect(gb_vars)
+
+    println("   mk_agsum    :")
+    println(prettyprint(expr))
+    println(gb_vars)
+    println(expr_ovars)
+    println(new_gb_vars)
+
     if (expr_ovars.equals(new_gb_vars))
       expr
     else
@@ -417,6 +446,7 @@ object SQLToCalc {
   //   ********CalculusDomains********** :
 
   def maintain(formula: CalcExpr): CalcExpr = {
+    //Fold(( _ => ),formula)
     formula
     // TODO Calcules.fold
   }
