@@ -48,6 +48,7 @@ object CalcAST {
   case class ArithFunc(name: String, terms: List[ArithExpr], tp: Tpe) extends ArithExpr
 
   case class VarT(name: String, tp: Tpe)
+  case class Schema_t(scope: Option[List[VarT]], schema: Option[List[VarT]])
 
   trait CmpTag
   case object Eq extends CmpTag // Equals
