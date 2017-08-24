@@ -150,6 +150,21 @@ object CalcAST {
     }
   }
 
+  class RebuildCalcTransformer extends optimizer.CalcTransformer {
+    override def transform(n: CalcExpr): CalcExpr = {
+      val newNode = super.transform(n)
+      val newSymbol = NodeSymbol(newNode)
+      if (n.symbol != null) {
+        val oldProps = n.symbol.properties
+        for ((pf, p) <- oldProps if pf.constant) {
+          newSymbol.updateProperty(p)
+        }
+      }
+      newNode.symbol = newSymbol
+      newNode
+    }
+  }
+
   object CalcExprShape {
     type CalcExprFact = Seq[CalcExpr] => CalcExpr
     def unapply(expr: CalcExpr): Option[(CalcExprFact, Seq[CalcExpr])] = {
