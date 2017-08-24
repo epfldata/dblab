@@ -321,7 +321,19 @@ object SQLAST {
       case vw: View => Seq(vw)
     }
 
-    def extractTables: Seq[SQLTable] = extractRelations collect { case x: SQLTable => x }
+    def extractTables: Seq[SQLTable] = this match {
+      case st @ SQLTable(_, _)     => Seq(st)
+      case Subquery(_, _)          => Seq()
+      case Join(left, right, _, _) => left.extractTables ++ right.extractTables
+      case _                       => Seq()
+    }
+
+    def extractImmediateSubqueries: Seq[Subquery] = this match {
+      case Join(left, right, _, _) => left.extractImmediateSubqueries ++ right.extractImmediateSubqueries
+      case tbl: SQLTable           => Seq()
+      case sq: Subquery            => Seq(sq)
+      case vw: View                => Seq()
+    }
 
     def extractSubqueries: Seq[Subquery] = this match {
       case Join(left, right, _, _) => left.extractSubqueries ++ right.extractSubqueries

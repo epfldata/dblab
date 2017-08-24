@@ -69,8 +69,8 @@ object SQLToCalc {
       case (base_tgt_name, tgt_expr) =>
         //TODO sql error failwith
         val tgt_name = if (query_name.isEmpty) base_tgt_name else var_of_sql_var(query_name.get, base_tgt_name, "ANY").name
-        println(tgt_name)
-        println(tgt_expr.asInstanceOf[FieldIdent].qualifier)
+        //        println(tgt_name)
+        //        println(tgt_expr.asInstanceOf[FieldIdent].qualifier)
         tgt_expr match {
           case f: FieldIdent if (query_name.isEmpty && f.name == tgt_name) ||
             (var_of_sql_var(f.qualifier.get, f.name, "INTEGER").name == tgt_name) => //TODO f.symbol
@@ -127,7 +127,7 @@ object SQLToCalc {
     }
 
     val subqs = sources match {
-      case Some(x) => x.extractSubqueries.toList
+      case Some(x) => x.extractImmediateSubqueries.toList
       case _       => List()
     }
 
@@ -182,6 +182,7 @@ object SQLToCalc {
           }
 
         val sum_calc = CalcSum((extract_ors(o.left) ++ extract_ors(o.right)).map(x => rcr_c(Some(x))))
+        println("sum_Calc:\n" + prettyprint(sum_calc))
         val (or_val, or_calc) = lift_if_necessary(sum_calc, Some("or"), Some(IntType))
         mk_aggsum(List(), CalcProd(List(or_calc, Cmp(Gt, or_val, ArithConst(IntLiteral(0))))))
 
@@ -222,9 +223,6 @@ object SQLToCalc {
         calc_of_sql_expr(None, materialize_query, tables, sources, e)
       }
     }
-
-    println("inja :    ")
-    println(expr)
 
     val (calc, contains_target) = expr match {
 
@@ -322,9 +320,9 @@ object SQLToCalc {
 
   def var_of_sql_var(R_name: String, col_name: String, tp: String): VarT = {
 
-    println(" VAR F ")
-    println(R_name)
-    println(col_name)
+    //    println(" VAR F ")
+    //    println(R_name)
+    //    println(col_name)
 
     tp match {
       case "INTEGER" => VarT(R_name + "_" + col_name, IntType)
@@ -337,7 +335,7 @@ object SQLToCalc {
 
   def lift_if_necessary(calc: CalcExpr, t: Option[String] = Some("agg"), vt: Option[Tpe] = Some(AnyType)): (ArithExpr, CalcExpr) = {
 
-    println(t)
+    //    println(t)
     combine_values(None, None, calc) match {
       case c: CalcValue => (c.v, CalcValue(ArithConst(IntLiteral(1))))
       case _ =>
@@ -411,12 +409,12 @@ object SQLToCalc {
   def mk_aggsum(gb_vars: List[VarT], expr: CalcExpr): CalcExpr = {
     val expr_ovars = SchemaOfExpression(expr)._2
     val new_gb_vars = expr_ovars.intersect(gb_vars)
-
-    println("   mk_aggsum    :")
-    println(prettyprint(expr))
-    println(gb_vars)
-    println(expr_ovars)
-    println(new_gb_vars)
+    //
+    //    println("   mk_aggsum    :")
+    //    println(prettyprint(expr))
+    //    println(gb_vars)
+    //    println(expr_ovars)
+    //    println(new_gb_vars)
 
     if (expr_ovars.equals(new_gb_vars))
       expr
@@ -508,9 +506,9 @@ object SQLToCalc {
   }
 
   def mk_exists(expr: CalcExpr): CalcExpr = {
-    println("\n\n\n\n\n\n\n")
-    println(prettyprint(expr))
     val dom_expr = maintain(expr)
+    println("**********************************")
+    println(prettyprint(expr))
     println(prettyprint(dom_expr))
     CalcAST.Exists(dom_expr)
   }
