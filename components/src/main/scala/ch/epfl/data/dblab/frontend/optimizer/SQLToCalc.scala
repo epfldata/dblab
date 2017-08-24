@@ -7,7 +7,7 @@ import ch.epfl.data.dblab.frontend.parser.CalcAST
 import parser.SQLAST._
 import parser.CalcAST._
 import optimizer.CalcOptimizer._
-import schema._
+//import schema._
 import sc.pardis.types._
 //import scala.reflect.runtime.{ universe => ru }
 //import ru._ //TODO this symbol ?
@@ -83,7 +83,7 @@ object SQLToCalc {
         }
     }).unzip
 
-    println("NO AGGG :\n\n")
+    println("NO Aggregate :\n\n")
     println(noagg_vars)
 
     val noagg_calc = CalcProd(noagg_terms)
@@ -383,7 +383,7 @@ object SQLToCalc {
       case u: UnaryOperator     => is_agg_expr(u.expr)
       case _: Aggregation       => true
       case f: FunctionExp       => f.inputs.map(x => is_agg_expr(x)).foldLeft(false)((sum, cur) => sum || cur)
-      //TODO nested_q , cases in OCaml and others in Scala
+      //TODO nested_q , cases in Ocaml and others in Scala
     }
   }
 
@@ -406,13 +406,13 @@ object SQLToCalc {
     // TODO
   }
 
-  // ********Calcules********** :
+  // ********Calculus********** :
 
   def mk_aggsum(gb_vars: List[VarT], expr: CalcExpr): CalcExpr = {
     val expr_ovars = SchemaOfExpression(expr)._2
     val new_gb_vars = expr_ovars.intersect(gb_vars)
 
-    println("   mk_agsum    :")
+    println("   mk_aggsum    :")
     println(prettyprint(expr))
     println(gb_vars)
     println(expr_ovars)
@@ -429,7 +429,7 @@ object SQLToCalc {
   }
 
   def CalculusFold[A](sumFn: (Schema_t, List[A]) => A, prodFn: (Schema_t, List[A]) => A, negFn: (Schema_t, A) => A,
-                      leafFn: (Schema_t, ArithExpr) => A, e: CalcExpr, scope: Option[List[VarT]] = Some(List()),
+                      leafFn: (Schema_t, CalcExpr) => A, e: CalcExpr, scope: Option[List[VarT]] = Some(List()),
                       schema: Option[List[VarT]] = Some(List())): A = {
 
     def rcr(e_scope: Option[List[VarT]], e_shema: Option[List[VarT]], e2: CalcExpr): A = {
@@ -459,9 +459,8 @@ object SQLToCalc {
         val term = n.expr
         negFn(Schema_t(scope, schema), rcr(scope, schema, term))
 
-      case v: CalcValue =>
-        val leaf = v.v
-        leafFn(Schema_t(scope, schema), leaf)
+      case _ =>
+        leafFn(Schema_t(scope, schema), e)
     }
   }
 
@@ -477,7 +476,7 @@ object SQLToCalc {
   }
 
   // ********CalculusTransforms********** :
-  def combine_values(aggresive: Option[Boolean], peer_group: Option[List[Unit]], big_expr: CalcExpr): CalcExpr = {
+  def combine_values(aggressive: Option[Boolean], peer_group: Option[List[Unit]], big_expr: CalcExpr): CalcExpr = {
     big_expr
     //TODO
   }
@@ -500,17 +499,20 @@ object SQLToCalc {
       (_, x) => x,
       (_, lf) =>
         lf match {
-          case _: CalcValue => CalcValue(ArithConst(IntLiteral(1)))
-          //case AggSum(gb_vars, subexp) => mk_aggsum(gb_vars, maintain(subexp)) //TODO leaf_t VS Calc_leaf_t
-          case _: Lift      => CalcValue(lf)
-          //case CalcAST.Exists(subexp) => mk_exists(subexp) //TODO leaf_t VS Calc_leaf_t
+          case r: Rel                  => r
+          case _: CalcValue            => CalcValue(ArithConst(IntLiteral(1)))
+          case AggSum(gb_vars, subexp) => mk_aggsum(gb_vars, maintain(subexp))
+          case CalcAST.Exists(subexp)  => mk_exists(subexp)
+          case x                       => x //TODO CalcValue(Lift) ?
         }, formula)
   }
 
   def mk_exists(expr: CalcExpr): CalcExpr = {
+    println("\n\n\n\n\n\n\n")
+    println(prettyprint(expr))
     val dom_expr = maintain(expr)
+    println(prettyprint(dom_expr))
     CalcAST.Exists(dom_expr)
-
   }
 
   def mk_domain_restricted_lift(lift_v: VarT, lift_expr: CalcExpr): CalcExpr = {
