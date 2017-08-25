@@ -161,8 +161,11 @@ object CalcOptimizer {
 
     if (res == 0)
       return CalcValue(ArithConst(DoubleLiteral(0.0)))
-    else if (res == 1.0)
+    else if (res == 1.0 && ncs.length > 0)
       return CalcProd(ncs)
+
+    else if (res == 1.0 && ncs.length == 0)
+      return CalcValue(ArithConst(DoubleLiteral(1.0)))
 
     if (ncs.length > 0)
       return CalcProd(CalcValue(ArithConst(DoubleLiteral(res))) :: ncs)
@@ -224,7 +227,9 @@ object CalcOptimizer {
       case CalcProd(list) => prodFun(list.map(x => rcr(x)))
       case CalcNeg(e)     => negFun(rcr(e))
       case _ => {
-        leafFun(expr)
+        val t = leafFun(expr)
+        println(t)
+        t
       }
     }
   }
@@ -354,6 +359,7 @@ object CalcOptimizer {
         //println("########")
         subterm match {
           case CalcSum(list) => {
+            println("SUM####")
             val (sumivars, _) = SchemaOfExpression(subterm)
             val rewritten = Sum(list.map(term => {
               val (_, termovars) = SchemaOfExpression(term)
@@ -363,13 +369,10 @@ object CalcOptimizer {
             rewritten
           }
           case CalcProd(list) => {
-
-            println(list)
-            println("###")
-            println(prettyprint(CalcProd(list)))
+            println("PROD####")
             val (unnested, nested) = list.foldLeft[(CalcExpr, CalcExpr)](((CalcValue(ArithConst(IntLiteral(1)))), (CalcValue(ArithConst(IntLiteral(1))))))((acc, cur) => {
-              println("########")
-              println(commutes(acc._2, cur) + " " + (SchemaOfExpression(cur)._2).toSet.subsetOf(gbvars.toSet))
+              //              println("########")
+              //              println(commutes(acc._2, cur) + " " + (SchemaOfExpression(cur)._2).toSet.subsetOf(gbvars.toSet))
               (if (commutes(acc._2, cur) && (SchemaOfExpression(cur)._2).toSet.subsetOf(gbvars.toSet)) (CalcProd(List(acc._1, cur)), acc._2) else (acc._1, CalcProd(List(acc._2, cur))))
             })
             val unnestedivars = SchemaOfExpression(unnested)._1
@@ -379,25 +382,32 @@ object CalcOptimizer {
             //println(unnested)
             //println(nested)
 
-            println("DEBUG:\n Nesting rewrites lifting out:\n")
-            println(prettyprint(unnested))
-            println("\n\tand keeping in:\n")
-            println(prettyprint(nested))
-            println("\n\twith output variables : ")
-            println(SchemaOfExpression(nested)_2)
-            println("\n\tMaking the new group-by variables:\n")
-            println(newgbvars)
+            //            println("DEBUG:\n Nesting rewrites lifting out:\n")
+            //            println(prettyprint(unnested))
+            //            println("\n\tand keeping in:\n")
+            //            println(prettyprint(nested))
+            //            println("\n\twith output variables : ")
+            //            println(SchemaOfExpression(nested)_2)
+            //            println("\n\tMaking the new group-by variables:\n")
+            //            println(newgbvars)
 
             CalcProd(List(unnested, AggSum(newgbvars, nested)))
 
           }
 
-          case AggSum(_, t) => AggSum(gbvars, t)
+          case AggSum(_, t) => {
+            println("RESIDAM" + gbvars)
+            AggSum(gbvars, t)
+          }
           case _ => {
-            if ((SchemaOfExpression(subterm)_2).toSet.subsetOf(gbvars.toSet))
+            println("WTF")
+            if ((SchemaOfExpression(subterm)_2).toSet.subsetOf(gbvars.toSet)) {
+              println("IF " + subterm)
               subterm
-            else
+            } else {
+              println("ELSE" + prettyprint(AggSum(gbvars, subterm)))
               AggSum(gbvars, subterm)
+            }
           }
         }
       }
@@ -410,7 +420,7 @@ object CalcOptimizer {
           case CalcValue(ArithConst(IntLiteral(0))) => CalcValue(ArithConst(IntLiteral(0)))
           case CalcValue(ArithConst(IntLiteral(_))) => CalcValue(ArithConst(IntLiteral(1)))
           case CalcValue(ArithConst(_))             => throw new Exception
-          case _                                    => CalcAST.Exists(subterm)
+          case _                                    => CalcAST.Exists(rcr(subterm))
         }
 
         case Lift(v, term) => {

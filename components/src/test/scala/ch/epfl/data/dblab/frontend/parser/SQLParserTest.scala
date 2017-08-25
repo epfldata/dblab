@@ -157,7 +157,7 @@ class SQLParserTest extends FlatSpec {
     } else
       f.listFiles.map(folder + "/" + _.getName).toList
     for (file <- files) {
-      // println(s"parsing $file")
+      println(s"parsing $file")
       val r = parser.parseStream(scala.io.Source.fromFile(file).mkString)
       r should not be None
     }

@@ -44,6 +44,7 @@ object Driver {
       val ParserTree = CalcParser.parse(scala.io.Source.fromFile(q).mkString)
       val optimizer = CalcOptimizer
       println("BEFORE: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${prettyprint(cur)}"))
+      println("MIDDLE")
       println("AFTER: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(optimizer.Normalize(optimizer.nestingRewrites(cur)))}"))
       //        System.out.println("Original SQL Parser Tree:\n" + sqlParserTree + "\n\n")
     }
