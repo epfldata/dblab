@@ -53,7 +53,7 @@ object SQLToCalc {
     val cond = sqlTree.where
     val gb_vars = sqlTree.groupBy.map(_.keys.collect { case x: FieldIdent => x }).getOrElse(Nil).toList
     val source_calc = calc_of_source(tables, sources)
-    val cond_calc = calc_of_condition(tables, sources.get, cond)
+    val cond_calc = calc_of_condition(tables, sources, cond)
     //    println("source :\n" + source_calc)
     println("source :\n" + CalcAST.prettyprint(source_calc))
     //    println("cond : \n" + cond_calc)
@@ -79,7 +79,7 @@ object SQLToCalc {
 
           case _ =>
             val tgt_var = VarT(tgt_name, IntType) // TODO type should infer with expr_type
-            (tgt_var, calc_of_sql_expr(Some(tgt_var), None, tables, sources.get, tgt_expr))
+            (tgt_var, calc_of_sql_expr(Some(tgt_var), None, tables, sources, tgt_expr))
         }
     }).unzip
 
@@ -124,7 +124,7 @@ object SQLToCalc {
     agg_tgts.map({
       case (tgt_name, unnormalized_tgt_expr) =>
         val tgt_expr = normalize_agg_target_expr(None, gb_vars, unnormalized_tgt_expr)
-        (tgt_name, calc_of_sql_expr(None, Some(mq), tables, sources.get, tgt_expr))
+        (tgt_name, calc_of_sql_expr(None, Some(mq), tables, sources, tgt_expr))
     })
   }
 
@@ -169,7 +169,7 @@ object SQLToCalc {
         }))
   }
 
-  def calc_of_condition(tables: List[CreateStream], sources: Relation, cond: Option[Expression]): CalcExpr = {
+  def calc_of_condition(tables: List[CreateStream], sources: Option[Relation], cond: Option[Expression]): CalcExpr = {
 
     def rcr_c(c: Option[Expression]): CalcExpr = {
       calc_of_condition(tables, sources, c)
@@ -217,13 +217,19 @@ object SQLToCalc {
         mk_exists(mk_aggsum(List(), q_calc_unlifted))
       //TODO failwith
 
+      case Some(Not(e: parser.SQLAST.Exists)) =>
+        val q = e.expr
+        val q_calc_unlifted = CalcOfQuery(None, tables, q).head._2
+        mk_not_exists(mk_aggsum(List(), q_calc_unlifted))
+      //TODO failwith
+
       case _ => CalcValue(ArithConst(IntLiteral(1)))
     }
     // TODO rest cases
   }
 
   def calc_of_sql_expr(tgt_var: Option[VarT], materialize_query: Option[(Aggregation, CalcExpr) => CalcExpr],
-                       tables: List[CreateStream], sources: Relation, expr: Expression): CalcExpr = { // expr was SQL node
+                       tables: List[CreateStream], sources: Option[Relation], expr: Expression): CalcExpr = { // expr was SQL node
 
     def rcr_e(e: Expression, is_agg: Option[Boolean] = Some(false)): CalcExpr = {
       if (is_agg.isDefined && is_agg.get) {
@@ -333,7 +339,7 @@ object SQLToCalc {
                 case f: FieldIdent => if (f.name == target_name.get) f.qualifier else None
                 case _             => None
               }
-              FieldIdent(target_source, target_name.get, sql_expr_type(None, target_expr, tables, sources.get))
+              FieldIdent(target_source, target_name.get, sql_expr_type(None, target_expr, tables, sources))
           }))
           SelectStatement(s.withs, new_targets, s.joinTree, s.where, Some(new_gb_vars),
             s.having, s.orderBy, s.limit, s.aliases)
@@ -376,6 +382,14 @@ object SQLToCalc {
   def tmp_var(vn: String, vt: Tpe): VarT = {
     varId += 1
     val v = VarT("__sql_inline_" + vn + varId, vt)
+    v
+  }
+
+  var domId = 0
+  def mk_dom_var(l: List[Unit], vt: Tpe): VarT = {
+    // TODO l ?
+    domId += 1
+    val v = VarT("__domain_" + domId, vt)
     v
   }
 
@@ -427,7 +441,7 @@ object SQLToCalc {
     // TODO
   }
 
-  def sql_expr_type(strict: Option[Boolean], expr: Expression, tables: List[CreateStream], sources: Relation): Symbol = {
+  def sql_expr_type(strict: Option[Boolean], expr: Expression, tables: List[CreateStream], sources: Option[Relation]): Symbol = {
     'INTEGER
     // TODO
   }
@@ -535,10 +549,17 @@ object SQLToCalc {
 
   def mk_exists(expr: CalcExpr): CalcExpr = {
     val dom_expr = maintain(expr)
-    println("**********************************")
-    println(prettyprint(expr))
-    println(prettyprint(dom_expr))
+    //    println("**********************************")
+    //    println(prettyprint(expr))
+    //    println(prettyprint(dom_expr))
     CalcAST.Exists(dom_expr)
+  }
+
+  def mk_not_exists(expr: CalcExpr): CalcExpr = {
+    val dom_expr = maintain(expr)
+    val dom_var = mk_dom_var(List(), IntType)
+    val ovars = SchemaOfExpression(expr)._2
+    mk_aggsum(ovars, CalcProd(List(Lift(dom_var, dom_expr), Cmp(Eq, ArithConst(IntLiteral(0)), ArithVar(dom_var)))))
   }
 
   def mk_domain_restricted_lift(lift_v: VarT, lift_expr: CalcExpr): CalcExpr = {
