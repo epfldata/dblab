@@ -109,12 +109,27 @@ object CalcParser extends StandardTokenParsers {
 
   def parseAddition: Parser[CalcExpr] =
     parseMultiplication * (
-      "+" ^^^ { (a: CalcExpr, b: CalcExpr) => CalcSum(List(a, b)) } |
-      "-" ^^^ { (a: CalcExpr, b: CalcExpr) => CalcSum(List(a, CalcNeg(b))) })
+      "+" ^^^ { (a: CalcExpr, b: CalcExpr) =>
+        a match {
+          case CalcSum(l1) => CalcSum(l1 :+ b)
+          case _           => CalcSum(List(a, b))
+        }
+      } |
+      "-" ^^^ { (a: CalcExpr, b: CalcExpr) =>
+        a match {
+          case CalcSum(l1) => CalcSum(l1 :+ CalcNeg(b))
+          case _           => CalcSum(List(a, CalcNeg(b)))
+        }
+      })
 
   def parseMultiplication: Parser[CalcExpr] =
     parseIvcCalcExpr * (
-      "*" ^^^ { (a: CalcExpr, b: CalcExpr) => CalcProd(List(a, b)) })
+      "*" ^^^ { (a: CalcExpr, b: CalcExpr) =>
+        a match {
+          case CalcProd(l1) => CalcProd(l1 :+ b)
+          case _            => CalcProd(List(a, b))
+        }
+      })
 
   def parseIvcCalcExpr: Parser[CalcExpr] = {
     ("NEG" ~> "*" ~> parseIvcCalcExpr ^^ {

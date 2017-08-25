@@ -91,6 +91,7 @@ object CalcAST {
       case Cmp(cmp, first, second) => s"{${pprint(first)} ${pprint(cmp)} ${pprint(second)}}"
       case CalcValue(v)            => s"{${pprint(v)}}"
       case CmpOrList(first, list)  => s"{${pprint(first)} IN [${list.map(pprint).mkString(", ")}]}"
+      case _                       => ""
 
     }
   }
