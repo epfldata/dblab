@@ -46,14 +46,22 @@ class SQLNamer(schema: Schema) {
     }
   }
 
-  def nameExpr(exp: Expression): Expression = {
+  def nameExprOptional(forced: Boolean)(exp: Expression): Expression = {
     exp match {
       case tl: TopLevelStatement           => nameQuery(tl)
-      case ExpressionShape(fact, children) => fact(children.map(nameExpr))
-      case FieldIdent(None, a, s)          => FieldIdent(Some(findRelationName(a)), a, s)
-      case _                               => exp
+      case ExpressionShape(fact, children) => fact(children.map(nameExprOptional(forced)))
+      case FieldIdent(None, a, s) =>
+        val qualifier = try {
+          Some(findRelationName(a))
+        } catch {
+          case ex: Exception if !forced => None
+        }
+        FieldIdent(qualifier, a, s)
+      case _ => exp
     }
   }
+
+  def nameExpr(exp: Expression): Expression = nameExprOptional(true)(exp)
 
   def extractSources(rel: Relation): List[Relation] = rel match {
     case SQLTable(_, _)          => List(rel)
@@ -140,7 +148,7 @@ class SQLNamer(schema: Schema) {
           })
         })
         val namedWhere = withSchema(newSchema)(() => where.map(nameExpr))
-        val namedGroupBy = withSchema(newSchema)(() => groupBy.map(gb => gb.copy(keys = gb.keys.map(nameExpr))))
+        val namedGroupBy = withSchema(newSchema)(() => groupBy.map(gb => gb.copy(keys = gb.keys.map(nameExprOptional(false)))))
         SelectStatement(withs, ExpressionProjections(namedProjections), namedSource, namedWhere, namedGroupBy, having, orderBy, limit, aliases)
     }
   }

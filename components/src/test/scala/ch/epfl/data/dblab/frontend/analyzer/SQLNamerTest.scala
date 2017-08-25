@@ -86,6 +86,13 @@ class SQLNamerTest extends FlatSpec {
     unnamedCount(namedQuery) should be(0)
   }
 
+  "SQLNamer" should "infer the names correctly in renaming" in {
+    val file = new java.io.File(s"$simpleQueriesFolder/r_nestedrename.sql")
+    val namedQuery = parseAndNameQuery(file)
+    // println(namedQuery)
+    unnamedCount(namedQuery) should be(0)
+  }
+
   "SQLNamer" should "infer the names correctly for all simple queries" in {
     val f = new java.io.File(simpleQueriesFolder)
     val files = if (!f.exists) {
