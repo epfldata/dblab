@@ -3,6 +3,8 @@ package dblab
 package frontend
 package parser
 
+import ch.epfl.data.dblab.frontend.parser.CalcAST.ArithConst
+
 import scala.reflect.runtime.{ universe => ru }
 //import ru._
 
@@ -210,7 +212,7 @@ object SQLAST {
   case class UnaryMinus(expr: Expression) extends UnaryOperator
   case class Exists(expr: SelectStatement) extends UnaryOperator
 
-  case class In(elem: Expression, set: Seq[Expression]) extends Expression
+  case class In(elem: Expression, set: Seq[LiteralExpression]) extends Expression //TODO set vase seq of Expression
   case class Case(cond: Expression, thenp: Expression, elsep: Expression) extends Expression
   case class Distinct(e: Expression) extends Expression
   case class AllExp(e: SelectStatement) extends Expression

@@ -175,6 +175,10 @@ object SQLToCalc {
       calc_of_condition(tables, sources, c)
     }
 
+    def rcr_et(tgt_var: Option[VarT], e: Expression): CalcExpr = {
+      calc_of_sql_expr(tgt_var, None, tables, sources, e)
+    }
+
     //TODO push_down_nots
     cond match {
       case Some(a: And) =>
@@ -223,6 +227,22 @@ object SQLToCalc {
         mk_not_exists(mk_aggsum(List(), q_calc_unlifted))
       //TODO failwith
 
+      case Some(i: In) =>
+        val expr = i.elem
+        val l = i.set.toList
+        val t = IntType // TODO change with the commented line
+        //val t = sql_expr_type(None,expr,tables,sources)
+        val v = tmp_var("in", t)
+        val (expr_val, expr_calc) = lower_if_value(rcr_et(Some(v), expr))
+        l.distinct match {
+          case List() =>
+            CalcValue(ArithConst(IntLiteral(0)))
+          case hd :: List() =>
+            CalcProd(List(expr_calc, Cmp(Eq, ArithConst(hd), expr_val))) //
+          case ul =>
+            CalcProd(List(expr_calc, CmpOrList(expr_val, ul)))
+
+        }
       case _ => CalcValue(ArithConst(IntLiteral(1)))
     }
     // TODO rest cases
@@ -350,6 +370,18 @@ object SQLToCalc {
           }
           UnionIntersectSequence(rcr(u.bottom), rcr(u.top), UNION)
       }
+    }
+  }
+
+  def lower_if_value(calc: CalcExpr): (ArithExpr, CalcExpr) = {
+    calc match {
+      case Lift(v, CalcValue(x)) =>
+        (x, CalcValue(ArithConst(IntLiteral(1))))
+      case Lift(v, c) =>
+        (ArithVar(v), c)
+      case AggSum(v :: List(), c) =>
+        (ArithVar(v), calc)
+      // TODO failwith
     }
   }
 
