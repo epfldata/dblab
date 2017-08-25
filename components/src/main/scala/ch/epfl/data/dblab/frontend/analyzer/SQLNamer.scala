@@ -99,10 +99,26 @@ class SQLNamer(schema: Schema) {
   }
 
   def nameSource(rel: Relation): Relation = rel match {
-    case SQLTable(name, alias)           => SQLTable(name, Some(alias.getOrElse(name)))
-    case Subquery(e, a)                  => Subquery(nameQuery(e), a)
-    case Join(left, right, kind, clause) => Join(nameSource(left), nameSource(right), kind, clause)
-    case _                               => ???
+    case SQLTable(name, alias) => SQLTable(name, Some(alias.getOrElse(name)))
+    case Subquery(e, a)        => Subquery(nameQuery(e), a)
+    case Join(left, right, kind, clause) => {
+      val nl = nameSource(left)
+      val nr = nameSource(right)
+      val (nk, nc) = kind match {
+        case NaturalJoin =>
+          val nls = getSourceLabeledSchema(nl)
+          val nrs = getSourceLabeledSchema(nr)
+          def getCommon(l1: List[String], l2: List[String]): Option[String] =
+            l1.find(x => l2.contains(x))
+          val commonAttr = getCommon(nls._1, nrs._1)
+          val eqClause = commonAttr.map(c => Equals(FieldIdent(Some(nls._2), c), FieldIdent(Some(nrs._2), c)))
+          InnerJoin -> eqClause.getOrElse(null)
+        case _ =>
+          kind -> clause
+      }
+      Join(nl, nr, nk, nc)
+    }
+    case _ => ???
   }
 
   def withSchema[T](newSchema: Schema)(f: () => T): T = {
@@ -111,6 +127,19 @@ class SQLNamer(schema: Schema) {
     val res = f()
     curSchema = oldSchema
     res
+  }
+
+  def extractJoinEqualities(rel: Relation): List[Equals] = rel match {
+    case SQLTable(_, _) => Nil
+    case Subquery(_, _) => Nil
+    case Join(left, right, kind, clause) =>
+      val currentEqClause = clause match {
+        case null                                 => Nil
+        case Equals(IntLiteral(1), IntLiteral(1)) => Nil // already handlered by the parser
+        case e: Equals                            => List(e)
+      }
+      currentEqClause ++ extractJoinEqualities(left) ++ extractJoinEqualities(right)
+    case _ => Nil
   }
 
   def nameSelect(select: SelectStatement): SelectStatement = {
@@ -132,7 +161,7 @@ class SQLNamer(schema: Schema) {
                 case Some(rel) => labeledRels.find(_._2 == rel) match {
                   case Some(v) => List(v)
                   case None    => throw new Exception(s"Could not find a reference to relation $rel")
-                } // intentionally used .get to give an error if the names don't match
+                }
               }
               filteredLabeledRels.flatMap {
                 case (table, name) =>
@@ -148,8 +177,16 @@ class SQLNamer(schema: Schema) {
           })
         })
         val namedWhere = withSchema(newSchema)(() => where.map(nameExpr))
+        val joinEqs = namedSource.map(extractJoinEqualities).getOrElse(Nil)
+        val newWhere = namedWhere match {
+          case Some(v) => Some(joinEqs.foldLeft(v)((x, y) => And(x, y)))
+          case None => joinEqs match {
+            case hd :: tl => Some(tl.foldLeft[Expression](hd)((x, y) => And(x, y)))
+            case Nil      => None
+          }
+        }
         val namedGroupBy = withSchema(newSchema)(() => groupBy.map(gb => gb.copy(keys = gb.keys.map(nameExprOptional(false)))))
-        SelectStatement(withs, ExpressionProjections(namedProjections), namedSource, namedWhere, namedGroupBy, having, orderBy, limit, aliases)
+        SelectStatement(withs, ExpressionProjections(namedProjections), namedSource, newWhere, namedGroupBy, having, orderBy, limit, aliases)
     }
   }
 }
