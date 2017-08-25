@@ -130,7 +130,8 @@ object CalcAST {
   def pprint(tpe: Tpe): String = {
     tpe match {
       case IntType          => s"INT"
-      case DoubleType       => s"FLOAT"
+      case DoubleType       => s"FLOAT" //TODO ok ?
+      case FloatType        => s"FLOAT" //TODO added by Mohsen
       case DateType         => s"DATE"
       case StringType       => s"STRING"
       case VarCharType(num) => s"VARCHAR(${num})"
