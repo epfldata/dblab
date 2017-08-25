@@ -140,7 +140,8 @@ class SQLNamer(schema: Schema) {
           })
         })
         val namedWhere = withSchema(newSchema)(() => where.map(nameExpr))
-        SelectStatement(withs, ExpressionProjections(namedProjections), namedSource, namedWhere, groupBy, having, orderBy, limit, aliases)
+        val namedGroupBy = withSchema(newSchema)(() => groupBy.map(gb => gb.copy(keys = gb.keys.map(nameExpr))))
+        SelectStatement(withs, ExpressionProjections(namedProjections), namedSource, namedWhere, namedGroupBy, having, orderBy, limit, aliases)
     }
   }
 }

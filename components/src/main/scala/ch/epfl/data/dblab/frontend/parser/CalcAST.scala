@@ -52,6 +52,7 @@ object CalcAST {
   case class ArithFunc(name: String, terms: List[ArithExpr], tp: Tpe) extends ArithExpr
 
   case class VarT(name: String, tp: Tpe)
+  case class Schema_t(scope: Option[List[VarT]], schema: Option[List[VarT]])
 
   trait CmpTag
   case object Eq extends CmpTag // Equals
@@ -133,7 +134,8 @@ object CalcAST {
   def pprint(tpe: Tpe): String = {
     tpe match {
       case IntType          => s"INT"
-      case DoubleType       => s"FLOAT"
+      case DoubleType       => s"FLOAT" //TODO ok ?
+      case FloatType        => s"FLOAT" //TODO added by Mohsen
       case DateType         => s"DATE"
       case StringType       => s"STRING"
       case VarCharType(num) => s"VARCHAR(${num})"

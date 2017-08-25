@@ -1,4 +1,4 @@
--- tgt_expr <- expr_type 
+-- listmax ?:-?
 -- Expected result: 1.
 
 CREATE STREAM R(A float, B float) 
