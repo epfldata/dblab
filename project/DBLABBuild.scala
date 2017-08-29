@@ -72,7 +72,10 @@ object DBLABBuild extends Build {
      site.addMappingsToSiteDir(mappings in packageDoc in Compile in dblab_components, "components-api"),
      site.addMappingsToSiteDir(mappings in packageDoc in Compile in dblab_components_compiler, "components-compiler-api"),
      gitRemoteRepo := "git@github.com:epfldata/dblab.git",
-     libraryDependencies += "ch.epfl.data" % "sc-pardis-library_2.11" % sc_version))
+     libraryDependencies ++= Seq(
+       "ch.epfl.data" % "sc-pardis-library_2.11" % sc_version,
+       "ch.epfl.data" % "sc-pardis-synthesis_2.11" % sc_version
+      )))
 
   lazy val dblab_components_compiler       = Project(id = "dblab-components-compiler",        base = file("components-compiler"),
    settings = defaults ++ Seq(

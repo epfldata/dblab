@@ -5,6 +5,7 @@ package parser
 
 import ch.epfl.data.dblab.schema.{ DateType, VarCharType }
 import sc.pardis.types._
+import sc.pardis.ast._
 
 /**
  * A module containing AST nodes for AG
@@ -23,7 +24,10 @@ object CalcAST {
     return VarT("tmpvar" + tmpVarNum, tpe)
   }
 
-  trait CalcExpr
+  sealed trait CalcExpr extends Node {
+    type NO = CalcExprOps
+    def nodeOps: NO = new CalcExprOps(this)
+  }
   case class CalcQuery(name: String, expr: CalcExpr) extends CalcExpr
   case class CalcSum(exprs: List[CalcExpr]) extends CalcExpr
   case class CalcProd(exprs: List[CalcExpr]) extends CalcExpr
@@ -39,7 +43,7 @@ object CalcAST {
 
   //TODO add const one and zero
 
-  trait ArithExpr
+  sealed trait ArithExpr extends CalcExpr
   case class ArithSum(expr: List[ArithExpr]) extends ArithExpr
   case class ArithProd(expr: List[ArithExpr]) extends ArithExpr
   case class ArithNeg(expr: ArithExpr) extends ArithExpr
@@ -48,6 +52,7 @@ object CalcAST {
   case class ArithFunc(name: String, terms: List[ArithExpr], tp: Tpe) extends ArithExpr
 
   case class VarT(name: String, tp: Tpe)
+  case class Schema_t(scope: Option[List[VarT]], schema: Option[List[VarT]])
 
   trait CmpTag
   case object Eq extends CmpTag // Equals
@@ -91,8 +96,7 @@ object CalcAST {
       case Cmp(cmp, first, second) => s"{${pprint(first)} ${pprint(cmp)} ${pprint(second)}}"
       case CalcValue(v)            => s"{${pprint(v)}}"
       case CmpOrList(first, list)  => s"{${pprint(first)} IN [${list.map(pprint).mkString(", ")}]}"
-      case _                       => ""
-
+      case ae: ArithExpr           => pprint(ae)
     }
   }
 
@@ -130,10 +134,64 @@ object CalcAST {
   def pprint(tpe: Tpe): String = {
     tpe match {
       case IntType          => s"INT"
-      case DoubleType       => s"FLOAT"
+      case DoubleType       => s"FLOAT" //TODO ok ?
+      case FloatType        => s"FLOAT" //TODO added by Mohsen
       case DateType         => s"DATE"
       case StringType       => s"STRING"
       case VarCharType(num) => s"VARCHAR(${num})"
+    }
+  }
+
+  class CalcExprOps(val node: CalcExpr) extends NodeOps {
+    type N = CalcExpr
+    def children: List[CalcExpr] = CalcExprShape.unapply(node).get._2.toList
+    def rebuild: CalcExpr = ???
+    def recreate(children: List[Node]): CalcExpr = {
+      val (fact, _) = CalcExprShape.unapply(node).get
+      fact(children.map(_.asInstanceOf[CalcExpr]))
+    }
+  }
+
+  class RebuildCalcTransformer extends optimizer.CalcTransformer {
+    override def transform(n: CalcExpr): CalcExpr = {
+      val newNode = super.transform(n)
+      val newSymbol = NodeSymbol(newNode)
+      if (n.symbol != null) {
+        val oldProps = n.symbol.properties
+        for ((pf, p) <- oldProps if pf.constant) {
+          newSymbol.updateProperty(p)
+        }
+      }
+      newNode.symbol = newSymbol
+      newNode
+    }
+  }
+
+  object CalcExprShape {
+    type CalcExprFact = Seq[CalcExpr] => CalcExpr
+    def unapply(expr: CalcExpr): Option[(CalcExprFact, Seq[CalcExpr])] = {
+      def arithChild(l: Seq[CalcExpr], i: Int) = l(i).asInstanceOf[ArithExpr]
+      expr match {
+        case CalcQuery(name, e)          => Some(l => CalcQuery(name, l(0)), Seq(e))
+        case CalcSum(es)                 => Some(l => CalcSum(l.toList), es)
+        case CalcProd(es)                => Some(l => CalcProd(l.toList), es)
+        case CalcNeg(e)                  => Some(l => CalcNeg(l(0)), Seq(e))
+        case AggSum(vs, e)               => Some(l => AggSum(vs, l(0)), Seq(e))
+        case Rel(t, n, vs, r)            => Some(l => Rel(t, n, vs, r), Seq())
+        case Cmp(t, e1, e2)              => Some(l => Cmp(t, arithChild(l, 0), arithChild(l, 1)), Seq(e1, e2))
+        case External(n, is, os, tp, me) => Some(l => External(n, is, os, tp, l.headOption), me.toSeq)
+        case CmpOrList(v, cs) =>
+          Some(l => CmpOrList(arithChild(l, 0), l.tail.toList.map(_.asInstanceOf[ArithConst])), Seq(v) ++ cs)
+        case Lift(v, e)           => Some(l => Lift(v, l(0)), Seq(e))
+        case Exists(e)            => Some(l => Exists(l(0)), Seq(e))
+        case CalcValue(a)         => Some(l => CalcValue(arithChild(l, 0)), Seq(a))
+        case ArithSum(es)         => Some(l => ArithSum(l.map(_.asInstanceOf[ArithExpr]).toList), es)
+        case ArithProd(es)        => Some(l => ArithProd(l.map(_.asInstanceOf[ArithExpr]).toList), es)
+        case ArithNeg(e)          => Some(l => ArithNeg(arithChild(l, 0)), Seq(e))
+        case ArithConst(c)        => Some(l => ArithConst(c), Seq())
+        case ArithVar(v)          => Some(l => ArithVar(v), Seq())
+        case ArithFunc(n, ts, tp) => Some(l => ArithFunc(n, l.map(_.asInstanceOf[ArithExpr]).toList, tp), ts)
+      }
     }
   }
 
