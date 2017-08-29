@@ -11,6 +11,7 @@ import ch.epfl.data.sc.pardis.types._
  */
 
 object CalcOptimizer {
+
   def escalateType(a: Tpe, b: Tpe): Tpe = {
     (a, b) match {
       case (at, bt) if (at.equals(bt)) => at
@@ -20,6 +21,7 @@ object CalcOptimizer {
       case (BooleanType, IntType)      => IntType
       case (IntType, FloatType)        => FloatType
       case (FloatType, IntType)        => FloatType
+      case _                           => AnyType
 
     }
   }
@@ -72,11 +74,56 @@ object CalcOptimizer {
         case CmpOrList(_, _)         => IntType
         case Lift(_, _)              => IntType
         case CalcAST.Exists(_)       => IntType
+        case _                       => IntType
       }
     }
 
-    def neg(tpe: Tpe): Tpe = { tpe }
+    def neg(tpe: Tpe): Tpe = tpe
     return Fold(escalateTypeList, escalateTypeList, neg, leaf, expr)
+  }
+
+  def relsOfExpr(expr: CalcExpr): List[String] = {
+    def multiunion(list: List[List[String]]): List[String] = {
+      return list.foldLeft(List.empty[String])((acc, cur) => acc.toSet.union(cur.toSet).toList)
+    }
+    def leaf(calcExpr: CalcExpr): List[String] = {
+      calcExpr match {
+        case CalcValue(_)                  => List()
+        case External(_, _, _, _, None)    => List()
+        case External(_, _, _, _, Some(e)) => relsOfExpr(e)
+        case AggSum(_, sub)                => relsOfExpr(sub)
+        case Rel(_, rn, _, _)              => List(rn)
+        case CmpOrList(_, _)               => List()
+        case Lift(_, sub)                  => relsOfExpr(sub)
+        case CalcAST.Exists(sub)           => relsOfExpr(sub)
+        case Cmp(_, _, _)                  => List()
+      }
+    }
+
+    def neg(list: List[String]): List[String] = list
+    Fold(multiunion, multiunion, neg, leaf, expr)
+  }
+
+  def exprHasDeltaRels(expr: CalcExpr): Boolean = {
+    expr match {
+      case CalcProd(pl)               => pl.map(x => exprHasDeltaRels(x)).exists(x => x)
+      case CalcSum(sl)                => sl.map(x => exprHasDeltaRels(x)).forall(x => x)
+      case CalcNeg(e)                 => exprHasDeltaRels(e)
+      case CalcValue(_)               => false
+      case Cmp(_, _, _)               => false
+      case CmpOrList(_, _)            => false
+      case Rel(_, _, _, _)            => false
+      case AggSum(_, sub)             => exprHasDeltaRels(sub)
+      case Lift(_, sub)               => exprHasDeltaRels(sub)
+      case CalcAST.Exists(sub)        => exprHasDeltaRels(expr)
+      case External(name, _, _, _, _) => (name.contains("DELTA") || name.contains("DOMAIN"))
+    }
+  }
+
+  def exprHasLowCardinality(expr: CalcExpr): Boolean = exprHasDeltaRels(expr)
+
+  def exprHasHighCardinality(expr: CalcExpr): Boolean = {
+    (!exprHasLowCardinality(expr)) && (relsOfExpr(expr).size != 0)
   }
   /**
    * Determine whether two expressions safely commute (in a product).
@@ -92,7 +139,10 @@ object CalcOptimizer {
     val (_, ovars1) = SchemaOfExpression(expr1)
     val (ivars2, _) = SchemaOfExpression(expr2)
 
-    return ivars2.toSet.intersect(ovars1.toSet).isEmpty
+    //TODO not kojas?
+
+    return (ivars2.toSet.intersect(ovars1.toSet).isEmpty && !((exprHasLowCardinality(expr1)) && exprHasHighCardinality(expr2)))
+
     //some of ocaml code is removed
 
   }
@@ -103,7 +153,7 @@ object CalcOptimizer {
       case ((acc1, acc2), cur) => cur match {
         case CalcValue(ArithConst(IntLiteral(t)))    => (t :: acc1, acc2)
         case CalcValue(ArithConst(DoubleLiteral(t))) => (t :: acc1, acc2)
-        case _                                       => (acc1, cur :: acc2)
+        case _                                       => (acc1, acc2 :+ cur)
       }
     })
 
@@ -113,8 +163,13 @@ object CalcOptimizer {
 
     if (res == 0)
       return CalcValue(ArithConst(DoubleLiteral(0.0)))
-    else if (res == 1.0)
+    else if (res == 1.0 && ncs.length > 1)
       return CalcProd(ncs)
+    else if (res == 1.0 && ncs.length > 0)
+      return ncs.head
+
+    else if (res == 1.0 && ncs.length == 0)
+      return CalcValue(ArithConst(DoubleLiteral(1.0)))
 
     if (ncs.length > 0)
       return CalcProd(CalcValue(ArithConst(DoubleLiteral(res))) :: ncs)
@@ -128,14 +183,14 @@ object CalcOptimizer {
       case (acc1, cur) => cur match {
         case CalcValue(ArithConst(IntLiteral(0)))      => (acc1)
         case CalcValue(ArithConst(DoubleLiteral(0.0))) => (acc1)
-        case _                                         => (cur :: acc1)
+        case _                                         => (acc1 :+ cur)
       }
     })
 
     if (elems.length > 0)
       return CalcSum(elems)
     else
-      return CalcSum(List(CalcValue(ArithConst(IntLiteral(0)))))
+      return CalcValue(ArithConst(IntLiteral(0)))
 
   }
 
@@ -153,25 +208,36 @@ object CalcOptimizer {
   /* Normalize a given expression by replacing all Negs with {-1} and
     evaluating all constants in the product list. */
   def Normalize(expr: CalcExpr): CalcExpr = {
-    return rewrite(expr, Sum, Prod, Neg, Value)
+    expr match {
+      case CalcQuery(name, e) =>
+        return CalcQuery(name, rewrite(e, Sum, Prod, Neg, Value))
+      case _ =>
+        return rewrite(expr, Sum, Prod, Neg, Value)
+    }
+
   }
 
+  //Ring Fold
   def Fold[A](sumFun: List[A] => A, prodFun: List[A] => A, negFun: A => A, leafFun: CalcExpr => A, expr: CalcExpr): A = {
 
     def rcr(expr: CalcExpr): A = {
-      return Fold(sumFun, prodFun, negFun, leafFun, expr)
+
+      Fold(sumFun, prodFun, negFun, leafFun, expr)
     }
     expr match {
       case CalcSum(list)  => sumFun(list.map(x => rcr(x)))
       case CalcProd(list) => prodFun(list.map(x => rcr(x)))
-      case CalcNeg(e)     => Fold(sumFun, prodFun, negFun, leafFun, e)
-      case _              => leafFun(expr)
+      case CalcNeg(e)     => negFun(rcr(e))
+      case _ => {
+        leafFun(expr)
+      }
     }
   }
 
   def FoldOfVars(sum: List[List[VarT]] => List[VarT], prod: List[List[VarT]] => List[VarT], neg: List[VarT] => List[VarT], leaf: ArithExpr => List[VarT], expr: ArithExpr): List[VarT] = {
 
     def rcr(expr: ArithExpr): List[VarT] = {
+
       return FoldOfVars(sum, prod, neg, leaf, expr)
     }
 
@@ -200,6 +266,7 @@ object CalcOptimizer {
   def SchemaOfExpression(expr: CalcExpr): (List[VarT], List[VarT]) = {
 
     def sum(sumlist: List[(List[VarT], List[VarT])]): (List[VarT], List[VarT]) = {
+
       val (ivars, ovars) = sumlist.unzip
       val oldivars = ivars.foldLeft(List.empty[VarT])((acc, cur) => acc.toSet.union(cur.toSet).toList)
       val oldovars = ovars.foldLeft(List.empty[VarT])((acc, cur) => acc.toSet.union(cur.toSet).toList)
@@ -209,7 +276,8 @@ object CalcOptimizer {
     }
 
     def prod(prodList: List[(List[VarT], List[VarT])]): (List[VarT], List[VarT]) = {
-      return prodList.foldLeft((List.empty[VarT], List.empty[VarT]))((oldvars, newvars) => (oldvars._1.toSet.union(newvars._1.toSet.diff(oldvars._2.toSet)).toList, oldvars._2.toSet.union(newvars._2.toSet).diff(oldvars._1.toSet).toList))
+
+      return prodList.foldLeft((List.empty[VarT], List.empty[VarT]))((oldvars, newvars) => ((oldvars._1.toSet).union(newvars._1.toSet.diff(oldvars._2.toSet)).toList, (oldvars._2.toSet.union(newvars._2.toSet)).diff(oldvars._1.toSet).toList))
 
     }
 
@@ -223,6 +291,7 @@ object CalcOptimizer {
       }
 
       def aggsum(gbvars: List[VarT], subexp: CalcExpr): (List[VarT], List[VarT]) = {
+
         val (ivars, ovars) = SchemaOfExpression(subexp)
         val trimmedGbVars = ovars.toSet.intersect(gbvars.toSet).toList
         if (!(trimmedGbVars.equals(gbvars)))
@@ -235,11 +304,12 @@ object CalcOptimizer {
         case CalcValue(v)                   => (varsOfValue(v), List())
         case External(_, eins, eouts, _, _) => (eins, eouts)
         case AggSum(gbvars, subexp)         => { aggsum(gbvars, subexp) }
-        case Rel("Rel", _, rvars, _)        => (List.empty[VarT], rvars)
+        case Rel("Rel", _, rvars, _)        => (List(), rvars)
         case Cmp(_, v1, v2)                 => (varsOfValue(v1).toSet.union(varsOfValue(v2).toSet).toList, List())
         case CmpOrList(v, _)                => (varsOfValue(v), List())
         case Lift(target, subexpr)          => lift(target, subexpr)
         case CalcAST.Exists(expr)           => SchemaOfExpression(expr)
+        // case _                              => (List(), List())
 
       }
     }
@@ -248,10 +318,11 @@ object CalcOptimizer {
   }
   def rewrite(expression: CalcExpr, sumFunc: List[CalcExpr] => CalcExpr, prodFunc: List[CalcExpr] => CalcExpr, negFunc: CalcExpr => CalcExpr, leafFunc: CalcExpr => CalcExpr): CalcExpr = {
     expression match {
-      case CalcProd(list)  => prodFunc(list.foldLeft(List.empty[CalcExpr])((acc, cur) => rewrite(cur, sumFunc, prodFunc, negFunc, leafFunc) :: acc))
-      case CalcSum(list)   => sumFunc(list.foldLeft(List.empty[CalcExpr])((acc, cur) => rewrite(cur, sumFunc, prodFunc, negFunc, leafFunc) :: acc))
-      case CalcNeg(expr)   => rewrite(negFunc(expr), sumFunc, prodFunc, negFunc, leafFunc)
-      case AggSum(t, expr) => AggSum(t, rewrite(expr, sumFunc, prodFunc, negFunc, leafFunc))
+      case CalcQuery(name, expr) => CalcQuery(name, rewrite(expr, sumFunc, prodFunc, negFunc, leafFunc))
+      case CalcProd(list)        => prodFunc(list.foldLeft(List.empty[CalcExpr])((acc, cur) => acc :+ rewrite(cur, sumFunc, prodFunc, negFunc, leafFunc)))
+      case CalcSum(list)         => sumFunc(list.foldLeft(List.empty[CalcExpr])((acc, cur) => acc :+ rewrite(cur, sumFunc, prodFunc, negFunc, leafFunc)))
+      case CalcNeg(expr)         => rewrite(negFunc(expr), sumFunc, prodFunc, negFunc, leafFunc)
+      case AggSum(t, expr)       => AggSum(t, rewrite(expr, sumFunc, prodFunc, negFunc, leafFunc))
       case External(name, inps, outs, tp, meta) => meta match {
         case Some(expr) => External(name, inps, outs, tp, Some(rewrite(expr, sumFunc, prodFunc, negFunc, leafFunc)))
         case None       => expression
@@ -267,9 +338,11 @@ object CalcOptimizer {
     def leafNest(expr: CalcExpr): CalcExpr = {
 
       def aggsum(gbvars: List[VarT], unpsubterm: CalcExpr): CalcExpr = {
-        val subterm = rcr(unpsubterm)
+
+        val subterm = Normalize(rcr(unpsubterm))
         if ((SchemaOfExpression(subterm)_2).length == 0)
           return subterm
+
         subterm match {
           case CalcSum(list) => {
             val (sumivars, _) = SchemaOfExpression(subterm)
@@ -281,19 +354,25 @@ object CalcOptimizer {
             rewritten
           }
           case CalcProd(list) => {
-            val (unnested, nested) = list.foldLeft[(CalcExpr, CalcExpr)]((null, null))((acc, cur) => (if (commutes(acc._2, cur) && (SchemaOfExpression(cur)._2).toSet.subsetOf(gbvars.toSet)) (CalcProd(List(acc._1, cur)), acc._2) else (acc._1, CalcProd(List(acc._2, cur)))))
+
+            val (unnested, nested) = list.foldLeft[(CalcExpr, CalcExpr)](((CalcValue(ArithConst(IntLiteral(1)))), (CalcValue(ArithConst(IntLiteral(1))))))((acc, cur) => {
+              (if (commutes(acc._2, cur) && (SchemaOfExpression(cur)._2).toSet.subsetOf(gbvars.toSet)) (CalcProd(List(acc._1, cur)), acc._2) else (acc._1, CalcProd(List(acc._2, cur))))
+            })
             val unnestedivars = SchemaOfExpression(unnested)._1
             val newgbvars = (SchemaOfExpression(nested)._2).toSet.intersect(gbvars.toSet.union(unnestedivars.toSet)).toList
             CalcProd(List(unnested, AggSum(newgbvars, nested)))
 
           }
 
-          case AggSum(_, t) => AggSum(gbvars, t)
+          case AggSum(_, t) => {
+            AggSum(gbvars, t)
+          }
           case _ => {
-            if ((SchemaOfExpression(subterm)_2).toSet.subsetOf(gbvars.toSet))
+            if ((SchemaOfExpression(subterm)_2).toSet.subsetOf(gbvars.toSet)) {
               subterm
-            else
+            } else {
               AggSum(gbvars, subterm)
+            }
           }
         }
       }
@@ -310,7 +389,7 @@ object CalcOptimizer {
         }
 
         case Lift(v, term) => {
-          val nested = nestingRewrites(term)
+          val nested = rcr(term)
           val (nestedivars, nestedovars) = SchemaOfExpression(nested)
           if (nestedovars.contains(v))
             throw new Exception
@@ -326,13 +405,20 @@ object CalcOptimizer {
             Lift(v, nested)
         }
 
-        case _ => expr
+        case _ => {
+          expr
+        }
 
       }
     }
 
     def rcr(expr: CalcExpr): CalcExpr = {
-      Fold(Sum, Prod, Neg, leafNest, expr)
+      expr match {
+        case CalcQuery(name, e) =>
+          CalcQuery(name, Fold(Sum, Prod, Neg, leafNest, e))
+        case _ =>
+          Fold(Sum, Prod, Neg, leafNest, expr)
+      }
     }
 
     val rewrittenExpr = rcr(bigexpr)
