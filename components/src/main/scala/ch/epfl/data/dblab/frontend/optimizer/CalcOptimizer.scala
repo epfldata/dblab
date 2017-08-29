@@ -163,8 +163,10 @@ object CalcOptimizer {
 
     if (res == 0)
       return CalcValue(ArithConst(DoubleLiteral(0.0)))
-    else if (res == 1.0 && ncs.length > 0)
+    else if (res == 1.0 && ncs.length > 1)
       return CalcProd(ncs)
+    else if (res == 1.0 && ncs.length > 0)
+      return ncs.head
 
     else if (res == 1.0 && ncs.length == 0)
       return CalcValue(ArithConst(DoubleLiteral(1.0)))
@@ -188,7 +190,7 @@ object CalcOptimizer {
     if (elems.length > 0)
       return CalcSum(elems)
     else
-      return CalcSum(List(CalcValue(ArithConst(IntLiteral(0)))))
+      return CalcValue(ArithConst(IntLiteral(0)))
 
   }
 
@@ -207,8 +209,8 @@ object CalcOptimizer {
     evaluating all constants in the product list. */
   def Normalize(expr: CalcExpr): CalcExpr = {
     expr match {
-      case CalcQuery(_, e) =>
-        return rewrite(e, Sum, Prod, Neg, Value)
+      case CalcQuery(name, e) =>
+        return CalcQuery(name, rewrite(e, Sum, Prod, Neg, Value))
       case _ =>
         return rewrite(expr, Sum, Prod, Neg, Value)
     }
@@ -218,10 +220,8 @@ object CalcOptimizer {
   //Ring Fold
   def Fold[A](sumFun: List[A] => A, prodFun: List[A] => A, negFun: A => A, leafFun: CalcExpr => A, expr: CalcExpr): A = {
 
-    //println("fold" + expr)
     def rcr(expr: CalcExpr): A = {
 
-      //println("rcr fold" + expr)
       Fold(sumFun, prodFun, negFun, leafFun, expr)
     }
     expr match {
@@ -229,19 +229,15 @@ object CalcOptimizer {
       case CalcProd(list) => prodFun(list.map(x => rcr(x)))
       case CalcNeg(e)     => negFun(rcr(e))
       case _ => {
-        val t = leafFun(expr)
-        // println(t)
-        t
+        leafFun(expr)
       }
     }
   }
 
   def FoldOfVars(sum: List[List[VarT]] => List[VarT], prod: List[List[VarT]] => List[VarT], neg: List[VarT] => List[VarT], leaf: ArithExpr => List[VarT], expr: ArithExpr): List[VarT] = {
 
-    //println("foldofvars  " + expr)
     def rcr(expr: ArithExpr): List[VarT] = {
 
-      //println("rcr foldofvars  " + expr)
       return FoldOfVars(sum, prod, neg, leaf, expr)
     }
 
@@ -254,8 +250,6 @@ object CalcOptimizer {
   }
 
   def varsOfValue(expr: ArithExpr): List[VarT] = {
-
-    //println("varsofvalue  " + expr)
     def multiunion(list: List[List[VarT]]): List[VarT] = {
       return list.foldLeft(List.empty[VarT])((acc, cur) => acc.toSet.union(cur.toSet).toList)
     }
@@ -271,11 +265,7 @@ object CalcOptimizer {
   }
   def SchemaOfExpression(expr: CalcExpr): (List[VarT], List[VarT]) = {
 
-    //println("Schema  " + expr)
-
     def sum(sumlist: List[(List[VarT], List[VarT])]): (List[VarT], List[VarT]) = {
-
-      //println("sum schema  " + sumlist)
 
       val (ivars, ovars) = sumlist.unzip
       val oldivars = ivars.foldLeft(List.empty[VarT])((acc, cur) => acc.toSet.union(cur.toSet).toList)
@@ -287,7 +277,6 @@ object CalcOptimizer {
 
     def prod(prodList: List[(List[VarT], List[VarT])]): (List[VarT], List[VarT]) = {
 
-      //println("prod schema  " + prodList)
       return prodList.foldLeft((List.empty[VarT], List.empty[VarT]))((oldvars, newvars) => ((oldvars._1.toSet).union(newvars._1.toSet.diff(oldvars._2.toSet)).toList, (oldvars._2.toSet.union(newvars._2.toSet)).diff(oldvars._1.toSet).toList))
 
     }
@@ -296,7 +285,6 @@ object CalcOptimizer {
 
     def leafSch(calcExpr: CalcExpr): (List[VarT], List[VarT]) = {
 
-      //println("leaf schema  " + calcExpr)
       def lift(target: VarT, expr: CalcExpr): (List[VarT], List[VarT]) = {
         val (ivars, ovars) = SchemaOfExpression(expr)
         return (ivars.toSet.union(ovars.toSet).toList, List(target))
@@ -304,7 +292,6 @@ object CalcOptimizer {
 
       def aggsum(gbvars: List[VarT], subexp: CalcExpr): (List[VarT], List[VarT]) = {
 
-        //println("aggsum schema  " + gbvars + subexp)
         val (ivars, ovars) = SchemaOfExpression(subexp)
         val trimmedGbVars = ovars.toSet.intersect(gbvars.toSet).toList
         if (!(trimmedGbVars.equals(gbvars)))
@@ -348,20 +335,16 @@ object CalcOptimizer {
 
   def nestingRewrites(bigexpr: CalcExpr): CalcExpr = {
 
-    // println("nesting  " + prettyprint(bigexpr))
-
     def leafNest(expr: CalcExpr): CalcExpr = {
 
       def aggsum(gbvars: List[VarT], unpsubterm: CalcExpr): CalcExpr = {
 
-        //  println("aggsum nest  " + prettyprint(unpsubterm))
-        val subterm = rcr(unpsubterm)
+        val subterm = Normalize(rcr(unpsubterm))
         if ((SchemaOfExpression(subterm)_2).length == 0)
           return subterm
 
         subterm match {
           case CalcSum(list) => {
-            //println("SUM####")
             val (sumivars, _) = SchemaOfExpression(subterm)
             val rewritten = Sum(list.map(term => {
               val (_, termovars) = SchemaOfExpression(term)
@@ -373,43 +356,21 @@ object CalcOptimizer {
           case CalcProd(list) => {
 
             val (unnested, nested) = list.foldLeft[(CalcExpr, CalcExpr)](((CalcValue(ArithConst(IntLiteral(1)))), (CalcValue(ArithConst(IntLiteral(1))))))((acc, cur) => {
-              //              println("########")
-              //              println(prettyprint(acc._2))
-              //              println(prettyprint(cur))
-              //              println("ina commute" + commutes(acc._2, cur) + " " + (SchemaOfExpression(cur)._2).toSet.subsetOf(gbvars.toSet))
               (if (commutes(acc._2, cur) && (SchemaOfExpression(cur)._2).toSet.subsetOf(gbvars.toSet)) (CalcProd(List(acc._1, cur)), acc._2) else (acc._1, CalcProd(List(acc._2, cur))))
             })
             val unnestedivars = SchemaOfExpression(unnested)._1
             val newgbvars = (SchemaOfExpression(nested)._2).toSet.intersect(gbvars.toSet.union(unnestedivars.toSet)).toList
-            //
-            //            println("###########################\n")
-            //            println(prettyprint(unnested))
-            //            println(prettyprint(nested))
-            //
-            //            println("DEBUG:\n Nesting rewrites lifting out:\n")
-            //            println(prettyprint(unnested))
-            //            println("\n\tand keeping in:\n")
-            //            println(prettyprint(nested))
-            //            println("\n\twith output variables : ")
-            //            println(SchemaOfExpression(nested)_2)
-            //            println("\n\tMaking the new group-by variables:\n")
-            //            println(newgbvars)
-
             CalcProd(List(unnested, AggSum(newgbvars, nested)))
 
           }
 
           case AggSum(_, t) => {
-            // println("RESIDAM" + gbvars)
             AggSum(gbvars, t)
           }
           case _ => {
-            //   println("WTF")
             if ((SchemaOfExpression(subterm)_2).toSet.subsetOf(gbvars.toSet)) {
-              //    println("IF " + subterm)
               subterm
             } else {
-              //    println("ELSE" + prettyprint(AggSum(gbvars, subterm)))
               AggSum(gbvars, subterm)
             }
           }
@@ -452,8 +413,6 @@ object CalcOptimizer {
     }
 
     def rcr(expr: CalcExpr): CalcExpr = {
-
-      //println("rcr nesting  " + expr)
       expr match {
         case CalcQuery(name, e) =>
           CalcQuery(name, Fold(Sum, Prod, Neg, leafNest, e))
