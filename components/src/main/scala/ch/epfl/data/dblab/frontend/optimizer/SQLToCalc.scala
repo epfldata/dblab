@@ -89,13 +89,6 @@ object SQLToCalc {
     val noagg_calc = CalcProd(noagg_terms)
     val new_gb_vars = noagg_vars ++ gb_vars.flatMap(f => if (!noagg_tgts.exists({
       case (tgt_name, tgt_expr) =>
-//        println(tgt_expr.asInstanceOf[FieldIdent].qualifier)
-//        println(tgt_expr.asInstanceOf[FieldIdent].name)
-//        println(tgt_expr.asInstanceOf[FieldIdent].symbol)
-//        println(f.qualifier)
-//        println(f.name)
-//        println(f.symbol)
-//        println(f.equals(tgt_expr.asInstanceOf[FieldIdent]))
         if (f.qualifier.isEmpty && tgt_name == f.name) true
         //        else if (tgt_expr.equals(f)) true // TODO : type is not inferred yet
         else if (tgt_expr.asInstanceOf[FieldIdent].qualifier.equals(f.qualifier) &&
@@ -240,9 +233,9 @@ object SQLToCalc {
         mk_not_exists(mk_aggsum(List(), q_calc_unlifted))
       //TODO failwith
 
-      case Some(i: In) =>
-        val expr = i.elem
-        val l = i.set.toList
+      case Some(i: InList) =>
+        val expr = i.e
+        val l = i.list
         val t = IntType // TODO change with the commented line
         //val t = sql_expr_type(None,expr,tables,sources)
         val v = tmp_var("in", t)

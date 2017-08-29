@@ -1,4 +1,4 @@
--- scanner error
+-- namer should changes in to exists
 
 CREATE STREAM R(A int, B int)
 FROM FILE '../../experiments/data/simple/tiny/r.dat' LINE DELIMITED

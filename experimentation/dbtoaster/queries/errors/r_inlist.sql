@@ -1,4 +1,4 @@
--- scanner error
+-- namer should change A to R.A
 
 CREATE STREAM R(A int, B int) 
   FROM FILE '../../experiments/data/simple/tiny/r.dat' LINE DELIMITED csv;

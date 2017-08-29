@@ -212,13 +212,13 @@ object SQLAST {
   case class UnaryMinus(expr: Expression) extends UnaryOperator
   case class Exists(expr: SelectStatement) extends UnaryOperator
 
-  case class In(elem: Expression, set: Seq[LiteralExpression]) extends Expression //TODO set was a seq of Expression
+  case class In(elem: Expression, set: Seq[Expression]) extends Expression //TODO set was a seq of Expression
   case class Case(cond: Expression, thenp: Expression, elsep: Expression) extends Expression
   case class Distinct(e: Expression) extends Expression
   case class AllExp(e: SelectStatement) extends Expression
   case class SomeExp(e: SelectStatement) extends Expression
   case class ExtractExp(first: String, second: String) extends Expression
-  case class InList(e: Expression, list: List[Expression]) extends Expression
+  case class InList(e: Expression, list: List[LiteralExpression]) extends Expression
 
   case class FunctionExp(name: String, inputs: List[Expression]) extends Expression
 
