@@ -243,8 +243,8 @@ object SQLParser extends StandardTokenParsers {
     case (acc, ((">", right: Expression)))                  => GreaterThan(acc, right)
     case (acc, ((">=", right: Expression)))                 => GreaterOrEqual(acc, right)
     case (acc, (("BETWEEN", l: Expression, r: Expression))) => And(GreaterOrEqual(acc, l), LessOrEqual(acc, r))
-    case (acc, (("IN", e: Seq[_])))                         => In(acc, e.asInstanceOf[Seq[Expression]])
-    case (acc, (("IN", s: SelectStatement)))                => In(acc, Seq(s))
+    case (acc, (("IN", e: Seq[_])))                         => In(acc, e.asInstanceOf[Seq[LiteralExpression]])
+    //    case (acc, (("IN", s: SelectStatement)))                => In(acc, Seq(s)) //TODO generalize
     case (acc, (("LIKE", e: Expression)))                   => Like(acc, e)
     case (acc, (("NOT", e: Serializable)))                  => Not(exprToSQLNode(acc, e))
     case (acc, (("||", e: Expression)))                     => StringConcat(acc, e)

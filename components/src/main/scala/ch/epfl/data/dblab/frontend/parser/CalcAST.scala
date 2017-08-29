@@ -32,7 +32,7 @@ object CalcAST {
   case class Rel(tag: String, name: String, vars: List[VarT], rest: String) extends CalcExpr
   case class Cmp(cmp: CmpTag, first: ArithExpr, second: ArithExpr) extends CalcExpr
   case class External(name: String, inps: List[VarT], outs: List[VarT], tp: Tpe, meta: Option[CalcExpr]) extends CalcExpr
-  case class CmpOrList(v: ArithExpr, consts: List[SQLAST.LiteralExpression]) extends CalcExpr
+  case class CmpOrList(v: ArithExpr, consts: List[ArithConst]) extends CalcExpr
   case class Lift(vr: VarT, expr: CalcExpr) extends CalcExpr
   case class Exists(term: CalcExpr) extends CalcExpr
   case class CalcValue(v: ArithExpr) extends CalcExpr
