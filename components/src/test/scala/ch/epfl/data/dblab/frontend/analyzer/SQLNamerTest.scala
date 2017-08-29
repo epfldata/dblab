@@ -27,6 +27,13 @@ class SQLNamerTest extends FlatSpec {
     namedQuery
   }
 
+  def noNaturalJoin(rel: Relation): Unit = rel match {
+    case Join(_, _, NaturalJoin, _) => throw new Exception("A natural join still exists")
+    case Join(l, r, _, _) =>
+      noNaturalJoin(l); noNaturalJoin(r)
+    case _ =>
+  }
+
   def unnamedCount(queryExpr: Expression): Int = {
     queryExpr match {
       case st: SelectStatement =>
@@ -39,6 +46,7 @@ class SQLNamerTest extends FlatSpec {
             }).sum
         }
         val countTarget = st.joinTree.map(_.extractSubqueries.map(x => unnamedCount(x.subquery)).sum).getOrElse(0)
+        st.joinTree.foreach(noNaturalJoin)
         val countWhere = st.where match {
           case None    => 0
           case Some(v) => unnamedCount(v)
@@ -83,6 +91,20 @@ class SQLNamerTest extends FlatSpec {
     val file = new java.io.File(s"$simpleQueriesFolder/r_simplenest.sql")
     val namedQuery = parseAndNameQuery(file)
     // println(namedQuery)
+    unnamedCount(namedQuery) should be(0)
+  }
+
+  "SQLNamer" should "infer the names correctly in renaming" in {
+    val file = new java.io.File(s"$simpleQueriesFolder/r_nestedrename.sql")
+    val namedQuery = parseAndNameQuery(file)
+    // println(namedQuery)
+    unnamedCount(namedQuery) should be(0)
+  }
+
+  "SQLNamer" should "rewrite correctly natural joins" in {
+    val file = new java.io.File(s"$simpleQueriesFolder/rs.sql")
+    val namedQuery = parseAndNameQuery(file)
+    println(namedQuery)
     unnamedCount(namedQuery) should be(0)
   }
 
