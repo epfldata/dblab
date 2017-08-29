@@ -125,17 +125,23 @@ object CalcRules {
     }
   }
 
-  //TODO: if not aggsum1
+  //TODO make it more clear
   case object AggSum3 extends Rule("Agg3") {
     override def generate(node: Node): Option[Node] = node match {
       case AggSum(gbvars, CalcProd(list)) => {
-        val (unnested, nested) = list.foldLeft[(CalcExpr, CalcExpr)](((CalcValue(ArithConst(IntLiteral(1)))), (CalcValue(ArithConst(IntLiteral(1))))))((acc, cur) => {
-          (if (commutes(acc._2, cur) && (SchemaOfExpression(cur)._2).toSet.subsetOf(gbvars.toSet)) (CalcProd(List(acc._1, cur)), acc._2) else (acc._1, CalcProd(List(acc._2, cur))))
+        val calcOne = CalcValue(ArithConst(IntLiteral(1)))
+        def prod(e1: CalcExpr, e2: CalcExpr): CalcExpr = (e1, e2) match {
+          case (_, _) if e1 == calcOne => e2
+          case (_, CalcProd(l2))       => CalcProd(e1 :: l2)
+          case _                       => CalcProd(List(e1, e2))
+        }
+        val (unnested, nested) = list.foldLeft[(CalcExpr, CalcExpr)]((calcOne, calcOne))((acc, cur) => {
+          (if (commutes(acc._2, cur) && (SchemaOfExpression(cur)._2).toSet.subsetOf(gbvars.toSet)) (prod(acc._1, cur), acc._2) else (acc._1, prod(acc._2, cur)))
         })
         val unnestedivars = SchemaOfExpression(unnested)._1
         val newgbvars = (SchemaOfExpression(nested)._2).toSet.intersect(gbvars.toSet.union(unnestedivars.toSet)).toList
-        val res = CalcProd(List(unnested, AggSum(newgbvars, nested)))
-        if (res.equals(AggSum(gbvars, CalcProd(list))))
+        val res = prod(unnested, AggSum(newgbvars, nested))
+        if (AggSum(newgbvars, nested).equals(AggSum(gbvars, CalcProd(list))))
           None
         else
           Some(res)
@@ -172,7 +178,7 @@ object CalcRules {
     }
   }
 
-  case object exists extends Rule("Exists0") {
+  case object Exists0 extends Rule("Exists0") {
     override def generate(node: Node): Option[Node] = node match {
       case CalcAST.Exists(CalcValue(ArithConst(IntLiteral(0)))) => Some(CalcValue(ArithConst(IntLiteral(0))))
       case CalcAST.Exists(CalcValue(ArithConst(IntLiteral(_)))) => Some(CalcValue(ArithConst(IntLiteral(1))))
@@ -180,7 +186,7 @@ object CalcRules {
     }
   }
 
-  case object lift extends Rule("Lift0") {
+  case object Lift0 extends Rule("Lift0") {
     override def generate(node: Node): Option[Node] = node match {
       case Lift(v, nested) => {
         val (nestedivars, nestedovars) = SchemaOfExpression(nested)
@@ -197,6 +203,7 @@ object CalcRules {
         } else
           None
       }
+      case _ => None
     }
   }
 

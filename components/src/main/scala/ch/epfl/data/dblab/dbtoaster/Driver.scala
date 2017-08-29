@@ -44,6 +44,10 @@ object Driver {
       println("BEFORE: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${prettyprint(cur)}"))
       // println("MIDDLE")
       println("AFTER: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(optimizer.Normalize(optimizer.nestingRewrites(cur)))}"))
+      import CalcRules._
+      val allRules = List(Agg0, Prod0, Prod1, Sum0, Sum1, AggSum1, AggSum2, AggSum3, AggSum4, AggSum5, Exists0, Lift0)
+      val ruleBasedOptimizer = new CalcRuleBasedTransformer(allRules)
+      println("AFTER RB: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(ruleBasedOptimizer(cur))}"))
       //      val sqlParserTree = SQLParser.parseStream(scala.io.Source.fromFile(q).mkString)
       //      val sqlProgram = sqlParserTree.asInstanceOf[IncludeStatement]
       //      val tables = sqlProgram.streams.toList.map(x => x.asInstanceOf[CreateStream]) // ok ?
