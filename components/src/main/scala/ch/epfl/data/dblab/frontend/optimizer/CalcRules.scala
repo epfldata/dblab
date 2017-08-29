@@ -3,7 +3,8 @@ package dblab
 package frontend
 package optimizer
 
-import ch.epfl.data.dblab.frontend.optimizer.CalcOptimizer.{ SchemaOfExpression }
+import ch.epfl.data.dblab.frontend.optimizer.CalcOptimizer.{ SchemaOfExpression, commutes, typeOfExpression }
+import ch.epfl.data.dblab.frontend.parser.CalcAST
 import parser.CalcAST._
 import parser.SQLAST._
 import sc.pardis.ast._
@@ -104,6 +105,7 @@ object CalcRules {
     }
   }
 
+  //TODO: if not aggsum1
   case object AggSum2 extends Rule("Agg2") {
     override def generate(node: Node): Option[Node] = node match {
       case AggSum(gbvars, CalcSum(list)) => {
@@ -120,6 +122,81 @@ object CalcRules {
       }
       case _ => None
 
+    }
+  }
+
+  //TODO: if not aggsum1
+  case object AggSum3 extends Rule("Agg3") {
+    override def generate(node: Node): Option[Node] = node match {
+      case AggSum(gbvars, CalcProd(list)) => {
+        val (unnested, nested) = list.foldLeft[(CalcExpr, CalcExpr)](((CalcValue(ArithConst(IntLiteral(1)))), (CalcValue(ArithConst(IntLiteral(1))))))((acc, cur) => {
+          (if (commutes(acc._2, cur) && (SchemaOfExpression(cur)._2).toSet.subsetOf(gbvars.toSet)) (CalcProd(List(acc._1, cur)), acc._2) else (acc._1, CalcProd(List(acc._2, cur))))
+        })
+        val unnestedivars = SchemaOfExpression(unnested)._1
+        val newgbvars = (SchemaOfExpression(nested)._2).toSet.intersect(gbvars.toSet.union(unnestedivars.toSet)).toList
+        val res = CalcProd(List(unnested, AggSum(newgbvars, nested)))
+        if (res.equals(AggSum(gbvars, CalcProd(list))))
+          None
+        else
+          Some(res)
+      }
+      case _ => None
+    }
+  }
+
+  case object AggSum4 extends Rule("Agg4") {
+    override def generate(node: Node): Option[Node] = node match {
+      case AggSum(_, CalcProd(_)) => None
+      case AggSum(_, CalcProd(_)) => None
+      case AggSum(gbvars, AggSum(_, t)) => {
+        //TODO: if not aggsum1
+        Some(AggSum(gbvars, t))
+      }
+      case _ => None
+    }
+  }
+
+  case object AggSum5 extends Rule("Agg5") {
+    override def generate(node: Node): Option[Node] = node match {
+      case AggSum(_, CalcProd(_))  => None
+      case AggSum(_, CalcProd(_))  => None
+      case AggSum(_, AggSum(_, _)) => None
+      case AggSum(gbvars, AggSum(name, t)) => {
+        if ((SchemaOfExpression(AggSum(name, t)) _2).toSet.subsetOf(gbvars.toSet))
+          Some(AggSum(name, t))
+        else
+          None
+
+      }
+      case _ => None
+    }
+  }
+
+  case object exists extends Rule("Exists0") {
+    override def generate(node: Node): Option[Node] = node match {
+      case CalcAST.Exists(CalcValue(ArithConst(IntLiteral(0)))) => Some(CalcValue(ArithConst(IntLiteral(0))))
+      case CalcAST.Exists(CalcValue(ArithConst(IntLiteral(_)))) => Some(CalcValue(ArithConst(IntLiteral(1))))
+      case _ => None
+    }
+  }
+
+  case object lift extends Rule("Lift0") {
+    override def generate(node: Node): Option[Node] = node match {
+      case Lift(v, nested) => {
+        val (nestedivars, nestedovars) = SchemaOfExpression(nested)
+        if (nestedovars.contains(v))
+          None
+        else if (nestedivars.contains(v)) {
+          nested match {
+            case CalcValue(cmp) => Some(Cmp(Eq, ArithVar(v), cmp))
+            case _ => {
+              val tmpVar = getTmpVar(typeOfExpression(nested))
+              Some(CalcProd(List(Lift(tmpVar, nested), Cmp(Eq, ArithVar(v), ArithVar(tmpVar)))))
+            }
+          }
+        } else
+          None
+      }
     }
   }
 
