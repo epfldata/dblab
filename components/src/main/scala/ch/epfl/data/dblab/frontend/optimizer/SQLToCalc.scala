@@ -107,12 +107,23 @@ object SQLToCalc {
         case _: Sum =>
           println(prettyprint(noagg_calc))
           mk_aggsum(new_gb_vars, CalcProd(List(source_calc, cond_calc, agg_calc, noagg_calc)))
+
         case _: CountAll =>
           mk_aggsum(new_gb_vars, CalcProd(List(source_calc, cond_calc, noagg_calc)))
-        //        case CountExpr(Distinct(fields)) => // TODO fields is a list in ocaml but an expression in scala
-        //          mk_aggsum(new_gb_vars, mk_exists(mk_aggsum(  new_gb_vars.union(fields.map(var_of_sql_var())) , )))
+
+        case CountExpr(Distinct(StarExpression(x))) =>
+          mk_aggsum(new_gb_vars, mk_exists(CalcProd(List(source_calc, cond_calc, noagg_calc))))
+
+        case CountExpr(Distinct(fields)) => // TODO fields is a list in ocaml but an expression in scala
+          println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+          val f = fields.asInstanceOf[FieldIdent]
+          mk_aggsum(new_gb_vars, mk_exists(mk_aggsum(
+            new_gb_vars.union(List(var_of_sql_var(f.qualifier.get, f.name, "INTEGER"))), //TODO type infer
+            CalcProd(List(source_calc, cond_calc, noagg_calc)))))
+
         case _: CountExpr =>
           mk_aggsum(new_gb_vars, mk_exists(CalcProd(List(source_calc, cond_calc, noagg_calc))))
+
         case _: Avg =>
           val count_var = tmp_var("average_count", IntType)
           mk_aggsum(new_gb_vars, CalcProd(List(
@@ -324,6 +335,16 @@ object SQLToCalc {
               case Some(mq) => mq(a, rcr_e(agg_expr, Some(true)))
               //case None =>  //TODO failwith
             }, false)
+          case CountExpr(Distinct(StarExpression(c))) =>
+            (materialize_query match {
+              case Some(mq) => mq(a, rcr_e(IntLiteral(1), Some(true)))
+              //case None =>  //TODO failwith
+            }, false)
+          case CountExpr(Distinct(d)) =>
+            (materialize_query match {
+              case Some(mq) => mq(a, rcr_e(d, Some(true)))
+              //case None =>  //TODO failwith
+            }, false)
           case c: CountExpr =>
             val agg_expr = c.expr
             (materialize_query match {
@@ -477,6 +498,7 @@ object SQLToCalc {
   // ********SQL********* :
   def is_agg_expr(expr: Expression): Boolean = {
     // There is a isAggregateOpExpr in scala but seems different
+    println(expr)
     expr match {
       case _: LiteralExpression => false
       case _: FieldIdent        => false
@@ -485,6 +507,7 @@ object SQLToCalc {
       case _: Aggregation       => true
       case f: FunctionExp       => f.inputs.map(x => is_agg_expr(x)).foldLeft(false)((sum, cur) => sum || cur)
       case s: SelectStatement   => false
+      //      case d: Distinct          => false // its not in ocaml
       //TODO nested_q , cases in Ocaml and others in Scala
     }
   }
@@ -671,5 +694,4 @@ object SQLToCalc {
     }
     iterate(List(), l)
   }
-
 }

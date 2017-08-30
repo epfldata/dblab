@@ -53,9 +53,22 @@ object Driver {
       val query = sqlProgram.body
       println(query)
       val schema = ddlInterpreter.interpret(UseSchema("DBToaster") :: tables)
-      val namedQuery = new SQLNamer(schema).nameQuery(query)
-      val calc_expr = SQLToCalc.CalcOfQuery(None, tables, namedQuery)
-      calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + CalcAST.prettyprint(tgt_calc) }).foreach(println)
+
+      def listOfQueries(q: TopLevelStatement): List[TopLevelStatement] = {
+        q match {
+          case u: UnionIntersectSequence if u.connectionType.equals(SEQUENCE) =>
+            List(u.top) ++ listOfQueries(u.bottom)
+          case x => List(x)
+        }
+      }
+
+      val queries = listOfQueries(query)
+
+      queries.foreach({ q =>
+        val namedQuery = new SQLNamer(schema).nameQuery(q)
+        val calc_expr = SQLToCalc.CalcOfQuery(None, tables, namedQuery)
+        calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + CalcAST.prettyprint(tgt_calc) }).foreach(println)
+      })
       //      calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + tgt_calc }).foreach(println) // TODO this is for test
       //      if (Config.debugQueryPlan)
       //        System.out.println("Original SQL Parser Tree:\n" + sqlParserTree + "\n\n")
