@@ -1,0 +1,3 @@
+COUNT: 
+(EXISTS( AggSum([S_A], (R(R_A, R_B) * (S_A ^= R_A)))) *
+  (S_C ^= AggSum([S_A], (R(R_A, R_B) * (S_A ^= R_A)))) * {S_A = 3})

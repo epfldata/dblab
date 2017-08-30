@@ -1,3 +1,7 @@
-COUNT_3:
+QUERY_1_COUNT: 
+({2 > 3} * (A ^= 1))
+QUERY_2_COUNT: 
+AggSum([B], ((S_A ^= 1) * {S_A = 2} * (B ^= 1)))
+QUERY_3_COUNT: 
 AggSum([C], 
   ((S_A ^= 1) * EXISTS( AggSum([], ({S_A = 2} * (unused ^= 1)))) * (C ^= 1)))

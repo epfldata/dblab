@@ -30,20 +30,35 @@ trait RecursiveTransformer extends Transformer {
   }
 
   def pprint(node: ThisNode): String
+}
 
+trait TopDownRecursiveTransformer extends RecursiveTransformer {
   abstract override def transform(node: ThisNode): ThisNode = node match {
     case ApplicableRule(rule) => {
       val nnode = rule.generate(node).get.asInstanceOf[ThisNode]
-      // println(s"rule $rule applicable to\n>>${pprint(node)}\n<<${pprint(nnode)}")
+      //      println(s"rule $rule applicable to\n>>${pprint(node)}\n<<${pprint(nnode)}")
       super.transform(nnode)
     }
     case _ => super.transform(node)
   }
 }
 
+trait BottomUpRecursiveTransformer extends RecursiveTransformer {
+
+  abstract override def transform(node: ThisNode): ThisNode = super.transform(node) match {
+    case x @ ApplicableRule(rule) => {
+      val nnode = rule.generate(x).get.asInstanceOf[ThisNode]
+      //      println(s"rule $rule applicable to\n>>${pprint(x)}\n<<${pprint(nnode)}")
+      nnode
+
+    }
+    case x => x
+  }
+}
+
 class CalcRuleBasedTransformer(rules: List[Rule])
   extends CalcTransformer
-  with RecursiveTransformer
+  with BottomUpRecursiveTransformer
   with FixedPointTransformer {
   def definedRules = rules
 

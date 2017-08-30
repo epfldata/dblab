@@ -157,21 +157,30 @@ object CalcOptimizer {
     if (cs.length > 0)
       res = cs.foldLeft(1.0)((acc, cur) => (acc * cur))
 
-    if (res == 0)
-      return CalcValue(ArithConst(DoubleLiteral(0.0)))
+    val result = if (res == 0)
+      CalcValue(ArithConst(DoubleLiteral(0.0)))
     else if (res == 1.0 && ncs.length > 1)
-      return CalcProd(ncs)
+      CalcProd(ncs)
     else if (res == 1.0 && ncs.length > 0)
-      return ncs.head
+      ncs.head
 
     else if (res == 1.0 && ncs.length == 0)
-      return CalcValue(ArithConst(DoubleLiteral(1.0)))
+      CalcValue(ArithConst(DoubleLiteral(1.0)))
 
-    if (ncs.length > 0)
-      return CalcProd(CalcValue(ArithConst(DoubleLiteral(res))) :: ncs)
+    else if (ncs.length > 0)
+      CalcProd(CalcValue(ArithConst(DoubleLiteral(res))) :: ncs)
     else
-      return CalcValue(ArithConst(DoubleLiteral(res)))
+      CalcValue(ArithConst(DoubleLiteral(res)))
 
+    result match {
+      case CalcProd(list) =>
+        val newExprs = list.flatMap(x => x match {
+          case CalcProd(l) => l
+          case _           => List(x)
+        })
+        CalcProd(newExprs)
+      case _ => result
+    }
   }
 
   def Sum(exprs: List[CalcExpr]): CalcExpr = {
@@ -336,6 +345,7 @@ object CalcOptimizer {
 
       def aggsum(gbvars: List[VarT], unpsubterm: CalcExpr): CalcExpr = {
         val subterm = Normalize(rcr(unpsubterm))
+        //        val subterm = rcr(unpsubterm)
         if ((SchemaOfExpression(subterm)_2).length == 0)
           return subterm
 
@@ -357,7 +367,6 @@ object CalcOptimizer {
             val unnestedivars = SchemaOfExpression(unnested)._1
             val newgbvars = (SchemaOfExpression(nested)._2).toSet.intersect(gbvars.toSet.union(unnestedivars.toSet)).toList
             CalcProd(List(unnested, AggSum(newgbvars, nested)))
-
           }
 
           case AggSum(_, t) => {

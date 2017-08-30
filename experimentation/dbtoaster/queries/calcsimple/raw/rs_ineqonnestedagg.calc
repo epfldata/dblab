@@ -1,0 +1,5 @@
+COUNT: 
+AggSum([R_A], 
+  (R(R_A, R_B) * EXISTS( AggSum([S_B], (S(S2_B, S2_C) * (S_B ^= S2_B)))) *
+    (S_CNT ^= AggSum([S_B], (S(S2_B, S2_C) * (S_B ^= S2_B)))) * {R_B = S_B} *
+    {R_A < S_CNT}))
