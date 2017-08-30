@@ -83,17 +83,19 @@ object SQLToCalc {
         }
     }).unzip
 
-    println("NO Aggregate :\n\n")
-    println(noagg_vars)
+    println("gb vars  :\n")
+    println(gb_vars)
 
     val noagg_calc = CalcProd(noagg_terms)
     val new_gb_vars = noagg_vars ++ gb_vars.flatMap(f => if (!noagg_tgts.exists({
       case (tgt_name, tgt_expr) =>
         if (f.qualifier.isEmpty && tgt_name == f.name) true
-        else if (tgt_expr.equals(f)) true
+        //        else if (tgt_expr.equals(f)) true // TODO : type is not inferred yet
+        else if (tgt_expr.asInstanceOf[FieldIdent].qualifier.equals(f.qualifier) &&
+          tgt_expr.asInstanceOf[FieldIdent].name.equals(f.name)) true
         else false
     })) {
-      println(f)
+      //      println(f)
       //      List(var_of_sql_var(f.qualifier.get, f.name, f.symbol match { case Symbol(b) => b }))
       List(var_of_sql_var(f.qualifier.get, f.name, "INTEGER")) // TODO type
     } else List())
@@ -105,16 +107,20 @@ object SQLToCalc {
           println(prettyprint(noagg_calc))
           mk_aggsum(new_gb_vars, CalcProd(List(source_calc, cond_calc, agg_calc, noagg_calc)))
         case _: CountAll =>
-          //          println("8888888888888888888888888 : ")
-          //          println(new_gb_vars)
-          //          println(source_calc)
-          //          println(cond_calc)
-          //          println(noagg_calc)
           mk_aggsum(new_gb_vars, CalcProd(List(source_calc, cond_calc, noagg_calc)))
+        //        case CountExpr(Distinct(fields)) => // TODO fields is a list in ocaml but an expression in scala
+        //          mk_aggsum(new_gb_vars, mk_exists(mk_aggsum(  new_gb_vars.union(fields.map(var_of_sql_var())) , )))
         case _: CountExpr =>
           mk_aggsum(new_gb_vars, mk_exists(CalcProd(List(source_calc, cond_calc, noagg_calc))))
-
-        //TODO other cases
+        case _: Avg =>
+          val count_var = tmp_var("average_count", IntType)
+          mk_aggsum(new_gb_vars, CalcProd(List(
+            mk_aggsum(new_gb_vars, CalcProd(List(source_calc, cond_calc, agg_calc, noagg_calc))),
+            Lift(count_var, mk_aggsum(new_gb_vars, CalcProd(List(source_calc, cond_calc, noagg_calc)))),
+            CalcProd(List(
+              CalcValue(ArithFunc("/", List(ArithFunc("listmax", List(ArithConst(IntLiteral(1)),
+                ArithVar(count_var)), IntType)), FloatType)),
+              Cmp(Neq, ArithConst(IntLiteral(0)), ArithVar(count_var)))))))
       }
       println("  r  e  t : ")
       println(prettyprint(ret))
@@ -175,6 +181,10 @@ object SQLToCalc {
       calc_of_condition(tables, sources, c)
     }
 
+    def rcr_et(tgt_var: Option[VarT], e: Expression): CalcExpr = {
+      calc_of_sql_expr(tgt_var, None, tables, sources, e)
+    }
+
     //TODO push_down_nots
     cond match {
       case Some(a: And) =>
@@ -223,6 +233,22 @@ object SQLToCalc {
         mk_not_exists(mk_aggsum(List(), q_calc_unlifted))
       //TODO failwith
 
+      case Some(i: InList) =>
+        val expr = i.e
+        val l = i.list
+        val t = IntType // TODO change with the commented line
+        //val t = sql_expr_type(None,expr,tables,sources)
+        val v = tmp_var("in", t)
+        val (expr_val, expr_calc) = lower_if_value(rcr_et(Some(v), expr))
+        l.distinct match {
+          case List() =>
+            CalcValue(ArithConst(IntLiteral(0)))
+          case hd :: List() =>
+            CalcProd(List(expr_calc, Cmp(Eq, ArithConst(hd), expr_val))) //
+          case ul =>
+            CalcProd(List(expr_calc, CmpOrList(expr_val, ul.map(ArithConst))))
+
+        }
       case _ => CalcValue(ArithConst(IntLiteral(1)))
     }
     // TODO rest cases
@@ -280,13 +306,25 @@ object SQLToCalc {
             else List(CalcProd(List(ce1, e2_calc)))
               ++ List(CalcValue(ArithFunc("/", List(e2_val), FloatType))))), false)
 
-          //TODO other cases
+          //TODO subtract case
         }
 
       case a: Aggregation =>
         a match {
           case s: Sum =>
             val agg_expr = s.expr
+            (materialize_query match {
+              case Some(mq) => mq(a, rcr_e(agg_expr, Some(true)))
+              //case None =>  //TODO failwith
+            }, false)
+          case a: Avg =>
+            val agg_expr = a.expr
+            (materialize_query match {
+              case Some(mq) => mq(a, rcr_e(agg_expr, Some(true)))
+              //case None =>  //TODO failwith
+            }, false)
+          case c: CountExpr =>
+            val agg_expr = c.expr
             (materialize_query match {
               case Some(mq) => mq(a, rcr_e(agg_expr, Some(true)))
               //case None =>  //TODO failwith
@@ -309,6 +347,17 @@ object SQLToCalc {
         else
           (CalcProd(List(calc_of_condition(tables, sources, q.where),
             rcr_e(q.projections.extractExpretions().head._1))), false)
+      //      case f: FunctionExp =>
+      //        val fn = f.name
+      //        val fargs = f.inputs
+      //        val ( lifted_args_and_gb_vars , arg_calc ) = fargs.map({ arg =>
+      //          val raw_arg_calc = rcr_e(arg)
+      //          val ( arg_val , arg_calc ) = lift_if_necessary(raw_arg_calc)
+      //          ((arg_val,SchemaOfExpression(raw_arg_calc)._2) , ( is_agg_expr(arg),arg_calc) )
+      //        }).unzip
+      //        val ( lifted_args , gb_vars ) = lifted_args_and_gb_vars.unzip
+      //        val (agg_args,non_agg_args) =
+
       //TODO other cases
 
     }
@@ -350,6 +399,18 @@ object SQLToCalc {
           }
           UnionIntersectSequence(rcr(u.bottom), rcr(u.top), UNION)
       }
+    }
+  }
+
+  def lower_if_value(calc: CalcExpr): (ArithExpr, CalcExpr) = {
+    calc match {
+      case Lift(v, CalcValue(x)) =>
+        (x, CalcValue(ArithConst(IntLiteral(1))))
+      case Lift(v, c) =>
+        (ArithVar(v), c)
+      case AggSum(v :: List(), c) =>
+        (ArithVar(v), calc)
+      // TODO failwith
     }
   }
 
@@ -451,12 +512,12 @@ object SQLToCalc {
   def mk_aggsum(gb_vars: List[VarT], expr: CalcExpr): CalcExpr = {
     val expr_ovars = SchemaOfExpression(expr)._2
     val new_gb_vars = expr_ovars.intersect(gb_vars)
-    //
-    //    println("   mk_aggsum    :")
-    //    println(prettyprint(expr))
-    //    println(gb_vars)
-    //    println(expr_ovars)
-    //    println(new_gb_vars)
+
+    println("   mk_aggsum    :")
+    println(prettyprint(expr))
+    println(gb_vars)
+    println(expr_ovars)
+    println(new_gb_vars)
 
     if (expr_ovars.equals(new_gb_vars))
       expr

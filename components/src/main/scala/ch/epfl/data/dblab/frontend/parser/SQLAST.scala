@@ -3,6 +3,8 @@ package dblab
 package frontend
 package parser
 
+import ch.epfl.data.dblab.frontend.parser.CalcAST.ArithConst
+
 import scala.reflect.runtime.{ universe => ru }
 //import ru._
 
@@ -210,13 +212,13 @@ object SQLAST {
   case class UnaryMinus(expr: Expression) extends UnaryOperator
   case class Exists(expr: SelectStatement) extends UnaryOperator
 
-  case class In(elem: Expression, set: Seq[Expression]) extends Expression
+  case class In(elem: Expression, set: Seq[Expression]) extends Expression //TODO set was a seq of Expression
   case class Case(cond: Expression, thenp: Expression, elsep: Expression) extends Expression
   case class Distinct(e: Expression) extends Expression
   case class AllExp(e: SelectStatement) extends Expression
   case class SomeExp(e: SelectStatement) extends Expression
   case class ExtractExp(first: String, second: String) extends Expression
-  case class InList(e: Expression, list: List[Expression]) extends Expression
+  case class InList(e: Expression, list: List[LiteralExpression]) extends Expression
 
   case class FunctionExp(name: String, inputs: List[Expression]) extends Expression
 
@@ -305,7 +307,7 @@ object SQLAST {
         case UnaryMinus(e1)         => Some((l) => UnaryMinus(l(0)), Seq(e1))
         case Exists(e1)             => Some((l) => Exists(l(0).asInstanceOf[SelectStatement]), Seq(e1))
         case Case(e1, e2, e3)       => Some((l) => Case(l(0), l(1), l(2)), Seq(e1, e2, e3))
-        case In(e1, l2)             => Some((l) => In(l(0), l.tail), e1 +: l2)
+        case In(e1, l2)             => Some((l) => In(l(0), l.tail.asInstanceOf[Seq[LiteralExpression]]), e1 +: l2)
         case _                      => None
       }
   }

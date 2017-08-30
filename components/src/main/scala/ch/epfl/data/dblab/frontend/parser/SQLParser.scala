@@ -244,13 +244,13 @@ object SQLParser extends StandardTokenParsers {
     case (acc, ((">=", right: Expression)))                 => GreaterOrEqual(acc, right)
     case (acc, (("BETWEEN", l: Expression, r: Expression))) => And(GreaterOrEqual(acc, l), LessOrEqual(acc, r))
     case (acc, (("IN", e: Seq[_])))                         => In(acc, e.asInstanceOf[Seq[Expression]])
-    case (acc, (("IN", s: SelectStatement)))                => In(acc, Seq(s))
+    case (acc, (("IN", s: SelectStatement)))                => In(acc, Seq(s)) //TODO generalize
     case (acc, (("LIKE", e: Expression)))                   => Like(acc, e)
     case (acc, (("NOT", e: Serializable)))                  => Not(exprToSQLNode(acc, e))
     case (acc, (("||", e: Expression)))                     => StringConcat(acc, e)
     case (acc, (("ISNOTNULL", null)))                       => Not(Equals(acc, NullLiteral))
     case (acc, (("ISNULL", null)))                          => Equals(acc, NullLiteral)
-    case (acc, (("IN LIST", l: List[Expression])))          => InList(acc, l)
+    case (acc, (("IN LIST", l: List[LiteralExpression])))   => InList(acc, l)
   }
 
   def parseOperandExpression: Parser[Expression] =

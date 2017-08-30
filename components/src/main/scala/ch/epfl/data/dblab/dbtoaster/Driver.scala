@@ -39,13 +39,15 @@ object Driver {
     }).flatten.groupBy(f => f.substring(f.lastIndexOf('.'), f.length))
 
     for (q <- args) {
-
-      // val ParserTree = List(AggSum(List(VarT("R_A", null), VarT("R_B", null)), CalcProd(List(Rel("Rel", "R", List(VarT("R_A", null), VarT("R_B", null)), ""), Rel("Rel", "S", List(VarT("S_B", null), VarT("S_C", null)), ""), Cmp(Eq, ArithVar(VarT("S_B", null)), ArithVar(VarT("R_B", null)))))))
       val ParserTree = CalcParser.parse(scala.io.Source.fromFile(q).mkString)
       val optimizer = CalcOptimizer
       println("BEFORE: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${prettyprint(cur)}"))
       // println("MIDDLE")
       println("AFTER: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(optimizer.Normalize(optimizer.nestingRewrites(cur)))}"))
+      import CalcRules._
+      val allRules = List(Agg0, Prod0, Prod1, Sum0, Sum1, AggSum1, AggSum2, AggSum3, AggSum4, AggSum5, Exists0, Lift0)
+      val ruleBasedOptimizer = new CalcRuleBasedTransformer(allRules)
+      println("AFTER RB: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(ruleBasedOptimizer(cur))}"))
       //      val sqlParserTree = SQLParser.parseStream(scala.io.Source.fromFile(q).mkString)
       //      val sqlProgram = sqlParserTree.asInstanceOf[IncludeStatement]
       //      val tables = sqlProgram.streams.toList.map(x => x.asInstanceOf[CreateStream]) // ok ?
