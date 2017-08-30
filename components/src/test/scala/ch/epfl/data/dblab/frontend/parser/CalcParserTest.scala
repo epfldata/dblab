@@ -13,14 +13,18 @@ class CalcParserTest extends FlatSpec {
     r should not be None
   }
 
+  def getCalcFiles(folder: String): List[String] = {
+    val f = new java.io.File(folder)
+    if (!f.exists) {
+      throw new Exception(s"$f does not exist!")
+    } else
+      f.listFiles.filter(_.getName().endsWith(".calc")).map(folder + "/" + _.getName).toList
+  }
+
   "CalcParser" should "parse DBToaster simple queries" in {
     val parser = CalcParser
     val folder = "experimentation/dbtoaster/queries/calcsimple"
-    val f = new java.io.File(folder)
-    val files = if (!f.exists) {
-      throw new Exception(s"$f does not exist!")
-    } else
-      f.listFiles.map(folder + "/" + _.getName).toList
+    val files = getCalcFiles(folder)
     for (file <- files) {
       // println(s"parsing $file")
       val r = parser.parse(scala.io.Source.fromFile(file).mkString)
@@ -31,11 +35,7 @@ class CalcParserTest extends FlatSpec {
   "CalcParser" should "parse DBToaster tpch queries" in {
     val parser = CalcParser
     val folder = "experimentation/dbtoaster/queries/calctpch"
-    val f = new java.io.File(folder)
-    val files = if (!f.exists) {
-      throw new Exception(s"$f does not exist!")
-    } else
-      f.listFiles.map(folder + "/" + _.getName).toList
+    val files = getCalcFiles(folder)
     for (file <- files) {
       // println(s"parsing $file")
       val r = parser.parse(scala.io.Source.fromFile(file).mkString)
@@ -52,13 +52,9 @@ class CalcParserTest extends FlatSpec {
   "CalcParser" should "pretty print DBToaster simple queries" in {
     val parser = CalcParser
     val folder = "experimentation/dbtoaster/queries/calcsimple"
-    val f = new java.io.File(folder)
-    val files = if (!f.exists) {
-      throw new Exception(s"$f does not exist!")
-    } else
-      f.listFiles.map(folder + "/" + _.getName).toList
+    val files = getCalcFiles(folder)
     for (file <- files) {
-      println(s"parsing $file")
+      //      println(s"parsing $file")
       val r = parser.parse(scala.io.Source.fromFile(file).mkString)
       val res = r.foldLeft()((acc, cur) => acc + CalcAST.prettyprint(cur))
       res should not be None
@@ -68,13 +64,9 @@ class CalcParserTest extends FlatSpec {
   "CalcParser" should "pretty print DBToaster tpch queries" in {
     val parser = CalcParser
     val folder = "experimentation/dbtoaster/queries/calctpch"
-    val f = new java.io.File(folder)
-    val files = if (!f.exists) {
-      throw new Exception(s"$f does not exist!")
-    } else
-      f.listFiles.map(folder + "/" + _.getName).toList
+    val files = getCalcFiles(folder)
     for (file <- files) {
-      println(s"parsing $file")
+      //      println(s"parsing $file")
       val r = parser.parse(scala.io.Source.fromFile(file).mkString)
       val res = r.foldLeft()((acc, cur) => acc + CalcAST.prettyprint(cur))
       res should not be None
