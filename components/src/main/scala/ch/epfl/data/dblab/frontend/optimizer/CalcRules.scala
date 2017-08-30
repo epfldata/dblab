@@ -34,13 +34,39 @@ object CalcRules {
         })
 
         if (cs.length > 0) {
-          var res = cs.foldLeft(1.0)((acc, cur) => (acc * cur))
-          if (res == 0)
-            Some(CalcValue(ArithConst(DoubleLiteral(0.0))))
+          var res = 1.0
+          res = cs.foldLeft(1.0)((acc, cur) => (acc * cur))
+
+          val result = if (res == 0)
+            CalcValue(ArithConst(DoubleLiteral(0.0)))
+          else if (res == 1.0 && ncs.length > 1)
+            CalcProd(ncs)
           else if (res == 1.0 && ncs.length > 0)
-            Some(CalcProd(ncs))
+            ncs.head
+
+          else if (res == 1.0 && ncs.length == 0)
+            CalcValue(ArithConst(DoubleLiteral(1.0)))
+
+          else if (ncs.length > 0)
+            CalcProd(CalcValue(ArithConst(DoubleLiteral(res))) :: ncs)
           else
-            Some(CalcProd(CalcValue(ArithConst(DoubleLiteral(res))) :: ncs))
+            CalcValue(ArithConst(DoubleLiteral(res)))
+          //          var res = cs.foldLeft(1.0)((acc, cur) => (acc * cur))
+          //          if (res == 0)
+          //            Some(CalcValue(ArithConst(DoubleLiteral(0.0))))
+          //          else if (res == 1.0 && ncs.length > 0)
+          //            Some(CalcProd(ncs))
+          //          else
+          //            Some(CalcProd(CalcValue(ArithConst(DoubleLiteral(res))) :: ncs))
+          result match {
+            case CalcProd(list) =>
+              val newExprs = list.flatMap(x => x match {
+                case CalcProd(l) => l
+                case _           => List(x)
+              })
+              Some(CalcProd(newExprs))
+            case _ => Some(result)
+          }
 
         } else
           None
@@ -228,6 +254,15 @@ object CalcRules {
           None
       }
       case _ => None
+    }
+  }
+
+  case object Neg0 extends Rule("Neg0") {
+    override def generate(node: Node): Option[Node] = node match {
+      case CalcNeg(CalcProd(list)) => Some(CalcProd(CalcValue(ArithConst(IntLiteral(-1))) :: list))
+      case CalcNeg(expr)           => Some(CalcProd(CalcValue(ArithConst(IntLiteral(-1))) :: List(expr)))
+      case _                       => None
+
     }
   }
 

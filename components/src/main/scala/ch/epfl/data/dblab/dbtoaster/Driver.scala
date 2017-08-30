@@ -43,11 +43,16 @@ object Driver {
       val optimizer = CalcOptimizer
       println("BEFORE: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${prettyprint(cur)}"))
       // println("MIDDLE")
-      println("AFTER: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(optimizer.Normalize(optimizer.nestingRewrites(cur)))}"))
+      val opt = ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(optimizer.Normalize(optimizer.nestingRewrites(cur)))}")
+
+      println("AFTER: \n" + opt)
       import CalcRules._
-      val allRules = List(Agg0, Prod0, Prod1, ProdNormalize, Sum0, Sum1, AggSum1, AggSum2, AggSum3, AggSum4, Exists0, Lift0)
+      val allRules = List(Agg0, Prod0, Prod1, ProdNormalize, Sum0, Sum1, AggSum1, AggSum2, AggSum3, AggSum4, Exists0, Lift0, Neg0)
       val ruleBasedOptimizer = new CalcRuleBasedTransformer(allRules)
-      println("AFTER RB: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(ruleBasedOptimizer(cur))}"))
+
+      val rb = ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(ruleBasedOptimizer(cur))}")
+      println("AFTER RB: \n" + rb)
+
       //      val sqlParserTree = SQLParser.parseStream(scala.io.Source.fromFile(q).mkString)
       //      val sqlProgram = sqlParserTree.asInstanceOf[IncludeStatement]
       //      val tables = sqlProgram.streams.toList.map(x => x.asInstanceOf[CreateStream]) // ok ?
@@ -61,6 +66,7 @@ object Driver {
       //      //      calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + tgt_calc }).foreach(println) // TODO this is for test
       //      //      if (Config.debugQueryPlan)
       //      //        System.out.println("Original SQL Parser Tree:\n" + sqlParserTree + "\n\n")
+
     }
   }
 }

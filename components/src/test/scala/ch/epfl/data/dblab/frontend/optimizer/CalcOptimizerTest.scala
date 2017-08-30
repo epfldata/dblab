@@ -67,7 +67,7 @@ class CalcOptimizerTest extends FlatSpec {
   }
 
   import CalcRules._
-  val allRules = List(Agg0, Prod0, Prod1, ProdNormalize, Sum0, Sum1, AggSum1, AggSum2, AggSum3, AggSum4, Exists0, Lift0)
+  val allRules = List(Agg0, Prod0, Prod1, ProdNormalize, Sum0, Sum1, AggSum1, AggSum2, AggSum3, AggSum4, Exists0, Lift0, Neg0)
   val ruleBasedOptimizer = new CalcRuleBasedTransformer(allRules)
 
   "nesting rewrite" should "optimize simple queries similar to the rule-based version" in {
@@ -77,6 +77,22 @@ class CalcOptimizerTest extends FlatSpec {
     val files = getCalcFiles(folder)
     for (file <- files) {
       //      println(s"optimizing $file")
+      val queries = parser.parse(scala.io.Source.fromFile(file).mkString)
+      for (q <- queries) {
+        val o1 = optimizer.Normalize(optimizer.nestingRewrites(q))
+        val o2 = ruleBasedOptimizer(q)
+        o1 should be(o2)
+      }
+    }
+  }
+
+  "nesting rewrite" should "optimize tpch queries similar to the rule-based version" in {
+    val optimizer = CalcOptimizer
+    val parser = CalcParser
+    val folder = "experimentation/dbtoaster/queries/calctpch/raw"
+    val files = getCalcFiles(folder)
+    for (file <- files) {
+      println(s"optimizing $file")
       val queries = parser.parse(scala.io.Source.fromFile(file).mkString)
       for (q <- queries) {
         val o1 = optimizer.Normalize(optimizer.nestingRewrites(q))
