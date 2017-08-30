@@ -162,7 +162,7 @@ object SQLParser extends StandardTokenParsers {
     parseExpression ~ parseAlias.? ^^ { case expr ~ alias => (expr, alias) }
 
   def parseAlias: Parser[String] =
-    ("AS".? ~> ident) ^^ { case ident => ident.toLowerCase() } |
+    ("AS".? ~> ident) ^^ { case ident => ident.toLowerCase } |
       ("AS".? ~> stringLit) ^^ { case lit => lit }
 
   def parseFrom: Parser[Relation] =

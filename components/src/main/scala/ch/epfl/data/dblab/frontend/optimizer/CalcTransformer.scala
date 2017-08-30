@@ -14,7 +14,7 @@ trait CalcTransformer extends Transformer {
   type ThisNode = CalcExpr
   def transform(node: CalcExpr): CalcExpr = {
     val (fact, children) = CalcExprShape.unapply(node).get
-    val result = fact(children)
+    val result = fact(children.map(transform))
     updateSymbol(node, result)
   }
   def updateSymbol(oldNode: CalcExpr, newNode: CalcExpr): CalcExpr = {
