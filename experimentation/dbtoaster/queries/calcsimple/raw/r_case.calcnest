@@ -1,0 +1,25 @@
+QUERY_1_MKT_SHARE_1: 
+AggSum([TOTAL_YEAR], 
+  (AggSum([TOTAL_YEAR], 
+     (AggSum([TOTAL_YEAR, TOTAL_NAME, TOTAL_VOLUME], 
+        (R(R_A, R_B) * (TOTAL_YEAR ^= R_A) * (TOTAL_NAME ^= R_B) *
+          (TOTAL_VOLUME ^= R_B))) *
+       {TOTAL_NAME = 3} * TOTAL_VOLUME)) *
+    (__sql_inline_agg_2 ^=
+      AggSum([], 
+        ((__sql_inline_agg_1 ^=
+           AggSum([TOTAL_YEAR], 
+             (AggSum([TOTAL_YEAR, TOTAL_NAME, TOTAL_VOLUME], 
+                (R(R_A, R_B) * (TOTAL_YEAR ^= R_A) * (TOTAL_NAME ^= R_B) *
+                  (TOTAL_VOLUME ^= R_B))) *
+               TOTAL_VOLUME))) *
+          {[listmax:int](1, __sql_inline_agg_1)}))) *
+    {[/:float](__sql_inline_agg_2)}))
+QUERY_2_MKT_SHARE_2: 
+AggSum([R_A], 
+  (AggSum([R_A], (R(R_A, R_B) * {R_B = 3} * R_B)) *
+    (__sql_inline_agg_4 ^=
+      AggSum([], 
+        ((__sql_inline_agg_3 ^= AggSum([R_A], (R(R_A, R_B) * R_B))) *
+          {[listmax:int](1, __sql_inline_agg_3)}))) *
+    {[/:float](__sql_inline_agg_4)}))

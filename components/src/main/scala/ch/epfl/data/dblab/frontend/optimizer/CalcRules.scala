@@ -96,11 +96,8 @@ object CalcRules {
   }
   case object AggSum1 extends Rule("Agg1") {
     override def generate(node: Node): Option[Node] = node match {
-      case AggSum(_, sub) => {
-        if ((SchemaOfExpression(sub)_2).length == 0)
-          Some(sub)
-        else None
-      }
+      case AggSum(_, sub) if (SchemaOfExpression(sub)_2).length == 0 =>
+        Some(sub)
       case _ => None
     }
   }

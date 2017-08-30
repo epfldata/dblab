@@ -1,0 +1,2 @@
+__SQL_EXPRESSION_1: 
+(AggSum([R_B], R(R_A, R_B)) * 100000 * {[/:float](R_B)})

@@ -1,0 +1,4 @@
+QUERY_1_COUNT: 
+R(R_A, R_B)
+QUERY_2_COUNT: 
+EXISTS( R(R_A, R_B))

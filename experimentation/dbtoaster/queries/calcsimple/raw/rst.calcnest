@@ -1,0 +1,4 @@
+ATIMESD: 
+AggSum([], 
+  (R(R_A, R_B) * S(S_B, S_C) * T(T_C, T_D) * {R_B = S_B} * {S_C = T_C} *
+    R_A * T_D))

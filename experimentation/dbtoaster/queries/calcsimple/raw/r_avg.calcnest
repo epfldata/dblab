@@ -1,0 +1,6 @@
+__SQL_AVG_AGGREGATE_1: 
+AggSum([], 
+  (AggSum([], (R(R_A, R_B) * R_A)) *
+    (__sql_inline_average_count_1 ^= AggSum([], R(R_A, R_B))) *
+    {[/:float]([listmax:int](1, __sql_inline_average_count_1))} *
+    {0 != __sql_inline_average_count_1}))
