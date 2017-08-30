@@ -62,15 +62,34 @@ object CalcRules {
     }
   }
 
+  case object ProdNormalize extends Rule("ProdNormalize") {
+    override def generate(node: Node): Option[Node] = node match {
+      case CalcProd(exprs) if exprs.exists(x => x.isInstanceOf[CalcProd]) => {
+        val newExprs = exprs.flatMap(x => x match {
+          case CalcProd(l) => l
+          case _           => List(x)
+        })
+        Some(CalcProd(newExprs))
+      }
+      case _ => None
+    }
+  }
+
+  val calcZeroInt = CalcValue(ArithConst(IntLiteral(0)))
+  val calcZeroDouble = CalcValue(ArithConst(DoubleLiteral(0.0)))
+
+  def calcIsZero(e: CalcExpr): Boolean = {
+    e == calcZeroDouble || e == calcZeroInt
+  }
+
   case object Sum0 extends Rule("Sum0") {
     //remove 0s
     override def generate(node: Node): Option[Node] = node match {
-      case CalcSum(exprs) => {
+      case CalcSum(exprs) if exprs.exists(calcIsZero) => {
         val elems = exprs.foldLeft[(List[CalcExpr])]((Nil))({
           case (acc1, cur) => cur match {
-            case CalcValue(ArithConst(IntLiteral(0)))      => (acc1)
-            case CalcValue(ArithConst(DoubleLiteral(0.0))) => (acc1)
-            case _                                         => (acc1 :+ cur)
+            case _ if calcIsZero(cur) => (acc1)
+            case _                    => (acc1 :+ cur)
           }
         })
 
@@ -127,18 +146,30 @@ object CalcRules {
     override def generate(node: Node): Option[Node] = node match {
       case AggSum(gbvars, CalcProd(list)) => {
         val calcOne = CalcValue(ArithConst(IntLiteral(1)))
-        def prod(e1: CalcExpr, e2: CalcExpr): CalcExpr = (e1, e2) match {
-          case (_, _) if e1 == calcOne => e2
-          case (_, CalcProd(l2))       => CalcProd(e1 :: l2)
-          case _                       => CalcProd(List(e1, e2))
+
+        def prod(exprs: List[CalcExpr]): CalcExpr = {
+          val p1 = ProdNormalize.generate(CalcProd(exprs)) match {
+            case Some(e: CalcExpr) => e
+            case None              => CalcProd(exprs)
+          }
+          val p2 = Prod0.generate(p1) match {
+            case Some(e: CalcExpr) => e
+            case None              => p1
+          }
+          val p3 = Prod1.generate(p2) match {
+            case Some(e: CalcExpr) => e
+            case None              => p2
+          }
+          p3
         }
         val (unnested, nested) = list.foldLeft[(CalcExpr, CalcExpr)]((calcOne, calcOne))((acc, cur) => {
-          (if (commutes(acc._2, cur) && (SchemaOfExpression(cur)._2).toSet.subsetOf(gbvars.toSet)) (prod(acc._1, cur), acc._2) else (acc._1, prod(acc._2, cur)))
+          (if (commutes(acc._2, cur) && (SchemaOfExpression(cur)._2).toSet.subsetOf(gbvars.toSet)) (prod(List(acc._1, cur)), acc._2) else (acc._1, prod(List(acc._2, cur))))
         })
         val unnestedivars = SchemaOfExpression(unnested)._1
         val newgbvars = (SchemaOfExpression(nested)._2).toSet.intersect(gbvars.toSet.union(unnestedivars.toSet)).toList
-        val res = prod(unnested, AggSum(newgbvars, nested))
-        if (AggSum(newgbvars, nested).equals(AggSum(gbvars, CalcProd(list))))
+        //        CalcProd(List(unnested, AggSum(newgbvars, nested)))
+        val res = prod(List(unnested, AggSum(newgbvars, nested)))
+        if (res == node)
           None
         else
           Some(res)
@@ -147,29 +178,25 @@ object CalcRules {
     }
   }
 
-  case object AggSum4 extends Rule("Agg4") {
+  //  case object AggSum4 extends Rule("AggSum4") {
+  //    override def generate(node: Node): Option[Node] = node match {
+  //      case AggSum(gbvars1, AggSum(gbvars2, t)) if (SchemaOfExpression(t) _2).toSet.subsetOf(gbvars1.toSet) => {
+  //        Some(AggSum(gbvars1, t))
+  //      }
+  //      case AggSum(gbvars, t) if (SchemaOfExpression(t) _2).toSet.subsetOf(gbvars.toSet) => {
+  //        Some(t)
+  //      }
+  //      case _ => None
+  //    }
+  //  }
+
+  case object AggSum4 extends Rule("AggSum4") {
     override def generate(node: Node): Option[Node] = node match {
-      case AggSum(_, CalcProd(_)) => None
-      case AggSum(_, CalcProd(_)) => None
-      case AggSum(gbvars, AggSum(_, t)) => {
-        //TODO: if not aggsum1
-        Some(AggSum(gbvars, t))
+      case AggSum(gbvars1, AggSum(gbvars2, t)) => {
+        Some(AggSum(gbvars1, t))
       }
-      case _ => None
-    }
-  }
-
-  case object AggSum5 extends Rule("Agg5") {
-    override def generate(node: Node): Option[Node] = node match {
-      case AggSum(_, CalcProd(_))  => None
-      case AggSum(_, CalcProd(_))  => None
-      case AggSum(_, AggSum(_, _)) => None
-      case AggSum(gbvars, AggSum(name, t)) => {
-        if ((SchemaOfExpression(AggSum(name, t)) _2).toSet.subsetOf(gbvars.toSet))
-          Some(AggSum(name, t))
-        else
-          None
-
+      case AggSum(gbvars, t) if (SchemaOfExpression(t) _2).toSet.subsetOf(gbvars.toSet) => {
+        Some(t)
       }
       case _ => None
     }
