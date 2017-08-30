@@ -1,0 +1,20 @@
+QUERY22: 
+AggSum([C1_NATIONKEY], 
+  (CUSTOMER(C1_CUSTKEY, C1_NAME, C1_ADDRESS, C1_NATIONKEY, C1_PHONE,
+              C1_ACCTBAL, C1_MKTSEGMENT, C1_COMMENT) *
+    AggSum([], 
+      ((__sql_inline_agg_2 ^=
+         AggSum([], 
+           (CUSTOMER(C2_CUSTKEY, C2_NAME, C2_ADDRESS, C2_NATIONKEY, C2_PHONE,
+                       C2_ACCTBAL, C2_MKTSEGMENT, C2_COMMENT) *
+             {C2_ACCTBAL > 0} * C2_ACCTBAL))) *
+        {C1_ACCTBAL < __sql_inline_agg_2})) *
+    AggSum([], 
+      ((__sql_inline_agg_1 ^=
+         AggSum([], 
+           (ORDERS(O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE,
+                     O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY,
+                     O_COMMENT) *
+             {O_CUSTKEY = C1_CUSTKEY}))) *
+        {0 = __sql_inline_agg_1})) *
+    C1_ACCTBAL))

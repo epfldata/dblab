@@ -1,0 +1,49 @@
+COUNT: 
+AggSum([S_SUPPKEY, S_NAME, S_ADDRESS, S_PHONE, R1_TOTAL_REVENUE], 
+  (SUPPLIER(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE, S_ACCTBAL,
+              S_COMMENT) *
+    EXISTS(
+      AggSum([R1_SUPPLIER_NO], 
+        (LINEITEM(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY,
+                    L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG,
+                    L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE,
+                    L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT) *
+          {L_SHIPDATE >= DATE('1996-1-1')} *
+          {L_SHIPDATE < DATE('1996-4-1')} * (R1_SUPPLIER_NO ^= L_SUPPKEY)))) *
+    (R1_TOTAL_REVENUE ^=
+      AggSum([R1_SUPPLIER_NO], 
+        (LINEITEM(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY,
+                    L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG,
+                    L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE,
+                    L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT) *
+          {L_SHIPDATE >= DATE('1996-1-1')} *
+          {L_SHIPDATE < DATE('1996-4-1')} * L_EXTENDEDPRICE *
+          (1 + (NEG * L_DISCOUNT)) * (R1_SUPPLIER_NO ^= L_SUPPKEY)))) *
+    {S_SUPPKEY = R1_SUPPLIER_NO} *
+    AggSum([], 
+      ((__domain_1 ^=
+         AggSum([], 
+           AggSum([__SQL_CONSTANT_1], 
+             (EXISTS(
+                AggSum([R2_SUPPKEY], 
+                  (LINEITEM(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER,
+                              L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX,
+                              L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE,
+                              L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT,
+                              L_SHIPMODE, L_COMMENT) *
+                    {L_SHIPDATE >= DATE('1996-1-1')} *
+                    {L_SHIPDATE < DATE('1996-4-1')} *
+                    (R2_SUPPKEY ^= L_SUPPKEY)))) *
+               (R2_TOTAL_REVENUE ^=
+                 AggSum([R2_SUPPKEY], 
+                   (LINEITEM(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER,
+                               L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT,
+                               L_TAX, L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE,
+                               L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT,
+                               L_SHIPMODE, L_COMMENT) *
+                     {L_SHIPDATE >= DATE('1996-1-1')} *
+                     {L_SHIPDATE < DATE('1996-4-1')} * L_EXTENDEDPRICE *
+                     (1 + (NEG * L_DISCOUNT)) * (R2_SUPPKEY ^= L_SUPPKEY)))) *
+               {R2_TOTAL_REVENUE > R1_TOTAL_REVENUE} *
+               (__SQL_CONSTANT_1 ^= 1))))) *
+        {0 = __domain_1}))))
