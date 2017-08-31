@@ -11,6 +11,7 @@ import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.token._
 import scala.util.parsing.input.CharArrayReader.EofCh
 import SQLAST._
+import ch.epfl.data.dblab.frontend.optimizer.SQLToCalc
 import ch.epfl.data.dblab.frontend.parser.SQLParser.ident
 
 /**
@@ -76,7 +77,7 @@ object SQLParser extends StandardTokenParsers {
 
   def parseCreateStreamOrTable: Parser[CreateStream] =
     "CREATE" ~> ("STREAM" | "TABLE") ~ ident ~ "(" ~ parseStreamColumns.? ~ ")" ~ ("FROM" ~> parseSrcStatement).? <~ ";" ^^ {
-      case sot ~ nameStr ~ _ ~ colsOpt ~ _ ~ restOpt => CreateStream(sot, nameStr.toLowerCase, colsOpt.getOrElse(Seq()), restOpt.getOrElse(""))
+      case sot ~ nameStr ~ _ ~ colsOpt ~ _ ~ restOpt => CreateStream(sot, nameStr.toUpperCase, colsOpt.getOrElse(Seq()), restOpt.getOrElse(""))
 
     }
 
@@ -107,8 +108,8 @@ object SQLParser extends StandardTokenParsers {
     })
   def parseStreamColumns: Parser[Seq[(String, String)]] =
     ident ~ (parseStreamDataType) ~ ("," ~> parseStreamColumns).? ^^ {
-      case col ~ colType ~ Some(cols) => (col, colType) +: cols
-      case col ~ colType ~ None       => Seq((col, colType))
+      case col ~ colType ~ Some(cols) => (col.toUpperCase, colType) +: cols
+      case col ~ colType ~ None       => Seq((col.toUpperCase(), colType))
     }
   // TODO change it to SC type or DDL type
   def parseStreamDataType: Parser[String] =
@@ -162,7 +163,7 @@ object SQLParser extends StandardTokenParsers {
     parseExpression ~ parseAlias.? ^^ { case expr ~ alias => (expr, alias) }
 
   def parseAlias: Parser[String] =
-    ("AS".? ~> ident) ^^ { case ident => ident } |
+    ("AS".? ~> ident) ^^ { case ident => ident.toUpperCase() } |
       ("AS".? ~> stringLit) ^^ { case lit => lit }
 
   def parseFrom: Parser[Relation] =
@@ -183,7 +184,7 @@ object SQLParser extends StandardTokenParsers {
 
   def parseSingleRelation: Parser[Relation] = (
     ident ~ parseAlias.? ^^ {
-      case tbl ~ alias => SQLTable(tbl.toLowerCase(), alias)
+      case tbl ~ alias => SQLTable(tbl.toUpperCase(), alias)
     }
     | ("(" ~> parseQuery <~ ")") ~ parseAlias ^^ {
       case subq ~ alias => Subquery(subq, alias)
@@ -235,22 +236,25 @@ object SQLParser extends StandardTokenParsers {
     | "AND" ^^^ { (a: Expression, b: Expression) => And(a, b) })
 
   def exprToSQLNode(acc: Expression, elem: Any): Expression = (acc, elem) match {
-    case (acc, (("=", right: Expression)))                  => Equals(acc, right)
-    case (acc, (("<>", right: Expression)))                 => NotEquals(acc, right)
-    case (acc, (("!=", right: Expression)))                 => NotEquals(acc, right)
-    case (acc, (("<", right: Expression)))                  => LessThan(acc, right)
-    case (acc, (("<=", right: Expression)))                 => LessOrEqual(acc, right)
-    case (acc, ((">", right: Expression)))                  => GreaterThan(acc, right)
-    case (acc, ((">=", right: Expression)))                 => GreaterOrEqual(acc, right)
-    case (acc, (("BETWEEN", l: Expression, r: Expression))) => And(GreaterOrEqual(acc, l), LessOrEqual(acc, r))
-    case (acc, (("IN", e: Seq[_])))                         => In(acc, e.asInstanceOf[Seq[Expression]])
-    case (acc, (("IN", s: SelectStatement)))                => In(acc, Seq(s)) //TODO generalize
-    case (acc, (("LIKE", e: Expression)))                   => Like(acc, e)
-    case (acc, (("NOT", e: Serializable)))                  => Not(exprToSQLNode(acc, e))
-    case (acc, (("||", e: Expression)))                     => StringConcat(acc, e)
-    case (acc, (("ISNOTNULL", null)))                       => Not(Equals(acc, NullLiteral))
-    case (acc, (("ISNULL", null)))                          => Equals(acc, NullLiteral)
-    case (acc, (("IN LIST", l: List[LiteralExpression])))   => InList(acc, l)
+    case (acc, (("=", right: Expression)))                       => Equals(acc, right)
+    case (acc, (("<>", right: Expression)))                      => NotEquals(acc, right)
+    case (acc, (("!=", right: Expression)))                      => NotEquals(acc, right)
+    case (acc, (("<", right: Expression)))                       => LessThan(acc, right)
+    case (acc, (("<=", right: Expression)))                      => LessOrEqual(acc, right)
+    case (acc, ((">", right: Expression)))                       => GreaterThan(acc, right)
+    case (acc, ((">=", right: Expression)))                      => GreaterOrEqual(acc, right)
+    case (acc, (("BETWEEN", l: Expression, r: Expression)))      => And(GreaterOrEqual(acc, l), LessOrEqual(acc, r))
+    case (acc, (("IN", e: Seq[_])))                              => In(acc, e.asInstanceOf[Seq[Expression]])
+    //    case (acc, (("IN", s: SelectStatement)))                    => In(acc, Seq(s)) //TODO generalize
+    case (acc, (("LIKE", e: Expression)))                        => Like(acc, e)
+    case (acc, (("NOT", e: Serializable)))                       => Not(exprToSQLNode(acc, e))
+    case (acc, (("||", e: Expression)))                          => StringConcat(acc, e)
+    case (acc, (("ISNOTNULL", null)))                            => Not(Equals(acc, NullLiteral))
+    case (acc, (("ISNULL", null)))                               => Equals(acc, NullLiteral)
+    case (acc, (("IN LIST", l: List[LiteralExpression])))        => InList(acc, l)
+    case (acc, (("ALL", List(op: String, s: SelectStatement))))  => Not(scanForExistence(s, acc, op, true))
+    case (acc, (("SOME", List(op: String, s: SelectStatement)))) => scanForExistence(s, acc, op, false)
+    case (acc, (("IN", s: SelectStatement)))                     => scanForExistence(s, acc, "==", false)
   }
 
   def parseOperandExpression: Parser[Expression] =
@@ -259,8 +263,12 @@ object SQLParser extends StandardTokenParsers {
         expressions.foldLeft(leftOperator)((acc, elem) => exprToSQLNode(acc, elem))
     }
 
+  def parseCompareOperand: Parser[String] = "=" | "<>" | "!=" | "<" | "<=" | ">" | ">="
+
   def parseOperation: Parser[Product] = (
-    ("=" | "<>" | "!=" | "<" | "<=" | ">" | ">=") ~ parseAddition ^^ { case op ~ right => (op, right) }
+    (parseCompareOperand <~ "ALL" <~ "(") ~ (parseSelectStatement <~ ")") ^^ { case op ~ s => ("ALL", List(op, s)) }
+    | (parseCompareOperand <~ "SOME" <~ "(") ~ (parseSelectStatement <~ ")") ^^ { case op ~ s => ("SOME", List(op, s)) }
+    | parseCompareOperand ~ parseAddition ^^ { case op ~ right => (op, right) }
     | "BETWEEN" ~ parseAddition ~ "AND" ~ parseAddition ^^ {
       case op ~ a ~ _ ~ b => (op, a, b)
     }
@@ -286,6 +294,27 @@ object SQLParser extends StandardTokenParsers {
       "*" ^^^ { (a: Expression, b: Expression) => Multiply(a, b) } |
       "/" ^^^ { (a: Expression, b: Expression) => Divide(a, b) })
 
+  def scanForExistence(q: TopLevelStatement, e: Expression, op: String, inverse: Boolean): Expression = {
+    q match {
+      case s: SelectStatement =>
+        val target = s.projections match {
+          case ExpressionProjections(List((e, _))) => e
+          case _                                   => ???
+        }
+        def cmpFact(e1: Expression, e2: Expression): Expression = Equals(e1, e2) // TODO
+        if (SQLToCalc.is_agg_expr(target)) {
+          cmpFact(e, s)
+        } else {
+          val cmp: Expression = cmpFact(e, target)
+          Exists(SelectStatement(Seq(), ExpressionProjections(List((IntLiteral(1), Some("unused")))),
+            s.joinTree, s.where.map(w => And(w, cmp)).fold(Some(cmp))(Some.apply _), s.groupBy, s.having, s.orderBy, s.limit, s.aliases))
+
+        }
+
+    }
+
+  }
+
   def parsePrimaryExpression: Parser[Expression] = (
     parseLiteral
     | parseFunction ~ ("OVER" ~ "(" ~ "PARTITION" ~ "BY" ~ rep1sep(parsePrimaryExpression, ",") ~ parseOrderBy.? ~
@@ -294,9 +323,9 @@ object SQLParser extends StandardTokenParsers {
       }
       | "*" ^^^ { StarExpression(None) }
       | ident ~ opt("." ~> (ident | "*") /*| ("(" ~> repsep(parseExpression, ",") <~ ")")*/ ) ^^ {
-        case id ~ None      => FieldIdent(None, id)
-        case id ~ Some("*") => StarExpression(Some(id.toLowerCase()))
-        case id ~ Some(b)   => FieldIdent(Some(id.toLowerCase()), b)
+        case id ~ None      => FieldIdent(None, id.toUpperCase())
+        case id ~ Some("*") => StarExpression(Some(id.toUpperCase()))
+        case id ~ Some(b)   => FieldIdent(Some(id.toUpperCase()), b.toUpperCase())
       }
       | "(" ~> (parseExpression | parseSelectStatement) <~ ")"
       | "DISTINCT" ~> parseExpression ^^ { case e => Distinct(e) }

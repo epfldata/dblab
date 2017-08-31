@@ -1,4 +1,4 @@
--- like
+-- varchar , like
 
 --  List all the employee details
 

@@ -1,5 +1,3 @@
--- unionIntersect
-
 SELECT 1 AS A WHERE (2 > 3);
 
 SELECT 1 AS B

@@ -244,6 +244,12 @@ object SQLToCalc {
         mk_not_exists(mk_aggsum(List(), q_calc_unlifted))
       //TODO failwith
 
+      case Some(Not(InList(expr, l))) =>
+        //        val t =
+        val v = Some(tmp_var("in", IntType)) // TODO Expr type
+        val (expr_val, expr_calc) = lower_if_value(rcr_et(v, expr))
+        CalcProd(List(expr_calc) ++ l.distinct.map(x => Cmp(Neq, ArithConst(x), expr_val)))
+
       case Some(i: InList) =>
         val expr = i.e
         val l = i.list
