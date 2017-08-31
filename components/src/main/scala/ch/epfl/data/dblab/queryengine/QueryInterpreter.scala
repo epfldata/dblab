@@ -37,25 +37,28 @@ object QueryInterpreter {
       System.out.println("Example: run /home/data/sf0.1/ experimentation/tpch-sql/dss.ddl experimentation/tpch-sql/Q6.sql")
       System.exit(1)
     }
-    // Set the folder containing data
-    Config.datapath = args(0);
-    val dataFolder = new java.io.File(Config.datapath)
-    if (!dataFolder.exists || !dataFolder.isDirectory) {
-      println("Data folder " + Config.datapath + " does not exist or is not a directory. Cannot proceed");
-      return
-    }
 
-    val filesToExecute = args.tail.map(arg => {
+    val filesToExecute = args.toList.tail.map(arg => {
       val f = new java.io.File(arg)
       if (!f.exists) {
         println("Warning: Command line parameter " + f + " is not a file or directory. Skipping this argument...")
         List()
       } else if (f.isDirectory) f.listFiles.map(arg + "/" + _.getName).toList
       else List(arg)
-    }).flatten.groupBy(f => f.substring(f.lastIndexOf('.'), f.length))
+    }).flatten.groupBy(f => f.substring(f.lastIndexOf('.'), f.length)).toMap
 
+    interpret(args(0), filesToExecute)
+  }
+
+  def interpret(dataPath: String, filesToExecute: Map[String, List[String]]): Unit = {
+    // Set the folder containing data
+    Config.datapath = dataPath
+    val dataFolder = new java.io.File(Config.datapath)
+    if (!dataFolder.exists || !dataFolder.isDirectory) {
+      println("Data folder " + Config.datapath + " does not exist or is not a directory. Cannot proceed");
+      return
+    }
     val ddlInterpreter = new DDLInterpreter(new Catalog(scala.collection.mutable.Map()))
-
     // TODO -- Ideally, the following should not be dependant on the file extension, but OK for now.
     for (f <- (filesToExecute.get(".ddl") ++ filesToExecute.get(".ri")).flatten.toList) {
       System.out.println("Executing file " + f)
