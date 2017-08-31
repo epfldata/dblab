@@ -1,4 +1,4 @@
--- namer should change A to R.A
+-- not in list
 
 CREATE STREAM R(A int, B int) 
   FROM FILE '../../experiments/data/simple/tiny/r.dat' LINE DELIMITED csv;

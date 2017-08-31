@@ -4,6 +4,7 @@ package frontend
 package optimizer
 
 import ch.epfl.data.dblab.frontend.parser.CalcAST
+import ch.epfl.data.dblab.schema.VarCharType
 import parser.SQLAST._
 import parser.CalcAST._
 import optimizer.CalcOptimizer._
@@ -91,7 +92,7 @@ object SQLToCalc {
       case (tgt_name, tgt_expr) =>
         if (f.qualifier.isEmpty && tgt_name == f.name) true
         //        else if (tgt_expr.equals(f)) true // TODO : type is not inferred yet
-        else if (tgt_expr.asInstanceOf[FieldIdent].qualifier.equals(f.qualifier) &&
+        else if (tgt_expr.isInstanceOf[FieldIdent] && tgt_expr.asInstanceOf[FieldIdent].qualifier.equals(f.qualifier) && // TODO it should be convertable
           tgt_expr.asInstanceOf[FieldIdent].name.equals(f.name)) true
         else false
     })) {
@@ -106,12 +107,23 @@ object SQLToCalc {
         case _: Sum =>
           println(prettyprint(noagg_calc))
           mk_aggsum(new_gb_vars, CalcProd(List(source_calc, cond_calc, agg_calc, noagg_calc)))
+
         case _: CountAll =>
           mk_aggsum(new_gb_vars, CalcProd(List(source_calc, cond_calc, noagg_calc)))
-        //        case CountExpr(Distinct(fields)) => // TODO fields is a list in ocaml but an expression in scala
-        //          mk_aggsum(new_gb_vars, mk_exists(mk_aggsum(  new_gb_vars.union(fields.map(var_of_sql_var())) , )))
+
+        case CountExpr(Distinct(StarExpression(x))) =>
+          mk_aggsum(new_gb_vars, mk_exists(CalcProd(List(source_calc, cond_calc, noagg_calc))))
+
+        case CountExpr(Distinct(fields)) => // TODO fields is a list in ocaml but an expression in scala
+          println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+          val f = fields.asInstanceOf[FieldIdent]
+          mk_aggsum(new_gb_vars, mk_exists(mk_aggsum(
+            new_gb_vars.union(List(var_of_sql_var(f.qualifier.get, f.name, "INTEGER"))), //TODO type infer
+            CalcProd(List(source_calc, cond_calc, noagg_calc)))))
+
         case _: CountExpr =>
           mk_aggsum(new_gb_vars, mk_exists(CalcProd(List(source_calc, cond_calc, noagg_calc))))
+
         case _: Avg =>
           val count_var = tmp_var("average_count", IntType)
           mk_aggsum(new_gb_vars, CalcProd(List(
@@ -185,8 +197,7 @@ object SQLToCalc {
       calc_of_sql_expr(tgt_var, None, tables, sources, e)
     }
 
-    //TODO push_down_nots
-    cond match {
+    push_down_nots(cond) match {
       case Some(a: And) =>
         CalcProd(List(rcr_c(Some(a.left)), rcr_c(Some(a.right))))
 
@@ -232,6 +243,12 @@ object SQLToCalc {
         val q_calc_unlifted = CalcOfQuery(None, tables, q).head._2
         mk_not_exists(mk_aggsum(List(), q_calc_unlifted))
       //TODO failwith
+
+      case Some(Not(InList(expr, l))) =>
+        //        val t =
+        val v = Some(tmp_var("in", IntType)) // TODO Expr type
+        val (expr_val, expr_calc) = lower_if_value(rcr_et(v, expr))
+        CalcProd(List(expr_calc) ++ l.distinct.map(x => Cmp(Neq, ArithConst(x), expr_val)))
 
       case Some(i: InList) =>
         val expr = i.e
@@ -281,6 +298,7 @@ object SQLToCalc {
         (make_CalcExpr(ArithConst(l)), false)
 
       case f: FieldIdent =>
+        println(f)
         (make_CalcExpr(make_ArithExpr(var_of_sql_var(f.qualifier.get, f.name, "INTEGER"))), false) //TODO type expr
 
       case b: BinaryOperator =>
@@ -321,6 +339,16 @@ object SQLToCalc {
             val agg_expr = a.expr
             (materialize_query match {
               case Some(mq) => mq(a, rcr_e(agg_expr, Some(true)))
+              //case None =>  //TODO failwith
+            }, false)
+          case CountExpr(Distinct(StarExpression(c))) =>
+            (materialize_query match {
+              case Some(mq) => mq(a, rcr_e(IntLiteral(1), Some(true)))
+              //case None =>  //TODO failwith
+            }, false)
+          case CountExpr(Distinct(d)) =>
+            (materialize_query match {
+              case Some(mq) => mq(a, rcr_e(d, Some(true)))
               //case None =>  //TODO failwith
             }, false)
           case c: CountExpr =>
@@ -421,7 +449,7 @@ object SQLToCalc {
       case "STRING"  => VarT(R_name + "_" + col_name, StringType)
       case "ANY"     => VarT(R_name + "_" + col_name, AnyType)
       case "FLOAT"   => VarT(R_name + "_" + col_name, FloatType)
-
+      //      case "VARCHAR" => VarT(R_name + "_" + col_name, VarCharType)
       //TODO rest cases
     }
   }
@@ -476,6 +504,7 @@ object SQLToCalc {
   // ********SQL********* :
   def is_agg_expr(expr: Expression): Boolean = {
     // There is a isAggregateOpExpr in scala but seems different
+    println(expr)
     expr match {
       case _: LiteralExpression => false
       case _: FieldIdent        => false
@@ -484,6 +513,7 @@ object SQLToCalc {
       case _: Aggregation       => true
       case f: FunctionExp       => f.inputs.map(x => is_agg_expr(x)).foldLeft(false)((sum, cur) => sum || cur)
       case s: SelectStatement   => false
+      //      case d: Distinct          => false // its not in ocaml
       //TODO nested_q , cases in Ocaml and others in Scala
     }
   }
@@ -505,6 +535,35 @@ object SQLToCalc {
   def sql_expr_type(strict: Option[Boolean], expr: Expression, tables: List[CreateStream], sources: Option[Relation]): Symbol = {
     'INTEGER
     // TODO
+  }
+
+  def push_down_nots(cond: Option[Expression]): Option[Expression] = {
+
+    cond match {
+      case (Some(Not(Not(c))))                => Some(c)
+      case (Some(Not(e: EqualityOperator)))   => Some(Inverse(e))
+      case (Some(Not(e: InEqualityOperator))) => Some(Inverse(e))
+      case (Some(Not(And(c1, c2))))           => push_down_nots(Some(Or(Not(c1), Not(c2))))
+      case (Some(Not(Or(c1, c2))))            => push_down_nots(Some(And(Not(c1), Not(c2))))
+      //      case (Some(Const())) //TODO for const
+      case (Some(And(c1, c2)))                => Some(And(push_down_nots(Some(c1)).get, push_down_nots(Some(c2)).get))
+      case (Some(Or(c1, c2)))                 => Some(Or(push_down_nots(Some(c1)).get, push_down_nots(Some(c2)).get))
+      case s                                  => s
+    }
+  }
+
+  def Inverse(e: BinaryOperator): BinaryOperator = {
+    val e1 = e.left
+    val e2 = e.right
+    e match {
+      case _: Equals         => NotEquals(e1, e2)
+      case _: NotEquals      => Equals(e1, e2)
+      case _: GreaterThan    => LessOrEqual(e1, e2)
+      case _: LessOrEqual    => GreaterThan(e1, e2)
+      case _: GreaterOrEqual => LessThan(e1, e2)
+      case _: LessThan       => GreaterOrEqual(e1, e2)
+
+    }
   }
 
   // ********Calculus********** :
@@ -641,5 +700,4 @@ object SQLToCalc {
     }
     iterate(List(), l)
   }
-
 }
