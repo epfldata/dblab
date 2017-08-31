@@ -3,7 +3,8 @@ package dblab
 package frontend
 package optimizer
 
-import ch.epfl.data.dblab.frontend.optimizer.CalcOptimizer.{ schemaOfExpression, commutes, typeOfExpression }
+import ch.epfl.data.dblab.frontend.optimizer.CalcUtils._
+
 import ch.epfl.data.dblab.frontend.parser.CalcAST
 import parser.CalcAST._
 import parser.SQLAST._

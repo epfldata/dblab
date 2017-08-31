@@ -9,6 +9,7 @@ import parser.CalcAST._
 import optimizer.CalcOptimizer._
 //import schema._
 import sc.pardis.types._
+import ch.epfl.data.dblab.frontend.optimizer.CalcUtils._
 //import scala.reflect.runtime.{ universe => ru }
 //import ru._ //TODO this symbol ?
 
