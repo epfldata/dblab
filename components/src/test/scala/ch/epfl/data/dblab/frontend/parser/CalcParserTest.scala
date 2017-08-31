@@ -4,6 +4,7 @@ import org.scalatest._
 import Matchers._
 import ch.epfl.data.dblab.frontend.parser.CalcAST._
 import ch.epfl.data.sc.pardis.types.IntType
+import ch.epfl.data.dblab.frontend.optimizer.CalcUtils._
 
 class CalcParserTest extends FlatSpec {
 
@@ -11,14 +12,6 @@ class CalcParserTest extends FlatSpec {
     val parser = CalcParser
     val r = parser.parse("declare query q2 := AggSum([], (C ^= 0) * {C:int > 0});")
     r should not be None
-  }
-
-  def getCalcFiles(folder: String): List[String] = {
-    val f = new java.io.File(folder)
-    if (!f.exists) {
-      throw new Exception(s"$f does not exist!")
-    } else
-      f.listFiles.filter(_.getName().endsWith(".calc")).map(folder + "/" + _.getName).toList
   }
 
   "CalcParser" should "parse DBToaster simple queries" in {

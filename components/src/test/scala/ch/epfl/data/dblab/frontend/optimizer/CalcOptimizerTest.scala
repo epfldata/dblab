@@ -9,19 +9,11 @@ import sc.pardis.types.IntType
 import org.scalatest.Matchers._
 import org.scalatest._
 import parser.CalcParser
-
+import ch.epfl.data.dblab.frontend.optimizer.CalcUtils._
 /**
  * @author Parand Alizadeh
  */
 class CalcOptimizerTest extends FlatSpec {
-
-  def getCalcFiles(folder: String): List[String] = {
-    val f = new java.io.File(folder)
-    if (!f.exists) {
-      throw new Exception(s"$f does not exist!")
-    } else
-      f.listFiles.filter(_.getName().endsWith(".calc")).map(folder + "/" + _.getName).toList
-  }
 
   "CalcOptimzer" should "optimize query with multiple constants in prod" in {
     val optimizer = CalcOptimizer

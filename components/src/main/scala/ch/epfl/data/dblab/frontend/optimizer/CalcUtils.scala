@@ -11,6 +11,15 @@ import ch.epfl.data.sc.pardis.types._
  */
 
 object CalcUtils {
+
+  def getCalcFiles(folder: String): List[String] = {
+    val f = new java.io.File(folder)
+    if (!f.exists) {
+      throw new Exception(s"$f does not exist!")
+    } else
+      f.listFiles.filter(_.getName().endsWith(".calc")).map(folder + "/" + _.getName).toList
+  }
+
   def escalateType(a: Tpe, b: Tpe): Tpe = {
     (a, b) match {
       case (at, bt) if (at.equals(bt)) => at
