@@ -26,7 +26,7 @@ class CalcOptimizerTest extends FlatSpec {
   "CalcOptimzer" should "optimize query with multiple constants in prod" in {
     val optimizer = CalcOptimizer
     val r = CalcProd(List(CalcValue(ArithConst(IntLiteral(2))), CalcValue(ArithConst(IntLiteral(3))), CalcValue(ArithConst(IntLiteral(4))), CalcValue(ArithConst(IntLiteral(5))), CalcSum(List(CalcValue(ArithConst(IntLiteral(3))), CalcValue(ArithConst(IntLiteral(0))), CalcValue(ArithConst(IntLiteral(4)))))))
-    val res = optimizer.Normalize(r)
+    val res = optimizer.normalize(r)
     res should not be None
   }
 
@@ -79,7 +79,7 @@ class CalcOptimizerTest extends FlatSpec {
       //      println(s"optimizing $file")
       val queries = parser.parse(scala.io.Source.fromFile(file).mkString)
       for (q <- queries) {
-        val o1 = optimizer.Normalize(optimizer.nestingRewrites(q))
+        val o1 = optimizer.normalize(optimizer.nestingRewrites(q))
         val o2 = ruleBasedOptimizer(q)
         o1 should be(o2)
       }
@@ -95,7 +95,7 @@ class CalcOptimizerTest extends FlatSpec {
       println(s"optimizing $file")
       val queries = parser.parse(scala.io.Source.fromFile(file).mkString)
       for (q <- queries) {
-        val o1 = optimizer.Normalize(optimizer.nestingRewrites(q))
+        val o1 = optimizer.normalize(optimizer.nestingRewrites(q))
         val o2 = ruleBasedOptimizer(q)
         o1 should be(o2)
       }

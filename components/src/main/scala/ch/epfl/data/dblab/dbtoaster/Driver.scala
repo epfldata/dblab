@@ -43,7 +43,7 @@ object Driver {
       val optimizer = CalcOptimizer
       println("BEFORE: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${prettyprint(cur)}"))
       // println("MIDDLE")
-      val opt = ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(optimizer.Normalize(optimizer.nestingRewrites(cur)))}")
+      val opt = ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(optimizer.normalize(optimizer.nestingRewrites(cur)))}")
 
       println("AFTER: \n" + opt)
       import CalcRules._

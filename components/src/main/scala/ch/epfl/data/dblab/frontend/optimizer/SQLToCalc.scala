@@ -270,7 +270,7 @@ object SQLToCalc {
       materialize_query match {
         case Some(m) =>
           val count_agg = m(CountAll(), CalcValue(ArithConst(IntLiteral(1)))) // expr will never use
-          val count_sch = SchemaOfExpression(count_agg)._2
+          val count_sch = schemaOfExpression(count_agg)._2
           CalcProd(List(mk_aggsum(count_sch, CalcAST.Exists(count_agg)), calc_expr))
       }
     }
@@ -301,7 +301,7 @@ object SQLToCalc {
             val ce2 = rcr_e(e2)
             val (e2_val, e2_calc) = lift_if_necessary(ce2)
             val needs_order_flip = !is_agg_expr(e1) && is_agg_expr(e2)
-            val nestedSchema = SchemaOfExpression(ce1)._2.union(SchemaOfExpression(ce2)._2)
+            val nestedSchema = schemaOfExpression(ce1)._2.union(schemaOfExpression(ce2)._2)
             (mk_aggsum(nestedSchema, CalcProd(if (needs_order_flip) List(CalcProd(List(e2_calc, ce1)))
             else List(CalcProd(List(ce1, e2_calc)))
               ++ List(CalcValue(ArithFunc("/", List(e2_val), FloatType))))), false)
@@ -510,7 +510,7 @@ object SQLToCalc {
   // ********Calculus********** :
 
   def mk_aggsum(gb_vars: List[VarT], expr: CalcExpr): CalcExpr = {
-    val expr_ovars = SchemaOfExpression(expr)._2
+    val expr_ovars = schemaOfExpression(expr)._2
     val new_gb_vars = expr_ovars.intersect(gb_vars)
 
     println("   mk_aggsum    :")
@@ -547,9 +547,9 @@ object SQLToCalc {
         val terms = p.exprs
         def fun(prev: List[CalcExpr], curr: CalcExpr, next: List[CalcExpr]): A = {
           rcr(
-            Some((scope ++ prev.map(x => SchemaOfExpression(x)._2)).foldLeft(List[VarT]())((a, b) => a.union(b))),
+            Some((scope ++ prev.map(x => schemaOfExpression(x)._2)).foldLeft(List[VarT]())((a, b) => a.union(b))),
             Some((schema ++ next.map({ x =>
-              val (xin, xout) = SchemaOfExpression(x)
+              val (xin, xout) = schemaOfExpression(x)
               xin.union(xout)
             })).foldLeft(List[VarT]())((a, b) => a.union(b))),
             curr)
@@ -619,13 +619,13 @@ object SQLToCalc {
   def mk_not_exists(expr: CalcExpr): CalcExpr = {
     val dom_expr = maintain(expr)
     val dom_var = mk_dom_var(List(), IntType)
-    val ovars = SchemaOfExpression(expr)._2
+    val ovars = schemaOfExpression(expr)._2
     mk_aggsum(ovars, CalcProd(List(Lift(dom_var, dom_expr), Cmp(Eq, ArithConst(IntLiteral(0)), ArithVar(dom_var)))))
   }
 
   def mk_domain_restricted_lift(lift_v: VarT, lift_expr: CalcExpr): CalcExpr = {
     val lift = Lift(lift_v, lift_expr)
-    val ovars = SchemaOfExpression(lift_expr)._2
+    val ovars = schemaOfExpression(lift_expr)._2
     if (ovars.isEmpty) lift
     else CalcProd(List(mk_exists(lift_expr), lift))
   }
