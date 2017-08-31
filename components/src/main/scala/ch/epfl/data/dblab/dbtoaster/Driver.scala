@@ -47,7 +47,7 @@ object Driver {
 
       println("AFTER: \n" + opt)
       import CalcRules._
-      val allRules = List(Agg0, Prod0, Prod1, ProdNormalize, Sum0, Sum1, AggSum1, AggSum2, AggSum3, AggSum4, Exists0, Lift0, Neg0)
+      val allRules = List(AggSum0, Prod0, Prod1, ProdNormalize, Sum0, Sum1, AggSum1, AggSum2, AggSum3, AggSum4, Exists0, Lift0, Neg0)
       val ruleBasedOptimizer = new CalcRuleBasedTransformer(allRules)
 
       val rb = ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(ruleBasedOptimizer(cur))}")

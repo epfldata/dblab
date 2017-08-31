@@ -21,7 +21,7 @@ object CalcAST {
 
   def getTmpVar(tpe: Tpe): VarT = {
     tmpVarNum = tmpVarNum + 1
-    return VarT("tmpvar" + tmpVarNum, tpe)
+    VarT("tmpvar" + tmpVarNum, tpe)
   }
 
   sealed trait CalcExpr extends Node {

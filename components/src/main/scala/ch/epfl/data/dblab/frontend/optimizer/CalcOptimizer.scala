@@ -62,11 +62,11 @@ object CalcOptimizer {
     })
 
     if (elems.length > 1)
-      return CalcSum(elems)
+      CalcSum(elems)
     else if (elems.length == 1)
-      return elems.head
+      elems.head
     else
-      return CalcValue(ArithConst(IntLiteral(0)))
+      CalcValue(ArithConst(IntLiteral(0)))
 
   }
 
@@ -82,9 +82,9 @@ object CalcOptimizer {
   def normalize(expr: CalcExpr): CalcExpr = {
     expr match {
       case CalcQuery(name, e) =>
-        return CalcQuery(name, rewrite(e, sumGeneral, prodGeneral, negGeneral, (x => x)))
+        CalcQuery(name, rewrite(e, sumGeneral, prodGeneral, negGeneral, (x => x)))
       case _ =>
-        return rewrite(expr, sumGeneral, prodGeneral, negGeneral, (x => x))
+        rewrite(expr, sumGeneral, prodGeneral, negGeneral, (x => x))
     }
 
   }
@@ -97,7 +97,7 @@ object CalcOptimizer {
         val subterm = normalize(rcr(unpsubterm))
         //        val subterm = rcr(unpsubterm)
         if ((schemaOfExpression(subterm)_2).length == 0)
-          return subterm
+          subterm
 
         subterm match {
           case CalcSum(list) => {

@@ -12,7 +12,7 @@ import sc.pardis.ast._
 import sc.pardis.rules._
 
 object CalcRules {
-  case object Agg0 extends Rule("Agg0") {
+  case object AggSum0 extends Rule("AggSum0") {
     def generate(node: Node): Option[Node] = node match {
       case AggSum(gbvars, CalcValue(ArithConst(IntLiteral(0)))) =>
         Some(CalcValue(ArithConst(IntLiteral(0))))
@@ -140,7 +140,7 @@ object CalcRules {
       case _ => None
     }
   }
-  case object AggSum1 extends Rule("Agg1") {
+  case object AggSum1 extends Rule("AggSum1") {
     override def generate(node: Node): Option[Node] = node match {
       case AggSum(_, sub) if (schemaOfExpression(sub)_2).length == 0 =>
         Some(sub)
@@ -149,7 +149,7 @@ object CalcRules {
   }
 
   //TODO: if not aggsum1
-  case object AggSum2 extends Rule("Agg2") {
+  case object AggSum2 extends Rule("AggSum2") {
     override def generate(node: Node): Option[Node] = node match {
       case AggSum(gbvars, CalcSum(list)) => {
         val (sumivars, _) = schemaOfExpression(CalcSum(list))
@@ -169,7 +169,7 @@ object CalcRules {
   }
 
   //TODO make it more clear
-  case object AggSum3 extends Rule("Agg3") {
+  case object AggSum3 extends Rule("AggSum3") {
     override def generate(node: Node): Option[Node] = node match {
       case AggSum(gbvars, CalcProd(list)) => {
         val calcOne = CalcValue(ArithConst(IntLiteral(1)))
@@ -204,18 +204,6 @@ object CalcRules {
       case _ => None
     }
   }
-
-  //  case object AggSum4 extends Rule("AggSum4") {
-  //    override def generate(node: Node): Option[Node] = node match {
-  //      case AggSum(gbvars1, AggSum(gbvars2, t)) if (SchemaOfExpression(t) _2).toSet.subsetOf(gbvars1.toSet) => {
-  //        Some(AggSum(gbvars1, t))
-  //      }
-  //      case AggSum(gbvars, t) if (SchemaOfExpression(t) _2).toSet.subsetOf(gbvars.toSet) => {
-  //        Some(t)
-  //      }
-  //      case _ => None
-  //    }
-  //  }
 
   case object AggSum4 extends Rule("AggSum4") {
     override def generate(node: Node): Option[Node] = node match {

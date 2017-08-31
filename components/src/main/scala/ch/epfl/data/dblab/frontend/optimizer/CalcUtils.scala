@@ -36,7 +36,7 @@ object CalcUtils {
 
   def escalateTypeList(list: List[Tpe]): Tpe = {
     if (list.isEmpty)
-      return IntType
+      IntType
     list.tail.foldLeft(list.head)((acc, cur) => escalateType(acc, cur))
   }
 
@@ -87,13 +87,13 @@ object CalcUtils {
     }
 
     def neg(tpe: Tpe): Tpe = tpe
-    return fold(escalateTypeList, escalateTypeList, neg, leaf, expr)
+    fold(escalateTypeList, escalateTypeList, neg, leaf, expr)
   }
 
   def relsOfExpr(expr: CalcExpr): List[String] = {
 
     def multiunion(list: List[List[String]]): List[String] = {
-      return list.foldLeft(List.empty[String])((acc, cur) => acc.toSet.union(cur.toSet).toList)
+      list.foldLeft(List.empty[String])((acc, cur) => acc.toSet.union(cur.toSet).toList)
     }
     def leaf(calcExpr: CalcExpr): List[String] = {
       calcExpr match {
@@ -148,7 +148,7 @@ object CalcUtils {
     val (_, ovars1) = schemaOfExpression(expr1)
     val (ivars2, _) = schemaOfExpression(expr2)
 
-    return (ivars2.toSet.intersect(ovars1.toSet).isEmpty && !((exprHasLowCardinality(expr1)) && exprHasHighCardinality(expr2)))
+    (ivars2.toSet.intersect(ovars1.toSet).isEmpty && !((exprHasLowCardinality(expr1)) && exprHasHighCardinality(expr2)))
 
   }
 
@@ -172,7 +172,7 @@ object CalcUtils {
 
     def rcr(expr: ArithExpr): List[VarT] = {
 
-      return foldOfVars(sum, prod, neg, leaf, expr)
+      foldOfVars(sum, prod, neg, leaf, expr)
     }
 
     expr match {
@@ -185,7 +185,7 @@ object CalcUtils {
 
   def varsOfValue(expr: ArithExpr): List[VarT] = {
     def multiunion(list: List[List[VarT]]): List[VarT] = {
-      return list.foldLeft(List.empty[VarT])((acc, cur) => acc.toSet.union(cur.toSet).toList)
+      list.foldLeft(List.empty[VarT])((acc, cur) => acc.toSet.union(cur.toSet).toList)
     }
     def leaf(arithExpr: ArithExpr): List[VarT] = {
       arithExpr match {
@@ -194,7 +194,7 @@ object CalcUtils {
         case ArithFunc(_, tr, _) => multiunion(tr.map(x => varsOfValue(x)))
       }
     }
-    return foldOfVars(multiunion, multiunion, (x => x), leaf, expr)
+    foldOfVars(multiunion, multiunion, (x => x), leaf, expr)
 
   }
   def schemaOfExpression(expr: CalcExpr): (List[VarT], List[VarT]) = {
@@ -206,22 +206,22 @@ object CalcUtils {
       val oldovars = ovars.foldLeft(List.empty[VarT])((acc, cur) => acc.toSet.union(cur.toSet).toList)
       val newivars = oldovars.toSet.diff(ovars.foldLeft(Set.empty[VarT])((acc, cur) => acc.intersect(cur.toSet))).toList
 
-      return (oldivars.toSet.union(newivars.toSet).toList, oldovars.toSet.diff(newivars.toSet).toList)
+      (oldivars.toSet.union(newivars.toSet).toList, oldovars.toSet.diff(newivars.toSet).toList)
     }
 
     def prod(prodList: List[(List[VarT], List[VarT])]): (List[VarT], List[VarT]) = {
 
-      return prodList.foldLeft((List.empty[VarT], List.empty[VarT]))((oldvars, newvars) => ((oldvars._1.toSet).union(newvars._1.toSet.diff(oldvars._2.toSet)).toList, (oldvars._2.toSet.union(newvars._2.toSet)).diff(oldvars._1.toSet).toList))
+      prodList.foldLeft((List.empty[VarT], List.empty[VarT]))((oldvars, newvars) => ((oldvars._1.toSet).union(newvars._1.toSet.diff(oldvars._2.toSet)).toList, (oldvars._2.toSet.union(newvars._2.toSet)).diff(oldvars._1.toSet).toList))
 
     }
 
-    def negSch(varTs: (List[VarT], List[VarT])): (List[VarT], List[VarT]) = { return varTs }
+    def negSch(varTs: (List[VarT], List[VarT])): (List[VarT], List[VarT]) = { varTs }
 
     def leafSch(calcExpr: CalcExpr): (List[VarT], List[VarT]) = {
 
       def lift(target: VarT, expr: CalcExpr): (List[VarT], List[VarT]) = {
         val (ivars, ovars) = schemaOfExpression(expr)
-        return (ivars.toSet.union(ovars.toSet).toList, List(target))
+        (ivars.toSet.union(ovars.toSet).toList, List(target))
       }
 
       def aggsum(gbvars: List[VarT], subexp: CalcExpr): (List[VarT], List[VarT]) = {
@@ -231,7 +231,7 @@ object CalcUtils {
         if (!(trimmedGbVars.equals(gbvars)))
           throw new Exception
         else
-          return (ivars, gbvars)
+          (ivars, gbvars)
       }
 
       calcExpr match {

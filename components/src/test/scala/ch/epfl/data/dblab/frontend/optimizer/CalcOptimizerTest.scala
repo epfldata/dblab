@@ -59,7 +59,7 @@ class CalcOptimizerTest extends FlatSpec {
   }
 
   import CalcRules._
-  val allRules = List(Agg0, Prod0, Prod1, ProdNormalize, Sum0, Sum1, AggSum1, AggSum2, AggSum3, AggSum4, Exists0, Lift0, Neg0)
+  val allRules = List(AggSum0, Prod0, Prod1, ProdNormalize, Sum0, Sum1, AggSum1, AggSum2, AggSum3, AggSum4, Exists0, Lift0, Neg0)
   val ruleBasedOptimizer = new CalcRuleBasedTransformer(allRules)
 
   "nesting rewrite" should "optimize simple queries similar to the rule-based version" in {
