@@ -3,7 +3,8 @@ package dblab
 package frontend
 package optimizer
 
-import ch.epfl.data.dblab.frontend.optimizer.CalcOptimizer.{ SchemaOfExpression, commutes, typeOfExpression }
+import ch.epfl.data.dblab.frontend.optimizer.CalcUtils._
+
 import ch.epfl.data.dblab.frontend.parser.CalcAST
 import parser.CalcAST._
 import parser.SQLAST._
@@ -11,7 +12,7 @@ import sc.pardis.ast._
 import sc.pardis.rules._
 
 object CalcRules {
-  case object Agg0 extends Rule("Agg0") {
+  case object AggSum0 extends Rule("AggSum0") {
     def generate(node: Node): Option[Node] = node match {
       case AggSum(gbvars, CalcValue(ArithConst(IntLiteral(0)))) =>
         Some(CalcValue(ArithConst(IntLiteral(0))))
@@ -139,21 +140,21 @@ object CalcRules {
       case _ => None
     }
   }
-  case object AggSum1 extends Rule("Agg1") {
+  case object AggSum1 extends Rule("AggSum1") {
     override def generate(node: Node): Option[Node] = node match {
-      case AggSum(_, sub) if (SchemaOfExpression(sub)_2).length == 0 =>
+      case AggSum(_, sub) if (schemaOfExpression(sub)_2).length == 0 =>
         Some(sub)
       case _ => None
     }
   }
 
   //TODO: if not aggsum1
-  case object AggSum2 extends Rule("Agg2") {
+  case object AggSum2 extends Rule("AggSum2") {
     override def generate(node: Node): Option[Node] = node match {
       case AggSum(gbvars, CalcSum(list)) => {
-        val (sumivars, _) = SchemaOfExpression(CalcSum(list))
+        val (sumivars, _) = schemaOfExpression(CalcSum(list))
         val rewritten = CalcSum(list.map(term => {
-          val (_, termovars) = SchemaOfExpression(term)
+          val (_, termovars) = schemaOfExpression(term)
           val termgbvars = gbvars.toSet.union(sumivars.toSet.intersect(termovars.toSet)).toList
           (AggSum(termgbvars, term))
         }))
@@ -168,7 +169,7 @@ object CalcRules {
   }
 
   //TODO make it more clear
-  case object AggSum3 extends Rule("Agg3") {
+  case object AggSum3 extends Rule("AggSum3") {
     override def generate(node: Node): Option[Node] = node match {
       case AggSum(gbvars, CalcProd(list)) => {
         val calcOne = CalcValue(ArithConst(IntLiteral(1)))
@@ -189,10 +190,10 @@ object CalcRules {
           p3
         }
         val (unnested, nested) = list.foldLeft[(CalcExpr, CalcExpr)]((calcOne, calcOne))((acc, cur) => {
-          (if (commutes(acc._2, cur) && (SchemaOfExpression(cur)._2).toSet.subsetOf(gbvars.toSet)) (prod(List(acc._1, cur)), acc._2) else (acc._1, prod(List(acc._2, cur))))
+          (if (commutes(acc._2, cur) && (schemaOfExpression(cur)._2).toSet.subsetOf(gbvars.toSet)) (prod(List(acc._1, cur)), acc._2) else (acc._1, prod(List(acc._2, cur))))
         })
-        val unnestedivars = SchemaOfExpression(unnested)._1
-        val newgbvars = (SchemaOfExpression(nested)._2).toSet.intersect(gbvars.toSet.union(unnestedivars.toSet)).toList
+        val unnestedivars = schemaOfExpression(unnested)._1
+        val newgbvars = (schemaOfExpression(nested)._2).toSet.intersect(gbvars.toSet.union(unnestedivars.toSet)).toList
         //        CalcProd(List(unnested, AggSum(newgbvars, nested)))
         val res = prod(List(unnested, AggSum(newgbvars, nested)))
         if (res == node)
@@ -204,24 +205,12 @@ object CalcRules {
     }
   }
 
-  //  case object AggSum4 extends Rule("AggSum4") {
-  //    override def generate(node: Node): Option[Node] = node match {
-  //      case AggSum(gbvars1, AggSum(gbvars2, t)) if (SchemaOfExpression(t) _2).toSet.subsetOf(gbvars1.toSet) => {
-  //        Some(AggSum(gbvars1, t))
-  //      }
-  //      case AggSum(gbvars, t) if (SchemaOfExpression(t) _2).toSet.subsetOf(gbvars.toSet) => {
-  //        Some(t)
-  //      }
-  //      case _ => None
-  //    }
-  //  }
-
   case object AggSum4 extends Rule("AggSum4") {
     override def generate(node: Node): Option[Node] = node match {
       case AggSum(gbvars1, AggSum(gbvars2, t)) => {
         Some(AggSum(gbvars1, t))
       }
-      case AggSum(gbvars, t) if (SchemaOfExpression(t) _2).toSet.subsetOf(gbvars.toSet) => {
+      case AggSum(gbvars, t) if (schemaOfExpression(t) _2).toSet.subsetOf(gbvars.toSet) => {
         Some(t)
       }
       case _ => None
@@ -239,7 +228,7 @@ object CalcRules {
   case object Lift0 extends Rule("Lift0") {
     override def generate(node: Node): Option[Node] = node match {
       case Lift(v, nested) => {
-        val (nestedivars, nestedovars) = SchemaOfExpression(nested)
+        val (nestedivars, nestedovars) = schemaOfExpression(nested)
         if (nestedovars.contains(v))
           None
         else if (nestedivars.contains(v)) {

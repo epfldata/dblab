@@ -60,7 +60,6 @@ object Driver {
           case x => List(x)
         }
       }
-
       val queries = listOfQueries(query)
 
       queries.foreach({ q =>

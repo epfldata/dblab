@@ -4,7 +4,6 @@ package frontend
 package optimizer
 
 import parser.CalcAST._
-import parser.SQLAST._
 import sc.pardis.ast._
 import sc.pardis.rules._
 
