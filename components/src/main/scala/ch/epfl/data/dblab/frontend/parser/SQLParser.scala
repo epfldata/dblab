@@ -2,7 +2,6 @@ package ch.epfl.data
 package dblab
 package frontend
 package parser
-
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.RegexParsers
 import scala.util.parsing.combinator._
@@ -11,7 +10,8 @@ import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.token._
 import scala.util.parsing.input.CharArrayReader.EofCh
 import SQLAST._
-import ch.epfl.data.dblab.frontend.optimizer.SQLToCalc
+import ch.epfl.data.dblab.frontend.optimizer.{ SQLToCalc, SQLUtils }
+import SQLUtils._
 import ch.epfl.data.dblab.frontend.parser.SQLParser.ident
 
 /**
@@ -21,6 +21,7 @@ import ch.epfl.data.dblab.frontend.parser.SQLParser.ident
  * @author Yannis Klonatos
  * @author Florian Chlan
  * @author Parand Alizadeh
+ * @author Mohsen Ferdosi
  */
 object SQLParser extends StandardTokenParsers {
 
@@ -254,7 +255,7 @@ object SQLParser extends StandardTokenParsers {
     case (acc, (("IN LIST", l: List[LiteralExpression])))        => InList(acc, l)
     case (acc, (("ALL", List(op: String, s: SelectStatement))))  => Not(scanForExistence(s, acc, op, true))
     case (acc, (("SOME", List(op: String, s: SelectStatement)))) => scanForExistence(s, acc, op, false)
-    case (acc, (("IN", s: SelectStatement)))                     => scanForExistence(s, acc, "=", false) // TODO it was ==
+    case (acc, (("IN", s: SelectStatement)))                     => scanForExistence(s, acc, "=", false)
   }
 
   def parseOperandExpression: Parser[Expression] =
@@ -313,12 +314,12 @@ object SQLParser extends StandardTokenParsers {
             case ">=" => GreaterOrEqual(e1, e2)
           }
           if (inverse)
-            SQLToCalc.Inverse(c)
+            Inverse(c)
           else
             c
         }
 
-        if (SQLToCalc.is_agg_expr(target)) {
+        if (is_agg_expr(target)) {
           cmpFact(e, s)
         } else {
           val cmp: Expression = cmpFact(e, target)

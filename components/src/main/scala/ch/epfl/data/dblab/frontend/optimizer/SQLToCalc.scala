@@ -5,13 +5,14 @@ package optimizer
 
 import ch.epfl.data.dblab.frontend.parser.{ CalcAST, SQLAST }
 import ch.epfl.data.dblab.schema.VarCharType
-import parser.SQLAST.{ CountExpr, _ }
+import parser.SQLAST.{ CountExpr, LiteralExpression, _ }
 import parser.CalcAST._
 import optimizer.CalcOptimizer._
-//import schema._
+import schema._
 import sc.pardis.types._
 //import scala.reflect.runtime.{ universe => ru }
 //import ru._ //TODO this symbol ?
+import SQLUtils._
 
 /**
  * Converts SQL queries into a calculus representation.
@@ -19,8 +20,11 @@ import sc.pardis.types._
  * @author Mohsen Ferdosi
  */
 
-object SQLToCalc {
+class SQLToCalc(schema: Schema) {
 
+  def init(): Unit = {
+    declare_std_function("listmax", x => IntType)
+  }
   def CalcOfQuery(query_name: Option[String], tables: List[CreateStream], query: TopLevelStatement): List[(String, CalcExpr)] = {
 
     println("query:\n" + query)
@@ -375,16 +379,43 @@ object SQLToCalc {
         else
           (CalcProd(List(calc_of_condition(tables, sources, q.where),
             rcr_e(q.projections.extractExpretions().head._1))), false)
-      //      case f: FunctionExp =>
-      //        val fn = f.name
-      //        val fargs = f.inputs
-      //        val ( lifted_args_and_gb_vars , arg_calc ) = fargs.map({ arg =>
-      //          val raw_arg_calc = rcr_e(arg)
-      //          val ( arg_val , arg_calc ) = lift_if_necessary(raw_arg_calc)
-      //          ((arg_val,SchemaOfExpression(raw_arg_calc)._2) , ( is_agg_expr(arg),arg_calc) )
-      //        }).unzip
-      //        val ( lifted_args , gb_vars ) = lifted_args_and_gb_vars.unzip
-      //        val (agg_args,non_agg_args) =
+
+      case f: FunctionExp =>
+
+        val fn = f.name
+        val fargs = f.inputs
+        val (lifted_args_and_gb_vars, arg_calc) = fargs.map({ arg =>
+          val raw_arg_calc = rcr_e(arg)
+          val (arg_val, arg_calc_local) = lift_if_necessary(raw_arg_calc)
+          ((arg_val, SchemaOfExpression(raw_arg_calc)._2), (is_agg_expr(arg), arg_calc_local))
+        }).unzip
+        val (lifted_args, gb_vars) = lifted_args_and_gb_vars.unzip
+        val (agg_args, non_agg_args) = arg_calc.partition(x => x._1)
+
+        val agg_res =
+          tgt_var match {
+            case None    => List()
+            case Some(t) => List(t)
+          }
+
+        val args_list = {
+          val args_expr = CalcProd((agg_args ++ non_agg_args).map(x => x._2))
+          //          if ( args_expr.equals( CalcValue(ArithConst(IntLiteral(1))) ) )
+          if (args_expr.equals(CalcProd(List(CalcValue(ArithConst(IntLiteral(1))))))) //TODO
+            List()
+          else
+            prod_list(args_expr)
+        }
+
+        val FunctionDeclaration(impl_name, imple_type) = declaration(fn, lifted_args.map(x => IntType))
+
+        (mk_aggsum(agg_res ++ gb_vars.flatten, CalcProd(args_list ++ List({
+          val calc = CalcValue(ArithFunc(impl_name, lifted_args, imple_type))
+          if (agg_res == List())
+            calc
+          else
+            Lift(agg_res.head, calc)
+        }))), agg_res != List())
 
       //TODO other cases
 
@@ -517,21 +548,6 @@ object SQLToCalc {
   }
 
   // ********SQL********* :
-  def is_agg_expr(expr: Expression): Boolean = {
-    // There is a isAggregateOpExpr in scala but seems different
-    println(expr)
-    expr match {
-      case _: LiteralExpression => false
-      case _: FieldIdent        => false
-      case b: BinaryOperator    => is_agg_expr(b.left) || is_agg_expr(b.right)
-      case u: UnaryOperator     => is_agg_expr(u.expr)
-      case _: Aggregation       => true
-      case f: FunctionExp       => f.inputs.map(x => is_agg_expr(x)).foldLeft(false)((sum, cur) => sum || cur)
-      case s: SelectStatement   => false
-      case d: Distinct          => false // its not in ocaml
-      //TODO nested_q , cases in Ocaml and others in Scala
-    }
-  }
 
   def is_agg_query(stmt: TopLevelStatement): Boolean = {
 
@@ -564,20 +580,6 @@ object SQLToCalc {
       case (Some(And(c1, c2)))                => Some(And(push_down_nots(Some(c1)).get, push_down_nots(Some(c2)).get))
       case (Some(Or(c1, c2)))                 => Some(Or(push_down_nots(Some(c1)).get, push_down_nots(Some(c2)).get))
       case s                                  => s
-    }
-  }
-
-  def Inverse(e: BinaryOperator): BinaryOperator = {
-    val e1 = e.left
-    val e2 = e.right
-    e match {
-      case _: Equals         => NotEquals(e1, e2)
-      case _: NotEquals      => Equals(e1, e2)
-      case _: GreaterThan    => LessOrEqual(e1, e2)
-      case _: LessOrEqual    => GreaterThan(e1, e2)
-      case _: GreaterOrEqual => LessThan(e1, e2)
-      case _: LessThan       => GreaterOrEqual(e1, e2)
-
     }
   }
 
@@ -704,6 +706,15 @@ object SQLToCalc {
     else CalcProd(List(mk_exists(lift_expr), lift))
   }
 
+  //   ********Ring********** :
+
+  def prod_list(e: CalcExpr): List[CalcExpr] = {
+    e match {
+      case CalcProd(l) => l
+      case _           => List(e)
+    }
+  }
+
   //   ********List********** :
 
   def scan_map[A, B](f: (List[A], A, List[A]) => B, l: List[A]): List[B] = {
@@ -714,5 +725,16 @@ object SQLToCalc {
       }
     }
     iterate(List(), l)
+  }
+
+  //   ********Function********** :
+
+  def declaration(fn: String, argtypes: List[Tpe]): FunctionDeclaration = {
+    schema.functions(fn).apply(argtypes)
+  }
+
+  def declare_std_function(name: String, //fn: (List[LiteralExpression],Tpe) => LiteralExpression ,
+                           typing_rule: List[Tpe] => Tpe): Unit = {
+    schema.functions += name -> (l => FunctionDeclaration(name, typing_rule(l)))
   }
 }

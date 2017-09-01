@@ -12,6 +12,7 @@ import java.io.PrintStream
 import ch.epfl.data.dblab.frontend.parser.CalcAST._
 import ch.epfl.data.dblab.frontend.parser.DDLAST.UseSchema
 import ch.epfl.data.dblab.frontend.parser.SQLAST._
+import ch.epfl.data.sc.pardis.types.IntType
 import frontend.parser.OperatorAST._
 import config._
 import schema._
@@ -64,9 +65,13 @@ object Driver {
 
       val queries = listOfQueries(query)
 
+      val sql_to_calc = new SQLToCalc(schema)
+
+      sql_to_calc.init()
+
       queries.foreach({ q =>
         val namedQuery = new SQLNamer(schema).nameQuery(q)
-        val calc_expr = SQLToCalc.CalcOfQuery(None, tables, namedQuery)
+        val calc_expr = sql_to_calc.CalcOfQuery(None, tables, namedQuery)
         calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + CalcAST.prettyprint(tgt_calc) }).foreach(println)
       })
       //      calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + tgt_calc }).foreach(println) // TODO this is for test
