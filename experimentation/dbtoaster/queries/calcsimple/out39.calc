@@ -1,0 +1,2 @@
+COUNT: 
+(R(R2_A, R2_B) * EXISTS( AggSum([R2_B], R(R2_B, R1_B))))

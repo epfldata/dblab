@@ -1,0 +1,34 @@
+QUERY11: 
+AggSum([P_PARTKEY], 
+  (EXISTS(
+     AggSum([P_PARTKEY], 
+       (PARTSUPP(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST,
+                   PS_COMMENT) *
+         SUPPLIER(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE,
+                    S_ACCTBAL, S_COMMENT) *
+         NATION(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT) *
+         {PS_SUPPKEY = S_SUPPKEY} * {S_NATIONKEY = N_NATIONKEY} *
+         {N_NAME = 'GERMANY'} * (P_PARTKEY ^= PS_PARTKEY)))) *
+    (P_VALUE ^=
+      AggSum([P_PARTKEY], 
+        (PARTSUPP(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST,
+                    PS_COMMENT) *
+          SUPPLIER(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE,
+                     S_ACCTBAL, S_COMMENT) *
+          NATION(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT) *
+          {PS_SUPPKEY = S_SUPPKEY} * {S_NATIONKEY = N_NATIONKEY} *
+          {N_NAME = 'GERMANY'} * PS_SUPPLYCOST * PS_AVAILQTY *
+          (P_PARTKEY ^= PS_PARTKEY)))) *
+    AggSum([], 
+      ((__sql_inline_agg_1 ^=
+         (AggSum([], 
+            (PARTSUPP(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST,
+                        PS_COMMENT) *
+              SUPPLIER(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE,
+                         S_ACCTBAL, S_COMMENT) *
+              NATION(N_NATIONKEY, N_NAME, N_REGIONKEY, N_COMMENT) *
+              {PS_SUPPKEY = S_SUPPKEY} * {S_NATIONKEY = N_NATIONKEY} *
+              {N_NAME = 'GERMANY'} * PS_SUPPLYCOST * PS_AVAILQTY)) *
+           0.001)) *
+        {P_VALUE > __sql_inline_agg_1})) *
+    P_VALUE))

@@ -1,0 +1,59 @@
+MKT_SHARE: 
+(AggSum([TOTAL_O_YEAR], 
+   ((TOTAL_NAME ^= 'BRAZIL') *
+     AggSum([TOTAL_VOLUME, TOTAL_O_YEAR, TOTAL_NAME], 
+       ((P_TYPE ^= 'ECONOMY ANODIZED STEEL') * (R_NAME ^= 'AMERICA') *
+         PART(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE,
+                P_CONTAINER, P_RETAILPRICE, P_COMMENT) *
+         SUPPLIER(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE,
+                    S_ACCTBAL, S_COMMENT) *
+         LINEITEM(L_ORDERKEY, P_PARTKEY, S_SUPPKEY, L_LINENUMBER, L_QUANTITY,
+                    L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG,
+                    L_LINESTATUS, L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE,
+                    L_SHIPINSTRUCT, L_SHIPMODE, L_COMMENT) *
+         (TOTAL_VOLUME ^= (L_EXTENDEDPRICE * {(1 + (-1 * L_DISCOUNT))})) *
+         ORDERS(L_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE,
+                  O_ORDERDATE, O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY,
+                  O_COMMENT) *
+         {O_ORDERDATE >= DATE('1995-1-1')} *
+         {O_ORDERDATE <= DATE('1996-12-31')} *
+         (TOTAL_O_YEAR ^= {[date_part:int]('year', O_ORDERDATE)}) *
+         CUSTOMER(O_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE,
+                    C_ACCTBAL, C_MKTSEGMENT, C_COMMENT) *
+         NATION(C_NATIONKEY, N1_NAME, N1_REGIONKEY, N1_COMMENT) *
+         NATION(S_NATIONKEY, N2_NAME, N2_REGIONKEY, N2_COMMENT) *
+         (TOTAL_NAME ^= N2_NAME) * REGION(N1_REGIONKEY, R_NAME, R_COMMENT))) *
+     TOTAL_VOLUME)) *
+  AggSum([], 
+    ((__sql_inline_agg_2 ^=
+       AggSum([], 
+         ((__sql_inline_agg_1 ^=
+            AggSum([TOTAL_O_YEAR], 
+              (AggSum([TOTAL_VOLUME, TOTAL_O_YEAR], 
+                 ((P_TYPE ^= 'ECONOMY ANODIZED STEEL') *
+                   (R_NAME ^= 'AMERICA') *
+                   PART(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE,
+                          P_CONTAINER, P_RETAILPRICE, P_COMMENT) *
+                   SUPPLIER(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY,
+                              S_PHONE, S_ACCTBAL, S_COMMENT) *
+                   LINEITEM(L_ORDERKEY, P_PARTKEY, S_SUPPKEY, L_LINENUMBER,
+                              L_QUANTITY, L_EXTENDEDPRICE, L_DISCOUNT, L_TAX,
+                              L_RETURNFLAG, L_LINESTATUS, L_SHIPDATE,
+                              L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT,
+                              L_SHIPMODE, L_COMMENT) *
+                   (TOTAL_VOLUME ^=
+                     (L_EXTENDEDPRICE * {(1 + (-1 * L_DISCOUNT))})) *
+                   ORDERS(L_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE,
+                            O_ORDERDATE, O_ORDERPRIORITY, O_CLERK,
+                            O_SHIPPRIORITY, O_COMMENT) *
+                   {O_ORDERDATE >= DATE('1995-1-1')} *
+                   {O_ORDERDATE <= DATE('1996-12-31')} *
+                   (TOTAL_O_YEAR ^= {[date_part:int]('year', O_ORDERDATE)}) *
+                   CUSTOMER(O_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY,
+                              C_PHONE, C_ACCTBAL, C_MKTSEGMENT, C_COMMENT) *
+                   NATION(C_NATIONKEY, N1_NAME, N1_REGIONKEY, N1_COMMENT) *
+                   NATION(S_NATIONKEY, N2_NAME, N2_REGIONKEY, N2_COMMENT) *
+                   REGION(N1_REGIONKEY, R_NAME, R_COMMENT))) *
+                TOTAL_VOLUME))) *
+           {[listmax:float](1, __sql_inline_agg_1)}))) *
+      {[/:float](__sql_inline_agg_2)})))

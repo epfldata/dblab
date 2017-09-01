@@ -1,0 +1,12 @@
+COUNT: 
+AggSum([R3_C], 
+  (EXISTS(
+     AggSum([R3_C], 
+       (EXISTS( AggSum([R2_A], (R(R1_A, R1_B) * (R2_A ^= R1_A)))) *
+         (R2_C ^= AggSum([R2_A], (R(R1_A, R1_B) * (R2_A ^= R1_A)))) *
+         (R3_C ^= R2_C)))) *
+    (R3___SQL_COUNT_AGGREGATE_1 ^=
+      AggSum([R3_C], 
+        (EXISTS( AggSum([R2_A], (R(R1_A, R1_B) * (R2_A ^= R1_A)))) *
+          (R2_C ^= AggSum([R2_A], (R(R1_A, R1_B) * (R2_A ^= R1_A)))) *
+          (R3_C ^= R2_C))))))

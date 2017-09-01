@@ -1,0 +1,7 @@
+COUNT: 
+(T(T1_C, T1_D) * T(T2_C, T2_D) *
+  AggSum([], 
+    (S(S_B, S_C) *
+      AggSum([], 
+        ((__sql_inline_or_1 ^= ({T1_D = T2_C} + {2 = (S_B * T1_D)})) *
+          {__sql_inline_or_1 > 0})))))

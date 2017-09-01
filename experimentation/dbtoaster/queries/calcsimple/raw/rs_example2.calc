@@ -1,0 +1,4 @@
+RESULT_1: 
+AggSum([R_B], (R(R_A, R_B) * S(S_B, S_C) * {R_B = S_B} * R_A * S_C))
+RESULT_2: 
+AggSum([R_B], (R(R_A, R_B) * S(S_B, S_C) * {R_B = S_B} * (R_A + S_C)))

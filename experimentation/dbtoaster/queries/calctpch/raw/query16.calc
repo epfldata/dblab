@@ -1,0 +1,21 @@
+SUPPLIER_CNT: 
+AggSum([P_BRAND, P_TYPE, P_SIZE], 
+  EXISTS(
+    AggSum([P_BRAND, P_TYPE, P_SIZE, PS_SUPPKEY], 
+      (PARTSUPP(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST,
+                  PS_COMMENT) *
+        PART(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER,
+               P_RETAILPRICE, P_COMMENT) *
+        {P_PARTKEY = PS_PARTKEY} * {P_BRAND != 'Brand#45'} *
+        {0 = [regexp_match:int]('^MEDIUM POLISHED.*$', P_TYPE)} *
+        {P_SIZE IN [49, 14, 23, 45, 19, 3, 36, 9]} *
+        AggSum([], 
+          ((__domain_1 ^=
+             AggSum([], 
+               AggSum([unused], 
+                 (SUPPLIER(S_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY,
+                             S_PHONE, S_ACCTBAL, S_COMMENT) *
+                   {0 !=
+                   [regexp_match:int]('^.*Customer.*Complaints.*$', S_COMMENT)} *
+                   {PS_SUPPKEY = S_SUPPKEY} * (unused ^= 1))))) *
+            {0 = __domain_1}))))))

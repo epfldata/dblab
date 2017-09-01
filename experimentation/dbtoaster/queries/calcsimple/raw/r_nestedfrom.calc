@@ -1,0 +1,5 @@
+Q: 
+AggSum([P_A], 
+  (EXISTS( AggSum([P_A], (R(R_A, R_B) * (P_A ^= R_A)))) *
+    (P_VALUE ^= AggSum([P_A], (R(R_A, R_B) * R_B * (P_A ^= R_A)))) *
+    {P_VALUE > 5} * P_VALUE))

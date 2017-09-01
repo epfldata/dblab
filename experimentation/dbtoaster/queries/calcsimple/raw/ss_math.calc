@@ -1,0 +1,5 @@
+COUNT: 
+AggSum([S2_B, S2_C, RESULT_1, RESULT_2, RESULT_3], 
+  (S(S1_B, S1_C) * S(S2_B, S2_C) * {2 != S2_C} * {0 = S2_B} *
+    (RESULT_1 ^= (S2_B + (S1_B * S1_C))) *
+    (RESULT_2 ^= (S2_C * S2_B * S2_B)) * (RESULT_3 ^= S1_C)))

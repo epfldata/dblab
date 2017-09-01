@@ -1,0 +1,4 @@
+COUNT: 
+(AggSum([R3_A], 
+   (R(R1_A, R1_B) * (R3_A ^= R1_A) * AggSum([R1_A], R(R1_A, R2_B)))) *
+  AggSum([R3_A], R(R3_A, R4_B)))

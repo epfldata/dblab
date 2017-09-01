@@ -1,0 +1,2 @@
+RESULT: 
+AggSum([], (R(R_A, R_B) * S(R_B, S_C) * R_A * S_C))

@@ -1,0 +1,7 @@
+AGG: 
+AggSum([], 
+  (R(R_A, R_B) *
+    AggSum([], 
+      ((__sql_inline_or_1 ^= ({R_A = 1} + {R_A = 2} + {R_A = 3})) *
+        {__sql_inline_or_1 > 0})) *
+    R_B))

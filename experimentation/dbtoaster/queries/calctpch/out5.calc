@@ -1,0 +1,39 @@
+QUERY11: 
+(EXISTS(
+   AggSum([P_PARTKEY, P_NATIONKEY], 
+     (PARTSUPP(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST, PS_COMMENT) *
+       (P_PARTKEY ^= PS_PARTKEY) *
+       SUPPLIER(PS_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE,
+                  S_ACCTBAL, S_COMMENT) *
+       (P_NATIONKEY ^= S_NATIONKEY) *
+       EXISTS(
+         AggSum([PS_SUPPKEY], 
+           ((PS2_PARTKEY ^= 2) *
+             PARTSUPP(PS2_PARTKEY, PS_SUPPKEY, PS2_AVAILQTY, PS2_SUPPLYCOST,
+                        PS2_COMMENT))))))) *
+  AggSum([], 
+    ((P_VALUE ^=
+       AggSum([P_PARTKEY, P_NATIONKEY], 
+         (PARTSUPP(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST,
+                     PS_COMMENT) *
+           (P_PARTKEY ^= PS_PARTKEY) *
+           SUPPLIER(PS_SUPPKEY, S_NAME, S_ADDRESS, S_NATIONKEY, S_PHONE,
+                      S_ACCTBAL, S_COMMENT) *
+           (P_NATIONKEY ^= S_NATIONKEY) *
+           EXISTS(
+             AggSum([PS_SUPPKEY], 
+               ((PS2_PARTKEY ^= 2) *
+                 PARTSUPP(PS2_PARTKEY, PS_SUPPKEY, PS2_AVAILQTY,
+                            PS2_SUPPLYCOST, PS2_COMMENT)))) *
+           {(PS_SUPPLYCOST * PS_AVAILQTY)}))) *
+      AggSum([], 
+        ((__sql_inline_agg_1 ^=
+           (AggSum([P_NATIONKEY], 
+              (PARTSUPP(PS_PARTKEY, PS_SUPPKEY, PS_AVAILQTY, PS_SUPPLYCOST,
+                          PS_COMMENT) *
+                SUPPLIER(PS_SUPPKEY, S_NAME, S_ADDRESS, P_NATIONKEY, S_PHONE,
+                           S_ACCTBAL, S_COMMENT) *
+                {(PS_SUPPLYCOST * PS_AVAILQTY)})) *
+             0.001)) *
+          {P_VALUE > __sql_inline_agg_1})) *
+      P_VALUE)))

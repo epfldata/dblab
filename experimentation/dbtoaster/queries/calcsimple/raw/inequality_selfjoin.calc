@@ -1,0 +1,4 @@
+QUERY_1_COUNT: 
+AggSum([R1_A], (R(R1_A, R1_B) * R(R2_A, R2_B) * {R1_A != R2_A}))
+QUERY_2_COUNT: 
+AggSum([R1_A], (R(R1_A, R1_B) * R(R2_A, R2_B) * {R1_A != R2_A}))
