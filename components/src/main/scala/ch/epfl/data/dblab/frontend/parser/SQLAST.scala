@@ -3,7 +3,7 @@ package dblab
 package frontend
 package parser
 
-import ch.epfl.data.dblab.frontend.parser.CalcAST.ArithConst
+import sc.pardis.types._
 
 import scala.reflect.runtime.{ universe => ru }
 //import ru._
@@ -163,18 +163,15 @@ object SQLAST {
   case class StarExpression(relation: Option[String]) extends Expression
   // Expressions
   trait Expression extends SQLNode {
-    // FIXME why TypeTag[_] ?
-    private var tpe: ru.TypeTag[_] = null
     val isAggregateOpExpr = true
+    @deprecated("Use the tpe field instead", "")
     def tp = tpe match {
-      case t if t == null => tpe // TODO -- Introduce check here?
-      case _              => tpe
+      case IntType    => ru.typeTag[Int]
+      case CharType   => ru.typeTag[Char]
+      case DoubleType => ru.typeTag[Double]
+      case FloatType  => ru.typeTag[Float]
     }
-    def setTp[A](tt: ru.TypeTag[A]) {
-      if (tt == null && this != NullLiteral)
-        throw new Exception("SQL Type Inferrence BUG: type of Expression " + this + " cannot be set to null.")
-      this.tpe = tt
-    }
+    var tpe: Tpe = _
   }
 
   trait BinaryOperator extends Expression {
@@ -277,40 +274,40 @@ object SQLAST {
       e match {
         case tl: TopLevelStatement =>
           throw new Exception(s"Make sure that you pattern match TopLevelStatement before ExpressionShape: $tl")
-        case Or(e1, e2)             => Some((l) => Or(l(0), l(1)), Seq(e1, e2))
-        case And(e1, e2)            => Some((l) => And(l(0), l(1)), Seq(e1, e2))
-        case Equals(e1, e2)         => Some((l) => Equals(l(0), l(1)), Seq(e1, e2))
-        case NotEquals(e1, e2)      => Some((l) => NotEquals(l(0), l(1)), Seq(e1, e2))
-        case LessOrEqual(e1, e2)    => Some((l) => LessOrEqual(l(0), l(1)), Seq(e1, e2))
-        case LessThan(e1, e2)       => Some((l) => LessThan(l(0), l(1)), Seq(e1, e2))
-        case GreaterOrEqual(e1, e2) => Some((l) => GreaterOrEqual(l(0), l(1)), Seq(e1, e2))
-        case GreaterThan(e1, e2)    => Some((l) => GreaterThan(l(0), l(1)), Seq(e1, e2))
-        case Like(e1, e2)           => Some((l) => Like(l(0), l(1)), Seq(e1, e2))
-        case Add(e1, e2)            => Some((l) => Add(l(0), l(1)), Seq(e1, e2))
-        case Subtract(e1, e2)       => Some((l) => Subtract(l(0), l(1)), Seq(e1, e2))
-        case Multiply(e1, e2)       => Some((l) => Multiply(l(0), l(1)), Seq(e1, e2))
-        case Divide(e1, e2)         => Some((l) => Divide(l(0), l(1)), Seq(e1, e2))
-        case StringConcat(e1, e2)   => Some((l) => StringConcat(l(0), l(1)), Seq(e1, e2))
-        case CountExpr(e1)          => Some((l) => CountExpr(l(0)), Seq(e1))
-        case Sum(e1)                => Some((l) => Sum(l(0)), Seq(e1))
-        case Avg(e1)                => Some((l) => Avg(l(0)), Seq(e1))
-        case Min(e1)                => Some((l) => Min(l(0)), Seq(e1))
-        case Max(e1)                => Some((l) => Max(l(0)), Seq(e1))
-        case Year(e1)               => Some((l) => Year(l(0)), Seq(e1))
-        case Upper(e1)              => Some((l) => Upper(l(0)), Seq(e1))
-        case Distinct(e1)           => Some((l) => Distinct(l(0)), Seq(e1))
-        case AllExp(e1)             => Some((l) => AllExp(l(0).asInstanceOf[SelectStatement]), Seq(e1))
-        case SomeExp(e1)            => Some((l) => SomeExp(l(0).asInstanceOf[SelectStatement]), Seq(e1))
-        case Not(e1)                => Some((l) => Not(l(0)), Seq(e1))
-        case Abs(e1)                => Some((l) => Abs(l(0)), Seq(e1))
-        case UnaryPlus(e1)          => Some((l) => UnaryPlus(l(0)), Seq(e1))
-        case UnaryMinus(e1)         => Some((l) => UnaryMinus(l(0)), Seq(e1))
-        case Exists(e1)             => Some((l) => Exists(l(0).asInstanceOf[SelectStatement]), Seq(e1))
-        case Case(e1, e2, e3)       => Some((l) => Case(l(0), l(1), l(2)), Seq(e1, e2, e3))
-        case In(e1, l2)             => Some((l) => In(l(0), l.tail), e1 +: l2)
-        case InList(e1, l2)         => Some((l) => InList(l(0), l.tail.asInstanceOf[List[LiteralExpression]]), e1 +: l2)
-
-        case _                      => None
+        case Or(e1, e2)                          => Some((l) => Or(l(0), l(1)), Seq(e1, e2))
+        case And(e1, e2)                         => Some((l) => And(l(0), l(1)), Seq(e1, e2))
+        case Equals(e1, e2)                      => Some((l) => Equals(l(0), l(1)), Seq(e1, e2))
+        case NotEquals(e1, e2)                   => Some((l) => NotEquals(l(0), l(1)), Seq(e1, e2))
+        case LessOrEqual(e1, e2)                 => Some((l) => LessOrEqual(l(0), l(1)), Seq(e1, e2))
+        case LessThan(e1, e2)                    => Some((l) => LessThan(l(0), l(1)), Seq(e1, e2))
+        case GreaterOrEqual(e1, e2)              => Some((l) => GreaterOrEqual(l(0), l(1)), Seq(e1, e2))
+        case GreaterThan(e1, e2)                 => Some((l) => GreaterThan(l(0), l(1)), Seq(e1, e2))
+        case Like(e1, e2)                        => Some((l) => Like(l(0), l(1)), Seq(e1, e2))
+        case Add(e1, e2)                         => Some((l) => Add(l(0), l(1)), Seq(e1, e2))
+        case Subtract(e1, e2)                    => Some((l) => Subtract(l(0), l(1)), Seq(e1, e2))
+        case Multiply(e1, e2)                    => Some((l) => Multiply(l(0), l(1)), Seq(e1, e2))
+        case Divide(e1, e2)                      => Some((l) => Divide(l(0), l(1)), Seq(e1, e2))
+        case StringConcat(e1, e2)                => Some((l) => StringConcat(l(0), l(1)), Seq(e1, e2))
+        case CountExpr(e1)                       => Some((l) => CountExpr(l(0)), Seq(e1))
+        case Sum(e1)                             => Some((l) => Sum(l(0)), Seq(e1))
+        case Avg(e1)                             => Some((l) => Avg(l(0)), Seq(e1))
+        case Min(e1)                             => Some((l) => Min(l(0)), Seq(e1))
+        case Max(e1)                             => Some((l) => Max(l(0)), Seq(e1))
+        case Year(e1)                            => Some((l) => Year(l(0)), Seq(e1))
+        case Upper(e1)                           => Some((l) => Upper(l(0)), Seq(e1))
+        case Distinct(e1)                        => Some((l) => Distinct(l(0)), Seq(e1))
+        case AllExp(e1)                          => Some((l) => AllExp(l(0).asInstanceOf[SelectStatement]), Seq(e1))
+        case SomeExp(e1)                         => Some((l) => SomeExp(l(0).asInstanceOf[SelectStatement]), Seq(e1))
+        case Not(e1)                             => Some((l) => Not(l(0)), Seq(e1))
+        case Abs(e1)                             => Some((l) => Abs(l(0)), Seq(e1))
+        case UnaryPlus(e1)                       => Some((l) => UnaryPlus(l(0)), Seq(e1))
+        case UnaryMinus(e1)                      => Some((l) => UnaryMinus(l(0)), Seq(e1))
+        case Exists(e1)                          => Some((l) => Exists(l(0).asInstanceOf[SelectStatement]), Seq(e1))
+        case Case(e1, e2, e3)                    => Some((l) => Case(l(0), l(1), l(2)), Seq(e1, e2, e3))
+        case In(e1, l2)                          => Some((l) => In(l(0), l.tail), e1 +: l2)
+        case InList(e1, l2)                      => Some((l) => InList(l(0), l.tail.asInstanceOf[List[LiteralExpression]]), e1 +: l2)
+        case (_: LiteralExpression) | CountAll() => Some((l) => e, Nil)
+        case _                                   => None
       }
   }
 

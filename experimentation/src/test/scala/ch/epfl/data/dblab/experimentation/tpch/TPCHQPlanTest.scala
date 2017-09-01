@@ -10,7 +10,7 @@ import storagemanager._
 import java.io.PrintStream
 import config.Config
 
-class TPCHTest extends FlatSpec {
+class TPCHQPlanTest extends FlatSpec {
   val interpreter = TPCHInterpreter
 
   TPCHData.runOnData(datapath => {
@@ -20,7 +20,7 @@ class TPCHTest extends FlatSpec {
     interpreter.scalingFactor = 0.1
     val queries = (1 to 22) map (i => s"Q$i")
     for (currQuery <- queries) {
-      s"TPCH $currQuery" should "run correctly with SF0.1" in {
+      s"TPCH $currQuery written using the QPlan DSL" should "run correctly with SF0.1" in {
         val outputName = interpreter.getOutputName(currQuery)
         Console.withOut(new PrintStream(outputName)) {
           interpreter.executeQuery(currQuery, schema)
@@ -37,4 +37,5 @@ class TPCHTest extends FlatSpec {
       }
     }
   })
+
 }

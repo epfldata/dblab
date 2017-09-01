@@ -23,7 +23,7 @@ object Config {
   /** Specifies whether to obtain statistics during schema definition */
   val gatherStats: Boolean = false
   /** Specifies whether to show information about the query plan generation during execution */
-  val debugQueryPlan: Boolean = true
+  val debugQueryPlan: Boolean = false
   /** Specifies whether to specialize the loader or not */
   var specializeLoader: Boolean = true
   /** Specifies whether to specialize the query engine or not */

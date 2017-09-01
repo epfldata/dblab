@@ -137,6 +137,7 @@ class SQLNamer(schema: Schema) {
         case null                                 => Nil
         case Equals(IntLiteral(1), IntLiteral(1)) => Nil // already handlered by the parser
         case e: Equals                            => List(e)
+        case And(e1: Equals, e2: Equals)          => List(e1, e2)
       }
       currentEqClause ++ extractJoinEqualities(left) ++ extractJoinEqualities(right)
     case _ => Nil
@@ -177,7 +178,7 @@ class SQLNamer(schema: Schema) {
           })
         })
         val namedWhere = withSchema(newSchema)(() => where.map(nameExpr))
-        val joinEqs = namedSource.map(extractJoinEqualities).getOrElse(Nil)
+        val joinEqs = namedSource.map(ns => extractJoinEqualities(ns).map(nameExpr)).getOrElse(Nil)
         val newWhere = namedWhere match {
           case Some(v) => Some(joinEqs.foldLeft(v)((x, y) => And(x, y)))
           case None => joinEqs match {
@@ -186,7 +187,8 @@ class SQLNamer(schema: Schema) {
           }
         }
         val namedGroupBy = withSchema(newSchema)(() => groupBy.map(gb => gb.copy(keys = gb.keys.map(nameExprOptional(false)))))
-        SelectStatement(withs, ExpressionProjections(namedProjections), namedSource, newWhere, namedGroupBy, having, orderBy, limit, aliases)
+        val namedOrderBy = withSchema(newSchema)(() => orderBy.map(ob => ob.copy(keys = ob.keys.map(x => nameExprOptional(false)(x._1) -> x._2))))
+        SelectStatement(withs, ExpressionProjections(namedProjections), namedSource, newWhere, namedGroupBy, having, namedOrderBy, limit, aliases)
     }
   }
 }

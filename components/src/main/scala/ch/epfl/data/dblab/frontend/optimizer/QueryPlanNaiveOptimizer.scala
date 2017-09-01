@@ -36,7 +36,7 @@ class QueryPlanNaiveOptimizer(schema: Schema) extends QueryPlanOptimizer {
     case JoinOpNode(leftParent, rightParent, joinCond, joinType, leftAlias, rightAlias) =>
       containsField(leftParent, fld) || containsField(rightParent, fld)
     case ViewOpNode(qpt, projNames, name) =>
-      System.out.println("projNames of ViewOp " + name + " = " + projNames + " and searching for " + fld.name)
+      // System.out.println("projNames of ViewOp " + name + " = " + projNames + " and searching for " + fld.name)
       projNames.contains(fld.name)
     case AggOpNode(parent, aggs, gb, aggAlias) =>
       aggAlias.contains(fld.name) || gb.map(_._2).contains(fld.name)
@@ -83,11 +83,11 @@ class QueryPlanNaiveOptimizer(schema: Schema) extends QueryPlanOptimizer {
     val joinOperators = operatorList.filter(_.isInstanceOf[JoinOpNode]).map(_.asInstanceOf[JoinOpNode]).sortWith((a, b) => a.toList.length < b.toList.length)
 
     var reorder = false
-    System.out.println("Searching to find operator for join cond " + cond + "\n")
+    // System.out.println("Searching to find operator for join cond " + cond + "\n")
     joinOperators.find(jo => {
       val containsInExistingOrder = containsField(jo.left, fi1) && containsField(jo.right, fi2)
       val containsInReverseOrder = containsField(jo.right, fi1) && containsField(jo.left, fi2)
-      System.out.println(jo + "/" + containsInExistingOrder + "/" + containsInReverseOrder + "/(" + containsField(jo.left, fi1) + "/" + containsField(jo.right, fi2) + ")" + "(" + containsField(jo.right, fi1) + "/" + containsField(jo.left, fi2) + ")")
+      // System.out.println(jo + "/" + containsInExistingOrder + "/" + containsInReverseOrder + "/(" + containsField(jo.left, fi1) + "/" + containsField(jo.right, fi2) + ")" + "(" + containsField(jo.right, fi1) + "/" + containsField(jo.left, fi2) + ")")
       if (containsInExistingOrder) true
       else if (containsInReverseOrder) {
         reorder = true
@@ -111,7 +111,7 @@ class QueryPlanNaiveOptimizer(schema: Schema) extends QueryPlanOptimizer {
       case _ => false
     }
 
-    System.out.println("Analyzing condition " + cond)
+    // System.out.println("Analyzing condition " + cond)
     cond match {
       case And(lhs, rhs) =>
         val lhsPushed = analysePushingUpCondition(parent, lhs)

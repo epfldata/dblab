@@ -529,8 +529,9 @@ object SQLParser extends StandardTokenParsers {
     "AVG", "MIN", "MAX", "YEAR", "DATE", "TOP", "LIMIT", "CASE", "WHEN", "THEN", "ELSE",
     "END", "SUBSTRING", "SUBSTR", "UNION", "ALL", "CAST", "DECIMAL", "DISTINCT", "NUMERIC",
     "INT", "DAYS", "COALESCE", "ROUND", "OVER", "PARTITION", "BY", "ROWS", "INTERSECT",
-    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED", "FIXEDWIDTH", "INTERVAL",
-    "LINE", "STRING", "FLOAT", "CHAR", "VARCHAR", "NATURAL", "SOME", "TABLE", "ANY", "EXTRACT", "LIST", "INTEGER", "FUNCTION", "EXTERNAL", "RETURNS")
+    "UPPER", "IS", "ABS", "EXCEPT", "INCLUDE", "CREATE", "STREAM", "FILE", "DELIMITED",
+    "FIXEDWIDTH", "INTERVAL", "LINE", "STRING", "FLOAT", "CHAR", "VARCHAR", "NATURAL",
+    "SOME", "TABLE", "ANY", "EXTRACT", "LIST", "INTEGER", "FUNCTION", "EXTERNAL", "RETURNS")
 
   for (token <- tokens)
     lexical.reserved += token

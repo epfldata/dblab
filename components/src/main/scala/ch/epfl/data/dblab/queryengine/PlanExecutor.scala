@@ -14,6 +14,8 @@ import scala.collection.mutable.ArrayBuffer
 import push._
 import sc.pardis.shallow.{ OptimalString, Record, DynamicCompositeRecord }
 import config.Config
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 
 /**
  * The main module for executing (interpreting) query plans.
@@ -58,7 +60,8 @@ object PlanExecutor {
 
   def recursiveGetField(n: String, alias: Option[String], t: Record, t2: Record = null): Any = {
     var stop = false
-    val name = alias.getOrElse("") + n
+    // val name = alias.getOrElse("") + n
+    val name = n
 
     def searchRecordFields(rec: DataRow): Option[Any] = {
       var res: Option[Any] = None
@@ -110,9 +113,9 @@ object PlanExecutor {
     }
   }
 
-  def printRecord(rec: Record, order: Seq[Expression] = Seq()) {
-    //System.out.println("Printing record...")
-    def printMembers(v: Any, cls: Class[_]) {
+  def printRecord(rec: Record, order: Seq[(Expression, String)] = Seq()) {
+    // System.out.println("Printing record...")
+    def printMembers(v: Any, cls: Class[_], tp: Option[TypeTag[_]] = None) {
       v match {
         case rec if rec.isInstanceOf[Record] =>
           printRecord(rec.asInstanceOf[Record], order)
@@ -120,30 +123,42 @@ object PlanExecutor {
           val arr = c.asInstanceOf[Array[_]]
           for (arrElem <- arr)
             printMembers(arrElem, arrElem.getClass)
-        case i: Int           => printf("%d|", i)
-        case c: Character     => printf("%c|", c)
-        case d: Double        => printf("%.2f|", d) // TODO -- Precision should not be hardcoded
-        case str: String      => printf("%s|", str)
-        case s: OptimalString => printf("%s|", s.string)
+        case i: Int       => printf("%d", i)
+        case c: Character => printf("%c", c)
+        case d: Double => {
+          tp match {
+            case Some(x) if x == typeTag[Int] => printf("%.0f", d)
+            case _                            => printf("%.2f", d) // TODO -- Precision should not be hardcoded
+          }
+        }
+        case str: String      => printf("%s", str)
+        case s: OptimalString => printf("%s", s.string)
         case _                => throw new Exception("Do not know how to print member " + v + " of class " + cls + " in recond " + rec)
       }
     }
     order.size match {
       case 0 =>
         val fieldNames = rec.asInstanceOf[DataRow].getFieldNames
-        fieldNames.foreach(fn => {
+        val n = fieldNames.size
+        for ((fn, i) <- fieldNames.zipWithIndex) {
           val f = recursiveGetField(fn, None, rec)
           printMembers(f, f.getClass)
-        })
-      case _ =>
-        order.foreach(p => p match {
-          case FieldIdent(qualifier, name, _) =>
-            val f = recursiveGetField(qualifier.getOrElse("") + name, None, rec)
-            printMembers(f, f.getClass)
-          case e =>
-            val parsedExpr = parseExpression(e, rec)(e.tp)
-            printMembers(parsedExpr, parsedExpr.getClass)
-        })
+          printf(if (i != n - 1) "|" else "\n")
+        }
+      case n =>
+        for (((p, pn), i) <- order.zipWithIndex) {
+          p match {
+            case FieldIdent(qualifier, name, _) =>
+              // val f = recursiveGetField(qualifier.getOrElse("") + name, Some(pn), rec)
+              val f = recursiveGetField(name, None, rec)
+              // printf(s"---$f, ${f.getClass} ${p.tp}")
+              printMembers(f, f.getClass, Option(p.tp))
+            case e =>
+              val parsedExpr = parseExpression(e, rec)(e.tp)
+              printMembers(parsedExpr, parsedExpr.getClass)
+          }
+          printf(if (i != n - 1) "|" else "\n")
+        }
     }
   }
 
@@ -329,9 +344,9 @@ object PlanExecutor {
   }
 
   def createAggOpOperator(parentOp: OperatorNode, aggs: Seq[Expression], gb: Seq[(Expression, String)], aggNames: Seq[String]): Operator[_] = {
-    System.out.println(s"AGGOP INFO: $aggs")
-    System.out.println(gb)
-    System.out.println(aggNames)
+    // System.out.println(s"AGGOP INFO: $aggs")
+    // System.out.println(gb)
+    // System.out.println(aggNames)
     val aggFuncs: Seq[(Record, Double) => Double] = aggs.map(p => {
       (t: Record, currAgg: Double) =>
         p match {
@@ -421,13 +436,18 @@ object PlanExecutor {
     val finalProjs = projs.map(p => p._1 match {
       case c if (!p._2.isDefined && p._1.isAggregateOpExpr) =>
         throw new Exception("LegoBase limitation: Aggregates must always be aliased (e.g. SUM(...) AS TOTAL) -- aggregate " + p._1 + " was not ")
-      case _ => p._1 match {
-        case agg if p._1.isAggregateOpExpr => FieldIdent(None, p._2.get)
-        // TODO -- The following line shouldn't be necessary in a clean solution
-        case Year(_) | Substring(_, _, _)  => FieldIdent(None, p._2.get)
-        case c if p._2.isDefined           => FieldIdent(None, p._2.get)
-        case _                             => p._1 // last chance
-      }
+      case _ =>
+        val res = (p._1 match {
+          case agg if p._1.isAggregateOpExpr => FieldIdent(None, p._2.get) -> p._2.get
+          // TODO -- The following line shouldn't be necessary in a clean solution
+          case Year(_) | Substring(_, _, _)  => FieldIdent(None, p._2.get) -> p._2.get
+          case c if p._2.isDefined           => FieldIdent(None, p._2.get) -> p._2.get
+          case FieldIdent(q, v, _)           => p._1 -> v
+          case _                             => throw new Exception(s"No alias provided for $p ${p._1.getClass}")
+        })
+        // res._1.setTp(p._1.tp)
+        res._1.tpe = p._1.tpe
+        res
     })
 
     new PrintOp(convertOperator(parent))(kv => {

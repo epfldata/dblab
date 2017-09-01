@@ -4,7 +4,6 @@ package frontend
 package optimizer
 
 import parser.CalcAST._
-import parser.SQLAST._
 import sc.pardis.ast._
 import sc.pardis.rules._
 
@@ -48,7 +47,7 @@ trait BottomUpRecursiveTransformer extends RecursiveTransformer {
   abstract override def transform(node: ThisNode): ThisNode = super.transform(node) match {
     case x @ ApplicableRule(rule) => {
       val nnode = rule.generate(x).get.asInstanceOf[ThisNode]
-      //      println(s"rule $rule applicable to\n>>${pprint(x)}\n<<${pprint(nnode)}")
+      //println(s"rule $rule applicable to\n>>${pprint(x)}\n<<${pprint(nnode)}")
       nnode
 
     }
