@@ -24,8 +24,14 @@ import SQLUtils._
 class SQLToCalc(schema: Schema) {
 
   def init(): Unit = {
-    declare_std_function("listmax", x => IntType)
+    declare_std_function("listmax", x => IntType) //TODO
+    declare_std_function("substring", x => StringType) //TODO
+    declare_std_function("cast_int", x => IntType) //TODO
+    declare_std_function("cast_date", x => DateType) //TODO
+    declare_std_function("cast_float", x => FloatType) //TODO
+    declare_std_function("cast_String", x => StringType) //TODO
   }
+
   def CalcOfQuery(query_name: Option[String], tables: List[CreateStream], query: TopLevelStatement): List[(String, CalcExpr)] = {
 
     println("query:\n" + query)
@@ -202,6 +208,10 @@ class SQLToCalc(schema: Schema) {
       calc_of_sql_expr(tgt_var, None, tables, sources, e)
     }
 
+//    def calc_of_like ( ) = {
+//
+//    }
+
     push_down_nots(cond) match {
       case Some(a: And) =>
         CalcProd(List(rcr_c(Some(a.left)), rcr_c(Some(a.right))))
@@ -271,6 +281,9 @@ class SQLToCalc(schema: Schema) {
             CalcProd(List(expr_calc, CmpOrList(expr_val, ul.map(ArithConst))))
 
         }
+
+      //      case Some( Like(expr,like_str) ) =>
+      //        Like( x => Cmp( Neq , ArithConst( IntLiteral(0) ) , x ) , expr , like_str )
       case _ => CalcValue(ArithConst(IntLiteral(1)))
     }
     // TODO rest cases
@@ -381,10 +394,8 @@ class SQLToCalc(schema: Schema) {
           (CalcProd(List(calc_of_condition(tables, sources, q.where),
             rcr_e(q.projections.extractExpretions().head._1))), false)
 
-      case f: FunctionExp =>
+      case ExternalFunctionExp(fn, fargs) =>
 
-        val fn = f.name
-        val fargs = f.inputs
         val (lifted_args_and_gb_vars, arg_calc) = fargs.map({ arg =>
           val raw_arg_calc = rcr_e(arg)
           val (arg_val, arg_calc_local) = lift_if_necessary(raw_arg_calc)
@@ -417,6 +428,9 @@ class SQLToCalc(schema: Schema) {
           else
             Lift(agg_res.head, calc)
         }))), agg_res != List())
+
+//      case Case( cases , else_branch ) =>
+//        val ( ret_calc , else_cond ) =
 
       //TODO other cases
 
@@ -589,12 +603,6 @@ class SQLToCalc(schema: Schema) {
   def mk_aggsum(gb_vars: List[VarT], expr: CalcExpr): CalcExpr = {
     val expr_ovars = schemaOfExpression(expr)._2
     val new_gb_vars = expr_ovars.intersect(gb_vars)
-
-    println("   mk_aggsum    :")
-    println(prettyprint(expr))
-    println(gb_vars)
-    println(expr_ovars)
-    println(new_gb_vars)
 
     if (expr_ovars.equals(new_gb_vars))
       expr
