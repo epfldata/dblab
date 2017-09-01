@@ -208,9 +208,9 @@ class SQLToCalc(schema: Schema) {
       calc_of_sql_expr(tgt_var, None, tables, sources, e)
     }
 
-//    def calc_of_like ( ) = {
-//
-//    }
+    //    def calc_of_like ( ) = {
+    //
+    //    }
 
     push_down_nots(cond) match {
       case Some(a: And) =>
@@ -429,8 +429,8 @@ class SQLToCalc(schema: Schema) {
             Lift(agg_res.head, calc)
         }))), agg_res != List())
 
-//      case Case( cases , else_branch ) =>
-//        val ( ret_calc , else_cond ) =
+      //      case Case( cases , else_branch ) =>
+      //        val ( ret_calc , else_cond ) =
 
       //TODO other cases
 
