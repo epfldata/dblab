@@ -15,6 +15,7 @@ import ch.epfl.data.dblab.frontend.parser.SQLAST._
 import frontend.parser.OperatorAST._
 import config._
 import schema._
+import sc.pardis.language.Language
 
 object Driver {
   /**
@@ -25,51 +26,80 @@ object Driver {
   def main(args: Array[String]) {
     if (args.length < 1) {
       System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
-      System.out.println("USAGE: run <SQL query>")
+      System.out.println("USAGE: run <SQL/Calc query> -l SQL|M3|CALC -O")
       System.out.println("Example: run experimentation/tpch-sql/Q6.sql")
       System.exit(1)
     }
-    val filesToExecute = args.map(arg => {
-      val f = new java.io.File(arg)
-      if (!f.exists) {
-        println("Warning: Command line parameter " + f + " is not a file or directory. Skipping this argument...")
-        List()
-      } else if (f.isDirectory) f.listFiles.map(arg + "/" + _.getName).toList
-      else List(arg)
-    }).flatten.groupBy(f => f.substring(f.lastIndexOf('.'), f.length))
+    val options = nextOption(Map(), args.toList)
+    val queryFiles = options.get('queries) match {
+      case Some(l: List[String]) => l
+      case x                     => throw new Exception(s"No queries provided: $x")
+    }
+    val outputLang: Language = options.get('lang).map(_.toString().toUpperCase()) match {
+      case Some("CALC") => Calc
+      case Some("M3")   => M3
+      case Some("SQL")  => SQL
+      case _ =>
+        throw new Exception("No proper -l defined!")
+    }
+    val shouldOptimize = options.get('opt).map(_.asInstanceOf[Boolean]).getOrElse(false)
 
-    for (q <- args) {
-      // val ParserTree = List(AggSum(List(VarT("R_A", null), VarT("R_B", null)), CalcProd(List(Rel("Rel", "R", List(VarT("R_A", null), VarT("R_B", null)), ""), Rel("Rel", "S", List(VarT("S_B", null), VarT("S_C", null)), ""), Cmp(Eq, ArithVar(VarT("S_B", null)), ArithVar(VarT("R_B", null)))))))
-      //      val ParserTree = CalcParser.parse(scala.io.Source.fromFile(q).mkString)
-      //      val optimizer = CalcOptimizer
-      //      println("BEFORE: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${prettyprint(cur)}"))
-      //      // println("MIDDLE")
-      //      println("AFTER: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(optimizer.Normalize(optimizer.nestingRewrites(cur)))}"))
-      val sqlParserTree = SQLParser.parseStream(scala.io.Source.fromFile(q).mkString)
-      val sqlProgram = sqlParserTree.asInstanceOf[IncludeStatement]
-      val tables = sqlProgram.streams.toList.map(x => x.asInstanceOf[CreateStream]) // ok ?
-      val ddlInterpreter = new DDLInterpreter(new Catalog(scala.collection.mutable.Map()))
-      val query = sqlProgram.body
-      println(query)
-      val schema = ddlInterpreter.interpret(UseSchema("DBToaster") :: tables)
+    for (q <- queryFiles) {
+      def getCalc(): List[CalcExpr] = if (q.endsWith(".calc")) {
+        CalcParser.parse(scala.io.Source.fromFile(q).mkString)
+      } else {
+        val sqlParserTree = SQLParser.parseStream(scala.io.Source.fromFile(q).mkString)
+        val sqlProgram = sqlParserTree.asInstanceOf[IncludeStatement]
+        val tables = sqlProgram.streams.toList.map(x => x.asInstanceOf[CreateStream]) // ok ?
+        val ddlInterpreter = new DDLInterpreter(new Catalog(scala.collection.mutable.Map()))
+        val query = sqlProgram.body
+        println(query)
+        val schema = ddlInterpreter.interpret(UseSchema("DBToaster") :: tables)
 
-      def listOfQueries(q: TopLevelStatement): List[TopLevelStatement] = {
-        q match {
-          case u: UnionIntersectSequence if u.connectionType.equals(SEQUENCE) =>
-            List(u.top) ++ listOfQueries(u.bottom)
-          case x => List(x)
+        def listOfQueries(q: TopLevelStatement): List[TopLevelStatement] = {
+          q match {
+            case u: UnionIntersectSequence if u.connectionType.equals(SEQUENCE) =>
+              List(u.top) ++ listOfQueries(u.bottom)
+            case x => List(x)
+          }
         }
-      }
-      val queries = listOfQueries(query)
+        val queries = listOfQueries(query)
 
-      queries.foreach({ q =>
-        val namedQuery = new SQLNamer(schema).nameQuery(q)
-        val calc_expr = SQLToCalc.CalcOfQuery(None, tables, namedQuery)
-        calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + CalcAST.prettyprint(tgt_calc) }).foreach(println)
-      })
-      //      calc_expr.map({ case (tgt_name, tgt_calc) => tgt_name + " : \n" + tgt_calc }).foreach(println) // TODO this is for test
-      //      if (Config.debugQueryPlan)
-      //        System.out.println("Original SQL Parser Tree:\n" + sqlParserTree + "\n\n")
+        queries.flatMap({ q =>
+          val namedQuery = new SQLNamer(schema).nameQuery(q)
+          val calc_expr = SQLToCalc.CalcOfQuery(None, tables, namedQuery)
+          calc_expr.map({ case (tgt_name, tgt_calc) => tgt_calc })
+        })
+      }
+      outputLang match {
+        case Calc =>
+          val ParserTree = getCalc()
+
+          println("BEFORE: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${prettyprint(cur)}"))
+          if (shouldOptimize) {
+            val optimizer = CalcOptimizer
+            // println("MIDDLE")
+            println("AFTER: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(optimizer.normalize(optimizer.nestingRewrites(cur)))}"))
+          }
+        case lang =>
+          throw new Exception(s"Outputing language $lang is not supported yet!")
+
+      }
+    }
+  }
+
+  type OptionMap = Map[Symbol, Any]
+
+  def nextOption(map: OptionMap, list: List[String]): OptionMap = {
+    list match {
+      case Nil => map
+      case "-O" :: tail =>
+        nextOption(map ++ Map('opt -> true), tail)
+      case "-l" :: value :: tail =>
+        nextOption(map ++ Map('lang -> value), tail)
+      case string :: tail =>
+        println(s"foo-$string")
+        nextOption(map ++ Map('queries -> (map.getOrElse('queries, List()).asInstanceOf[List[String]] :+ string)), tail)
     }
   }
 }
