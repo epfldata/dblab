@@ -13,6 +13,9 @@ import SQLAST._
 import ch.epfl.data.dblab.frontend.optimizer.{ SQLToCalc, SQLUtils }
 import SQLUtils._
 import ch.epfl.data.dblab.frontend.parser.SQLParser.ident
+import sc.pardis.types._
+import PardisTypeImplicits._
+import schema._
 
 /**
  * A simple SQL parser.
@@ -107,31 +110,33 @@ object SQLParser extends StandardTokenParsers {
     }) | (stringLit ^^ {
       case s => s
     })
-  def parseStreamColumns: Parser[Seq[(String, String)]] =
+  def parseStreamColumns: Parser[Seq[(String, Tpe)]] =
     ident ~ (parseStreamDataType) ~ ("," ~> parseStreamColumns).? ^^ {
       case col ~ colType ~ Some(cols) => (col.toUpperCase, colType) +: cols
       case col ~ colType ~ None       => Seq((col.toUpperCase(), colType))
     }
+
   // TODO change it to SC type or DDL type
-  def parseStreamDataType: Parser[String] =
-    "DECIMAL" ~ ("(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")").? ^^^ { "DECIMAL" } |
-      "NUMERIC" ~ "(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")" ^^^ { "NUMERIC" } |
+  def parseStreamDataType: Parser[Tpe] =
+    "DECIMAL" ~ ("(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")").? ^^^ { DoubleType.asInstanceOf[Tpe] } | // TODO change to DecimalType
+      "NUMERIC" ~ "(" ~ parseLiteral ~ "," ~ parseLiteral ~ ")" ^^^ { DoubleType.asInstanceOf[Tpe] } | // TODO change to DecimalType
       "INT" ^^^ {
-        "INTEGER"
+        IntType.asInstanceOf[Tpe]
       } |
       "DATE" ^^^ {
-        "DATE"
+        DateType.asInstanceOf[Tpe]
       } |
       "STRING" ^^^ {
-        "STRING"
+        StringType.asInstanceOf[Tpe]
       } |
       "FLOAT" ^^^ {
-        "FLOAT"
-      } | "CHAR" ~ ("(" ~ numericLit ~ ")").? ^^^ {
-        "CHAR"
-      } | "VARCHAR" ~ "(" ~ numericLit ~ ")" ^^^ {
-        "VARCHAR"
-      }
+        FloatType.asInstanceOf[Tpe]
+      } | ("CHAR" ~> ("(" ~> (numericLit <~ ")")) ^^ {
+        case n if n.toInt == 1 => CharType.asInstanceOf[Tpe]
+        case n                 => VarCharType(n.toInt).asInstanceOf[Tpe]
+      }) | ("VARCHAR" ~> ("(" ~> (numericLit <~ ")")) ^^ {
+        case n => VarCharType(n.toInt).asInstanceOf[Tpe]
+      })
   /** ********************************************************/
   /* Parse parts of individual select statements in a query */
   /** ********************************************************/

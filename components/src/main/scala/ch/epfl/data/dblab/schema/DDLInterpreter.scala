@@ -91,7 +91,7 @@ class DDLInterpreter(val catalog: Catalog) {
         getCurrSchema
       // TODO add the file path.
       case cs @ CreateStream(_, name, cols, _) =>
-        val colsDef = cols.toList.map(c => Attribute(c._1, typeNameToSCType(c._2), Nil))
+        val colsDef = cols.toList.map(c => Attribute(c._1, c._2, Nil))
         val constraints: ArrayBuffer[Constraint] = if (cs.isStream) ArrayBuffer(StreamingTable) else ArrayBuffer()
         getCurrSchema.tables += new Table(name, colsDef, constraints, "")
         getCurrSchema

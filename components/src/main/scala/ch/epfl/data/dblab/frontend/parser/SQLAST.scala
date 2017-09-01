@@ -106,11 +106,11 @@ object SQLAST {
   case object EXCEPT extends QueryRelationType
   case class IncludeStatement(include: String, streams: Seq[CreateStatement], body: TopLevelStatement) extends TopLevelStatement
   trait CreateStatement
-  case class CreateStream(tag: String, name: String, cols: Seq[(String, String)], rest: String) extends CreateStatement {
+  case class CreateStream(tag: String, name: String, cols: Seq[(String, Tpe)], rest: String) extends CreateStatement {
     def isTable: Boolean = tag == "TABLE"
     def isStream: Boolean = !isTable
   }
-  case class CreateFunction(name: String, inputs: Seq[(String, String)], output: String, external: String) extends CreateStatement
+  case class CreateFunction(name: String, inputs: Seq[(String, Tpe)], output: Tpe, external: String) extends CreateStatement
   trait Projections extends SQLNode {
     def size(): Int
     def get(n: Int): (Expression, Option[String])
