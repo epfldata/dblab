@@ -60,7 +60,8 @@ object PlanExecutor {
 
   def recursiveGetField(n: String, alias: Option[String], t: Record, t2: Record = null): Any = {
     var stop = false
-    val name = alias.getOrElse("") + n
+    // val name = alias.getOrElse("") + n
+    val name = n
 
     def searchRecordFields(rec: DataRow): Option[Any] = {
       var res: Option[Any] = None
@@ -148,7 +149,8 @@ object PlanExecutor {
         for (((p, pn), i) <- order.zipWithIndex) {
           p match {
             case FieldIdent(qualifier, name, _) =>
-              val f = recursiveGetField(qualifier.getOrElse("") + name, None, rec)
+              // val f = recursiveGetField(qualifier.getOrElse("") + name, Some(pn), rec)
+              val f = recursiveGetField(name, None, rec)
               // printf(s"---$f, ${f.getClass} ${p.tp}")
               printMembers(f, f.getClass, Option(p.tp))
             case e =>
@@ -443,7 +445,8 @@ object PlanExecutor {
           case FieldIdent(q, v, _)           => p._1 -> v
           case _                             => throw new Exception(s"No alias provided for $p ${p._1.getClass}")
         })
-        res._1.setTp(p._1.tp)
+        // res._1.setTp(p._1.tp)
+        res._1.tpe = p._1.tpe
         res
     })
 

@@ -11,6 +11,8 @@ import parser.SQLAST._
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 import queryengine.GenericEngine
+import sc.pardis.types._
+import PardisTypeImplicits._
 
 /**
  * Converts SQL queries into a physical query plan representation. This conversion is performed in a naive way
@@ -119,7 +121,8 @@ class SQLToQueryPlan(schema: Schema) {
       val hasAVG = aggProjs.exists(ap => ap._1.isInstanceOf[Avg])
       if (hasAVG && aggProjs.find(_._1.isInstanceOf[CountAll]) == None) {
         val count = CountAll()
-        count.setTp(typeTag[Int])
+        // count.setTp(typeTag[Int])
+        count.tpe = IntType
         aggProjs = aggProjs :+ ((count, Some("__TOTAL_COUNT")))
       }
 
@@ -132,9 +135,10 @@ class SQLToQueryPlan(schema: Schema) {
 
         val aggOp = if (hasAVG) {
           val finalAggs = aggProjs.map(ag => ag._1 match {
-            case Avg(e) =>
+            case avg @ Avg(e) =>
               val sum = Sum(e)
-              sum.setTp(ag._1.tp)
+              // sum.setTp(ag._1.tp)
+              sum.tpe = avg.tpe
               sum
             case _ => ag._1
           })
@@ -156,7 +160,8 @@ class SQLToQueryPlan(schema: Schema) {
   def createSubquery(sq: SelectStatement) = {
     val rootOp = SubquerySingleResultNode(createMainOperatorTree(sq))
     val rhs = GetSingleResult(rootOp)
-    rhs.setTp(typeTag[Double]) // FIXME
+    // rhs.setTp(typeTag[Double]) // FIXME
+    rhs.tpe = DoubleType // FIXME
     rhs
   }
 

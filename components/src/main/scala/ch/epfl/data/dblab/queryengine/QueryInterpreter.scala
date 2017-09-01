@@ -65,11 +65,13 @@ object QueryInterpreter {
       if (Config.debugQueryPlan)
         System.out.println("After Subqyery Normalization:\n" + subqueryNormalizedqTree + "\n\n")
 
-      // val namedQuery = new SQLNamer(schema).nameQuery(subqueryNormalizedqTree)
-      val namedQuery = subqueryNormalizedqTree
+      val namedQuery = new SQLNamer(schema).nameQuery(subqueryNormalizedqTree)
+      // val namedQuery = subqueryNormalizedqTree
+      val typedQuery = new SQLTyper(schema).typeQuery(namedQuery)
+      // val typedQuery = namedQuery
 
-      new SQLAnalyzer(schema).checkAndInfer(namedQuery)
-      val operatorTree = new SQLToQueryPlan(schema).convert(namedQuery)
+      // new SQLAnalyzer(schema).checkAndInfer(typedQuery)
+      val operatorTree = new SQLToQueryPlan(schema).convert(typedQuery)
 
       if (Config.debugQueryPlan)
         System.out.println("Before Optimizer:\n" + operatorTree + "\n\n")
