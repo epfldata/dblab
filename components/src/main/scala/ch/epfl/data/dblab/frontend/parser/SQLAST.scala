@@ -307,6 +307,7 @@ object SQLAST {
         case In(e1, l2)                          => Some((l) => In(l(0), l.tail), e1 +: l2)
         case InList(e1, l2)                      => Some((l) => InList(l(0), l.tail.asInstanceOf[List[LiteralExpression]]), e1 +: l2)
         case (_: LiteralExpression) | CountAll() => Some((l) => e, Nil)
+        case FunctionExp(name, inputs)           => Some((l) => FunctionExp(name, l.toList), inputs)
         case _                                   => None
       }
   }

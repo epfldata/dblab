@@ -388,7 +388,7 @@ class SQLToCalc(schema: Schema) {
         val (lifted_args_and_gb_vars, arg_calc) = fargs.map({ arg =>
           val raw_arg_calc = rcr_e(arg)
           val (arg_val, arg_calc_local) = lift_if_necessary(raw_arg_calc)
-          ((arg_val, SchemaOfExpression(raw_arg_calc)._2), (is_agg_expr(arg), arg_calc_local))
+          ((arg_val, schemaOfExpression(raw_arg_calc)._2), (is_agg_expr(arg), arg_calc_local))
         }).unzip
         val (lifted_args, gb_vars) = lifted_args_and_gb_vars.unzip
         val (agg_args, non_agg_args) = arg_calc.partition(x => x._1)
@@ -731,11 +731,11 @@ class SQLToCalc(schema: Schema) {
   //   ********Function********** :
 
   def declaration(fn: String, argtypes: List[Tpe]): FunctionDeclaration = {
-    schema.functions(fn).apply(argtypes)
+    schema.functions(fn.toUpperCase()).apply(argtypes)
   }
 
   def declare_std_function(name: String, //fn: (List[LiteralExpression],Tpe) => LiteralExpression ,
                            typing_rule: List[Tpe] => Tpe): Unit = {
-    schema.functions += name -> (l => FunctionDeclaration(name, typing_rule(l)))
+    schema.functions += name.toUpperCase() -> (l => FunctionDeclaration(name.toUpperCase(), typing_rule(l)))
   }
 }
