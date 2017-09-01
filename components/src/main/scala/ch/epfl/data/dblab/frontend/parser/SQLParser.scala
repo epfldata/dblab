@@ -254,7 +254,7 @@ object SQLParser extends StandardTokenParsers {
     case (acc, (("IN LIST", l: List[LiteralExpression])))        => InList(acc, l)
     case (acc, (("ALL", List(op: String, s: SelectStatement))))  => Not(scanForExistence(s, acc, op, true))
     case (acc, (("SOME", List(op: String, s: SelectStatement)))) => scanForExistence(s, acc, op, false)
-    case (acc, (("IN", s: SelectStatement)))                     => scanForExistence(s, acc, "==", false)
+    case (acc, (("IN", s: SelectStatement)))                     => scanForExistence(s, acc, "=", false) // TODO it was ==
   }
 
   def parseOperandExpression: Parser[Expression] =
@@ -301,7 +301,23 @@ object SQLParser extends StandardTokenParsers {
           case ExpressionProjections(List((e, _))) => e
           case _                                   => ???
         }
-        def cmpFact(e1: Expression, e2: Expression): Expression = Equals(e1, e2) // TODO
+
+        def cmpFact(e1: Expression, e2: Expression): Expression = {
+          val c = op match {
+            case "="  => Equals(e1, e2)
+            case "<>" => NotEquals(e1, e2)
+            case "!=" => NotEquals(e1, e2)
+            case "<"  => LessThan(e1, e2)
+            case ">"  => GreaterThan(e1, e2)
+            case "<=" => LessOrEqual(e1, e2)
+            case ">=" => GreaterOrEqual(e1, e2)
+          }
+          if (inverse)
+            SQLToCalc.Inverse(c)
+          else
+            c
+        }
+
         if (SQLToCalc.is_agg_expr(target)) {
           cmpFact(e, s)
         } else {

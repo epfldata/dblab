@@ -3,9 +3,9 @@ package dblab
 package frontend
 package optimizer
 
-import ch.epfl.data.dblab.frontend.parser.CalcAST
+import ch.epfl.data.dblab.frontend.parser.{ CalcAST, SQLAST }
 import ch.epfl.data.dblab.schema.VarCharType
-import parser.SQLAST._
+import parser.SQLAST.{ CountExpr, _ }
 import parser.CalcAST._
 import optimizer.CalcOptimizer._
 //import schema._
@@ -111,7 +111,7 @@ object SQLToCalc {
         case _: CountAll =>
           mk_aggsum(new_gb_vars, CalcProd(List(source_calc, cond_calc, noagg_calc)))
 
-        case CountExpr(Distinct(StarExpression(x))) =>
+        case CountExpr(Distinct(StarExpression(_))) =>
           mk_aggsum(new_gb_vars, mk_exists(CalcProd(List(source_calc, cond_calc, noagg_calc))))
 
         case CountExpr(Distinct(fields)) => // TODO fields is a list in ocaml but an expression in scala
@@ -406,7 +406,22 @@ object SQLToCalc {
           val targets = s.projections.extractAliases().toList.map(x => (x._1, Some(x._2)))
           val sources = s.joinTree
 
-          val lst = targets ++ List((CountAll(), Some("COUNT")))
+          val cnt = {
+            if (targets.exists(x => x._1.isInstanceOf[Distinct]))
+              CountExpr(Distinct(StarExpression(None)))
+            else
+              CountAll()
+          }
+
+          val tgt = targets.map({ x =>
+            (x._1 match {
+              case d: Distinct =>
+                d.e
+              case y => y
+            }, x._2)
+          })
+
+          val lst = tgt ++ List((cnt, Some("COUNT")))
           val new_targets = ExpressionProjections(lst) // TODO distinct is Ocaml?
 
           val new_gb_vars = GroupBy(targets.map({
@@ -513,7 +528,7 @@ object SQLToCalc {
       case _: Aggregation       => true
       case f: FunctionExp       => f.inputs.map(x => is_agg_expr(x)).foldLeft(false)((sum, cur) => sum || cur)
       case s: SelectStatement   => false
-      //      case d: Distinct          => false // its not in ocaml
+      case d: Distinct          => false // its not in ocaml
       //TODO nested_q , cases in Ocaml and others in Scala
     }
   }
