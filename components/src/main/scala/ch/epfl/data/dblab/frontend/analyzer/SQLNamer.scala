@@ -9,6 +9,7 @@ import scala.reflect.runtime.{ universe => ru }
 import ru._
 import parser.SQLAST._
 import sc.pardis.shallow.OptimalString
+import optimizer.SQLUtils._
 
 /**
  * Performs naming on SQL queries, in order to handle aliasing, substituting
@@ -18,6 +19,18 @@ import sc.pardis.shallow.OptimalString
  * @author Amir Shaikhha
  */
 class SQLNamer(schema: Schema) {
+  def init(): Unit = {
+    addStdFunctionDeclaration(schema)("listmax", x => IntType) //TODO
+    addStdFunctionDeclaration(schema)("substring", x => StringType) //TODO
+    addStdFunctionDeclaration(schema)("cast_int", x => IntType) //TODO
+    addStdFunctionDeclaration(schema)("cast_date", x => DateType) //TODO
+    addStdFunctionDeclaration(schema)("cast_float", x => FloatType) //TODO
+    addStdFunctionDeclaration(schema)("cast_String", x => StringType) //TODO
+    addStdFunctionDeclaration(schema)("date_part", x => IntType) //TODO
+  }
+
+  init()
+
   // TODO reuse the existing ones from SC.
   var globalId = 0
   def newVarName(prefix: String): String = {

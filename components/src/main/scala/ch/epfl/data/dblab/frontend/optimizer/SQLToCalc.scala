@@ -23,15 +23,6 @@ import SQLUtils._
 
 class SQLToCalc(schema: Schema) {
 
-  def init(): Unit = {
-    declare_std_function("listmax", x => IntType) //TODO
-    declare_std_function("substring", x => StringType) //TODO
-    declare_std_function("cast_int", x => IntType) //TODO
-    declare_std_function("cast_date", x => DateType) //TODO
-    declare_std_function("cast_float", x => FloatType) //TODO
-    declare_std_function("cast_String", x => StringType) //TODO
-  }
-
   def CalcOfQuery(query_name: Option[String], tables: List[CreateStream], query: TopLevelStatement): List[(String, CalcExpr)] = {
 
     println("query:\n" + query)
@@ -419,7 +410,7 @@ class SQLToCalc(schema: Schema) {
             prod_list(args_expr)
         }
 
-        val FunctionDeclaration(impl_name, imple_type) = declaration(fn, lifted_args.map(x => IntType))
+        val FunctionDeclaration(impl_name, imple_type) = getFunctionDeclaration(schema)(fn, lifted_args.map(x => IntType))
 
         (mk_aggsum(agg_res ++ gb_vars.flatten, CalcProd(args_list ++ List({
           val calc = CalcValue(ArithFunc(impl_name, lifted_args, imple_type))
@@ -729,13 +720,4 @@ class SQLToCalc(schema: Schema) {
   }
 
   //   ********Function********** :
-
-  def declaration(fn: String, argtypes: List[Tpe]): FunctionDeclaration = {
-    schema.functions(fn.toUpperCase()).apply(argtypes)
-  }
-
-  def declare_std_function(name: String, //fn: (List[LiteralExpression],Tpe) => LiteralExpression ,
-                           typing_rule: List[Tpe] => Tpe): Unit = {
-    schema.functions += name.toUpperCase() -> (l => FunctionDeclaration(name.toUpperCase(), typing_rule(l)))
-  }
 }

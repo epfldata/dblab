@@ -10,6 +10,7 @@ import scala.reflect.runtime.{ universe => ru }
 import ru._
 import parser.SQLAST._
 import sc.pardis.shallow.OptimalString
+import optimizer.SQLUtils._
 
 /**
  * Type checking and inference for SQL expressions.
@@ -50,7 +51,8 @@ class SQLTyper(schema: Schema) {
 
   def typeExpr(exp: Expression): Expression = {
     exp match {
-      case tl: TopLevelStatement => typeQuery(tl)
+      case tl: TopLevelStatement       => typeQuery(tl)
+      case Distinct(StarExpression(_)) => exp
       case ExpressionShape(_, children) =>
         children.foreach(typeExpr)
         val tpe = exp match {
@@ -61,7 +63,7 @@ class SQLTyper(schema: Schema) {
           case Add(_, _) | Subtract(_, _) | Multiply(_, _) | Divide(_, _) =>
             val List(tpe1, tpe2) = children.map(_.tpe)
             escalateType(tpe1, tpe2)
-          case And(_, _) | Or(_, _) =>
+          case And(_, _) | Or(_, _) | Not(_) =>
             assert(children.forall(_.tpe == BooleanType))
             BooleanType
           case DateLiteral(_) | IntLiteral(_) =>
@@ -70,24 +72,47 @@ class SQLTyper(schema: Schema) {
             FloatType
           case DoubleLiteral(_) =>
             DoubleType
-          case StringLiteral(_) =>
+          case StringLiteral(_) | Substring(_, _, _) =>
             StringType
           case CharLiteral(_) =>
             CharType
+          case FunctionExp(name, inputs) =>
+            getFunctionDeclaration(schema)(name, inputs.map(_.tpe)).returnType
+          case IntervalLiteral(_, _, _) | Exists(_) | Like(_, _) =>
+            BooleanType
+          case Distinct(e)      => e.tpe
+          case ExtractExp(_, _) => IntType // TODO make it more generic
+          case Case(c, e1, e2) =>
+            assert(c.tpe == BooleanType)
+            escalateType(e1.tpe, e2.tpe)
+          case InList(_, _) =>
+            BooleanType
+          case _ =>
+            throw new Exception(s"Does not handle $exp (${exp.getClass}) inside ExprShape!")
         }
         exp.tpe = tpe
         exp
       case FieldIdent(Some(q), a, s) =>
-        val table = curSchema.findTable(q).getOrElse(throw new Exception(s"Couldn't find table $q"))
-        val attr = table.findAttribute(a).getOrElse(throw new Exception(s"Couldn't find attr $a in table $q"))
+        val tables = curSchema.tables.filter(_.name == q)
+        if (tables.length == 0) {
+          throw new Exception(s"Couldn't find table $q! $curSchema")
+        }
+        val attrs = tables.flatMap(_.findAttribute(a))
+        val attr = attrs.headOption.getOrElse(throw new Exception(s"Couldn't find attr $a in table $q"))
         exp.tpe = attr.dataType match {
           case DateType => IntType
           case t        => t
         }
-        println(s"inferred type for $exp: ${exp.tpe}")
+        // println(s"inferred type for $exp: ${exp.tpe}")
         exp
       case FieldIdent(None, a, s) =>
-        throw new Exception(s"$exp is without quantifier. You forgot to use the namer?")
+        val attr = curSchema.findAttribute(a).getOrElse(throw new Exception(s"Couldn't find attr $a w/o table! $curSchema"))
+        exp.tpe = attr.dataType match {
+          case DateType => IntType
+          case t        => t
+        }
+        // println(s"inferred type for $exp: ${exp.tpe}")
+        exp
       case _ => throw new Exception(s"Does not handle $exp (${exp.getClass}) yet")
     }
   }
@@ -116,7 +141,7 @@ class SQLTyper(schema: Schema) {
 
   def getSelectSchema(select: SelectStatement): TableSchema = {
     val projs = select.projections.asInstanceOf[ExpressionProjections].lst
-    projs.map(x => x._2.get -> AnyType).toList
+    projs.map(x => x._2.get -> x._1.tpe).toList
   }
 
   def typeSource(rel: Relation): Relation = rel match {
@@ -140,9 +165,17 @@ class SQLTyper(schema: Schema) {
         val newSchema = curSchema.copy(tables = curSchema.tables ++ labeledRels.map(labeledSchemaToTable))
         withSchema(newSchema) { () =>
           projections.lst.foreach(x => typeExpr(x._1))
+        }
+        val projSchema = Table("SELECT_TABLE", projections.lst.toList.map(x => Attribute(x._2.get, x._1.tpe)), collection.mutable.ArrayBuffer(), "")
+        val newSchemaWithProj = curSchema.copy(tables = newSchema.tables :+ projSchema)
+        withSchema(newSchemaWithProj) { () =>
           where.foreach(typeExpr)
           groupBy.foreach(_.keys.foreach(typeExpr))
           orderBy.foreach(_.keys.foreach(x => typeExpr(x._1)))
+        }
+        projections.lst match {
+          case List((e, _)) => select.tpe = e.tpe
+          case _            =>
         }
         select
     }

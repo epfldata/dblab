@@ -68,11 +68,14 @@ object Driver {
 
         val sql_to_calc = new SQLToCalc(schema)
 
-        sql_to_calc.init()
+        // sql_to_calc.init()
+        val namer = new SQLNamer(schema)
+        val typer = new SQLTyper(schema)
 
         queries.flatMap({ q =>
-          val namedQuery = new SQLNamer(schema).nameQuery(q)
-          val calc_expr = sql_to_calc.CalcOfQuery(None, tables, namedQuery)
+          val namedQuery = namer.nameQuery(q)
+          val typedQuery = typer.typeQuery(namedQuery)
+          val calc_expr = sql_to_calc.CalcOfQuery(None, tables, typedQuery)
           calc_expr.map({ case (tgt_name, tgt_calc) => tgt_calc })
         })
       }

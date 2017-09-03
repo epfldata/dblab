@@ -1,6 +1,11 @@
-package ch.epfl.data.dblab.frontend.optimizer
+package ch.epfl.data
+package dblab
+package frontend
+package optimizer
 
-import ch.epfl.data.dblab.frontend.parser.SQLAST.{ ExternalFunctionExp, _ }
+import parser.SQLAST.{ ExternalFunctionExp, _ }
+import schema._
+import sc.pardis.types._
 
 /**
  * Created by mohsen on 9/1/17.
@@ -10,7 +15,7 @@ object SQLUtils {
 
   def is_agg_expr(expr: Expression): Boolean = {
     // There is a isAggregateOpExpr in scala but seems different
-    println(expr)
+    // println(expr)
     expr match {
       case _: LiteralExpression              => false
       case _: FieldIdent                     => false
@@ -36,5 +41,14 @@ object SQLUtils {
       case _: LessThan       => GreaterOrEqual(e1, e2)
 
     }
+  }
+
+  def getFunctionDeclaration(schema: Schema)(fn: String, argtypes: List[Tpe]): FunctionDeclaration = {
+    schema.functions(fn.toUpperCase()).apply(argtypes)
+  }
+
+  def addStdFunctionDeclaration(schema: Schema)(name: String, //fn: (List[LiteralExpression],Tpe) => LiteralExpression ,
+                                                typing_rule: List[Tpe] => Tpe): Unit = {
+    schema.functions += name.toUpperCase() -> (l => FunctionDeclaration(name.toUpperCase(), typing_rule(l)))
   }
 }
