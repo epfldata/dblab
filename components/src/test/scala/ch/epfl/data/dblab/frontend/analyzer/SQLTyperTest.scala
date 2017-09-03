@@ -19,7 +19,7 @@ class SQLTyperTest extends FlatSpec {
     val tables = sqlProgram.streams.toList.collect { case x: CreateStream => x }
     val ddlInterpreter = new DDLInterpreter(new Catalog(scala.collection.mutable.Map()))
     val query = sqlProgram.body
-    // println(query)
+    println(query)
     // unnamedCount(query) should not be (0)
     val schema = ddlInterpreter.interpret(UseSchema("DBToaster") :: tables)
     val namedQuery = new SQLNamer(schema).nameQuery(query)
@@ -34,7 +34,7 @@ class SQLTyperTest extends FlatSpec {
         val countProj = st.projections match {
           case ExpressionProjections(lst) =>
             lst.map({
-              case (e, _) if e.tpe == null => 1
+              case (e, _) if e.tpe == null => throw new Exception(s"$e (:${e.getClass}) has null type. Query: $queryExpr")
               case (e, _)                  => untypedCount(e)
             }).sum
         }
@@ -62,7 +62,7 @@ class SQLTyperTest extends FlatSpec {
     } else
       f.listFiles.map(simpleQueriesFolder + "/" + _.getName).toList
     for (file <- files) {
-      // println(s"naming $file")
+      println(s"naming $file")
       val typedQuery = parseAndNameAndTypeQuery(new java.io.File(file))
       untypedCount(typedQuery) should be(0)
     }
