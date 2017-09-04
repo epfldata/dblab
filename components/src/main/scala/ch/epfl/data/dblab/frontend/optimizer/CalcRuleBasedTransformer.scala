@@ -63,3 +63,8 @@ class CalcRuleBasedTransformer(rules: List[Rule])
 
   def pprint(node: ThisNode): String = prettyprint(node)
 }
+
+class CalcRuleBasedTransformationRules(rules: List[Rule])
+  extends RuleBasedTransformationRules {
+  val definedRules = rules
+}

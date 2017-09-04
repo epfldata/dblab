@@ -255,4 +255,6 @@ object CalcRules {
     }
   }
 
+  val allRules = List(AggSum0, Prod0, Prod1, ProdNormalize, Sum0, Sum1, AggSum1, AggSum2, AggSum3, AggSum4, Exists0, Lift0, Neg0)
+
 }

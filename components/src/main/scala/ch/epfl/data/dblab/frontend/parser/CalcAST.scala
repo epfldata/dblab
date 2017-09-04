@@ -145,14 +145,14 @@ object CalcAST {
   class CalcExprOps(val node: CalcExpr) extends NodeOps {
     type N = CalcExpr
     def children: List[CalcExpr] = CalcExprShape.unapply(node).get._2.toList
-    def rebuild: CalcExpr = ???
+    def rebuild: CalcExpr = RebuildCalcTransformer.transform(node)
     def recreate(children: List[Node]): CalcExpr = {
       val (fact, _) = CalcExprShape.unapply(node).get
       fact(children.map(_.asInstanceOf[CalcExpr]))
     }
   }
 
-  class RebuildCalcTransformer extends optimizer.CalcTransformer {
+  object RebuildCalcTransformer extends optimizer.CalcTransformer {
     override def transform(n: CalcExpr): CalcExpr = {
       val newNode = super.transform(n)
       val newSymbol = NodeSymbol(newNode)
