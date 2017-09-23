@@ -17,7 +17,7 @@ object CalcCompiler {
     db.tables.find(x => x.name.equals(reln))
   }
   def compileMap(todot: todot, computedelta: Boolean, dbschema: Schema): (List[todot], Ds) = {
-    val ext = todot.ds match {
+    val ext = todot.ds.dsname match {
       case External(name, inps, outs, tp, Some(s)) => External(name, inps, outs, tp, Some(s))
       case External(name, inps, outs, tp, None)    => External(name, inps, outs, tp, None)
       case _                                       => throw new Exception
@@ -83,5 +83,6 @@ object CalcCompiler {
 
       val (newtodos, compiledds) = compileMap(nextds, computedelta, dbSchema)
     }
+    ???
   }
 }
