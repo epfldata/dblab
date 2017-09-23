@@ -41,6 +41,9 @@ object CalcAST {
   case class Exists(term: CalcExpr) extends CalcExpr
   case class CalcValue(v: ArithExpr) extends CalcExpr
 
+  case class Ds(dsname: CalcExpr, dsdef: CalcExpr)
+  case class todot(depth: Int, ds: Ds, b: Boolean)
+  case class Plan(list: List[Ds])
   //TODO add const one and zero
 
   sealed trait ArithExpr extends CalcExpr
