@@ -16,7 +16,7 @@ object CalcCompiler {
   def rel(db: Schema, reln: String): Option[Table] = {
     db.tables.find(x => x.name.equals(reln))
   }
-  def compileMap(todot: todot, computedelta: Boolean, dbschema: Schema): (List[todot], Ds) = {
+  def compileMap(todot: TodoT, computedelta: Boolean, dbschema: Schema): (List[TodoT], Ds) = {
     val ext = todot.ds.dsname match {
       case External(name, inps, outs, tp, Some(s)) => External(name, inps, outs, tp, Some(s))
       case External(name, inps, outs, tp, None)    => External(name, inps, outs, tp, None)
@@ -45,11 +45,10 @@ object CalcCompiler {
   def compileTables(rel: Rel): CompiledDs = {
     val mapName = External("_" + rel.name, List(), rel.vars, IntType, None)
     val discription = Ds(mapName, Rel("Rel", rel.name, rel.vars, ""))
-    val one = CalcValue(ArithConst(IntLiteral(1)))
-    val mone = CalcNeg(one)
+    val mone = CalcNeg(CalcOne)
 
     var l = List.empty[(EventT, CalcExpr)]
-    l = List((InsertEvent(Rel("Rel", rel.name, rel.vars, "")), one), (DeleteEvent(Rel("Rel", rel.name, rel.vars, "")), mone))
+    l = List((InsertEvent(Rel("Rel", rel.name, rel.vars, "")), CalcOne), (DeleteEvent(Rel("Rel", rel.name, rel.vars, "")), mone))
     val triggers = l.map(x => {
       Trigger(x._1, StmtT(mapName, UpdateStmt, x._2))
     })
@@ -57,13 +56,13 @@ object CalcCompiler {
     CompiledDs(discription, triggers)
   }
 
-  def compileTlqs(calcQueries: List[CalcQuery]): (List[todot], List[CalcQuery]) = {
+  def compileTlqs(calcQueries: List[CalcQuery]): (List[TodoT], List[CalcQuery]) = {
     val (todolist, toplevelqueries) = calcQueries.map(x => {
 
       val qschema = schemaOfExpression(x.expr)
       val qtype = typeOfExpression(x.expr)
       val dsname = External(x.name, qschema._1, qschema._2, qtype, None)
-      (todot(1, Ds(dsname, x.expr), false), CalcQuery(x.name, dsname))
+      (TodoT(1, Ds(dsname, x.expr), false), CalcQuery(x.name, dsname))
     }).unzip
     (todolist, toplevelqueries)
 

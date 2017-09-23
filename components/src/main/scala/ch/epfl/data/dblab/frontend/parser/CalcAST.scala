@@ -3,6 +3,7 @@ package dblab
 package frontend
 package parser
 
+import ch.epfl.data.dblab.frontend.parser.SQLAST.IntLiteral
 import ch.epfl.data.dblab.schema.{ DateType, VarCharType }
 import sc.pardis.types._
 import sc.pardis.ast._
@@ -41,8 +42,11 @@ object CalcAST {
   case class Exists(term: CalcExpr) extends CalcExpr
   case class CalcValue(v: ArithExpr) extends CalcExpr
 
+  val CalcOne = CalcValue(ArithConst(IntLiteral(1)))
+  val CalcZero = CalcValue(ArithConst(IntLiteral(0)))
+
   case class Ds(dsname: CalcExpr, dsdef: CalcExpr)
-  case class todot(depth: Int, ds: Ds, b: Boolean)
+  case class TodoT(depth: Int, ds: Ds, b: Boolean)
   trait EventT
   case class InsertEvent(rel: Rel) extends EventT
   case class DeleteEvent(rel: Rel) extends EventT
@@ -57,7 +61,6 @@ object CalcAST {
   case class Trigger(event: EventT, stmt: StmtT)
   case class CompiledDs(discription: Ds, triggers: List[Trigger])
   case class Plan(list: List[CompiledDs])
-  //TODO add const one and zero
 
   sealed trait ArithExpr extends CalcExpr
   case class ArithSum(expr: List[ArithExpr]) extends ArithExpr
