@@ -43,7 +43,20 @@ object CalcAST {
 
   case class Ds(dsname: CalcExpr, dsdef: CalcExpr)
   case class todot(depth: Int, ds: Ds, b: Boolean)
-  case class Plan(list: List[Ds])
+  trait EventT
+  case class InsertEvent(rel: Rel) extends EventT
+  case class DeleteEvent(rel: Rel) extends EventT
+  case class BatchUpdate(str: String) extends EventT
+  case class CorrectiveUpdate(str: String, l1: List[VarT], l2: List[VarT], e: EventT) extends EventT
+  case class SystemInitializedEvent() extends EventT
+
+  trait UpdateType
+  case object UpdateStmt extends UpdateType
+  case object ReplaceStmt extends UpdateType
+  case class StmtT(targetMap: CalcExpr, updateType: UpdateType, updateExpr: CalcExpr)
+  case class Trigger(event: EventT, stmt: StmtT)
+  case class CompiledDs(discription: Ds, triggers: List[Trigger])
+  case class Plan(list: List[CompiledDs])
   //TODO add const one and zero
 
   sealed trait ArithExpr extends CalcExpr
