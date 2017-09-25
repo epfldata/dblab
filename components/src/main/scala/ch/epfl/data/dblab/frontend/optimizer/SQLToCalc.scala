@@ -32,19 +32,19 @@ class SQLToCalc(schema: Schema) {
     declareStdFunction("cast_String", x => StringType) //TODO
   }
 
-  def calcOfQuery(query_name: Option[String], tables: List[CreateStream], query: TopLevelStatement): List[(String, CalcExpr)] = {
+  def calcOfQuery(query_name: Option[String], query: TopLevelStatement): List[(String, CalcExpr)] = {
 
     println("query:\n" + query)
-    val re_hv_query = rewriteHavingQuery(tables, query)
+    val re_hv_query = rewriteHavingQuery(query)
     println("re_hv_query:\n" + re_hv_query)
-    val agg_query = castQueryToAggregate(tables, re_hv_query)
+    val agg_query = castQueryToAggregate(re_hv_query)
     println("agg_query:\n" + agg_query)
 
     agg_query match {
 
       case u: UnionIntersectSequence =>
         def rcr(stmt: TopLevelStatement): List[(String, CalcExpr)] = {
-          calcOfQuery(query_name, tables, stmt)
+          calcOfQuery(query_name, stmt)
         }
         def lift_stmt(name: String, stmt: CalcExpr): CalcExpr = {
           CalcProd(List(mkExists(stmt), Lift(VarT(name, typeOfExpression(stmt)), stmt)))
@@ -54,18 +54,18 @@ class SQLToCalc(schema: Schema) {
             (n1, CalcSum(List(lift_stmt(n1, e1), lift_stmt(n1, e2))))
         })
 
-      case s: SelectStatement => calcOfSelect(query_name, tables, s)
+      case s: SelectStatement => calcOfSelect(query_name, s)
     }
   }
 
-  def calcOfSelect(query_name: Option[String], tables: List[CreateStream], sqlTree: SelectStatement): List[(String, CalcExpr)] = {
+  def calcOfSelect(query_name: Option[String], sqlTree: SelectStatement): List[(String, CalcExpr)] = {
 
     val targets = sqlTree.projections
     val sources = sqlTree.joinTree
     val cond = sqlTree.where
     val gb_vars = sqlTree.groupBy.map(_.keys.collect { case x: FieldIdent => x }).getOrElse(Nil).toList
-    val source_calc = calcOfSource(tables, sources)
-    val cond_calc = calcOfCondition(tables, sources, cond)
+    val source_calc = calcOfSource(sources)
+    val cond_calc = calcOfCondition(sources, cond)
     //    println("source :\n" + source_calc)
     println("source :\n" + CalcAST.prettyprint(source_calc))
     //    println("cond : \n" + cond_calc)
@@ -91,7 +91,7 @@ class SQLToCalc(schema: Schema) {
 
           case _ =>
             val tgt_var = VarT(tgt_name, IntType) // TODO type should infer with expr_type
-            (tgt_var, calcOfSqlExpr(Some(tgt_var), None, tables, sources, tgt_expr))
+            (tgt_var, calcOfSqlExpr(Some(tgt_var), None, sources, tgt_expr))
         }
     }).unzip
 
@@ -153,11 +153,11 @@ class SQLToCalc(schema: Schema) {
     agg_tgts.map({
       case (tgt_name, unnormalized_tgt_expr) =>
         val tgt_expr = normalizeAggTargetExpr(None, gb_vars, unnormalized_tgt_expr)
-        (tgt_name, calcOfSqlExpr(None, Some(mq), tables, sources, tgt_expr))
+        (tgt_name, calcOfSqlExpr(None, Some(mq), sources, tgt_expr))
     })
   }
 
-  def calcOfSource(tables: List[CreateStream], sources: Option[Relation]): CalcExpr = {
+  def calcOfSource(sources: Option[Relation]): CalcExpr = {
 
     val rels = sources match {
       case Some(x) => x.extractTables.toList
@@ -172,12 +172,6 @@ class SQLToCalc(schema: Schema) {
     CalcProd(
       rels.map(x =>
 
-        //        Rel("Rel",
-        //          x.name, {
-        //            val table = findTable2(x.name, tables).getOrElse(throw new Exception(s"Relation ${x.name} does not exist"))
-        //            table.cols.toList.map(y => varOfSqlVar(x.alias.get, y._1, y._2))
-        //          }, ""))
-
         Rel("Rel",
           x.name, {
             val table = findTable(x.name).getOrElse(throw new Exception(s"Relation ${x.name} does not exist"))
@@ -190,13 +184,13 @@ class SQLToCalc(schema: Schema) {
           val q = x.subquery
           val ref_name = x.alias
           if (isAggQuery(q)) {
-            CalcProd(calcOfQuery(Some(ref_name), tables, q).map({
+            CalcProd(calcOfQuery(Some(ref_name), q).map({
               case (tgt_name, subq) =>
                 mkDomainRestrictedLift(varOfSqlVar(ref_name, tgt_name, "INTEGER"), subq)
               //mk_domain_restricted_lift ( var_of_sql_var( ref_name,tgt_name,typeOfExpression(subq)),subq) // TODO
             }))
           } else {
-            val c = calcOfQuery(Some(ref_name), tables, q)
+            val c = calcOfQuery(Some(ref_name), q)
             if (c.length == 1)
               c.head._2
             else {
@@ -207,14 +201,14 @@ class SQLToCalc(schema: Schema) {
         }))
   }
 
-  def calcOfCondition(tables: List[CreateStream], sources: Option[Relation], cond: Option[Expression]): CalcExpr = {
+  def calcOfCondition(sources: Option[Relation], cond: Option[Expression]): CalcExpr = {
 
     def rcr_c(c: Option[Expression]): CalcExpr = {
-      calcOfCondition(tables, sources, c)
+      calcOfCondition(sources, c)
     }
 
     def rcr_et(tgt_var: Option[VarT], e: Expression): CalcExpr = {
-      calcOfSqlExpr(tgt_var, None, tables, sources, e)
+      calcOfSqlExpr(tgt_var, None, sources, e)
     }
 
     //    def calc_of_like ( expr: Expression , like : Expression ) = {
@@ -241,8 +235,8 @@ class SQLToCalc(schema: Schema) {
         mkAggsum(List(), CalcProd(List(or_calc, Cmp(Gt, or_val, ArithConst(IntLiteral(0))))))
 
       case Some(b: BinaryOperator) =>
-        val e1_calc = calcOfSqlExpr(None, None, tables, sources, b.left)
-        val e2_calc = calcOfSqlExpr(None, None, tables, sources, b.right)
+        val e1_calc = calcOfSqlExpr(None, None, sources, b.left)
+        val e2_calc = calcOfSqlExpr(None, None, sources, b.right)
 
         val (e1_val, e1_calc2) = liftIfNecessary(e1_calc)
         val (e2_val, e2_calc2) = liftIfNecessary(e2_calc)
@@ -258,13 +252,13 @@ class SQLToCalc(schema: Schema) {
 
       case Some(e: parser.SQLAST.Exists) =>
         val q = e.expr
-        val q_calc_unlifted = calcOfQuery(None, tables, q).head._2
+        val q_calc_unlifted = calcOfQuery(None, q).head._2
         mkExists(mkAggsum(List(), q_calc_unlifted))
       //TODO failwith
 
       case Some(Not(e: parser.SQLAST.Exists)) =>
         val q = e.expr
-        val q_calc_unlifted = calcOfQuery(None, tables, q).head._2
+        val q_calc_unlifted = calcOfQuery(None, q).head._2
         mkNotExists(mkAggsum(List(), q_calc_unlifted))
       //TODO failwith
 
@@ -299,13 +293,13 @@ class SQLToCalc(schema: Schema) {
   }
 
   def calcOfSqlExpr(tgt_var: Option[VarT], materialize_query: Option[(Aggregation, CalcExpr) => CalcExpr],
-                    tables: List[CreateStream], sources: Option[Relation], expr: Expression): CalcExpr = { // expr was SQL node
+                    sources: Option[Relation], expr: Expression): CalcExpr = { // expr was SQL node
 
     def rcr_e(e: Expression, is_agg: Option[Boolean] = Some(false)): CalcExpr = {
       if (is_agg.isDefined && is_agg.get) {
-        calcOfSqlExpr(None, None, tables, sources, e)
+        calcOfSqlExpr(None, None, sources, e)
       } else {
-        calcOfSqlExpr(None, materialize_query, tables, sources, e)
+        calcOfSqlExpr(None, materialize_query, sources, e)
       }
     }
 
@@ -398,9 +392,9 @@ class SQLToCalc(schema: Schema) {
         val q = s
         //TODO sql.error failwith
         if (isAggQuery(q))
-          (calcOfQuery(None, tables, q).head._2, false)
+          (calcOfQuery(None, q).head._2, false)
         else
-          (CalcProd(List(calcOfCondition(tables, sources, q.where),
+          (CalcProd(List(calcOfCondition(sources, q.where),
             rcr_e(q.projections.extractExpretions().head._1))), false)
 
       case ExternalFunctionExp(fn, fargs) =>
@@ -451,7 +445,7 @@ class SQLToCalc(schema: Schema) {
     }
   }
 
-  def castQueryToAggregate(tables: List[CreateStream], query: TopLevelStatement): TopLevelStatement = {
+  def castQueryToAggregate(query: TopLevelStatement): TopLevelStatement = {
 
     if (isAggQuery(query)) {
       query
@@ -486,14 +480,14 @@ class SQLToCalc(schema: Schema) {
                 case f: FieldIdent => if (f.name == target_name.get) f.qualifier else None
                 case _             => None
               }
-              FieldIdent(target_source, target_name.get, sqlExprType(None, target_expr, tables, sources))
+              FieldIdent(target_source, target_name.get, sqlExprType(None, target_expr, sources))
           }))
           SelectStatement(s.withs, new_targets, s.joinTree, s.where, Some(new_gb_vars),
             s.having, s.orderBy, s.limit, s.aliases)
 
         case u: UnionIntersectSequence =>
           def rcr(stmt: TopLevelStatement): TopLevelStatement = {
-            castQueryToAggregate(tables, stmt)
+            castQueryToAggregate(stmt)
           }
           UnionIntersectSequence(rcr(u.bottom), rcr(u.top), UNION)
       }
@@ -554,10 +548,6 @@ class SQLToCalc(schema: Schema) {
     v
   }
 
-  def findTable2(rel_name: String, tables: List[CreateStream]): Option[CreateStream] = {
-    tables.find(x => x.name == rel_name)
-  }
-
   def findTable(rel_name: String): Option[Table] = {
     schema.tables.find(x => x.name == rel_name)
   }
@@ -588,12 +578,12 @@ class SQLToCalc(schema: Schema) {
     }
   }
 
-  def rewriteHavingQuery(tables: List[CreateStream], query: TopLevelStatement): TopLevelStatement = {
+  def rewriteHavingQuery(query: TopLevelStatement): TopLevelStatement = {
     query
     // TODO
   }
 
-  def sqlExprType(strict: Option[Boolean], expr: Expression, tables: List[CreateStream], sources: Option[Relation]): Symbol = {
+  def sqlExprType(strict: Option[Boolean], expr: Expression, sources: Option[Relation]): Symbol = {
     'INTEGER
     // TODO
   }
