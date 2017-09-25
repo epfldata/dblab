@@ -12,7 +12,6 @@ import schema._
 import sc.pardis.types._
 import ch.epfl.data.dblab.frontend.optimizer.CalcUtils._
 //import scala.reflect.runtime.{ universe => ru }
-//import ru._ //TODO this symbol ?
 import SQLUtils._
 
 /**
@@ -80,14 +79,14 @@ class SQLToCalc(schema: Schema) {
     val (noagg_vars, noagg_terms) = noagg_tgts.map({
       case (base_tgt_name, tgt_expr) =>
         //TODO sql error failwith
-        val tgt_name = if (query_name.isEmpty) base_tgt_name else varOfSqlVar(query_name.get, base_tgt_name, "ANY").name
+        val tgt_name = if (query_name.isEmpty) base_tgt_name else varOfSqlVar(query_name.get, base_tgt_name, AnyType).name
         //        println(tgt_name)
         //        println(tgt_expr.asInstanceOf[FieldIdent].qualifier)
         tgt_expr match {
           case f: FieldIdent if (query_name.isEmpty && f.name == tgt_name) ||
-            (varOfSqlVar(f.qualifier.get, f.name, "INTEGER").name == tgt_name) => //TODO f.symbol
+            (varOfSqlVar(f.qualifier.get, f.name, IntType).name == tgt_name) => //TODO f.symbol
             //(var_of_sql_var(f.qualifier.get, f.name, f.symbol match { case Symbol(b) => b }), CalcValue(ArithConst(IntLiteral(1))))
-            (varOfSqlVar(f.qualifier.get, f.name, "INTEGER"), CalcValue(ArithConst(IntLiteral(1)))) //TODO type
+            (varOfSqlVar(f.qualifier.get, f.name, IntType), CalcValue(ArithConst(IntLiteral(1)))) //TODO type
 
           case _ =>
             val tgt_var = VarT(tgt_name, IntType) // TODO type should infer with expr_type
@@ -109,7 +108,7 @@ class SQLToCalc(schema: Schema) {
     })) {
       //      println(f)
       //      List(var_of_sql_var(f.qualifier.get, f.name, f.symbol match { case Symbol(b) => b }))
-      List(varOfSqlVar(f.qualifier.get, f.name, "INTEGER")) // TODO type
+      List(varOfSqlVar(f.qualifier.get, f.name, IntType)) // TODO type
     } else List())
 
     def mq(agg_type: Aggregation, agg_calc: CalcExpr): CalcExpr = {
@@ -129,7 +128,7 @@ class SQLToCalc(schema: Schema) {
           println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
           val f = fields.asInstanceOf[FieldIdent]
           mkAggsum(new_gb_vars, mkExists(mkAggsum(
-            new_gb_vars.union(List(varOfSqlVar(f.qualifier.get, f.name, "INTEGER"))), //TODO type infer
+            new_gb_vars.union(List(varOfSqlVar(f.qualifier.get, f.name, IntType))), //TODO type infer
             CalcProd(List(source_calc, cond_calc, noagg_calc)))))
 
         case _: CountExpr =>
@@ -176,7 +175,7 @@ class SQLToCalc(schema: Schema) {
           x.name, {
             val table = findTable(x.name).getOrElse(throw new Exception(s"Relation ${x.name} does not exist"))
             //          table.attributes.map(y => varOfSqlVar(x.alias.get, y.name, y.dataType)) //TODO after fixing typing
-            table.attributes.map(y => varOfSqlVar(x.alias.get, y.name, "INTEGER"))
+            table.attributes.map(y => varOfSqlVar(x.alias.get, y.name, IntType))
           }, ""))
 
         ++
@@ -186,7 +185,7 @@ class SQLToCalc(schema: Schema) {
           if (isAggQuery(q)) {
             CalcProd(calcOfQuery(Some(ref_name), q).map({
               case (tgt_name, subq) =>
-                mkDomainRestrictedLift(varOfSqlVar(ref_name, tgt_name, "INTEGER"), subq)
+                mkDomainRestrictedLift(varOfSqlVar(ref_name, tgt_name, IntType), subq)
               //mk_domain_restricted_lift ( var_of_sql_var( ref_name,tgt_name,typeOfExpression(subq)),subq) // TODO
             }))
           } else {
@@ -271,7 +270,7 @@ class SQLToCalc(schema: Schema) {
       case Some(i: InList) =>
         val expr = i.e
         val l = i.list
-        val t = IntType // TODO change with the commented line
+        val t = IntType // TODO change with the commented line after typing
         //val t = sql_expr_type(None,expr,tables,sources)
         val v = tmpVar("in", t)
         val (expr_val, expr_calc) = lowerIfValue(rcr_et(Some(v), expr))
@@ -320,7 +319,8 @@ class SQLToCalc(schema: Schema) {
 
       case f: FieldIdent =>
         println(f)
-        (makeCalcExpr(makeArithExpr(varOfSqlVar(f.qualifier.get, f.name, "INTEGER"))), false) //TODO type expr
+        println(f.name)
+        (makeCalcExpr(makeArithExpr(varOfSqlVar(f.qualifier.get, f.name, IntType))), false) //TODO type expr
 
       case b: BinaryOperator =>
         b match {
@@ -416,7 +416,7 @@ class SQLToCalc(schema: Schema) {
         val args_list = {
           val args_expr = CalcProd((agg_args ++ non_agg_args).map(x => x._2))
           //          if ( args_expr.equals( CalcValue(ArithConst(IntLiteral(1))) ) )
-          if (args_expr.equals(CalcProd(List(CalcValue(ArithConst(IntLiteral(1))))))) //TODO
+          if (args_expr.equals(CalcProd(List(CalcValue(ArithConst(IntLiteral(1))))))) //TODO check equality with 1
             List()
           else
             prodList(args_expr)
@@ -506,18 +506,8 @@ class SQLToCalc(schema: Schema) {
     }
   }
 
-  def varOfSqlVar(R_name: String, col_name: String, tp: String): VarT = {
-
-    tp match {
-      case "INTEGER" => VarT(R_name + "_" + col_name, IntType)
-      case "STRING"  => VarT(R_name + "_" + col_name, StringType)
-      case "ANY"     => VarT(R_name + "_" + col_name, AnyType)
-      case "FLOAT"   => VarT(R_name + "_" + col_name, FloatType)
-      case "DATE"    => VarT(R_name + "_" + col_name, DateType)
-
-      //      case "VARCHAR" => VarT(R_name + "_" + col_name, VarCharType)
-      //TODO rest cases
-    }
+  def varOfSqlVar(R_name: String, col_name: String, tp: Tpe): VarT = {
+    VarT(R_name + "_" + col_name, tp)
   }
 
   def liftIfNecessary(calc: CalcExpr, t: Option[String] = Some("agg"), vt: Option[Tpe] = Some(AnyType)): (ArithExpr, CalcExpr) = {
