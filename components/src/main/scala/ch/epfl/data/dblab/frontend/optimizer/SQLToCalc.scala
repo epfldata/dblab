@@ -6,7 +6,7 @@ package optimizer
 import ch.epfl.data.dblab.frontend.parser.{ CalcAST, SQLAST }
 import ch.epfl.data.dblab.schema.VarCharType
 import parser.SQLAST.{ CountExpr, LiteralExpression, _ }
-import parser.CalcAST._
+import parser.CalcAST.{ Rel, _ }
 import optimizer.CalcOptimizer._
 import schema._
 import sc.pardis.types._
@@ -171,11 +171,20 @@ class SQLToCalc(schema: Schema) {
 
     CalcProd(
       rels.map(x =>
+
+        //        Rel("Rel",
+        //          x.name, {
+        //            val table = findTable2(x.name, tables).getOrElse(throw new Exception(s"Relation ${x.name} does not exist"))
+        //            table.cols.toList.map(y => varOfSqlVar(x.alias.get, y._1, y._2))
+        //          }, ""))
+
         Rel("Rel",
           x.name, {
-            val table = findTable(x.name, tables).getOrElse(throw new Exception(s"Relation ${x.name} does not exist"))
-            table.cols.toList.map(y => varOfSqlVar(x.alias.get, y._1, y._2))
+            val table = findTable(x.name).getOrElse(throw new Exception(s"Relation ${x.name} does not exist"))
+            //          table.attributes.map(y => varOfSqlVar(x.alias.get, y.name, y.dataType)) //TODO after fixing typing
+            table.attributes.map(y => varOfSqlVar(x.alias.get, y.name, "INTEGER"))
           }, ""))
+
         ++
         subqs.map({ x =>
           val q = x.subquery
@@ -545,8 +554,12 @@ class SQLToCalc(schema: Schema) {
     v
   }
 
-  def findTable(rel_name: String, tables: List[CreateStream]): Option[CreateStream] = {
+  def findTable2(rel_name: String, tables: List[CreateStream]): Option[CreateStream] = {
     tables.find(x => x.name == rel_name)
+  }
+
+  def findTable(rel_name: String): Option[Table] = {
+    schema.tables.find(x => x.name == rel_name)
   }
 
   // Arithmetic.mk_var

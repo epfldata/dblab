@@ -57,6 +57,12 @@ object Driver {
         println(query)
         val schema = ddlInterpreter.interpret(UseSchema("DBToaster") :: tables)
 
+        println()
+        println(schema.tables)
+        println()
+        println(tables)
+        println()
+
         def listOfQueries(q: TopLevelStatement): List[TopLevelStatement] = {
           q match {
             case u: UnionIntersectSequence if u.connectionType.equals(SEQUENCE) =>
