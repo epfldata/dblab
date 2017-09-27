@@ -55,8 +55,8 @@ object SQLParser extends StandardTokenParsers {
     }
 
   def parseStreamQuery: Parser[TopLevelStatement] =
-    parseIncludeStatement.? ~ parseCreate.? ~ parseQuery ^^ {
-      case incOpt ~ streamsOpt ~ body => IncludeStatement("", incOpt.getOrElse(Seq()) ++ streamsOpt.getOrElse(Seq()), body)
+    parseIncludeStatement.? ~ parseCreate.? ~ parseQuery.? ^^ {
+      case incOpt ~ streamsOpt ~ body => IncludeStatement("", incOpt.getOrElse(Seq()) ++ streamsOpt.getOrElse(Seq()), body.orNull)
     }
   def parseIncludeStatement: Parser[List[CreateStatement]] =
     "INCLUDE" ~ stringLit <~ ";".? ^^ {

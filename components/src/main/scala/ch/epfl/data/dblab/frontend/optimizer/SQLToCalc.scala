@@ -29,6 +29,8 @@ class SQLToCalc(schema: Schema) {
     declareStdFunction("cast_date", x => DateType) //TODO
     declareStdFunction("cast_float", x => FloatType) //TODO
     declareStdFunction("cast_String", x => StringType) //TODO
+    declareStdFunction("date_part", x => StringType) //TODO
+    declareStdFunction("year", x => StringType) //TODO uppercase in query9!
   }
 
   def calcOfQuery(query_name: Option[String], query: TopLevelStatement): List[(String, CalcExpr)] = {
@@ -210,11 +212,28 @@ class SQLToCalc(schema: Schema) {
       calcOfSqlExpr(tgt_var, None, sources, e)
     }
 
-    //    def calc_of_like ( expr: Expression , like : Expression ) = {
-    //      val like_regexp = "^"+"$"
-    //    }
+    def calcOfLike(wrapper: ArithExpr => CalcExpr, expr: Expression, like: Expression) = {
+
+      like match {
+        case StringLiteral(s) =>
+          val like_regexp = "^" + s.replaceAll("%", ".*") + "$"
+          val (expr_val, expr_calc) = liftIfNecessary(calcOfSqlExpr(None, None, sources, expr), Some("like"))
+          //TODO failwith
+          CalcProd(List(expr_calc,
+            wrapper(ArithFunc("regexp_match", List(ArithConst(StringLiteral(like_regexp)), expr_val), IntType))))
+
+        case _ => ???
+      }
+    }
 
     pushDownNots(cond) match {
+
+      case Some(Like(expr, like_str)) =>
+        calcOfLike(x => Cmp(Eq, ArithConst(IntLiteral(0)), x), expr, like_str)
+
+      case Some(Not(Like(expr, like_str))) =>
+        calcOfLike(x => Cmp(Neq, ArithConst(IntLiteral(0)), x), expr, like_str)
+
       case Some(a: And) =>
         CalcProd(List(rcr_c(Some(a.left)), rcr_c(Some(a.right))))
 
@@ -284,8 +303,6 @@ class SQLToCalc(schema: Schema) {
 
         }
 
-      //      case Some( Like(expr,like_str) ) =>
-      //        calc_of_like( x => Cmp( Neq , ArithConst( IntLiteral(0) ) , x ) , expr , like_str )
       case _ => CalcValue(ArithConst(IntLiteral(1)))
     }
     // TODO rest cases
@@ -326,13 +343,16 @@ class SQLToCalc(schema: Schema) {
         b match {
           case m: Multiply =>
             (CalcProd(List(rcr_e(m.left), rcr_e(m.right))), false)
-          case a: Add =>
-            val (e1_calc, e2_calc) = (is_agg_expr(a.left), is_agg_expr(a.right)) match {
+
+          case a @ (_: Add | _: Subtract) =>
+            val (e1_calc, e2_base_calc) = (is_agg_expr(a.left), is_agg_expr(a.right)) match {
               case (true, true) | (false, false) => (rcr_e(a.left), rcr_e(a.right))
               case (false, true)                 => (extendSumWithAgg(rcr_e(a.left)), rcr_e(a.right))
               case (true, false)                 => (rcr_e(a.left), extendSumWithAgg(rcr_e(a.right)))
             }
+            val e2_calc = if (a.isInstanceOf[Subtract]) CalcNeg(e2_base_calc) else e2_base_calc
             (CalcSum(List(e1_calc, e2_calc)), false)
+
           case d: Divide =>
             val e1 = d.left
             val e2 = d.right
@@ -734,6 +754,7 @@ class SQLToCalc(schema: Schema) {
   //   ********Function********** :
 
   def declaration(fn: String, argtypes: List[Tpe]): FunctionDeclaration = {
+    println(fn)
     schema.functions(fn.toUpperCase()).apply(argtypes)
   }
 
