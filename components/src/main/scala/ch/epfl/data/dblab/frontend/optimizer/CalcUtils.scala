@@ -18,18 +18,21 @@ object CalcUtils {
       case _           => List(calcExpr)
     }
   }
-  def extractDomains(scope: List[VarT], calcExpr: CalcExpr) = {
+  def extractDomains(scope: List[VarT], calcExpr: CalcExpr): (CalcExpr, CalcExpr) = {
     val schema = schemaOfExpression(calcExpr)._2
 
     //TODO optimize
 
-    prodList(calcExpr).foldLeft((CalcOne, CalcOne))((acc, cur) => {
-      ???
-      //Domain delta
+    val res = prodList(calcExpr).foldLeft[(CalcExpr, CalcExpr)]((CalcOne, CalcOne))((acc, cur) => {
+      cur match {
+        case DomainDelta(_) => (CalcProd(List(acc._1, cur)), acc._2)
+        case _              => (acc._1, CalcProd(List(acc._2, cur)))
+      }
 
     })
-
+    res
   }
+
   def eventVars(e: EventT): List[VarT] = {
     e match {
       case InsertEvent(rel)                          => rel.vars
@@ -135,16 +138,27 @@ object CalcUtils {
             CalcZero
           else {
             val scope = eventVars(deltaEvent)
-            ???
+            val (deltalhs, deltarhs) = extractDomains(scope, deltaterm)
+            CalcProd(List(deltalhs, CalcSum(List(Lift(vr, CalcSum(List(subt, deltarhs))), CalcNeg(Lift(vr, subt))))))
+          }
+        }
+        case CalcAST.Exists(subt) => {
+          val deltaTerm = deltaOfExpr(deltaEvent, subt)
+          if (deltaTerm == CalcZero)
+            CalcZero
+          else {
+            val scope = eventVars(deltaEvent)
+            val (deltalhs, deltarhs) = extractDomains(scope, deltaTerm)
+            CalcProd(List(deltalhs, CalcSum(List(CalcAST.Exists(CalcSum(List(subt, deltarhs))), CalcNeg(CalcAST.Exists(subt))))))
           }
         }
 
       }
     }
-
-    ???
+    delta(leaf)(expr)
 
   }
+
   def deltaRelsOfExpression(expr: CalcExpr): List[String] = {
     def leaf(calcExpr: CalcExpr): List[String] = {
       calcExpr match {

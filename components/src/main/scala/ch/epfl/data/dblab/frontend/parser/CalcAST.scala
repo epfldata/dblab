@@ -43,7 +43,8 @@ object CalcAST {
   case class CalcValue(v: ArithExpr) extends CalcExpr
 
   case class DeltaRel(name: String, vars: List[VarT]) extends CalcExpr
-  //TODO fix all previous utils for delta rel
+  case class DomainDelta(term: CalcExpr) extends CalcExpr
+  //TODO fix all previous utils for delta rel and domain delta
 
   val CalcOne = CalcValue(ArithConst(IntLiteral(1)))
   val CalcZero = CalcValue(ArithConst(IntLiteral(0)))
