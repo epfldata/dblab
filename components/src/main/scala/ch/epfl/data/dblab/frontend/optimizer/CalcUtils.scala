@@ -12,6 +12,160 @@ import ch.epfl.data.sc.pardis.types._
 
 object CalcUtils {
 
+  def prodList(calcExpr: CalcExpr): List[CalcExpr] = {
+    calcExpr match {
+      case CalcProd(l) => l
+      case _           => List(calcExpr)
+    }
+  }
+  def extractDomains(scope: List[VarT], calcExpr: CalcExpr) = {
+    val schema = schemaOfExpression(calcExpr)._2
+
+    //TODO optimize
+
+    prodList(calcExpr).foldLeft((CalcOne, CalcOne))((acc, cur) => {
+      ???
+      //Domain delta
+
+    })
+
+  }
+  def eventVars(e: EventT): List[VarT] = {
+    e match {
+      case InsertEvent(rel)                          => rel.vars
+      case DeleteEvent(rel)                          => rel.vars
+      case BatchUpdate(_)                            => List()
+      case CorrectiveUpdate(_, ivars, ovars, v, upe) => (ivars ++ ovars ++ List(v) ++ eventVars(upe))
+      case SystemInitializedEvent()                  => List()
+    }
+  }
+  def delta(leaf: (CalcExpr => CalcExpr))(e: CalcExpr): CalcExpr = {
+    e match {
+      case CalcSum(l)       => CalcSum(l.map(delta(leaf)_))
+      case CalcProd(List()) => CalcZero
+      case CalcProd(x :: l) => {
+        val r = List(CalcProd(delta(leaf)(x) :: l), CalcProd(List(CalcSum(List(x, delta(leaf)(x))), delta(leaf)(CalcProd(l)))))
+        CalcSum(r)
+      }
+      case CalcNeg(ex) => CalcNeg(delta(leaf)(ex))
+      case _           => leaf(e)
+    }
+  }
+  def singleton(cols: List[(VarT, CalcExpr)], multiplicity: CalcExpr = CalcOne): CalcExpr = {
+    CalcProd(multiplicity :: cols.map(x => Lift(x._1, x._2)))
+  }
+
+  def deltaOfExpr(deltaEvent: EventT, expr: CalcExpr): CalcExpr = {
+
+    def templateBatchDeltaOfRel(deltareln: String)(reln: String, relvars: List[VarT]): CalcExpr = {
+      if (deltareln == reln)
+        DeltaRel(reln, relvars)
+      else
+        CalcZero
+    }
+
+    def templateDeltaOfRel(applySign: (CalcExpr => CalcExpr), deltaRel: Rel)(reln: String, relv: List[VarT]) = {
+      if (deltaRel.name == reln) {
+        if (relv.length != deltaRel.vars.length)
+          throw new Exception
+        else {
+          val definitionTerms = singleton(relv.zip(deltaRel.vars.map(x => CalcValue(ArithVar(x)))))
+          applySign(definitionTerms)
+        }
+      } else
+        CalcZero
+    }
+    val emptyDeltaOfRel = (n: String, v: List[VarT]) => CalcZero
+
+    val errorDeltaOfExt = (ex: CalcAST.External) => {
+      throw new Exception("Cannot take delta of an external")
+    }
+
+    def pos(expr: CalcExpr) = expr
+    def neg(expr: CalcExpr) = CalcNeg(expr)
+
+    val deltaOfRel = deltaEvent match {
+      case InsertEvent(deltaRel) => templateDeltaOfRel(pos, deltaRel)_
+      case DeleteEvent(deltaRel) => templateDeltaOfRel(neg, deltaRel)_
+      case BatchUpdate(deltaReln) => templateBatchDeltaOfRel(deltaReln)_
+      case CorrectiveUpdate(deltaExtName, ivars, ovars, value, _) => emptyDeltaOfRel
+      case _ => throw new Exception("Error: Can not take delta of a non relation event")
+
+    }
+
+    val deltaOfExt = deltaEvent match {
+      case InsertEvent(deltaRel)  => errorDeltaOfExt
+      case DeleteEvent(deltaRel)  => errorDeltaOfExt
+      case BatchUpdate(deltaReln) => errorDeltaOfExt
+      case CorrectiveUpdate(deltaExtName, ivars, ovars, value, _) => {
+        val res = (e: External) => {
+          if (e.name == deltaExtName)
+            singleton(e.outs.zip(ovars.map(x => CalcValue(ArithVar(x)))), CalcProd(CalcValue(ArithVar(value)) :: (e.inps.zip(ivars)).map(x => Cmp(Eq, ArithVar(x._1), ArithVar(x._2)))))
+          else
+            CalcZero
+
+        }
+        res
+      }
+      case _ => throw new Exception("Error: Can not take delta of a non relation event")
+
+    }
+
+    def leaf(calcExpr: CalcExpr): CalcExpr = {
+      calcExpr match {
+        case CalcValue(_) => CalcZero
+        case AggSum(gbvars, subt) => {
+          val subtdelta = deltaOfExpr(deltaEvent, subt)
+          val ins = schemaOfExpression(subt)._1
+          val outs = schemaOfExpression(subtdelta)._2
+          val newgbs = gbvars.toSet.union(ins.toSet.intersect(outs.toSet)).toList
+          if (subtdelta.equals(CalcZero))
+            CalcZero
+          else
+            AggSum(newgbs, subtdelta)
+        }
+        case Rel(_, name, vars, _)            => deltaOfRel(name, vars)
+        case DeltaRel(_, _)                   => CalcZero
+        case External(name, ins, outs, tp, m) => deltaOfExt(External(name, ins, outs, tp, m))
+        case Cmp(_, _, _)                     => CalcZero
+        case CmpOrList(_, _)                  => CalcZero
+        case Lift(vr, subt) => {
+          val deltaterm = deltaOfExpr(deltaEvent, subt)
+          if (deltaterm.equals(CalcZero))
+            CalcZero
+          else {
+            val scope = eventVars(deltaEvent)
+            ???
+          }
+        }
+
+      }
+    }
+
+    ???
+
+  }
+  def deltaRelsOfExpression(expr: CalcExpr): List[String] = {
+    def leaf(calcExpr: CalcExpr): List[String] = {
+      calcExpr match {
+        case CalcValue(_)                  => List()
+        case External(_, _, _, _, None)    => List()
+        case External(_, _, _, _, Some(s)) => deltaRelsOfExpression(s)
+        case AggSum(_, e)                  => deltaRelsOfExpression(e)
+        case Rel(_, _, _, _)               => List()
+        case DeltaRel(rn, _)               => List(rn)
+        case Cmp(_, _, _)                  => List()
+        case CmpOrList(_, _)               => List()
+        case Lift(_, e)                    => deltaRelsOfExpression(e)
+        case CalcAST.Exists(e)             => deltaRelsOfExpression(e)
+
+      }
+    }
+    def neg(x: List[String]): List[String] = x
+
+    fold(multiunion, multiunion, neg, leaf, expr)
+
+  }
   def getCalcFiles(folder: String): List[String] = {
     val f = new java.io.File(folder)
     if (!f.exists) {
@@ -90,11 +244,11 @@ object CalcUtils {
     fold(escalateTypeList, escalateTypeList, neg, leaf, expr)
   }
 
+  def multiunion(list: List[List[String]]): List[String] = {
+    list.foldLeft(List.empty[String])((acc, cur) => acc.toSet.union(cur.toSet).toList)
+  }
   def relsOfExpr(expr: CalcExpr): List[String] = {
 
-    def multiunion(list: List[List[String]]): List[String] = {
-      list.foldLeft(List.empty[String])((acc, cur) => acc.toSet.union(cur.toSet).toList)
-    }
     def leaf(calcExpr: CalcExpr): List[String] = {
       calcExpr match {
         case CalcValue(_)                  => List()

@@ -39,6 +39,17 @@ object CalcCompiler {
     })
     //TODO where are streams?
 
+    val events = List(((x: Rel) => DeleteEvent(x), "_m"), ((x: Rel) => InsertEvent(x), "_p"))
+
+    //TODO 154
+
+    def func(rel: Rel, mkevt: Rel => EventT, evtprefix: String) = {
+      val mapprefix = ext.name + evtprefix + rel.name
+      val prefixedrelv = rel.vars.map(x => VarT(mapprefix + x.name, x.tp))
+      val deltaEvent = mkevt(Rel("Stream", rel.name, prefixedrelv, ""))
+      //if(computedelta) //TODO and heuristic
+      //val deltaExpr =
+    }
     ???
   }
 

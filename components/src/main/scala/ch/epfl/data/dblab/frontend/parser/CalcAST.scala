@@ -42,6 +42,9 @@ object CalcAST {
   case class Exists(term: CalcExpr) extends CalcExpr
   case class CalcValue(v: ArithExpr) extends CalcExpr
 
+  case class DeltaRel(name: String, vars: List[VarT]) extends CalcExpr
+  //TODO fix all previous utils for delta rel
+
   val CalcOne = CalcValue(ArithConst(IntLiteral(1)))
   val CalcZero = CalcValue(ArithConst(IntLiteral(0)))
 
@@ -51,7 +54,7 @@ object CalcAST {
   case class InsertEvent(rel: Rel) extends EventT
   case class DeleteEvent(rel: Rel) extends EventT
   case class BatchUpdate(str: String) extends EventT
-  case class CorrectiveUpdate(str: String, l1: List[VarT], l2: List[VarT], e: EventT) extends EventT
+  case class CorrectiveUpdate(str: String, l1: List[VarT], l2: List[VarT], v: VarT, e: EventT) extends EventT
   case class SystemInitializedEvent() extends EventT
 
   trait UpdateType
