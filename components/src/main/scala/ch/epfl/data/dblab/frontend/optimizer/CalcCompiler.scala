@@ -13,8 +13,12 @@ import scala.tools.nsc.interactive.Lexer.IntLit
 object CalcCompiler {
 
   //TODO not sure
-  def rel(db: Schema, reln: String): Option[Table] = {
-    db.tables.find(x => x.name.equals(reln))
+  def rel(db: Schema, reln: String): Table = {
+    val r = db.tables.find(x => x.name.equals(reln))
+    r match {
+      case Some(x) => x
+      case _ => null
+    }
   }
   def compileMap(todot: TodoT, computedelta: Boolean, dbschema: Schema): (List[TodoT], Ds) = {
     val ext = todot.ds.dsname match {
@@ -33,24 +37,25 @@ object CalcCompiler {
     //TODO optimiziation removed
 
     val rels = relsOfExpr(ext).map(x => rel(dbschema, x))
-    val (tablerels, streamrels) = rels.partition(x => x match {
-      case Some(_) => true
-      case None    => false
-    })
+    val (tablerels, streamrels) = rels.partition(x => true)
     //TODO where are streams?
+
 
     val events = List(((x: Rel) => DeleteEvent(x), "_m"), ((x: Rel) => InsertEvent(x), "_p"))
 
-    //TODO 154
+    for (rel <- streamrels){
+      for(evt <- events){
+        val mapPrefix = ext.name + evt._2 + rel.name
+        //TODO not sure
+        val prefixedRelv = rel.attributes.map(x => Attribute(mapPrefix + x.name, x.dataType, x.constraints, x.distinctValuesCount, x.nullValuesCount))
+        //TODO change rel in event to table
+        val deltaEvent = evt._1(???)
+        if(computedelta) {
+          val (deltaRenaming, deltaExpr) =
+        }
 
-    def func(rel: Rel, mkevt: Rel => EventT, evtprefix: String) = {
-      val mapprefix = ext.name + evtprefix + rel.name
-      val prefixedrelv = rel.vars.map(x => VarT(mapprefix + x.name, x.tp))
-      val deltaEvent = mkevt(Rel("Stream", rel.name, prefixedrelv, ""))
-      //if(computedelta) //TODO and heuristic
-      //val deltaExpr =
+      }
     }
-    ???
   }
 
   def compileTables(rel: Rel): CompiledDs = {

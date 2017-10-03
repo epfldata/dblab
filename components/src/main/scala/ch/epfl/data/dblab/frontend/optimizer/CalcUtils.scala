@@ -1,17 +1,63 @@
 package ch.epfl.data.dblab.frontend.optimizer
 
 import ch.epfl.data.dblab.frontend.parser.CalcAST._
-import ch.epfl.data.dblab.frontend.parser.{ CalcAST, SQLAST }
+import ch.epfl.data.dblab.frontend.parser.{CalcAST, SQLAST}
 import ch.epfl.data.dblab.frontend.parser.SQLAST._
-import ch.epfl.data.dblab.schema.DateType
+import ch.epfl.data.dblab.schema.{Attribute, DateType, Table}
 import ch.epfl.data.sc.pardis.types._
-
+import ch.epfl.data.dblab.frontend.optimizer.CalcOptimizer._
 /**
  * @author Parand Alizadeh
  */
 
 object CalcUtils {
 
+
+  def renameVars(mappings: List[(VarT, VarT)], expr: CalcExpr): CalcExpr = {
+    ???
+  }
+
+
+    //TODO
+  def reduceAssoc[A,B](l: List[(A,B)]): List[(A, List[B])] = {
+    l.foldRight(List.empty[(A, List[B])])((acc, cur) => {
+      ???
+    })
+  }
+
+  def toVarT(atr: Attribute): VarT = {
+    VarT(atr.name, atr.dataType)
+  }
+  def extractRenamings(scope: List[VarT], schema: List[VarT], calcExpr: CalcExpr): (List[(VarT, VarT)], List[CalcExpr]) = {
+    val (rawmappings, exprTerms) = prodList(calcExpr).foldLeft((List.empty[(VarT, VarT)], List.empty[CalcExpr]))((acc, cur) => {
+      cur match {
+        case Lift(v1, CalcValue(ArithVar(v2))) if (scope.contains(v2) && schema.contains(v1)) => ((v1, v2) :: acc._1, acc._2)
+        case Lift(v1, CalcValue(ArithVar(v2))) if (scope.contains(v1) && scope.contains(v2)) => (acc._1, acc._2 ++ List(Cmp(Eq, ArithVar(v1), ArithVar(v2))))
+        case _ => (acc._1, acc._2 ++ List(cur))
+      }
+    })
+   val (mappings, mappingCondition) = reduceAssoc(rawmappings).map(cur => cur._2 match {
+     case List() => throw new Exception("BUG: reduce returned an empty list")
+     case x::rest => ((cur._1, x), CalcProd(rest.map(y => Cmp(Eq, ArithVar(x), ArithVar(y)))))
+   }).unzip
+
+   def fixSchemas(expr: CalcExpr): CalcExpr = {
+     def leaf(x: CalcExpr): CalcExpr = {
+       x match {
+         case AggSum(gbvars, subexp) => {
+           val newsubexp = fixSchemas(subexp)
+           AggSum(gbvars.toSet.intersect(schemaOfExpression(newsubexp)._2.toSet).toList, newsubexp)
+         }
+         case Lift(var1, CalcValue(ArithVar(var2))) if(var1 == var2) => CalcOne
+         case Lift(var1, subexp) => Lift(var1, fixSchemas(subexp))
+         case _ => x
+       }
+     }
+     fold(sumGeneral, prodGeneral, negGeneral, leaf, expr)
+   }
+
+
+  }
   def prodList(calcExpr: CalcExpr): List[CalcExpr] = {
     calcExpr match {
       case CalcProd(l) => l
@@ -35,8 +81,8 @@ object CalcUtils {
 
   def eventVars(e: EventT): List[VarT] = {
     e match {
-      case InsertEvent(rel)                          => rel.vars
-      case DeleteEvent(rel)                          => rel.vars
+      case InsertEvent(rel)                          => rel.attributes.map(toVarT)
+      case DeleteEvent(rel)                          => rel.attributes.map(toVarT)
       case BatchUpdate(_)                            => List()
       case CorrectiveUpdate(_, ivars, ovars, v, upe) => (ivars ++ ovars ++ List(v) ++ eventVars(upe))
       case SystemInitializedEvent()                  => List()
@@ -67,12 +113,12 @@ object CalcUtils {
         CalcZero
     }
 
-    def templateDeltaOfRel(applySign: (CalcExpr => CalcExpr), deltaRel: Rel)(reln: String, relv: List[VarT]) = {
+    def templateDeltaOfRel(applySign: (CalcExpr => CalcExpr), deltaRel: Table)(reln: String, relv: List[VarT]) = {
       if (deltaRel.name == reln) {
-        if (relv.length != deltaRel.vars.length)
+        if (relv.length != deltaRel.attributes.map(toVarT).length)
           throw new Exception
         else {
-          val definitionTerms = singleton(relv.zip(deltaRel.vars.map(x => CalcValue(ArithVar(x)))))
+          val definitionTerms = singleton(relv.zip(deltaRel.attributes.map(toVarT).map(x => CalcValue(ArithVar(x)))))
           applySign(definitionTerms)
         }
       } else
@@ -158,7 +204,7 @@ object CalcUtils {
     delta(leaf)(expr)
 
   }
-
+5
   def deltaRelsOfExpression(expr: CalcExpr): List[String] = {
     def leaf(calcExpr: CalcExpr): List[String] = {
       calcExpr match {

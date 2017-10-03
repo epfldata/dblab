@@ -7,6 +7,7 @@ import ch.epfl.data.dblab.frontend.parser.SQLAST.IntLiteral
 import ch.epfl.data.dblab.schema.{ DateType, VarCharType }
 import sc.pardis.types._
 import sc.pardis.ast._
+import ch.epfl.data.dblab.schema._
 
 /**
  * A module containing AST nodes for AG
@@ -52,8 +53,8 @@ object CalcAST {
   case class Ds(dsname: CalcExpr, dsdef: CalcExpr)
   case class TodoT(depth: Int, ds: Ds, b: Boolean)
   trait EventT
-  case class InsertEvent(rel: Rel) extends EventT
-  case class DeleteEvent(rel: Rel) extends EventT
+  case class InsertEvent(tab: Table) extends EventT
+  case class DeleteEvent(tab: Table) extends EventT
   case class BatchUpdate(str: String) extends EventT
   case class CorrectiveUpdate(str: String, l1: List[VarT], l2: List[VarT], v: VarT, e: EventT) extends EventT
   case class SystemInitializedEvent() extends EventT
