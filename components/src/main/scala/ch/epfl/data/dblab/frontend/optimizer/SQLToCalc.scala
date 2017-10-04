@@ -126,8 +126,7 @@ class SQLToCalc(schema: Schema) {
         case CountExpr(Distinct(StarExpression(_))) =>
           mkAggsum(new_gb_vars, mkExists(CalcProd(List(source_calc, cond_calc, noagg_calc))))
 
-        case CountExpr(Distinct(fields)) => // TODO fields is a list in ocaml but an expression in scala
-          println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+        case CountExpr(Distinct(fields)) => // fields is a list in ocaml but an expression in scala
           val f = fields.asInstanceOf[FieldIdent]
           mkAggsum(new_gb_vars, mkExists(mkAggsum(
             new_gb_vars.union(List(varOfSqlVar(f.qualifier.get, f.name, IntType))), //TODO type infer
@@ -305,7 +304,6 @@ class SQLToCalc(schema: Schema) {
 
       case _ => CalcValue(ArithConst(IntLiteral(1)))
     }
-    // TODO rest cases
   }
 
   def calcOfSqlExpr(tgt_var: Option[VarT], materialize_query: Option[(Aggregation, CalcExpr) => CalcExpr],
@@ -326,6 +324,13 @@ class SQLToCalc(schema: Schema) {
           val count_agg = m(CountAll(), CalcValue(ArithConst(IntLiteral(1)))) // expr will never use
           val count_sch = schemaOfExpression(count_agg)._2
           CalcProd(List(mkAggsum(count_sch, CalcAST.Exists(count_agg)), calc_expr))
+      }
+    }
+
+    def casesAsList(caseExp: Case): List[(Expression, Expression)] = {
+      caseExp.elsep match {
+        case c: Case => List((caseExp.cond, caseExp.thenp)) ++ casesAsList(c)
+        case _       => List((caseExp.cond, caseExp.thenp))
       }
     }
 
@@ -364,8 +369,6 @@ class SQLToCalc(schema: Schema) {
             (mkAggsum(nestedSchema, CalcProd(if (needs_order_flip) List(CalcProd(List(e2_calc, ce1)))
             else List(CalcProd(List(ce1, e2_calc)))
               ++ List(CalcValue(ArithFunc("/", List(e2_val), FloatType))))), false)
-
-          //TODO subtract case
         }
 
       case a: Aggregation =>
@@ -403,8 +406,6 @@ class SQLToCalc(schema: Schema) {
               case Some(mq) => mq(a, rcr_e(IntLiteral(1), Some(true)))
               //case None =>  //TODO failwith
             }, false)
-
-          //TODO other cases
         }
 
       case s: SelectStatement =>
@@ -452,11 +453,17 @@ class SQLToCalc(schema: Schema) {
             Lift(agg_res.head, calc)
         }))), agg_res != List())
 
-      //      case Case( cases , else_branch ) =>
-      //        val ( ret_calc , else_cond ) =
+      case c: Case =>
+        val cases = casesAsList(c)
+        val (ret_calc, else_cond) = cases.foldLeft(CalcValue(ArithConst(IntLiteral(0))).asInstanceOf[CalcExpr], BoolLiteral(true).asInstanceOf[Expression])({ (a, b) =>
+          val (ret_calc, prev_cond) = a
+          val (curr_cond, curr_term) = b
+          val full_cond = sqlMakeAnd(prev_cond, curr_cond)
 
-      //TODO other cases
-
+          (CalcSum(List(ret_calc, CalcProd(List(calcOfCondition(sources, Some(full_cond)), rcr_e(curr_term))))),
+            sqlMakeAnd(prev_cond, Not(curr_cond)))
+        })
+        (CalcSum(List(ret_calc, CalcProd(List(calcOfCondition(sources, Some(else_cond)), rcr_e(c.elsep))))), false)
     }
 
     (tgt_var, contains_target) match {
@@ -606,10 +613,23 @@ class SQLToCalc(schema: Schema) {
       case (Some(Not(e: InEqualityOperator))) => Some(Inverse(e))
       case (Some(Not(And(c1, c2))))           => pushDownNots(Some(Or(Not(c1), Not(c2))))
       case (Some(Not(Or(c1, c2))))            => pushDownNots(Some(And(Not(c1), Not(c2))))
-      //      case (Some(Const())) //TODO for const
+      case (Some(Not(BoolLiteral(c))))        => Some(BoolLiteral(!c))
       case (Some(And(c1, c2)))                => Some(And(pushDownNots(Some(c1)).get, pushDownNots(Some(c2)).get))
       case (Some(Or(c1, c2)))                 => Some(Or(pushDownNots(Some(c1)).get, pushDownNots(Some(c2)).get))
       case s                                  => s
+    }
+  }
+
+  def sqlMakeAnd(lhs: Expression, rhs: Expression): Expression = {
+    lhs match {
+      case BoolLiteral(true)  => rhs
+      case BoolLiteral(false) => BoolLiteral(false)
+      case _ =>
+        rhs match {
+          case BoolLiteral(true)  => lhs
+          case BoolLiteral(false) => BoolLiteral(false)
+          case _                  => And(lhs, rhs)
+        }
     }
   }
 

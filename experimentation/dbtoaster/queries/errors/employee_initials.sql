@@ -1,4 +1,4 @@
--- func , substring
+-- quantifier first_name
 
 --  List all the employee details
 
