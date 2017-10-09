@@ -6,11 +6,38 @@ import ch.epfl.data.dblab.frontend.parser.SQLAST.IntLiteral
 import ch.epfl.data.dblab.schema._
 import ch.epfl.data.sc.pardis.types._
 
+import scala.collection.mutable.ArrayBuffer
 import scala.tools.nsc.interactive.Lexer.IntLit
 /**
  * @author Parand Alizadeh
  */
 object CalcCompiler {
+
+  def materializeAsExternal(expr: CalcExpr, dbSchema: Schema, prefix: String, event: Option[EventT], scope: List[VarT], schema: List[VarT]): (List[Ds], CalcExpr) = {
+
+    val history = List.empty[Ds]
+    if(relsOfExpr(expr).length == 0 && deltaRelsOfExpression(expr).length == 0)
+      (List(), expr)
+    else{
+      val aggExpr = AggSum(schema, expr)
+      val tableVars = List()
+
+      val (foundDs, mappingIfFound) = (Ds(CalcOne, CalcOne), None)
+      mappingIfFound match {
+        case None => {
+          val exprIvars = schemaOfExpression(expr)._1
+          val(todoIvc, ivcExpr ) = (List(), None)
+
+
+          val newDS = Ds(External(prefix, exprIvars, schema, typeOfExpression(aggExpr), ivcExpr), aggExpr)
+          //TODO change history
+
+          (newDS :: todoIvc, newDS.dsname)
+        }
+      }
+    }
+  }
+
 
   //TODO not sure
   def rel(db: Schema, reln: String): Table = {
@@ -35,23 +62,29 @@ object CalcCompiler {
 
     }
     //TODO optimiziation removed
+    val optimizedDefn = todot.ds.dsdef
 
     val rels = relsOfExpr(ext).map(x => rel(dbschema, x))
     val (tablerels, streamrels) = rels.partition(x => true)
     //TODO where are streams?
 
 
-    val events = List(((x: Rel) => DeleteEvent(x), "_m"), ((x: Rel) => InsertEvent(x), "_p"))
+    val events = List(((x: Table) => DeleteEvent(x), "_m"), ((x: Table) => InsertEvent(x), "_p"))
 
     for (rel <- streamrels){
       for(evt <- events){
         val mapPrefix = ext.name + evt._2 + rel.name
         //TODO not sure
         val prefixedRelv = rel.attributes.map(x => Attribute(mapPrefix + x.name, x.dataType, x.constraints, x.distinctValuesCount, x.nullValuesCount))
-        //TODO change rel in event to table
-        val deltaEvent = evt._1(???)
-        if(computedelta) {
-          val (deltaRenaming, deltaExpr) =
+        val deltaEve = evt._1(Table(rel.name, rel.attributes, (new ArrayBuffer[Constraint](1)) += (StreamingTable),""))
+
+        //TODO hueristic
+        if (computedelta){
+          val deltaUnop = deltaOfExpr(deltaEve, optimizedDefn)
+          //TODO optimize
+          val deltaUnextracted = deltaUnop
+          val (deltaRenamings, deltaExpr) = extractRenamings(prefixedRelv.map(toVarT), ext.outs, deltaUnextracted)
+
         }
 
       }
@@ -64,7 +97,7 @@ object CalcCompiler {
     val mone = CalcNeg(CalcOne)
 
     var l = List.empty[(EventT, CalcExpr)]
-    l = List((InsertEvent(Rel("Rel", rel.name, rel.vars, "")), CalcOne), (DeleteEvent(Rel("Rel", rel.name, rel.vars, "")), mone))
+    l = List((InsertEvent(Table(rel.name, rel.vars.map(toAttribute), )), CalcOne), (DeleteEvent(Rel("Rel", rel.name, rel.vars, "")), mone))
     val triggers = l.map(x => {
       Trigger(x._1, StmtT(mapName, UpdateStmt, x._2))
     })

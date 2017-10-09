@@ -28,7 +28,11 @@ object CalcUtils {
   def toVarT(atr: Attribute): VarT = {
     VarT(atr.name, atr.dataType)
   }
-  def extractRenamings(scope: List[VarT], schema: List[VarT], calcExpr: CalcExpr): (List[(VarT, VarT)], List[CalcExpr]) = {
+
+  def toAttribute(v: VarT): Attribute = {
+    Attribute(v.name, v.tp)
+  }
+  def extractRenamings(scope: List[VarT], schema: List[VarT], calcExpr: CalcExpr): (List[(VarT, VarT)], CalcExpr) = {
     val (rawmappings, exprTerms) = prodList(calcExpr).foldLeft((List.empty[(VarT, VarT)], List.empty[CalcExpr]))((acc, cur) => {
       cur match {
         case Lift(v1, CalcValue(ArithVar(v2))) if (scope.contains(v2) && schema.contains(v1)) => ((v1, v2) :: acc._1, acc._2)
@@ -55,7 +59,7 @@ object CalcUtils {
      }
      fold(sumGeneral, prodGeneral, negGeneral, leaf, expr)
    }
-
+ ???
 
   }
   def prodList(calcExpr: CalcExpr): List[CalcExpr] = {
@@ -204,7 +208,7 @@ object CalcUtils {
     delta(leaf)(expr)
 
   }
-5
+
   def deltaRelsOfExpression(expr: CalcExpr): List[String] = {
     def leaf(calcExpr: CalcExpr): List[String] = {
       calcExpr match {
