@@ -13,6 +13,7 @@ import ch.epfl.data.dblab.frontend.optimizer.CalcOptimizer._
 object CalcUtils {
 
 
+  def applyIfPresent[A](x : A): A= ???
   def renameVars(mappings: List[(VarT, VarT)], expr: CalcExpr): CalcExpr = {
     ???
   }
