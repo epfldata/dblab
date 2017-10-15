@@ -19,16 +19,16 @@ object CalcCompiler {
 
   var rawCurSuffix = 0
 
-  def extractRelations(expr: CalcExpr,dbSchema: Schema, prefix: String, exprScope: List[VarT], exprSchema: List[VarT]): (List[Ds], CalcExpr) = {
-    //TODO
-    def merge(opTerms: (List[Ds], CalcExpr)) = {
+  def extractRelations(expr: CalcExpr,dbSchema: Schema, prefix: String, schemaT: SchemaT): (List[Ds], CalcExpr) = {
+    //TODO should ask
+    def merge[A]() = {
       ???
     }
 
-    def rcr(scope: List[VarT], schema: List[VarT], exp: CalcExpr) = extractRelations(exp, dbSchema, prefix, scope, schema)
+    def rcr(schemaT: SchemaT, exp: CalcExpr) = extractRelations(exp, dbSchema, prefix, schemaT)
 
-    def rcrWrap(wrap: (CalcExpr => CalcExpr), scope: List[VarT], schema: List[VarT], expr: CalcExpr): (List[Ds], CalcExpr) = {
-      val (dses, rete) = rcr(scope, schema, expr)
+    def rcrWrap(wrap: (CalcExpr => CalcExpr),schemaT: SchemaT, expr: CalcExpr): (List[Ds], CalcExpr) = {
+      val (dses, rete) = rcr(schemaT, expr)
       (dses, wrap(rete))
     }
 
@@ -41,6 +41,21 @@ object CalcCompiler {
       rawCurSuffix = rawCurSuffix + 1
       s"${prefix}_raw_reln_${rawCurSuffix}"
     }
+
+
+    def leaf(schemaT: SchemaT, expr: CalcExpr) = {
+      expr match {
+          //TODO Table or Rel?
+        //case Rel
+
+        case DomainDelta(exp) => rcrWrap((x => DomainDelta(x)), schemaT, exp)
+        case Exists(subexp) => rcrWrap((x => Exists(x)), schemaT, subexp)
+        case AggSum(gbv, subterm) => rcrWrap((x => AggSum(gbv, x)), SchemaT(schemaT.scope, gbv), subterm)
+        case Lift(v, subexp) => rcrWrap((x => Lift(v, x)), SchemaT(schemaT.scope, List()), subexp)
+        case _ => (List(), expr)
+      }
+    }
+
 
 
   }
@@ -96,8 +111,7 @@ object CalcCompiler {
     val optimizedDefn = todot.ds.dsdef
 
     val rels = relsOfExpr(ext).map(x => rel(dbschema, x))
-    val (tablerels, streamrels) = rels.partition(x => true)
-    //TODO where are streams?
+    val (tablerels, streamrels) = rels.partition(tableHasStream)
 
 
     val events = List(((x: Table) => DeleteEvent(x), "_m"), ((x: Table) => InsertEvent(x), "_p"))

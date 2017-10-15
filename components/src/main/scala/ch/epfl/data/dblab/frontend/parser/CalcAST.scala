@@ -77,6 +77,7 @@ object CalcAST {
 
   case class VarT(name: String, tp: Tpe)
   case class Schema_t(scope: Option[List[VarT]], schema: Option[List[VarT]])
+  case class SchemaT(scope: List[VarT], schema: List[VarT])
 
   trait CmpTag
   case object Eq extends CmpTag // Equals

@@ -3,7 +3,7 @@ package ch.epfl.data.dblab.frontend.optimizer
 import ch.epfl.data.dblab.frontend.parser.CalcAST._
 import ch.epfl.data.dblab.frontend.parser.{CalcAST, SQLAST}
 import ch.epfl.data.dblab.frontend.parser.SQLAST._
-import ch.epfl.data.dblab.schema.{Attribute, DateType, Table}
+import ch.epfl.data.dblab.schema.{Attribute, DateType, StreamingTable, Table}
 import ch.epfl.data.sc.pardis.types._
 import ch.epfl.data.dblab.frontend.optimizer.CalcOptimizer._
 /**
@@ -13,8 +13,29 @@ import ch.epfl.data.dblab.frontend.optimizer.CalcOptimizer._
 object CalcUtils {
 
 
+  def foldCalculus[A](expr: CalcExpr, schemaT: SchemaT, sumFunc: ((SchemaT, List[A]) => A), prodFunc:((SchemaT, List[A]) => A), negFunc: ((SchemaT, A) => A), leaf: ((SchemaT, CalcExpr)) => A ): A = {
+    def rcr(e: CalcExpr, schemaT: SchemaT) = foldCalculus(e, schemaT, sumFunc, prodFunc, negFunc, leaf)
+    expr match {
+      case CalcSum(terms) => sumFunc(schemaT, terms.map(x => rcr(x, schemaT)))
+      case CalcProd(terms) => {
+        ???
+        //TODO
+      }
+      case CalcNeg(e) => negFunc(schemaT, rcr(e , schemaT))
+      case _ => leaf(schemaT, expr)
+    }
+  }
+
+  //TODO
+  def rewriteLeaves()
+
+
+
   def tableHasStream(table: Table): Boolean = {
-    ???
+    table.constraints.foldLeft(false)((acc, cur) => acc | (cur match {
+      case StreamingTable => true
+      case _ => false
+    }))
   }
   def applyListAsFunction[A](theta: List[(A,A)], defau: A, x: A): A ={
     def g[B](x: B, y:B) = {
@@ -37,12 +58,21 @@ object CalcUtils {
     applyListAsFunction(theta, x, x)
   }
 
-  def renameVarsArithmetic(mapping: List[(VarT, VarT)], x : CalcValue): CalcExpr = {
-    ???
+  def renameVarsArithmetic(mapping: List[(VarT, VarT)])( x : CalcValue): CalcExpr = {
+    def leaf(expr: CalcValue): CalcValue = {
+      expr match {
+        case CalcValue(ArithConst(c)) => expr
+        case CalcValue(ArithVar(v)) => CalcValue(ArithVar(applyIfPresent(mapping)(v)))
+        case CalcValue(ArithFunc(fn, fa, ft)) => CalcValue(ArithFunc(fn , fa.map(x => renameVars(mapping, x)), ft))
+        //TODO we have problem here
+      }
+    }
   }
   def renameVars(mappings: List[(VarT, VarT)], expr: CalcExpr): CalcExpr = {
     val remapOne = applyIfPresent(mappings)
-    val remap = ???
+
+    val remapValue = renameVarsArithmetic(mappings)
+
     ???
   }
 
@@ -88,7 +118,8 @@ object CalcUtils {
      }
      fold(sumGeneral, prodGeneral, negGeneral, leaf, expr)
    }
- ???
+
+    (mappings, fixSchemas(renameVars(mappings, CalcProd(mappingCondition ::: exprTerms))))
 
   }
   def prodList(calcExpr: CalcExpr): List[CalcExpr] = {
