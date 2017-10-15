@@ -12,8 +12,38 @@ import scala.tools.nsc.interactive.Lexer.IntLit
 /**
  * @author Parand Alizadeh
  */
+
+
+
 object CalcCompiler {
 
+  var rawCurSuffix = 0
+
+  def extractRelations(expr: CalcExpr,dbSchema: Schema, prefix: String, exprScope: List[VarT], exprSchema: List[VarT]): (List[Ds], CalcExpr) = {
+    //TODO
+    def merge(opTerms: (List[Ds], CalcExpr)) = {
+      ???
+    }
+
+    def rcr(scope: List[VarT], schema: List[VarT], exp: CalcExpr) = extractRelations(exp, dbSchema, prefix, scope, schema)
+
+    def rcrWrap(wrap: (CalcExpr => CalcExpr), scope: List[VarT], schema: List[VarT], expr: CalcExpr): (List[Ds], CalcExpr) = {
+      val (dses, rete) = rcr(scope, schema, expr)
+      (dses, wrap(rete))
+    }
+
+    def isStream(relName: String) : Boolean = {
+      val t = rel(dbSchema, relName)
+      tableHasStream(t)
+    }
+
+    def nextPrefix(reln: String):String = {
+      rawCurSuffix = rawCurSuffix + 1
+      s"${prefix}_raw_reln_${rawCurSuffix}"
+    }
+
+
+  }
   def materializeAsExternal(expr: CalcExpr, dbSchema: Schema, prefix: String, event: Option[EventT], schema: List[VarT]): (List[Ds], CalcExpr) = {
 
     val history = List.empty[Ds]
@@ -100,7 +130,7 @@ object CalcCompiler {
           }
           triggerTodos = mergedTodos.map(x => TodoT(todot.depth + 1 , x, true)) ::: triggerTodos
 
-          triggers = Trigger(deltaEve, StmtT(External(ext.name, ext.inps.map(x => applyIfPresent(x)), ext.outs.map(x => applyIfPresent(x)), ext.tp, None), UpdateStmt, materlizedData)) :: triggers
+          triggers = Trigger(deltaEve, StmtT(External(ext.name, ext.inps.map(x => applyIfPresent(deltaRenamings)(x)), ext.outs.map(x => applyIfPresent(deltaRenamings)(x)), ext.tp, None), UpdateStmt, materlizedData)) :: triggers
 
         }
 
@@ -142,7 +172,7 @@ object CalcCompiler {
     val mone = CalcNeg(CalcOne)
 
     var l = List.empty[(EventT, CalcExpr)]
-    l = List((InsertEvent(Table(rel.name, rel.vars.map(toAttribute), )), CalcOne), (DeleteEvent(Rel("Rel", rel.name, rel.vars, "")), mone))
+    l = List((InsertEvent(Table(rel.name, rel.vars.map(toAttribute), ArrayBuffer(), "")), CalcOne), (DeleteEvent(Table(rel.name, rel.vars.map(toAttribute), ArrayBuffer(), "")), mone))
     val triggers = l.map(x => {
       Trigger(x._1, StmtT(mapName, UpdateStmt, x._2))
     })
@@ -150,21 +180,22 @@ object CalcCompiler {
     CompiledDs(discription, triggers)
   }
 
-  def compileTlqs(calcQueries: List[CalcQuery]): (List[TodoT], List[CalcQuery]) = {
-    val (todolist, toplevelqueries) = calcQueries.map(x => {
+  def compileTlqs(calcQueries: List[CalcQuery], dbSchema: Schema): (List[TodoT], List[CalcQuery]) = {
+    val (todolists, toplevelqueries) = calcQueries.map(x => {
 
       val qschema = schemaOfExpression(x.expr)
       val qtype = typeOfExpression(x.expr)
       val dsname = External(x.name, qschema._1, qschema._2, qtype, None)
       (TodoT(1, Ds(dsname, x.expr), false), CalcQuery(x.name, dsname))
     }).unzip
-    (todolist, toplevelqueries)
+
+    (todolists, toplevelqueries)
 
   }
 
   def compile(calcQueris: List[CalcQuery], dbSchema: Schema): (Plan, List[CalcQuery]) = {
-    var (todolist, tlqlist) = compileTlqs(calcQueris)
-
+    var (todolist, tlqlist) = compileTlqs(calcQueris, dbSchema)
+    var plan = List.empty[CompiledDs]
     while (todolist.length > 0) {
       val nextds = todolist.head
       todolist = todolist.tail
@@ -174,8 +205,12 @@ object CalcCompiler {
 
       val computedelta = true
 
+
       val (newtodos, compiledds) = compileMap(nextds, computedelta, dbSchema)
+
+      todolist = newtodos ::: todolist
+      plan = plan :+ compiledds
     }
-    ???
+    (Plan(plan), tlqlist)
   }
 }

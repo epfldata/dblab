@@ -13,8 +13,36 @@ import ch.epfl.data.dblab.frontend.optimizer.CalcOptimizer._
 object CalcUtils {
 
 
-  def applyIfPresent[A](x : A): A= ???
+  def tableHasStream(table: Table): Boolean = {
+    ???
+  }
+  def applyListAsFunction[A](theta: List[(A,A)], defau: A, x: A): A ={
+    def g[B](x: B, y:B) = {
+      if(x == y)
+        List(y)
+      else
+        List()
+    }
+
+    val x2 = theta.map(x => g(x._1, x._2)).foldLeft(List.empty[A])((acc, cur) => acc ::: cur)
+    if(x2.length == 0)
+      defau
+    else if(x2.length == 1)
+      x2.head
+    else
+      throw new Exception
+
+  }
+  def applyIfPresent[A](theta : List[(A, A)])(x: A): A = {
+    applyListAsFunction(theta, x, x)
+  }
+
+  def renameVarsArithmetic(mapping: List[(VarT, VarT)], x : CalcValue): CalcExpr = {
+    ???
+  }
   def renameVars(mappings: List[(VarT, VarT)], expr: CalcExpr): CalcExpr = {
+    val remapOne = applyIfPresent(mappings)
+    val remap = ???
     ???
   }
 
