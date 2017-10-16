@@ -77,10 +77,15 @@ object CalcUtils {
   }
 
 
-    //TODO
+    //TODO ask about foldRight
   def reduceAssoc[A,B](l: List[(A,B)]): List[(A, List[B])] = {
-    l.foldRight(List.empty[(A, List[B])])((acc, cur) => {
-      ???
+    l.foldRight(List.empty[(A, List[B])])((cur, acc) => {
+      val a = cur._1
+      val t = acc.find(x => x._1 == a)
+      t match {
+        case Some(r) => (a , cur._2 :: r._2) :: acc.filter(x => x._1 != a)
+        case None => (a, List(cur._2)) :: acc
+      }
     })
   }
 
