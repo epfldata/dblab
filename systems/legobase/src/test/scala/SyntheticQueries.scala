@@ -545,6 +545,39 @@ object SyntheticQueries extends TPCHRunner {
     dsl"()"
   }
 
+  def filter4Sum(numRuns: Int): Rep[Unit] = {
+    import dblab.queryengine.monad.Query
+    import dblab.experimentation.tpch.TPCHLoader._
+    import dblab.queryengine.GenericEngine._
+    val loadedLineitemTable = dsl"loadLineitem()"
+    def lineitemTable = dsl"""Query($loadedLineitemTable)"""
+    val startDate = param
+    val endDate = "1997-01-01"
+    for (i <- 0 until numRuns) {
+      dsl"""
+        runQuery {
+          val constantDate1: Int = parseDate($startDate)
+          val constantDate2: Int = parseDate($endDate)
+          val constantDate3: Int = constantDate1
+          val constantDate4: Int = constantDate2
+          val MAIL = parseString("MAIL")
+          val result = $lineitemTable.
+            // filter(_.L_SHIPDATE >= constantDate1).
+            // filter(_.L_SHIPDATE < constantDate2).
+            filter(_.L_SHIPMODE === MAIL).
+            // filter(_.L_COMMITDATE >= constantDate3).
+            // filter(_.L_COMMITDATE < constantDate4).
+            // filter(_.L_RECEIPTDATE >= constantDate3).
+            // filter(_.L_RECEIPTDATE < constantDate4).
+            foldLeft(0.0)((acc, cur) => acc + cur.L_EXTENDEDPRICE * cur.L_DISCOUNT)
+            // count
+          printf("%.4f\n", result)
+        }
+      """
+    }
+    dsl"()"
+  }
+
   def filterMergeJoinSum(numRuns: Int): Rep[Unit] = {
     import dblab.queryengine.monad.Query
     import dblab.experimentation.tpch.TPCHLoader._
@@ -754,6 +787,7 @@ object SyntheticQueries extends TPCHRunner {
       case "fmjs"           => (28, () => filterMergeJoinSum(MICRO_JOIN_RUNS))
       case "fhjs"           => (29, () => filterHashJoinSum(MICRO_JOIN_RUNS))
       case "fhsjs"          => (31, () => filterHashSemiJoinSum(MICRO_JOIN_RUNS))
+      case "f4s"            => (34, () => filter4Sum(MICRO_RUNS))
       case "Q1_functional"  => (1, () => Q1_functional_p2(unit(tpchRuns)))
       case "Q2_functional"  => (2, () => Q2_functional(unit(tpchRuns)))
       case "Q3_functional"  => (3, () => Q3_functional(unit(tpchRuns)))
