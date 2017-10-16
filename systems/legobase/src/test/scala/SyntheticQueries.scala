@@ -562,8 +562,8 @@ object SyntheticQueries extends TPCHRunner {
           val constantDate4: Int = constantDate2
           val MAIL = parseString("MAIL")
           val result = $lineitemTable.
-            // filter(_.L_SHIPDATE >= constantDate1).
-            // filter(_.L_SHIPDATE < constantDate2).
+            filter(_.L_SHIPDATE >= constantDate1).
+            filter(_.L_SHIPDATE < constantDate2).
             filter(_.L_SHIPMODE === MAIL).
             // filter(_.L_COMMITDATE >= constantDate3).
             // filter(_.L_COMMITDATE < constantDate4).
