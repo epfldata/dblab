@@ -13,21 +13,114 @@ import ch.epfl.data.dblab.frontend.optimizer.CalcOptimizer._
 object CalcUtils {
 
 
+
+  def rewriteCalculus(schemaT: SchemaT, sumFun: (SchemaT, List[CalcExpr])=> CalcExpr, prodFunc:  (SchemaT, List[CalcExpr])=> CalcExpr, negFunc:  (SchemaT, CalcExpr)=> CalcExpr, leafFunc: (SchemaT, CalcExpr) => CalcExpr, leafDes: (SchemaT, CalcExpr)=> Boolean, e: CalcExpr): CalcExpr = {
+    def rcr(schemaT: SchemaT, e: CalcExpr): CalcExpr = rewriteCalculus(schemaT, sumFun, prodFunc, negFunc, leafFunc, leafDes, e)
+    e match {
+      case CalcSum(terms) => sumFun(schemaT, terms.map(x => rcr(schemaT, x)))
+      case CalcProd(terms) => {
+        def f(prev: List[CalcExpr], cur: CalcExpr, next: List[CalcExpr]): CalcExpr = {
+          val scope = multiunion(schemaT.scope :: prev.map(x => schemaOfExpression(x)._2))
+          val schema = multiunion(schemaT.schema :: next.map(x => {
+            val (xin, xout) = schemaOfExpression(x)
+            xin.toSet.union(xout.toSet).toList
+
+          }))
+
+          rcr(SchemaT(scope, schema), cur)
+        }
+        prodFunc(schemaT, scanMap2(f, terms))
+      }
+
+      case CalcNeg(term) => negFunc(schemaT, rcr(schemaT, term))
+      case CalcValue(lf) => {
+        val (lfivars, lfOvars) = schemaOfExpression(e)
+        val lfVars = lfivars.toSet.union(lfOvars.toSet).toList
+        val lfScope = schemaT.scope.toSet.intersect(lfVars.toSet).toList
+        val lfSchema = schemaT.scope.toSet.union(schemaT.schema.toSet).intersect(lfOvars.toSet).toList
+        e match {
+          case AggSum(gbvars, subt) => {
+            if (leafDes(SchemaT(lfScope, lfSchema), e))
+              AggSum(gbvars, rcr(SchemaT(lfScope, lfSchema), subt))
+            else
+              e
+          }
+          case Lift(v, subt) => {
+            val subScope = lfScope.toSet.diff(List(v).toSet).toList
+            val subSchema = lfSchema.toSet.diff(List(v).toSet).toList
+            if(leafDes(SchemaT(lfScope, lfSchema), e))
+              Lift(v, rcr(SchemaT(subScope, subSchema), subt))
+            else
+              e
+          }
+          case External(en, eiv, eov, et , Some(em)) => {
+            if(leafDes(SchemaT(lfScope, lfSchema), e))
+              External(en, eiv, eov, et , Some(rcr(SchemaT(eiv, eov), em)))
+            else
+              e
+          }
+          case CalcAST.Exists(subexp) => {
+            if(leafDes(SchemaT(lfScope, lfSchema), e))
+              CalcAST.Exists(rcr(SchemaT(lfScope, lfSchema), subexp))
+            else
+              e
+          }
+          case _ => e
+        }
+      }
+
+    }
+  }
+  //TODO
+  def rewriteLeaves(leafFn: (SchemaT, CalcExpr) => CalcExpr, leafDes: (SchemaT, CalcExpr) => Boolean, expr: CalcExpr): CalcExpr = {
+    rewriteCalculus()
+  }
+
+
+  def scanMap2[A,B](f: (List[B], A, List[A]) => B, l: List[A]): List[B] = {
+    def iter(prev: List[B], curNext: List[A]): List[B] = {
+      curNext match {
+        case List.empty => List()
+        case cur::next => {
+          val mappedCurr = f(prev, cur, next)
+          mappedCurr:: iter(prev ::: List(mappedCurr), next)
+        }
+      }
+    }
+    iter(List(), l)
+  }
+
+  def scanMap[A,B](f: ((List[A], A, List[A]) => B), l: List[A]): List[B]= {
+    def iter(prev: List[A], currNext: List[A]): List[B] = {
+      currNext match {
+        case List.empty => List.empty[B]
+        case cur::next => f(prev, cur, next) :: iter(prev:::List(cur), next)
+      }
+    }
+
+    iter(List(), l)
+
+  }
   def foldCalculus[A](expr: CalcExpr, schemaT: SchemaT, sumFunc: ((SchemaT, List[A]) => A), prodFunc:((SchemaT, List[A]) => A), negFunc: ((SchemaT, A) => A), leaf: ((SchemaT, CalcExpr)) => A ): A = {
     def rcr(e: CalcExpr, schemaT: SchemaT) = foldCalculus(e, schemaT, sumFunc, prodFunc, negFunc, leaf)
     expr match {
       case CalcSum(terms) => sumFunc(schemaT, terms.map(x => rcr(x, schemaT)))
       case CalcProd(terms) => {
-        ???
-        //TODO
+          def f(prev: List[CalcExpr], cur: CalcExpr, next: List[CalcExpr]) = {
+            //TODO there is a problem here calling rcr
+            val scope = multiunion(schemaT.scope :: prev.map(x => schemaOfExpression(x)._2))
+            val schema = multiunion(schemaT.schema :: next.map(x => {
+              val (xin, xout) = schemaOfExpression(x)
+              xin.toSet.union(xout.toSet).toList
+            }))
+            rcr(cur, SchemaT(scope, schema))
+          }
+        prodFunc(schemaT, scanMap(f, terms))
       }
       case CalcNeg(e) => negFunc(schemaT, rcr(e , schemaT))
       case _ => leaf(schemaT, expr)
     }
   }
-
-  //TODO
-  def rewriteLeaves()
 
 
 
@@ -58,16 +151,19 @@ object CalcUtils {
     applyListAsFunction(theta, x, x)
   }
 
-  def renameVarsArithmetic(mapping: List[(VarT, VarT)])( x : CalcValue): CalcExpr = {
-    def leaf(expr: CalcValue): CalcValue = {
+  def renameVarsArithmetic(mapping: List[(VarT, VarT)])( x : ArithExpr): ArithExpr = {
+    def leaf(expr: CalcExpr): CalcExpr = {
       expr match {
-        case CalcValue(ArithConst(c)) => expr
-        case CalcValue(ArithVar(v)) => CalcValue(ArithVar(applyIfPresent(mapping)(v)))
-        case CalcValue(ArithFunc(fn, fa, ft)) => CalcValue(ArithFunc(fn , fa.map(x => renameVars(mapping, x)), ft))
-        //TODO we have problem here
+        case CalcValue(ArithConst(c)) => ArithConst(c)
+        case CalcValue(ArithVar(v)) => ArithVar(applyIfPresent(mapping)(v))
+        case CalcValue(ArithFunc(fn, fa, ft)) => ArithFunc(fn , fa.map(x => renameVarsArithmetic(mapping)(x)), ft)
+        case _ => throw new Exception
       }
     }
+    val res = fold(sumGeneral, prodGeneral, negGeneral, leaf, x)
+    //TODO problem is still here
   }
+
   def renameVars(mappings: List[(VarT, VarT)], expr: CalcExpr): CalcExpr = {
     val remapOne = applyIfPresent(mappings)
 
@@ -77,7 +173,6 @@ object CalcUtils {
   }
 
 
-    //TODO ask about foldRight
   def reduceAssoc[A,B](l: List[(A,B)]): List[(A, List[B])] = {
     l.foldRight(List.empty[(A, List[B])])((cur, acc) => {
       val a = cur._1
@@ -373,8 +468,8 @@ object CalcUtils {
     fold(escalateTypeList, escalateTypeList, neg, leaf, expr)
   }
 
-  def multiunion(list: List[List[String]]): List[String] = {
-    list.foldLeft(List.empty[String])((acc, cur) => acc.toSet.union(cur.toSet).toList)
+  def multiunion[A](list: List[List[A]]): List[A] = {
+    list.foldLeft(List.empty[A])((acc, cur) => acc.toSet.union(cur.toSet).toList)
   }
   def relsOfExpr(expr: CalcExpr): List[String] = {
 
