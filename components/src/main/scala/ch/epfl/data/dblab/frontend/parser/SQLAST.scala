@@ -273,6 +273,11 @@ object SQLAST {
   case class CharLiteral(v: Char) extends LiteralExpression {
     override def toString = v.toString
   }
+
+  case class BoolLiteral(v: Boolean) extends LiteralExpression {
+    override def toString = v.toString
+  }
+
   case object NullLiteral extends LiteralExpression
   case class DateLiteral(v: String) extends LiteralExpression {
     override def toString = "DATE '" + v.toString + "'"

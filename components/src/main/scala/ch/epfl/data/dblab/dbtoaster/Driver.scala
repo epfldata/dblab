@@ -56,6 +56,7 @@ object Driver {
         val query = sqlProgram.body
         println(query)
         val schema = ddlInterpreter.interpret(UseSchema("DBToaster") :: tables)
+        val tpchSchema = TPCHSchema.getSchema("experimentation/dbtoaster/queries/sf0.001/", 0.0001)
 
         def listOfQueries(q: TopLevelStatement): List[TopLevelStatement] = {
           q match {
@@ -66,17 +67,35 @@ object Driver {
         }
         val queries = listOfQueries(query)
 
-        val sql_to_calc = new SQLToCalc(schema)
+        val sqlToCalc = new SQLToCalc(schema)
 
         // sql_to_calc.init()
         val namer = new SQLNamer(schema)
         val typer = new SQLTyper(schema)
+        val calcCoster = new CalcCosting(tpchSchema)
 
         queries.flatMap({ q =>
           val namedQuery = namer.nameQuery(q)
           val typedQuery = typer.typeQuery(namedQuery)
-          val calc_expr = sql_to_calc.CalcOfQuery(None, tables, typedQuery)
-          calc_expr.map({ case (tgt_name, tgt_calc) => tgt_calc })
+          val calcExpr = sqlToCalc.calcOfQuery(None, typedQuery)
+
+          println()
+          println("Costing : ")
+          println()
+          //          println(schema)
+          //          println()
+          //          println(tpchSchema)
+
+          calcExpr.foreach({
+            case (name, exp) =>
+              println(name + ":")
+              println(calcCoster.cost(exp))
+          })
+          println()
+          println()
+          println()
+
+          calcExpr.map({ case (tgt_name, tgt_calc) => tgt_calc })
         })
       }
       outputLang match {
