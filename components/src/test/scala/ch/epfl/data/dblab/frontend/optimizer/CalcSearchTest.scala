@@ -35,13 +35,13 @@ class CalcSearchTest extends FlatSpec {
 
   "CalcSearch" should "optimize simple queries similar to the rule-based version" in {
     val parser = CalcParser
-    val folder = "experimentation/dbtoaster/queries/calcsimple/ok_raw"
+    val folder = "experimentation/dbtoaster/queries/calcsimple/but_why?"
     val files = getCalcFiles(folder)
     for (file <- files) {
       println(s"optimizing $file")
       val queries = parser.parse(scala.io.Source.fromFile(file).mkString)
       for (q <- queries) {
-        //        println(q)
+        println(q)
         val o1 = bfs.search(q.asInstanceOf[CalcQuery].expr, 200).asInstanceOf[CalcExpr]
         val o2 = ruleBasedOptimizer(q).asInstanceOf[CalcQuery].expr
         println(prettyprint(q))
