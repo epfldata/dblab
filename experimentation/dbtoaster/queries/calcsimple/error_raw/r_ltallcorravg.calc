@@ -1,0 +1,11 @@
+COUNT: 
+(R(R2_A, R2_B) *
+  AggSum([], 
+    ((__sql_inline_agg_2 ^=
+       AggSum([], 
+         (AggSum([], (R(R1_A, R1_B) * {R1_B = R2_B} * R1_A)) *
+           (__sql_inline_average_count_1 ^=
+             AggSum([], (R(R1_A, R1_B) * {R1_B = R2_B}))) *
+           {[/:float]([listmax:int](1, __sql_inline_average_count_1))} *
+           {0 != __sql_inline_average_count_1}))) *
+      {R2_A < __sql_inline_agg_2})))

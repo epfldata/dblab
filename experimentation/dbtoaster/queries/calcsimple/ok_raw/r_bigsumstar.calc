@@ -1,0 +1,5 @@
+__SQL_SUM_AGGREGATE_1: 
+AggSum([R1_A], 
+  (R(R1_A, R1_B) * R(R2_A, R2_B) * R(R3_A, R3_B) * R(R4_A, R4_B) *
+    {R1_A = R2_A} * {R2_A = R3_A} * {R3_A = R4_A} *
+    (R1_B + R2_B + R3_B + R4_B)))

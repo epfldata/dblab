@@ -1,0 +1,2 @@
+COUNT: 
+(N___SQL_COUNT_AGGREGATE_1 ^= AggSum([], R(R_A, R_B)))

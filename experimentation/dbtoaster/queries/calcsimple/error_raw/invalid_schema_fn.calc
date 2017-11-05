@@ -1,0 +1,12 @@
+COUNT: 
+AggSum([R1_A], 
+  (R(R1_A, R1_B) *
+    EXISTS(
+      AggSum([], 
+        AggSum([unused], 
+          (R(R3_A, R3_B) *
+            AggSum([], 
+              ((__sql_inline_agg_1 ^=
+                 (AggSum([], R(R_A, R_B)) * {[/:float](2)})) *
+                {__sql_inline_agg_1 = R3_A})) *
+            (unused ^= 1)))))))

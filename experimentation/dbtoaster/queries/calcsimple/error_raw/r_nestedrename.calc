@@ -1,0 +1,10 @@
+QUERY_1_COUNT: 
+AggSum([Q_FOO], 
+  (EXISTS( AggSum([Q_FOO], (R(R_A, R_B) * (Q_FOO ^= R_A)))) *
+    (Q___SQL_COUNT_AGGREGATE_1 ^=
+      AggSum([Q_FOO], (R(R_A, R_B) * (Q_FOO ^= R_A))))))
+QUERY_2_COUNT: 
+AggSum([Q_FOO], 
+  (EXISTS( AggSum([Q_FOO], (R(R_A, R_B) * (Q_FOO ^= R_A)))) *
+    (Q___SQL_COUNT_AGGREGATE_2 ^=
+      AggSum([Q_FOO], (R(R_A, R_B) * (Q_FOO ^= R_A))))))

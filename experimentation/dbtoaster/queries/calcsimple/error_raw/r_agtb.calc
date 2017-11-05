@@ -1,0 +1,4 @@
+COUNT: 
+AggSum([BOB, JOE], 
+  (R(R1_A, R1_B) * R(R2_A, R2_B) * {R1_B > R2_A} * (BOB ^= R1_A) *
+    (JOE ^= R2_B)))

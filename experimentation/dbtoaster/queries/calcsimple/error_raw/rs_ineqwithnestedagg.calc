@@ -1,0 +1,6 @@
+COUNT: 
+AggSum([R_A], 
+  (R(R_A, R_B) * EXISTS( AggSum([S2_B], (S(S_B, S_C) * (S2_B ^= S_B)))) *
+    (S2___SQL_COUNT_AGGREGATE_1 ^=
+      AggSum([S2_B], (S(S_B, S_C) * (S2_B ^= S_B)))) *
+    {R_B < S2_B}))
