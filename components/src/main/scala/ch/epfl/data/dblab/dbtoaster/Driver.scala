@@ -12,11 +12,14 @@ import java.io.PrintStream
 import ch.epfl.data.dblab.frontend.parser.CalcAST._
 import ch.epfl.data.dblab.frontend.parser.DDLAST.UseSchema
 import ch.epfl.data.dblab.frontend.parser.SQLAST._
-import ch.epfl.data.sc.pardis.types.IntType
+import ch.epfl.data.sc.pardis.annotations.mutable
+import ch.epfl.data.sc.pardis.types.{ IntType, Tpe }
 import frontend.parser.OperatorAST._
 import config._
 import schema._
 import sc.pardis.language.Language
+
+import scala.collection.mutable.ArrayBuffer
 
 object Driver {
   /**
@@ -48,6 +51,7 @@ object Driver {
     for (q <- queryFiles) {
       def getCalc(): List[CalcExpr] = if (q.endsWith(".calc")) {
         CalcParser.parse(scala.io.Source.fromFile(q).mkString)
+
       } else {
         val sqlParserTree = SQLParser.parseStream(scala.io.Source.fromFile(q).mkString)
         val sqlProgram = sqlParserTree.asInstanceOf[IncludeStatement]
@@ -80,12 +84,18 @@ object Driver {
         case Calc =>
           val ParserTree = getCalc()
 
-          println("BEFORE: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${prettyprint(cur)}"))
-          if (shouldOptimize) {
-            val optimizer = CalcOptimizer
-            // println("MIDDLE")
-            println("AFTER: \n" + ParserTree.foldLeft("")((acc, cur) => s"${acc} \n${CalcAST.prettyprint(optimizer.normalize(optimizer.nestingRewrites(cur)))}"))
-          }
+          val queries = ParserTree.foldLeft(List.empty[CalcQuery])((acc, cur) => {
+            cur match {
+              case CalcQuery(x, y) => acc :+ CalcQuery(x, y)
+              case _               => acc
+            }
+          })
+
+          println(queries.length)
+
+          val ans = CalcCompiler.compile(Some(1), queries, Schema(ArrayBuffer(), Statistics()))
+          println(ans)
+
         case lang =>
           throw new Exception(s"Outputing language $lang is not supported yet!")
 

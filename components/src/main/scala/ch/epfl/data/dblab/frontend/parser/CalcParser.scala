@@ -161,7 +161,8 @@ object CalcParser extends StandardTokenParsers {
         }) |
         ("(" ~> ident ~ (parseDataType).? ~ "^=" ~ parseIvcCalcExpr <~ ")" ^^ {
           case id ~ Some(t) ~ _ ~ ivc => Lift(VarT(id, t), ivc)
-          case id ~ None ~ _ ~ ivc    => Lift(VarT(id, null), ivc)
+          //TODO change null to int type
+          case id ~ None ~ _ ~ ivc    => Lift(VarT(id, IntType), ivc)
         }) |
         ("EXISTS" ~> "(" ~> parseCalcExpr <~ ")" ^^ {
           case c => CalcAST.Exists(c)
@@ -282,7 +283,8 @@ object CalcParser extends StandardTokenParsers {
     }) |
       (ident ~ (":" ~> parseDataType).? ^^ {
         case id ~ Some(t) => ArithVar(VarT(id, t))
-        case id ~ None    => ArithVar(VarT(id, null))
+        //TODO change null to IntType
+        case id ~ None    => ArithVar(VarT(id, IntType))
       }) |
       (parseFuncDef ^^ {
         case func => func
@@ -326,8 +328,8 @@ object CalcParser extends StandardTokenParsers {
     (ident ~ (":" ~> parseDataType).? ~ ("," ~> parseVarList).?) ^^ {
       case id ~ Some(t) ~ Some(l) => VarT(id, t) :: l
       case id ~ Some(t) ~ None    => List(VarT(id, t))
-      case id ~ None ~ Some(l)    => VarT(id, null) :: l
-      case id ~ None ~ None       => List(VarT(id, null))
+      case id ~ None ~ Some(l)    => VarT(id, IntType) :: l
+      case id ~ None ~ None       => List(VarT(id, IntType))
 
     }
 
