@@ -13,19 +13,13 @@ import scala.math._
 
 class CalcCosting(schema: Schema) extends CostingContext {
   def apply(node: Node): Double = cost(node.asInstanceOf[CalcExpr])
-
-  // TODO add proper costs for different calc expressions
-  // most probably an appropriate cost will be parameteric and dependent on
-  // the cardinality of relations.
-
-  //  println("here : ")
-  //  println(schema)
+  var count = 0
 
   def searchCost(x: Double): Double = max(1, scala.math.log(x) / scala.math.log(2))
 
   def findVars(exp: CalcExpr): scala.collection.mutable.Map[VarT, CalcExpr] = {
     val vars = scala.collection.mutable.Map[VarT, CalcExpr]()
-    val r = exp match {
+    exp match {
       case CalcProd(lst) => lst.foldLeft(vars)((a, b) => a ++ findVars(b))
       case CalcSum(lst)  => lst.foldLeft(vars)((a, b) => a ++ findVars(b))
       case AggSum(v, e)  => findVars(e)
@@ -33,22 +27,17 @@ class CalcCosting(schema: Schema) extends CostingContext {
       case Lift(vr, e)   => vars += (vr -> e)
       case _             => vars
     }
-    //    println()
-    //    println(r)
-    //    println()
-    r
   }
 
   def cost(exp: CalcExpr): Double = {
+    count += 1
     val vars = findVars(exp)
     costExpr(exp, vars)
   }
 
   def costExpr(exp: CalcExpr, vars: scala.collection.mutable.Map[VarT, CalcExpr]): Double = {
 
-    //    println(exp)
-
-    val r = exp match {
+    exp match {
       case CalcProd(List()) => 0.0
       case CalcProd(lst) =>
         val headCardinality = cardinality(lst.head, vars)._2
@@ -72,7 +61,7 @@ class CalcCosting(schema: Schema) extends CostingContext {
       case AggSum(v, e) => costExpr(e, vars) + cardinality(e, vars)._2 *
         searchCost(cardinality(e, vars)._2) + cardinality(e, vars)._2 //TODO we should multiply sorting part to a constant if we know what algorithm is used
       case _: Rel                         => cardinality(exp, vars)._2
-      case Cmp(c, first, second)          => costExpr(first, vars) + costExpr(second, vars) + max(cardinality(first, vars)._2, cardinality(second, vars)._2) //TODO : +they should be same size ? +can be a part of CalcSum ?
+      case Cmp(c, first, second)          => costExpr(first, vars) + costExpr(second, vars) + max(cardinality(first, vars)._2, cardinality(second, vars)._2)
       case External(_, inps, outs, tp, _) => ???
       case CmpOrList(v, consts)           => ???
       case Lift(vr, e)                    => searchCost(vars.size)
@@ -100,9 +89,6 @@ class CalcCosting(schema: Schema) extends CostingContext {
       case ArithConst(s: SQLAST.StringLiteral) => s.v.length.toDouble
       case _: ArithConst                       => 1.0
     }
-    //    println(prettyprint(exp))
-    //    println("cost is : " + r)
-    r
   }
 
   def cardinality(exp: CalcExpr, vars: scala.collection.mutable.Map[VarT, CalcExpr]): (Int, Double) = {
@@ -122,7 +108,7 @@ class CalcCosting(schema: Schema) extends CostingContext {
       case AggSum(v, e) => (cardinality(e, vars)._1, min(cardinality(e, vars)._2,
         v.foldLeft(1)((a, b) => schema.stats.getDistinctAttrValuesOrElse(b.name, cardinality(e, vars)._2.toInt) * a)) * 0.5)
       case Rel(_, name, _, _)             => (2, schema.stats.getCardinalityOrElse("PART", 1)) //TODO it should change to name
-      case Cmp(c, first, second)          => (1, max(cardinality(first, vars)._2, cardinality(second, vars)._2) * 1) // TODO : +we can have some inference here +they should be same size I think
+      case Cmp(c, first, second)          => (1, max(cardinality(first, vars)._2, cardinality(second, vars)._2) * 1) // TODO : +we can have some inference here
       case External(_, inps, outs, tp, _) => ???
       case CmpOrList(v, consts)           => ???
       case Lift(vr, e)                    => (0, 1)
@@ -130,10 +116,6 @@ class CalcCosting(schema: Schema) extends CostingContext {
       case CalcValue(v: ArithVar)         => cardinality(v, vars)
       case CalcValue(_)                   => (1, 1)
       case ArithVar(v) =>
-        //        println()
-        //        println("!@#!@$!%!$!$!%$!$!%$!")
-        //        println(v)
-        //        println()
         if (vars.contains(v))
           cardinality(vars(v), vars)
         else

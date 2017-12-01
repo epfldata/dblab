@@ -1,0 +1,2 @@
+(AGGSUM([], (R(R_A, R_B) * S(S_B, S_C) * {R_B = S_B} * {R_B})) * AGGSUM([], ((__sql_inline_average_count_1 ^= AGGSUM([], (R(R_A, R_B) * S(S_B, S_C) * {R_B = S_B}))) * {[/: FLOAT]([listmax: INT](1, __sql_inline_average_count_1))} * {0 != __sql_inline_average_count_1})))
+

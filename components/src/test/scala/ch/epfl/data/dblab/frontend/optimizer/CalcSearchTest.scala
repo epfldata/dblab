@@ -33,9 +33,9 @@ class CalcSearchTest extends FlatSpec {
   import CalcRules._
   val ruleBasedOptimizer = new CalcRuleBasedTransformer(allRules)
 
-  "CalcSearch" should "optimize simple queries similar to the rule-based version" in {
+  "CalcSearchSimple" should "optimize simple queries similar to the rule-based version" in {
     val parser = CalcParser
-    val folder = "experimentation/dbtoaster/queries/calcsimple/but_why?"
+    val folder = "experimentation/dbtoaster/queries/calcsimple/just_test"
     val files = getCalcFiles(folder)
     for (file <- files) {
       println(s"optimizing $file")
@@ -43,6 +43,27 @@ class CalcSearchTest extends FlatSpec {
       for (q <- queries) {
         println(q)
         val o1 = bfs.search(q.asInstanceOf[CalcQuery].expr, 200).asInstanceOf[CalcExpr]
+        val o2 = ruleBasedOptimizer(q).asInstanceOf[CalcQuery].expr
+        println(prettyprint(q))
+        println(" " + prettyprint(o1))
+        println("cost is : " + costEngine.cost(o1))
+        println(" " + prettyprint(o2))
+        println("cost is : " + costEngine.cost(o2))
+        o1 should be(o2)
+      }
+    }
+  }
+
+  "CalcSearchTPCH" should "optimize simple queries similar to the rule-based version" in {
+    val parser = CalcParser
+    val folder = "experimentation/dbtoaster/queries/calctpch/ok_raw"
+    val files = getCalcFiles(folder)
+    for (file <- files) {
+      println(s"optimizing $file")
+      val queries = parser.parse(scala.io.Source.fromFile(file).mkString)
+      for (q <- queries) {
+        println(q)
+        val o1 = bfs.search(q.asInstanceOf[CalcQuery].expr, 10).asInstanceOf[CalcExpr]
         val o2 = ruleBasedOptimizer(q).asInstanceOf[CalcQuery].expr
         println(prettyprint(q))
         println(" " + prettyprint(o1))
