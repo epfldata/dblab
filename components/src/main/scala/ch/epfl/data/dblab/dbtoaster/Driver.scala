@@ -83,40 +83,50 @@ object Driver {
           val typedQuery = typer.typeQuery(namedQuery)
           val calcExpr = sqlToCalc.calcOfQuery(None, typedQuery)
 
-          println()
-          println("Costing : ")
-          println()
+          // println()
+          // println("Costing : ")
+          // println()
           //          println(schema)
           //          println()
           //          println(tpchSchema)
 
-          calcExpr.foreach({
-            case (name, exp) =>
-              println(name + ":")
-              println(calcCoster.cost(exp))
-          })
-          println()
-          println()
-          println()
+          // calcExpr.foreach({
+          //   case (name, exp) =>
+          //     println(name + ":")
+          //     println(calcCoster.cost(exp))
+          // })
+          // println()
+          // println()
+          // println()
 
           calcExpr.map({ case (tgt_name, tgt_calc) => tgt_calc })
         })
       }
       outputLang match {
         case Calc =>
-          val ParserTree = getCalc()
-
-          val queries = ParserTree.foldLeft(List.empty[CalcQuery])((acc, cur) => {
-            cur match {
-              case CalcQuery(x, y) => acc :+ CalcQuery(x, y)
-              case _               => acc
+          val calcExprs = getCalc()
+          for (calcExpr <- calcExprs) {
+            calcExpr match {
+              case CalcQuery(x, y) => println(s"$x:\n${prettyprint(y)}")
+              case _               =>
             }
-          })
+          }
+        case M3 =>
+          println("Outputing M3")
+          val calcExprs = getCalc()
 
-          println(queries.length)
+          val queries = calcExprs.collect({ case ce: CalcQuery => ce })
 
-          val ans = CalcCompiler.compile(Some(1), queries, Schema(ArrayBuffer(), Statistics()))
-          println(ans)
+          val (plan, qs) = CalcCompiler.compile(Some(1), queries, Schema(ArrayBuffer(), Statistics()))
+          for (cds <- plan.list) {
+            println("description")
+            println(cds.description)
+            println("triggers")
+            println(cds.triggers)
+
+          }
+        // println(plan)
+        // println(qs)
 
         case lang =>
           throw new Exception(s"Outputing language $lang is not supported yet!")

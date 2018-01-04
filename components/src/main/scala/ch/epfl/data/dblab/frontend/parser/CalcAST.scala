@@ -64,7 +64,7 @@ object CalcAST {
   case object ReplaceStmt extends UpdateType
   case class StmtT(targetMap: CalcExpr, updateType: UpdateType, updateExpr: CalcExpr)
   case class Trigger(event: EventT, stmt: StmtT)
-  case class CompiledDs(discription: Ds, triggers: List[Trigger])
+  case class CompiledDs(description: Ds, triggers: List[Trigger])
   case class Plan(list: List[CompiledDs])
 
   sealed trait ArithExpr extends CalcExpr
