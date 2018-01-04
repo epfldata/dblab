@@ -83,7 +83,7 @@ class CalcOptimizerTest extends FlatSpec {
     val folder = "experimentation/dbtoaster/queries/calctpch/raw"
     val files = getCalcFiles(folder)
     for (file <- files) {
-      println(s"optimizing $file")
+      // println(s"optimizing $file")
       val queries = parser.parse(scala.io.Source.fromFile(file).mkString)
       for (q <- queries) {
         val o1 = optimizer.normalize(optimizer.nestingRewrites(q))

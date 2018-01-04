@@ -17,7 +17,7 @@ class CalcCompilerTest extends FlatSpec {
     val folder = "experimentation/dbtoaster/queries/calcsimple"
     val files = getCalcFiles(folder)
     for (file <- files) {
-      println(s"compiling $file")
+      // println(s"compiling $file")
       val tree = parser.parse(scala.io.Source.fromFile(file).mkString)
 
       val queries = tree.foldLeft(List.empty[CalcQuery])((acc, cur) => {
@@ -39,7 +39,7 @@ class CalcCompilerTest extends FlatSpec {
     val folder = "experimentation/dbtoaster/queries/calctpch"
     val files = getCalcFiles(folder)
     for (file <- files) {
-      println(s"compiling $file")
+      // println(s"compiling $file")
       val tree = parser.parse(scala.io.Source.fromFile(file).mkString)
 
       val queries = tree.foldLeft(List.empty[CalcQuery])((acc, cur) => {

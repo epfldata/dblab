@@ -102,7 +102,7 @@ object CalcCompiler {
       case _                                       => throw new Exception
     }
 
-    println(ext.tp)
+    // println(ext.tp)
     val todotype = ext.tp match {
       case IntType     => ext.tp
       case FloatType   => ext.tp

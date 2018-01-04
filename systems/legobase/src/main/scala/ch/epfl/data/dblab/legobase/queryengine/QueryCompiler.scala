@@ -92,7 +92,7 @@ object QueryCompiler {
         // val namedQuery = subqueryNormalizedqTree
         val typedQuery = new SQLTyper(schema).typeQuery(namedQuery)
         // val typedQuery = namedQuery
-        
+
         // new SQLAnalyzer(schema).checkAndInfer(typedQuery)
         val operatorTree = new SQLToQueryPlan(schema).convert(typedQuery)
 
@@ -100,8 +100,6 @@ object QueryCompiler {
           System.out.println("Before Optimizer:\n" + operatorTree + "\n\n")
 
         val optimizerTree = new QueryPlanNaiveOptimizer(schema).optimize(operatorTree)
-
-
 
         if (Config.debugQueryPlan)
           System.out.println("After Optimizer:\n" + optimizerTree + "\n\n")
