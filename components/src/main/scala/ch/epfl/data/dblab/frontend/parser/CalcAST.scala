@@ -3,9 +3,11 @@ package dblab
 package frontend
 package parser
 
+import ch.epfl.data.dblab.frontend.parser.SQLAST.IntLiteral
 import ch.epfl.data.dblab.schema.{ DateType, VarCharType }
 import sc.pardis.types._
 import sc.pardis.ast._
+import ch.epfl.data.dblab.schema._
 
 /**
  * A module containing AST nodes for AG
@@ -41,7 +43,29 @@ object CalcAST {
   case class Exists(term: CalcExpr) extends CalcExpr
   case class CalcValue(v: ArithExpr) extends CalcExpr
 
-  //TODO add const one and zero
+  case class DeltaRel(name: String, vars: List[VarT]) extends CalcExpr
+  case class DomainDelta(term: CalcExpr) extends CalcExpr
+  //TODO fix all previous utils for delta rel and domain delta
+
+  val CalcOne = CalcValue(ArithConst(IntLiteral(1)))
+  val CalcZero = CalcValue(ArithConst(IntLiteral(0)))
+
+  case class Ds(dsname: CalcExpr, dsdef: CalcExpr)
+  case class TodoT(depth: Int, ds: Ds, b: Boolean)
+  trait EventT
+  case class InsertEvent(tab: Table) extends EventT
+  case class DeleteEvent(tab: Table) extends EventT
+  case class BatchUpdate(str: String) extends EventT
+  case class CorrectiveUpdate(str: String, l1: List[VarT], l2: List[VarT], v: VarT, e: EventT) extends EventT
+  case class SystemInitializedEvent() extends EventT
+
+  trait UpdateType
+  case object UpdateStmt extends UpdateType
+  case object ReplaceStmt extends UpdateType
+  case class StmtT(targetMap: CalcExpr, updateType: UpdateType, updateExpr: CalcExpr)
+  case class Trigger(event: EventT, stmt: StmtT)
+  case class CompiledDs(discription: Ds, triggers: List[Trigger])
+  case class Plan(list: List[CompiledDs])
 
   sealed trait ArithExpr extends CalcExpr
   case class ArithSum(expr: List[ArithExpr]) extends ArithExpr
@@ -53,6 +77,7 @@ object CalcAST {
 
   case class VarT(name: String, tp: Tpe)
   case class Schema_t(scope: Option[List[VarT]], schema: Option[List[VarT]])
+  case class SchemaT(scope: List[VarT], schema: List[VarT])
 
   trait CmpTag
   case object Eq extends CmpTag // Equals
