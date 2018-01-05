@@ -232,4 +232,5 @@ object CalcCompiler {
     }
     (Plan(plan), tlqlist)
   }
+
 }
