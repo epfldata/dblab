@@ -30,7 +30,7 @@ object Driver {
   def main(args: Array[String]) {
     if (args.length < 1) {
       System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
-      System.out.println("USAGE: run <SQL/Calc query> -l SQL|M3|CALC -O")
+      System.out.println("USAGE: run <SQL/Calc query> -l SQL|CALC|PLAN|M3 -O")
       System.out.println("Example: run experimentation/tpch-sql/Q6.sql")
       System.exit(1)
     }
@@ -43,6 +43,7 @@ object Driver {
       case Some("CALC") => Calc
       case Some("M3")   => M3
       case Some("SQL")  => SQL
+      case Some("PLAN") => CalcPlan
       case _ =>
         throw new Exception("No proper -l defined!")
     }
@@ -60,7 +61,6 @@ object Driver {
         val query = sqlProgram.body
         // println(query)
         val schema = ddlInterpreter.interpret(UseSchema("DBToaster") :: tables)
-        val tpchSchema = TPCHSchema.getSchema("experimentation/dbtoaster/queries/sf0.001/", 0.0001)
 
         def listOfQueries(q: TopLevelStatement): List[TopLevelStatement] = {
           q match {
@@ -76,7 +76,8 @@ object Driver {
         // sql_to_calc.init()
         val namer = new SQLNamer(schema)
         val typer = new SQLTyper(schema)
-        val calcCoster = new CalcCosting(tpchSchema)
+        // val tpchSchema = TPCHSchema.getSchema("experimentation/dbtoaster/queries/sf0.001/", 0.0001)
+        // val calcCoster = new CalcCosting(tpchSchema)
 
         queries.flatMap({ q =>
           val namedQuery = namer.nameQuery(q)
@@ -102,6 +103,10 @@ object Driver {
           calcExpr.map({ case (tgt_name, tgt_calc) => tgt_calc })
         })
       }
+      def getCalcPlan(calcExprs: List[CalcExpr]): (Plan, List[CalcQuery]) = {
+        val queries = calcExprs.collect({ case ce: CalcQuery => ce })
+        CalcCompiler.compile(Some(1), queries, Schema(ArrayBuffer(), Statistics()))
+      }
       outputLang match {
         case Calc =>
           val calcExprs = getCalc()
@@ -111,13 +116,10 @@ object Driver {
               case _               =>
             }
           }
-        case M3 =>
-          println("Outputing M3")
+        case CalcPlan =>
+          println("Outputing PLAN")
           val calcExprs = getCalc()
-
-          val queries = calcExprs.collect({ case ce: CalcQuery => ce })
-
-          val (plan, qs) = CalcCompiler.compile(Some(1), queries, Schema(ArrayBuffer(), Statistics()))
+          val (plan, qs) = getCalcPlan(calcExprs)
           for (cds <- plan.list) {
             println("description")
             println(cds.description)
@@ -127,10 +129,14 @@ object Driver {
           }
         // println(plan)
         // println(qs)
-
+        case M3 =>
+          println("Outputing M3")
+          val calcExprs = getCalc()
+          val (plan, qs) = getCalcPlan(calcExprs)
+          val m3 = PlanToM3.planToM3(Schema(ArrayBuffer(), Statistics()), plan)
+          println(m3)
         case lang =>
           throw new Exception(s"Outputing language $lang is not supported yet!")
-
       }
     }
   }
