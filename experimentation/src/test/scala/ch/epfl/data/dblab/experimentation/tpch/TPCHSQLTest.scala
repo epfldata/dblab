@@ -26,12 +26,14 @@ class TPCHSQLTest extends FlatSpec {
     val ddlFiles = getFiles(folder, ".ddl").map(_.getAbsolutePath())
     // println(s"$dataPath, $riFiles, $ddlFiles, $sqlFiles")
     val schema = interpreter.readSchema(dataPath, ddlFiles ++ riFiles)
-    "TPCH Q1" should "work" in {
-      for (i <- 1 to 1) {
+
+    for (i <- 1 to 1) {
+      s"TPCH Q$i" should "work" in {
         val query = s"$folder/Q$i.sql"
         val resq = interpreter.processQuery(schema, query)
         val resultFileName = s"$resultFolder/Q$i.result_sf0.1"
         if (new java.io.File(resultFileName).exists) {
+          println("RESULT exists!")
           val resc = scala.io.Source.fromFile(resultFileName).mkString
           resq should be(resc)
         } else {

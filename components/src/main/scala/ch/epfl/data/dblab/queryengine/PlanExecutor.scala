@@ -338,6 +338,14 @@ object PlanExecutor {
         new HashJoinAnti(leftOp, rightOp)((x, y) => parseExpression(joinCond, x, y).asInstanceOf[Boolean])(
           x => parseExpression(leftCond, x)(leftCond.tp))(x => parseExpression(rightCond, x)(rightCond.tp))
       case InnerJoin =>
+        println(joinCond)
+        println(joinCond.tp)
+        println("left")
+        println(leftCond)
+        println(leftCond.tp)
+        println("right")
+        println(rightCond)
+        println(rightCond.tp)
         new HashJoinOp(leftOp, rightOp, leftAlias, rightAlias)((x, y) => parseExpression(joinCond, x, y).asInstanceOf[Boolean])(
           x => parseExpression(leftCond, x)(leftCond.tp))(x => parseExpression(rightCond, x)(rightCond.tp))
     }
@@ -482,7 +490,8 @@ object PlanExecutor {
       ??? // TODO
     case ProjectOpNode(parent, projNames, origFieldNames) =>
       // new ProjectOperator(convertOperator(parent), projNames, origFieldNames)
-      ??? // TODO
+      convertOperator(parent)
+    // ??? // TODO
     case ViewOpNode(_, _, name) => new ScanOp(activeViews(name).getDataArray())
   }
 }

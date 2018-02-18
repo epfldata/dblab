@@ -49,6 +49,10 @@ class SQLTyper(schema: Schema) {
     }
   }
 
+  def schemaToString(schema: Schema) = {
+    s"tables:\n\t${schema.tables.mkString("\n\t")}\nfunctions:\n\t${schema.functions.mkString("\n\t")}"
+  }
+
   def typeExpr(exp: Expression): Expression = {
     exp match {
       case tl: TopLevelStatement       => typeQuery(tl)
@@ -95,7 +99,7 @@ class SQLTyper(schema: Schema) {
       case FieldIdent(Some(q), a, s) =>
         val tables = curSchema.tables.filter(_.name == q)
         if (tables.length == 0) {
-          throw new Exception(s"Couldn't find table $q! $curSchema")
+          throw new Exception(s"Couldn't find table $q!\n${schemaToString(curSchema)}")
         }
         val attrs = tables.flatMap(_.findAttribute(a))
         val attr = attrs.headOption.getOrElse(throw new Exception(s"Couldn't find attr $a in table $q"))
@@ -106,7 +110,7 @@ class SQLTyper(schema: Schema) {
         // println(s"inferred type for $exp: ${exp.tpe}")
         exp
       case FieldIdent(None, a, s) =>
-        val attr = curSchema.findAttribute(a).getOrElse(throw new Exception(s"Couldn't find attr $a w/o table! $curSchema"))
+        val attr = curSchema.findAttribute(a).getOrElse(throw new Exception(s"Couldn't find attr $a w/o table!\n${schemaToString(curSchema)}"))
         exp.tpe = attr.dataType match {
           case DateType => IntType
           case t        => t
@@ -151,6 +155,7 @@ class SQLTyper(schema: Schema) {
     case Join(left, right, kind, clause) => {
       typeSource(left)
       typeSource(right)
+      typeExpr(clause)
       rel
     }
     case _ => ???

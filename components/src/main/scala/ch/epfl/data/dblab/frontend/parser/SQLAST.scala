@@ -165,11 +165,16 @@ object SQLAST {
   trait Expression extends SQLNode {
     val isAggregateOpExpr = true
     @deprecated("Use the tpe field instead", "")
-    def tp = tpe match {
-      case IntType    => ru.typeTag[Int]
-      case CharType   => ru.typeTag[Char]
-      case DoubleType => ru.typeTag[Double]
-      case FloatType  => ru.typeTag[Float]
+    def tp = {
+      if (tpe == null) {
+        throw new Exception(s"$this does not have a type!")
+      }
+      tpe match {
+        case IntType    => ru.typeTag[Int]
+        case CharType   => ru.typeTag[Char]
+        case DoubleType => ru.typeTag[Double]
+        case FloatType  => ru.typeTag[Float]
+      }
     }
     var tpe: Tpe = _
   }
