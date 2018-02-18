@@ -13,16 +13,16 @@ import ch.epfl.data.dblab.frontend.optimizer.CalcOptimizer._
 object CalcUtils {
 
   def topoSortFromNode(graph: List[(String, List[String])], visited: List[String], node: String) = {
-    def explore(path: List[String])( node: String, visited: List[String]): List[String] = {
-      if(path.contains(node))
+    def explore(path: List[String])(node: String, visited: List[String]): List[String] = {
+      if (path.contains(node))
         throw new Exception("cycle found")
-      else if(visited.contains(node))
+      else if (visited.contains(node))
         visited
-      else{
-        val newPath = node::path
+      else {
+        val newPath = node :: path
         val childNodes = {
           val t = graph.filter(x => x._1 == node)
-          if(t.length == 0)
+          if (t.length == 0)
             List()
           else
             t.head._2
@@ -42,47 +42,47 @@ object CalcUtils {
     name match {
       case External(name, inps, outs, tp, Some(s)) => External(name, inps, outs, tp, Some(s))
       case External(name, inps, outs, tp, None)    => External(name, inps, outs, tp, None)
-      case _ => throw new Exception("invalid DS name ")
+      case _                                       => throw new Exception("invalid DS name ")
     }
   }
   def externalsOfExpression(expr: CalcExpr): List[String] = {
-    def leaf(lf:CalcExpr): List[String] = {
+    def leaf(lf: CalcExpr): List[String] = {
       lf match {
-        case CalcValue(_) => List()
-        case External(en, _,_,_, Some(ivs)) => en :: externalsOfExpression(ivs)
-        case External(en, _ , _, _, None) => List(en)
-        case AggSum(_, subexp) => externalsOfExpression(subexp)
-        case Rel(_, _, _, _) => List()
-        case DeltaRel(_, _) => List()
-        case DomainDelta(subexp) => externalsOfExpression(subexp)
-        case Cmp(_,_,_) => List()
-        case CmpOrList(_,_) => List()
-        case Lift(_, subexp) => externalsOfExpression(subexp)
-        case CalcAST.Exists(subexp) => externalsOfExpression(subexp)
+        case CalcValue(_)                     => List()
+        case External(en, _, _, _, Some(ivs)) => en :: externalsOfExpression(ivs)
+        case External(en, _, _, _, None)      => List(en)
+        case AggSum(_, subexp)                => externalsOfExpression(subexp)
+        case Rel(_, _, _, _)                  => List()
+        case DeltaRel(_, _)                   => List()
+        case DomainDelta(subexp)              => externalsOfExpression(subexp)
+        case Cmp(_, _, _)                     => List()
+        case CmpOrList(_, _)                  => List()
+        case Lift(_, subexp)                  => externalsOfExpression(subexp)
+        case CalcAST.Exists(subexp)           => externalsOfExpression(subexp)
       }
     }
-    fold(multiunion, multiunion, (x:List[String]) => x, leaf, expr)
+    fold(multiunion[String], multiunion[String], (x: List[String]) => x, leaf, expr)
   }
   def allVars(expr: CalcAST.CalcExpr): List[VarT] = {
     def leaf(ex: CalcExpr): List[VarT] = {
       ex match {
         case CalcValue(x) => varsOfValue(x).toSet.toList
-        case External(_,iv, ov, _, m) => (iv ++ ov ++ (m match {
-          case None => List()
+        case External(_, iv, ov, _, m) => (iv ++ ov ++ (m match {
+          case None    => List()
           case Some(s) => allVars(s)
         })).toSet.toList
-        case AggSum(_, subexp) => allVars(subexp)
-        case Rel(_, _, ov, _) => ov.toSet.toList
-        case DeltaRel(_, ov) => ov.toSet.toList
-        case DomainDelta(subexp) => allVars(subexp)
-        case Cmp(_, v1, v2) => (varsOfValue(v1) ++ varsOfValue(v2)).toSet.toList
-        case CmpOrList(v, _) => varsOfValue(v)
-        case Lift(v, subexp) => (List(v) ++ allVars(subexp)).toSet.toList
+        case AggSum(_, subexp)      => allVars(subexp)
+        case Rel(_, _, ov, _)       => ov.toSet.toList
+        case DeltaRel(_, ov)        => ov.toSet.toList
+        case DomainDelta(subexp)    => allVars(subexp)
+        case Cmp(_, v1, v2)         => (varsOfValue(v1) ++ varsOfValue(v2)).toSet.toList
+        case CmpOrList(v, _)        => varsOfValue(v)
+        case Lift(v, subexp)        => (List(v) ++ allVars(subexp)).toSet.toList
         case CalcAST.Exists(subexp) => allVars(subexp)
 
       }
     }
-    fold(multiunion, multiunion, ((x:List[VarT]) => x), leaf, expr)
+    fold(multiunion[VarT], multiunion[VarT], ((x: List[VarT]) => x), leaf, expr)
 
   }
   def findSafeVarMapping(mapping: List[(VarT, VarT)], expr: CalcExpr): List[(VarT, VarT)] = {
@@ -91,29 +91,28 @@ object CalcUtils {
     val problemNames = staticNames.intersect(mapping.unzip._2)
     val finalVarNames = (staticNames.union(mapping.unzip._2)).diff(problemNames)
 
-
     val (safeMapping, _) = problemNames.foldLeft((mapping, finalVarNames.map(x => x.name)))((acc, cur) => {
       def fixName(n: String, i: Integer): String = {
         val attempt = n + "_" + i
-        if(acc._2.contains(attempt))
+        if (acc._2.contains(attempt))
           fixName(n, i + 1)
         else
           attempt
       }
       val fixed = VarT(fixName(cur.name, 1), cur.tp)
-      ( ((cur, fixed)) :: acc._1, fixed.name :: acc._2)
+      (((cur, fixed)) :: acc._1, fixed.name :: acc._2)
     })
 
     safeMapping
   }
 
   def eventEquals(a: EventT, b: EventT): Boolean = {
-    (a,b) match {
+    (a, b) match {
       case (SystemInitializedEvent(), SystemInitializedEvent()) => true
       case (InsertEvent(an), InsertEvent(bn)) => an.name.equals(bn.name)
       case (DeleteEvent(an), DeleteEvent(bn)) => an.name.equals(bn.name)
       case (BatchUpdate(an), BatchUpdate(bn)) => an.equals(bn)
-      case (CorrectiveUpdate(aen, _, _, _, aue) , CorrectiveUpdate(ben, _ , _, _ , bue)) => aen.equals(ben) && eventEquals(aue, bue)
+      case (CorrectiveUpdate(aen, _, _, _, aue), CorrectiveUpdate(ben, _, _, _, bue)) => aen.equals(ben) && eventEquals(aue, bue)
       case _ => false
 
     }
