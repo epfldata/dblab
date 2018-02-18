@@ -64,7 +64,10 @@ object CalcAST {
   case object ReplaceStmt extends UpdateType
   case class StmtT(targetMap: CalcExpr, updateType: UpdateType, updateExpr: CalcExpr)
   case class Trigger(event: EventT, stmt: StmtT)
+
+  case class M3Trigger(event: EventT, stmt: List[StmtT])
   case class CompiledDs(description: Ds, triggers: List[Trigger])
+
   case class Plan(list: List[CompiledDs])
 
   sealed trait ArithExpr extends CalcExpr
@@ -99,6 +102,11 @@ object CalcAST {
   trait Interval
   case class CYearMonth(y: Int, m: Int) extends Interval
   case class CDay(value: Int) extends Interval
+
+  trait MapT
+  case class DSView(ds: Ds) extends MapT
+  case class DSTable(rel: Table) extends MapT
+  case class ProgT(queries: List[CalcQuery], maps: List[MapT], triggers: List[M3Trigger], db: Schema)
 
   def prettyprint(calcExpr: CalcExpr): String = {
     def rcr(c: CalcExpr): String = prettyprint(c)
