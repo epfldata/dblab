@@ -58,7 +58,7 @@ object Driver {
         val tables = sqlProgram.streams.toList.map(x => x.asInstanceOf[CreateStream]) // ok ?
         val ddlInterpreter = new DDLInterpreter(new Catalog(scala.collection.mutable.Map()))
         val query = sqlProgram.body
-        println(query)
+        // println(query)
         val schema = ddlInterpreter.interpret(UseSchema("DBToaster") :: tables)
         val tpchSchema = TPCHSchema.getSchema("experimentation/dbtoaster/queries/sf0.001/", 0.0001)
 

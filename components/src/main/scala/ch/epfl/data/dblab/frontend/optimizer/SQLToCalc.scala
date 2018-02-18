@@ -34,11 +34,11 @@ class SQLToCalc(schema: Schema) {
 
   def calcOfQuery(query_name: Option[String], query: TopLevelStatement): List[(String, CalcExpr)] = {
 
-    println("query:\n" + query)
+    // println("query:\n" + query)
     val re_hv_query = rewriteHavingQuery(query)
-    println("re_hv_query:\n" + re_hv_query)
+    // println("re_hv_query:\n" + re_hv_query)
     val agg_query = castQueryToAggregate(re_hv_query)
-    println("agg_query:\n" + agg_query)
+    // println("agg_query:\n" + agg_query)
 
     agg_query match {
 
@@ -67,15 +67,15 @@ class SQLToCalc(schema: Schema) {
     val source_calc = calcOfSource(sources)
     val cond_calc = calcOfCondition(sources, cond)
     //    println("source :\n" + source_calc)
-    println("source :\n" + CalcAST.prettyprint(source_calc))
+    // println("source :\n" + CalcAST.prettyprint(source_calc))
     //    println("cond : \n" + cond_calc)
-    println("cond :\n" + CalcAST.prettyprint(cond_calc))
+    // println("cond :\n" + CalcAST.prettyprint(cond_calc))
     // int of extractAliases is removed and the order is changed to OCaml's order
 
     val (agg_tgts, noagg_tgts) = targets.extractAliases().map(e => (e._2, e._1)).toList.partition(x => is_agg_expr(x._2))
 
-    println(agg_tgts)
-    println(noagg_tgts)
+    // println(agg_tgts)
+    // println(noagg_tgts)
 
     val (noagg_vars, noagg_terms) = noagg_tgts.map({
       case (base_tgt_name, tgt_expr) =>
@@ -95,8 +95,8 @@ class SQLToCalc(schema: Schema) {
         }
     }).unzip
 
-    println("gb vars  :\n")
-    println(gb_vars)
+    // println("gb vars  :\n")
+    // println(gb_vars)
 
     val noagg_calc = CalcProd(noagg_terms)
     val new_gb_vars = noagg_vars ++ gb_vars.flatMap(f => if (!noagg_tgts.exists({
@@ -116,7 +116,7 @@ class SQLToCalc(schema: Schema) {
 
       val ret = agg_type match {
         case _: Sum =>
-          println(prettyprint(noagg_calc))
+          // println(prettyprint(noagg_calc))
           mkAggsum(new_gb_vars, CalcProd(List(source_calc, cond_calc, agg_calc, noagg_calc)))
 
         case _: CountAll =>
@@ -144,8 +144,8 @@ class SQLToCalc(schema: Schema) {
                 ArithVar(count_var)), IntType)), FloatType)),
               Cmp(Neq, ArithConst(IntLiteral(0)), ArithVar(count_var)))))))
       }
-      println("  r  e  t : ")
-      println(prettyprint(ret))
+      // println("  r  e  t : ")
+      // println(prettyprint(ret))
       ret
     }
 
@@ -246,7 +246,7 @@ class SQLToCalc(schema: Schema) {
           }
 
         val sum_calc = CalcSum((extract_ors(o.left) ++ extract_ors(o.right)).map(x => rcr_c(Some(x))))
-        println("sum_Calc:\n" + prettyprint(sum_calc))
+        // println("sum_Calc:\n" + prettyprint(sum_calc))
         val (or_val, or_calc) = liftIfNecessary(sum_calc, Some("or"), Some(IntType))
         mkAggsum(List(), CalcProd(List(or_calc, Cmp(Gt, or_val, ArithConst(IntLiteral(0))))))
 
@@ -339,8 +339,8 @@ class SQLToCalc(schema: Schema) {
         (makeCalcExpr(ArithConst(l)), false)
 
       case f: FieldIdent =>
-        println(f)
-        println(f.name)
+        // println(f)
+        // println(f.name)
         (makeCalcExpr(makeArithExpr(varOfSqlVar(f.qualifier.get, f.name, IntType))), false) //TODO type expr
 
       case b: BinaryOperator =>
@@ -541,9 +541,9 @@ class SQLToCalc(schema: Schema) {
     combineValues(None, None, calc) match {
       case c: CalcValue => (c.v, CalcValue(ArithConst(IntLiteral(1))))
       case _ =>
-        println("^^^^^^^^^^^^^")
-        println(t)
-        println(vt)
+        // println("^^^^^^^^^^^^^")
+        // println(t)
+        // println(vt)
         val v = tmpVar(t.get, escalateType(None, vt.get, typeOfExpr(calc)))
         (makeArithExpr(v), Lift(v, calc))
     }
@@ -773,7 +773,7 @@ class SQLToCalc(schema: Schema) {
   //   ********Function********** :
 
   def declaration(fn: String, argtypes: List[Tpe]): FunctionDeclaration = {
-    println(fn)
+    // println(fn)
     schema.functions(fn.toUpperCase()).apply(argtypes)
   }
 
