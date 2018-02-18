@@ -29,12 +29,11 @@ object QueryInterpreter {
    *
    * @param args the setting arguments passed through command line
    */
-  // FIXME revert the name back to main
-  def main2(args: Array[String]) {
+  def main(args: Array[String]) {
     if (args.size < 1) {
       System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
-      System.out.println("USAGE: run <data_folder> <list of DDL files and SQL queries>")
-      System.out.println("Example: run /home/data/sf0.1/ experimentation/tpch-sql/dss.ddl experimentation/tpch-sql/Q6.sql")
+      System.out.println("USAGE: olap-interpreter <data_folder> <list of DDL files and SQL queries>")
+      System.out.println("Example: olap-interpreter /home/data/sf0.1/ experimentation/tpch-sql/dss.ddl experimentation/tpch-sql/Q6.sql")
       System.exit(1)
     }
 

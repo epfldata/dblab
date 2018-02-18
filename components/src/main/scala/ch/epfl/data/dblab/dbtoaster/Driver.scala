@@ -30,8 +30,8 @@ object Driver {
   def main(args: Array[String]) {
     if (args.length < 1) {
       System.out.println("ERROR: Invalid number (" + args.length + ") of command line arguments!")
-      System.out.println("USAGE: run <SQL/Calc query> -l SQL|CALC|PLAN|M3 -O")
-      System.out.println("Example: run experimentation/tpch-sql/Q6.sql")
+      System.out.println("USAGE: dbtoaster <SQL/Calc query> -l SQL|CALC|PLAN|M3 -O")
+      System.out.println("Example: dbtoaster experimentation/dbtoaster/queries/tpch/query6.sql -l M3")
       System.exit(1)
     }
     val options = nextOption(Map(), args.toList)
