@@ -170,10 +170,11 @@ object SQLAST {
         throw new Exception(s"$this does not have a type!")
       }
       tpe match {
-        case IntType    => ru.typeTag[Int]
-        case CharType   => ru.typeTag[Char]
-        case DoubleType => ru.typeTag[Double]
-        case FloatType  => ru.typeTag[Float]
+        case IntType     => ru.typeTag[Int]
+        case CharType    => ru.typeTag[Char]
+        case DoubleType  => ru.typeTag[Double]
+        case FloatType   => ru.typeTag[Float]
+        case BooleanType => ru.typeTag[Boolean]
       }
     }
     var tpe: Tpe = _

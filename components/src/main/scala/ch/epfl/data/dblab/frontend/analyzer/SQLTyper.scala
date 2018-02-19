@@ -19,6 +19,7 @@ import optimizer.SQLUtils._
  */
 class SQLTyper(schema: Schema) {
   val namer = new SQLNamer(schema)
+  import namer.{ schemaToString }
   var curSchema = schema
   def withSchema[T](newSchema: Schema)(f: () => T): T = {
     val oldSchema = curSchema
@@ -49,10 +50,6 @@ class SQLTyper(schema: Schema) {
     }
   }
 
-  def schemaToString(schema: Schema) = {
-    s"tables:\n\t${schema.tables.mkString("\n\t")}\nfunctions:\n\t${schema.functions.mkString("\n\t")}"
-  }
-
   def typeExpr(exp: Expression): Expression = {
     exp match {
       case tl: TopLevelStatement       => typeQuery(tl)
@@ -62,8 +59,8 @@ class SQLTyper(schema: Schema) {
         val tpe = exp match {
           case Equals(_, _) | NotEquals(_, _) | LessOrEqual(_, _) |
             LessThan(_, _) | GreaterOrEqual(_, _) | GreaterThan(_, _) => BooleanType
-          case Sum(_) | Min(_) | Max(_) | Avg(_) => children.head.tpe
-          case CountExpr(_) | CountAll()         => IntType
+          case Sum(_) | Min(_) | Max(_) | Avg(_)   => children.head.tpe
+          case CountExpr(_) | CountAll() | Year(_) => IntType
           case Add(_, _) | Subtract(_, _) | Multiply(_, _) | Divide(_, _) =>
             val List(tpe1, tpe2) = children.map(_.tpe)
             escalateType(tpe1, tpe2)
@@ -155,10 +152,18 @@ class SQLTyper(schema: Schema) {
     case Join(left, right, kind, clause) => {
       typeSource(left)
       typeSource(right)
-      typeExpr(clause)
+      if (clause != null)
+        withSchema(expandSchema(curSchema)(namer.extractSources(rel))) { () =>
+          typeExpr(clause)
+        }
       rel
     }
     case _ => ???
+  }
+
+  def expandSchema(oldSchema: Schema)(rels: Seq[Relation]): Schema = {
+    val labeledRels = rels.map(getSourceLabeledSchema)
+    oldSchema.copy(tables = oldSchema.tables ++ labeledRels.map(labeledSchemaToTable))
   }
 
   def typeSelect(select: SelectStatement): SelectStatement = {

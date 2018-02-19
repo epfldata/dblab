@@ -38,6 +38,10 @@ class SQLNamer(schema: Schema) {
     s"$prefix$globalId"
   }
 
+  def schemaToString(schema: Schema) = {
+    s"tables:\n\t${schema.tables.mkString("\n\t")}\nfunctions:\n\t${schema.functions.mkString("\n\t")}"
+  }
+
   def nameQuery(query: TopLevelStatement): TopLevelStatement = {
     query match {
       case UnionIntersectSequence(left, right, kind) =>
@@ -54,7 +58,7 @@ class SQLNamer(schema: Schema) {
     val filteredRelations = if (relations.size > 1) relations diff filterTables(schema.tables.toList) else relations
     filteredRelations match {
       case List(rel) => rel
-      case Nil       => throw new Exception(s"No relation found with attribute $attr. Schema: $curSchema")
+      case Nil       => throw new Exception(s"No relation found with attribute $attr. Schema: ${schemaToString(curSchema)}")
       case rels      => throw new Exception(s"Multiple relations found with attribute $attr: ${rels.mkString(", ")}")
     }
   }
@@ -148,9 +152,10 @@ class SQLNamer(schema: Schema) {
     case Join(left, right, kind, clause) =>
       val currentEqClause = clause match {
         case null                                 => Nil
-        case Equals(IntLiteral(1), IntLiteral(1)) => Nil // already handlered by the parser
+        case Equals(IntLiteral(1), IntLiteral(1)) => Nil // already handled by the parser
         case e: Equals                            => List(e)
         case And(e1: Equals, e2: Equals)          => List(e1, e2)
+        case And(e1: Equals, _)                   => List(e1)
       }
       currentEqClause ++ extractJoinEqualities(left) ++ extractJoinEqualities(right)
     case _ => Nil
@@ -191,7 +196,7 @@ class SQLNamer(schema: Schema) {
           })
         })
         val namedWhere = withSchema(newSchema)(() => where.map(nameExpr))
-        val joinEqs = namedSource.map(ns => extractJoinEqualities(ns).map(nameExpr)).getOrElse(Nil)
+        val joinEqs = withSchema(newSchema)(() => namedSource.map(ns => extractJoinEqualities(ns).map(nameExpr)).getOrElse(Nil))
         val newWhere = namedWhere match {
           case Some(v) => Some(joinEqs.foldLeft(v)((x, y) => And(x, y)))
           case None => joinEqs match {
