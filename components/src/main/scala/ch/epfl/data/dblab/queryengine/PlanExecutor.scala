@@ -76,21 +76,32 @@ object PlanExecutor {
     }
 
     def searchRecord(rec: Record): Option[Any] = {
+      // rec match {
+      //   case pr: PageRow =>
+      //     // pr.page.fieldId.get(name)
+      //     pr.getField(name)
+      //   case _ =>
       /* Does a field exist with this name? If so immediately return it */
       val res = rec.getField(name)
       if (res.isDefined) res
       /* If not, is it a dynamic record on which we can look (and find) this attribute name?*/
-      else if (rec.isInstanceOf[DynamicCompositeRecord[_, _]]) {
-        val r = rec.asInstanceOf[DynamicCompositeRecord[_, _]]
-        r.getField(name) match {
-          case Some(f) => Some(f)
-          case None    => None //searchRecordFields(rec)
-        }
-      } else if (rec.isInstanceOf[DataRow])
-        searchRecordFields(rec.asInstanceOf[DataRow])
       else
-        throw new Exception(s"$rec is not a DataRow record and does not have the field `$name`")
+        rec match {
+          case r: DynamicCompositeRecord[_, _] =>
+            r.getField(name) match {
+              case Some(f) => Some(f)
+              case None    => None //searchRecordFields(rec)
+            }
+          case r: DataRow =>
+            searchRecordFields(r)
+          case r: PageRow =>
+            None
+          case _ =>
+            throw new Exception(s"$rec is not a DataRow record and does not have the field `$name`")
+        }
     }
+
+    // println(s"search record $n, $alias, \n\t$t\n\t$t2")
 
     searchRecord(t) match {
       case Some(res) => res // rec.getField(name).get
@@ -338,15 +349,7 @@ object PlanExecutor {
         new HashJoinAnti(leftOp, rightOp)((x, y) => parseExpression(joinCond, x, y).asInstanceOf[Boolean])(
           x => parseExpression(leftCond, x)(leftCond.tp))(x => parseExpression(rightCond, x)(rightCond.tp))
       case InnerJoin =>
-        println(joinCond)
-        println(joinCond.tp)
-        println("left")
-        println(leftCond)
-        println(leftCond.tp)
-        println("right")
-        println(rightCond)
-        println(rightCond.tp)
-        new HashJoinOp(leftOp, rightOp, leftAlias, rightAlias)((x, y) => parseExpression(joinCond, x, y).asInstanceOf[Boolean])(
+        new HashJoinOp(leftOp, rightOp, "", "")((x, y) => parseExpression(joinCond, x, y).asInstanceOf[Boolean])(
           x => parseExpression(leftCond, x)(leftCond.tp))(x => parseExpression(rightCond, x)(rightCond.tp))
     }
   }

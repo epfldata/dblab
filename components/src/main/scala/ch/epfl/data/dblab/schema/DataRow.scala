@@ -68,10 +68,7 @@ case class Page(table: Table) {
 
 case class PageRow(page: Page, rowId: Int, values: Array[Any]) extends Record {
   def numFields = page.fieldId.size
-  def getField(name: String): Option[Any] = page.fieldId.get(name) match {
-    case Some(id) => Some(values(id))
-    case None     => throw new Exception(s"Table ${page.table.name} does not have any field named $name")
-  }
+  def getField(name: String): Option[Any] = page.fieldId.get(name).map(values)
   override def toString = "PageRow(" + values.toSeq.toString + ")"
   override def hashCode: Int = values.map(_.hashCode).sum
   override def equals(o: Any): Boolean = o match {

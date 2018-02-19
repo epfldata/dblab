@@ -27,7 +27,9 @@ class TPCHSQLTest extends FlatSpec {
     // println(s"$dataPath, $riFiles, $ddlFiles, $sqlFiles")
     val schema = interpreter.readSchema(dataPath, ddlFiles ++ riFiles)
 
-    for (i <- 1 to 1) {
+    val queries = List(1)
+
+    for (i <- queries) {
       s"TPCH Q$i" should "work" in {
         val query = s"$folder/Q$i.sql"
         val resq = interpreter.processQuery(schema, query)

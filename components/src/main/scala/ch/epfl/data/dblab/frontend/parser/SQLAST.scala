@@ -4,6 +4,7 @@ package frontend
 package parser
 
 import sc.pardis.types._
+import schema.{ VarCharType }
 
 import scala.reflect.runtime.{ universe => ru }
 //import ru._
@@ -170,11 +171,13 @@ object SQLAST {
         throw new Exception(s"$this does not have a type!")
       }
       tpe match {
-        case IntType     => ru.typeTag[Int]
-        case CharType    => ru.typeTag[Char]
-        case DoubleType  => ru.typeTag[Double]
-        case FloatType   => ru.typeTag[Float]
-        case BooleanType => ru.typeTag[Boolean]
+        case IntType        => ru.typeTag[Int]
+        case CharType       => ru.typeTag[Char]
+        case DoubleType     => ru.typeTag[Double]
+        case FloatType      => ru.typeTag[Float]
+        case BooleanType    => ru.typeTag[Boolean]
+        case VarCharType(_) => ru.typeTag[VarCharType]
+        case StringType     => ru.typeTag[VarCharType]
       }
     }
     var tpe: Tpe = _
