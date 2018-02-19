@@ -69,7 +69,7 @@ case class Page(table: Table) {
 case class PageRow(page: Page, rowId: Int, values: Array[Any]) extends Record {
   def numFields = page.fieldId.size
   def getField(name: String): Option[Any] = page.fieldId.get(name).map(values)
-  override def toString = "PageRow(" + values.toSeq.toString + ")"
+  override def toString = "PageRow(" + page.fieldId.toSeq.sortBy(_._2).zip(values).toSeq.toString + ")"
   override def hashCode: Int = values.map(_.hashCode).sum
   override def equals(o: Any): Boolean = o match {
     case pr: PageRow => pr.page.table == page.table && values.zip(pr.values).forall(x => x._1 == x._2)

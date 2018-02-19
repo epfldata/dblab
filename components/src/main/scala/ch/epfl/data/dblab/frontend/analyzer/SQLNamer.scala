@@ -206,7 +206,8 @@ class SQLNamer(schema: Schema) {
         }
         val namedGroupBy = withSchema(newSchema)(() => groupBy.map(gb => gb.copy(keys = gb.keys.map(nameExprOptional(false)))))
         val namedOrderBy = withSchema(newSchema)(() => orderBy.map(ob => ob.copy(keys = ob.keys.map(x => nameExprOptional(false)(x._1) -> x._2))))
-        SelectStatement(withs, ExpressionProjections(namedProjections), namedSource, newWhere, namedGroupBy, having, namedOrderBy, limit, aliases)
+        val namedHaving = withSchema(newSchema)(() => having.map(h => h.copy(having = nameExprOptional(false)(h.having))))
+        SelectStatement(withs, ExpressionProjections(namedProjections), namedSource, newWhere, namedGroupBy, namedHaving, namedOrderBy, limit, aliases)
     }
   }
 }

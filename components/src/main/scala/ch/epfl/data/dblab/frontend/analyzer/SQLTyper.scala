@@ -182,6 +182,7 @@ class SQLTyper(schema: Schema) {
           where.foreach(typeExpr)
           groupBy.foreach(_.keys.foreach(typeExpr))
           orderBy.foreach(_.keys.foreach(x => typeExpr(x._1)))
+          having.foreach(h => typeExpr(h.having))
         }
         projections.lst match {
           case List((e, _)) => select.tpe = e.tpe
