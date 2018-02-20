@@ -43,18 +43,23 @@ class QueryPlanNaiveOptimizer(schema: Schema) extends QueryPlanOptimizer {
     case SelectOpNode(parent, cond, isHaving) =>
       containsField(parent, fld)
     case so: ScanOpNode =>
-
-      so.scanOpName == (schema.tables.find(t => t.findAttribute(fld.name).isDefined) match {
-        case Some(tbl) => {
-          // Apparently it is valid to use table name when referencing a field ident. So we 
-          // check for this case here and handle it approprietly
-          if (fld.qualifier.getOrElse("") != tbl.name) tbl.name + fld.qualifier.getOrElse("")
-          else tbl.name
-        }
-        case None => ""
-      })
+      // System.out.println(s"scanop ${so.scanOpName}")
+      val relationName = schema.tables.find(t => t.findAttribute(fld.name).isDefined).map(tbl => {
+        // System.out.println(s"scanop-- ${fld.qualifier.getOrElse("")} ${tbl.name}")
+        // if (fld.qualifier.getOrElse("") != tbl.name) tbl.name + fld.qualifier.getOrElse("")
+        // else tbl.name
+        tbl.name + fld.qualifier.getOrElse("")
+      }).getOrElse("")
+      // System.out.println(s"scanop2 ${relationName}")
+      so.scanOpName == relationName
     case MapOpNode(parent, mapIndices) =>
       containsField(parent, fld)
+    case SubqueryNode(parent) =>
+      containsField(parent, fld)
+    case ProjectOpNode(parent, _, _) =>
+      containsField(parent, fld)
+
+    case _ => throw new Exception(s"Does not know if the following node contains a field: $op")
   }
 
   def registerScanOpCond(fi: FieldIdent, cond: Expression): Option[Expression] = {
@@ -87,7 +92,11 @@ class QueryPlanNaiveOptimizer(schema: Schema) extends QueryPlanOptimizer {
     joinOperators.find(jo => {
       val containsInExistingOrder = containsField(jo.left, fi1) && containsField(jo.right, fi2)
       val containsInReverseOrder = containsField(jo.right, fi1) && containsField(jo.left, fi2)
-      // System.out.println(jo + "/" + containsInExistingOrder + "/" + containsInReverseOrder + "/(" + containsField(jo.left, fi1) + "/" + containsField(jo.right, fi2) + ")" + "(" + containsField(jo.right, fi1) + "/" + containsField(jo.left, fi2) + ")")
+      // System.out.println(jo.left)
+      // System.out.println(containsField(jo.left, fi1))
+      // System.out.println(jo.right)
+      // System.out.println(containsField(jo.right, fi2))
+      // System.out.println(fi1 + ", " + fi2 + "\n" + jo + "/" + containsInExistingOrder + "/" + containsInReverseOrder + "/(" + containsField(jo.left, fi1) + "/" + containsField(jo.right, fi2) + ")" + "(" + containsField(jo.right, fi1) + "/" + containsField(jo.left, fi2) + ")")
       if (containsInExistingOrder) true
       else if (containsInReverseOrder) {
         reorder = true
@@ -101,7 +110,7 @@ class QueryPlanNaiveOptimizer(schema: Schema) extends QueryPlanOptimizer {
           if (reorder) reorderPredicates(cond)
           else cond
         }
-      case None => throw new Exception("LegoBase Optimizer: Couldn't find join operator for condition " + cond)
+      case None => throw new Exception(s"LegoBase Optimizer: Couldn't find join operator for condition $cond, $fi1, $fi2")
     }
   }
 
