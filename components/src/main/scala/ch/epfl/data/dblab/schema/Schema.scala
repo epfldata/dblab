@@ -16,6 +16,7 @@ case class Schema(tables: ArrayBuffer[Table], stats: Statistics,
   def findTable(name: String): Option[Table] = tables.find(t => t.name == name)
   def findTableByType(tpe: PardisType[_]): Option[Table] = tables.find(t => t.name + "Record" == tpe.name)
   def findAttribute(attrName: String): Option[Attribute] = tables.map(t => t.attributes).flatten.find(attr => attr.name == attrName)
+  def findTableByAttributeName(attrName: String): Option[Table] = tables.find(t => t.attributes.exists(_.name == attrName))
 }
 case class FunctionDeclaration(name: String, returnType: Tpe)
 
