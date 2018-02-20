@@ -106,7 +106,7 @@ class SQLNamer(schema: Schema) {
 
   def getSelectSchema(select: SelectStatement): TableSchema = {
     val projs = select.projections.asInstanceOf[ExpressionProjections].lst
-    projs.map(_._2.get).toList
+    projs.map(p => p._2.getOrElse(p._1 match { case FieldIdent(_, name, _) => name; case _ => ??? })).toList
   }
 
   def labeledSchemaToTable(ls: LabeledSchema): Table = {
@@ -131,11 +131,23 @@ class SQLNamer(schema: Schema) {
           val eqClause = commonAttr.map(c => Equals(FieldIdent(Some(nls._2), c), FieldIdent(Some(nrs._2), c)))
           InnerJoin -> eqClause.getOrElse(null)
         case _ =>
-          kind -> clause
+          val newClause =
+            if (clause != null) {
+              withSchema(expandSchema(curSchema)(extractSources(nl) ++ extractSources(nr))) { () =>
+                nameExpr(clause)
+              }
+            } else
+              clause
+          kind -> newClause
       }
       Join(nl, nr, nk, nc)
     }
     case _ => ???
+  }
+
+  def expandSchema(oldSchema: Schema)(rels: Seq[Relation]): Schema = {
+    val labeledRels = rels.map(getSourceLabeledSchema)
+    oldSchema.copy(tables = oldSchema.tables ++ labeledRels.map(labeledSchemaToTable))
   }
 
   def withSchema[T](newSchema: Schema)(f: () => T): T = {
