@@ -59,9 +59,58 @@ class SQLToQueryPlan(schema: Schema) {
     case Some(joinTree) => joinTree match {
       case j: Join =>
         val leftOp = parseJoinTree(Some(j.left), inputOps)
-        val rightOp = parseJoinTree(Some(j.right), inputOps)
-        val (leftAlias, rightAlias) = parseJoinAliases(leftOp, rightOp)
-        new JoinOpNode(leftOp, rightOp, j.clause, j.tpe, leftAlias, rightAlias)
+        val origRightOp = parseJoinTree(Some(j.right), inputOps)
+        val (leftAlias, rightAlias) = parseJoinAliases(leftOp, origRightOp)
+        val (rightOp, clause) = j.tpe match {
+          // case LeftSemiJoin =>
+          //   def fieldIsFromRight(e: FieldIdent): Boolean = {
+          //     (j.right, schema.findTableByAttributeName(e.name)) match {
+          //       case (SQLTable(tableName, _), Some(t)) =>
+          //         tableName == t.name
+          //       case _ => false
+          //     }
+          //   }
+          //   def containsConditionFromRight(e: Expression): Boolean = {
+          //     def rcr(e1: Expression) = containsConditionFromRight(e1)
+          //     e match {
+          //       case fi: FieldIdent         => fieldIsFromRight(fi)
+          //       case And(e1, e2)            => rcr(e1) || rcr(e2)
+          //       case ExpressionShape(_, es) => es.foldLeft(true)((acc, cur) => acc && rcr(cur))
+          //       case _                      => false
+          //     }
+          //   }
+          //   def isConjunction(e: Expression): Boolean = {
+          //     e match {
+          //       case And(e1, e2)                                 => isConjunction(e1) && isConjunction(e2)
+          //       case _: EqualityOperator | _: InEqualityOperator => true
+          //       case Or(_, _)                                    => false
+          //     }
+          //   }
+          //   if (containsConditionFromRight(j.clause) && isConjunction(j.clause)) {
+          //     def conjuctionTerms(e: Expression): List[Expression] = {
+          //       e match {
+          //         case And(e1, e2) => conjuctionTerms(e1) ++ conjuctionTerms(e2)
+          //         case _: EqualityOperator | _: InEqualityOperator => List(e)
+          //         case _ => ???
+          //       }
+          //     }
+          //     val terms = conjuctionTerms(j.clause)
+          //     val (selectionTerms, joinTerms) = terms.partition(containsConditionFromRight)
+          //     def conjunction(ts: List[Expression]): Expression = ts match {
+          //       case hd :: Nil => hd
+          //       case hd :: tl  => And(hd, conjunction(tl))
+          //       case Nil       => ???
+          //     }
+          //     // System.out.println(s"isConjunction: ${conjunction(joinTerms)}, ${analyzeExprForSubquery(conjunction(selectionTerms), origRightOp, false)}")
+          //     analyzeExprForSubquery(conjunction(selectionTerms), origRightOp, false) -> conjunction(joinTerms)
+          //   } else {
+          //     (origRightOp, j.clause)
+          //   }
+
+          case _ =>
+            (origRightOp, j.clause)
+        }
+        new JoinOpNode(leftOp, rightOp, clause, j.tpe, leftAlias, rightAlias)
       case r: SQLTable if viewNameDefined(r.name) => getViewWithName(r.name)
       case vw: View                               => getViewWithName(vw.alias)
       case r: SQLTable =>
