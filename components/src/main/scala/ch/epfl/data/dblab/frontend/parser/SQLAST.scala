@@ -112,14 +112,7 @@ object SQLAST {
     def isStream: Boolean = !isTable
   }
   case class CreateFunction(name: String, inputs: Seq[(String, Tpe)], output: Tpe, external: String) extends CreateStatement
-  trait Projections extends SQLNode {
-    def size(): Int
-    def get(n: Int): (Expression, Option[String])
-    def extractAliases(): Seq[(Expression, String, Int)]
-    def extractExpretions(): Seq[(Expression, Int)]
-    def findProjection(e: Expression, alias: String): Seq[Expression]
-  }
-  case class ExpressionProjections(lst: Seq[(Expression, Option[String])]) extends Projections {
+  case class Projections(lst: Seq[(Expression, Option[String])]) extends SQLNode {
     def size(): Int = lst.size
     def get(n: Int) = lst(n)
     def findProjection(e: Expression, alias: String) = {
@@ -149,18 +142,9 @@ object SQLAST {
       case c if c.isAggregateOpExpr => p._2.get
     })
     def extractAliases(): Seq[(Expression, String, Int)] = lst.zipWithIndex.filter(p => p._1._2.isDefined).map(al => (al._1._1, al._1._2.get, al._2))
-    override def extractExpretions(): Seq[(Expression, Int)] = lst.zipWithIndex.map(al => (al._1._1, al._2))
+    def extractExpressions(): Seq[(Expression, Int)] = lst.zipWithIndex.map(al => (al._1._1, al._2))
     //TODO p._1._2 ?? AVG(A)
   }
-  @deprecated("", "")
-  case class AllColumns() extends Projections {
-    def size(): Int = ???
-    def get(n: Int) = ???
-    def extractAliases(): Seq[(Expression, String, Int)] = Seq()
-    def extractExpretions(): Seq[(Expression, Int)] = Seq()
-    def findProjection(e: Expression, alias: String) = ???
-  }
-
   case class StarExpression(relation: Option[String]) extends Expression
   // Expressions
   trait Expression extends SQLNode {

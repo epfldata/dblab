@@ -141,7 +141,7 @@ class SQLTyper(schema: Schema) {
   }
 
   def getSelectSchema(select: SelectStatement): TableSchema = {
-    val projs = select.projections.asInstanceOf[ExpressionProjections].lst
+    val projs = select.projections.lst
     projs.map(x => x._2.get -> x._1.tpe).toList
   }
 
@@ -168,7 +168,7 @@ class SQLTyper(schema: Schema) {
 
   def typeSelect(select: SelectStatement): SelectStatement = {
     select match {
-      case SelectStatement(withs, projections: ExpressionProjections, source, where, groupBy, having, orderBy, limit, aliases) =>
+      case SelectStatement(withs, projections, source, where, groupBy, having, orderBy, limit, aliases) =>
         source.foreach(typeSource)
         val rels = source.map(namer.extractSources).getOrElse(Seq()).toList
         val labeledRels = rels.map(getSourceLabeledSchema)

@@ -415,7 +415,7 @@ class SQLToCalc(schema: Schema) {
           (calcOfQuery(None, q).head._2, false)
         else
           (CalcProd(List(calcOfCondition(sources, q.where),
-            rcr_e(q.projections.extractExpretions().head._1))), false)
+            rcr_e(q.projections.extractExpressions().head._1))), false)
 
       case ExternalFunctionExp(fn, fargs) =>
 
@@ -497,7 +497,7 @@ class SQLToCalc(schema: Schema) {
           })
 
           val lst = tgt ++ List((cnt, Some("COUNT")))
-          val new_targets = ExpressionProjections(lst) // TODO distinct is Ocaml?
+          val new_targets = Projections(lst) // TODO distinct is Ocaml?
 
           val new_gb_vars = GroupBy(targets.map({
             case (target_expr, target_name) =>
@@ -589,7 +589,7 @@ class SQLToCalc(schema: Schema) {
 
     stmt match {
       case s: SelectStatement =>
-        s.projections.extractExpretions().map(x => x._1).toList.exists(x => is_agg_expr(x))
+        s.projections.extractExpressions().map(x => x._1).toList.exists(x => is_agg_expr(x))
       case u: UnionIntersectSequence => isAggQuery(u.bottom) && isAggQuery(u.top)
     }
   }

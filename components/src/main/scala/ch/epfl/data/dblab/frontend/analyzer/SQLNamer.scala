@@ -105,7 +105,7 @@ class SQLNamer(schema: Schema) {
   }
 
   def getSelectSchema(select: SelectStatement): TableSchema = {
-    val projs = select.projections.asInstanceOf[ExpressionProjections].lst
+    val projs = select.projections.lst
     projs.map(p => p._2.getOrElse(p._1 match { case FieldIdent(_, name, _) => name; case _ => ??? })).toList
   }
 
@@ -175,7 +175,7 @@ class SQLNamer(schema: Schema) {
 
   def nameSelect(select: SelectStatement): SelectStatement = {
     select match {
-      case SelectStatement(withs, projections: ExpressionProjections, source, where, groupBy, having, orderBy, limit, aliases) =>
+      case SelectStatement(withs, projections, source, where, groupBy, having, orderBy, limit, aliases) =>
         val namedSource = source.map(nameSource)
         val rels = namedSource.map(extractSources).getOrElse(Seq()).toList
         val namedRels = rels.map({
@@ -219,7 +219,7 @@ class SQLNamer(schema: Schema) {
         val namedGroupBy = withSchema(newSchema)(() => groupBy.map(gb => gb.copy(keys = gb.keys.map(nameExprOptional(false)))))
         val namedOrderBy = withSchema(newSchema)(() => orderBy.map(ob => ob.copy(keys = ob.keys.map(x => nameExprOptional(false)(x._1) -> x._2))))
         val namedHaving = withSchema(newSchema)(() => having.map(h => h.copy(having = nameExprOptional(false)(h.having))))
-        SelectStatement(withs, ExpressionProjections(namedProjections), namedSource, newWhere, namedGroupBy, namedHaving, namedOrderBy, limit, aliases)
+        SelectStatement(withs, Projections(namedProjections), namedSource, newWhere, namedGroupBy, namedHaving, namedOrderBy, limit, aliases)
     }
   }
 }

@@ -56,8 +56,11 @@ object OLAPEngine {
     val schema = ddlInterpreter.getCurrSchema
     val subqNorm = new SQLSubqueryNormalizer(schema)
     val subqueryNormalizedqTree = subqNorm.normalize(sqlParserTree)
-    new SQLAnalyzer(schema).checkAndInfer(subqueryNormalizedqTree)
-    val operatorTree = new SQLToQueryPlan(schema).convert(subqueryNormalizedqTree)
+    val namedQuery = new SQLNamer(schema).nameQuery(subqueryNormalizedqTree)
+    // val namedQuery = subqueryNormalizedqTree
+    val typedQuery = new SQLTyper(schema).typeQuery(namedQuery)
+    // val typedQuery = namedQuery
+    val operatorTree = new SQLToQueryPlan(schema).convert(typedQuery)
     val optimizerTree = new QueryPlanNaiveOptimizer(schema).optimize(operatorTree)
     optimizerTree
   }

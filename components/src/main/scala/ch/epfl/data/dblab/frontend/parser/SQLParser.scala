@@ -163,7 +163,7 @@ object SQLParser extends StandardTokenParsers {
     ident ~ "AS" ~ "(" ~ parseQuery <~ ")" ^^ { case name ~ _ ~ _ ~ stmt => View(stmt, name) }
 
   def parseProjections: Parser[Projections] = (
-    rep1sep(parseAliasedExpression, ",") ^^ { case lst => ExpressionProjections(lst) })
+    rep1sep(parseAliasedExpression, ",") ^^ { case lst => Projections(lst) })
 
   def parseAliasedExpression: Parser[(Expression, Option[String])] =
     parseExpression ~ parseAlias.? ^^ { case expr ~ alias => (expr, alias) }
@@ -303,9 +303,9 @@ object SQLParser extends StandardTokenParsers {
   def scanForExistence(q: TopLevelStatement, e: Expression, op: String, inverse: Boolean): Expression = {
     q match {
       case s: SelectStatement =>
-        val target = s.projections match {
-          case ExpressionProjections(List((e, _))) => e
-          case _                                   => ???
+        val target = s.projections.lst match {
+          case List((e, _)) => e
+          case _            => ???
         }
 
         def cmpFact(e1: Expression, e2: Expression): Expression = {
@@ -328,7 +328,7 @@ object SQLParser extends StandardTokenParsers {
           cmpFact(e, s)
         } else {
           val cmp: Expression = cmpFact(e, target)
-          Exists(SelectStatement(Seq(), ExpressionProjections(List((IntLiteral(1), Some("unused")))),
+          Exists(SelectStatement(Seq(), Projections(List((IntLiteral(1), Some("unused")))),
             s.joinTree, s.where.map(w => And(w, cmp)).fold(Some(cmp))(Some.apply _), s.groupBy, s.having, s.orderBy, s.limit, s.aliases))
 
         }

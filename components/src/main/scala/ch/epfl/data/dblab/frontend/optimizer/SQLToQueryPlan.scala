@@ -150,59 +150,57 @@ class SQLToQueryPlan(schema: Schema) {
     case None => Seq()
   }
 
-  def parseAggregations(e: Projections, gb: Option[GroupBy], parentOp: OperatorNode): OperatorNode = e match {
-    case ExpressionProjections(proj) => {
+  def parseAggregations(e: Projections, gb: Option[GroupBy], parentOp: OperatorNode): OperatorNode = {
+    val proj = e.lst
 
-      val divisionIndexes = scala.collection.mutable.ArrayBuffer[(String, String)]()
-      val hasDivide = proj.find(p => p._1.isInstanceOf[Divide]).isDefined
+    val divisionIndexes = scala.collection.mutable.ArrayBuffer[(String, String)]()
+    val hasDivide = proj.find(p => p._1.isInstanceOf[Divide]).isDefined
 
-      val projsWithoutDiv = proj.map(p => (p._1 match {
-        case Divide(e1, e2) =>
-          val e1Name = p._2.getOrElse("")
-          val e2Name = p._2.getOrElse("") + "_2"
-          divisionIndexes += ((e1Name, e2Name))
-          Seq((e1, Some(e1Name)), (e2, Some(e2Name)))
-        case _ => Seq((p._1, p._2))
-      })).flatten.asInstanceOf[Seq[(Expression, Option[String])]]
+    val projsWithoutDiv = proj.map(p => (p._1 match {
+      case Divide(e1, e2) =>
+        val e1Name = p._2.getOrElse("")
+        val e2Name = p._2.getOrElse("") + "_2"
+        divisionIndexes += ((e1Name, e2Name))
+        Seq((e1, Some(e1Name)), (e2, Some(e2Name)))
+      case _ => Seq((p._1, p._2))
+    })).flatten.asInstanceOf[Seq[(Expression, Option[String])]]
 
-      var aggProjs = projsWithoutDiv.filter(p => p._1.isAggregateOpExpr)
+    var aggProjs = projsWithoutDiv.filter(p => p._1.isAggregateOpExpr)
 
-      val hasAVG = aggProjs.exists(ap => ap._1.isInstanceOf[Avg])
-      if (hasAVG && aggProjs.find(_._1.isInstanceOf[CountAll]) == None) {
-        val count = CountAll()
-        // count.setTp(typeTag[Int])
-        count.tpe = IntType
-        aggProjs = aggProjs :+ ((count, Some("__TOTAL_COUNT")))
-      }
+    val hasAVG = aggProjs.exists(ap => ap._1.isInstanceOf[Avg])
+    if (hasAVG && aggProjs.find(_._1.isInstanceOf[CountAll]) == None) {
+      val count = CountAll()
+      // count.setTp(typeTag[Int])
+      count.tpe = IntType
+      aggProjs = aggProjs :+ ((count, Some("__TOTAL_COUNT")))
+    }
 
-      if (aggProjs == List()) parentOp
-      else {
-        val aggNames = aggProjs.map(agg => agg._2 match {
-          case Some(al) => al
-          case None     => throw new Exception("LegoBase Limitation: All aggregations must be given an alias (aggregation " + agg._1 + " was not)")
+    if (aggProjs == List()) parentOp
+    else {
+      val aggNames = aggProjs.map(agg => agg._2 match {
+        case Some(al) => al
+        case None     => throw new Exception("LegoBase Limitation: All aggregations must be given an alias (aggregation " + agg._1 + " was not)")
+      })
+
+      val aggOp = if (hasAVG) {
+        val finalAggs = aggProjs.map(ag => ag._1 match {
+          case avg @ Avg(e) =>
+            val sum = Sum(e)
+            // sum.setTp(ag._1.tp)
+            sum.tpe = avg.tpe
+            sum
+          case _ => ag._1
         })
 
-        val aggOp = if (hasAVG) {
-          val finalAggs = aggProjs.map(ag => ag._1 match {
-            case avg @ Avg(e) =>
-              val sum = Sum(e)
-              // sum.setTp(ag._1.tp)
-              sum.tpe = avg.tpe
-              sum
-            case _ => ag._1
-          })
+        //val countAllIdx = aggsAliases.indexOf(CountAll())
+        val countAllName = aggProjs.find(_._1.isInstanceOf[CountAll]).get._2.get
+        val mapIndices = aggProjs.filter(avg => avg._1.isInstanceOf[Avg]).map(avg => { (avg._2.get, countAllName) })
+        MapOpNode(AggOpNode(parentOp, finalAggs, parseGroupBy(gb, proj), aggNames), mapIndices)
+      } else AggOpNode(parentOp, aggProjs.map(_._1), parseGroupBy(gb, proj), aggNames)
 
-          //val countAllIdx = aggsAliases.indexOf(CountAll())
-          val countAllName = aggProjs.find(_._1.isInstanceOf[CountAll]).get._2.get
-          val mapIndices = aggProjs.filter(avg => avg._1.isInstanceOf[Avg]).map(avg => { (avg._2.get, countAllName) })
-          MapOpNode(AggOpNode(parentOp, finalAggs, parseGroupBy(gb, proj), aggNames), mapIndices)
-        } else AggOpNode(parentOp, aggProjs.map(_._1), parseGroupBy(gb, proj), aggNames)
-
-        if (hasDivide) MapOpNode(aggOp, divisionIndexes)
-        else aggOp
-      }
+      if (hasDivide) MapOpNode(aggOp, divisionIndexes)
+      else aggOp
     }
-    case AllColumns() => parentOp
   }
 
   // TODO -- needs to be generalized and expanded with more cases
@@ -246,27 +244,26 @@ class SQLToQueryPlan(schema: Schema) {
     case None                    => parentOp
   }
 
-  def parseProjections(e: Projections, gb: Option[GroupBy], parentOp: OperatorNode): OperatorNode = e match {
-    case ExpressionProjections(projs) =>
-      //System.out.println("Trying to create projection operator for " + projs + " and groupbys " + gb + " which when parsed is " + parseGroupBy(gb, projs))
-      // If there is a projection that is a) not an aggregation, b) not a group by and c) *does have an alias* then we need to project
-      val projsThatNeedRenaming = projs.filter(p => {
-        gb match {
-          case Some(l) => !l.contains(p._1)
-          case None    => true
-        }
-      } && !p._1.isAggregateOpExpr && p._2.isDefined)
-      //System.out.println("projsThatNeedRenaming = " + projsThatNeedRenaming)
-      if (projsThatNeedRenaming.size == 0) parentOp
-      else ProjectOpNode(parentOp, projsThatNeedRenaming.map(_._2.get), projsThatNeedRenaming.map(_._1))
-    case AllColumns() => parentOp
+  def parseProjections(e: Projections, gb: Option[GroupBy], parentOp: OperatorNode): OperatorNode = {
+    val projs = e.lst
+    //System.out.println("Trying to create projection operator for " + projs + " and groupbys " + gb + " which when parsed is " + parseGroupBy(gb, projs))
+    // If there is a projection that is a) not an aggregation, b) not a group by and c) *does have an alias* then we need to project
+    val projsThatNeedRenaming = projs.filter(p => {
+      gb match {
+        case Some(l) => !l.contains(p._1)
+        case None    => true
+      }
+    } && !p._1.isAggregateOpExpr && p._2.isDefined)
+    //System.out.println("projsThatNeedRenaming = " + projsThatNeedRenaming)
+    if (projsThatNeedRenaming.size == 0) parentOp
+    else ProjectOpNode(parentOp, projsThatNeedRenaming.map(_._2.get), projsThatNeedRenaming.map(_._1))
   }
 
   def createMainOperatorTree(sqlTree: SelectStatement): OperatorNode = {
     sqlTree.withs.foreach(w => {
       val qt = convertQuery(w.subquery)
       // TODO -- Handle all columns
-      temporaryViewMap += ViewOpNode(qt.topOperator, qt.projections.asInstanceOf[ExpressionProjections].getNames, w.alias)
+      temporaryViewMap += ViewOpNode(qt.topOperator, qt.projections.getNames, w.alias)
     })
 
     val inputOps = createScanOperators(sqlTree)
@@ -303,10 +300,7 @@ class SQLToQueryPlan(schema: Schema) {
   }
 
   def createPrintOperator(parent: OperatorNode, e: Projections, limit: Option[Limit]) = {
-    val projs = e match {
-      case ExpressionProjections(proj) => proj
-      case AllColumns()                => Seq()
-    }
+    val projs = e.lst
     new PrintOpNode(parent, projs, limit match {
       case Some(Limit(num)) => num.toInt
       case None             => -1
