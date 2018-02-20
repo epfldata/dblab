@@ -71,16 +71,18 @@ object QueryInterpreter {
       val typedQuery = new SQLTyper(schema).typeQuery(namedQuery)
       // val typedQuery = namedQuery
 
-      System.out.println(typedQuery)
+      // System.out.println(typedQuery)
 
       // new SQLAnalyzer(schema).checkAndInfer(typedQuery)
       val operatorTree = new SQLToQueryPlan(schema).convert(typedQuery)
 
+      // System.out.println(operatorTree)
+
       if (Config.debugQueryPlan)
         System.out.println("Before Optimizer:\n" + operatorTree + "\n\n")
 
-      // val optimizerTree = new QueryPlanNaiveOptimizer(schema).optimize(operatorTree)
-      val optimizerTree = operatorTree
+      val optimizerTree = new QueryPlanNaiveOptimizer(schema).optimize(operatorTree)
+      // val optimizerTree = operatorTree
 
       if (Config.debugQueryPlan)
         System.out.println("After Optimizer:\n" + optimizerTree + "\n\n")
