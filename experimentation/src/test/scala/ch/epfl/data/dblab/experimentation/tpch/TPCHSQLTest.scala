@@ -56,11 +56,12 @@ class TPCHSQLTest extends FlatSpec {
     val ddlFiles = getFiles(folder, ".ddl").map(_.getAbsolutePath())
     // println(s"$dataPath, $riFiles, $ddlFiles, $sqlFiles")
     val schema = interpreter.readSchema(dataPath, ddlFiles ++ riFiles)
-    // 4, 16, 20, (21), 22 bug
-    // 7, 8, 18 GC overflow
+    // 16, 20, 22 bug
     // 13 no query
-    // 19 acc bug
-    val queries = (1 to 22) diff List(4, 7, 8, 13, 16, 20, 21, 22)
+    // 4, 8, 17 wrong answer
+    // 21 exception
+    // 7 time out
+    val queries = (1 to 22) diff List(4, 7, 8, 13, 16, 17, 20, 21, 22)
 
     for (i <- queries) {
       s"TPCH Q$i" should "work" in {
