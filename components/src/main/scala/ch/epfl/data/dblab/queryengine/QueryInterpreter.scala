@@ -6,11 +6,14 @@ import schema._
 import frontend.parser._
 import frontend.optimizer._
 import frontend.analyzer._
-import utils.Utilities._
 import java.io.PrintStream
+import java.io.PrintWriter
+import java.io.File
 import frontend.parser.OperatorAST._
 import config._
 import schema._
+import java.util.Date
+import java.text.SimpleDateFormat;
 
 /**
  * The Query Interpreter module which reads a SQL query and interprets it.
@@ -75,14 +78,19 @@ object QueryInterpreter {
 
       // new SQLAnalyzer(schema).checkAndInfer(typedQuery)
       val operatorTree = new SQLToQueryPlan(schema).convert(typedQuery)
-
-      // System.out.println(operatorTree)
+      visualize(operatorTree, queryName + "_normal")
+      val costingPlan = new PlanCosting(schema, operatorTree)
+      System.out.println("Normal cost: " + costingPlan.cost())
+      //System.out.println(operatorTree)
 
       if (Config.debugQueryPlan)
         System.out.println("Before Optimizer:\n" + operatorTree + "\n\n")
 
       val optimizerTree = new QueryPlanNaiveOptimizer(schema).optimize(operatorTree)
       // val optimizerTree = operatorTree
+      visualize(optimizerTree, queryName + "_optimized")
+      val costingPlanOptimized = new PlanCosting(schema, optimizerTree)
+      System.out.println("Optimized cost: " + costingPlan.cost())
 
       if (Config.debugQueryPlan)
         System.out.println("After Optimizer:\n" + optimizerTree + "\n\n")
@@ -157,5 +165,69 @@ object QueryInterpreter {
       }
 
     }
+  }
+
+  def visualize(tree: QueryPlanTree, queryName: String) {
+    def parseTree(tree: OperatorNode): String = {
+      def getLabel(node: OperatorNode): String = {
+        node match {
+          case ScanOpNode(_, scanOpName, _)             => "SCAN " + scanOpName
+          case UnionAllOpNode(_, _)                     => "U"
+          case SelectOpNode(_, cond, _)                 => "Select " + cond.toString
+          case JoinOpNode(_, _, clause, joinType, _, _) => joinType + " " + clause.toString
+          case AggOpNode(_, aggs, gb, _)                => "Aggregate " + aggs.toString + " group by " + gb.map(_._2).toString
+          case MapOpNode(_, mapIndices)                 => "Map " + mapIndices.map(mi => mi._1 + " = " + mi._1 + " / " + mi._2).mkString(", ").toString
+          case OrderByNode(_, ob)                       => "Order by " + ob.map(ob => ob._1 + " " + ob._2).mkString(", ").toString
+          case PrintOpNode(_, projNames, limit) => "Project " + projNames.map(p => p._2 match {
+            case Some(al) => al
+            case None     => p._1
+          }).mkString(",").toString + {
+            if (limit != -1) ", limit = " + limit.toString
+            else ""
+          }
+          case SubqueryNode(parent)                        => "Subquery"
+          case SubquerySingleResultNode(parent)            => "Single subquery"
+          case ProjectOpNode(_, projNames, origFieldNames) => "Project " + (projNames zip origFieldNames).toString
+          case ViewOpNode(_, _, name)                      => "View " + name
+        }
+      }
+
+      def connectTwo(node1: OperatorNode, node2: OperatorNode, alias: String = ""): String = {
+        if (alias == "") {
+          "\"" + getLabel(node1) + "\" -> \"" + getLabel(node2) + "\";\n"
+        } else {
+          "\"" + getLabel(node1) + "\" -> \"" + alias + "\";\n"
+        }
+      }
+
+      tree match {
+        case ScanOpNode(_, _, _)                                  => ""
+        case UnionAllOpNode(top, bottom)                          => connectTwo(tree, top) + connectTwo(tree, bottom) + parseTree(top) + parseTree(bottom)
+        case SelectOpNode(parent, _, _)                           => connectTwo(tree, parent) + parseTree(parent)
+        case JoinOpNode(left, right, _, _, leftAlias, rightAlias) => connectTwo(tree, left, leftAlias) + connectTwo(tree, right, rightAlias) + parseTree(right) + parseTree(left)
+        case AggOpNode(parent, _, _, _)                           => connectTwo(tree, parent) + parseTree(parent)
+        case MapOpNode(parent, _)                                 => connectTwo(tree, parent) + parseTree(parent)
+        case OrderByNode(parent, ob)                              => connectTwo(tree, parent) + parseTree(parent)
+        case PrintOpNode(parent, _, _)                            => connectTwo(tree, parent) + parseTree(parent)
+        case SubqueryNode(parent)                                 => connectTwo(tree, parent) + parseTree(parent)
+        case SubquerySingleResultNode(parent)                     => connectTwo(tree, parent) + parseTree(parent)
+        case ProjectOpNode(parent, _, _)                          => connectTwo(tree, parent) + parseTree(parent)
+        case ViewOpNode(parent, _, name)                          => connectTwo(tree, parent) + parseTree(parent)
+      }
+    }
+
+    val dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+
+    val date = new Date()
+
+    val fileName = dateFormat.format(date) + "_" + queryName
+
+    val pw = new PrintWriter(new File("/Users/michal/Desktop/SemesterProject/visualisations/" + fileName + ".gv"))
+
+    pw.write("digraph G { \n	size=\"8,8\"\n")
+    val edges = parseTree(tree.rootNode)
+    pw.write(edges)
+    pw.write("}")
+    pw.close
   }
 }
