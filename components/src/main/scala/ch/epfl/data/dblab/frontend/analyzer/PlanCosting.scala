@@ -62,7 +62,9 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
 
   def getJoinTableList(node: OperatorNode, tableNames: List[String] = Nil): List[String] = {
     node match {
-      case ScanOpNode(table, _, _) => table.name :: tableNames
+      case ScanOpNode(table, _, _)    => table.name :: tableNames
+      case SelectOpNode(parent, _, _) => getJoinTableList(parent)
+      case AggOpNode(parent, _, _, _) => getJoinTableList(parent) ::: tableNames
       case JoinOpNode(left, right, _, _, leftAlias, rightAlias) => {
         (leftAlias, rightAlias) match {
           case ("", "") => getJoinTableList(left, tableNames) ::: getJoinTableList(right)
@@ -71,7 +73,8 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
           case (_, _)   => leftAlias :: rightAlias :: tableNames
         }
       }
-      case SelectOpNode(parent, _, _) => getJoinTableList(parent)
+      case SubqueryNode(parent)             => getJoinTableList(parent) ::: tableNames
+      case SubquerySingleResultNode(parent) => getJoinTableList(parent) ::: tableNames
     }
   }
 
