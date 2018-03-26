@@ -4,6 +4,10 @@ package schema
 
 import scala.language.implicitConversions
 import scala.collection.immutable.ListMap
+import frontend.parser.SQLAST._
+import schema._
+import frontend.optimizer._
+import frontend.analyzer._
 
 // FIXME make the return types for the values consistent (i.e. all of them Long or Double!)
 /**
@@ -46,7 +50,7 @@ case class Statistics() {
 
   def getCardinality(tableName: String) = getCardinalityOrElse(tableName, {
     // This means that the statistics module has been asked for either a) a table that does not exist
-    // in this schema or b) cardinality of an intermediate table that is being scanned over (see TPCH 
+    // in this schema or b) cardinality of an intermediate table that is being scanned over (see TPCH
     // Q13 for an example about how this may happen). In both cases, we throw a warning message and
     // return the biggest cardinality
     System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics do not include cardinality information for table " + tableName + ". Returning largest cardinality to compensate. This may lead to degraded performance due to unnecessarily large memory pool allocations.")
@@ -59,7 +63,6 @@ case class Statistics() {
       else max
     })
   }
-
   // TODO-GEN: The three following functions assume 1-N schemas. We have to make this explicit
   def getJoinOutputEstimation(tableNames: List[String]): Double = {
     val cardinalities = tableNames.map(getCardinality)
@@ -68,7 +71,6 @@ case class Statistics() {
     statsMap(statKey) = value
     value
   }
-
   def warningPerformance(key: String): Unit = {
     System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics value for $key not found.")
     System.out.println("Returning largest cardinality to compensate. This may lead to degraded performance due to unnecessarily large memory pool allocations.")
@@ -121,6 +123,36 @@ case class Statistics() {
     case None =>
       System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics value for QS_OUTPUT_SIZE_ESTIMATION not found. Returning largest cardinality to compensate.")
       getLargestCardinality().toInt // This is more than enough for all practical cases encountered so far
+  }
+
+  def getFilterSelectivity(condition: Expression): Double = condition match {
+    case tl: TopLevelStatement =>
+      throw new Exception(s"Make sure that you pattern match TopLevelStatement before ExpressionShape: $tl")
+    case Or(e1, e2) => {
+      val s1 = getFilterSelectivity(e1)
+      val s2 = getFilterSelectivity(e2)
+      (s1 + s2) - (s1 * s2)
+    }
+    case And(e1, e2) => getFilterSelectivity(e1) * getFilterSelectivity(e2)
+    case Equals(e1: FieldIdent, e2: FieldIdent) =>
+      //we assume Equals only contains attribute names or values
+      distinctAttributes.apply(e1.name) match {
+        case Some(v) => distinctAttributes.apply(e2.name) match {
+          case Some(a) => 1 / (v * a)
+          case None    => 1 / v
+        }
+        case None => {
+          System.out.println("Statistics doesn't contain information about attribute: " + e1.name)
+          1 //TODO
+        }
+      }
+
+    case NotEquals(e1, e2)      => 1 - getFilterSelectivity(condition)
+    case LessOrEqual(e1, e2)    => 0.5 //TODO
+    case LessThan(e1, e2)       => 0.5 //TODO
+    case GreaterOrEqual(e1, e2) => 1 - getFilterSelectivity(condition)
+    case GreaterThan(e1, e2)    => 1 - getFilterSelectivity(condition)
+    case _                      => throw new Exception("Uknown expression error in getFilterSelectivity method")
   }
 
   class AttributeHandler(prefix: String) {
