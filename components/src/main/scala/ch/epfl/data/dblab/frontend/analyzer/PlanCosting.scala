@@ -179,12 +179,6 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
     val joinWays = tableList.map(join => List((join._1, join._2, join._5, join._6), (join._2, join._1, join._5, join._6))).flatten.groupBy(_._1)
     val joinCosts = new scala.collection.mutable.HashMap[List[String], (Int, Int, List[String])](); //maps list of tables to best cost, size and joinPlan
 
-    /*for (v <- subsets.values) {
-      for (subset <- v) {
-        joinCosts.put(subset.toList.sorted, (Integer.MAX_VALUE, Nil))
-      }
-    }*/
-
     for (i <- 1 to tables.size) {
       for (subset <- subsets(i)) {
         //when a subset is only one table
