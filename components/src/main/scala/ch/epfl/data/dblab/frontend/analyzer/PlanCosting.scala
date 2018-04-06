@@ -50,13 +50,12 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
       case SelectOpNode(parent, _, _)  => tau * size(parent)
       case UnionAllOpNode(top, bottom) => size(top) * size(bottom)
       case JoinOpNode(left, right, condition, joinType, _, _) => {
-        /*val selinger = optimizeJoins(getJoinList(node))
-        System.out.println("##############")
+        val selinger = optimizeJoins(getJoinList(node))
+        /*System.out.println("##############")
         System.out.println("Cost: " + selinger._1)
         System.out.println("Size: " + selinger._2)
         System.out.println("Order (last to first): " + selinger._3)
         System.out.println("##############")*/
-
         //val tableList = getJoinTableList(node)
         //System.out.print(tableList)
         //schema.stats.getJoinOutputEstimation(tableList)
@@ -178,7 +177,7 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
     val tables = tableList.map(join => List(join._1, join._2)).flatten.toSet
     val subsets = tables.subsets.toList.groupBy(_.size).filter(_._1 != 0)
     val joinWays = tableList.map(join => List((join._1, join._2, join._5, join._6), (join._2, join._1, join._5, join._6))).flatten.groupBy(_._1)
-    val joinCosts = new scala.collection.mutable.HashMap[List[String], (Int, Int, List[String])](); //maps list of tables to best cost and joinPlan
+    val joinCosts = new scala.collection.mutable.HashMap[List[String], (Int, Int, List[String])](); //maps list of tables to best cost, size and joinPlan
 
     /*for (v <- subsets.values) {
       for (subset <- v) {
@@ -190,6 +189,7 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
       for (subset <- subsets(i)) {
         //when a subset is only one table
         if (subset.size == 1) {
+
           var size = schema.stats.getCardinality(subset.head).toInt
           //is cost == size for one table?
           joinCosts.put(subset.toList.sorted, (size, size, subset.toList.sorted))
@@ -212,7 +212,9 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
                 case IndexNestedLoopJoin | NestedLoopJoin =>
                   size = max(getJoinOutputEstimation(join._3), costAndPlan1._2)
                   costAndPlan1._1 + lambda * costAndPlan1._2 * max(costAndPlan2._2 / costAndPlan1._2, 1)
-                case _ => max(costAndPlan2._2, costAndPlan1._2) + costAndPlan1._1 + costAndPlan2._1
+                case _ =>
+                  size = max(getJoinOutputEstimation(join._3), costAndPlan1._2)
+                  max(costAndPlan2._2, costAndPlan1._2) + costAndPlan1._1 + costAndPlan2._1
               }
               if (cost < bestPlan._1) {
                 bestPlan = (cost, size, table :: costAndPlan1._3)
@@ -223,7 +225,6 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
         joinCosts.put(subset.toList.sorted, bestPlan)
       }
     }
-    System.out.println(joinCosts)
     joinCosts.get(subsets(tables.size).head.toList.sorted) match {
       case Some(v) => v
       case None    => throw new Exception("Error while loading best join plan")

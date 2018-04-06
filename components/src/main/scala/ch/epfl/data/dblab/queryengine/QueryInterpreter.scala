@@ -12,6 +12,7 @@ import java.io.File
 import frontend.parser.OperatorAST._
 import config._
 import schema._
+import SQLAST._
 import java.util.Date
 import java.text.SimpleDateFormat;
 
@@ -78,19 +79,21 @@ object QueryInterpreter {
 
       // new SQLAnalyzer(schema).checkAndInfer(typedQuery)
       val operatorTree = new SQLToQueryPlan(schema).convert(typedQuery)
-      visualize(operatorTree, queryName + "_normal")
+
       val costingPlan = new PlanCosting(schema, operatorTree)
+      visualize(operatorTree, costingPlan, queryName + "_normal")
       System.out.println("Normal cost: " + costingPlan.cost())
-      //System.out.println(operatorTree)
+      System.out.println(operatorTree)
 
       if (Config.debugQueryPlan)
         System.out.println("Before Optimizer:\n" + operatorTree + "\n\n")
 
       val optimizerTree = new QueryPlanNaiveOptimizer(schema).optimize(operatorTree)
       // val optimizerTree = operatorTree
-      visualize(optimizerTree, queryName + "_optimized")
       val costingPlanOptimized = new PlanCosting(schema, optimizerTree)
+      visualize(optimizerTree, costingPlanOptimized, queryName + "_optimized")
       System.out.println("Optimized cost: " + costingPlan.cost())
+      System.out.println(optimizerTree)
 
       if (Config.debugQueryPlan)
         System.out.println("After Optimizer:\n" + optimizerTree + "\n\n")
@@ -133,7 +136,7 @@ object QueryInterpreter {
   def interpret(dataPath: String, filesToExecute: Map[String, List[String]]): Unit = {
     // Now run all queries specified
     val schema = readSchema(dataPath, (filesToExecute.get(".ddl") ++ filesToExecute.get(".ri")).flatten.toList)
-
+    addStats(schema)
     for (q <- filesToExecute.get(".sql").toList.flatten) {
       val resq = processQuery(schema, q)
 
@@ -167,36 +170,17 @@ object QueryInterpreter {
     }
   }
 
-  def visualize(tree: QueryPlanTree, queryName: String) {
+  def visualize(tree: QueryPlanTree, planCosting: PlanCosting, queryName: String, graphType: String = "simple") {
+    val simple = graphType.equals("simple")
+
     def parseTree(tree: OperatorNode): String = {
-      def getLabel(node: OperatorNode): String = {
-        node match {
-          case ScanOpNode(_, scanOpName, _)             => "SCAN " + scanOpName
-          case UnionAllOpNode(_, _)                     => "U"
-          case SelectOpNode(_, cond, _)                 => "Select " + cond.toString
-          case JoinOpNode(_, _, clause, joinType, _, _) => joinType + " " + clause.toString
-          case AggOpNode(_, aggs, gb, _)                => "Aggregate " + aggs.toString + " group by " + gb.map(_._2).toString
-          case MapOpNode(_, mapIndices)                 => "Map " + mapIndices.map(mi => mi._1 + " = " + mi._1 + " / " + mi._2).mkString(", ").toString
-          case OrderByNode(_, ob)                       => "Order by " + ob.map(ob => ob._1 + " " + ob._2).mkString(", ").toString
-          case PrintOpNode(_, projNames, limit) => "Project " + projNames.map(p => p._2 match {
-            case Some(al) => al
-            case None     => p._1
-          }).mkString(",").toString + {
-            if (limit != -1) ", limit = " + limit.toString
-            else ""
-          }
-          case SubqueryNode(parent)                        => "Subquery"
-          case SubquerySingleResultNode(parent)            => "Single subquery"
-          case ProjectOpNode(_, projNames, origFieldNames) => "Project " + (projNames zip origFieldNames).toString
-          case ViewOpNode(_, _, name)                      => "View " + name
-        }
-      }
+      val subquery = 0
 
       def connectTwo(node1: OperatorNode, node2: OperatorNode, alias: String = ""): String = {
         if (alias == "") {
-          "\"" + getLabel(node1) + "\" -> \"" + getLabel(node2) + "\";\n"
+          "\"" + getLabel(node1) + "\" -> \"" + getLabel(node2) + "\" [label=\"" + planCosting.size(node2) + "\"];\n"
         } else {
-          "\"" + getLabel(node1) + "\" -> \"" + alias + "\";\n"
+          "\"" + getLabel(node1) + "\" -> \"" + alias + "\" [label=\"" + planCosting.size(node2) + "\"];\n"
         }
       }
 
@@ -216,18 +200,152 @@ object QueryInterpreter {
       }
     }
 
-    val dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+    def getLabel(node: OperatorNode): String = {
+      node match {
+        case ScanOpNode(_, scanOpName, _)             => "SCAN " + scanOpName
+        case UnionAllOpNode(_, _)                     => "U"
+        case SelectOpNode(_, cond, _)                 => "Select " + cond.toString
+        case JoinOpNode(_, _, clause, joinType, _, _) => joinType + " " + clause.toString
+        case AggOpNode(_, aggs, gb, _)                => "Aggregate " + aggs.toString + " group by " + gb.map(_._2).toString
+        case MapOpNode(_, mapIndices)                 => "Map " + mapIndices.map(mi => mi._1 + " = " + mi._1 + " / " + mi._2).mkString(", ").toString
+        case OrderByNode(_, ob)                       => "Order by " + ob.map(ob => ob._1 + " " + ob._2).mkString(", ").toString
+        case PrintOpNode(_, projNames, limit) => "Project " + projNames.map(p => p._2 match {
+          case Some(al) => al
+          case None     => p._1
+        }).mkString(",").toString + {
+          if (limit != -1) ", limit = " + limit.toString
+          else ""
+        }
+        case SubqueryNode(parent)                        => "Subquery"
+        case SubquerySingleResultNode(parent)            => "Single subquery"
+        case ProjectOpNode(_, projNames, origFieldNames) => "Project " + (projNames zip origFieldNames).toString
+        case ViewOpNode(_, _, name)                      => "View " + name
+      }
+    }
+
+    def simplify(node: OperatorNode): String = node match {
+      case ScanOpNode(_, scanOpName, _)                                => ""
+      case UnionAllOpNode(top, bottom)                                 => "\"" + getLabel(node) + "\"" + " [label=\"∪\"];\n" + simplify(top) + simplify(bottom)
+      case SelectOpNode(parent, _, _)                                  => "\"" + getLabel(node) + "\"" + " [label=\"σ\"];\n" + simplify(parent)
+      case JoinOpNode(left, right, _, joinType, leftAlias, rightAlias) => "\"" + getLabel(node) + "\"" + " [label=\"⋈: " + joinType + "\"];\n" + simplify(left) + simplify(right)
+      case AggOpNode(parent, _, _, _)                                  => "\"" + getLabel(node) + "\"" + " [label=\"Γ\"];\n" + simplify(parent)
+      case MapOpNode(parent, _)                                        => "\"" + getLabel(node) + "\"" + " [label=\"X\"];\n" + simplify(parent)
+      case OrderByNode(parent, ob)                                     => "\"" + getLabel(node) + "\"" + " [label=\"SORT\"];\n" + simplify(parent)
+      case PrintOpNode(parent, _, _)                                   => "\"" + getLabel(node) + "\"" + " [label=\"Print\"];\n" + simplify(parent)
+      case SubqueryNode(parent)                                        => "\"" + getLabel(node) + "\"" + " [label=\"Subquery\"];\n" + simplify(parent)
+      case SubquerySingleResultNode(parent)                            => "\"" + getLabel(node) + "\"" + " [label=\"Subquery single\"];\n" + simplify(parent)
+      case ProjectOpNode(parent, _, _)                                 => "\"" + getLabel(node) + "\"" + " [label=\"π\"];\n" + simplify(parent)
+      case ViewOpNode(parent, _, name)                                 => "\"" + getLabel(node) + "\"" + " [label=\"View\"];\n" + simplify(parent)
+    }
+
+    val dateFormat = new SimpleDateFormat("MM-dd_HH-mm-ss");
 
     val date = new Date()
 
-    val fileName = dateFormat.format(date) + "_" + queryName
+    val graphSuffix = if (simple) "_simple" else "_full"
+    val fileName = queryName + "_" + dateFormat.format(date) + graphSuffix
 
     val pw = new PrintWriter(new File("/Users/michal/Desktop/SemesterProject/visualisations/" + fileName + ".gv"))
 
-    pw.write("digraph G { \n	size=\"8,8\"\n")
+    pw.write("digraph G { \n	size=\"8,8\"\nrankdir = TB;\nedge[dir=back];\n")
+    val simpleLabels = if (simple) simplify(tree.rootNode) else "gowno"
     val edges = parseTree(tree.rootNode)
-    pw.write(edges)
+    val result = simpleLabels + edges
+    pw.write(result)
     pw.write("}")
     pw.close
+  }
+
+  def addStats(tpchSchema: Schema) {
+    val YEARS = 7
+
+    val lineItemTable = tpchSchema.findTable("LINEITEM") match {
+      case Some(v) => v
+      case None    => throw new Exception("Can't find table LINEITEM")
+    }
+    val nationTable = tpchSchema.findTable("NATION") match {
+      case Some(v) => v
+      case None    => throw new Exception("Can't find table NATION")
+    }
+    val ordersTable = tpchSchema.findTable("ORDERS") match {
+      case Some(v) => v
+      case None    => throw new Exception("Can't find table ORDERS")
+    }
+    val customerTable = tpchSchema.findTable("CUSTOMER") match {
+      case Some(v) => v
+      case None    => throw new Exception("Can't find table CUSTOMER")
+    }
+    val regionTable = tpchSchema.findTable("REGION") match {
+      case Some(v) => v
+      case None    => throw new Exception("Can't find table REGION")
+    }
+    val supplierTable = tpchSchema.findTable("SUPPLIER") match {
+      case Some(v) => v
+      case None    => throw new Exception("Can't find table SUPPLIER")
+    }
+    val partTable = tpchSchema.findTable("PART") match {
+      case Some(v) => v
+      case None    => throw new Exception("Can't find table PART")
+    }
+    val partsuppTable = tpchSchema.findTable("PARTSUPP") match {
+      case Some(v) => v
+      case None    => throw new Exception("Can't find table PARTSUPP")
+    }
+
+    tpchSchema.stats += "CARDINALITY_ORDERS" -> ordersTable.rowCount
+    tpchSchema.stats += "CARDINALITY_CUSTOMER" -> customerTable.rowCount
+    tpchSchema.stats += "CARDINALITY_LINEITEM" -> lineItemTable.rowCount
+    tpchSchema.stats += "CARDINALITY_SUPPLIER" -> supplierTable.rowCount
+    tpchSchema.stats += "CARDINALITY_PARTSUPP" -> partsuppTable.rowCount
+    tpchSchema.stats += "CARDINALITY_PART" -> partTable.rowCount
+    tpchSchema.stats += "CARDINALITY_NATION" -> nationTable.rowCount
+    tpchSchema.stats += "CARDINALITY_REGION" -> regionTable.rowCount
+
+    tpchSchema.stats += "CARDINALITY_Q1GRP" -> 4
+    tpchSchema.stats += "CARDINALITY_Q3GRP" -> ordersTable.rowCount / 100
+    tpchSchema.stats += "CARDINALITY_Q9GRP" -> nationTable.rowCount * YEARS
+    tpchSchema.stats += "CARDINALITY_Q10GRP" -> customerTable.rowCount
+    tpchSchema.stats += "CARDINALITY_Q20GRP" -> supplierTable.rowCount
+
+    tpchSchema.stats += "DISTINCT_L_SHIPMODE" -> YEARS
+    tpchSchema.stats += "DISTINCT_L_RETURNFLAG" -> 3
+    tpchSchema.stats += "DISTINCT_L_LINESTATUS" -> 2
+    tpchSchema.stats += "DISTINCT_L_ORDERKEY" -> ordersTable.rowCount * 5
+    tpchSchema.stats += "DISTINCT_L_PARTKEY" -> partTable.rowCount
+    tpchSchema.stats += "DISTINCT_L_SUPPKEY" -> supplierTable.rowCount
+    tpchSchema.stats += "DISTINCT_N_NAME" -> nationTable.rowCount
+    tpchSchema.stats += "DISTINCT_N_NATIONKEY" -> nationTable.rowCount
+    tpchSchema.stats += "DISTINCT_O_SHIPPRIORITY" -> 1
+    tpchSchema.stats += "DISTINCT_O_ORDERDATE" -> 365 * YEARS
+    tpchSchema.stats += "DISTINCT_O_ORDERPRIORITY" -> 5
+    tpchSchema.stats += "DISTINCT_O_ORDERKEY" -> ordersTable.rowCount * 5
+    tpchSchema.stats += "DISTINCT_O_COMMENT" -> ordersTable.rowCount
+    tpchSchema.stats += "DISTINCT_O_CUSTKEY" -> customerTable.rowCount
+    tpchSchema.stats += "DISTINCT_P_PARTKEY" -> partTable.rowCount
+    tpchSchema.stats += "DISTINCT_P_BRAND" -> 25
+    tpchSchema.stats += "DISTINCT_P_SIZE" -> 50
+    tpchSchema.stats += "DISTINCT_P_TYPE" -> 150
+    tpchSchema.stats += "DISTINCT_P_NAME" -> partTable.rowCount
+    tpchSchema.stats += "DISTINCT_PS_PARTKEY" -> partTable.rowCount
+    tpchSchema.stats += "DISTINCT_PS_SUPPKEY" -> supplierTable.rowCount
+    tpchSchema.stats += "DISTINCT_PS_AVAILQTY" -> 9999
+    tpchSchema.stats += "DISTINCT_S_NAME" -> supplierTable.rowCount
+    tpchSchema.stats += "DISTINCT_S_COMMENT" -> supplierTable.rowCount
+    tpchSchema.stats += "DISTINCT_S_NATIONKEY" -> nationTable.rowCount
+    tpchSchema.stats += "DISTINCT_S_SUPPKEY" -> supplierTable.rowCount
+    tpchSchema.stats += "DISTINCT_C_CUSTKEY" -> customerTable.rowCount
+    tpchSchema.stats += "DISTINCT_C_NAME" -> customerTable.rowCount
+    tpchSchema.stats += "DISTINCT_C_NATIONKEY" -> nationTable.rowCount
+    tpchSchema.stats += "DISTINCT_R_REGIONKEY" -> 5
+
+    tpchSchema.stats.conflicts("PS_PARTKEY") = 16
+    tpchSchema.stats.conflicts("P_PARTKEY") = 4
+    tpchSchema.stats.conflicts("L_PARTKEY") = 64
+    tpchSchema.stats.conflicts("L_ORDERKEY") = 8
+    tpchSchema.stats.conflicts("C_NATIONKEY") = customerTable.rowCount / 20
+    tpchSchema.stats.conflicts("S_NATIONKEY") = supplierTable.rowCount / 20
+
+    tpchSchema.stats += "NUM_YEARS_ALL_DATES" -> YEARS
+
   }
 }
