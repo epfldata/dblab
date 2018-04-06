@@ -374,6 +374,8 @@ object SQLAST {
   case object FullOuterJoin extends JoinType
   case object NaturalJoin extends JoinType
   case object AntiJoin extends JoinType
+  case object NestedLoopJoin extends JoinType
+  case object IndexNestedLoopJoin extends JoinType
 
   case class Join(left: Relation, right: Relation, tpe: JoinType, clause: Expression) extends Relation
 
