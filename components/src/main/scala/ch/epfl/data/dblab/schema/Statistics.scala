@@ -5,9 +5,6 @@ package schema
 import scala.language.implicitConversions
 import scala.collection.immutable.ListMap
 import frontend.parser.SQLAST._
-import schema._
-import frontend.optimizer._
-import frontend.analyzer._
 
 // FIXME make the return types for the values consistent (i.e. all of them Long or Double!)
 /**
@@ -138,21 +135,30 @@ case class Statistics() {
       //we assume Equals only contains attribute names or values
       distinctAttributes.apply(e1.name) match {
         case Some(v) => distinctAttributes.apply(e2.name) match {
-          case Some(a) => 1 / (v * a)
-          case None    => 1 / v
+          case Some(a) => 1.0 / (v * a)
+          case None    => 1.0 / v
         }
         case None => {
           System.out.println("Statistics doesn't contain information about attribute: " + e1.name)
           1 //TODO
         }
       }
-
-    case NotEquals(e1, e2)      => 1 - getFilterSelectivity(condition)
+    case Equals(fi: FieldIdent, lit: LiteralExpression) => distinctAttributes.apply(fi.name) match {
+      case Some(v) => 1.0 / v
+      case None    => 1.0
+    }
+    case NotEquals(e1, e2)      => 1 - getFilterSelectivity(Equals(e1, e2))
     case LessOrEqual(e1, e2)    => 0.5 //TODO
     case LessThan(e1, e2)       => 0.5 //TODO
-    case GreaterOrEqual(e1, e2) => 1 - getFilterSelectivity(condition)
-    case GreaterThan(e1, e2)    => 1 - getFilterSelectivity(condition)
-    case _                      => throw new Exception("Uknown expression error in getFilterSelectivity method")
+    case GreaterOrEqual(e1, e2) => 1 - getFilterSelectivity(LessThan(e1, e2))
+    case GreaterThan(e1, e2)    => 1 - getFilterSelectivity(LessOrEqual(e1, e2))
+    case _ =>
+      System.out.println("Unknown expression error in getFilterSelectivity method: " + condition)
+      1
+  }
+
+  def getJoinType(tableName1: String, tableName2: String, expr: Expression): JoinType = {
+    ???
   }
 
   class AttributeHandler(prefix: String) {

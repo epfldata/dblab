@@ -3,32 +3,33 @@ package dblab
 package frontend
 package analyzer
 
-import parser.CalcAST._
-import sc.pardis.search.CostingContext
-import sc.pardis.ast.Node
 import schema._
-import frontend.parser._
 import parser.OperatorAST._
-import frontend.optimizer._
-import frontend.analyzer._
 import ch.epfl.data.dblab.frontend.parser.SQLAST._
+
 import scala.math._
-import collection.mutable.HashMap
 
 class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
   val tau = 0.2
   val lambda = 2
+  val tableFilters = new scala.collection.mutable.HashMap[String, List[Expression]]()
+  val tableJoins = new scala.collection.mutable.HashMap[String, List[Expression]]()
+  getExpressions()
+  val filterExprs = tableFilters.map(t => t._1 -> t._2.tail.foldLeft(t._2.head)((a: Expression, b: Expression) => And(a, b)))
 
   def cost(node: OperatorNode = queryPlan.rootNode): Double = {
     node match {
-      case ScanOpNode(table, _, _)     => tau * size(node)
+      case ScanOpNode(_, _, _)         => size(node)
       case SelectOpNode(parent, _, _)  => tau * size(parent) + cost(parent)
       case UnionAllOpNode(top, bottom) => cost(top) + cost(bottom) + size(top) * size(bottom)
       case JoinOpNode(left, right, _, joinType, _, _) =>
         joinType match {
-          case IndexNestedLoopJoin | NestedLoopJoin => cost(left) + lambda * size(left) * max(size(node) / size(left), 1)
-          case HashJoin                             => size(node) + cost(left) + cost(right)
-          case _                                    => size(left) * size(right)
+          case IndexNestedLoopJoin | NestedLoopJoin =>
+            val result = cost(left) + lambda * size(left) * max(size(node) / size(left), 1)
+            //System.out.println("Cost: " + cost(left) + " + " + lambda * size(left) + " * " + size(node) + " / " + size(left) + " = " + result)
+            result
+          case HashJoin => size(node) + cost(left) + cost(right)
+          case _        => size(left) * size(right)
         }
       case AggOpNode(parent, _, _, _) => size(parent) + cost(parent)
       case MapOpNode(parent, _)       => size(parent) + cost(parent)
@@ -48,7 +49,7 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
     case ScanOpNode(table, _, _)     => schema.stats.getCardinality(table.name)
     case SelectOpNode(parent, _, _)  => tau * size(parent)
     case UnionAllOpNode(top, bottom) => size(top) * size(bottom)
-    case JoinOpNode(left, right, condition, joinType, _, rightAlias) => joinType match {
+    case JoinOpNode(left, right, condition, joinType, _, _) => joinType match {
       //getJoinOutputEstimation(condition, size(left).toInt, rightAlias) //fix this
       case AntiJoin                             => size(left)
       case HashJoin                             => max(size(left), size(right))
@@ -68,6 +69,75 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
     case SubquerySingleResultNode(parent) => size(parent)
     case ProjectOpNode(parent, _, _)      => size(parent)
     case ViewOpNode(parent, _, _)         => size(parent)
+  }
+
+  def registerExpression(e: Expression, fi: FieldIdent, map: scala.collection.mutable.HashMap[String, List[Expression]]): Unit = {
+    val tableName = fi.qualifier match {
+      case Some(v) => v
+      case None    => fi.name
+    }
+    map.put(tableName, map.get(tableName) match {
+      case Some(v) => if (v.contains(e)) v else e :: v
+      case None    => List(e)
+    })
+  }
+
+  def parseExpression(e: Expression) {
+    e match {
+      case And(e1, e2) => {
+        parseExpression(e1)
+        parseExpression(e2)
+      }
+      case Or(lhs, rhs) =>
+      case Equals(fi1: FieldIdent, fi2: FieldIdent) => {
+        registerExpression(e, fi1, tableJoins)
+        registerExpression(e, fi2, tableJoins)
+      }
+      case Equals(fi: FieldIdent, lit: LiteralExpression) =>
+        registerExpression(e, fi, tableFilters)
+      case NotEquals(fi: FieldIdent, lit: LiteralExpression)      => registerExpression(e, fi, tableFilters)
+      case GreaterThan(fi: FieldIdent, lit: LiteralExpression)    => registerExpression(e, fi, tableFilters)
+      case GreaterOrEqual(fi: FieldIdent, lit: LiteralExpression) => registerExpression(e, fi, tableFilters)
+      case LessThan(fi: FieldIdent, lit: LiteralExpression)       => registerExpression(e, fi, tableFilters)
+      case LessThan(fi1: FieldIdent, fi2: FieldIdent) =>
+        registerExpression(e, fi1, tableJoins)
+        registerExpression(e, fi2, tableJoins)
+      case LessOrEqual(fi: FieldIdent, lit: LiteralExpression) => registerExpression(e, fi, tableFilters)
+      case Like(fi: FieldIdent, lit: LiteralExpression) => //registerExpression(e,fi,tableFilters)
+      case In(fi: FieldIdent, _) => //registerScanOpCond(fi, cond)
+      case _ =>
+
+      // TODO -- Can optimize further by looking at lhs and rhs recursively
+      //case GreaterThan(_, _) => //Some(cond)
+      //case LessThan(_, _) => //Some(cond)
+      //case LessOrEqual(_, _) => //Some(cond)
+      //case Not(_) => //Some(cond) // TODO: can this be optimized?
+    }
+  }
+
+  def getExpressions(node: OperatorNode = queryPlan.rootNode) {
+    node match {
+      case SelectOpNode(parent, expression, _) => {
+        parseExpression(expression)
+        getExpressions(parent)
+      }
+      case UnionAllOpNode(top, bottom) => {
+        getExpressions(top)
+        getExpressions(bottom)
+      }
+      case JoinOpNode(left, right, clause, _, _, _) => {
+        parseExpression(clause)
+        getExpressions(left)
+        getExpressions(right)
+      }
+      case AggOpNode(parent, _, _, _) => getExpressions(parent)
+      case MapOpNode(parent, _) => getExpressions(parent)
+      case OrderByNode(parent, _) => getExpressions(parent)
+      case PrintOpNode(parent, _, _) => getExpressions(parent)
+      case ProjectOpNode(parent, _, _) => getExpressions(parent)
+      case ViewOpNode(parent, _, _) => getExpressions(parent)
+      case SubqueryNode(_) | SubquerySingleResultNode(_) | ScanOpNode(_, _, _) =>
+    }
   }
 
   def getJoinTableList(node: OperatorNode, tableNames: List[String] = Nil): List[String] = {
@@ -205,6 +275,12 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
         case _                    => None
       }
       case LessThan(e1, e2) => None
+      case NotEquals(e1: FieldIdent, e2: FieldIdent) => (e1.qualifier, e2.qualifier) match {
+        case (Some(`tableName1`), Some(`tableName2`))                   => Some((e1.name, e2.name))
+        case (Some(`tableName2`), Some(`tableName1`))                   => Some((e2.name, e1.name))
+        case (Some(_), Some(`tableName1`)) | (Some(`tableName1`), None) => Some((e1.name, ""))
+        case (Some(_), Some(`tableName2`)) | (Some(`tableName2`), None) => Some(("", e2.name))
+      }
     }
   }
 
