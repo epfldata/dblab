@@ -2,7 +2,6 @@ package ch.epfl.data
 package dblab
 package queryengine
 
-import schema._
 import frontend.parser._
 import frontend.optimizer._
 import frontend.analyzer._
@@ -12,7 +11,6 @@ import java.io.File
 import frontend.parser.OperatorAST._
 import config._
 import schema._
-import SQLAST._
 import java.util.Date
 import java.text.SimpleDateFormat
 import sc.pardis.types._
@@ -86,35 +84,43 @@ object QueryInterpreter {
 
       val costingPlan = new PlanCosting(schema, operatorTree)
       val costingPlanJoins = new PlanCosting(schema, simpleOperatorTree)
-      //visualize(operatorTree, costingPlan, queryName + "_normal")
-      visualize(simpleOperatorTree, costingPlanJoins, queryName + "_before")
+      visualize(operatorTree, costingPlan, queryName + "_normal", false)
+      //visualize(simpleOperatorTree, costingPlanJoins, queryName + "_before")
       System.out.println("Normal cost: " + costingPlanJoins.cost())
       System.out.println(operatorTree)
 
       if (Config.debugQueryPlan)
         System.out.println("Before Optimizer:\n" + operatorTree + "\n\n")
 
+      System.out.println("Optimizing with selinger")
       val selingerOptimizerTree = selingerOptimizer.optimize(operatorTree)
-      val selingerOptimizerSimple = selingerOptimizer.simplifyJoinTree(selingerOptimizerTree.rootNode)
-      val selingerCosting = new PlanCosting(schema, new QueryPlanTree(selingerOptimizerSimple, new ArrayBuffer()))
-      val selingeredTree = new QueryPlanTree(selingerOptimizerSimple, new ArrayBuffer())
-      System.out.println("Optimized joins: \n" + selingeredTree)
-      visualize(selingeredTree, selingerCosting, queryName + "_after")
+      System.out.println("End of selinger optimizing")
+      val selingerCosting = new PlanCosting(schema, selingerOptimizerTree)
+      System.out.println("Optimized joins: \n" + selingerOptimizerTree)
+      visualize(selingerOptimizerTree, selingerCosting, queryName + "_after", false)
+      visualize(selingerOptimizerTree, selingerCosting, queryName + "_after", true)
       System.out.println("Optimized cost: " + selingerCosting.cost())
 
       val optimizerTree = new QueryPlanNaiveOptimizer(schema).optimize(operatorTree)
       // val optimizerTree = operatorTree
-      //val costingPlanOptimized = new PlanCosting(schema, optimizerTree)
+      val costingPlanOptimized = new PlanCosting(schema, optimizerTree)
       //visualize(optimizerTree, costingPlanOptimized, queryName + "_optimized")
 
       System.out.println(optimizerTree)
-
+      //costingPlanOptimized.getExpressions()
       if (Config.debugQueryPlan)
         System.out.println("After Optimizer:\n" + optimizerTree + "\n\n")
 
+      System.out.println("Normal result")
       PlanExecutor.executeQuery(optimizerTree, schema)
 
       val resq = scala.io.Source.fromFile(getOutputName).mkString
+
+      System.out.println("Selinger result")
+      PlanExecutor.executeQuery(selingerOptimizerTree, schema)
+
+      //val resOpt = scala.io.Source.fromFile(getOutputName).mkString
+      //System.out.println(resOpt)
 
       // if (Config.debugQueryPlan)
       resq
@@ -143,9 +149,8 @@ object QueryInterpreter {
       ddlInterpreter.getCurrSchema.stats += "NUM_YEARS_ALL_DATES" -> 7
       // System.out.println(ddlInterpreter.getCurrSchema.stats.mkString("\n"))
     }
-
+    //TPCHSchema.getSchema(dataPath, 1.0)
     ddlInterpreter.getCurrSchema
-    //TPCHSchema.getSchema("experimentation/sf0/", 1.0)
   }
 
   def interpret(dataPath: String, filesToExecute: Map[String, List[String]]): Unit = {
@@ -185,8 +190,7 @@ object QueryInterpreter {
     }
   }
 
-  def visualize(tree: QueryPlanTree, planCosting: PlanCosting, queryName: String, graphType: String = "simple", subquery: String = "") {
-    val simple = graphType.equals("simple")
+  def visualize(tree: QueryPlanTree, planCosting: PlanCosting, queryName: String, simple: Boolean = true, subquery: String = "") {
 
     def parseTree(tree: OperatorNode, suffix: String = ""): String = {
 
@@ -272,6 +276,7 @@ object QueryInterpreter {
 
   def addStats(tpchSchema: Schema): Schema = {
     val YEARS = 7
+    val SCALING_FACTOR = 10.0
 
     val lineItem = tpchSchema.findTable("LINEITEM") match {
       case Some(v) => v
@@ -382,49 +387,58 @@ object QueryInterpreter {
 
     val newSchema = new Schema(List(lineItemTable, regionTable, nationTable, supplierTable, partTable, partsuppTable, customerTable, ordersTable))
 
-    newSchema.stats += "CARDINALITY_ORDERS" -> ordersTable.rowCount
-    newSchema.stats += "CARDINALITY_CUSTOMER" -> customerTable.rowCount
-    newSchema.stats += "CARDINALITY_LINEITEM" -> lineItemTable.rowCount
-    newSchema.stats += "CARDINALITY_SUPPLIER" -> supplierTable.rowCount
-    newSchema.stats += "CARDINALITY_PARTSUPP" -> partsuppTable.rowCount
-    newSchema.stats += "CARDINALITY_PART" -> partTable.rowCount
+    newSchema.stats += "CARDINALITY_ORDERS" -> ordersTable.rowCount * SCALING_FACTOR
+    newSchema.stats += "CARDINALITY_CUSTOMER" -> customerTable.rowCount * SCALING_FACTOR
+    newSchema.stats += "CARDINALITY_LINEITEM" -> lineItemTable.rowCount * SCALING_FACTOR
+    newSchema.stats += "CARDINALITY_SUPPLIER" -> supplierTable.rowCount * SCALING_FACTOR
+    newSchema.stats += "CARDINALITY_PARTSUPP" -> partsuppTable.rowCount * SCALING_FACTOR
+    newSchema.stats += "CARDINALITY_PART" -> partTable.rowCount * SCALING_FACTOR
     newSchema.stats += "CARDINALITY_NATION" -> nationTable.rowCount
     newSchema.stats += "CARDINALITY_REGION" -> regionTable.rowCount
+    /*
+    System.out.println("CARDINALITY_ORDERS: " + ordersTable.rowCount)
+    System.out.println("CARDINALITY_CUSTOMER: " + customerTable.rowCount)
+    System.out.println("CARDINALITY_LINEITEM: " + lineItemTable.rowCount)
+    System.out.println("CARDINALITY_SUPPLIER: " + supplierTable.rowCount)
+    System.out.println("CARDINALITY_PARTSUPP: " + partsuppTable.rowCount)
+    System.out.println("CARDINALITY_PART: " + partTable.rowCount)
+    System.out.println("CARDINALITY_NATION: " + nationTable.rowCount)
+    System.out.println("CARDINALITY_REGION: " + regionTable.rowCount)*/
 
     newSchema.stats += "CARDINALITY_Q1GRP" -> 4
     newSchema.stats += "CARDINALITY_Q3GRP" -> ordersTable.rowCount / 100
     newSchema.stats += "CARDINALITY_Q9GRP" -> nationTable.rowCount * YEARS
-    newSchema.stats += "CARDINALITY_Q10GRP" -> customerTable.rowCount
-    newSchema.stats += "CARDINALITY_Q20GRP" -> supplierTable.rowCount
+    newSchema.stats += "CARDINALITY_Q10GRP" -> customerTable.rowCount * SCALING_FACTOR
+    newSchema.stats += "CARDINALITY_Q20GRP" -> supplierTable.rowCount * SCALING_FACTOR
 
     newSchema.stats += "DISTINCT_L_SHIPMODE" -> YEARS
     newSchema.stats += "DISTINCT_L_RETURNFLAG" -> 3
     newSchema.stats += "DISTINCT_L_LINESTATUS" -> 2
-    newSchema.stats += "DISTINCT_L_ORDERKEY" -> ordersTable.rowCount * 5
-    newSchema.stats += "DISTINCT_L_PARTKEY" -> partTable.rowCount
-    newSchema.stats += "DISTINCT_L_SUPPKEY" -> supplierTable.rowCount
+    newSchema.stats += "DISTINCT_L_ORDERKEY" -> ordersTable.rowCount * 5 * SCALING_FACTOR
+    newSchema.stats += "DISTINCT_L_PARTKEY" -> partTable.rowCount * SCALING_FACTOR
+    newSchema.stats += "DISTINCT_L_SUPPKEY" -> supplierTable.rowCount * SCALING_FACTOR
     newSchema.stats += "DISTINCT_N_NAME" -> nationTable.rowCount
     newSchema.stats += "DISTINCT_N_NATIONKEY" -> nationTable.rowCount
     newSchema.stats += "DISTINCT_O_SHIPPRIORITY" -> 1
     newSchema.stats += "DISTINCT_O_ORDERDATE" -> 365 * YEARS
     newSchema.stats += "DISTINCT_O_ORDERPRIORITY" -> 5
-    newSchema.stats += "DISTINCT_O_ORDERKEY" -> ordersTable.rowCount * 5
-    newSchema.stats += "DISTINCT_O_COMMENT" -> ordersTable.rowCount
-    newSchema.stats += "DISTINCT_O_CUSTKEY" -> customerTable.rowCount
-    newSchema.stats += "DISTINCT_P_PARTKEY" -> partTable.rowCount
+    newSchema.stats += "DISTINCT_O_ORDERKEY" -> ordersTable.rowCount * 5 * SCALING_FACTOR
+    newSchema.stats += "DISTINCT_O_COMMENT" -> ordersTable.rowCount * SCALING_FACTOR
+    newSchema.stats += "DISTINCT_O_CUSTKEY" -> customerTable.rowCount * SCALING_FACTOR
+    newSchema.stats += "DISTINCT_P_PARTKEY" -> partTable.rowCount * SCALING_FACTOR
     newSchema.stats += "DISTINCT_P_BRAND" -> 25
     newSchema.stats += "DISTINCT_P_SIZE" -> 50
     newSchema.stats += "DISTINCT_P_TYPE" -> 150
-    newSchema.stats += "DISTINCT_P_NAME" -> partTable.rowCount
-    newSchema.stats += "DISTINCT_PS_PARTKEY" -> partTable.rowCount
-    newSchema.stats += "DISTINCT_PS_SUPPKEY" -> supplierTable.rowCount
+    newSchema.stats += "DISTINCT_P_NAME" -> partTable.rowCount * SCALING_FACTOR
+    newSchema.stats += "DISTINCT_PS_PARTKEY" -> partTable.rowCount * SCALING_FACTOR
+    newSchema.stats += "DISTINCT_PS_SUPPKEY" -> supplierTable.rowCount * SCALING_FACTOR
     newSchema.stats += "DISTINCT_PS_AVAILQTY" -> 9999
-    newSchema.stats += "DISTINCT_S_NAME" -> supplierTable.rowCount
-    newSchema.stats += "DISTINCT_S_COMMENT" -> supplierTable.rowCount
+    newSchema.stats += "DISTINCT_S_NAME" -> supplierTable.rowCount * SCALING_FACTOR
+    newSchema.stats += "DISTINCT_S_COMMENT" -> supplierTable.rowCount * SCALING_FACTOR
     newSchema.stats += "DISTINCT_S_NATIONKEY" -> nationTable.rowCount
-    newSchema.stats += "DISTINCT_S_SUPPKEY" -> supplierTable.rowCount
-    newSchema.stats += "DISTINCT_C_CUSTKEY" -> customerTable.rowCount
-    newSchema.stats += "DISTINCT_C_NAME" -> customerTable.rowCount
+    newSchema.stats += "DISTINCT_S_SUPPKEY" -> supplierTable.rowCount * SCALING_FACTOR
+    newSchema.stats += "DISTINCT_C_CUSTKEY" -> customerTable.rowCount * SCALING_FACTOR
+    newSchema.stats += "DISTINCT_C_NAME" -> customerTable.rowCount * SCALING_FACTOR
     newSchema.stats += "DISTINCT_C_NATIONKEY" -> nationTable.rowCount
     newSchema.stats += "DISTINCT_R_REGIONKEY" -> 5
 

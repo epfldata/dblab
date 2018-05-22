@@ -16,15 +16,22 @@ case class Statistics() {
   private val CARDINALITY_PREFIX = "CARDINALITY_"
   private val DISTINCT_PREFIX = "DISTINCT_"
   private val statsMap = new scala.collection.mutable.HashMap[String, Double]()
+
   case class Dependency(name: String, func: Double => Double)
+
   private val statsDependencyMap = new scala.collection.mutable.HashMap[String, Dependency]()
+
   private def format(name: String) = name.replaceAll("Record", "").replaceAll("Type", "").
     replaceAll("\\(", "_").replaceAll("\\)", "").replaceAll("\\[", "_").replaceAll("\\]", "").replaceAll("\\ ", "").replaceAll("\\[", "").replaceAll(",", "_").toUpperCase()
 
   def +=(nameAndValue: (String, Double)) = statsMap += (format(nameAndValue._1) -> nameAndValue._2)
+
   def +=(name: String, value: Double) = statsMap += (format(name) -> value)
+
   def mkString(delim: String) = ListMap(statsMap.toSeq.sortBy(_._1): _*).mkString("\n========= STATISTICS =========\n", delim, "\n==============================\n")
+
   def increase(nameAndValue: (String, Double)) = statsMap += format(nameAndValue._1) -> (statsMap.getOrElse(format(nameAndValue._1), 0.0) + nameAndValue._2)
+
   def apply(statName: String): Double = statsMap(statName) // TODO-GEN: will die
   def addDependency(name1: String, name2: String, func: Double => Double): Unit = {
     statsDependencyMap += format(name1) -> Dependency(format(name2), func)
@@ -60,6 +67,7 @@ case class Statistics() {
       else max
     })
   }
+
   // TODO-GEN: The three following functions assume 1-N schemas. We have to make this explicit
   def getJoinOutputEstimation(tableNames: List[String]): Double = {
     val cardinalities = tableNames.map(getCardinality)
@@ -68,6 +76,7 @@ case class Statistics() {
     statsMap(statKey) = value
     value
   }
+
   def warningPerformance(key: String): Unit = {
     System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics value for $key not found.")
     System.out.println("Returning largest cardinality to compensate. This may lead to degraded performance due to unnecessarily large memory pool allocations.")
@@ -85,8 +94,11 @@ case class Statistics() {
   })
 
   def conflicts = new AttributeHandler(CONFLICT_PREFIX)
+
   def cardinalities = new AttributeHandler(CARDINALITY_PREFIX)
+
   def querySpecificCardinalities = new AttributeHandler(QS_MEM_PREFIX)
+
   def distinctAttributes = new AttributeHandler(DISTINCT_PREFIX)
 
   def getEstimatedNumObjectsForType(typeName: String): Double = getEstimatedNumObjectsForTypeOrElse(typeName, {
@@ -128,7 +140,7 @@ case class Statistics() {
     case Or(e1, e2) => {
       val s1 = getFilterSelectivity(e1)
       val s2 = getFilterSelectivity(e2)
-      (s1 + s2) - (s1 * s2)
+      (s1 + s2)
     }
     case And(e1, e2) => getFilterSelectivity(e1) * getFilterSelectivity(e2)
     case Equals(e1: FieldIdent, e2: FieldIdent) =>
@@ -152,6 +164,14 @@ case class Statistics() {
     case LessThan(e1, e2)       => 0.5 //TODO
     case GreaterOrEqual(e1, e2) => 1 - getFilterSelectivity(LessThan(e1, e2))
     case GreaterThan(e1, e2)    => 1 - getFilterSelectivity(LessOrEqual(e1, e2))
+    case Like(fi: FieldIdent, e) =>
+      distinctAttributes.apply(fi.name) match {
+        case Some(v) => 0.1
+        case None => {
+          System.out.println("Statistics doesn't contain information about attribute: " + fi.name)
+          1 //TODO
+        }
+      }
     case _ =>
       System.out.println("Unknown expression error in getFilterSelectivity method: " + condition)
       1
@@ -163,10 +183,13 @@ case class Statistics() {
 
   class AttributeHandler(prefix: String) {
     def update(attrName: String, value: Long): Unit = statsMap(prefix + format(attrName)) = value.toInt
+
     def +=(attrName: String, value: Long): Unit = apply(attrName) match {
       case Some(v) => update(attrName, v + value.toInt)
       case None    => update(attrName, value)
     }
+
     def apply(attrName: String): Option[Int] = statsMap.get(prefix + format(attrName)).map(_.toInt)
   }
+
 }
