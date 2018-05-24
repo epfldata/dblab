@@ -15,8 +15,6 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
   val tableJoins = new scala.collection.mutable.HashMap[String, List[Expression]]()
   getExpressions()
   val filterExprs: scala.collection.mutable.HashMap[String, Expression] = tableFilters.map(t => t._1 -> t._2.tail.foldLeft(t._2.head)((a, b) => And(a, b)))
-  //val aggExpression = tableFilters.filter()
-  /*.map{case (key, value) => (key, value.toSet)}*/
 
   def cost(node: OperatorNode = queryPlan.rootNode): Double = {
     node match {
@@ -325,24 +323,6 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
     case SubquerySingleResultNode(parent) => Some(parent)
   }
 
-  def getJoinTableList(node: OperatorNode, tableNames: List[String] = Nil): List[String] = {
-    node match {
-      case ScanOpNode(table, _, _)    => table.name :: tableNames
-      case SelectOpNode(parent, _, _) => getJoinTableList(parent, tableNames)
-      case AggOpNode(parent, _, _, _) => getJoinTableList(parent, tableNames)
-      case JoinOpNode(left, right, _, _, leftAlias, rightAlias) => {
-        (leftAlias, rightAlias) match {
-          case ("", "") => getJoinTableList(left, tableNames) ::: getJoinTableList(right)
-          case (_, "")  => getJoinTableList(right, leftAlias :: tableNames)
-          case ("", _)  => getJoinTableList(left, rightAlias :: tableNames)
-          case (_, _)   => leftAlias :: rightAlias :: tableNames
-        }
-      }
-      case SubqueryNode(parent)             => getJoinTableList(parent, tableNames)
-      case SubquerySingleResultNode(parent) => getJoinTableList(parent, tableNames)
-    }
-  }
-
   def isPrimaryKey(column: String, tableName: String): Boolean = schema.findTable(tableName) match {
     case Some(table) => {
       table.primaryKey match {
@@ -359,62 +339,6 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
       }
     }
     case None => false
-  }
-
-  def getJoinOutputEstimation(condition: Expression, sizeLeft: Int, table: String): Int = condition match {
-    case Equals(e1: FieldIdent, e2: FieldIdent) => {
-      val tableName1 = e1.qualifier match {
-        case Some(v) => v
-        case None    => throw new Exception("Can't find table ")
-      }
-      val tableName2 = e2.qualifier match {
-        case Some(v) => v
-        case None    => throw new Exception("Can't find table")
-      }
-
-      if (isPrimaryKey(e1.name, tableName1)) {
-        if (tableName2 == table) {
-          schema.stats.getCardinality(tableName2).toInt
-        } else {
-          sizeLeft
-        }
-
-      } else if (isPrimaryKey(e2.name, tableName2)) {
-        if (tableName1 == table) {
-          schema.stats.getCardinality(tableName1).toInt
-        } else {
-          sizeLeft
-        }
-      } else {
-        //very general for now, returning size of bigger table in case of join that doesn't include a primary key
-        val cardinality1 = schema.stats.getCardinality(tableName1)
-        val cardinality2 = schema.stats.getCardinality(tableName2)
-        max(max(cardinality1, cardinality2), sizeLeft).toInt
-      }
-    }
-    case And(e1, e2)      => (schema.stats.getFilterSelectivity(e1) * getJoinOutputEstimation(e2, sizeLeft, table)).toInt
-    case LessThan(e1, e2) => (0.5 * sizeLeft).toInt //TODO
-  }
-
-  def getJoinList(node: OperatorNode, result: List[(String, String, Int, Int, Expression, JoinType)] = Nil): List[(String, String, Int, Int, Expression, JoinType)] = {
-    node match {
-      case ScanOpNode(table, _, _) => result
-      case JoinOpNode(left, _, clause, joinType, _, _) => {
-        val (tableName1, tableName2, size1, size2) = getTablesAndSizes(clause)
-        val thisJoin = (tableName1, tableName2, size1, size2, clause, joinType)
-        getJoinList(left, thisJoin :: result)
-      }
-      case SelectOpNode(parent, _, _)       => getJoinList(parent, result)
-      case AggOpNode(parent, _, _, _)       => getJoinList(parent, result)
-      case MapOpNode(parent, _)             => getJoinList(parent, result)
-      case OrderByNode(parent, _)           => getJoinList(parent, result)
-      case PrintOpNode(parent, _, _)        => getJoinList(parent, result)
-      case SubqueryNode(parent)             => result
-      case SubquerySingleResultNode(parent) => result
-      case ProjectOpNode(parent, _, _)      => getJoinList(parent, result)
-      case ViewOpNode(parent, _, _)         => getJoinList(parent, result)
-      case UnionAllOpNode(top, bottom)      => getJoinList(top) ::: getJoinList(bottom, result)
-    }
   }
 
   //assumes two tables are joined only on one attribute
@@ -445,19 +369,5 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
         case (Some(_), Some(`tableName2`)) | (Some(`tableName2`), None) => Some(("", e2.name))
       }
     }
-  }
-
-  def getTablesAndSizes(expression: Expression): (String, String, Int, Int) = expression match {
-    case And(e1, e2) => getTablesAndSizes(e1)
-    case Equals(e1: FieldIdent, e2: FieldIdent) =>
-      val tableName1 = e1.qualifier match {
-        case Some(v) => v
-        case None    => throw new Exception("Can't find table " + e1.qualifier)
-      }
-      val tableName2 = e2.qualifier match {
-        case Some(v) => v
-        case None    => throw new Exception("Can't find table " + e2.qualifier)
-      }
-      (tableName1, tableName2, schema.stats.getCardinality(tableName1).toInt, schema.stats.getCardinality(tableName1).toInt)
   }
 }
