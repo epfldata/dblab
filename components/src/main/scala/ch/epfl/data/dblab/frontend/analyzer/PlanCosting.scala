@@ -93,15 +93,55 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
     tableName1 == tableName2
   }
 
+  def getFieldIdents(e: Expression, res: List[FieldIdent] = Nil): List[FieldIdent] = e match {
+    case e1: FieldIdent            => e1 :: res
+    case Or(e1, e2)                => getFieldIdents(e1, res) ::: getFieldIdents(e2)
+    case And(e1, e2)               => getFieldIdents(e1, res) ::: getFieldIdents(e2)
+    case Equals(e1, e2)            => getFieldIdents(e1, res) ::: getFieldIdents(e2)
+    case NotEquals(e1, e2)         => getFieldIdents(e1, res) ::: getFieldIdents(e2)
+    case LessOrEqual(e1, e2)       => getFieldIdents(e1, res) ::: getFieldIdents(e2)
+    case LessThan(e1, e2)          => getFieldIdents(e1, res) ::: getFieldIdents(e2)
+    case GreaterOrEqual(e1, e2)    => getFieldIdents(e1, res) ::: getFieldIdents(e2)
+    case GreaterThan(e1, e2)       => getFieldIdents(e1, res) ::: getFieldIdents(e2)
+    case Like(e1, e2)              => getFieldIdents(e1, res) ::: getFieldIdents(e2)
+    case Add(e1, e2)               => getFieldIdents(e1, res) ::: getFieldIdents(e2)
+    case Subtract(e1, e2)          => getFieldIdents(e1, res) ::: getFieldIdents(e2)
+    case Multiply(e1, e2)          => getFieldIdents(e1, res) ::: getFieldIdents(e2)
+    case Divide(e1, e2)            => getFieldIdents(e1, res) ::: getFieldIdents(e2)
+    case StringConcat(e1, e2)      => getFieldIdents(e1, res) ::: getFieldIdents(e2)
+    case CountExpr(e1)             => getFieldIdents(e1, res)
+    case Sum(e1)                   => getFieldIdents(e1, res)
+    case Avg(e1)                   => getFieldIdents(e1, res)
+    case Min(e1)                   => getFieldIdents(e1, res)
+    case Max(e1)                   => getFieldIdents(e1, res)
+    case Year(e1)                  => getFieldIdents(e1, res)
+    case Upper(e1)                 => getFieldIdents(e1, res)
+    case Distinct(e1)              => getFieldIdents(e1, res)
+    case AllExp(e1)                => getFieldIdents(e1, res)
+    case SomeExp(e1)               => getFieldIdents(e1, res)
+    case Not(e1)                   => getFieldIdents(e1, res)
+    case Abs(e1)                   => getFieldIdents(e1, res)
+    case UnaryPlus(e1)             => getFieldIdents(e1, res)
+    case UnaryMinus(e1)            => getFieldIdents(e1, res)
+    case Exists(e1)                => getFieldIdents(e1, res)
+    case Case(e1, e2, e3)          => getFieldIdents(e1, res) ::: getFieldIdents(e2) ::: getFieldIdents(e3)
+    case In(e1, l2)                => getFieldIdents(e1, res)
+    case InList(e1, l2)            => getFieldIdents(e1, res)
+    case FunctionExp(name, inputs) => res
+    case Substring(e1, e2, e3)     => getFieldIdents(e1, res) ::: getFieldIdents(e2) ::: getFieldIdents(e3)
+    case _                         => res
+  }
+
   def parseExpression(e: Expression) {
     e match {
       case And(e1, e2) => {
         parseExpression(e1)
         parseExpression(e2)
       }
-      case Or(lhs, rhs) => {
-        parseExpression(lhs)
-        parseExpression(rhs)
+      case Or(_, _) => {
+        val fields = getFieldIdents(e)
+        val table = if (fields.size > 1) tableJoins else tableFilters
+        fields.map(registerExpression(e, _, table))
       }
       case Equals(fi1: FieldIdent, fi2: FieldIdent) => {
         if (sameTables(fi1, fi2)) {
@@ -288,6 +328,37 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
     case PrintOpNode(parent, _, _)        => getProjection(parent)
     case ProjectOpNode(parent, _, _)      => Some(node)
     case ViewOpNode(parent, _, _)         => getProjection(parent)
+    case SubqueryNode(parent)             => None
+    case SubquerySingleResultNode(parent) => None
+  }
+
+  def getPrint(node: OperatorNode = queryPlan.rootNode): Option[OperatorNode] = node match {
+    case SelectOpNode(parent, _, _) => getPrint(parent)
+    case ScanOpNode(_, _, _)        => None
+    case UnionAllOpNode(top, bottom) => {
+      getPrint(top) match {
+        case None => getPrint(bottom) match {
+          case Some(v) => Some(v)
+          case None    => None
+        }
+        case Some(a) => Some(a)
+      }
+    }
+    case JoinOpNode(left, right, _, _, _, _) => {
+      getPrint(right) match {
+        case None => getPrint(left) match {
+          case Some(v) => Some(v)
+          case None    => None
+        }
+        case Some(a) => Some(a)
+      }
+    }
+    case AggOpNode(parent, _, _, _)       => getPrint(parent)
+    case MapOpNode(parent, _)             => getPrint(parent)
+    case OrderByNode(parent, _)           => getPrint(parent)
+    case PrintOpNode(parent, _, _)        => Some(node)
+    case ProjectOpNode(parent, _, _)      => getPrint(parent)
+    case ViewOpNode(parent, _, _)         => getPrint(parent)
     case SubqueryNode(parent)             => None
     case SubquerySingleResultNode(parent) => None
   }
