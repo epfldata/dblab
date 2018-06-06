@@ -12,6 +12,7 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
   val tau = 0.2
   val lambda = 2
   val tableFilters = new scala.collection.mutable.HashMap[String, List[Expression]]()
+  val generalFilters = new scala.collection.mutable.ArrayBuffer[Expression]()
   val tableJoins = new scala.collection.mutable.HashMap[String, List[Expression]]()
   getExpressions()
   val filterExprs: scala.collection.mutable.HashMap[String, Expression] = tableFilters.map(t => t._1 -> t._2.tail.foldLeft(t._2.head)((a, b) => And(a, b)))
@@ -90,7 +91,7 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
       case Some(v) => v
       case None    => fi2.name
     }
-    tableName1 == tableName2
+    tableName1.equals(tableName2)
   }
 
   def getFieldIdents(e: Expression, res: List[FieldIdent] = Nil): List[FieldIdent] = e match {
@@ -138,11 +139,6 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
         parseExpression(e1)
         parseExpression(e2)
       }
-      case Or(_, _) => {
-        val fields = getFieldIdents(e)
-        val table = if (fields.size > 1) tableJoins else tableFilters
-        fields.map(registerExpression(e, _, table))
-      }
       case Equals(fi1: FieldIdent, fi2: FieldIdent) => {
         if (sameTables(fi1, fi2)) {
           registerExpression(e, fi1, tableFilters)
@@ -161,7 +157,6 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
       case LessThan(fi1: FieldIdent, fi2: FieldIdent) => {
         if (sameTables(fi1, fi2)) {
           registerExpression(e, fi1, tableFilters)
-          registerExpression(e, fi2, tableFilters)
         } else {
           registerExpression(e, fi1, tableJoins)
           registerExpression(e, fi2, tableJoins)
@@ -178,8 +173,15 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
         }
       }
       case Like(fi: FieldIdent, lit: LiteralExpression) => registerExpression(e, fi, tableFilters)
-      case In(fi: FieldIdent, _) => //registerScanOpCond(fi, cond)
-      case _ =>
+      case In(fi: FieldIdent, _)                        => //registerScanOpCond(fi, cond)
+      case a => {
+        val fields = getFieldIdents(e)
+        if (fields.size == 1) {
+          registerExpression(e, fields.head, tableFilters)
+        } else {
+          generalFilters.append(a)
+        }
+      }
 
     }
   }
@@ -415,6 +417,7 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
   //assumes two tables are joined only on one attribute
   def getJoinColumns(condition: Expression, tableName1: String, tableName2: String): Option[(String, String)] = {
     condition match {
+      case Equals(e1: IntLiteral, e2: IntLiteral) => if (e1.v == 1 && e2.v == 1) Some(("1", "1")) else None
       case Equals(e1: FieldIdent, e2: FieldIdent) => (e1.qualifier, e2.qualifier) match {
         case (Some(`tableName1`), Some(`tableName2`))                   => Some((e1.name, e2.name))
         case (Some(`tableName2`), Some(`tableName1`))                   => Some((e2.name, e1.name))

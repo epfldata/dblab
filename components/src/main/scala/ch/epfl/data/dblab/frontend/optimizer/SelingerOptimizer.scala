@@ -24,11 +24,27 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
   def getJoinNodes(node: OperatorNode, result: List[(String, String, OperatorNode)] = Nil): List[(String, String, OperatorNode)] = {
     node match {
       case ScanOpNode(_, _, _) => result
-      case JoinOpNode(left, _, clause, _, _, _) => {
-        val tableNames = getFieldIdents(clause).map(f => f.qualifier match {
-          case Some(v) => v
-          case None    => f.name
-        }).distinct
+      case JoinOpNode(left, right, clause, _, _, _) => {
+        val names = getFieldIdents(clause)
+        System.out.println("Names: " + names)
+        val tableNames = if (names.isEmpty) {
+          val leftNode = left.toList().collectFirst { case s: ScanOpNode => s } match {
+            case Some(v) => v.asInstanceOf[ScanOpNode]
+            case None    => throw new Exception("No ScanOpNode found")
+          }
+          val rightNode = right.toList().collectFirst { case s: ScanOpNode => s } match {
+            case Some(v) => v.asInstanceOf[ScanOpNode]
+            case None    => throw new Exception("No ScanOpNode found")
+          }
+          List(leftNode.qualifier match {
+            case Some(v) => v
+            case None    => leftNode.scanOpName
+          }, rightNode.qualifier match {
+            case Some(v) => v
+            case None    => leftNode.scanOpName
+          })
+        } else getTableNames(names)
+        System.out.println("tableNames: " + tableNames)
         val thisJoin = (tableNames(0), tableNames(1), node)
         getJoinNodes(left, thisJoin :: result)
       }
@@ -55,23 +71,24 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
   }
 
   def getTableNames(expression: Expression): Seq[String] = expression match {
-    case And(e1, e2)                                    => getTableNames(e1)
-    case Equals(e1: FieldIdent, e2: FieldIdent)         => getTableNames(Seq(e1, e2))
-    case NotEquals(e1: FieldIdent, e2: FieldIdent)      => getTableNames(Seq(e1, e2))
-    case LessThan(e1: FieldIdent, e2: FieldIdent)       => getTableNames(Seq(e1, e2))
-    case LessOrEqual(e1: FieldIdent, e2: FieldIdent)    => getTableNames(Seq(e1, e2))
+    case And(e1, e2) => getTableNames(e1)
+    case Equals(e1: FieldIdent, e2: FieldIdent) => getTableNames(Seq(e1, e2))
+    case NotEquals(e1: FieldIdent, e2: FieldIdent) => getTableNames(Seq(e1, e2))
+    case LessThan(e1: FieldIdent, e2: FieldIdent) => getTableNames(Seq(e1, e2))
+    case LessOrEqual(e1: FieldIdent, e2: FieldIdent) => getTableNames(Seq(e1, e2))
     case GreaterOrEqual(e1: FieldIdent, e2: FieldIdent) => getTableNames(Seq(e1, e2))
-    case GreaterThan(e1: FieldIdent, e2: FieldIdent)    => getTableNames(Seq(e1, e2))
+    case GreaterThan(e1: FieldIdent, e2: FieldIdent) => getTableNames(Seq(e1, e2))
+    case _ => Seq()
   }
 
   def reorderTables(expression: Expression): Expression = expression match {
     case And(e1, e2)                                    => And(reorderTables(e1), reorderTables(e2))
     case Equals(e1: FieldIdent, e2: FieldIdent)         => Equals(e2, e1)
     case NotEquals(e1: FieldIdent, e2: FieldIdent)      => NotEquals(e2, e1)
-    case LessThan(e1: FieldIdent, e2: FieldIdent)       => LessThan(e2, e1)
-    case LessOrEqual(e1: FieldIdent, e2: FieldIdent)    => LessOrEqual(e2, e1)
-    case GreaterOrEqual(e1: FieldIdent, e2: FieldIdent) => GreaterOrEqual(e2, e1)
-    case GreaterThan(e1: FieldIdent, e2: FieldIdent)    => GreaterThan(e2, e1)
+    case LessThan(e1: FieldIdent, e2: FieldIdent)       => GreaterOrEqual(e2, e1)
+    case LessOrEqual(e1: FieldIdent, e2: FieldIdent)    => GreaterThan(e2, e1)
+    case GreaterOrEqual(e1: FieldIdent, e2: FieldIdent) => LessThan(e2, e1)
+    case GreaterThan(e1: FieldIdent, e2: FieldIdent)    => LessOrEqual(e2, e1)
   }
 
   def simplifyJoinTree(node: OperatorNode): OperatorNode = node match {
@@ -149,7 +166,7 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
   def attachAggregationNode(node: OperatorNode, aggregation: AggOpNode, tables: Set[String]): OperatorNode = node match {
     case ScanOpNode(_, _, _) => AggOpNode(node, aggregation.aggs, aggregation.gb, aggregation.aggNames)
     case JoinOpNode(left, right, clause, joinType, leftAlias, rightAlias) => {
-      val tablesLeft = left.toList().collect {
+      /*val tablesLeft = left.toList().collect {
         case scan: ScanOpNode => scan
       }.map(_.table.name).toSet
       val tableRight = {
@@ -167,18 +184,22 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
             case None    => throw new Exception("Join contains no tables on the right!")
           }
         }
-      }
+      }*/
       //System.out.println("Left tables: " + tablesLeft + " right table: " + tableRight)
-      if (tables.subsetOf(tablesLeft) && !tables.contains(tableRight)) JoinOpNode(attachAggregationNode(left, aggregation, tables), right, clause, joinType, leftAlias, rightAlias)
-      else AggOpNode(node, aggregation.aggs, aggregation.gb, aggregation.aggNames)
+      //if (tables.subsetOf(tablesLeft) && !tables.contains(tableRight)) JoinOpNode(attachAggregationNode(left, aggregation, tables), right, clause, joinType, leftAlias, rightAlias)
+      //else AggOpNode(node, aggregation.aggs, aggregation.gb, aggregation.aggNames)
+      //Check whether the expression contains any of the tabless
+      val tablesInClause = getTableNames(clause).filter(tables.contains(_))
+      if (tablesInClause.size > 0) AggOpNode(node, aggregation.aggs, aggregation.gb, aggregation.aggNames)
+      else JoinOpNode(attachAggregationNode(left, aggregation, tables), right, clause, joinType, leftAlias, rightAlias)
     }
     case SelectOpNode(_, _, _)                            => AggOpNode(node, aggregation.aggs, aggregation.gb, aggregation.aggNames)
     case AggOpNode(parent, _, _, _)                       => attachAggregationNode(parent, aggregation, tables)
     case MapOpNode(parent, mapIndices)                    => MapOpNode(attachAggregationNode(parent, aggregation, tables), mapIndices)
     case OrderByNode(parent, _)                           => attachAggregationNode(parent, aggregation, tables)
     case PrintOpNode(parent, projNames, limit)            => PrintOpNode(attachAggregationNode(parent, aggregation, tables), projNames, limit)
-    case SubqueryNode(_)                                  => node
-    case SubquerySingleResultNode(_)                      => node
+    case SubqueryNode(_)                                  => AggOpNode(node, aggregation.aggs, aggregation.gb, aggregation.aggNames)
+    case SubquerySingleResultNode(_)                      => AggOpNode(node, aggregation.aggs, aggregation.gb, aggregation.aggNames)
     case ProjectOpNode(parent, projNames, origFieldNames) => ProjectOpNode(attachAggregationNode(parent, aggregation, tables), projNames, origFieldNames)
     case ViewOpNode(parent, projNames, name)              => ViewOpNode(attachAggregationNode(parent, aggregation, tables), projNames, name)
     case UnionAllOpNode(_, _)                             => AggOpNode(node, aggregation.aggs, aggregation.gb, aggregation.aggNames)
@@ -241,7 +262,7 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
 
   //fix the fieldIdent cases
   def getAggregationTables(node: AggOpNode): Set[String] = {
-    val fieldIdents = node.aggs.flatMap(a => getFieldIdents(a)) ++ node.gb.map(_._1)
+    val fieldIdents = node.aggs.flatMap(a => getFieldIdents(a)) ++ node.gb.map(_._1).flatMap(e => getFieldIdents(e))
     getTableNames(fieldIdents.asInstanceOf[List[FieldIdent]]).toSet
   }
 
@@ -250,13 +271,13 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
     val nodeList = getJoinNodes(queryNode)
 
     if (nodeList.isEmpty) {
-      /*costingPlan.getSubquery(queryNode).fold(plan = simplifyJoinTree(queryNode))(v => {val costing =
-                                                                                        new PlanCosting(schema, QueryPlanTree(v, new ArrayBuffer()))
-                                                                                        SubqueryNode(selinger(v, costing))})*/
+      /*costingPlan.getSubquery(queryNode).fold(plan = simplifyJoinTree(queryNode))(v => {val costing = new PlanCosting(schema, QueryPlanTree(v, new ArrayBuffer()))
+                                                                                          SubqueryNode(selinger(v, costing))})*/
       costingPlan.getSubquery(queryNode) match {
         case Some(v) => {
+          System.out.println("Found a subquery!")
           val costing = new PlanCosting(schema, QueryPlanTree(v, new ArrayBuffer()))
-          SubqueryNode(selinger(v, costing))
+          plan = SubqueryNode(selinger(v, costing))
         }
         case None => {
           plan = simplifyJoinTree(queryNode)
@@ -269,12 +290,13 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
 
       val joinCosts = new scala.collection.mutable.HashMap[List[String], JoinPlan](); //maps of table_list -> (best cost, size, joinPlan)
       val aliases = getTableAliases(queryNode).toMap
-
+      System.out.println("Tables: " + tables)
       for (i <- 1 to tables.size) {
         for (subset <- subsets(i)) {
           //when a subset is only one table
           if (i == 1) {
             val tableName = aliases.getOrElse(subset.head, throw new Exception(subset.head + " table doesn't exist!"))
+            System.out.println("Table name is " + tableName)
             schema.findTable(tableName) match {
               case Some(v) => {
                 val table = v
@@ -283,7 +305,8 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
                   case Some(a) => schema.stats.getFilterSelectivity(a)
                   case None    => 1
                 }
-                joinCosts.put(subset.toList.sorted, new JoinPlan((size * tableSelectivity).toLong, (size * tableSelectivity).toLong, new ScanOpNode(table, subset.head, None)))
+                joinCosts.put(subset.toList.sorted, new JoinPlan(size.toLong, (size * tableSelectivity).toLong, new ScanOpNode(table, subset.head, None)))
+                System.out.println(s"Best plan for $tableName is cost: $size and size: $size")
               }
               case None =>
                 if (tableName.equals("TMP_VIEW")) {
@@ -296,7 +319,6 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
                   }
                 } else None
             }
-            //System.out.println(s"Best plan for $tableName is cost: $size and size: $size")
           } else {
             var bestCost = Long.MaxValue
             for (table <- subset) {
@@ -308,12 +330,12 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
                     if (subsetToConsider.contains(join._2)) {
                       //get best plan and cost for one table
                       val rightPlan = joinCosts.getOrElse(List(table), throw new Exception(s"No key: $table exists in the joinCosts HashMap"))
-                      val bestJoin = getBestJoinPlan(leftPlan, rightPlan, join, costingPlan, false)
+                      val bestJoin = getBestJoinPlan(leftPlan, rightPlan, join, costingPlan)
 
                       if (bestJoin.cost < bestCost) {
-                        val bestPlan = JoinPlan(bestJoin.cost, bestJoin.size, bestJoin.plan)
                         bestCost = bestJoin.cost
-                        joinCosts.put(subset.toList.sorted, bestPlan)
+                        joinCosts.put(subset.toList.sorted, JoinPlan(bestJoin.cost, bestJoin.size, bestJoin.plan))
+                        System.out.println("Found a best plan for: " + subset)
                       }
                     }
                   }
@@ -325,7 +347,9 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
         }
       }
       plan = joinCosts.getOrElse(subsets(tables.size).head.toList.sorted, throw new Exception("Error while loading best join plan")).plan
+      System.out.println("Best plan is " + plan)
     }
+    System.out.println("Best plan is " + plan)
     restoreQuery(queryNode, costingPlan, plan)
   }
 
@@ -337,29 +361,40 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
     var size = max(right.size, left.size)
     var cost = size + right.cost + left.cost
     val (column1, column2) = costingPlan.getJoinColumns(joinNode.clause, table, join._2).getOrElse(throw new Exception("Expression " + join._3 + " contains no column names"))
-    val tables = getTableNames(joinNode.clause)
-    val clause = if (table.equals(tables(0))) reorderTables(joinNode.clause) else joinNode.clause
 
-    var plan = new JoinOpNode(left.plan, right.plan, clause, joinType, left.plan match {
-      case ScanOpNode(_, name, _) => name
-      case _                      => ""
-    }, table)
+    if (joinNode.clause.equals(Equals(IntLiteral(1), IntLiteral(1)))) {
+      val plan = new JoinOpNode(left.plan, right.plan, joinNode.clause, joinType, left.plan match {
+        case ScanOpNode(_, name, _) => name
+        case _                      => ""
+      }, table)
+      cost = left.size * right.size
+      size = left.size * right.size
+      JoinPlan(cost, size, plan)
+    } else {
+      val tables = getTableNames(joinNode.clause)
+      val clause = if (table.equals(tables(0))) reorderTables(joinNode.clause) else joinNode.clause
 
-    if (!table.equals("TMP_VIEW") && costingPlan.isPrimaryKey(column1, table)) {
-      size = left.size
-      val cost1 = left.cost + costingPlan.lambda * left.cost * max(size / left.cost, 1)
-      //System.out.println(column1 + " is a primary key (1st if) of " + table)
-      //System.out.println("Hash cost: " + cost + " INL cost: " + cost1)
-      if (cost1 < cost) {
-        joinType = IndexNestedLoopJoin
-        cost = cost1
-        plan = new JoinOpNode(left.plan, right.plan, clause, if (physical) IndexNestedLoopJoin else joinNode.joinType, left.plan match {
-          case ScanOpNode(_, name, _) => name
-          case _                      => ""
-        }, table)
+      var plan = new JoinOpNode(left.plan, right.plan, clause, joinType, left.plan match {
+        case ScanOpNode(_, name, _) => name
+        case _                      => ""
+      }, table)
+
+      if (!table.equals("TMP_VIEW") && costingPlan.isPrimaryKey(column1, table)) {
+        size = left.size
+        val cost1 = left.cost + costingPlan.lambda * left.size * max(size / left.cost, 1)
+        //System.out.println(column1 + " is a primary key (1st if) of " + table)
+        //System.out.println("Hash cost: " + cost + " INL cost: " + cost1)
+        if (cost1 < cost) {
+          joinType = IndexNestedLoopJoin
+          cost = cost1
+          plan = new JoinOpNode(left.plan, right.plan, clause, if (physical) IndexNestedLoopJoin else joinNode.joinType, left.plan match {
+            case ScanOpNode(_, name, _) => name
+            case _                      => ""
+          }, table)
+        }
       }
+      JoinPlan(cost, size, plan)
     }
-    JoinPlan(cost, size, plan)
   }
 
   def restoreQuery(modelPlan: OperatorNode, costingPlan: PlanCosting, optimizedPlan: OperatorNode): OperatorNode = {
@@ -369,11 +404,13 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
     val projection = costingPlan.getProjection()
     val print = costingPlan.getPrint()
     val selections = costingPlan.filterExprs
+    val generalSelection = costingPlan.generalFilters
+    val plan = if (generalSelection.isEmpty) optimizedPlan else SelectOpNode(optimizedPlan, generalSelection.tail.foldLeft(generalSelection.head)((a, b) => And(a, b)), false)
     val resultWithAgg = aggregation match {
       case Some(v) => {
         val ag = v.asInstanceOf[AggOpNode]
         val tabs = getAggregationTables(ag)
-        attachAggregationNode(optimizedPlan, ag, tabs)
+        attachAggregationNode(plan, ag, tabs)
       }
       case None => optimizedPlan
     }

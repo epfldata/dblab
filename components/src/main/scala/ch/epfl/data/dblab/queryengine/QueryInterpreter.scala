@@ -96,7 +96,7 @@ object QueryInterpreter {
       val selingerOptimizerTree = selingerOptimizer.optimize(operatorTree)
       System.out.println("End of selinger optimizing")
       val selingerCosting = new PlanCosting(schema, selingerOptimizerTree)
-      System.out.println("Optimized joins: \n" + selingerOptimizerTree)
+      //System.out.println("Optimized joins: \n" + selingerOptimizerTree)
       visualize(selingerOptimizerTree, selingerCosting, queryName + "_after", false)
       visualize(selingerOptimizerTree, selingerCosting, queryName + "_after", true)
       System.out.println("Optimized cost: " + selingerCosting.cost())
@@ -104,9 +104,9 @@ object QueryInterpreter {
       val optimizerTree = new QueryPlanNaiveOptimizer(schema).optimize(operatorTree)
       // val optimizerTree = operatorTree
       val costingPlanOptimized = new PlanCosting(schema, optimizerTree)
-      //visualize(optimizerTree, costingPlanOptimized, queryName + "_optimized")
+      visualize(optimizerTree, costingPlanOptimized, queryName + "_optimized", false)
 
-      System.out.println(optimizerTree)
+      //System.out.println(optimizerTree)
       //costingPlanOptimized.getExpressions()
       if (Config.debugQueryPlan)
         System.out.println("After Optimizer:\n" + optimizerTree + "\n\n")
@@ -118,10 +118,12 @@ object QueryInterpreter {
 
       System.out.println("Selinger result")
       PlanExecutor.executeQuery(selingerOptimizerTree, schema)
+      System.out.println("Break1")
+      val resOpt = scala.io.Source.fromFile(getOutputName).mkString
+      System.out.println(resOpt)
+      System.out.println("Break2")
 
-      //val resOpt = scala.io.Source.fromFile(getOutputName).mkString
-      //System.out.println(resOpt)
-
+      System.out.println("Normal result")
       // if (Config.debugQueryPlan)
       resq
     }
