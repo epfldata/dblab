@@ -9,6 +9,12 @@ import ch.epfl.data.dblab.frontend.parser.SQLAST._
 
 import scala.math._
 
+/**
+  * Creates a costing plan for a given query based on estimated sizes of given nodes.
+  *
+  * @author Michal Pleskowicz
+  */
+
 class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
   val tau = 0.2
   val lambda = 2
@@ -18,16 +24,13 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
   val generalFilters = new scala.collection.mutable.ArrayBuffer[Expression]()
   val tableJoins = new scala.collection.mutable.HashMap[String, List[Expression]]()
   val aggFilter = new scala.collection.mutable.ArrayBuffer[Expression]()
-  getExpressions()
+  parseExpressions()
   val filterExprs: scala.collection.mutable.HashMap[String, Expression] = tableFilters.map(t => t._1 -> t._2.tail.foldLeft(t._2.head)((a, b) => And(a, b)))
 
   val costMap = new scala.collection.mutable.HashMap[OperatorNode, Double]
   val sizeMap = new scala.collection.mutable.HashMap[OperatorNode, Double]
-  val fullSize = sizing(queryPlan.rootNode)
-  val fullCost = costing(queryPlan.rootNode)
 
   val tables: Set[String] = removeSubquery(queryPlan.rootNode).toList().collect { case s: ScanOpNode => s }.map(_.table.name).toSet
-  System.out.println("Tables at beginning are: " + tables)
   val views: Set[String] = queryPlan.views.map(_.name).toSet
 
   def size(node: OperatorNode = queryPlan.rootNode): Double = sizeMap.getOrElse(node, sizing(node))
@@ -35,6 +38,7 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
   def cost(node: OperatorNode): Double = costMap.getOrElse(node, costing(node))
   def cost(plan: QueryPlanTree = queryPlan): Double = cost(queryPlan.rootNode) + queryPlan.views.map(v => cost(v)).sum
 
+  //based on http://www.vldb.org/pvldb/vol9/p204-leis.pdf
   def costing(node: OperatorNode = queryPlan.rootNode): Double = {
     node match {
       case ScanOpNode(_, _, _) =>
@@ -100,7 +104,7 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
         result
     }
   }
-
+  //based on https://cs.ulb.ac.be/public/_media/teaching/infoh417/slides-lect7.pdf
   def sizing(node: OperatorNode): Double = node match {
     case ScanOpNode(table, _, _) =>
       val cardinality = schema.stats.getCardinality(table.name)
@@ -271,7 +275,7 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
         val fields = getFieldIdents(e)
         if (fields.size == 1) {
           registerExpression(e, fields.head, tableFilters)
-        } else {
+        } else if(fields.size > 1){
           generalFilters.append(a)
         }
       }
@@ -279,27 +283,27 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
     }
   }
 
-  def getExpressions(node: OperatorNode = queryPlan.rootNode) {
+  def parseExpressions(node: OperatorNode = queryPlan.rootNode) {
     node match {
       case SelectOpNode(parent, expression, _) => {
         parseExpression(expression)
-        getExpressions(parent)
+        parseExpressions(parent)
       }
       case UnionAllOpNode(top, bottom) => {
-        getExpressions(top)
-        getExpressions(bottom)
+        parseExpressions(top)
+        parseExpressions(bottom)
       }
       case JoinOpNode(left, right, clause, _, _, _) => {
         parseExpression(clause)
-        getExpressions(left)
-        getExpressions(right)
+        parseExpressions(left)
+        parseExpressions(right)
       }
-      case AggOpNode(parent, _, _, _) => getExpressions(parent)
-      case MapOpNode(parent, _) => getExpressions(parent)
-      case OrderByNode(parent, _) => getExpressions(parent)
-      case PrintOpNode(parent, _, _) => getExpressions(parent)
-      case ProjectOpNode(parent, _, _) => getExpressions(parent)
-      case ViewOpNode(parent, _, _) => getExpressions(parent)
+      case AggOpNode(parent, _, _, _) => parseExpressions(parent)
+      case MapOpNode(parent, _) => parseExpressions(parent)
+      case OrderByNode(parent, _) => parseExpressions(parent)
+      case PrintOpNode(parent, _, _) => parseExpressions(parent)
+      case ProjectOpNode(parent, _, _) => parseExpressions(parent)
+      case ViewOpNode(parent, _, _) => parseExpressions(parent)
       case SubqueryNode(_) | SubquerySingleResultNode(_) | ScanOpNode(_, _, _) =>
     }
   }
