@@ -26,7 +26,7 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
       case ScanOpNode(_, _, _) => result
       case JoinOpNode(left, right, clause, _, _, _) => {
         val names = getFieldIdents(clause)
-        System.out.println("Names: " + names)
+        //System.out.println("Names: " + names)
         val tableNames = if (names.isEmpty) {
           val leftNode = left.toList().collectFirst { case s: ScanOpNode => s } match {
             case Some(v) => v.asInstanceOf[ScanOpNode]
@@ -44,7 +44,7 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
             case None    => leftNode.scanOpName
           })
         } else getTableNames(names)
-        System.out.println("tableNames: " + tableNames)
+        //System.out.println("tableNames: " + tableNames)
         val thisJoin = (tableNames(0), tableNames(1), node)
         getJoinNodes(left, thisJoin :: result)
       }
@@ -205,6 +205,10 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
     case UnionAllOpNode(_, _)                             => AggOpNode(node, aggregation.aggs, aggregation.gb, aggregation.aggNames)
   }
 
+  def attachAggregationNode(tree: OperatorNode, aggregationNode: AggOpNode): OperatorNode = {
+    AggOpNode(tree, aggregationNode.aggs, aggregationNode.gb, aggregationNode.aggNames)
+  }
+
   def attachOrderNode(tree: OperatorNode, orderNode: OrderByNode): OperatorNode = {
     OrderByNode(tree, orderNode.orderBy)
   }
@@ -271,11 +275,8 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
     val nodeList = getJoinNodes(queryNode)
 
     if (nodeList.isEmpty) {
-      /*costingPlan.getSubquery(queryNode).fold(plan = simplifyJoinTree(queryNode))(v => {val costing = new PlanCosting(schema, QueryPlanTree(v, new ArrayBuffer()))
-                                                                                          SubqueryNode(selinger(v, costing))})*/
       costingPlan.getSubquery(queryNode) match {
         case Some(v) => {
-          System.out.println("Found a subquery!")
           val costing = new PlanCosting(schema, QueryPlanTree(v, new ArrayBuffer()))
           plan = SubqueryNode(selinger(v, costing))
         }
@@ -290,13 +291,13 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
 
       val joinCosts = new scala.collection.mutable.HashMap[List[String], JoinPlan](); //maps of table_list -> (best cost, size, joinPlan)
       val aliases = getTableAliases(queryNode).toMap
-      System.out.println("Tables: " + tables)
+      //System.out.println("Tables: " + tables)
       for (i <- 1 to tables.size) {
         for (subset <- subsets(i)) {
           //when a subset is only one table
           if (i == 1) {
             val tableName = aliases.getOrElse(subset.head, throw new Exception(subset.head + " table doesn't exist!"))
-            System.out.println("Table name is " + tableName)
+            //System.out.println("Table name is " + tableName)
             schema.findTable(tableName) match {
               case Some(v) => {
                 val table = v
@@ -306,7 +307,7 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
                   case None    => 1
                 }
                 joinCosts.put(subset.toList.sorted, new JoinPlan(size.toLong, (size * tableSelectivity).toLong, new ScanOpNode(table, subset.head, None)))
-                System.out.println(s"Best plan for $tableName is cost: $size and size: $size")
+                //System.out.println(s"Best plan for $tableName is cost: $size and size: $size")
               }
               case None =>
                 if (tableName.equals("TMP_VIEW")) {
@@ -330,12 +331,12 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
                     if (subsetToConsider.contains(join._2)) {
                       //get best plan and cost for one table
                       val rightPlan = joinCosts.getOrElse(List(table), throw new Exception(s"No key: $table exists in the joinCosts HashMap"))
-                      val bestJoin = getBestJoinPlan(leftPlan, rightPlan, join, costingPlan)
+                      val bestJoin = getBestJoinPlan(leftPlan, rightPlan, join, costingPlan, true)
 
                       if (bestJoin.cost < bestCost) {
                         bestCost = bestJoin.cost
                         joinCosts.put(subset.toList.sorted, JoinPlan(bestJoin.cost, bestJoin.size, bestJoin.plan))
-                        System.out.println("Found a best plan for: " + subset)
+                        //System.out.println("Found a best plan for: " + subset)
                       }
                     }
                   }
@@ -347,9 +348,7 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
         }
       }
       plan = joinCosts.getOrElse(subsets(tables.size).head.toList.sorted, throw new Exception("Error while loading best join plan")).plan
-      System.out.println("Best plan is " + plan)
     }
-    System.out.println("Best plan is " + plan)
     restoreQuery(queryNode, costingPlan, plan)
   }
 
@@ -405,16 +404,23 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
     val print = costingPlan.getPrint()
     val selections = costingPlan.filterExprs
     val generalSelection = costingPlan.generalFilters
+    val aggSelection = costingPlan.aggFilter
     val plan = if (generalSelection.isEmpty) optimizedPlan else SelectOpNode(optimizedPlan, generalSelection.tail.foldLeft(generalSelection.head)((a, b) => And(a, b)), false)
-    val resultWithAgg = aggregation match {
+    /*val resultWithAgg = aggregation match {
       case Some(v) => {
         val ag = v.asInstanceOf[AggOpNode]
         val tabs = getAggregationTables(ag)
         attachAggregationNode(plan, ag, tabs)
       }
       case None => optimizedPlan
+    }*/
+    val resultWithAgg = aggregation.fold(plan)(v => attachAggregationNode(plan, v.asInstanceOf[AggOpNode]))
+    val resultWithAggFilter = if (aggSelection.isEmpty) resultWithAgg else {
+      System.out.println("Agg selection is " + aggSelection)
+      val cond = aggSelection.tail.foldLeft(aggSelection.head)((a, b) => And(a, b))
+      SelectOpNode(resultWithAgg, cond, false)
     }
-    val resultWithOrder = order.fold(resultWithAgg)(v => attachOrderNode(resultWithAgg, v.asInstanceOf[OrderByNode]))
+    val resultWithOrder = order.fold(resultWithAggFilter)(v => attachOrderNode(resultWithAggFilter, v.asInstanceOf[OrderByNode]))
     val resultWithMap = map.fold(resultWithOrder)(v => attachMapNode(resultWithOrder, v.asInstanceOf[MapOpNode]))
     val resultWithProjection = projection.fold(resultWithMap)(v => attachProjectionNode(resultWithMap, v.asInstanceOf[ProjectOpNode]))
     val resultWithPrint = print.fold(resultWithProjection)(v => attachPrintNode(resultWithProjection, v.asInstanceOf[PrintOpNode]))

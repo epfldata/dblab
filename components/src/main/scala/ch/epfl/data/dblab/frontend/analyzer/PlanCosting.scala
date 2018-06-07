@@ -6,69 +6,165 @@ package analyzer
 import schema._
 import parser.OperatorAST._
 import ch.epfl.data.dblab.frontend.parser.SQLAST._
+
 import scala.math._
 
 class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
   val tau = 0.2
   val lambda = 2
+  val blockSize = 1000
+
   val tableFilters = new scala.collection.mutable.HashMap[String, List[Expression]]()
   val generalFilters = new scala.collection.mutable.ArrayBuffer[Expression]()
   val tableJoins = new scala.collection.mutable.HashMap[String, List[Expression]]()
+  val aggFilter = new scala.collection.mutable.ArrayBuffer[Expression]()
   getExpressions()
   val filterExprs: scala.collection.mutable.HashMap[String, Expression] = tableFilters.map(t => t._1 -> t._2.tail.foldLeft(t._2.head)((a, b) => And(a, b)))
 
-  def cost(node: OperatorNode = queryPlan.rootNode): Double = {
+  val costMap = new scala.collection.mutable.HashMap[OperatorNode, Double]
+  val sizeMap = new scala.collection.mutable.HashMap[OperatorNode, Double]
+  val fullSize = sizing(queryPlan.rootNode)
+  val fullCost = costing(queryPlan.rootNode)
+
+  val tables: Set[String] = removeSubquery(queryPlan.rootNode).toList().collect { case s: ScanOpNode => s }.map(_.table.name).toSet
+  System.out.println("Tables at beginning are: " + tables)
+  val views: Set[String] = queryPlan.views.map(_.name).toSet
+
+  def size(node: OperatorNode = queryPlan.rootNode): Double = sizeMap.getOrElse(node, sizing(node))
+  def size(plan: QueryPlanTree): Double = sizeMap.getOrElse(plan.rootNode, sizing(plan.rootNode))
+  def cost(node: OperatorNode): Double = costMap.getOrElse(node, costing(node))
+  def cost(plan: QueryPlanTree = queryPlan): Double = cost(queryPlan.rootNode) + queryPlan.views.map(v => cost(v)).sum
+
+  def costing(node: OperatorNode = queryPlan.rootNode): Double = {
     node match {
-      case ScanOpNode(_, _, _)         => size(node)
-      case SelectOpNode(parent, _, _)  => tau * size(parent) + cost(parent)
-      case UnionAllOpNode(top, bottom) => cost(top) + cost(bottom) + size(top) * size(bottom)
+      case ScanOpNode(_, _, _) =>
+        val result = size(node)
+        costMap.put(node, result)
+        result
+      case SelectOpNode(parent, _, _) =>
+        val result = tau * size(parent) + cost(parent)
+        costMap.put(node, result)
+        result
+      case UnionAllOpNode(top, bottom) =>
+        val result = cost(top) + cost(bottom) + size(top) * size(bottom)
+        costMap.put(node, result)
+        result
       case JoinOpNode(left, right, _, joinType, _, _) =>
         joinType match {
           case IndexNestedLoopJoin | NestedLoopJoin =>
             val result = cost(left) + lambda * size(left) * max(size(node) / size(left), 1)
-            //System.out.println("Cost: " + cost(left) + " + " + lambda * size(left) + " * " + size(node) + " / " + size(left) + " = " + result)
+            costMap.put(node, result)
             result
-          case HashJoin => size(node) + cost(left) + cost(right)
-          case _        => size(left) * size(right)
+          case HashJoin =>
+            val result = size(node) + cost(left) + cost(right)
+            costMap.put(node, result)
+            result
+          case _ =>
+            val result = size(left) * size(right)
+            costMap.put(node, result)
+            result
         }
-      case AggOpNode(parent, _, _, _) => size(parent) + cost(parent)
-      case MapOpNode(parent, _)       => size(parent) + cost(parent)
+      case AggOpNode(parent, _, _, _) =>
+        val result = size(parent) + cost(parent)
+        costMap.put(node, result)
+        result
+      case MapOpNode(parent, _) =>
+        val result = size(parent) + cost(parent)
+        costMap.put(node, result)
+        result
       case OrderByNode(parent, _) => {
         val parent_size = size(parent)
-        parent_size * log10(parent_size) / log10(2) + cost(parent)
+        val result = parent_size * log10(parent_size) / log10(2) + cost(parent)
+        costMap.put(node, result)
+        result
       }
-      case PrintOpNode(parent, _, _)        => size(parent) + cost(parent)
-      case SubqueryNode(parent)             => cost(parent)
-      case SubquerySingleResultNode(parent) => cost(parent)
-      case ProjectOpNode(parent, _, _)      => size(parent) + cost(parent)
-      case ViewOpNode(parent, _, _)         => cost(parent)
+      case PrintOpNode(parent, _, _) =>
+        val result = size(parent) + cost(parent)
+        costMap.put(node, result)
+        result
+      case SubqueryNode(parent) =>
+        val result = costing(parent)
+        costMap.put(node, result)
+        result
+      case SubquerySingleResultNode(parent) =>
+        val result = costing(parent)
+        costMap.put(node, result)
+        result
+      case ProjectOpNode(parent, _, _) =>
+        val result = size(parent) + costing(parent)
+        costMap.put(node, result)
+        result
+      case ViewOpNode(parent, _, _) =>
+        val result = costing(parent)
+        costMap.put(node, result)
+        result
     }
   }
 
-  def size(node: OperatorNode): Double = node match {
-    case ScanOpNode(table, _, _)     => schema.stats.getCardinality(table.name)
-    case SelectOpNode(parent, e, _)  => schema.stats.getFilterSelectivity(e) * size(parent)
-    case UnionAllOpNode(top, bottom) => size(top) * size(bottom)
-    case JoinOpNode(left, right, condition, joinType, _, _) => joinType match {
-      //getJoinOutputEstimation(condition, size(left).toInt, rightAlias) //fix this
-      case AntiJoin                             => size(left)
-      case HashJoin                             => max(size(left), size(right))
-      case InnerJoin | NaturalJoin              => size(left) * size(right)
-      case LeftSemiJoin                         => size(left)
-      case LeftOuterJoin                        => size(left)
-      case RightOuterJoin                       => size(right)
-      case FullOuterJoin                        => size(left) * size(right)
-      case NestedLoopJoin | IndexNestedLoopJoin => size(left)
-
-    }
-    case AggOpNode(parent, _, _, _)       => size(parent)
-    case MapOpNode(parent, _)             => size(parent)
-    case OrderByNode(parent, _)           => size(parent)
-    case PrintOpNode(parent, _, _)        => size(parent)
-    case SubqueryNode(parent)             => size(parent)
-    case SubquerySingleResultNode(parent) => size(parent)
-    case ProjectOpNode(parent, _, _)      => size(parent)
-    case ViewOpNode(parent, _, _)         => size(parent)
+  def sizing(node: OperatorNode): Double = node match {
+    case ScanOpNode(table, _, _) =>
+      val cardinality = schema.stats.getCardinality(table.name)
+      sizeMap.put(node, cardinality)
+      cardinality
+    case SelectOpNode(parent, e, _) =>
+      val cardinality = schema.stats.getFilterSelectivity(e) * size(parent)
+      sizeMap.put(node, cardinality)
+      cardinality
+    case UnionAllOpNode(top, bottom) =>
+      val cardinality = sizing(top) * sizing(bottom)
+      sizeMap.put(node, cardinality)
+      cardinality
+    case JoinOpNode(left, right, condition, joinType, _, _) =>
+      if (condition.equals(Equals(IntLiteral(1), IntLiteral(1)))) {
+        val cardinality = size(left) * size(right)
+        sizeMap.put(node, cardinality)
+        cardinality
+      } else {
+        val cardinality = joinType match {
+          case AntiJoin                             => sizing(left)
+          case HashJoin                             => max(sizing(left), sizing(right))
+          case InnerJoin | NaturalJoin              => sizing(left) * sizing(right)
+          case LeftSemiJoin                         => sizing(left)
+          case LeftOuterJoin                        => sizing(left)
+          case RightOuterJoin                       => sizing(right)
+          case FullOuterJoin                        => sizing(left) * sizing(right)
+          case NestedLoopJoin | IndexNestedLoopJoin => sizing(left)
+        }
+        sizeMap.put(node, cardinality)
+        cardinality
+      }
+    case AggOpNode(parent, aggs, gb, aggNames) =>
+      val cardinality = if (gb.isEmpty) 1.0 else sizing(parent)
+      sizeMap.put(node, cardinality)
+      cardinality
+    case MapOpNode(parent, _) =>
+      val cardinality = sizing(parent)
+      sizeMap.put(node, cardinality)
+      cardinality
+    case OrderByNode(parent, _) =>
+      val cardinality = sizing(parent)
+      sizeMap.put(node, cardinality)
+      cardinality
+    case PrintOpNode(parent, _, _) =>
+      val cardinality = sizing(parent)
+      sizeMap.put(node, cardinality)
+      cardinality
+    case SubqueryNode(parent) =>
+      val cardinality = sizing(parent)
+      sizeMap.put(node, cardinality)
+      cardinality
+    case SubquerySingleResultNode(parent) =>
+      val cardinality = sizing(parent)
+      sizeMap.put(node, cardinality)
+      cardinality
+    case ProjectOpNode(parent, _, _) =>
+      val cardinality = sizing(parent)
+      sizeMap.put(node, cardinality)
+      cardinality
+    case ViewOpNode(parent, _, _) =>
+      val cardinality = sizing(parent)
+      sizeMap.put(node, cardinality)
+      cardinality
   }
 
   def registerExpression(e: Expression, fi: FieldIdent, map: scala.collection.mutable.HashMap[String, List[Expression]]): Unit = {
@@ -133,47 +229,44 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
     case _                         => res
   }
 
+  def decideExpression(e: Expression, fi1: FieldIdent, fi2: FieldIdent): Unit = {
+    if (sameTables(fi1, fi2)) {
+      registerExpression(e, fi1, tableFilters)
+      registerExpression(e, fi2, tableFilters)
+    } else {
+      val tableName1 = fi1.qualifier.getOrElse(fi1.name)
+      val tableName2 = fi2.qualifier.getOrElse(fi2.name)
+      val allTables = removeSubquery(queryPlan.rootNode).toList().collect { case s: ScanOpNode => s }.map(_.table.name).toSet
+      if (!Set(tableName1, tableName2).subsetOf(allTables)) {
+        aggFilter.append(e)
+      } else {
+        registerExpression(e, fi1, tableJoins)
+        registerExpression(e, fi2, tableJoins)
+      }
+    }
+  }
+
   def parseExpression(e: Expression) {
     e match {
       case And(e1, e2) => {
         parseExpression(e1)
         parseExpression(e2)
       }
-      case Equals(fi1: FieldIdent, fi2: FieldIdent) => {
-        if (sameTables(fi1, fi2)) {
-          registerExpression(e, fi1, tableFilters)
-          registerExpression(e, fi2, tableFilters)
-        } else {
-          registerExpression(e, fi1, tableJoins)
-          registerExpression(e, fi2, tableJoins)
-        }
-      }
+      case Equals(fi1: FieldIdent, fi2: FieldIdent) => decideExpression(e, fi1, fi2)
       case Equals(fi: FieldIdent, lit: LiteralExpression) =>
         registerExpression(e, fi, tableFilters)
       case NotEquals(fi: FieldIdent, lit: LiteralExpression)      => registerExpression(e, fi, tableFilters)
+      case NotEquals(fi1: FieldIdent, fi2: FieldIdent)            => decideExpression(e, fi1, fi2)
       case GreaterThan(fi: FieldIdent, lit: LiteralExpression)    => registerExpression(e, fi, tableFilters)
+      case GreaterThan(fi1: FieldIdent, fi2: FieldIdent)          => decideExpression(e, fi1, fi2)
       case GreaterOrEqual(fi: FieldIdent, lit: LiteralExpression) => registerExpression(e, fi, tableFilters)
+      case GreaterOrEqual(fi1: FieldIdent, fi2: FieldIdent)       => decideExpression(e, fi1, fi2)
       case LessThan(fi: FieldIdent, lit: LiteralExpression)       => registerExpression(e, fi, tableFilters)
-      case LessThan(fi1: FieldIdent, fi2: FieldIdent) => {
-        if (sameTables(fi1, fi2)) {
-          registerExpression(e, fi1, tableFilters)
-        } else {
-          registerExpression(e, fi1, tableJoins)
-          registerExpression(e, fi2, tableJoins)
-        }
-      }
-      case LessOrEqual(fi: FieldIdent, lit: LiteralExpression) => registerExpression(e, fi, tableFilters)
-      case LessOrEqual(fi1: FieldIdent, fi2: FieldIdent) => {
-        if (sameTables(fi1, fi2)) {
-          registerExpression(e, fi1, tableFilters)
-          registerExpression(e, fi2, tableFilters)
-        } else {
-          registerExpression(e, fi1, tableJoins)
-          registerExpression(e, fi2, tableJoins)
-        }
-      }
-      case Like(fi: FieldIdent, lit: LiteralExpression) => registerExpression(e, fi, tableFilters)
-      case In(fi: FieldIdent, _)                        => //registerScanOpCond(fi, cond)
+      case LessThan(fi1: FieldIdent, fi2: FieldIdent)             => decideExpression(e, fi1, fi2)
+      case LessOrEqual(fi: FieldIdent, lit: LiteralExpression)    => registerExpression(e, fi, tableFilters)
+      case LessOrEqual(fi1: FieldIdent, fi2: FieldIdent)          => decideExpression(e, fi1, fi2)
+      case Like(fi: FieldIdent, lit: LiteralExpression)           => registerExpression(e, fi, tableFilters)
+      case In(fi: FieldIdent, _)                                  => //registerScanOpCond(fi, cond)
       case a => {
         val fields = getFieldIdents(e)
         if (fields.size == 1) {
@@ -211,159 +304,11 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
     }
   }
 
-  //assumes only one aggregation per query (not counting subqueries)
-  def getAggregation(node: OperatorNode = queryPlan.rootNode): Option[OperatorNode] = node match {
-    case SelectOpNode(parent, _, _) => getAggregation(parent)
-    case ScanOpNode(_, _, _)        => None
-    case UnionAllOpNode(top, bottom) => {
-      getAggregation(top) match {
-        case None => getAggregation(bottom) match {
-          case Some(v) => Some(v)
-          case None    => None
-        }
-        case Some(a) => Some(a)
-      }
-    }
-    case JoinOpNode(left, right, _, _, _, _) => {
-      getAggregation(right) match {
-        case None => getAggregation(left) match {
-          case Some(v) => Some(v)
-          case None    => None
-        }
-        case Some(a) => Some(a)
-      }
-    }
-    case AggOpNode(parent, _, _, _)                    => Some(node)
-    case MapOpNode(parent, _)                          => getAggregation(parent)
-    case OrderByNode(parent, _)                        => getAggregation(parent)
-    case PrintOpNode(parent, _, _)                     => getAggregation(parent)
-    case ProjectOpNode(parent, _, _)                   => getAggregation(parent)
-    case ViewOpNode(parent, _, _)                      => getAggregation(parent)
-    case SubqueryNode(_) | SubquerySingleResultNode(_) => None
-  }
-
-  def getOrder(node: OperatorNode = queryPlan.rootNode): Option[OperatorNode] = node match {
-    case SelectOpNode(parent, _, _) => getOrder(parent)
-    case ScanOpNode(_, _, _)        => None
-    case UnionAllOpNode(top, bottom) => {
-      getOrder(top) match {
-        case None => getOrder(bottom) match {
-          case Some(v) => Some(v)
-          case None    => None
-        }
-        case Some(a) => Some(a)
-      }
-    }
-    case JoinOpNode(left, right, _, _, _, _) => {
-      getOrder(right) match {
-        case None => getOrder(left) match {
-          case Some(v) => Some(v)
-          case None    => None
-        }
-        case Some(a) => Some(a)
-      }
-    }
-    case AggOpNode(parent, _, _, _)                    => None
-    case MapOpNode(parent, _)                          => getOrder(parent)
-    case OrderByNode(parent, _)                        => Some(node)
-    case PrintOpNode(parent, _, _)                     => getOrder(parent)
-    case ProjectOpNode(parent, _, _)                   => getOrder(parent)
-    case ViewOpNode(parent, _, _)                      => getOrder(parent)
-    case SubqueryNode(_) | SubquerySingleResultNode(_) => None
-  }
-
-  def getMap(node: OperatorNode = queryPlan.rootNode): Option[OperatorNode] = node match {
-    case SelectOpNode(parent, _, _) => getMap(parent)
-    case ScanOpNode(_, _, _)        => None
-    case UnionAllOpNode(top, bottom) => {
-      getMap(top) match {
-        case None => getMap(bottom) match {
-          case Some(v) => Some(v)
-          case None    => None
-        }
-        case Some(a) => Some(a)
-      }
-    }
-    case JoinOpNode(left, right, _, _, _, _) => {
-      getMap(right) match {
-        case None => getMap(left) match {
-          case Some(v) => Some(v)
-          case None    => None
-        }
-        case Some(a) => Some(a)
-      }
-    }
-    case AggOpNode(parent, _, _, _)       => getMap(parent)
-    case MapOpNode(parent, _)             => Some(node)
-    case OrderByNode(parent, _)           => getMap(parent)
-    case PrintOpNode(parent, _, _)        => getMap(parent)
-    case ProjectOpNode(parent, _, _)      => getMap(parent)
-    case ViewOpNode(parent, _, _)         => getMap(parent)
-    case SubqueryNode(parent)             => None
-    case SubquerySingleResultNode(parent) => None
-  }
-
-  def getProjection(node: OperatorNode = queryPlan.rootNode): Option[OperatorNode] = node match {
-    case SelectOpNode(parent, _, _) => getProjection(parent)
-    case ScanOpNode(_, _, _)        => None
-    case UnionAllOpNode(top, bottom) => {
-      getProjection(top) match {
-        case None => getProjection(bottom) match {
-          case Some(v) => Some(v)
-          case None    => None
-        }
-        case Some(a) => Some(a)
-      }
-    }
-    case JoinOpNode(left, right, _, _, _, _) => {
-      getProjection(right) match {
-        case None => getProjection(left) match {
-          case Some(v) => Some(v)
-          case None    => None
-        }
-        case Some(a) => Some(a)
-      }
-    }
-    case AggOpNode(parent, _, _, _)       => getProjection(parent)
-    case MapOpNode(parent, _)             => getProjection(parent)
-    case OrderByNode(parent, _)           => getProjection(parent)
-    case PrintOpNode(parent, _, _)        => getProjection(parent)
-    case ProjectOpNode(parent, _, _)      => Some(node)
-    case ViewOpNode(parent, _, _)         => getProjection(parent)
-    case SubqueryNode(parent)             => None
-    case SubquerySingleResultNode(parent) => None
-  }
-
-  def getPrint(node: OperatorNode = queryPlan.rootNode): Option[OperatorNode] = node match {
-    case SelectOpNode(parent, _, _) => getPrint(parent)
-    case ScanOpNode(_, _, _)        => None
-    case UnionAllOpNode(top, bottom) => {
-      getPrint(top) match {
-        case None => getPrint(bottom) match {
-          case Some(v) => Some(v)
-          case None    => None
-        }
-        case Some(a) => Some(a)
-      }
-    }
-    case JoinOpNode(left, right, _, _, _, _) => {
-      getPrint(right) match {
-        case None => getPrint(left) match {
-          case Some(v) => Some(v)
-          case None    => None
-        }
-        case Some(a) => Some(a)
-      }
-    }
-    case AggOpNode(parent, _, _, _)       => getPrint(parent)
-    case MapOpNode(parent, _)             => getPrint(parent)
-    case OrderByNode(parent, _)           => getPrint(parent)
-    case PrintOpNode(parent, _, _)        => Some(node)
-    case ProjectOpNode(parent, _, _)      => getPrint(parent)
-    case ViewOpNode(parent, _, _)         => getPrint(parent)
-    case SubqueryNode(parent)             => None
-    case SubquerySingleResultNode(parent) => None
-  }
+  def getAggregation(node: OperatorNode = queryPlan.rootNode): Option[OperatorNode] = removeSubquery(node).toList.collectFirst { case a: AggOpNode => a }
+  def getOrder(node: OperatorNode = queryPlan.rootNode): Option[OperatorNode] = removeSubquery(node).toList.collectFirst { case o: OrderByNode => o }
+  def getMap(node: OperatorNode = queryPlan.rootNode): Option[OperatorNode] = removeSubquery(node).toList.collectFirst { case m: MapOpNode => m }
+  def getProjection(node: OperatorNode = queryPlan.rootNode): Option[OperatorNode] = removeSubquery(node).toList.collectFirst { case p: ProjectOpNode => p }
+  def getPrint(node: OperatorNode = queryPlan.rootNode): Option[OperatorNode] = removeSubquery(node).toList.collectFirst { case p: PrintOpNode => p }
 
   def getSubquery(node: OperatorNode = queryPlan.rootNode): Option[OperatorNode] = node match {
     case SelectOpNode(parent, _, _) => getSubquery(parent)
@@ -412,6 +357,25 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
       }
     }
     case None => false
+  }
+
+  def removeSubquery(node: OperatorNode = queryPlan.rootNode): OperatorNode = node match {
+    case SelectOpNode(parent, cond, isHavingClause) => SelectOpNode(removeSubquery(parent), cond, isHavingClause)
+    case ScanOpNode(_, _, _)                        => node
+    case UnionAllOpNode(top, bottom) => {
+      UnionAllOpNode(removeSubquery(top), removeSubquery(bottom))
+    }
+    case JoinOpNode(left, right, clause, joinType, leftAlias, rightAlias) => {
+      JoinOpNode(removeSubquery(left), removeSubquery(right), clause, joinType, leftAlias, rightAlias)
+    }
+    case AggOpNode(parent, aggs, gb, aggNames)            => AggOpNode(removeSubquery(parent), aggs, gb, aggNames)
+    case MapOpNode(parent, mapIndices)                    => MapOpNode(removeSubquery(parent), mapIndices)
+    case OrderByNode(parent, orderBy)                     => OrderByNode(removeSubquery(parent), orderBy)
+    case PrintOpNode(parent, projNames, limit)            => PrintOpNode(removeSubquery(parent), projNames, limit)
+    case ProjectOpNode(parent, projNames, origFieldNames) => ProjectOpNode(removeSubquery(parent), projNames, origFieldNames)
+    case ViewOpNode(parent, projNames, name)              => ViewOpNode(removeSubquery(parent), projNames, name)
+    case SubqueryNode(_)                                  => ScanOpNode(new Table("TMP_VIEW", List(), new scala.collection.mutable.ArrayBuffer[Constraint], ""), "TMP_VIEW", None)
+    case SubquerySingleResultNode(_)                      => ScanOpNode(new Table("TMP_VIEW", List(), new scala.collection.mutable.ArrayBuffer[Constraint], ""), "TMP_VIEW", None)
   }
 
   //assumes two tables are joined only on one attribute
