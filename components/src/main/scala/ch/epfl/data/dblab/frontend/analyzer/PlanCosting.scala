@@ -384,32 +384,26 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
 
   //assumes two tables are joined only on one attribute
   def getJoinColumns(condition: Expression, tableName1: String, tableName2: String): Option[(String, String)] = {
+    def helper(fi1: FieldIdent, fi2: FieldIdent): Option[(String, String)] = (fi1.qualifier, fi2.qualifier) match {
+        case (Some(`tableName1`), Some(`tableName2`))                   => Some((fi1.name, fi2.name))
+        case (Some(`tableName2`), Some(`tableName1`))                   => Some((fi2.name, fi1.name))
+        case (Some(_), Some(`tableName1`)) | (Some(`tableName1`), None) => Some((fi1.name, ""))
+        case (Some(_), Some(`tableName2`)) | (Some(`tableName2`), None) => Some(("", fi2.name))
+      }
     condition match {
-      case Equals(e1: IntLiteral, e2: IntLiteral) => if (e1.v == 1 && e2.v == 1) Some(("1", "1")) else None
-      case Equals(e1: FieldIdent, e2: FieldIdent) => (e1.qualifier, e2.qualifier) match {
-        case (Some(`tableName1`), Some(`tableName2`))                   => Some((e1.name, e2.name))
-        case (Some(`tableName2`), Some(`tableName1`))                   => Some((e2.name, e1.name))
-        case (Some(_), Some(`tableName1`)) | (Some(`tableName1`), None) => Some((e1.name, ""))
-        case (Some(_), Some(`tableName2`)) | (Some(`tableName2`), None) => Some(("", e2.name))
-      }
       case And(e1, e2) => (getJoinColumns(e1, tableName1, tableName2), getJoinColumns(e2, tableName1, tableName2)) match {
-        case (Some(v1), Some(v2)) => Some(v1) //fix this
-        case (Some(v), None)      => Some(v)
-        case (None, Some(v))      => Some(v)
-        case _                    => None
-      }
-      case LessThan(e1: FieldIdent, e2: FieldIdent) => (e1.qualifier, e2.qualifier) match {
-        case (Some(`tableName1`), Some(`tableName2`))                   => Some((e1.name, e2.name))
-        case (Some(`tableName2`), Some(`tableName1`))                   => Some((e2.name, e1.name))
-        case (Some(_), Some(`tableName1`)) | (Some(`tableName1`), None) => Some((e1.name, ""))
-        case (Some(_), Some(`tableName2`)) | (Some(`tableName2`), None) => Some(("", e2.name))
-      }
-      case NotEquals(e1: FieldIdent, e2: FieldIdent) => (e1.qualifier, e2.qualifier) match {
-        case (Some(`tableName1`), Some(`tableName2`))                   => Some((e1.name, e2.name))
-        case (Some(`tableName2`), Some(`tableName1`))                   => Some((e2.name, e1.name))
-        case (Some(_), Some(`tableName1`)) | (Some(`tableName1`), None) => Some((e1.name, ""))
-        case (Some(_), Some(`tableName2`)) | (Some(`tableName2`), None) => Some(("", e2.name))
-      }
+      case (Some(v1), Some(v2)) => Some(v1) //fix this
+      case (Some(v), None)      => Some(v)
+      case (None, Some(v))      => Some(v)
+      case _                    => None
+    }
+      case Equals(e1: IntLiteral, e2: IntLiteral) => if (e1.v == 1 && e2.v == 1) Some(("1", "1")) else None
+      case Equals(fi1: FieldIdent, fi2: FieldIdent) => helper(fi1, fi2)
+      case NotEquals(fi1: FieldIdent, fi2: FieldIdent)            => helper(fi1, fi2)
+      case GreaterThan(fi1: FieldIdent, fi2: FieldIdent)          => helper(fi1, fi2)
+      case GreaterOrEqual(fi1: FieldIdent, fi2: FieldIdent)       => helper(fi1, fi2)
+      case LessThan(fi1: FieldIdent, fi2: FieldIdent)             => helper(fi1, fi2)
+      case LessOrEqual(fi1: FieldIdent, fi2: FieldIdent)          => helper(fi1, fi2)
     }
   }
 }
