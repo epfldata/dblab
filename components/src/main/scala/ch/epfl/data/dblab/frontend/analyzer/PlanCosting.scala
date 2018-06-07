@@ -10,10 +10,10 @@ import ch.epfl.data.dblab.frontend.parser.SQLAST._
 import scala.math._
 
 /**
-  * Creates a costing plan for a given query based on estimated sizes of given nodes.
-  *
-  * @author Michal Pleskowicz
-  */
+ * Creates a costing plan for a given query based on estimated sizes of given nodes.
+ *
+ * @author Michal Pleskowicz
+ */
 
 class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
   val tau = 0.2
@@ -275,7 +275,7 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
         val fields = getFieldIdents(e)
         if (fields.size == 1) {
           registerExpression(e, fields.head, tableFilters)
-        } else if(fields.size > 1){
+        } else if (fields.size > 1) {
           generalFilters.append(a)
         }
       }
@@ -382,28 +382,28 @@ class PlanCosting(schema: Schema, queryPlan: QueryPlanTree) {
     case SubquerySingleResultNode(_)                      => ScanOpNode(new Table("TMP_VIEW", List(), new scala.collection.mutable.ArrayBuffer[Constraint], ""), "TMP_VIEW", None)
   }
 
-  //assumes two tables are joined only on one attribute
+  //TODO fix this to handle joins on more than two tables
   def getJoinColumns(condition: Expression, tableName1: String, tableName2: String): Option[(String, String)] = {
     def helper(fi1: FieldIdent, fi2: FieldIdent): Option[(String, String)] = (fi1.qualifier, fi2.qualifier) match {
-        case (Some(`tableName1`), Some(`tableName2`))                   => Some((fi1.name, fi2.name))
-        case (Some(`tableName2`), Some(`tableName1`))                   => Some((fi2.name, fi1.name))
-        case (Some(_), Some(`tableName1`)) | (Some(`tableName1`), None) => Some((fi1.name, ""))
-        case (Some(_), Some(`tableName2`)) | (Some(`tableName2`), None) => Some(("", fi2.name))
-      }
+      case (Some(`tableName1`), Some(`tableName2`))                   => Some((fi1.name, fi2.name))
+      case (Some(`tableName2`), Some(`tableName1`))                   => Some((fi2.name, fi1.name))
+      case (Some(_), Some(`tableName1`)) | (Some(`tableName1`), None) => Some((fi1.name, ""))
+      case (Some(_), Some(`tableName2`)) | (Some(`tableName2`), None) => Some(("", fi2.name))
+    }
     condition match {
       case And(e1, e2) => (getJoinColumns(e1, tableName1, tableName2), getJoinColumns(e2, tableName1, tableName2)) match {
-      case (Some(v1), Some(v2)) => Some(v1) //fix this
-      case (Some(v), None)      => Some(v)
-      case (None, Some(v))      => Some(v)
-      case _                    => None
-    }
-      case Equals(e1: IntLiteral, e2: IntLiteral) => if (e1.v == 1 && e2.v == 1) Some(("1", "1")) else None
-      case Equals(fi1: FieldIdent, fi2: FieldIdent) => helper(fi1, fi2)
-      case NotEquals(fi1: FieldIdent, fi2: FieldIdent)            => helper(fi1, fi2)
-      case GreaterThan(fi1: FieldIdent, fi2: FieldIdent)          => helper(fi1, fi2)
-      case GreaterOrEqual(fi1: FieldIdent, fi2: FieldIdent)       => helper(fi1, fi2)
-      case LessThan(fi1: FieldIdent, fi2: FieldIdent)             => helper(fi1, fi2)
-      case LessOrEqual(fi1: FieldIdent, fi2: FieldIdent)          => helper(fi1, fi2)
+        case (Some(v1), Some(v2)) => Some(v1)
+        case (Some(v), None)      => Some(v)
+        case (None, Some(v))      => Some(v)
+        case _                    => None
+      }
+      case Equals(e1: IntLiteral, e2: IntLiteral)           => if (e1.v == 1 && e2.v == 1) Some(("1", "1")) else None
+      case Equals(fi1: FieldIdent, fi2: FieldIdent)         => helper(fi1, fi2)
+      case NotEquals(fi1: FieldIdent, fi2: FieldIdent)      => helper(fi1, fi2)
+      case GreaterThan(fi1: FieldIdent, fi2: FieldIdent)    => helper(fi1, fi2)
+      case GreaterOrEqual(fi1: FieldIdent, fi2: FieldIdent) => helper(fi1, fi2)
+      case LessThan(fi1: FieldIdent, fi2: FieldIdent)       => helper(fi1, fi2)
+      case LessOrEqual(fi1: FieldIdent, fi2: FieldIdent)    => helper(fi1, fi2)
     }
   }
 }

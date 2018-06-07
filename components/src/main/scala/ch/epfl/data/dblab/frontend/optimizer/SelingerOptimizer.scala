@@ -161,30 +161,16 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
     case UnionAllOpNode(top, bottom)                      => UnionAllOpNode(attachSelections(top, selections), attachSelections(bottom, selections))
   }
 
-  def attachAggregationNode(tree: OperatorNode, aggregationNode: AggOpNode): OperatorNode = {
-    AggOpNode(tree, aggregationNode.aggs, aggregationNode.gb, aggregationNode.aggNames)
-  }
-
-  def attachOrderNode(tree: OperatorNode, orderNode: OrderByNode): OperatorNode = {
-    OrderByNode(tree, orderNode.orderBy)
-  }
-
-  def attachMapNode(tree: OperatorNode, mapNode: MapOpNode): OperatorNode = {
-    MapOpNode(tree, mapNode.mapIndices)
-  }
-
-  def attachProjectionNode(tree: OperatorNode, projectionNode: ProjectOpNode): OperatorNode = {
-    ProjectOpNode(tree, projectionNode.projNames, projectionNode.origFieldNames)
-  }
-
-  def attachPrintNode(tree: OperatorNode, printNode: PrintOpNode): OperatorNode = {
-    PrintOpNode(tree, printNode.projNames, printNode.limit)
-  }
+  def attachAggregationNode(tree: OperatorNode, aggregationNode: AggOpNode): OperatorNode = AggOpNode(tree, aggregationNode.aggs, aggregationNode.gb, aggregationNode.aggNames)
+  def attachOrderNode(tree: OperatorNode, orderNode: OrderByNode): OperatorNode = OrderByNode(tree, orderNode.orderBy)
+  def attachMapNode(tree: OperatorNode, mapNode: MapOpNode): OperatorNode = MapOpNode(tree, mapNode.mapIndices)
+  def attachProjectionNode(tree: OperatorNode, projectionNode: ProjectOpNode): OperatorNode = ProjectOpNode(tree, projectionNode.projNames, projectionNode.origFieldNames)
+  def attachPrintNode(tree: OperatorNode, printNode: PrintOpNode): OperatorNode = PrintOpNode(tree, printNode.projNames, printNode.limit)
 
   //based on https://courses.cs.washington.edu/courses/cse444/12sp/lectures/lecture11-12-optimization-part2.pdf
   def selinger(queryNode: OperatorNode, costingPlan: PlanCosting): OperatorNode = {
     var plan = queryNode
-    val nodeList = getJoinNodes(queryNode)
+    val nodeList = getJoinNodes(queryNode, costingPlan)
 
     if (nodeList.isEmpty) {
       costingPlan.getSubquery(queryNode) match {
@@ -315,7 +301,6 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
     val plan = if (generalSelection.isEmpty) optimizedPlan else SelectOpNode(optimizedPlan, generalSelection.tail.foldLeft(generalSelection.head)((a, b) => And(a, b)), false)
     val resultWithAgg = aggregation.fold(plan)(v => attachAggregationNode(plan, v.asInstanceOf[AggOpNode]))
     val resultWithAggFilter = if (aggSelection.isEmpty) resultWithAgg else {
-      System.out.println("Agg selection is " + aggSelection)
       val cond = aggSelection.tail.foldLeft(aggSelection.head)((a, b) => And(a, b))
       SelectOpNode(resultWithAgg, cond, false)
     }
