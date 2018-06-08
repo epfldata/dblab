@@ -195,6 +195,7 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
           //when a subset is only one table
           if (i == 1) {
             val tableName = aliases.getOrElse(subset.head, throw new Exception(subset.head + " table doesn't exist!"))
+            val qualifier = if(!tableName.equals(subset.head)) Some(subset.head) else None
             //TODO fix to include Views
             schema.findTable(tableName) match {
               case Some(v) => {
@@ -204,7 +205,7 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
                   case Some(a) => schema.stats.getFilterSelectivity(a)
                   case None    => 1
                 }
-                joinCosts.put(subset.toList.sorted, new JoinPlan(size.toLong, (size * tableSelectivity).toLong, new ScanOpNode(table, subset.head, None)))
+                joinCosts.put(subset.toList.sorted, new JoinPlan(size.toLong, (size * tableSelectivity).toLong, new ScanOpNode(table, subset.head, qualifier)))
               }
               case None =>
                 if (tableName.equals("TMP_VIEW")) {
