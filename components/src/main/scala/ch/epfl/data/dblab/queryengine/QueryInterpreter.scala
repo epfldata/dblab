@@ -83,7 +83,7 @@ object QueryInterpreter {
       val operatorTree = new SQLToQueryPlan(schema).convert(typedQuery)
 
       val costingPlan = new PlanCosting(schema, operatorTree)
-      DOTvisualizer.visualize(operatorTree, costingPlan, queryName + "_normal", false)
+      DOTvisualizer.visualize(operatorTree, costingPlan, queryName + "_normal", true)
       System.out.println("Normal cost: " + costingPlan.cost())
 
       if (Config.debugQueryPlan)
@@ -95,18 +95,18 @@ object QueryInterpreter {
       val selingerCosting = new PlanCosting(schema, selingerOptimizerTree)
       //System.out.println("Optimized joins: \n" + selingerOptimizerTree)
       DOTvisualizer.visualize(selingerOptimizerTree, selingerCosting, queryName + "_selinger", true)
-      //System.out.println("Optimized cost: " + selingerCosting.cost())
+      System.out.println("Optimized cost: " + selingerCosting.cost())
 
       val optimizerTree = new QueryPlanNaiveOptimizer(schema).optimize(operatorTree)
       val costingPlanOptimized = new PlanCosting(schema, optimizerTree)
-      DOTvisualizer.visualize(optimizerTree, costingPlanOptimized, queryName + "_naive", true)
+      //DOTvisualizer.visualize(optimizerTree, costingPlanOptimized, queryName + "_naive", true)
 
       //System.out.println(optimizerTree)
       if (Config.debugQueryPlan)
         System.out.println("After Optimizer:\n" + optimizerTree + "\n\n")
 
       System.out.println("Normal result")
-      PlanExecutor.executeQuery(optimizerTree, schema)
+      //PlanExecutor.executeQuery(optimizerTree, schema)
 
       val resq = scala.io.Source.fromFile(getOutputName).mkString
 
@@ -145,9 +145,8 @@ object QueryInterpreter {
   def interpret(dataPath: String, filesToExecute: Map[String, List[String]]): Unit = {
     // Now run all queries specified
     val schema = readSchema(dataPath, (filesToExecute.get(".ddl") ++ filesToExecute.get(".ri")).flatten.toList)
-    val schemaWithStats = addStats(schema)
     for (q <- filesToExecute.get(".sql").toList.flatten) {
-      val resq = processQuery(schemaWithStats, q)
+      val resq = processQuery(schema, q)
 
       // if (Config.debugQueryPlan)
       System.out.println(resq)
@@ -177,177 +176,5 @@ object QueryInterpreter {
       }
 
     }
-  }
-
-  def addStats(tpchSchema: Schema): Schema = {
-    val YEARS = 7
-    val SCALING_FACTOR = 10.0
-
-    val lineItem = tpchSchema.findTable("LINEITEM") match {
-      case Some(v) => v
-      case None    => throw new Exception("Can't find table LINEITEM")
-    }
-    val nation = tpchSchema.findTable("NATION") match {
-      case Some(v) => v
-      case None    => throw new Exception("Can't find table NATION")
-    }
-    val orders = tpchSchema.findTable("ORDERS") match {
-      case Some(v) => v
-      case None    => throw new Exception("Can't find table ORDERS")
-    }
-    val customer = tpchSchema.findTable("CUSTOMER") match {
-      case Some(v) => v
-      case None    => throw new Exception("Can't find table CUSTOMER")
-    }
-    val region = tpchSchema.findTable("REGION") match {
-      case Some(v) => v
-      case None    => throw new Exception("Can't find table REGION")
-    }
-    val supplier = tpchSchema.findTable("SUPPLIER") match {
-      case Some(v) => v
-      case None    => throw new Exception("Can't find table SUPPLIER")
-    }
-    val part = tpchSchema.findTable("PART") match {
-      case Some(v) => v
-      case None    => throw new Exception("Can't find table PART")
-    }
-    val partsupp = tpchSchema.findTable("PARTSUPP") match {
-      case Some(v) => v
-      case None    => throw new Exception("Can't find table PARTSUPP")
-    }
-
-    val lineItemTable = {
-      val L_ORDERKEY: Attribute = "L_ORDERKEY" -> IntType
-      val L_LINENUMBER: Attribute = "L_LINENUMBER" -> IntType
-
-      new Table(lineItem.name, lineItem.attributes, ArrayBuffer(
-        PrimaryKey(List(L_ORDERKEY, L_LINENUMBER)),
-        ForeignKey("LINEITEM", "ORDERS", List(("L_ORDERKEY", "O_ORDERKEY"))),
-        ForeignKey("LINEITEM", "PARTSUPP", List(("L_PARTKEY", "PS_PARTKEY"), ("L_SUPPKEY", "PS_SUPPKEY")))), lineItem.resourceLocator, lineItem.rowCount)
-    }
-
-    val nationTable = {
-      val N_NATIONKEY: Attribute = "N_NATIONKEY" -> IntType
-      val N_NAME: Attribute = Attribute("N_NAME", VarCharType(25), List(Compressed))
-
-      new Table(nation.name, nation.attributes, ArrayBuffer(
-        PrimaryKey(List(N_NATIONKEY)),
-        Continuous(N_NATIONKEY, 0),
-        ForeignKey("NATION", "REGION", List(("N_REGIONKEY", "R_REGIONKEY")))), nation.resourceLocator, nation.rowCount)
-    }
-
-    val ordersTable = {
-      val O_ORDERKEY: Attribute = "O_ORDERKEY" -> IntType
-      val O_COMMENT = Attribute("O_COMMENT", VarCharType(79), List(Compressed))
-      val O_ORDERPRIORITY = Attribute("O_ORDERPRIORITY", VarCharType(15))
-
-      new Table(orders.name, orders.attributes, ArrayBuffer(
-        PrimaryKey(List(O_ORDERKEY)),
-        ForeignKey("ORDERS", "CUSTOMER", List(("O_CUSTKEY", "C_CUSTKEY")))), orders.resourceLocator, orders.rowCount)
-    }
-
-    val customerTable = {
-      val ck: Attribute = "C_CUSTKEY" -> IntType
-
-      new Table(customer.name, customer.attributes, ArrayBuffer(
-        PrimaryKey(List(ck)),
-        Continuous(ck, 1),
-        ForeignKey("CUSTOMER", "NATION", List(("C_NATIONKEY", "N_NATIONKEY")))), customer.resourceLocator, customer.rowCount)
-    }
-
-    val regionTable = {
-      val R_REGIONKEY: Attribute = "R_REGIONKEY" -> IntType
-
-      new Table(region.name, region.attributes, ArrayBuffer(
-        PrimaryKey(List(R_REGIONKEY)),
-        Continuous(R_REGIONKEY, 0)), region.resourceLocator, region.rowCount)
-    }
-
-    val supplierTable = {
-      val sk: Attribute = "S_SUPPKEY" -> IntType
-
-      new Table(supplier.name, supplier.attributes, ArrayBuffer(
-        PrimaryKey(List(sk)),
-        Continuous(sk, 1),
-        ForeignKey("SUPPLIER", "NATION", List(("S_NATIONKEY", "N_NATIONKEY")))), supplier.resourceLocator, supplier.rowCount)
-    }
-
-    val partTable = {
-      val P_PARTKEY: Attribute = "P_PARTKEY" -> IntType
-
-      new Table(part.name, part.attributes, ArrayBuffer(
-        PrimaryKey(List(P_PARTKEY)),
-        Continuous(P_PARTKEY, 1)), part.resourceLocator, part.rowCount)
-    }
-
-    val partsuppTable = {
-      val pk: Attribute = "PS_PARTKEY" -> IntType
-      val sk: Attribute = "PS_SUPPKEY" -> IntType
-
-      new Table(partsupp.name, partsupp.attributes, ArrayBuffer(
-        PrimaryKey(List(pk, sk)),
-        ForeignKey("PARTSUPP", "PART", List(("PS_PARTKEY", "P_PARTKEY"))),
-        ForeignKey("PARTSUPP", "SUPPLIER", List(("PS_SUPPKEY", "S_SUPPKEY")))), partsupp.resourceLocator, partsupp.rowCount)
-    }
-
-    val newSchema = new Schema(List(lineItemTable, regionTable, nationTable, supplierTable, partTable, partsuppTable, customerTable, ordersTable))
-
-    newSchema.stats += "CARDINALITY_ORDERS" -> ordersTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "CARDINALITY_CUSTOMER" -> customerTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "CARDINALITY_LINEITEM" -> lineItemTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "CARDINALITY_SUPPLIER" -> supplierTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "CARDINALITY_PARTSUPP" -> partsuppTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "CARDINALITY_PART" -> partTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "CARDINALITY_NATION" -> nationTable.rowCount
-    newSchema.stats += "CARDINALITY_REGION" -> regionTable.rowCount
-
-    newSchema.stats += "CARDINALITY_Q1GRP" -> 4
-    newSchema.stats += "CARDINALITY_Q3GRP" -> ordersTable.rowCount / 100
-    newSchema.stats += "CARDINALITY_Q9GRP" -> nationTable.rowCount * YEARS
-    newSchema.stats += "CARDINALITY_Q10GRP" -> customerTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "CARDINALITY_Q20GRP" -> supplierTable.rowCount * SCALING_FACTOR
-
-    newSchema.stats += "DISTINCT_L_SHIPMODE" -> YEARS
-    newSchema.stats += "DISTINCT_L_RETURNFLAG" -> 3
-    newSchema.stats += "DISTINCT_L_LINESTATUS" -> 2
-    newSchema.stats += "DISTINCT_L_ORDERKEY" -> ordersTable.rowCount * 5 * SCALING_FACTOR
-    newSchema.stats += "DISTINCT_L_PARTKEY" -> partTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "DISTINCT_L_SUPPKEY" -> supplierTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "DISTINCT_N_NAME" -> nationTable.rowCount
-    newSchema.stats += "DISTINCT_N_NATIONKEY" -> nationTable.rowCount
-    newSchema.stats += "DISTINCT_O_SHIPPRIORITY" -> 1
-    newSchema.stats += "DISTINCT_O_ORDERDATE" -> 365 * YEARS
-    newSchema.stats += "DISTINCT_O_ORDERPRIORITY" -> 5
-    newSchema.stats += "DISTINCT_O_ORDERKEY" -> ordersTable.rowCount * 5 * SCALING_FACTOR
-    newSchema.stats += "DISTINCT_O_COMMENT" -> ordersTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "DISTINCT_O_CUSTKEY" -> customerTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "DISTINCT_P_PARTKEY" -> partTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "DISTINCT_P_BRAND" -> 25
-    newSchema.stats += "DISTINCT_P_SIZE" -> 50
-    newSchema.stats += "DISTINCT_P_TYPE" -> 150
-    newSchema.stats += "DISTINCT_P_NAME" -> partTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "DISTINCT_PS_PARTKEY" -> partTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "DISTINCT_PS_SUPPKEY" -> supplierTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "DISTINCT_PS_AVAILQTY" -> 9999
-    newSchema.stats += "DISTINCT_S_NAME" -> supplierTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "DISTINCT_S_COMMENT" -> supplierTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "DISTINCT_S_NATIONKEY" -> nationTable.rowCount
-    newSchema.stats += "DISTINCT_S_SUPPKEY" -> supplierTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "DISTINCT_C_CUSTKEY" -> customerTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "DISTINCT_C_NAME" -> customerTable.rowCount * SCALING_FACTOR
-    newSchema.stats += "DISTINCT_C_NATIONKEY" -> nationTable.rowCount
-    newSchema.stats += "DISTINCT_R_REGIONKEY" -> 5
-
-    newSchema.stats.conflicts("PS_PARTKEY") = 16
-    newSchema.stats.conflicts("P_PARTKEY") = 4
-    newSchema.stats.conflicts("L_PARTKEY") = 64
-    newSchema.stats.conflicts("L_ORDERKEY") = 8
-    newSchema.stats.conflicts("C_NATIONKEY") = customerTable.rowCount / 20
-    newSchema.stats.conflicts("S_NATIONKEY") = supplierTable.rowCount / 20
-
-    newSchema.stats += "NUM_YEARS_ALL_DATES" -> YEARS
-
-    newSchema
-
   }
 }

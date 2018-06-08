@@ -14,7 +14,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * Selinger optimizer performs the Selinger algorithm on the joins of
  * provided query plan. It reorders joins, pushes up selections. Aggregations so far are placed above the SPJ part of the tree.
-  * The position of the rest of the nodes shouldn't change relative to the SPJ part of the tree.
+ * The position of the rest of the nodes shouldn't change relative to the SPJ part of the tree.
  *
  * @author Michal Pleskowicz
  */
@@ -262,13 +262,12 @@ class SelingerOptimizer(schema: Schema) extends QueryPlanOptimizer {
         case ScanOpNode(_, name, _) => name
         case _                      => ""
       }, table)
-      cost = left.size * right.size + cost(left) + cost(right)
+      cost = left.size * right.size + left.cost + right.cost
       size = left.size * right.size
       JoinPlan(cost, size, plan)
     } else {
       val tables = getTableNames(joinNode.clause)
       val clause = if (table.equals(tables(0))) reorderTables(joinNode.clause) else joinNode.clause
-      joinType =
 
       var plan = new JoinOpNode(left.plan, right.plan, clause, joinType, left.plan match {
         case ScanOpNode(_, name, _) => name
