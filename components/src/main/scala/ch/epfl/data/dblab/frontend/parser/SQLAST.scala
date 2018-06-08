@@ -376,6 +376,7 @@ object SQLAST {
   case object AntiJoin extends JoinType
   case object NestedLoopJoin extends JoinType
   case object IndexNestedLoopJoin extends JoinType
+  case object HashJoin extends JoinType
 
   case class Join(left: Relation, right: Relation, tpe: JoinType, clause: Expression) extends Relation
 
