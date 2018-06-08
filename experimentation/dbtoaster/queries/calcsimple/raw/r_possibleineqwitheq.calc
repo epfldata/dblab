@@ -1,0 +1,2 @@
+COUNT: 
+(R(R_A, R_B) * {R_A = R_B} * {R_A <= R_B} * {R_A >= R_B})

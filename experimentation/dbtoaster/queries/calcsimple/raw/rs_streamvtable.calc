@@ -1,0 +1,2 @@
+COUNT: 
+(R(R_A, R_B) * S(S_B, S_C) * {S_B = R_B})

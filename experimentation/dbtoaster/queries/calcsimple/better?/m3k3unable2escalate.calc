@@ -1,0 +1,5 @@
+COUNT: 
+(EXISTS(
+   AggSum([], 
+     AggSum([unused], (R(R3_A, R3_B) * {5. = R3_A} * (unused ^= 1))))) *
+  (__SQL_CONSTANT_1 ^= 1))

@@ -1,0 +1,2 @@
+COUNT: 
+(R(R_A, R_B) * AggSum([R_B], S(R_B, S_C)))

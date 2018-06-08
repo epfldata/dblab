@@ -1,0 +1,27 @@
+COUNT: 
+(EXISTS(
+   AggSum([Z_D], 
+     (EXISTS(
+        AggSum([Y_C], 
+          (EXISTS( AggSum([X_A], (R(R1_A, R1_B) * (X_A ^= R1_A)))) *
+            (X_C ^= AggSum([X_A], (R(R1_A, R1_B) * R1_B * (X_A ^= R1_A)))) *
+            (Y_C ^= X_C)))) *
+       (Y_D ^=
+         AggSum([Y_C], 
+           (EXISTS( AggSum([X_A], (R(R1_A, R1_B) * (X_A ^= R1_A)))) *
+             (X_C ^= AggSum([X_A], (R(R1_A, R1_B) * R1_B * (X_A ^= R1_A)))) *
+             X_A * (Y_C ^= X_C)))) *
+       (Z_D ^= Y_D)))) *
+  (Z___SQL_SUM_AGGREGATE_1 ^=
+    AggSum([Z_D], 
+      (EXISTS(
+         AggSum([Y_C], 
+           (EXISTS( AggSum([X_A], (R(R1_A, R1_B) * (X_A ^= R1_A)))) *
+             (X_C ^= AggSum([X_A], (R(R1_A, R1_B) * R1_B * (X_A ^= R1_A)))) *
+             (Y_C ^= X_C)))) *
+        (Y_D ^=
+          AggSum([Y_C], 
+            (EXISTS( AggSum([X_A], (R(R1_A, R1_B) * (X_A ^= R1_A)))) *
+              (X_C ^= AggSum([X_A], (R(R1_A, R1_B) * R1_B * (X_A ^= R1_A)))) *
+              X_A * (Y_C ^= X_C)))) *
+        Y_C * (Z_D ^= Y_D)))))

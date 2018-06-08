@@ -1,0 +1,24 @@
+REVENUE: 
+AggSum([], 
+  (LINEITEM(L_ORDERKEY, L_PARTKEY, L_SUPPKEY, L_LINENUMBER, L_QUANTITY,
+              L_EXTENDEDPRICE, L_DISCOUNT, L_TAX, L_RETURNFLAG, L_LINESTATUS,
+              L_SHIPDATE, L_COMMITDATE, L_RECEIPTDATE, L_SHIPINSTRUCT,
+              L_SHIPMODE, L_COMMENT) *
+    PART(P_PARTKEY, P_NAME, P_MFGR, P_BRAND, P_TYPE, P_SIZE, P_CONTAINER,
+           P_RETAILPRICE, P_COMMENT) *
+    {P_PARTKEY = L_PARTKEY} * {P_SIZE >= 1} *
+    {L_SHIPMODE IN ['AIR', 'AIR REG']} *
+    {L_SHIPINSTRUCT = 'DELIVER IN PERSON'} *
+    AggSum([], 
+      ((__sql_inline_or_7 ^=
+         (({P_BRAND = 'Brand#12'} *
+            {P_CONTAINER IN ['SM CASE', 'SM BOX', 'SM PACK', 'SM PKG']} *
+            {L_QUANTITY >= 1} * {L_QUANTITY <= 11} * {P_SIZE <= 5}) +
+           ({P_BRAND = 'Brand#23'} *
+             {P_CONTAINER IN ['MED BAG', 'MED BOX', 'MED PKG', 'MED PACK']} *
+             {L_QUANTITY >= 10} * {L_QUANTITY <= 20} * {P_SIZE <= 10}) +
+           ({P_BRAND = 'Brand#34'} *
+             {P_CONTAINER IN ['LG CASE', 'LG BOX', 'LG PACK', 'LG PKG']} *
+             {L_QUANTITY >= 20} * {L_QUANTITY <= 30} * {P_SIZE <= 15}))) *
+        {__sql_inline_or_7 > 0})) *
+    L_EXTENDEDPRICE * (1 + (NEG * L_DISCOUNT))))

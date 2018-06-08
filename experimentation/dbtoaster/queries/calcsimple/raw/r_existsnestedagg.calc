@@ -1,0 +1,8 @@
+__SQL_SUM_AGGREGATE_1: 
+AggSum([R1_A], 
+  (R(R1_A, R1_B) *
+    EXISTS(
+      AggSum([], 
+        AggSum([__SQL_CONSTANT_2], 
+          ((N1_B ^= AggSum([], (R(R2_A, R2_B) * {R2_A = R1_B} * R2_B))) *
+            {(3 * R1_A) < N1_B} * (__SQL_CONSTANT_2 ^= 1)))))))

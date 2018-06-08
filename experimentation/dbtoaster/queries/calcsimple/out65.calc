@@ -1,0 +1,10 @@
+__SQL_EXPRESSION_1: 
+(AggSum([], (R(R_A, R_B) * R_A)) *
+  AggSum([], 
+    ((__sql_inline_agg_2 ^=
+       AggSum([], 
+         ((__sql_inline_agg_1 ^=
+            (EXISTS( AggSum([], R(R_A, R_B))) +
+              AggSum([], (R(R_A, R_B) * R_B)))) *
+           {[listmax:float](1, __sql_inline_agg_1)}))) *
+      {[/:float](__sql_inline_agg_2)})))

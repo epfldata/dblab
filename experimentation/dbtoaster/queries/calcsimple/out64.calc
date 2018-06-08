@@ -1,0 +1,2 @@
+__SQL_EXPRESSION_1: 
+(EXISTS( AggSum([], R(R_A, R_B))) + AggSum([], (R(R_A, R_B) * R_A)))

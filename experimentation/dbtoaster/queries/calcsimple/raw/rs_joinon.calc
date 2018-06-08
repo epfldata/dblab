@@ -1,0 +1,2 @@
+COUNT: 
+AggSum([R_A, R_B], (R(R_A, R_B) * S(S_C, S_D) * {R_B = S_C}))

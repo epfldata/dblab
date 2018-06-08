@@ -55,7 +55,7 @@ class SQLParserTest extends FlatSpec {
 
   "SQLParser" should "parse simple SELECT/FROM correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT * FROM table t")
+    val r = parser.parse("SELECT * FROM tbl t")
     r should not be None
   }
 
@@ -67,43 +67,43 @@ class SQLParserTest extends FlatSpec {
 
   "SQLParser" should "parse single expression correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT column1 FROM table")
+    val r = parser.parse("SELECT column1 FROM tbl")
     r should not be None
   }
 
   "SQLParser" should "parse explicit columns correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT column1, ident.column2 FROM table")
+    val r = parser.parse("SELECT column1, ident.column2 FROM tbl")
     r should not be None
   }
 
   "SQLParser" should "parse aggregate functions correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT SUM(column1), MIN(ident.column2) FROM table")
+    val r = parser.parse("SELECT SUM(column1), MIN(ident.column2) FROM tbl")
     r should not be None
   }
 
   "SQLParser" should "parse aliased expression correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT SUM(column1) AS theSum, MIN(ident.column2) AS minimum FROM table")
+    val r = parser.parse("SELECT SUM(column1) AS theSum, MIN(ident.column2) AS minimum FROM tbl")
     r should not be None
   }
 
   "SQLParser" should "parse arithmetic operations correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT SUM(column1) / 10, MIN(ident.column2) + 125.50 FROM table")
+    val r = parser.parse("SELECT SUM(column1) / 10, MIN(ident.column2) + 125.50 FROM tbl")
     r should not be None
   }
 
   "SQLParser" should "parse GROUP BY with HAVING correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT column1 FROM table GROUP BY column1, table.column2 HAVING SUM(table.column3) > 12345")
+    val r = parser.parse("SELECT column1 FROM tbl GROUP BY column1, tbl.column2 HAVING SUM(tbl.column3) > 12345")
     r should not be None
   }
 
   "SQLParser" should "parse WHERE correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT column1 FROM table WHERE column2 > 2.51 AND 1 != 0 AND table.column3 BETWEEN 5 AND 10")
+    val r = parser.parse("SELECT column1 FROM tbl WHERE column2 > 2.51 AND 1 != 0 AND tbl.column3 BETWEEN 5 AND 10")
     r should not be None
   }
 
@@ -115,7 +115,75 @@ class SQLParserTest extends FlatSpec {
 
   "SQLParser" should "parse LIMIT correctly" in {
     val parser = SQLParser
-    val r = parser.parse("SELECT * FROM table LIMIT 20")
+    val r = parser.parse("SELECT * FROM tbl LIMIT 20")
     r should not be None
   }
+
+  "SQLParser" should "parse csv adaptor" in {
+    val parser = SQLParser
+    val r = parser.parseStream(
+      """CREATE STREAM FOO (ok INT) FROM FILE 'foo.csv'
+        LINE DELIMITED CSV (delimiter := '|'); SELECT * FROM FOO;""")
+    r should not be None
+  }
+
+  "SQLParser" should "parse IN LIST" in {
+    val parser = SQLParser
+    val r = parser.parseStream("SELECT * FROM R WHERE A IN LIST (1, 2, 3);")
+    r should not be None
+  }
+
+  "SQLParser" should "parse schemas" in {
+    val parser = SQLParser
+    val s = "CREATE STREAM LINEITEM (\n        orderkey       INT,\n        partkey        INT,\n        suppkey        INT,\n        linenumber     INT,\n        quantity       DECIMAL,\n        extendedprice  DECIMAL,\n        discount       DECIMAL,\n        tax            DECIMAL,\n        returnflag     CHAR(1),\n        linestatus     CHAR(1),\n        shipdate       DATE,\n        commitdate     DATE,\n        receiptdate    DATE,\n        shipinstruct   CHAR(25),\n        shipmode       CHAR(10),\n        comment        VARCHAR(44)\n    )\n  FROM FILE '../../experiments/data/tpch/standard/lineitem.csv'\n  LINE DELIMITED CSV (delimiter := '|');\n\n\nCREATE STREAM ORDERS (\n        orderkey       INT,\n        custkey        INT,\n        orderstatus    CHAR(1),\n        totalprice     DECIMAL,\n        orderdate      DATE,\n        orderpriority  CHAR(15),\n        clerk          CHAR(15),\n        shippriority   INT,\n        comment        VARCHAR(79)\n    )\n  FROM FILE '../../experiments/data/tpch/standard/orders.csv'\n  LINE DELIMITED CSV (delimiter := '|');\n\nCREATE STREAM PART (\n        partkey      INT,\n        name         VARCHAR(55),\n        mfgr         CHAR(25),\n        brand        CHAR(10),\n        type         VARCHAR(25),\n        size         INT,\n        container    CHAR(10),\n        retailprice  DECIMAL,\n        comment      VARCHAR(23)\n    )\n  FROM FILE '../../experiments/data/tpch/standard/part.csv'\n  LINE DELIMITED CSV (delimiter := '|');\n\n\nCREATE STREAM CUSTOMER (\n        custkey      INT,\n        name         VARCHAR(25),\n        address      VARCHAR(40),\n        nationkey    INT,\n        phone        CHAR(15),\n        acctbal      DECIMAL,\n        mktsegment   CHAR(10),\n        comment      VARCHAR(117)\n    )\n  FROM FILE '../../experiments/data/tpch/standard/customer.csv'\n  LINE DELIMITED CSV (delimiter := '|');\n\nCREATE STREAM SUPPLIER (\n        suppkey      INT,\n        name         CHAR(25),\n        address      VARCHAR(40),\n        nationkey    INT,\n        phone        CHAR(15),\n        acctbal      DECIMAL,\n        comment      VARCHAR(101)\n    )\n  FROM FILE '../../experiments/data/tpch/standard/supplier.csv'\n  LINE DELIMITED CSV (delimiter := '|');\n\nCREATE STREAM PARTSUPP (\n        partkey      INT,\n        suppkey      INT,\n        availqty     INT,\n        supplycost   DECIMAL,\n        comment      VARCHAR(199)\n    )\n  FROM FILE '../../experiments/data/tpch/standard/partsupp.csv'\n  LINE DELIMITED CSV (delimiter := '|');\n\nCREATE TABLE NATION (\n        nationkey    INT,\n        name         CHAR(25),\n        regionkey    INT,\n        comment      VARCHAR(152)\n    )\n  FROM FILE '../../experiments/data/tpch/standard/nation.csv'\n  LINE DELIMITED CSV (delimiter := '|');\n\nCREATE TABLE REGION (\n        regionkey    INT,\n        name         CHAR(25),\n        comment      VARCHAR(152)\n    )\n  FROM FILE '../../experiments/data/tpch/standard/region.csv'\n  LINE DELIMITED CSV (delimiter := '|');\n\nSELECT * FROM nation;"
+    val r = parser.parseStream(s)
+    r should not be None
+  }
+  //  "SQLParser" should "parse TPCH queries" in {
+  //    val parser = SQLParser
+  //    val folder = "experimentation/tpch-sql"
+  //    val f = new java.io.File(folder)
+  //    val files = if (!f.exists) {
+  //      throw new Exception(s"$f does not exist!")
+  //    } else
+  //      f.listFiles.filter(x => x.getName.startsWith("Q")).map(folder + "/" + _.getName).toList
+  //    for (file <- files) {
+  //      //      println(s"parsing $file")
+  //      val r = parser.parseStream(scala.io.Source.fromFile(file).mkString)
+  //      r should not be None
+  //    }
+  //  }
+  //
+  //  "SQLParser" should "parse DBToaster simple queries" in {
+  //    val parser = SQLParser
+  //    val folder = "experimentation/dbtoaster/queries/simple"
+  //    val f = new java.io.File(folder)
+  //    val files = if (!f.exists) {
+  //      throw new Exception(s"$f does not exist!")
+  //    } else
+  //      f.listFiles.map(folder + "/" + _.getName).toList
+  //    for (file <- files) {
+  //      println(s"parsing $file")
+  //      val r = parser.parseStream(scala.io.Source.fromFile(file).mkString)
+  //      r should not be None
+  //    }
+  //  }
+  //
+  //
+  //
+  //  "SQLParser" should "parse DBToaster tpch queries" in {
+  //    val parser = SQLParser
+  //    val folder = "experimentation/dbtoaster/queries/tpch"
+  //    val f = new java.io.File(folder)
+  //    val files = if (!f.exists) {
+  //      throw new Exception(s"$f does not exist!")
+  //    } else
+  //      f.listFiles.filter(x => x.getName.endsWith(".sql")).map(folder + "/" + _.getName).toList
+  //    for (file <- files) {
+  //      println(s"parsing $file")
+  //      val r = parser.parseStream(scala.io.Source.fromFile(file).mkString)
+  //      r should not be None
+  //    }
+  //  }
+
 }

@@ -4,6 +4,7 @@ package schema
 
 import scala.language.implicitConversions
 import scala.collection.immutable.ListMap
+import frontend.parser.SQLAST._
 
 // FIXME make the return types for the values consistent (i.e. all of them Long or Double!)
 /**
@@ -15,15 +16,22 @@ case class Statistics() {
   private val CARDINALITY_PREFIX = "CARDINALITY_"
   private val DISTINCT_PREFIX = "DISTINCT_"
   private val statsMap = new scala.collection.mutable.HashMap[String, Double]()
+
   case class Dependency(name: String, func: Double => Double)
+
   private val statsDependencyMap = new scala.collection.mutable.HashMap[String, Dependency]()
+
   private def format(name: String) = name.replaceAll("Record", "").replaceAll("Type", "").
     replaceAll("\\(", "_").replaceAll("\\)", "").replaceAll("\\[", "_").replaceAll("\\]", "").replaceAll("\\ ", "").replaceAll("\\[", "").replaceAll(",", "_").toUpperCase()
 
   def +=(nameAndValue: (String, Double)) = statsMap += (format(nameAndValue._1) -> nameAndValue._2)
+
   def +=(name: String, value: Double) = statsMap += (format(name) -> value)
+
   def mkString(delim: String) = ListMap(statsMap.toSeq.sortBy(_._1): _*).mkString("\n========= STATISTICS =========\n", delim, "\n==============================\n")
+
   def increase(nameAndValue: (String, Double)) = statsMap += format(nameAndValue._1) -> (statsMap.getOrElse(format(nameAndValue._1), 0.0) + nameAndValue._2)
+
   def apply(statName: String): Double = statsMap(statName) // TODO-GEN: will die
   def addDependency(name1: String, name2: String, func: Double => Double): Unit = {
     statsDependencyMap += format(name1) -> Dependency(format(name2), func)
@@ -46,7 +54,7 @@ case class Statistics() {
 
   def getCardinality(tableName: String) = getCardinalityOrElse(tableName, {
     // This means that the statistics module has been asked for either a) a table that does not exist
-    // in this schema or b) cardinality of an intermediate table that is being scanned over (see TPCH 
+    // in this schema or b) cardinality of an intermediate table that is being scanned over (see TPCH
     // Q13 for an example about how this may happen). In both cases, we throw a warning message and
     // return the biggest cardinality
     System.out.println(s"${scala.Console.RED}Warning${scala.Console.RESET}: Statistics do not include cardinality information for table " + tableName + ". Returning largest cardinality to compensate. This may lead to degraded performance due to unnecessarily large memory pool allocations.")
@@ -86,8 +94,11 @@ case class Statistics() {
   })
 
   def conflicts = new AttributeHandler(CONFLICT_PREFIX)
+
   def cardinalities = new AttributeHandler(CARDINALITY_PREFIX)
+
   def querySpecificCardinalities = new AttributeHandler(QS_MEM_PREFIX)
+
   def distinctAttributes = new AttributeHandler(DISTINCT_PREFIX)
 
   def getEstimatedNumObjectsForType(typeName: String): Double = getEstimatedNumObjectsForTypeOrElse(typeName, {
@@ -123,12 +134,41 @@ case class Statistics() {
       getLargestCardinality().toInt // This is more than enough for all practical cases encountered so far
   }
 
+  def getFilterSelectivity(condition: Expression): Double = condition match {
+    case tl: TopLevelStatement =>
+      throw new Exception(s"Make sure that you pattern match TopLevelStatement before ExpressionShape: $tl")
+    case Or(e1, e2) => {
+      val s1 = getFilterSelectivity(e1)
+      val s2 = getFilterSelectivity(e2)
+      (s1 + s2)
+    }
+    case And(e1, e2) => getFilterSelectivity(e1) * getFilterSelectivity(e2)
+    case Equals(fi: FieldIdent, _) => distinctAttributes.apply(fi.name) match {
+      case Some(v) => 1.0 / v
+      case None    => 1.0
+    }
+    case NotEquals(e1, e2)       => 1.0 - getFilterSelectivity(Equals(e1, e2))
+    case LessOrEqual(e1, e2)     => 0.5
+    case LessThan(e1, e2)        => 0.5
+    case GreaterOrEqual(e1, e2)  => 1.0 - getFilterSelectivity(LessThan(e1, e2))
+    case GreaterThan(e1, e2)     => 1.0 - getFilterSelectivity(LessOrEqual(e1, e2))
+    case Like(fi: FieldIdent, e) => 0.1
+    case _                       => 1.0
+  }
+
+  def getJoinType(tableName1: String, tableName2: String, expr: Expression): JoinType = {
+    ???
+  }
+
   class AttributeHandler(prefix: String) {
     def update(attrName: String, value: Long): Unit = statsMap(prefix + format(attrName)) = value.toInt
+
     def +=(attrName: String, value: Long): Unit = apply(attrName) match {
       case Some(v) => update(attrName, v + value.toInt)
       case None    => update(attrName, value)
     }
+
     def apply(attrName: String): Option[Int] = statsMap.get(prefix + format(attrName)).map(_.toInt)
   }
+
 }

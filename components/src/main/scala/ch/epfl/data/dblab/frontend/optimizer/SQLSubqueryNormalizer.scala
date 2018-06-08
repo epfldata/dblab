@@ -97,17 +97,14 @@ class SQLSubqueryNormalizer(schema: Schema) extends SQLNormalizer {
       case None => (subq.groupBy.map(g => Some(g.keys)), Seq())
     }
 
-    val newProjections = subq.projections match {
-      case AllColumns() => AllColumns()
-      case ep: ExpressionProjections => ExpressionProjections(ep.lst ++ {
-        groupBy match {
-          case Some(gb) => gb.asInstanceOf[Seq[Expression]].map(gb => (gb, Some(gb match {
-            case FieldIdent(_, name, _) => name
-          })))
-          case None => Seq()
-        }
-      })
-    }
+    val newProjections = Projections(subq.projections.lst ++ {
+      groupBy match {
+        case Some(gb) => gb.asInstanceOf[Seq[Expression]].map(gb => (gb, Some(gb match {
+          case FieldIdent(_, name, _) => name
+        })))
+        case None => Seq()
+      }
+    })
 
     // THIS needs more work -- it shouldn't be None in where or join clause and i doubt the newStmt clause is generally correct
     val newGroupBy = groupBy match {

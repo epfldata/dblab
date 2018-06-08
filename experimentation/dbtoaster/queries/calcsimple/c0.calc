@@ -1,0 +1,8 @@
+QUERY_1_AGG1: 
+AggSum([], (R(R_A, R_B) * S(R_B, S_C) * R_A * S_C))
+QUERY_2_AGG2: 
+AggSum([], (R(R_A, R_B) * S(R_B, S_C) * (R_A + S_C)))
+QUERY_3_COUNT: 
+(R(R_A, R_B) * AggSum([R_B], S(R_B, S_C)))
+QUERY_4_COUNT: 
+(R(R_A, R_B) * (S_B ^= R_B) * S(S_B, S_C))

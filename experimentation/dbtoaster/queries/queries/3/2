@@ -1,0 +1,1 @@
+(R(R_A, R_B) * EXISTS (({R_B = 1} * AGGSUM([], (unused ^= {1})))) )

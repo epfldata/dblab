@@ -14,6 +14,8 @@ import scala.collection.mutable.ArrayBuffer
 import push._
 import sc.pardis.shallow.{ OptimalString, Record, DynamicCompositeRecord }
 import config.Config
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 
 /**
  * The main module for executing (interpreting) query plans.
@@ -58,7 +60,8 @@ object PlanExecutor {
 
   def recursiveGetField(n: String, alias: Option[String], t: Record, t2: Record = null): Any = {
     var stop = false
-    val name = alias.getOrElse("") + n
+    // val name = alias.getOrElse("") + n
+    val name = n
 
     def searchRecordFields(rec: DataRow): Option[Any] = {
       var res: Option[Any] = None
@@ -73,21 +76,32 @@ object PlanExecutor {
     }
 
     def searchRecord(rec: Record): Option[Any] = {
+      // rec match {
+      //   case pr: PageRow =>
+      //     // pr.page.fieldId.get(name)
+      //     pr.getField(name)
+      //   case _ =>
       /* Does a field exist with this name? If so immediately return it */
       val res = rec.getField(name)
       if (res.isDefined) res
       /* If not, is it a dynamic record on which we can look (and find) this attribute name?*/
-      else if (rec.isInstanceOf[DynamicCompositeRecord[_, _]]) {
-        val r = rec.asInstanceOf[DynamicCompositeRecord[_, _]]
-        r.getField(name) match {
-          case Some(f) => Some(f)
-          case None    => None //searchRecordFields(rec)
-        }
-      } else if (rec.isInstanceOf[DataRow])
-        searchRecordFields(rec.asInstanceOf[DataRow])
       else
-        throw new Exception(s"$rec is not a DataRow record and does not have the field `$name`")
+        rec match {
+          case r: DynamicCompositeRecord[_, _] =>
+            r.getField(name) match {
+              case Some(f) => Some(f)
+              case None    => None //searchRecordFields(rec)
+            }
+          case r: DataRow =>
+            searchRecordFields(r)
+          case r: PageRow =>
+            None
+          case _ =>
+            throw new Exception(s"$rec is not a DataRow record and does not have the field `$name`")
+        }
     }
+
+    // println(s"search record $n, $alias, \n\t$t\n\t$t2")
 
     searchRecord(t) match {
       case Some(res) => res // rec.getField(name).get
@@ -110,9 +124,9 @@ object PlanExecutor {
     }
   }
 
-  def printRecord(rec: Record, order: Seq[Expression] = Seq()) {
-    //System.out.println("Printing record...")
-    def printMembers(v: Any, cls: Class[_]) {
+  def printRecord(rec: Record, order: Seq[(Expression, String)] = Seq()) {
+    // System.out.println("Printing record...")
+    def printMembers(v: Any, cls: Class[_], tp: Option[TypeTag[_]] = None) {
       v match {
         case rec if rec.isInstanceOf[Record] =>
           printRecord(rec.asInstanceOf[Record], order)
@@ -120,30 +134,42 @@ object PlanExecutor {
           val arr = c.asInstanceOf[Array[_]]
           for (arrElem <- arr)
             printMembers(arrElem, arrElem.getClass)
-        case i: Int           => printf("%d|", i)
-        case c: Character     => printf("%c|", c)
-        case d: Double        => printf("%.2f|", d) // TODO -- Precision should not be hardcoded
-        case str: String      => printf("%s|", str)
-        case s: OptimalString => printf("%s|", s.string)
+        case i: Int       => printf("%d", i)
+        case c: Character => printf("%c", c)
+        case d: Double => {
+          tp match {
+            case Some(x) if x == typeTag[Int] => printf("%.0f", d)
+            case _                            => printf("%.2f", d) // TODO -- Precision should not be hardcoded
+          }
+        }
+        case str: String      => printf("%s", str)
+        case s: OptimalString => printf("%s", s.string)
         case _                => throw new Exception("Do not know how to print member " + v + " of class " + cls + " in recond " + rec)
       }
     }
     order.size match {
       case 0 =>
         val fieldNames = rec.asInstanceOf[DataRow].getFieldNames
-        fieldNames.foreach(fn => {
+        val n = fieldNames.size
+        for ((fn, i) <- fieldNames.zipWithIndex) {
           val f = recursiveGetField(fn, None, rec)
           printMembers(f, f.getClass)
-        })
-      case _ =>
-        order.foreach(p => p match {
-          case FieldIdent(qualifier, name, _) =>
-            val f = recursiveGetField(qualifier.getOrElse("") + name, None, rec)
-            printMembers(f, f.getClass)
-          case e =>
-            val parsedExpr = parseExpression(e, rec)(e.tp)
-            printMembers(parsedExpr, parsedExpr.getClass)
-        })
+          printf(if (i != n - 1) "|" else "\n")
+        }
+      case n =>
+        for (((p, pn), i) <- order.zipWithIndex) {
+          p match {
+            case FieldIdent(qualifier, name, _) =>
+              // val f = recursiveGetField(qualifier.getOrElse("") + name, Some(pn), rec)
+              val f = recursiveGetField(name, None, rec)
+              // printf(s"---$f, ${f.getClass} ${p.tp}")
+              printMembers(f, f.getClass, Option(p.tp))
+            case e =>
+              val parsedExpr = parseExpression(e, rec)(e.tp)
+              printMembers(parsedExpr, parsedExpr.getClass)
+          }
+          printf(if (i != n - 1) "|" else "\n")
+        }
     }
   }
 
@@ -323,15 +349,15 @@ object PlanExecutor {
         new HashJoinAnti(leftOp, rightOp)((x, y) => parseExpression(joinCond, x, y).asInstanceOf[Boolean])(
           x => parseExpression(leftCond, x)(leftCond.tp))(x => parseExpression(rightCond, x)(rightCond.tp))
       case InnerJoin =>
-        new HashJoinOp(leftOp, rightOp, leftAlias, rightAlias)((x, y) => parseExpression(joinCond, x, y).asInstanceOf[Boolean])(
+        new HashJoinOp(leftOp, rightOp, "", "")((x, y) => parseExpression(joinCond, x, y).asInstanceOf[Boolean])(
           x => parseExpression(leftCond, x)(leftCond.tp))(x => parseExpression(rightCond, x)(rightCond.tp))
     }
   }
 
   def createAggOpOperator(parentOp: OperatorNode, aggs: Seq[Expression], gb: Seq[(Expression, String)], aggNames: Seq[String]): Operator[_] = {
-    System.out.println(s"AGGOP INFO: $aggs")
-    System.out.println(gb)
-    System.out.println(aggNames)
+    // System.out.println(s"AGGOP INFO: $aggs")
+    // System.out.println(gb)
+    // System.out.println(aggNames)
     val aggFuncs: Seq[(Record, Double) => Double] = aggs.map(p => {
       (t: Record, currAgg: Double) =>
         p match {
@@ -421,13 +447,18 @@ object PlanExecutor {
     val finalProjs = projs.map(p => p._1 match {
       case c if (!p._2.isDefined && p._1.isAggregateOpExpr) =>
         throw new Exception("LegoBase limitation: Aggregates must always be aliased (e.g. SUM(...) AS TOTAL) -- aggregate " + p._1 + " was not ")
-      case _ => p._1 match {
-        case agg if p._1.isAggregateOpExpr => FieldIdent(None, p._2.get)
-        // TODO -- The following line shouldn't be necessary in a clean solution
-        case Year(_) | Substring(_, _, _)  => FieldIdent(None, p._2.get)
-        case c if p._2.isDefined           => FieldIdent(None, p._2.get)
-        case _                             => p._1 // last chance
-      }
+      case _ =>
+        val res = (p._1 match {
+          case agg if p._1.isAggregateOpExpr => FieldIdent(None, p._2.get) -> p._2.get
+          // TODO -- The following line shouldn't be necessary in a clean solution
+          case Year(_) | Substring(_, _, _)  => FieldIdent(None, p._2.get) -> p._2.get
+          case c if p._2.isDefined           => FieldIdent(None, p._2.get) -> p._2.get
+          case FieldIdent(q, v, _)           => p._1 -> v
+          case _                             => throw new Exception(s"No alias provided for $p ${p._1.getClass}")
+        })
+        // res._1.setTp(p._1.tp)
+        res._1.tpe = p._1.tpe
+        res
     })
 
     new PrintOp(convertOperator(parent))(kv => {
@@ -462,7 +493,8 @@ object PlanExecutor {
       ??? // TODO
     case ProjectOpNode(parent, projNames, origFieldNames) =>
       // new ProjectOperator(convertOperator(parent), projNames, origFieldNames)
-      ??? // TODO
+      convertOperator(parent)
+    // ??? // TODO
     case ViewOpNode(_, _, name) => new ScanOp(activeViews(name).getDataArray())
   }
 }

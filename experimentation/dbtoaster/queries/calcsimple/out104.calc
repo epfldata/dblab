@@ -1,0 +1,12 @@
+QUERY_1_COUNT: 
+((__SQL_EXPRESSION_3 ^= 19.2) * (__SQL_EXPRESSION_2 ^= DATE('1998-12-19')) *
+  (__SQL_EXPRESSION_1 ^= 23))
+QUERY_2_COUNT: 
+AggSum([__SQL_EXPRESSION_4, __SQL_EXPRESSION_5, __SQL_EXPRESSION_6,
+          __SQL_EXPRESSION_7, __SQL_EXPRESSION_8], 
+  (TEST(TEST_I, TEST_S1, TEST_S2, TEST_D, TEST_F) *
+    (__SQL_EXPRESSION_8 ^= {[cast_int:int](TEST_I)}) *
+    (__SQL_EXPRESSION_7 ^= {[cast_string:string](TEST_D)}) *
+    (__SQL_EXPRESSION_6 ^= {[cast_float:float](TEST_S2)}) *
+    (__SQL_EXPRESSION_5 ^= {[cast_date:date](TEST_S1)}) *
+    (__SQL_EXPRESSION_4 ^= {[cast_int:int](TEST_F)})))

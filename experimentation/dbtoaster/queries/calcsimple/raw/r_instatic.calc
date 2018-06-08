@@ -1,0 +1,2 @@
+COUNT: 
+(R(R_A, R_B) * EXISTS( AggSum([], ({R_B = 1} * (unused ^= 1)))))

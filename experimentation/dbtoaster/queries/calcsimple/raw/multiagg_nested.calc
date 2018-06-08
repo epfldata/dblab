@@ -1,0 +1,7 @@
+COUNT: 
+AggSum([R_B, AVG_A], 
+  (R(R_A, R_B) * EXISTS( AggSum([X_B], (R(Y_A, Y_B) * (X_B ^= Y_B)))) *
+    (X_C ^= AggSum([X_B], (R(Y_A, Y_B) * (X_B ^= Y_B)))) *
+    EXISTS( AggSum([X_B], (R(Y_A, Y_B) * (X_B ^= Y_B)))) *
+    (X_S ^= AggSum([X_B], (R(Y_A, Y_B) * Y_A * (X_B ^= Y_B)))) *
+    {R_B = X_B} * (AVG_A ^= (X_S * {[/:float](X_C)}))))

@@ -1,0 +1,6 @@
+__SQL_SUM_AGGREGATE_1: 
+AggSum([R1_A], 
+  (R(R1_A, R1_B) *
+    AggSum([], 
+      ((N1_B ^= AggSum([R1_B], (R(R1_B, R2_B) * R2_B))) *
+        {(3 * R1_A) < N1_B}))))

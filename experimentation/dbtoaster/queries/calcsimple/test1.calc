@@ -1,0 +1,2 @@
+DECLARE QUERY q2 := AggSum([], (C ^= 0) * {C:int > 0});
+q2: AggSum([], (C ^= 0) * {C:int > 0})

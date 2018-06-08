@@ -1,0 +1,2 @@
+__SQL_EXPRESSION_1: 
+(AggSum([R_A], (R(R_A, R_B) * R_B)) * {[/:float](R_A)})

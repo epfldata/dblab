@@ -8,14 +8,18 @@ import scala.collection.mutable.Map
 import scala.collection.mutable.ArrayBuffer
 
 case class Catalog(schemata: Map[String, Schema])
-case class Schema(tables: ArrayBuffer[Table], stats: Statistics) {
+case class Schema(tables: ArrayBuffer[Table], stats: Statistics,
+                  functions: Map[String, List[Tpe] => FunctionDeclaration] = Map()) {
   def this(tables: List[Table], stats: Statistics) = this(ArrayBuffer[Table]() ++ tables, stats)
   def this(tables: List[Table]) = this(tables, Statistics())
   def this(tables: ArrayBuffer[Table]) = this(tables, Statistics())
   def findTable(name: String): Option[Table] = tables.find(t => t.name == name)
   def findTableByType(tpe: PardisType[_]): Option[Table] = tables.find(t => t.name + "Record" == tpe.name)
   def findAttribute(attrName: String): Option[Attribute] = tables.map(t => t.attributes).flatten.find(attr => attr.name == attrName)
+  def findTableByAttributeName(attrName: String): Option[Table] = tables.find(t => t.attributes.exists(_.name == attrName))
 }
+case class FunctionDeclaration(name: String, returnType: Tpe)
+
 case class Table(name: String, attributes: List[Attribute], constraints: ArrayBuffer[Constraint], resourceLocator: String, var rowCount: Long = -1) {
   def primaryKey: Option[PrimaryKey] = constraints.collectFirst { case pk: PrimaryKey => pk }
   def foreignKeys: List[ForeignKey] = constraints.collect { case fk: ForeignKey => fk }.toList

@@ -57,6 +57,9 @@ object DBLABBuild extends Build {
   val generate_test = InputKey[Unit]("generate-test")
   // val test_run = InputKey[Unit]("test-run")
   val olap_engine = InputKey[Unit]("olap-engine")
+  val dbtoaster_driver = InputKey[Unit]("dbtoaster")
+  val olap_interpreter = InputKey[Unit]("olap-interpreter")
+  val componentsMainClass = "ch.epfl.data.dblab.main.Main"
 
   def purgatorySettings(projectFolder: String) = generatorSettings ++ Seq(
     outputFolder := s"$projectFolder/src/main/scala/ch/epfl/data/dblab/deep",
@@ -72,7 +75,21 @@ object DBLABBuild extends Build {
      site.addMappingsToSiteDir(mappings in packageDoc in Compile in dblab_components, "components-api"),
      site.addMappingsToSiteDir(mappings in packageDoc in Compile in dblab_components_compiler, "components-compiler-api"),
      gitRemoteRepo := "git@github.com:epfldata/dblab.git",
-     libraryDependencies += "ch.epfl.data" % "sc-pardis-library_2.11" % sc_version))
+     mainClass in Compile := Some(componentsMainClass),
+     fullRunInputTask(
+       dbtoaster_driver,
+       Compile,
+       "ch.epfl.data.dblab.dbtoaster.Driver"
+     ),
+     fullRunInputTask(
+       olap_interpreter,
+       Compile,
+       "ch.epfl.data.dblab.queryengine.QueryInterpreter"
+     ),
+     libraryDependencies ++= Seq(
+       "ch.epfl.data" % "sc-pardis-library_2.11" % sc_version,
+       "ch.epfl.data" % "sc-pardis-synthesis_2.11" % sc_version
+      )))
 
   lazy val dblab_components_compiler       = Project(id = "dblab-components-compiler",        base = file("components-compiler"),
    settings = defaults ++ Seq(

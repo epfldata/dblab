@@ -1,0 +1,31 @@
+QUERY18: 
+AggSum([C_CUSTKEY], 
+  (CUSTOMER(C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_PHONE, C_ACCTBAL,
+              C_MKTSEGMENT, C_COMMENT) *
+    ORDERS(O_ORDERKEY, C_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, O_ORDERDATE,
+             O_ORDERPRIORITY, O_CLERK, O_SHIPPRIORITY, O_COMMENT) *
+    LINEITEM(O_ORDERKEY, L1_PARTKEY, L1_SUPPKEY, L1_LINENUMBER, L1_QUANTITY,
+               L1_EXTENDEDPRICE, L1_DISCOUNT, L1_TAX, L1_RETURNFLAG,
+               L1_LINESTATUS, L1_SHIPDATE, L1_COMMITDATE, L1_RECEIPTDATE,
+               L1_SHIPINSTRUCT, L1_SHIPMODE, L1_COMMENT) *
+    AggSum([], 
+      ((__sql_inline_agg_2 ^=
+         AggSum([O_ORDERKEY], 
+           (LINEITEM(O_ORDERKEY, L2_PARTKEY, L2_SUPPKEY, L2_LINENUMBER,
+                       L2_QUANTITY, L2_EXTENDEDPRICE, L2_DISCOUNT, L2_TAX,
+                       L2_RETURNFLAG, L2_LINESTATUS, L2_SHIPDATE,
+                       L2_COMMITDATE, L2_RECEIPTDATE, L2_SHIPINSTRUCT,
+                       L2_SHIPMODE, L2_COMMENT) *
+             AggSum([], 
+               ((__sql_inline_agg_1 ^=
+                  AggSum([O_ORDERKEY], 
+                    (LINEITEM(O_ORDERKEY, L3_PARTKEY, L3_SUPPKEY,
+                                L3_LINENUMBER, L3_QUANTITY, L3_EXTENDEDPRICE,
+                                L3_DISCOUNT, L3_TAX, L3_RETURNFLAG,
+                                L3_LINESTATUS, L3_SHIPDATE, L3_COMMITDATE,
+                                L3_RECEIPTDATE, L3_SHIPINSTRUCT, L3_SHIPMODE,
+                                L3_COMMENT) *
+                      L3_QUANTITY))) *
+                 {100 < __sql_inline_agg_1}))))) *
+        {1 <= __sql_inline_agg_2})) *
+    L1_QUANTITY))
