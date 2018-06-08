@@ -1,13 +1,13 @@
-package ch.epfl.data.dblab.frontend.visualiser
+package ch.epfl.data.dblab.frontend.visualizer
 
-import java.io.{File, PrintWriter}
+import java.io.{ File, PrintWriter }
 import java.text.SimpleDateFormat
 import java.util.Date
 
 import ch.epfl.data.dblab.frontend.analyzer.PlanCosting
 import ch.epfl.data.dblab.frontend.parser.OperatorAST._
 
-object DOTvisualiser {
+object DOTvisualizer {
   def visualize(tree: QueryPlanTree, planCosting: PlanCosting, queryName: String, simple: Boolean = true, subquery: String = "") {
 
     def parseTree(tree: OperatorNode, suffix: String = ""): String = {
