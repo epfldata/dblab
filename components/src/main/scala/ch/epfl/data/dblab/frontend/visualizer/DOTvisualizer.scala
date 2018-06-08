@@ -35,7 +35,7 @@ object DOTvisualizer {
 
     def getLabel(node: OperatorNode, suffix: String = ""): String = {
       node match {
-        case ScanOpNode(_, scanOpName, _)             => "SCAN " + scanOpName + suffix
+        case ScanOpNode(table, _, qualifier)         => "SCAN " + qualifier.fold(table.name)(v => v) + suffix
         case UnionAllOpNode(_, _)                     => "U" + suffix
         case SelectOpNode(_, cond, _)                 => "Select " + cond.toString + suffix
         case JoinOpNode(_, _, clause, joinType, _, _) => joinType + " " + clause.toString + suffix
