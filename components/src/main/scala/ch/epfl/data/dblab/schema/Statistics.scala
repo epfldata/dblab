@@ -143,28 +143,17 @@ case class Statistics() {
       (s1 + s2)
     }
     case And(e1, e2) => getFilterSelectivity(e1) * getFilterSelectivity(e2)
-    case Equals(e1: FieldIdent, e2: FieldIdent) =>
-      distinctAttributes.apply(e1.name) match {
-        case Some(v) => distinctAttributes.apply(e2.name) match {
-          case Some(a) => 1.0 / (v * a)
-          case None    => 1.0 / v
-        }
-        case None => {
-          System.out.println("Statistics doesn't contain information about attribute: " + e1.name)
-          1
-        }
-      }
-    case Equals(fi: FieldIdent, lit: LiteralExpression) => distinctAttributes.apply(fi.name) match {
+    case Equals(fi: FieldIdent, _) => distinctAttributes.apply(fi.name) match {
       case Some(v) => 1.0 / v
       case None    => 1.0
     }
-    case NotEquals(e1, e2)      => 1.0 - getFilterSelectivity(Equals(e1, e2))
-    case LessOrEqual(e1, e2)    => 0.5
-    case LessThan(e1, e2)       => 0.5
-    case GreaterOrEqual(e1, e2) => 1.0 - getFilterSelectivity(LessThan(e1, e2))
-    case GreaterThan(e1, e2)    => 1.0 - getFilterSelectivity(LessOrEqual(e1, e2))
+    case NotEquals(e1, e2)       => 1.0 - getFilterSelectivity(Equals(e1, e2))
+    case LessOrEqual(e1, e2)     => 0.5
+    case LessThan(e1, e2)        => 0.5
+    case GreaterOrEqual(e1, e2)  => 1.0 - getFilterSelectivity(LessThan(e1, e2))
+    case GreaterThan(e1, e2)     => 1.0 - getFilterSelectivity(LessOrEqual(e1, e2))
     case Like(fi: FieldIdent, e) => 0.1
-    case _ => 1.0
+    case _                       => 1.0
   }
 
   def getJoinType(tableName1: String, tableName2: String, expr: Expression): JoinType = {
